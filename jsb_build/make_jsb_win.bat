@@ -3,11 +3,9 @@
 mkdir out
 pushd out
 
-mkdir jsb
-pushd jsb
-rd /s /q x64
-mkdir x64
-pushd x64
+rd /s /q win_x64
+mkdir win_x64
+pushd win_x64
 cmake -G "Visual Studio 15 2017 Win64" ..\..\jsb
 REM cmake -G "Visual Studio 16 2019" -A x64 ..\..\..
 popd
