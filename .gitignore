@@ -39,4 +39,20 @@ sysinfo.txt
 /jsb_build/quickjs-2019-10-27/.obj
 /jsb_build/quickjs-2019-10-27/repl.c
 /jsb_build/quickjs-2019-10-27/host-qjsc
+/jsb_build/quickjs-2019-10-27/qjsc
+/jsb_build/quickjs-2019-10-27/qjs
+/jsb_build/quickjs-2019-10-27/qjsbnc
+/jsb_build/quickjs-2019-10-27/qjsbn
+/jsb_build/quickjs-2019-10-27/qjscalc.c
+/jsb_build/quickjs-2019-10-27/qjscalc
+/jsb_build/quickjs-2019-10-27/repl-bn.c
+/jsb_build/quickjs-2019-10-27/run-test262
+/jsb_build/quickjs-2019-10-27/run-test262-bn
+/jsb_build/quickjs-2019-10-27/*.a
+/jsb_build/quickjs-2019-10-27/examples/*.so
+/jsb_build/quickjs-2019-10-27/examples/hello
+/jsb_build/quickjs-2019-10-27/examples/hello_module
+/jsb_build/quickjs-2019-10-27/hello.c
+/jsb_build/quickjs-2019-10-27/test_fib.c
+/jsb_build/quickjs-2019-10-27/examples/test_fib
 
