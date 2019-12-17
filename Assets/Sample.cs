@@ -6,8 +6,9 @@ namespace jsb
     {
         void Awake()
         {
-            var c = JSBridgeDLL.foo(1, 2);
+            var c = JSBridgeDLL.test(1, 2);
             Debug.Log(c);
+            JSBridgeDLL.init();
         }
     }
 }

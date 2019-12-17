@@ -32,6 +32,12 @@
 extern "C" {
 #endif
 
+// #define CONFIG_VERSION "2019-10-27"
+// #if defined(_MSC_VER)
+// #include <BaseTsd.h>
+// typedef SSIZE_T ssize_t;
+// #endif
+
 #if defined(__GNUC__) || defined(__clang__)
 #define js_likely(x)          __builtin_expect(!!(x), 1)
 #define js_unlikely(x)        __builtin_expect(!!(x), 0)

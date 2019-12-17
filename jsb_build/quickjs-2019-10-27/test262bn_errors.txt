@@ -1,2 +1,0 @@
-test262/test/language/expressions/dynamic-import/usage-from-eval.js:26: TypeError: $DONE() not called
-test262/test/language/expressions/dynamic-import/usage-from-eval.js:26: strict mode: TypeError: $DONE() not called

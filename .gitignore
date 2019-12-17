@@ -1,6 +1,7 @@
 [Ll]ibrary/
 [Tt]emp/
 [Oo]bj/
+[Ll]ogs/
 [Bb]uild/
 [Bb]uilds/
 Assets/AssetStoreTools*
@@ -55,4 +56,8 @@ sysinfo.txt
 /jsb_build/quickjs-2019-10-27/hello.c
 /jsb_build/quickjs-2019-10-27/test_fib.c
 /jsb_build/quickjs-2019-10-27/examples/test_fib
+
+/jsb_build/jsb/.obj
+/jsb_build/jsb/jsb.dll
+/jsb_build/jsb/libquickjs.a
 

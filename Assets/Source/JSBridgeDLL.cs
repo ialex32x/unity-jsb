@@ -8,11 +8,14 @@ namespace jsb
     public class JSBridgeDLL
     {
 #if UNITY_IPHONE && !UNITY_EDITOR
-	    const string DUKTAPEDLL = "__Internal";
+	    const string JSBDLL = "__Internal";
 #else
-        const string DUKTAPEDLL = "jsb";
+        const string JSBDLL = "jsb";
 #endif
-        [DllImport(DUKTAPEDLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern int foo(int a, int b);
+        [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern int test(int a, int b);
+
+        [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern void init();
     }
 }

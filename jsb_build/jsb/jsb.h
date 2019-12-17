@@ -12,6 +12,5 @@
     #define JSB_EXTERNAL       __attribute__ ((visibility("default")))
 #endif
 
-#include "jsb_version.h"
-
 JSB_EXTERNAL_DECL void init();
+JSB_EXTERNAL_DECL int test(int a, int b);
