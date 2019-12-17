@@ -58,6 +58,6 @@ sysinfo.txt
 /jsb_build/quickjs-2019-10-27/examples/test_fib
 
 /jsb_build/jsb/.obj
-/jsb_build/jsb/jsb.dll
-/jsb_build/jsb/libquickjs.a
-
+/jsb_build/jsb/*.dll
+/jsb_build/jsb/*.a
+/jsb_build/jsb/*.so

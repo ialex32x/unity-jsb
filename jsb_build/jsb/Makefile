@@ -51,11 +51,12 @@ prefix=/usr/local
 OBJDIR=.obj
 
 ifdef CONFIG_WIN32
-#   CROSS_PREFIX=i686-w64-mingw32-
+  CROSS_PREFIX32=i686-w64-mingw32-
   CROSS_PREFIX=x86_64-w64-mingw32-
   EXE=.exe
   DLL=.dll
 else
+  CROSS_PREFIX32=
   CROSS_PREFIX=
   EXE=
   DLL=.so
@@ -63,6 +64,7 @@ endif
 ifdef CONFIG_CLANG
   HOST_CC=clang
   CC=$(CROSS_PREFIX)clang
+  CC32=$(CROSS_PREFIX32)clang
   CFLAGS=-g -Wall -MMD -MF $(OBJDIR)/$(@F).d
   CFLAGS += -Wextra
   CFLAGS += -Wno-sign-compare
@@ -84,6 +86,7 @@ ifdef CONFIG_CLANG
 else
   HOST_CC=gcc
   CC=$(CROSS_PREFIX)gcc
+  CC32=$(CROSS_PREFIX32)gcc
   CFLAGS=-g -Wall -MMD -MF $(OBJDIR)/$(@F).d
   CFLAGS += -Wno-array-bounds -Wno-format-truncation
   ifdef CONFIG_LTO
@@ -98,7 +101,6 @@ CFLAGS+=-Werror
 endif
 DEFINES:=-D_GNU_SOURCE -DCONFIG_VERSION=\"$(shell cat VERSION)\"
 CFLAGS+=$(DEFINES)
-CFLAGS+=-m64
 CFLAGS_DEBUG=$(CFLAGS) -O0
 CFLAGS_SMALL=$(CFLAGS) -Os
 CFLAGS_OPT=$(CFLAGS) -O2
@@ -178,8 +180,11 @@ $(OBJDIR):
 qjs$(EXE): $(QJS_OBJS)
 	$(CC) $(LDFLAGS) $(LDEXPORT) -o $@ $^ $(LIBS) 
 
-jsb$(DLL): $(OBJDIR)/jsb.o $(QJS_LIB_OBJS)
-	$(CC) $(LDFLAGS) $(LDEXPORT) -fPIC -shared $^ -o $@ $(LIBS) 
+jsb_x64$(DLL): $(OBJDIR)/jsb.o $(OBJDIR)/quickjs.o $(OBJDIR)/libregexp.o $(OBJDIR)/libunicode.o $(OBJDIR)/cutils.o 
+	$(CC) -m64 $(LDFLAGS) $(LDEXPORT) -fPIC -shared $^ -o $@ $(LIBS) 
+
+jsb_x86$(DLL): $(OBJDIR)/jsb.m32.o $(OBJDIR)/quickjs.m32.o $(OBJDIR)/libregexp.m32.o $(OBJDIR)/libunicode.m32.o $(OBJDIR)/cutils.m32.o 
+	$(CC32) -m32 $(LDFLAGS) $(LDEXPORT) -fPIC -shared $^ -o $@ $(LIBS) 
 
 qjs-debug$(EXE): $(patsubst %.o, %.debug.o, $(QJS_OBJS))
 	$(CC) $(LDFLAGS) -o $@ $^ $(LIBS)
@@ -285,7 +290,7 @@ run-test262-bn32: $(patsubst %.o, %.m32.o, $(OBJDIR)/run-test262.bn.o $(QJSBN_LI
 # object suffix order: bn, nolto, [m32|m32s]
 
 $(OBJDIR)/%.o: %.c | $(OBJDIR)
-	$(CC) $(CFLAGS_OPT) -c -o $@ $<
+	$(CC) -m64 $(CFLAGS_OPT) -c -o $@ $<
 
 $(OBJDIR)/%.host.o: %.c | $(OBJDIR)
 	$(HOST_CC) $(CFLAGS_OPT) -c -o $@ $<
@@ -306,7 +311,7 @@ $(OBJDIR)/%.bn.nolto.o: %.c | $(OBJDIR)
 	$(CC) $(CFLAGS_NOLTO) -DCONFIG_BIGNUM -c -o $@ $<
 
 $(OBJDIR)/%.m32.o: %.c | $(OBJDIR)
-	$(CC) -m32 $(CFLAGS_OPT) -c -o $@ $<
+	$(CC32) -m32 $(CFLAGS_OPT) -c -o $@ $<
 
 $(OBJDIR)/%.m32s.o: %.c | $(OBJDIR)
 	$(CC) -m32 $(CFLAGS_SMALL) -c -o $@ $<
