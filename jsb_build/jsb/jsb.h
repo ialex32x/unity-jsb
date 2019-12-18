@@ -12,5 +12,17 @@
     #define JSB_EXTERNAL       __attribute__ ((visibility("default")))
 #endif
 
-JSB_EXTERNAL_DECL void init();
-JSB_EXTERNAL_DECL int test(int a, int b);
+struct JSBClass {
+    JSClassID class_id;
+    // JSValue prototype;
+    // JSValue constructor;
+    JSClassDef class_def;
+};
+
+struct JSBVM {
+    JSRuntime *rt;
+    JSContext *ctx;
+};
+
+JSB_EXTERNAL_DECL struct JSBVM *JSB_NewVM();
+JSB_EXTERNAL_DECL void JSB_FreeVM(struct JSBVM *vm);

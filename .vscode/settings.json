@@ -52,5 +52,6 @@
         "ProjectSettings/":true,
         "temp/":true,
         "Temp/":true
-    }
+    }, 
+    "C_Cpp.default.defines": ["${default}", "JSB_F_WINDOWS", "JSB_COMPILING"]
 }
