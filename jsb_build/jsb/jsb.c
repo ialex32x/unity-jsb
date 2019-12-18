@@ -4,10 +4,18 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+static void finalizer(JSRuntime *rt, JSValue val) {
+    // JS_GetOpaque(val, vm)
+    // JS_GetGlobalObject()
+}
+
 JSB_EXTERNAL struct JSBVM *JSB_NewVM() {
     struct JSBVM *vm = malloc(sizeof(struct JSBVM));
     vm->rt = JS_NewRuntime();
     vm->ctx = JS_NewContext(vm->rt);
+    vm->origin.class_id = 0;
+    vm->origin.class_def.class_name = "JSBOrigin";
+    vm->origin.class_def.finalizer = finalizer;
     return vm;
 }
 

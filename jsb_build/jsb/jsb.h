@@ -19,10 +19,25 @@ struct JSBClass {
     JSClassDef class_def;
 };
 
+struct JSBVM;
+
 struct JSBVM {
+    struct JSBVM *_next;
     JSRuntime *rt;
     JSContext *ctx;
+
+    struct JSBClass origin;
 };
+
+struct JSBValue;
+
+typedef void JSBClassFinalizer(JSRuntime *rt, struct JSBValue *val);
+
+struct JSBValue {
+    int32_t refid;
+    JSBClassFinalizer *finalizer;
+};
+
 
 JSB_EXTERNAL_DECL struct JSBVM *JSB_NewVM();
 JSB_EXTERNAL_DECL void JSB_FreeVM(struct JSBVM *vm);
