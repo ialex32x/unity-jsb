@@ -31,7 +31,7 @@ struct JSBVM {
 
 struct JSBValue;
 
-typedef void JSBClassFinalizer(JSRuntime *rt, struct JSBValue *val);
+typedef void JSBClassFinalizer(struct JSBVM *vm, struct JSBValue *val);
 
 struct JSBValue {
     int32_t refid;
