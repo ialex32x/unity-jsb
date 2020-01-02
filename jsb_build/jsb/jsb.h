@@ -38,7 +38,7 @@ struct JSBValue {
     int32_t refid;
 };
 
-JSB_EXTERNAL_DECL struct JSBRuntime *JSB_NewRuntime();
+JSB_EXTERNAL_DECL struct JSBRuntime *JSB_NewRuntime(JSBClassFinalizer *finalizer);
 JSB_EXTERNAL_DECL void JSB_FreeRuntime(struct JSBRuntime *vm);
 
 JSB_EXTERNAL_DECL JSContext *JSB_NewContext();
