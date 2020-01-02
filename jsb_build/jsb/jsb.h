@@ -12,6 +12,12 @@
     #define JSB_EXTERNAL       __attribute__ ((visibility("default")))
 #endif
 
+struct JSBRuntime;
+struct JSBValue;
+struct JSBClass;
+
+typedef void JSBClassFinalizer(struct JSBRuntime *vm, struct JSBValue *val);
+
 struct JSBClass {
     JSClassID class_id;
     // JSValue prototype;
@@ -19,25 +25,20 @@ struct JSBClass {
     JSClassDef class_def;
 };
 
-struct JSBVM;
-
-struct JSBVM {
-    struct JSBVM *_next;
+struct JSBRuntime {
+    struct JSBRuntime *_next;
     JSRuntime *rt;
     JSContext *ctx;
 
     struct JSBClass origin;
-};
-
-struct JSBValue;
-
-typedef void JSBClassFinalizer(struct JSBVM *vm, struct JSBValue *val);
-
-struct JSBValue {
-    int32_t refid;
     JSBClassFinalizer *finalizer;
 };
 
+struct JSBValue {
+    int32_t refid;
+};
 
-JSB_EXTERNAL_DECL struct JSBVM *JSB_NewVM();
-JSB_EXTERNAL_DECL void JSB_FreeVM(struct JSBVM *vm);
+JSB_EXTERNAL_DECL struct JSBRuntime *JSB_NewRuntime();
+JSB_EXTERNAL_DECL void JSB_FreeRuntime(struct JSBRuntime *vm);
+
+JSB_EXTERNAL_DECL JSContext *JSB_NewContext();
