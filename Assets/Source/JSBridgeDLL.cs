@@ -12,10 +12,18 @@ namespace jsb
 #else
         const string JSBDLL = "jsb";
 #endif
-        [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern int test(int a, int b);
 
         [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern void init();
+        public static extern IntPtr XJS_NewRuntime();
+
+        [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern IntPtr XJS_NewContext(IntPtr rt);
+
+        [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern void XJS_FreeContext(IntPtr rt);
+
+        [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern void XJS_FreeRuntime(IntPtr rt);
+
     }
 }
