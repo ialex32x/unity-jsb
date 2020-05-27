@@ -1,3 +1,5 @@
+using System;
+
 namespace jsb
 {
     using UnityEngine;
@@ -10,6 +12,7 @@ namespace jsb
             var ctx = JSBridgeDLL.JS_NewContext(rt);
             Debug.Log(rt);
             Debug.Log(ctx);
+
             var val = JSBridgeDLL.JSB_Test(ctx);
             Debug.Log(val);
 
