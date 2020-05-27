@@ -3,6 +3,9 @@ using System.Runtime.InteropServices;
 using System.Text;
 using AOT;
 
+// Default Marshaling for Strings
+// https://docs.microsoft.com/en-us/dotnet/framework/interop/default-marshaling-for-strings
+
 namespace jsb
 {
     public struct JSValue
