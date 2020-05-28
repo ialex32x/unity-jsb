@@ -20,21 +20,21 @@ namespace jsb
     using int64_t = Int64;
 
 #if UNITY_EDITOR_WIN || UNITY_STANDALONE_WIN
-    [UnmanagedFunctionPointer(CallingConvention.Cdecl)] 
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     public delegate void JSClassFinalizer(JSRuntime rt, JSValue val);
-    [UnmanagedFunctionPointer(CallingConvention.Cdecl)] 
-    public delegate JSValue JSCFunction(JSContext ctx, JSValueConst this_val, int argc, ref JSValueConst argv);
-    [UnmanagedFunctionPointer(CallingConvention.Cdecl)] 
-    public delegate JSValue JSCFunctionMagic(JSContext ctx, JSValueConst this_val, int argc, ref JSValueConst argv, int magic);
-    [UnmanagedFunctionPointer(CallingConvention.Cdecl)] 
-    public delegate JSValue JSCFunctionData(JSContext ctx, JSValueConst this_val, int argc, ref JSValueConst argv, int magic, ref JSValue func_data);
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    public delegate JSValue JSCFunction(JSContext ctx, JSValueConst this_val, int argc, [MarshalAs(UnmanagedType.LPArray)] JSValueConst[] argv);
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    public delegate JSValue JSCFunctionMagic(JSContext ctx, JSValueConst this_val, int argc, [MarshalAs(UnmanagedType.LPArray)] JSValueConst[] argv, int magic);
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    public delegate JSValue JSCFunctionData(JSContext ctx, JSValueConst this_val, int argc, [MarshalAs(UnmanagedType.LPArray)] JSValueConst[] argv, int magic, ref JSValue func_data);
 #else
     public delegate void JSClassFinalizer(JSRuntime rt, JSValue val);
 
     #region TEMP CODE
-    public delegate JSValue JSCFunction(JSContext ctx, JSValueConst this_val, int argc, ref JSValueConst argv);
-    public delegate JSValue JSCFunctionMagic(JSContext ctx, JSValueConst this_val, int argc, ref JSValueConst argv, int magic);
-    public delegate JSValue JSCFunctionData(JSContext ctx, JSValueConst this_val, int argc, ref JSValueConst argv, int magic, ref JSValue func_data);
+    public delegate JSValue JSCFunction(JSContext ctx, JSValueConst this_val, int argc, [MarshalAs(UnmanagedType.LPArray)] JSValueConst[] argv);
+    public delegate JSValue JSCFunctionMagic(JSContext ctx, JSValueConst this_val, int argc, [MarshalAs(UnmanagedType.LPArray)] JSValueConst[] argv, int magic);
+    public delegate JSValue JSCFunctionData(JSContext ctx, JSValueConst this_val, int argc, [MarshalAs(UnmanagedType.LPArray)] JSValueConst[] argv, int magic, ref JSValue func_data);
     #endregion
 
 #endif
@@ -90,7 +90,27 @@ namespace jsb
     };
 
     [Flags]
-    public enum JSPropFlags : uint
+    public enum JSEvalFlags
+    {
+        /* JS_Eval() flags */
+        JS_EVAL_TYPE_GLOBAL = (0 << 0) /* global code (default) */,
+        JS_EVAL_TYPE_MODULE = (1 << 0) /* module code */,
+        JS_EVAL_TYPE_DIRECT = (2 << 0) /* direct call (internal use) */,
+        JS_EVAL_TYPE_INDIRECT = (3 << 0) /* indirect call (internal use) */,
+        JS_EVAL_TYPE_MASK = (3 << 0),
+
+        JS_EVAL_FLAG_STRICT = (1 << 3) /* force 'strict' mode */,
+        JS_EVAL_FLAG_STRIP = (1 << 4) /* force 'strip' mode */,
+        /* compile but do not run. The result is an object with a
+           JS_TAG_FUNCTION_BYTECODE or JS_TAG_MODULE tag. It can be executed
+           with JS_EvalFunction(). */
+        JS_EVAL_FLAG_COMPILE_ONLY = (1 << 5),
+        /* don't include the stack frames before this eval in the Error() backtraces */
+        JS_EVAL_FLAG_BACKTRACE_BARRIER = (1 << 6),
+    }
+
+    [Flags]
+    public enum JSPropFlags
     {
         /* flags for object properties */
         JS_PROP_CONFIGURABLE = (1 << 0),
@@ -150,6 +170,11 @@ namespace jsb
         public const int JS_TAG_EXCEPTION = 6;
         public const int JS_TAG_FLOAT64 = 7;
 
+        public static bool JS_VALUE_HAS_REF_COUNT(JSValue v)
+        {
+            return (ulong)v.tag >= unchecked((ulong)JS_TAG_FIRST);
+        }
+
         public static JSValue JS_MKVAL(long tag, int val)
         {
             return new JSValue() { u = new JSValueUnion() { int32 = val }, tag = tag };
@@ -168,12 +193,119 @@ namespace jsb
         [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern void JS_FreeRuntime(IntPtr rt);
 
-
         [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern IntPtr JS_NewContext(IntPtr rt);
 
         [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern void JS_FreeContext(IntPtr rt);
+
+        #region ref counting
+
+        [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern JSValue JSB_DupValue(JSContext ctx, JSValueConst v);
+
+        [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern JSValue JSB_DupValueRT(JSRuntime rt, JSValueConst v);
+
+        [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern void JSB_FreeValue(JSContext ctx, JSValue v);
+
+        [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern void JSB_FreeValueRT(JSRuntime rt, JSValue v);
+
+        #endregion 
+
+        [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern JSValue JS_GetGlobalObject(JSContext ctx);
+
+        [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern int JS_IsInstanceOf(JSContext ctx, JSValueConst val, JSValueConst obj);
+
+        [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern int JS_DefineProperty(JSContext ctx, JSValueConst this_obj,
+                              JSAtom prop, JSValueConst val,
+                              JSValueConst getter, JSValueConst setter, int flags);
+
+        #region error handling
+
+        [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern JSValue JS_Throw(JSContext ctx, JSValue obj);
+
+        [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern JSValue JS_GetException(JSContext ctx);
+
+        [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern JS_BOOL JS_IsError(JSContext ctx, JSValueConst val);
+
+        [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern void JS_ResetUncatchableError(JSContext ctx);
+
+        [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern JSValue JS_NewError(JSContext ctx);
+
+        // JSValue __js_printf_like(2, 3) JS_ThrowSyntaxError(JSContext *ctx, const char *fmt, ...);
+        // JSValue __js_printf_like(2, 3) JS_ThrowTypeError(JSContext *ctx, const char *fmt, ...);
+        // JSValue __js_printf_like(2, 3) JS_ThrowReferenceError(JSContext *ctx, const char *fmt, ...);
+        // JSValue __js_printf_like(2, 3) JS_ThrowRangeError(JSContext *ctx, const char *fmt, ...);
+        // JSValue __js_printf_like(2, 3) JS_ThrowInternalError(JSContext *ctx, const char *fmt, ...);
+
+        [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern JSValue JS_ThrowOutOfMemory(JSContext ctx);
+
+        #endregion
+
+        #region atom support
+
+        // JSAtom JS_NewAtomLen(JSContext *ctx, const char *str, size_t len);
+
+        [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern JSAtom JS_NewAtom(JSContext ctx, [MarshalAs(UnmanagedType.LPStr)] string str);
+
+        // JSAtom JS_NewAtomUInt32(JSContext *ctx, uint32_t n);
+
+        [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern JSAtom JS_DupAtom(JSContext ctx, JSAtom v);
+
+        [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern void JS_FreeAtom(JSContext ctx, JSAtom v);
+
+        [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern void JS_FreeAtomRT(JSRuntime rt, JSAtom v);
+
+        [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern JSValue JS_AtomToValue(JSContext ctx, JSAtom atom);
+
+        [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern JSValue JS_AtomToString(JSContext ctx, JSAtom atom);
+
+        // const char *JS_AtomToCString(JSContext *ctx, JSAtom atom);
+
+        [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern JSAtom JS_ValueToAtom(JSContext ctx, JSValueConst val);
+
+        #endregion
+
+        [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern JSValue JS_NewObjectProtoClass(JSContext ctx, JSValueConst proto, JSClassID class_id);
+        [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern JSValue JS_NewObjectClass(JSContext ctx, int class_id);
+        [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern JSValue JS_NewObjectProto(JSContext ctx, JSValueConst proto);
+        [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern JSValue JS_NewObject(JSContext ctx);
+
+        [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern JS_BOOL JS_IsFunction(JSContext ctx, JSValueConst val);
+        [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern JS_BOOL JS_IsConstructor(JSContext ctx, JSValueConst val);
+        [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern JS_BOOL JS_SetConstructorBit(JSContext ctx, JSValueConst func_obj, JS_BOOL val);
+
+        [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern JSValue JS_NewArray(JSContext ctx);
+
+        [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern int JS_IsArray(JSContext ctx, JSValueConst val);
 
         [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern IntPtr JS_GetContextOpaque(JSContext ctx);
@@ -214,7 +346,7 @@ namespace jsb
 
         public static int JS_SetProperty(JSContext ctx, JSValueConst this_obj, JSAtom prop, JSValue val)
         {
-            return JS_SetPropertyInternal(ctx, this_obj, prop, val, (int) JSPropFlags.JS_PROP_THROW);
+            return JS_SetPropertyInternal(ctx, this_obj, prop, val, (int)JSPropFlags.JS_PROP_THROW);
         }
 
         [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
@@ -256,8 +388,9 @@ namespace jsb
         public static extern int JS_ToInt32(IntPtr ctx, out int pres, JSValue val);
 
         [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern JSValue JS_Eval(IntPtr ctx, byte[] input, size_t input_len, byte[] filename, int eval_flags);
+        public static extern JSValue JS_Eval(IntPtr ctx, byte[] input, size_t input_len, byte[] filename, JSEvalFlags eval_flags);
 
+        // 临时
         public static JSValue JS_Eval(IntPtr ctx, string input)
         {
             var bytes = Encoding.UTF8.GetBytes(input);
@@ -268,17 +401,14 @@ namespace jsb
             var nn = new byte[xx.Length + 1];
             xx.CopyTo(nn, 0);
 
-            return JS_Eval(ctx, buf, (size_t)bytes.Length, nn, 0);
+            return JS_Eval(ctx, buf, (size_t)bytes.Length, nn, JSEvalFlags.JS_EVAL_TYPE_GLOBAL);
         }
 
-        [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern int JSB_Test(IntPtr ctx);
-
-        // public static bool JS_IsNumber(JSValueConst v)
-        // {
-        //     var tag = v.tag;
-        //     return tag == JS_TAG_INT || JS_TAG_IS_FLOAT64(tag);
-        // }
+        public static bool JS_IsNumber(JSValueConst v)
+        {
+            var tag = v.tag;
+            return tag == JS_TAG_INT || tag == JS_TAG_FLOAT64;
+        }
 
         public static bool JS_IsBigInt(JSContext ctx, JSValueConst v)
         {
