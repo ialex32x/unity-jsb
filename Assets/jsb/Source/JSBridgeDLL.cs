@@ -199,6 +199,9 @@ namespace jsb
         [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern void JS_FreeContext(IntPtr rt);
 
+        [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern void JS_AddIntrinsicOperators(JSContext ctx);
+
         #region ref counting
 
         [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
