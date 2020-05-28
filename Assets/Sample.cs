@@ -13,7 +13,7 @@ namespace jsb
             var rt = JSBridgeDLL.JS_NewRuntime();
             var ctx = JSBridgeDLL.JS_NewContext(rt);
 
-            var jsval = JSBridgeDLL.JS_Eval(ctx, "2+2");
+            var jsval = JSBridgeDLL.JS_Eval(ctx, "2+2", "eval");
             int rval;
             JSBridgeDLL.JS_ToInt32(ctx, out rval, jsval);
             Debug.LogFormat("2+2={0}", rval);

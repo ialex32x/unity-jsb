@@ -187,8 +187,14 @@ namespace jsb
         public static readonly JSValue JS_EXCEPTION = JS_MKVAL(JS_TAG_EXCEPTION, 0);
         public static readonly JSValue JS_UNINITIALIZED = JS_MKVAL(JS_TAG_UNINITIALIZED, 0);
 
-        [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern IntPtr JS_NewRuntime();
+        [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl, EntryPoint = "JS_NewRuntime")]
+        public static extern IntPtr __JS_NewRuntime();
+
+        public static IntPtr JS_NewRuntime()
+        {
+            JSB_Init();
+            return __JS_NewRuntime();
+        }
 
         [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern void JS_FreeRuntime(IntPtr rt);
@@ -201,22 +207,6 @@ namespace jsb
 
         [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern void JS_AddIntrinsicOperators(JSContext ctx);
-
-        #region ref counting
-
-        [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern JSValue JSB_DupValue(JSContext ctx, JSValueConst v);
-
-        [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern JSValue JSB_DupValueRT(JSRuntime rt, JSValueConst v);
-
-        [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern void JSB_FreeValue(JSContext ctx, JSValue v);
-
-        [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern void JSB_FreeValueRT(JSRuntime rt, JSValue v);
-
-        #endregion 
 
         [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern JSValue JS_GetGlobalObject(JSContext ctx);
@@ -326,8 +316,8 @@ namespace jsb
             return JS_NewCFunction2(ctx, fn, name, length, cproto, magic);
         }
 
-        [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern JSClassID JS_NewClassID(ref JSClassID pclass_id);
+        // [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
+        // public static extern JSClassID JS_NewClassID(ref JSClassID pclass_id);
 
         [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern int JS_NewClass(JSRuntime rt, JSClassID class_id, ref JSClassDef class_def);
@@ -394,17 +384,11 @@ namespace jsb
         public static extern JSValue JS_Eval(IntPtr ctx, byte[] input, size_t input_len, byte[] filename, JSEvalFlags eval_flags);
 
         // 临时
-        public static JSValue JS_Eval(IntPtr ctx, string input)
+        public static JSValue JS_Eval(IntPtr ctx, string input, string filename)
         {
-            var bytes = Encoding.UTF8.GetBytes(input);
-            var buf = new byte[bytes.Length + 1];
-            bytes.CopyTo(buf, 0);
-
-            var xx = Encoding.UTF8.GetBytes("main");
-            var nn = new byte[xx.Length + 1];
-            xx.CopyTo(nn, 0);
-
-            return JS_Eval(ctx, buf, (size_t)bytes.Length, nn, JSEvalFlags.JS_EVAL_TYPE_GLOBAL);
+            var bytes = Encoding.UTF8.GetBytes(input + '\0');
+            var fn = Encoding.UTF8.GetBytes(filename + '\0');
+            return JS_Eval(ctx, bytes, (size_t)(bytes.Length - 1), fn, JSEvalFlags.JS_EVAL_TYPE_GLOBAL);
         }
 
         public static bool JS_IsNumber(JSValueConst v)
@@ -471,5 +455,33 @@ namespace jsb
             return v.tag == JS_TAG_OBJECT;
         }
 
+        #region ref counting
+
+        [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern JSValue JSB_DupValue(JSContext ctx, JSValueConst v);
+
+        [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern JSValue JSB_DupValueRT(JSRuntime rt, JSValueConst v);
+
+        [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern void JSB_FreeValue(JSContext ctx, JSValue v);
+
+        [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern void JSB_FreeValueRT(JSRuntime rt, JSValue v);
+
+        #endregion
+
+        #region unity 
+
+        [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern void JSB_Init();
+
+        [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern JSClassID JSB_NewClassID();
+
+        [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern JS_BOOL JSB_NewClass(JSRuntime rt, JSClassID class_id, [MarshalAs(UnmanagedType.LPStr)] string class_name, JSClassFinalizer finalizer);
+
+        #endregion
     }
 }
