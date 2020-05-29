@@ -382,15 +382,15 @@ namespace jsb
         [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern int JS_ToInt32(IntPtr ctx, out int pres, JSValue val);
 
-        [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern JSValue JS_Eval(IntPtr ctx, byte[] input, size_t input_len, byte[] filename, JSEvalFlags eval_flags);
+        [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl, EntryPoint = "JSB_Eval")]
+        public static extern JSValue __JSB_Eval(IntPtr ctx, byte[] input, int input_len, string filename, JSEvalFlags eval_flags);
 
         // 临时
         public static JSValue JS_Eval(IntPtr ctx, string input, string filename)
         {
             var bytes = Encoding.UTF8.GetBytes(input + '\0');
-            var fn = Encoding.UTF8.GetBytes(filename + '\0');
-            return JS_Eval(ctx, bytes, (size_t)(bytes.Length - 1), fn, JSEvalFlags.JS_EVAL_TYPE_GLOBAL);
+            // var fn = Encoding.UTF8.GetBytes(filename + '\0');
+            return __JSB_Eval(ctx, bytes, bytes.Length - 1, filename, JSEvalFlags.JS_EVAL_TYPE_GLOBAL);
         }
 
         public static bool JS_IsNumber(JSValueConst v)
