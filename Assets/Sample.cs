@@ -50,8 +50,13 @@ namespace jsb
             }
             rt.FreeValue(global_object);
 
-            var source = File.ReadAllText("Assets/test.js");
-            var jsval = JSApi.JS_Eval(ctx, source, "eval");
+            var fileName = "Assets/test.js";
+            var source = File.ReadAllText(fileName);
+            var jsval = JSApi.JS_Eval(ctx, source, fileName);
+            if (JSApi.JS_IsException(jsval))
+            {
+                ctx.print_exception();
+            }
             rt.FreeValue(jsval);
             
             JSApi.JS_FreeContext(ctx);

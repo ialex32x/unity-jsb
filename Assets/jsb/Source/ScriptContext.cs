@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using System.Text;
 using AOT;
 using QuickJS.Native;
@@ -15,6 +16,11 @@ namespace QuickJS
         {
             _ctx = ctx;
         }
+
+        public void AddIntrinsicOperators()
+        {
+            JSApi.JS_AddIntrinsicOperators(_ctx);
+        }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public JSValue GetGlobalObject()
@@ -29,6 +35,11 @@ namespace QuickJS
         }
 
         #region Builtins
+
+        public void print_exception()
+        {
+            _ctx.print_exception();
+        }
 
         [MonoPInvokeCallback(typeof(JSCFunction))]
         private static JSValue _print(JSContext ctx, JSValue this_obj, int argc, JSValue[] argv)
