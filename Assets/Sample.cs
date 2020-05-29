@@ -1,5 +1,9 @@
 using System;
+using System.IO;
+using System.Text;
 using AOT;
+using QuickJS;
+using QuickJS.Native;
 
 namespace jsb
 {
@@ -7,41 +11,51 @@ namespace jsb
 
     public class Sample : MonoBehaviour
     {
+        private static JSClassID class_id;
+        
         [MonoPInvokeCallback(typeof(JSClassFinalizer))]
-        static void finalizer(IntPtr rt, JSValue value)
+        static void finalizer(JSRuntime rt, JSValue value)
         {
             Debug.Log("finalizer");
         }
 
         [MonoPInvokeCallback(typeof(JSCFunction))]
-        static JSValue _print(IntPtr ctx, JSValue this_obj, int argc, JSValue[] argv)
+        static JSValue foo_ctor(JSContext ctx, JSValue new_target, int argc, JSValue[] argv)
         {
-            Debug.Log("_print");
-            return JSNative.JS_UNDEFINED;
+            Debug.Log("foo.ctor");
+            var proto = JSApi.JS_GetProperty(ctx, new_target, JSApi.JS_ATOM_prototype);
+            var obj = JSApi.JS_NewObjectProtoClass(ctx, proto, class_id);
+            JSApi.JS_FreeValue(ctx, proto);
+            return obj;
         }
 
         void Awake()
         {
-            Debug.Log(unchecked((ulong)-11));
-            Debug.Log(unchecked((ulong)-1));
-            var rt = JSNative.JS_NewRuntime();
-            var ctx = JSNative.JS_NewContext(rt);
+            var rt = new ScriptEngine();
+            var ctx = rt.NewContext();
 
-            var class_id = JSNative.JS_NewClassID();
-            JSNative.JS_NewClass(rt, class_id, "Foo", finalizer);
+            ctx.RegisterBuiltins();
+            class_id = rt.NewClassID();
+            JSApi.JS_NewClass(rt, class_id, "ManagedObject", finalizer);
 
-            var global_object = JSNative.JS_GetGlobalObject(ctx);
-            // var new_object = JSNative.JS_NewObject(ctx);
-            JSNative.JS_SetPropertyStr(ctx, global_object, "print", JSNative.JS_NewCFunction(ctx, _print, "print", 1));
+            var global_object = ctx.GetGlobalObject();
+            {
+                var foo_proto_val = ctx.NewObject();
+                var foo_ctor_val =
+                    JSApi.JS_NewCFunction2(ctx, foo_ctor, "Foo", 0, JSCFunctionEnum.JS_CFUNC_constructor, 0);
+                JSApi.JS_SetConstructor(ctx, foo_ctor_val, foo_proto_val);
+                JSApi.JS_SetClassProto(ctx, class_id, foo_proto_val);
+                JSApi.JS_DefinePropertyValueStr(ctx, global_object, "Foo", foo_ctor_val,
+                    JSPropFlags.JS_PROP_ENUMERABLE | JSPropFlags.JS_PROP_CONFIGURABLE);
+            }
+            rt.FreeValue(global_object);
 
-            JSNative.JS_FreeValue(ctx, global_object);
-
-            var jsval = JSNative.JS_Eval(ctx, "print(123); 2+2", "eval");
-            int rval;
-            JSNative.JS_ToInt32(ctx, out rval, jsval);
-            Debug.LogFormat("2+2={0}", rval);
-            JSNative.JS_FreeContext(ctx);
-            JSNative.JS_FreeRuntime(rt);
+            var source = File.ReadAllText("Assets/test.js");
+            var jsval = JSApi.JS_Eval(ctx, source, "eval");
+            rt.FreeValue(jsval);
+            
+            JSApi.JS_FreeContext(ctx);
+            JSApi.JS_FreeRuntime(rt);
         }
     }
 }
