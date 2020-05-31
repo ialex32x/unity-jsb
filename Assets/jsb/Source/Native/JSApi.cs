@@ -81,12 +81,12 @@ namespace QuickJS.Native
 
         public static bool JS_VALUE_HAS_REF_COUNT(JSValue v)
         {
-            return (ulong) v.tag >= unchecked((ulong) JS_TAG_FIRST);
+            return (ulong)v.tag >= unchecked((ulong)JS_TAG_FIRST);
         }
 
         public static JSValue JS_MKVAL(long tag, int val)
         {
-            return new JSValue() {u = new JSValueUnion() {int32 = val}, tag = tag};
+            return new JSValue() { u = new JSValueUnion() { int32 = val }, tag = tag };
         }
 
         public static readonly JSValue JS_NULL = JS_MKVAL(JS_TAG_NULL, 0);
@@ -176,7 +176,7 @@ namespace QuickJS.Native
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static unsafe JSValue JS_ThrowReferenceError(JSContext ctx, string message)
         {
-            var bytes = Encoding.UTF8.GetBytes(message + "\0");
+            var bytes = Utils.TextUtils.GetNullTerminatedBytes(message);
             fixed (byte* msg = bytes)
             {
                 return JSB_ThrowReferenceError(ctx, msg);
@@ -198,7 +198,7 @@ namespace QuickJS.Native
 
         public static unsafe JSValue JS_NewString(JSContext ctx, string str)
         {
-            var bytes = Encoding.UTF8.GetBytes(str + "\0");
+            var bytes = Utils.TextUtils.GetNullTerminatedBytes(str);
 
             fixed (byte* ptr = bytes)
             {
@@ -319,7 +319,7 @@ namespace QuickJS.Native
 
         public static int JS_SetProperty(JSContext ctx, JSValueConst this_obj, JSAtom prop, JSValue val)
         {
-            return JS_SetPropertyInternal(ctx, this_obj, prop, val, (int) JSPropFlags.JS_PROP_THROW);
+            return JS_SetPropertyInternal(ctx, this_obj, prop, val, (int)JSPropFlags.JS_PROP_THROW);
         }
 
         [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
@@ -381,13 +381,13 @@ namespace QuickJS.Native
         public static unsafe JSValue JS_Eval(JSContext ctx, string input, string filename)
         {
             //TEMP CODE
-            var input_bytes = Encoding.UTF8.GetBytes(input + "\0");
-            var input_len = (size_t) (input_bytes.Length - 1);
-            var fn_bytes = Encoding.UTF8.GetBytes(filename + "\0");
+            var input_bytes = Utils.TextUtils.GetNullTerminatedBytes(input);
+            var fn_bytes = Utils.TextUtils.GetNullTerminatedBytes(filename);
 
             fixed (byte* input_ptr = input_bytes)
             fixed (byte* fn_ptr = fn_bytes)
             {
+                var input_len = (size_t)(input_bytes.Length - 1);
                 // return JS_Eval(ctx, input_ptr, input_len, fn_ptr, JSEvalFlags.JS_EVAL_TYPE_GLOBAL);
                 return JS_Eval(ctx, input_ptr, input_len, fn_ptr, JSEvalFlags.JS_EVAL_TYPE_MODULE | JSEvalFlags.JS_EVAL_FLAG_STRICT);
             }
@@ -555,7 +555,7 @@ namespace QuickJS.Native
             IntPtr module_loader, IntPtr opaque);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void JS_SetModuleLoaderFunc(JSRuntime rt, 
+        public static void JS_SetModuleLoaderFunc(JSRuntime rt,
             JSModuleNormalizeFunc module_normalize,
             JSModuleLoaderFunc module_loader, IntPtr opaque)
         {
@@ -572,7 +572,7 @@ namespace QuickJS.Native
         public static extern JSAtom JS_GetModuleName(JSContext ctx, JSModuleDef m);
 
         #endregion
-        
+
         #region critical
         [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern unsafe IntPtr js_strndup(JSContext ctx, byte* s, size_t n);

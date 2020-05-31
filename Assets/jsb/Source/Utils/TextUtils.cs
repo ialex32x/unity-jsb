@@ -44,5 +44,16 @@ namespace QuickJS.Utils
             return outstr.ToString();
         }
 
+        public static byte[] GetNullTerminatedBytes(string str)
+        {
+            if (str.EndsWith("\0"))
+            {
+                return Encoding.UTF8.GetBytes(str);
+            }
+            var count = Encoding.UTF8.GetByteCount(str);
+            var bytes = new byte[count + 1];
+            Encoding.UTF8.GetBytes(str, 0, str.Length, bytes, 0);
+            return bytes;
+        }
     }
 }

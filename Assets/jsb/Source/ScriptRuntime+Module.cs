@@ -17,7 +17,7 @@ namespace QuickJS
             IntPtr opaque)
         {
             Debug.LogFormat("module_name: {0} [module_base_name: {1}]", module_name, module_base_name);
-            var bytes = Encoding.UTF8.GetBytes(module_name + "\0");
+            var bytes = Utils.TextUtils.GetNullTerminatedBytes(module_name);
             fixed (byte* msg = bytes)
             {
                 return JSApi.js_strndup(ctx, msg, bytes.Length - 1);
@@ -32,13 +32,13 @@ namespace QuickJS
             if (File.Exists(module_name))
             {
                 var source = File.ReadAllText(module_name);
-                var input_bytes = Encoding.UTF8.GetBytes(source + "\0");
-                var input_len = (size_t)(input_bytes.Length - 1);
-                var fn_bytes = Encoding.UTF8.GetBytes(module_name + "\0");
+                var input_bytes = Utils.TextUtils.GetNullTerminatedBytes(source);
+                var fn_bytes = Utils.TextUtils.GetNullTerminatedBytes(module_name);
 
                 fixed (byte* input_ptr = input_bytes)
                 fixed (byte* fn_ptr = fn_bytes)
                 {
+                    var input_len = (size_t)(input_bytes.Length - 1);
                     var func_val = JSApi.JS_Eval(ctx, input_ptr, input_len, fn_ptr,
                         JSEvalFlags.JS_EVAL_TYPE_MODULE | JSEvalFlags.JS_EVAL_FLAG_COMPILE_ONLY);
                     if (JSApi.JS_IsException(func_val))

@@ -11,8 +11,13 @@ namespace QuickJS.Native
     public struct JSContext
     {
         public static readonly JSContext Null;
-        
-        private unsafe void* _ctx;
+
+        private unsafe void* _ptr;
+
+        public unsafe bool IsContext(JSContext c)
+        {
+            return _ptr == c._ptr;
+        }
 
         public void print_exception()
         {
@@ -28,7 +33,7 @@ namespace QuickJS.Native
             var stack = this.GetString(err_stack);
 
             Debug.LogErrorFormat("[JS] {0}:{1} {2}\n{3}", fileName, lineNumber, message, stack);
-            
+
             JSApi.JS_FreeValue(this, err_fileName);
             JSApi.JS_FreeValue(this, err_lineNumber);
             JSApi.JS_FreeValue(this, err_message);
@@ -46,7 +51,7 @@ namespace QuickJS.Native
                 {
                     if (len > 0)
                     {
-                        var str_ = Encoding.UTF8.GetString((byte*) ptr.ToPointer(), len);
+                        var str_ = Encoding.UTF8.GetString((byte*)ptr.ToPointer(), len);
                         return str_;
                     }
                 }
@@ -66,7 +71,18 @@ namespace QuickJS.Native
 
         public override unsafe int GetHashCode()
         {
-            return (int) _ctx;
+            return (int)_ptr;
+        }
+
+        public override unsafe bool Equals(object obj)
+        {
+            if (obj is JSContext)
+            {
+                var t = (JSContext)obj;
+                return t._ptr == _ptr;
+            }
+
+            return false;
         }
     }
 }

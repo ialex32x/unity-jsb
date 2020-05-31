@@ -49,7 +49,7 @@ namespace jsb
         void Awake()
         {
             var rt = new ScriptRuntime();
-            var ctx = rt.NewContext();
+            var ctx = rt.CreateContext();
 
             ctx.RegisterBuiltins();
             class_id = rt.NewClassID();
