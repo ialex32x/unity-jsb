@@ -8,7 +8,7 @@ using UnityEngine;
 namespace QuickJS.Native
 {
     [StructLayout(LayoutKind.Sequential)]
-    public struct JSB_StructValue
+    public struct JSStructValue
     {
         private unsafe void* _value;
 
@@ -24,9 +24,9 @@ namespace QuickJS.Native
 
         public override unsafe bool Equals(object obj)
         {
-            if (obj is JSB_StructValue)
+            if (obj is JSStructValue)
             {
-                return ((JSB_StructValue) obj)._value == _value;
+                return ((JSStructValue) obj)._value == _value;
             }
 
             return false;
