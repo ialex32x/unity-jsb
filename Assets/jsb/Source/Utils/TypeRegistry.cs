@@ -13,7 +13,17 @@ namespace QuickJS.Utils
         private Dictionary<Type, MethodInfo> _delegates = new Dictionary<Type, MethodInfo>(); // 委托对应的 duktape 绑定函数
         private Dictionary<Type, int> _exportedTypeIndexer = new Dictionary<Type, int>();
         private List<Type> _exportedTypes = new List<Type>(); // 可用 索引 反查 Type
-        
+
+        public static Type GetType(string name)
+        {
+            if (string.IsNullOrEmpty(name))
+            {
+                return null;
+            }
+            var type = Assembly.GetExecutingAssembly().GetType(name);
+            return type;
+        }
+
         public void AddDelegate(Type type, MethodInfo method)
         {
             _delegates[type] = method;

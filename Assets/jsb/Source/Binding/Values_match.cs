@@ -4,6 +4,7 @@ using AOT;
 
 namespace QuickJS.Binding
 {
+    using Native;
     using UnityEngine;
 
     // 处理类型匹配
@@ -11,7 +12,7 @@ namespace QuickJS.Binding
     {
         protected static HashSet<Type> _assignableFromArray = new HashSet<Type>();
 
-        static DuktapeBinding()
+        static Values()
         {
             _assignableFromArray.Add(typeof(LayerMask));
             _assignableFromArray.Add(typeof(Color));
@@ -25,7 +26,7 @@ namespace QuickJS.Binding
             // _assignableFromArray.Add(typeof(Matrix4x4));
         }
 
-        protected static bool duk_match_type(IntPtr ctx, int idx, Type type)
+        protected static bool duk_match_type(JSContext ctx, JSValue jsValue, Type type)
         {
             if (type == null)
             {
@@ -38,7 +39,7 @@ namespace QuickJS.Binding
             if (type == typeof(Type))
             {
                 Type otype;
-                return duk_get_type(ctx, idx, out otype); // 只要求匹配 Type 本身, 不比较具体 Type
+                return duk_get_type(ctx, jsValue, out otype); // 只要求匹配 Type 本身, 不比较具体 Type
                 // return otype == type;
             }
             var jstype = DuktapeDLL.duk_get_type(ctx, idx);

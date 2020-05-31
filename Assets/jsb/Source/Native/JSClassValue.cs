@@ -7,11 +7,6 @@ using UnityEngine;
 
 namespace QuickJS.Native
 {
-    public enum JSClassValueTag : int
-    {
-        ReferenceID, 
-    }
-
     [StructLayout(LayoutKind.Explicit)]
     public struct JSClassValueUnion
     {
@@ -22,12 +17,12 @@ namespace QuickJS.Native
     [StructLayout(LayoutKind.Sequential)]
     public struct JSClassValue
     {
+        public int type_id;
         public JSClassValueUnion u;
-        public JSClassValueTag tag;
 
         public override unsafe int GetHashCode()
         {
-            return (int) tag & ((int) u.ptr << 2);
+            return (int) type_id & ((int) u.ptr << 2);
         }
 
         public override unsafe bool Equals(object obj)
@@ -35,7 +30,7 @@ namespace QuickJS.Native
             if (obj is JSClassValue)
             {
                 var t = (JSClassValue) obj;
-                return t.tag == tag && t.u.ptr == u.ptr;
+                return t.type_id == type_id && t.u.ptr == u.ptr;
             }
 
             return false;

@@ -9,7 +9,6 @@ namespace QuickJS.Utils
 
         public new bool Equals(object x, object y)
         {
-
             return ReferenceEquals(x, y);
         }
 

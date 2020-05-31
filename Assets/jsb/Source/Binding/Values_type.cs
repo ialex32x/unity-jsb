@@ -4,17 +4,19 @@ using AOT;
 
 namespace QuickJS.Binding
 {
+    using Utils;
+    using Native;
     using UnityEngine;
 
     // 处理类型
     public partial class Values
     {
-        public static bool duk_get_type(IntPtr ctx, int idx, out Type o)
+        public static bool duk_get_type(JSContext ctx, JSValue jsValue, out Type o)
         {
-            if (DuktapeDLL.duk_is_string(ctx, idx))
+            if (JSApi.JS_IsString(jsValue))
             {
-                var name = DuktapeDLL.duk_get_string(ctx, idx);
-                o = DuktapeAux.GetType(name);
+                var name = JSApi.GetString(ctx, jsValue);
+                o = TypeRegistry.GetType(name);
                 return o != null;
             }
             else
