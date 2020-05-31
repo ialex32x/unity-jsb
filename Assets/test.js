@@ -6,6 +6,8 @@ print(Foo);
 print(new Foo());
 print(123, 456);
 
+print(new Goo());
+
 print("fib:", fib(12));
 
 
