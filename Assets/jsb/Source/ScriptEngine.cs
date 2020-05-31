@@ -9,11 +9,20 @@ namespace QuickJS
 {
     public class ScriptEngine
     {
+        private static ScriptEngine _engine;
+
         private uint _class_id_alloc = JSApi.__JSB_GetClassID();
         private JSRuntime _rt;
+        // private ScriptContext _main;
+
+        public static ScriptEngine GetInstance()
+        {
+            return _engine;
+        }
 
         public ScriptEngine()
         {
+            _engine = this;
             _rt = JSApi.JS_NewRuntime();
             Init();
         }
