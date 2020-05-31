@@ -48,7 +48,7 @@ namespace jsb
 
         void Awake()
         {
-            var rt = new ScriptEngine();
+            var rt = new ScriptRuntime();
             var ctx = rt.NewContext();
 
             ctx.RegisterBuiltins();

@@ -10,6 +10,6 @@ namespace QuickJS
 {
     public class ScriptDelegate
     {
-
+        public Delegate target;
     }
 }

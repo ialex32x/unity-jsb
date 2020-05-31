@@ -10,16 +10,29 @@ namespace QuickJS
 {
     public class ScriptContext
     {
+        private ScriptRuntime _runtime;
         private JSContext _ctx;
         
-        public ScriptContext(JSContext ctx)
+        public ScriptContext(ScriptRuntime runtime)
         {
-            _ctx = ctx;
+            _runtime = runtime;
+            _ctx = JSApi.JS_NewContext(_runtime);
+        }
+
+        public void Destroy()
+        {
+            JSApi.JS_FreeContext(_ctx);
+            _ctx = JSContext.Null;
         }
 
         public void AddIntrinsicOperators()
         {
             JSApi.JS_AddIntrinsicOperators(_ctx);
+        }
+
+        public void FreeValue(JSValue value)
+        {
+            _runtime.FreeValue(value);
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

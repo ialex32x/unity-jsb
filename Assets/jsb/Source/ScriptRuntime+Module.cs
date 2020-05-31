@@ -1,32 +1,17 @@
-﻿using System;
+using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using AOT;
 using QuickJS.Native;
-using UnityEngine;
+using System.Threading;
 
 namespace QuickJS
 {
-    public class ScriptEngine
+    using UnityEngine;
+
+    public partial class ScriptRuntime
     {
-        private static ScriptEngine _engine;
-
-        private uint _class_id_alloc = JSApi.__JSB_GetClassID();
-        private JSRuntime _rt;
-        // private ScriptContext _main;
-
-        public static ScriptEngine GetInstance()
-        {
-            return _engine;
-        }
-
-        public ScriptEngine()
-        {
-            _engine = this;
-            _rt = JSApi.JS_NewRuntime();
-            Init();
-        }
-
         [MonoPInvokeCallback(typeof(JSModuleNormalizeFunc))]
         public static unsafe IntPtr module_normalize(JSContext ctx, string module_base_name, string module_name,
             IntPtr opaque)
@@ -48,9 +33,9 @@ namespace QuickJS
             {
                 var source = File.ReadAllText(module_name);
                 var input_bytes = Encoding.UTF8.GetBytes(source + "\0");
-                var input_len = (size_t) (input_bytes.Length - 1);
+                var input_len = (size_t)(input_bytes.Length - 1);
                 var fn_bytes = Encoding.UTF8.GetBytes(module_name + "\0");
-            
+
                 fixed (byte* input_ptr = input_bytes)
                 fixed (byte* fn_ptr = fn_bytes)
                 {
@@ -79,33 +64,6 @@ namespace QuickJS
             }
 
             return m;
-        }
-
-        public void Init()
-        {
-            JSApi.JS_SetModuleLoaderFunc(_rt, module_normalize, module_loader, IntPtr.Zero);
-            // JSApi.JS_SetModuleLoaderFunc(_rt, null, module_loader, IntPtr.Zero);
-        }
-
-        public JSClassID NewClassID()
-        {
-            return _class_id_alloc++;
-        }
-
-        public void FreeValue(JSValue value)
-        {
-            JSApi.JS_FreeValueRT(_rt, value);
-        }
-
-        public ScriptContext NewContext()
-        {
-            var ctx = JSApi.JS_NewContext(_rt);
-            return new ScriptContext(ctx);
-        }
-
-        public static implicit operator JSRuntime(ScriptEngine se)
-        {
-            return se._rt;
         }
     }
 }

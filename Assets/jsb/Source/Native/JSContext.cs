@@ -10,6 +10,8 @@ namespace QuickJS.Native
     [StructLayout(LayoutKind.Sequential)]
     public struct JSContext
     {
+        public static readonly JSContext Null;
+        
         private unsafe void* _ctx;
 
         public void print_exception()
