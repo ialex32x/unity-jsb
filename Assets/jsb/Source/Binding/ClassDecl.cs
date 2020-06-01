@@ -16,8 +16,6 @@ namespace QuickJS.Binding
             _ctx = _register.GetContext();
             _ctor = ctor;
             _proto = proto;
-            JSApi.JS_DupValue(_ctx, _ctor);
-            JSApi.JS_DupValue(_ctx, _proto);
         }
 
         public void Close()

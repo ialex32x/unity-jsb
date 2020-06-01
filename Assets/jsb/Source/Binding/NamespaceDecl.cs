@@ -29,7 +29,7 @@ namespace QuickJS.Binding
             var type_id = _register.Add(type, proto_val);
             var ctor_val =
                 JSApi.JS_NewCFunctionMagic(ctx, ctor, typename, 0, JSCFunctionEnum.JS_CFUNC_constructor_magic, type_id);
-            var decl = new ClassDecl(_register, ctor_val, proto_val);
+            var decl = new ClassDecl(_register, JSApi.JS_DupValue(_register, ctor_val), JSApi.JS_DupValue(_register, proto_val));
             JSApi.JS_SetConstructor(ctx, ctor_val, proto_val);
             JSApi.JS_SetClassProto(ctx, class_id, proto_val);
             JSApi.JS_DefinePropertyValueStr(ctx, _nsValue, typename, ctor_val,
