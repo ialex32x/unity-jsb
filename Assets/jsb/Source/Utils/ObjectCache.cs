@@ -40,6 +40,7 @@ namespace QuickJS.Utils
             _freeIndex = 0;
             _map.Clear();
             _rmap.Clear();
+            _delegateMap.Clear();
         }
 
         public void AddJSValue(object o, IntPtr heapptr)

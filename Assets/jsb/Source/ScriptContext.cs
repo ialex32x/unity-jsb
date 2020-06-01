@@ -21,6 +21,11 @@ namespace QuickJS
             _ctx = JSApi.JS_NewContext(_runtime);
         }
 
+        public ScriptRuntime GetRuntime()
+        {
+            return _runtime;
+        }
+
         public bool IsContext(JSContext ctx)
         {
             return ctx.IsContext(_ctx);

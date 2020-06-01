@@ -16,7 +16,7 @@ namespace QuickJS.Binding
             if (JSApi.JS_IsString(jsValue))
             {
                 var name = JSApi.GetString(ctx, jsValue);
-                o = TypeRegistry.GetType(name);
+                o = TypeDB.GetType(name);
                 return o != null;
             }
             else

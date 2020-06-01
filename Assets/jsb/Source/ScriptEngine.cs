@@ -22,6 +22,11 @@ namespace QuickJS
         {
             return _runtime;
         }
+        
+        public static ScriptRuntime GetRuntime(JSRuntime rt)
+        {
+            return _runtime;
+        }
 
         public static ScriptContext GetContext(JSContext ctx)
         {

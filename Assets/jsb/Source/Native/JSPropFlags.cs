@@ -40,5 +40,8 @@ namespace QuickJS.Native
 
         JS_PROP_NO_ADD = (1 << 16) /* internal use */,
         JS_PROP_NO_EXOTIC = (1 << 17) /* internal use */,
+        
+        // custom values
+        CONST_VALUE = JS_PROP_HAS_VALUE | JS_PROP_ENUMERABLE, 
     }
 }

@@ -12,11 +12,13 @@ namespace QuickJS.Binding
         // 尝试还原 js function/dispatcher
         public static void duk_push_delegate(IntPtr ctx, Delegate o)
         {
-            if (o.Target is DuktapeDelegate dDelegate)
+            var dDelegate = o.Target is ScriptDelegate;
+            if (dDelegate != null)
             {
                 dDelegate.Push(ctx);
                 return;
             }
+
             // fallback
             duk_push_object(ctx, (object)o);
         }
