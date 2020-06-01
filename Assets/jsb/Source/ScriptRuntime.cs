@@ -7,6 +7,7 @@ using AOT;
 using QuickJS.Native;
 using System.Threading;
 using System.Reflection;
+using QuickJS.Binding;
 using QuickJS.Utils;
 
 namespace QuickJS
@@ -38,15 +39,16 @@ namespace QuickJS
         {
             _mainThreadId = Thread.CurrentThread.ManagedThreadId;
             _rt = JSApi.JS_NewRuntime();
-            _def_class_id = NewClassID();
-            _def_struct_id = NewClassID();
-            _def_type_id = NewClassID();
+            _def_class_id = JSApi.JS_NewClass(_rt, NewClassID(), "CSharpClass", JSApi.class_finalizer);
+            _def_struct_id = JSApi.JS_NewClass(_rt, NewClassID(), "CSharpStruct", JSApi.struct_finalizer);
+            _def_type_id = JSApi.JS_NewClass(_rt, NewClassID(), "CSharpType", JSApi.type_finalizer);
             JSApi.JS_SetModuleLoaderFunc(_rt, module_normalize, module_loader, IntPtr.Zero);
             _mainContext = CreateContext();
         }
 
-        public void Initialize(MonoBehaviour runner, int step = 30)
+        public void Initialize(IFileResolver fileResolver, MonoBehaviour runner, int step = 30)
         {
+            _fileResolver = fileResolver;
             if (runner != null)
             {
                 runner.StartCoroutine(_InitializeStep(_mainContext, step));
@@ -149,14 +151,20 @@ namespace QuickJS
         public ScriptContext CreateContext()
         {
             var context = new ScriptContext(this);
-            context.OnDestroy += OnContextDestroy;
             _contexts.Add(context);
+            context.OnDestroy += OnContextDestroy;
+            context.RegisterBuiltins();
             return context;
         }
 
         private void OnContextDestroy(ScriptContext context)
         {
             _contexts.Remove(context);
+        }
+
+        public ScriptContext GetMainContext()
+        {
+            return _mainContext;
         }
 
         public ScriptContext GetContext(JSContext ctx)
@@ -185,6 +193,17 @@ namespace QuickJS
                     _pendingGC.Enqueue(value);
                 }
             }
+        }
+
+        public void EvalSource(string fileName)
+        {
+            var source = File.ReadAllText(fileName);
+            var jsValue = JSApi.JS_Eval(_mainContext, source, fileName);
+            if (JSApi.JS_IsException(jsValue))
+            {
+                _mainContext.print_exception();
+            }
+            FreeValue(jsValue);
         }
 
         public void Update(float deltaTime)
@@ -226,15 +245,6 @@ namespace QuickJS
 
         public void Destroy()
         {
-            try
-            {
-                OnDestroy?.Invoke(this);
-            }
-            catch (Exception e)
-            {
-                Debug.LogError(e);
-            }
-
             _objectCache.Clear();
             GC.Collect();
             CollectPendingGarbage();
@@ -246,6 +256,14 @@ namespace QuickJS
             _contexts.Clear();
             JSApi.JS_FreeRuntime(_rt);
             _rt = JSRuntime.Null;
+            try
+            {
+                OnDestroy?.Invoke(this);
+            }
+            catch (Exception e)
+            {
+                Debug.LogError(e);
+            }
         }
 
         public static implicit operator JSRuntime(ScriptRuntime se)

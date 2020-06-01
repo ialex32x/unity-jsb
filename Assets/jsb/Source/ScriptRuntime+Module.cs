@@ -9,19 +9,46 @@ using System.Threading;
 namespace QuickJS
 {
     using UnityEngine;
+    using Utils;
 
     public partial class ScriptRuntime
     {
+        public static string EnsureExtension(string fileName)
+        {
+            return fileName != null && fileName.EndsWith(".js") ? fileName : fileName + ".js";
+        }
+
         [MonoPInvokeCallback(typeof(JSModuleNormalizeFunc))]
         public static unsafe IntPtr module_normalize(JSContext ctx, string module_base_name, string module_name,
             IntPtr opaque)
         {
-            Debug.LogFormat("module_name: {0} [module_base_name: {1}]", module_name, module_base_name);
-            var bytes = Utils.TextUtils.GetNullTerminatedBytes(module_name);
-            fixed (byte* msg = bytes)
+            var module_id = EnsureExtension(module_name);
+            var parent_id = module_base_name;
+            var resolve_to = module_id;
+            Debug.LogFormat("module_normalize module_id:'{0}', parent_id:'{1}'", module_id, parent_id);
+
+            if (module_id.StartsWith("./") || module_id.StartsWith("../") || module_id.Contains("/./") || module_id.Contains("/../"))
             {
-                return JSApi.js_strndup(ctx, msg, bytes.Length - 1);
+                // 显式相对路径直接从 parent 模块路径拼接
+                var parent_path = PathUtils.GetDirectoryName(parent_id);
+                try
+                {
+                    resolve_to = PathUtils.ExtractPath(PathUtils.Combine(parent_path, module_id), '/');
+                }
+                catch
+                {
+                    // 不能提升到源代码目录外面
+                    JSApi.JS_ThrowInternalError(ctx, string.Format("invalid module path (out of sourceRoot): {0}", module_id));
+                    return IntPtr.Zero;
+                }
             }
+
+            if (resolve_to != null)
+            {
+                return JSApi.js_strndup(ctx, resolve_to);
+            }
+            JSApi.JS_ThrowInternalError(ctx, string.Format("cannot find module: {0}", module_id));
+            return IntPtr.Zero;
         }
 
         [MonoPInvokeCallback(typeof(JSModuleLoaderFunc))]
@@ -31,7 +58,9 @@ namespace QuickJS
             var m = JSModuleDef.Null;
             if (File.Exists(module_name))
             {
-                var source = File.ReadAllText(module_name);
+                var runtime = ScriptEngine.GetRuntime(ctx);
+                var fileResolver = runtime._fileResolver;
+                var source = fileResolver.ReadAllBytes(module_name);
                 var input_bytes = Utils.TextUtils.GetNullTerminatedBytes(source);
                 var fn_bytes = Utils.TextUtils.GetNullTerminatedBytes(module_name);
 

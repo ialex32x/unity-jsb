@@ -33,10 +33,11 @@ namespace QuickJS
             return _runtime.GetContext(ctx);
         }
 
-        public static void CreateRuntime()
+        public static ScriptRuntime CreateRuntime()
         {
             _runtime = new ScriptRuntime();
             _runtime.OnDestroy += OnRuntimeDestroy;
+            return _runtime;
         }
 
         public static void Destroy()

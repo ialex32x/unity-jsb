@@ -607,10 +607,10 @@ namespace QuickJS.Native
         public static extern JSClassID __JSB_GetClassID();
 
         [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl, EntryPoint = "JSB_NewClass")]
-        public static extern JS_BOOL __JSB_NewClass(JSRuntime rt, JSClassID class_id,
+        public static extern JSClassID __JSB_NewClass(JSRuntime rt, JSClassID class_id,
             [MarshalAs(UnmanagedType.LPStr)] string class_name, IntPtr finalizer);
 
-        public static JS_BOOL JS_NewClass(JSRuntime rt, JSClassID class_id, string class_name,
+        public static JSClassID JS_NewClass(JSRuntime rt, JSClassID class_id, string class_name,
             JSClassFinalizer finalizer)
         {
             var fn_ptr = Marshal.GetFunctionPointerForDelegate(finalizer);
@@ -665,6 +665,16 @@ namespace QuickJS.Native
         #region critical
         [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern unsafe IntPtr js_strndup(JSContext ctx, byte* s, size_t n);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static unsafe IntPtr js_strndup(JSContext ctx, string str)
+        {
+            var bytes = Utils.TextUtils.GetNullTerminatedBytes(str);
+            fixed (byte* ptr = bytes)
+            {
+                return JSApi.js_strndup(ctx, ptr, bytes.Length - 1);
+            }
+        }
         #endregion
     }
 }

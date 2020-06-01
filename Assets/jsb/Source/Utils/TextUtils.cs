@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Runtime.InteropServices;
 using System.Text;
 
 namespace QuickJS.Utils
@@ -53,6 +54,18 @@ namespace QuickJS.Utils
             var count = Encoding.UTF8.GetByteCount(str);
             var bytes = new byte[count + 1];
             Encoding.UTF8.GetBytes(str, 0, str.Length, bytes, 0);
+            return bytes;
+        }
+
+        public static byte[] GetNullTerminatedBytes(byte[] str)
+        {
+            var count = str.Length;
+            if (str[count-1] == 0)
+            {
+                return str;
+            }
+            var bytes = new byte[count + 1];
+            Array.Copy(str, 0, bytes, 0, count);
             return bytes;
         }
     }

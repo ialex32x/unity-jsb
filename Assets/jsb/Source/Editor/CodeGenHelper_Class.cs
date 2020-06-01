@@ -271,7 +271,7 @@ namespace QuickJS.Editor
                 {
                     using (new RegFuncNamespaceCodeGen(cg, bindingInfo))
                     {
-                        var constructor = bindingInfo.constructors.available ? bindingInfo.constructors.name : "object_private_ctor";
+                        var constructor = bindingInfo.constructors.available ? bindingInfo.constructors.name : "class_private_ctor";
                         if (!bindingInfo.constructors.available && !bindingInfo.type.IsAbstract)
                         {
                             if (bindingInfo.type.IsSubclassOf(typeof(Component)))
@@ -285,10 +285,12 @@ namespace QuickJS.Editor
                                 cg.tsDeclare.AppendLine("protected constructor()");
                             }
                         }
-                        cg.cs.AppendLine("duk_begin_class(ctx, \"{0}\", typeof({1}), {2});",
+                        cg.cs.AppendLine("using (var cls = CreateClass(reg, ns, \"{0}\", typeof({1}), {2}))",
                             bindingInfo.jsName,
                             this.cg.bindingManager.GetCSTypeFullName(bindingInfo.type),
                             constructor);
+                        cg.cs.AppendLine("{");
+                        cg.cs.AddTabLevel();
                         foreach (var kv in bindingInfo.methods)
                         {
                             var regName = kv.Value.regName;
@@ -299,7 +301,8 @@ namespace QuickJS.Editor
                             {
                                 funcName = redirect;
                             }
-                            cg.cs.AppendLine("duk_add_method(ctx, \"{0}\", {1}, {2});", regName, funcName, bStatic ? -2 : -1);
+
+                            cg.cs.AppendLine("AddMethod(ctx, {0}, \"{1}\", {2});", bStatic ? "cls.ctor" : "cls.proto", regName, funcName);
                         }
                         foreach (var kv in bindingInfo.staticMethods)
                         {
@@ -311,7 +314,7 @@ namespace QuickJS.Editor
                             {
                                 funcName = redirect;
                             }
-                            cg.cs.AppendLine("duk_add_method(ctx, \"{0}\", {1}, {2});", regName, funcName, bStatic ? -2 : -1);
+                            cg.cs.AppendLine("AddMethod(ctx, cls, \"{0}\", {1}, {2});", bStatic ? "cls.ctor" : "cls.proto", regName, funcName);
                         }
                         foreach (var kv in bindingInfo.properties)
                         {
@@ -319,11 +322,10 @@ namespace QuickJS.Editor
                             if (bindingInfo.staticPair.IsValid())
                             {
                                 var tsPropertyVar = BindingManager.GetTSVariable(bindingInfo.regName);
-                                cg.cs.AppendLine("duk_add_property(ctx, \"{0}\", {1}, {2}, {3});",
+                                cg.cs.AppendLine("AddProperty(ctx, cls.ctor, \"{0}\", {1}, {2});",
                                     tsPropertyVar,
                                     bindingInfo.staticPair.getterName != null ? bindingInfo.staticPair.getterName : "null",
-                                    bindingInfo.staticPair.setterName != null ? bindingInfo.staticPair.setterName : "null",
-                                    -2);
+                                    bindingInfo.staticPair.setterName != null ? bindingInfo.staticPair.setterName : "null");
 
                                 var tsPropertyPrefix = "static ";
                                 if (bindingInfo.staticPair.setterName == null)
@@ -334,14 +336,14 @@ namespace QuickJS.Editor
                                 cg.AppendJSDoc(bindingInfo.propertyInfo);
                                 cg.tsDeclare.AppendLine($"{tsPropertyPrefix}{tsPropertyVar}: {tsPropertyType}");
                             }
+                            
                             if (bindingInfo.instancePair.IsValid())
                             {
                                 var tsPropertyVar = BindingManager.GetTSVariable(bindingInfo.regName);
-                                cg.cs.AppendLine("duk_add_property(ctx, \"{0}\", {1}, {2}, {3});",
+                                cg.cs.AppendLine("AddProperty(ctx, cls.proto, \"{0}\", {1}, {2});",
                                     tsPropertyVar,
                                     bindingInfo.instancePair.getterName != null ? bindingInfo.instancePair.getterName : "null",
-                                    bindingInfo.instancePair.setterName != null ? bindingInfo.instancePair.setterName : "null",
-                                    -1);
+                                    bindingInfo.instancePair.setterName != null ? bindingInfo.instancePair.setterName : "null");
 
                                 var tsPropertyPrefix = "";
                                 if (bindingInfo.instancePair.setterName == null)
@@ -361,15 +363,15 @@ namespace QuickJS.Editor
                             if (bindingInfo.constantValue != null)
                             {
                                 var cv = bindingInfo.constantValue;
-                                cg.cs.AppendLine($"duk_add_const(ctx, \"{tsFieldVar}\", {cv}, {-2});");
+                                cg.cs.AppendLine($"AddConstValue(ctx, cls.ctor, \"{tsFieldVar}\", {cv});");
                             }
                             else
                             {
-                                cg.cs.AppendLine("duk_add_field(ctx, \"{0}\", {1}, {2}, {3});",
+                                cg.cs.AppendLine("AddField(ctx, \"{0}\", {1}, {2}, {3});",
+                                    bStatic ? "cls.ctor" : "cls.proto",
                                     tsFieldVar,
                                     bindingInfo.getterName != null ? bindingInfo.getterName : "null",
-                                    bindingInfo.setterName != null ? bindingInfo.setterName : "null",
-                                    bStatic ? -2 : -1);
+                                    bindingInfo.setterName != null ? bindingInfo.setterName : "null");
                             }
                             var tsFieldPrefix = bStatic ? "static " : "";
                             if (bindingInfo.setterName == null)
@@ -391,15 +393,16 @@ namespace QuickJS.Editor
                             if (bStatic)
                             {
                                 tsFieldPrefix += "static ";
-                                cg.cs.AppendLine($"duk_add_event(ctx, \"{tsFieldVar}\", {eventBindingInfo.adderName}, {eventBindingInfo.removerName}, -2);");
+                                cg.cs.AppendLine($"AddEvent(ctx, cls.ctor, \"{tsFieldVar}\", {eventBindingInfo.adderName}, {eventBindingInfo.removerName});");
                             }
                             else
                             {
-                                cg.cs.AppendLine($"duk_add_property(ctx, \"{tsFieldVar}\", {eventBindingInfo.proxyName}, null, -1);");
+                                cg.cs.AppendLine($"AddProperty(ctx, cls.proto, \"{tsFieldVar}\", {eventBindingInfo.proxyName}, null);");
                             }
                             cg.tsDeclare.AppendLine($"{tsFieldPrefix}{tsFieldVar}: DuktapeJS.event<{tsFieldType}>");
                         }
-                        cg.cs.AppendLine("duk_end_class(ctx);");
+                        cg.cs.DecTabLevel();
+                        cg.cs.AppendLine("}");
                     }
                 }
                 base.Dispose();

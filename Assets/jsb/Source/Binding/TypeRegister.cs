@@ -6,8 +6,9 @@ using AOT;
 using QuickJS.Native;
 using System.Reflection;
 
-namespace QuickJS.Utils
+namespace QuickJS.Binding
 {
+    using Utils;
     using UnityEngine;
     
     public class TypeRegister
@@ -16,6 +17,11 @@ namespace QuickJS.Utils
 
         private TypeDB _db;
         private Dictionary<Type, JSValue> _prototypes = new Dictionary<Type, JSValue>();
+
+        public static implicit operator JSContext(TypeRegister register)
+        {
+            return register._context;
+        }
 
         public ScriptContext GetContext()
         {
@@ -34,9 +40,9 @@ namespace QuickJS.Utils
         }
 
         // 无命名空间, 直接外围对象作为容器 (通常是global)
-        public JSValue GetNamespace() // [parent]
+        public NamespaceDecl CreateNamespace() // [parent]
         {
-            return _context.GetGlobalObject();
+            return new NamespaceDecl(this, _context.GetGlobalObject());
         }
 
         private JSValue _AutoProperty(string name)
@@ -54,23 +60,23 @@ namespace QuickJS.Utils
             return ns;
         }
 
-        public JSValue GetNamespace(string el) // [parent]
+        public NamespaceDecl CreateNamespace(string el) // [parent]
         {
-            return _AutoProperty(el);
+            return new NamespaceDecl(this, _AutoProperty(el));
         }
 
-        public JSValue GetNamespace(string el1, string el2) // [parent]
+        public NamespaceDecl CreateNamespace(string el1, string el2) // [parent]
         {
-            return _AutoProperty(_AutoProperty(el1), el1);
+            return new NamespaceDecl(this, _AutoProperty(_AutoProperty(el1), el1));
         }
 
-        public JSValue GetNamespace(string el1, string el2, string el3) // [parent]
+        public NamespaceDecl CreateNamespace(string el1, string el2, string el3) // [parent]
         {
-            return _AutoProperty(_AutoProperty(_AutoProperty(el1), el1), el3);
+            return new NamespaceDecl(this, _AutoProperty(_AutoProperty(_AutoProperty(el1), el1), el3));
         }
 
         // return [parent, el]
-        public JSValue GetNamespace(params string[] els) // [parent]
+        public NamespaceDecl CreateNamespace(params string[] els) // [parent]
         {
             var ns = _context.GetGlobalObject();
             for (int i = 0, size = els.Length; i < size; i++)
@@ -79,7 +85,7 @@ namespace QuickJS.Utils
                 ns = _AutoProperty(ns, el);
             }
 
-            return ns;
+            return new NamespaceDecl(this, ns);
         }
 
         // return type id
