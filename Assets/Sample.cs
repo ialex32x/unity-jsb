@@ -21,6 +21,7 @@ namespace jsb
             var register = new TypeRegister(rt.GetMainContext());
             
             Foo.Bind(register);
+            register.Finish();
             // rt.EvalSource("Assets/test.js");
             rt.Destroy();
         }

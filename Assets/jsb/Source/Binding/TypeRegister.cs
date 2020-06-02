@@ -138,10 +138,6 @@ namespace QuickJS.Binding
                     var fn = kv.Value;
                     JSApi.JS_SetPrototype(_context, fn, parent);
                 }
-                else
-                {
-                    Debug.LogWarning($"fail to push prototype, for {type}: {baseType}");
-                }
             }
 
             Cleanup();

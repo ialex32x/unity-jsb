@@ -42,7 +42,10 @@ namespace QuickJS
 
         public static void Destroy()
         {
-            _runtime.Destroy();
+            if (_runtime != null)
+            {
+                _runtime.Destroy();
+            }
         }
 
         private static void OnRuntimeDestroy(ScriptRuntime runtime)
