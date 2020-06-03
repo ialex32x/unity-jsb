@@ -2,7 +2,7 @@ using System;
 
 namespace QuickJS.Utils
 {
-    public interface Invokable
+    public interface Invokable : IDisposable
     {
         void Invoke();
     }
@@ -26,6 +26,11 @@ namespace QuickJS.Utils
             {
                 UnityEngine.Debug.LogError(exception);
             }
+        }
+
+        public void Dispose()
+        {
+            _fn = null;
         }
     }
 }

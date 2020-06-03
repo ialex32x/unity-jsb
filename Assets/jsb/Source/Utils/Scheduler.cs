@@ -16,6 +16,15 @@ namespace QuickJS.Utils
         public bool deleted;
         public bool once;
         public WheelSlot slot;
+
+        public void Cleanup()
+        {
+            if (action != null)
+            {
+                action.Dispose();
+                action = null;
+            }
+        }
     }
 
     internal class WheelSlot
@@ -231,6 +240,19 @@ namespace QuickJS.Utils
             return _timeHandles.Count;
         }
 
+        public void Destroy()
+        {
+            foreach (var kv in _timeHandles)
+            {
+                var act = kv.Value.action;
+                if (act != null)
+                {
+                    act.Dispose();
+                }
+            }
+            _timeHandles.Clear();
+        }
+
         public ulong Add(int delay, bool once, TimeHandleCallback fn)
         {
             var id = ++_idgen;
@@ -250,6 +272,7 @@ namespace QuickJS.Utils
                 {
                     _timeHandles.Remove(id);
                     timer.deleted = true;
+                    timer.Cleanup();
                     if (timer.slot != null)
                     {
                         timer.slot.Remove(timer);
@@ -311,22 +334,25 @@ namespace QuickJS.Utils
                         timer.slot = null;
                     }
                     // UnityEngine.Debug.LogError($"[timer#{timer.id}] active");
-                    try
+
+                    if (!timer.deleted && handler != null)
                     {
-                        if (!timer.deleted && handler != null)
+                        try
                         {
                             handler.Invoke();
                         }
+                        catch (Exception exception)
+                        {
+                            UnityEngine.Debug.LogErrorFormat("Scheduler Exception: {0}", exception);
+                        }
                     }
-                    catch (Exception exception)
-                    {
-                        UnityEngine.Debug.LogErrorFormat("Scheduler Exception: {0}", exception);
-                    }
+
                     if (!timer.deleted)
                     {
                         if (timer.once)
                         {
                             timer.deleted = true;
+                            timer.Cleanup();
                             _timeHandles.Remove(timer.id);
                             _recycle.Add(timer);
                         }
@@ -337,6 +363,7 @@ namespace QuickJS.Utils
                         }
                     }
                 }
+
                 // 回收
                 for (int i = 0, size = _recycle.Count; i < size; ++i)
                 {
@@ -346,6 +373,7 @@ namespace QuickJS.Utils
                         _pool.Add(timer);
                     }
                 }
+
                 _recycle.Clear();
                 _tcache1.Clear();
             }

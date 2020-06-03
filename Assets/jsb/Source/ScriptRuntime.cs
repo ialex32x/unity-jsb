@@ -273,6 +273,7 @@ namespace QuickJS
 
         public void Destroy()
         {
+            _timerManager.Destroy();
             _objectCache.Clear();
             GC.Collect();
             CollectPendingGarbage();

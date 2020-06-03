@@ -1505,7 +1505,7 @@ static void set_dummy_numeric_ops(JSNumericOperations *ops)
 
 #endif /* CONFIG_BIGNUM */
 
-#if defined(EMSCRIPTEN)
+#if 1 //defined(EMSCRIPTEN)
 /* currently no stack limitation */
 static inline uint8_t *js_get_stack_pointer(void)
 {

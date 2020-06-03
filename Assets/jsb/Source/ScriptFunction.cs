@@ -1,4 +1,5 @@
 ﻿using QuickJS.Native;
+using UnityEngine;
 
 namespace QuickJS
 {
@@ -50,7 +51,7 @@ namespace QuickJS
                 {
                     _context.print_exception();
                 }
-
+            
                 JSApi.JS_FreeValue(ctx, rVal);
             }
             else
@@ -60,7 +61,7 @@ namespace QuickJS
                 {
                     _context.print_exception();
                 }
-
+            
                 JSApi.JS_FreeValue(ctx, rVal);
             }
         }

@@ -109,7 +109,8 @@ namespace QuickJS.Utils
 
                 var context = ScriptEngine.GetContext(ctx);
                 var func = new ScriptFunction(context, fnValue, this_obj, fnArgs);
-                return JSApi.JS_NewUint32(ctx, context.GetTimerManager().CreateTimer(func, pres, false));
+                var timer = context.GetTimerManager().CreateTimer(func, pres, false);
+                return JSApi.JS_NewUint32(ctx, timer);
             }
             return JSApi.JS_UNDEFINED;
         }
@@ -145,7 +146,8 @@ namespace QuickJS.Utils
 
                 var context = ScriptEngine.GetContext(ctx);
                 var func = new ScriptFunction(context, fnValue, this_obj, fnArgs);
-                return JSApi.JS_NewUint32(ctx, context.GetTimerManager().CreateTimer(func, pres, true));
+                var timer = context.GetTimerManager().CreateTimer(func, pres, true);
+                return JSApi.JS_NewUint32(ctx, timer);
             }
             return JSApi.JS_UNDEFINED;
         }

@@ -10,20 +10,20 @@ print(123, 456);
 
 print("fib:", fib(12));
 
-// function delay() {
-//     return new Promise((resolve, reject) => {
-//         setTimeout(() => {
-//             print("[async] resolve");
-//             resolve();
-//         }, 1000);
-//     });
-// }
-//
-// async function test() {
-//     print("[async] begin");
-//     await delay();
-//     print("[async] end");
-// }
+function delay() {
+    return new Promise((resolve, reject) => {
+        setTimeout(() => {
+            print("[async] resolve");
+            resolve();
+        }, 1000);
+    });
+}
+
+async function test() {
+    print("[async] begin");
+    await delay();
+    print("[async] end");
+}
 
 test();
 
