@@ -79,6 +79,8 @@ namespace QuickJS.Native
         public const int JS_TAG_CATCH_OFFSET = 5;
         public const int JS_TAG_EXCEPTION = 6;
         public const int JS_TAG_FLOAT64 = 7;
+        
+        public static JSValue[] EmptyValues = new JSValue[0];
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool JS_VALUE_HAS_REF_COUNT(JSValue v)
@@ -463,8 +465,15 @@ namespace QuickJS.Native
         [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern JS_BOOL JS_IsLiveObject(JSRuntime rt, JSValueConst obj);
 
+        // 返回 <0 表示失败
         [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern int JS_ToInt32(JSContext ctx, out int pres, JSValue val);
+
+        [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern uint32_t JSB_ToUint32z(JSContext ctx, JSValueConst val);
+
+        [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern JS_BOOL JSB_ToUint32(JSContext ctx, out uint32_t pres, JSValueConst val);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static unsafe JSValue JS_Eval(JSContext ctx, string input, string filename)

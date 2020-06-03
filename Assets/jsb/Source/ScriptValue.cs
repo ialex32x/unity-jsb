@@ -10,12 +10,14 @@ namespace QuickJS
 {
     public class ScriptValue : IDisposable
     {
-        private ScriptContext _context;
-        private JSValue _value;
+        protected ScriptContext _context;
+        protected /*readonly*/ JSValue _jsValue;
 
-        public ScriptValue(ScriptContext context, JSValue value)
+        public ScriptValue(ScriptContext context, JSValue jsValue)
         {
-            JSApi.JS_DupValue(context, value);
+            _context = context;
+            _jsValue = jsValue;
+            JSApi.JS_DupValue(context, jsValue);
         }
 
         ~ScriptValue()
@@ -34,12 +36,26 @@ namespace QuickJS
             if (_context != null)
             {
                 var context = _context;
-                var value = _value;
 
                 _context = null;
-                _value = JSApi.JS_UNDEFINED;
-                context.FreeValue(value);
+                context.FreeValue(_jsValue);
             }
+        }
+
+        public override int GetHashCode()
+        {
+            return _jsValue.GetHashCode();
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (obj is ScriptValue)
+            {
+                var other = (ScriptValue) obj;
+                return other._jsValue.Equals(_jsValue);
+            }
+
+            return false;
         }
     }
 }

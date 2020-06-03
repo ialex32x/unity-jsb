@@ -21,5 +21,26 @@ namespace QuickJS.Native
     {
         public JSValueUnion u; // IntPtr
         public long tag;
+
+        public override int GetHashCode()
+        {
+            return u.int32 << 2 | (int) tag;
+        }
+
+        public bool Equals(JSValue other)
+        {
+            return other.tag == tag && other.u.int32 == u.int32;
+        }
+        
+        public override bool Equals(object obj)
+        {
+            if (obj is JSValue)
+            {
+                var other = (JSValue) obj;
+                return other.tag == tag && other.u.int32 == u.int32;
+            }
+
+            return false;
+        }
     }
 }

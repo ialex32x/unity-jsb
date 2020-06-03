@@ -4,6 +4,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using AOT;
 using QuickJS.Native;
+using QuickJS.Utils;
 using UnityEngine;
 
 namespace QuickJS
@@ -19,6 +20,11 @@ namespace QuickJS
         {
             _runtime = runtime;
             _ctx = JSApi.JS_NewContext(_runtime);
+        }
+
+        public TimerManager GetTimerManager()
+        {
+            return _runtime.GetTimerManager();
         }
 
         public ScriptRuntime GetRuntime()
@@ -53,6 +59,11 @@ namespace QuickJS
         public void FreeValue(JSValue value)
         {
             _runtime.FreeValue(value);
+        }
+        
+        public void FreeValues(JSValue[] values)
+        {
+            _runtime.FreeValues(values);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

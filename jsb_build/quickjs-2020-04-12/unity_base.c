@@ -32,6 +32,18 @@ enum
 #include "quickjs-atom.h"
 #undef DEF
 
+int JSB_ToUint32(JSContext *ctx, uint32_t *pres, JSValueConst val)
+{
+    return JS_ToInt32(ctx, (int32_t*)pres, val);
+}
+
+uint32_t JSB_ToUint32z(JSContext *ctx, JSValueConst val)
+{
+    uint32_t pres = 0;
+    JS_ToInt32(ctx, (int32_t*)&pres, val);
+    return pres;
+}
+
 JSValue JSB_NewFloat64(JSContext *ctx, double d)
 {
     return JS_NewFloat64(ctx, d);

@@ -30,14 +30,16 @@ namespace QuickJS
         public uint _def_struct_id;
         public uint _def_type_id;
 
-        private Utils.IFileResolver _fileResolver;
-        private Utils.ObjectCache _objectCache = new Utils.ObjectCache();
-        private Utils.TypeDB _typeDB;
+        private IFileResolver _fileResolver;
+        private ObjectCache _objectCache = new ObjectCache();
+        private TypeDB _typeDB;
+        private TimerManager _timerManager;
         private IO.ByteBufferAllocator _byteBufferAllocator;
 
         public ScriptRuntime()
         {
             _mainThreadId = Thread.CurrentThread.ManagedThreadId;
+            _timerManager = new TimerManager();
             _rt = JSApi.JS_NewRuntime();
             _def_class_id = JSApi.JS_NewClass(_rt, NewClassID(), "CSharpClass", JSApi.class_finalizer);
             _def_struct_id = JSApi.JS_NewClass(_rt, NewClassID(), "CSharpStruct", JSApi.struct_finalizer);
@@ -46,21 +48,14 @@ namespace QuickJS
             _mainContext = CreateContext();
         }
 
-        public void Initialize(IFileResolver fileResolver, MonoBehaviour runner, int step = 30)
+        public void Initialize(IFileResolver fileResolver, IScriptRuntimeListener runner, int step = 30)
         {
             _fileResolver = fileResolver;
-            if (runner != null)
-            {
-                runner.StartCoroutine(_InitializeStep(_mainContext, step));
-            }
-            else
-            {
-                var e = _InitializeStep(_mainContext, step);
-                while (e.MoveNext()) ;
-            }
+            var e = _InitializeStep(_mainContext, runner, step);
+            while (e.MoveNext()) ;
         }
 
-        private IEnumerator _InitializeStep(ScriptContext context, int step)
+        private IEnumerator _InitializeStep(ScriptContext context, IScriptRuntimeListener runner, int step)
         {
             var register = new TypeRegister(context);
             var regArgs = new object[] { register };
@@ -117,7 +112,7 @@ namespace QuickJS
             for (var i = 0; i < numRegInvoked; ++i)
             {
                 var type = bindingTypes[i];
-                var reg = type.GetMethod("reg");
+                var reg = type.GetMethod("Bind");
                 if (reg != null)
                 {
                     reg.Invoke(null, regArgs);
@@ -128,9 +123,16 @@ namespace QuickJS
                     }
                 }
             }
-            
-            // Debug.LogFormat("exported {0} classes", _exported.Count);
+
+            runner.OnBind(this, register);
+            _timerManager.Bind(register);
             _typeDB = register.Finish();
+            runner.OnComplete(this);
+        }
+
+        public TimerManager GetTimerManager()
+        {
+            return _timerManager;
         }
 
         public TypeDB GetTypeDB()
@@ -195,6 +197,27 @@ namespace QuickJS
             }
         }
 
+        public void FreeValues(JSValue[] values)
+        {
+            if (_mainThreadId == Thread.CurrentThread.ManagedThreadId)
+            {
+                for (int i = 0, len = values.Length; i < len; i++)
+                {
+                    JSApi.JS_FreeValueRT(_rt, values[i]);
+                }
+            }
+            else
+            {
+                lock (_pendingGC)
+                {
+                    for (int i = 0, len = values.Length; i < len; i++)
+                    {
+                        _pendingGC.Enqueue(values[i]);
+                    }
+                }
+            }
+        }
+
         public void EvalSource(string fileName)
         {
             var source = File.ReadAllText(fileName);
@@ -206,6 +229,7 @@ namespace QuickJS
             FreeValue(jsValue);
         }
 
+        // main loop
         public void Update(float deltaTime)
         {
             if (_pendingGC.Count != 0)
@@ -225,6 +249,10 @@ namespace QuickJS
                     ctx.print_exception();
                 }
             }
+
+            // poll here;
+            var ms = (int) (deltaTime * 1000f);
+            _timerManager.Update(ms);
         }
 
         private void CollectPendingGarbage()

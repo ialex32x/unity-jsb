@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.IO;
 using System.Text;
 using AOT;
@@ -11,19 +12,35 @@ namespace jsb
 {
     using UnityEngine;
 
-    public class Sample : MonoBehaviour
+    public class Sample : MonoBehaviour, IScriptRuntimeListener
     {
+        private ScriptRuntime _rt;
+        
         void Awake()
         {
-            var rt = ScriptEngine.CreateRuntime();
+_rt = ScriptEngine.CreateRuntime();
             var fileResolver = new FileResolver(new DefaultFileSystem());
-            rt.Initialize(fileResolver, this);
-            var register = new TypeRegister(rt.GetMainContext());
-            
+            _rt.Initialize(fileResolver, this);
+        }
+
+        void Update()
+        {
+            _rt.Update(Time.deltaTime);
+        }
+
+        void OnDestroy()
+        {
+            _rt.Destroy();
+        }
+
+        public void OnBind(ScriptRuntime runtime, TypeRegister register)
+        {
             Foo.Bind(register);
-            register.Finish();
-            // rt.EvalSource("Assets/test.js");
-            rt.Destroy();
+        }
+
+        public void OnComplete(ScriptRuntime runtime)
+        {
+            _rt.EvalSource("Assets/test.js");
         }
     }
 }

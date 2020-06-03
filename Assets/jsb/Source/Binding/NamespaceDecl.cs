@@ -20,6 +20,22 @@ namespace QuickJS.Binding
             _nsValue = JSApi.JS_UNDEFINED;
         }
         
+        public void AddFunction(string name, JSCFunctionMagic func, int length)
+        {
+            var ctx = _register.GetContext();
+            var magic = 0;
+            var cfun = JSApi.JS_NewCFunctionMagic(ctx, func, name, length, JSCFunctionEnum.JS_CFUNC_generic_magic,
+                magic);
+            JSApi.JS_DefinePropertyValueStr(ctx, _nsValue, name, cfun, JSPropFlags.JS_PROP_C_W_E);
+        }
+
+        public void AddFunction(string name, JSCFunction func, int length)
+        {
+            var ctx = _register.GetContext();
+            var cfun = JSApi.JS_NewCFunction(ctx, func, name, length);
+            JSApi.JS_DefinePropertyValueStr(ctx, _nsValue, name, cfun, JSPropFlags.JS_PROP_C_W_E);
+        }
+
         public ClassDecl CreateClass(string typename, Type type, JSCFunctionMagic ctor)
         {
             var ctx = _register.GetContext();

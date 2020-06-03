@@ -24,7 +24,7 @@ namespace jsb
         {
             var ns = register.CreateNamespace("jsb");
             var cls = ns.CreateClass("Foo", typeof(Foo), BindConstructor);
-            
+            cls.AddConstValue("name", "hello, world");
             cls.Close();
             ns.Close();
         }
