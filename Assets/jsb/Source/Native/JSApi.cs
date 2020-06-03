@@ -13,6 +13,7 @@ namespace QuickJS.Native
 {
     using JSValueConst = JSValue;
     using JS_BOOL = Int32;
+    using int32_t = Int32;
     using uint32_t = UInt32;
     using int64_t = Int64;
 
@@ -78,15 +79,19 @@ namespace QuickJS.Native
         public const int JS_TAG_CATCH_OFFSET = 5;
         public const int JS_TAG_EXCEPTION = 6;
         public const int JS_TAG_FLOAT64 = 7;
+        
+        public static JSValue[] EmptyValues = new JSValue[0];
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool JS_VALUE_HAS_REF_COUNT(JSValue v)
         {
-            return (ulong) v.tag >= unchecked((ulong) JS_TAG_FIRST);
+            return (ulong)v.tag >= unchecked((ulong)JS_TAG_FIRST);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static JSValue JS_MKVAL(long tag, int val)
         {
-            return new JSValue() {u = new JSValueUnion() {int32 = val}, tag = tag};
+            return new JSValue() { u = new JSValueUnion() { int32 = val }, tag = tag };
         }
 
         public static readonly JSValue JS_NULL = JS_MKVAL(JS_TAG_NULL, 0);
@@ -138,12 +143,21 @@ namespace QuickJS.Native
         }
 
         [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern JSValue JSB_NewPropertyObjectStr(JSContext ctx, JSValueConst this_obj,
+            [MarshalAs(UnmanagedType.LPStr)] string name, JSPropFlags flags);
+        
+        [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern JSValue JS_GetPropertyStr(JSContext ctx, JSValueConst this_obj,
+            [MarshalAs(UnmanagedType.LPStr)] string prop);
+
+        [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern int JS_DefineProperty(JSContext ctx, JSValueConst this_obj,
             JSAtom prop, JSValueConst val,
             JSValueConst getter, JSValueConst setter, JSPropFlags flags);
 
         [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern int JS_DefinePropertyValueStr(JSContext ctx, JSValueConst this_obj, string prop,
+        public static extern int JS_DefinePropertyValueStr(JSContext ctx, JSValueConst this_obj,
+            [MarshalAs(UnmanagedType.LPStr)] string prop,
             JSValue val, JSPropFlags flags);
 
         #endregion
@@ -165,18 +179,52 @@ namespace QuickJS.Native
         [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern JSValue JS_NewError(JSContext ctx);
 
-        // JSValue __js_printf_like(2, 3) JS_ThrowSyntaxError(JSContext *ctx, const char *fmt, ...);
-        // JSValue __js_printf_like(2, 3) JS_ThrowTypeError(JSContext *ctx, const char *fmt, ...);
-        // JSValue __js_printf_like(2, 3) JS_ThrowReferenceError(JSContext *ctx, const char *fmt, ...);
+        [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern unsafe JSValue JSB_ThrowTypeError(JSContext ctx, byte* msg);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static unsafe JSValue JS_ThrowTypeError(JSContext ctx, string message)
+        {
+            var bytes = Utils.TextUtils.GetNullTerminatedBytes(message);
+            fixed (byte* msg = bytes)
+            {
+                return JSB_ThrowTypeError(ctx, msg);
+            }
+        }
 
         [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
-        // public static extern unsafe JSValue JS_ThrowReferenceError(JSContext ctx, byte* fmt, __arglist);
+        public static extern unsafe JSValue JSB_ThrowInternalError(JSContext ctx, byte* msg);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static unsafe JSValue JS_ThrowInternalError(JSContext ctx, string message)
+        {
+            var bytes = Utils.TextUtils.GetNullTerminatedBytes(message);
+            fixed (byte* msg = bytes)
+            {
+                return JSB_ThrowInternalError(ctx, msg);
+            }
+        }
+
+        [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern unsafe JSValue JSB_ThrowRangeError(JSContext ctx, byte* msg);
+            
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static unsafe JSValue JS_ThrowRangeError(JSContext ctx, string message)
+        {
+            var bytes = Utils.TextUtils.GetNullTerminatedBytes(message);
+            fixed (byte* msg = bytes)
+            {
+                return JSB_ThrowRangeError(ctx, msg);
+            }
+        }
+
+        [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern unsafe JSValue JSB_ThrowReferenceError(JSContext ctx, byte* msg);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static unsafe JSValue JS_ThrowReferenceError(JSContext ctx, string message)
         {
-            var bytes = Encoding.UTF8.GetBytes(message + "\0");
+            var bytes = Utils.TextUtils.GetNullTerminatedBytes(message);
             fixed (byte* msg = bytes)
             {
                 return JSB_ThrowReferenceError(ctx, msg);
@@ -198,7 +246,7 @@ namespace QuickJS.Native
 
         public static unsafe JSValue JS_NewString(JSContext ctx, string str)
         {
-            var bytes = Encoding.UTF8.GetBytes(str + "\0");
+            var bytes = Utils.TextUtils.GetNullTerminatedBytes(str);
 
             fixed (byte* ptr = bytes)
             {
@@ -206,10 +254,41 @@ namespace QuickJS.Native
             }
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static JSValue JS_NewBool(JSContext ctx, bool val)
         {
             return val ? JS_TRUE : JS_FALSE;
         }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static JSValue JS_NewInt32(JSContext ctx, int val)
+        {
+            return JS_MKVAL(JS_TAG_INT, val);
+        }
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static JSValue __JS_NewFloat64(JSContext ctx, double d)
+        {
+            JSValue v = new JSValue();
+            v.tag = JS_TAG_FLOAT64;
+            v.u.float64 = d;
+            return v;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static JSValue JS_NewUint32(JSContext ctx, uint32_t val)
+        {
+            JSValue v;
+            if (val <= 0x7fffffff) {
+                v = JS_NewInt32(ctx, (int) val);
+            } else {
+                v = __JS_NewFloat64(ctx, val);
+            }
+            return v;
+        }
+
+        [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl, EntryPoint = "JSB_NewFloat64")]
+        public static extern JSValue JS_NewFloat64(JSContext ctx, double d);
 
         #endregion
 
@@ -277,6 +356,15 @@ namespace QuickJS.Native
         [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern void JS_SetContextOpaque(JSContext ctx, IntPtr opaque);
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static JSValue JS_NewCFunctionMagic(JSContext ctx, JSCFunctionMagic func,
+            [MarshalAs(UnmanagedType.LPStr)] string name,
+            int length, JSCFunctionEnum cproto, int magic)
+        {
+            var fn = Marshal.GetFunctionPointerForDelegate(func);
+            return JS_NewCFunction2(ctx, fn, name, length, cproto, magic);
+        }
+
         [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern JSValue JS_NewCFunction2(JSContext ctx, IntPtr func,
             [MarshalAs(UnmanagedType.LPStr)] string name,
@@ -319,7 +407,7 @@ namespace QuickJS.Native
 
         public static int JS_SetProperty(JSContext ctx, JSValueConst this_obj, JSAtom prop, JSValue val)
         {
-            return JS_SetPropertyInternal(ctx, this_obj, prop, val, (int) JSPropFlags.JS_PROP_THROW);
+            return JS_SetPropertyInternal(ctx, this_obj, prop, val, (int)JSPropFlags.JS_PROP_THROW);
         }
 
         [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
@@ -370,24 +458,34 @@ namespace QuickJS.Native
 
         [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern void JS_RunGC(JSRuntime rt);
+        
+        [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern int JS_ExecutePendingJob(JSRuntime rt, out JSContext pctx);
 
         [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern JS_BOOL JS_IsLiveObject(JSRuntime rt, JSValueConst obj);
 
+        // 返回 <0 表示失败
         [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern int JS_ToInt32(JSContext ctx, out int pres, JSValue val);
+
+        [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern uint32_t JSB_ToUint32z(JSContext ctx, JSValueConst val);
+
+        [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern JS_BOOL JSB_ToUint32(JSContext ctx, out uint32_t pres, JSValueConst val);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static unsafe JSValue JS_Eval(JSContext ctx, string input, string filename)
         {
             //TEMP CODE
-            var input_bytes = Encoding.UTF8.GetBytes(input + "\0");
-            var input_len = (size_t) (input_bytes.Length - 1);
-            var fn_bytes = Encoding.UTF8.GetBytes(filename + "\0");
+            var input_bytes = Utils.TextUtils.GetNullTerminatedBytes(input);
+            var fn_bytes = Utils.TextUtils.GetNullTerminatedBytes(filename);
 
             fixed (byte* input_ptr = input_bytes)
             fixed (byte* fn_ptr = fn_bytes)
             {
+                var input_len = (size_t)(input_bytes.Length - 1);
                 // return JS_Eval(ctx, input_ptr, input_len, fn_ptr, JSEvalFlags.JS_EVAL_TYPE_GLOBAL);
                 return JS_Eval(ctx, input_ptr, input_len, fn_ptr, JSEvalFlags.JS_EVAL_TYPE_MODULE | JSEvalFlags.JS_EVAL_FLAG_STRICT);
             }
@@ -518,10 +616,10 @@ namespace QuickJS.Native
         public static extern JSClassID __JSB_GetClassID();
 
         [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl, EntryPoint = "JSB_NewClass")]
-        public static extern JS_BOOL __JSB_NewClass(JSRuntime rt, JSClassID class_id,
+        public static extern JSClassID __JSB_NewClass(JSRuntime rt, JSClassID class_id,
             [MarshalAs(UnmanagedType.LPStr)] string class_name, IntPtr finalizer);
 
-        public static JS_BOOL JS_NewClass(JSRuntime rt, JSClassID class_id, string class_name,
+        public static JSClassID JS_NewClass(JSRuntime rt, JSClassID class_id, string class_name,
             JSClassFinalizer finalizer)
         {
             var fn_ptr = Marshal.GetFunctionPointerForDelegate(finalizer);
@@ -555,7 +653,7 @@ namespace QuickJS.Native
             IntPtr module_loader, IntPtr opaque);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void JS_SetModuleLoaderFunc(JSRuntime rt, 
+        public static void JS_SetModuleLoaderFunc(JSRuntime rt,
             JSModuleNormalizeFunc module_normalize,
             JSModuleLoaderFunc module_loader, IntPtr opaque)
         {
@@ -572,10 +670,20 @@ namespace QuickJS.Native
         public static extern JSAtom JS_GetModuleName(JSContext ctx, JSModuleDef m);
 
         #endregion
-        
+
         #region critical
         [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern unsafe IntPtr js_strndup(JSContext ctx, byte* s, size_t n);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static unsafe IntPtr js_strndup(JSContext ctx, string str)
+        {
+            var bytes = Utils.TextUtils.GetNullTerminatedBytes(str);
+            fixed (byte* ptr = bytes)
+            {
+                return JSApi.js_strndup(ctx, ptr, bytes.Length - 1);
+            }
+        }
         #endregion
     }
 }

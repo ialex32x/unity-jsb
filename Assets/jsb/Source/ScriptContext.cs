@@ -4,24 +4,68 @@ using System.Runtime.InteropServices;
 using System.Text;
 using AOT;
 using QuickJS.Native;
+using QuickJS.Utils;
 using UnityEngine;
 
 namespace QuickJS
 {
     public class ScriptContext
     {
+        public event Action<ScriptContext> OnDestroy;
+
+        private ScriptRuntime _runtime;
         private JSContext _ctx;
-        
-        public ScriptContext(JSContext ctx)
+
+        public ScriptContext(ScriptRuntime runtime)
         {
-            _ctx = ctx;
+            _runtime = runtime;
+            _ctx = JSApi.JS_NewContext(_runtime);
+        }
+
+        public TimerManager GetTimerManager()
+        {
+            return _runtime.GetTimerManager();
+        }
+
+        public ScriptRuntime GetRuntime()
+        {
+            return _runtime;
+        }
+
+        public bool IsContext(JSContext ctx)
+        {
+            return ctx.IsContext(_ctx);
+        }
+
+        public void Destroy()
+        {
+            try
+            {
+                OnDestroy?.Invoke(this);
+            }
+            catch (Exception e)
+            {
+                Debug.LogError(e);
+            }
+            JSApi.JS_FreeContext(_ctx);
+            _ctx = JSContext.Null;
         }
 
         public void AddIntrinsicOperators()
         {
             JSApi.JS_AddIntrinsicOperators(_ctx);
         }
+
+        public void FreeValue(JSValue value)
+        {
+            _runtime.FreeValue(value);
+        }
         
+        public void FreeValues(JSValue[] values)
+        {
+            _runtime.FreeValues(values);
+        }
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public JSValue GetGlobalObject()
         {
