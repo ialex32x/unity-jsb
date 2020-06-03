@@ -2,18 +2,21 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "../quickjs.h"
+#include "../quickjs-libc.h"
 
-enum {
+enum
+{
     JS_ATOM_NULL,
-#define DEF(name, str) JS_ATOM_ ## name,
+#define DEF(name, str) JS_ATOM_##name,
 #include "../quickjs-atom.h"
 #undef DEF
     JS_ATOM_END,
 };
 
+static int running = 1;
 static JSClassID unity_object_class_id;
 
-static void foo_finalizer(JSRuntime *rt, JSValue val) 
+static void foo_finalizer(JSRuntime *rt, JSValue val)
 {
     void *data = JS_GetOpaque(val, unity_object_class_id);
     printf("unity_object_class.finalizer (%d)\n", (int)data);
@@ -26,7 +29,7 @@ static JSValue foo_constructor(JSContext *ctx, JSValueConst new_target, int argc
     printf("foo.constructor\n");
     JSValue proto = JS_GetProperty(ctx, new_target, JS_ATOM_prototype);
     JSValue obj = JS_NewObjectProtoClass(ctx, proto, unity_object_class_id);
-    JS_SetOpaque(obj, (void*)iii);
+    JS_SetOpaque(obj, (void *)iii);
     JS_FreeValue(ctx, proto);
     // return new_target;
     return obj;
@@ -37,7 +40,7 @@ static JSValue goo_constructor(JSContext *ctx, JSValueConst new_target, int argc
     printf("goo.constructor\n");
     JSValue proto = JS_GetProperty(ctx, new_target, JS_ATOM_prototype);
     JSValue obj = JS_NewObjectProtoClass(ctx, proto, unity_object_class_id);
-    JS_SetOpaque(obj, (void*)123);
+    JS_SetOpaque(obj, (void *)123);
     JS_FreeValue(ctx, proto);
     // return new_target;
     return obj;
@@ -45,16 +48,16 @@ static JSValue goo_constructor(JSContext *ctx, JSValueConst new_target, int argc
 
 static char *read_file(const char *filename)
 {
-	FILE *fp = fopen(filename, "r");
-	if (fp) 
+    FILE *fp = fopen(filename, "r");
+    if (fp)
     {
-		fseek(fp, 0, SEEK_END);
-		long length = ftell(fp);
-		fseek(fp, 0, SEEK_SET);
-		char *buf = malloc(length + 1);
-		memset(buf, 0, length + 1);
-		fread(buf, length, 1, fp);
-		fclose(fp);
+        fseek(fp, 0, SEEK_END);
+        long length = ftell(fp);
+        fseek(fp, 0, SEEK_SET);
+        char *buf = malloc(length + 1);
+        memset(buf, 0, length + 1);
+        fread(buf, length, 1, fp);
+        fclose(fp);
         return buf;
     }
     return 0;
@@ -70,14 +73,21 @@ static void print_exception(JSContext *ctx, JSValueConst e)
     JS_FreeValue(ctx, err_msg);
 }
 
+static JSValue js_quit(JSContext *ctx, JSValueConst this_val,
+                       int argc, JSValueConst *argv)
+{
+    running = 0;
+    return JS_UNDEFINED;
+}
+
 static JSValue js_print(JSContext *ctx, JSValueConst this_val,
-                              int argc, JSValueConst *argv)
+                        int argc, JSValueConst *argv)
 {
     int i;
     const char *str;
     size_t len;
 
-    for(i = 0; i < argc; i++) 
+    for (i = 0; i < argc; i++)
     {
         if (i != 0)
             putchar(' ');
@@ -91,14 +101,48 @@ static JSValue js_print(JSContext *ctx, JSValueConst this_val,
     return JS_UNDEFINED;
 }
 
-void foo() 
+static JSModuleDef *js_module_loader_test(JSContext *ctx,
+                                          const char *module_name, void *opaque)
+{
+    printf("js_module_loader: %s\n", module_name);
+    size_t buf_len;
+    uint8_t *buf;
+    JSModuleDef *m;
+    JSValue func_val;
+
+    buf = js_load_file(ctx, &buf_len, module_name);
+    if (!buf)
+    {
+        JS_ThrowReferenceError(ctx, "could not load module filename '%s'",
+                               module_name);
+        return NULL;
+    }
+
+    /* compile the module */
+    func_val = JS_Eval(ctx, (char *)buf, buf_len, module_name,
+                       JS_EVAL_TYPE_MODULE | JS_EVAL_FLAG_COMPILE_ONLY);
+    js_free(ctx, buf);
+    if (JS_IsException(func_val))
+        return NULL;
+    /* the module is already referenced, so we must free it */
+    m = JS_VALUE_GET_PTR(func_val);
+    JS_FreeValue(ctx, func_val);
+    return m;
+}
+
+void foo()
 {
     JSRuntime *rt = JS_NewRuntime();
     JSContext *ctx = JS_NewContext(rt);
-    
+
+    JS_SetModuleLoaderFunc(rt, NULL, js_module_loader_test, NULL);
+
+    js_init_module_std(ctx, "std");
+    js_init_module_os(ctx, "os");
+
     JSClassID cls_id;
     unity_object_class_id = JS_NewClassID(&cls_id);
-    
+
     JSClassDef cls_def;
     cls_def.class_name = "UnityObject";
     cls_def.finalizer = foo_finalizer;
@@ -110,6 +154,7 @@ void foo()
     JSValue global_obj = JS_GetGlobalObject(ctx);
 
     JS_SetPropertyStr(ctx, global_obj, "print", JS_NewCFunction(ctx, js_print, "print", 1));
+    JS_SetPropertyStr(ctx, global_obj, "quit", JS_NewCFunction(ctx, js_quit, "quit", 0));
 
     JSValue foo_proto_val = JS_NewObject(ctx);
     JSValue foo_constructor_val = JS_NewCFunction2(ctx, foo_constructor, "Foo", 0, JS_CFUNC_constructor, 0);
@@ -126,10 +171,10 @@ void foo()
     JS_DefinePropertyValueStr(ctx, global_obj, "Goo", goo_constructor_val, JS_PROP_ENUMERABLE | JS_PROP_CONFIGURABLE);
 
     char *source = read_file("./examples/demo.js");
-    JSValue rval = JS_Eval(ctx, source, strlen(source), "eval", 0);
+    JSValue rval = JS_Eval(ctx, source, strlen(source), "eval", JS_EVAL_TYPE_MODULE | JS_EVAL_FLAG_STRICT);
     if (JS_IsException(rval))
     {
-		JSValue e = JS_GetException(ctx);
+        JSValue e = JS_GetException(ctx);
         print_exception(ctx, e);
     }
     free(source);
@@ -139,12 +184,17 @@ void foo()
     // JS_FreeValue(ctx, foo_constructor_val);
     JS_FreeValue(ctx, global_obj);
 
+    while (running)
+    {
+        js_std_loop(ctx);
+    }
+
     JS_RunGC(rt);
     JS_FreeContext(ctx);
     JS_FreeRuntime(rt);
 }
 
-int main() 
+int main()
 {
     printf("demo running...\n");
     foo();
