@@ -2,6 +2,7 @@
 // import { fib } from "./fib_module.js";
 import {fib} from "Assets/fib.js";
 
+print(jsb);
 print(jsb.Foo);
 print(new jsb.Foo());
 print(123, 456);

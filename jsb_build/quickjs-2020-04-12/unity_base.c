@@ -175,6 +175,7 @@ void JSB_NewClassPayload(JSContext *ctx, JSValue val, JSClassID class_id, int32_
     JSClassPayload *sv = (JSClassPayload *) js_malloc(ctx, sizeof(JSClassPayload));
     sv->header.type_id = type_id;
     sv->header.object_id = object_id;
+    JS_SetOpaque(val, sv);
 }
 
 void JSB_NewStructPayload(JSContext *ctx, JSValue val, JSClassID class_id, int32_t type_id, int32_t object_id, uint32_t size)
@@ -182,6 +183,7 @@ void JSB_NewStructPayload(JSContext *ctx, JSValue val, JSClassID class_id, int32
     JSStructPayload *sv = (JSStructPayload *) js_malloc(ctx, sizeof(JSPayloadHeader) + size);
     sv->header.type_id = type_id;
     sv->header.size = size;
+    JS_SetOpaque(val, sv);
 }
 
 JSPayloadHeader JSB_FreePayload(JSContext *ctx, JSValue val, JSClassID class_id)
