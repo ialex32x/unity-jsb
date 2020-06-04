@@ -38,7 +38,6 @@ namespace QuickJS
             _mainThreadId = Thread.CurrentThread.ManagedThreadId;
             _timerManager = new TimerManager();
             _rt = JSApi.JS_NewRuntime();
-            JSApi.JS_NewClass(_rt, JSApi.JSB_GetBridgeClassID(), "CSharpClass", JSApi.class_finalizer);
             JSApi.JS_SetModuleLoaderFunc(_rt, module_normalize, module_loader, IntPtr.Zero);
             _mainContext = CreateContext();
         }

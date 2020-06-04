@@ -22,11 +22,11 @@ static void foo_finalizer(JSRuntime *rt, JSValue val)
     printf("unity_object_class.finalizer (%d)\n", (int)data);
 }
 
+static int iii = 123;
 static JSValue foo_constructor(JSContext *ctx, JSValueConst new_target, int argc, JSValueConst *argv)
 {
-    static int iii = 123;
     iii++;
-    printf("foo.constructor\n");
+    printf("foo.constructor %d\n", iii);
     JSValue proto = JS_GetProperty(ctx, new_target, JS_ATOM_prototype);
     JSValue obj = JS_NewObjectProtoClass(ctx, proto, unity_object_class_id);
     JS_SetOpaque(obj, (void *)iii);
@@ -37,10 +37,11 @@ static JSValue foo_constructor(JSContext *ctx, JSValueConst new_target, int argc
 
 static JSValue goo_constructor(JSContext *ctx, JSValueConst new_target, int argc, JSValueConst *argv)
 {
-    printf("goo.constructor\n");
+    iii++;
+    printf("goo.constructor %d\n", iii);
     JSValue proto = JS_GetProperty(ctx, new_target, JS_ATOM_prototype);
     JSValue obj = JS_NewObjectProtoClass(ctx, proto, unity_object_class_id);
-    JS_SetOpaque(obj, (void *)123);
+    JS_SetOpaque(obj, (void *)iii);
     JS_FreeValue(ctx, proto);
     // return new_target;
     return obj;
@@ -159,14 +160,14 @@ void foo()
     JSValue foo_proto_val = JS_NewObject(ctx);
     JSValue foo_constructor_val = JS_NewCFunction2(ctx, foo_constructor, "Foo", 0, JS_CFUNC_constructor, 0);
     JS_SetConstructor(ctx, foo_constructor_val, foo_proto_val);
-    JS_SetClassProto(ctx, cls_id, foo_proto_val);
+    // JS_SetClassProto(ctx, cls_id, foo_proto_val);
     // JS_SetPrototype( __this_is_super_base_class__ );
     JS_DefinePropertyValueStr(ctx, global_obj, "Foo", foo_constructor_val, JS_PROP_ENUMERABLE | JS_PROP_CONFIGURABLE);
 
     JSValue goo_proto_val = JS_NewObject(ctx);
     JSValue goo_constructor_val = JS_NewCFunction2(ctx, goo_constructor, "Goo", 0, JS_CFUNC_constructor, 0);
     JS_SetConstructor(ctx, goo_constructor_val, goo_proto_val);
-    JS_SetClassProto(ctx, cls_id, goo_proto_val);
+    // JS_SetClassProto(ctx, cls_id, goo_proto_val);
     JS_SetPrototype(ctx, goo_proto_val, foo_proto_val);
     JS_DefinePropertyValueStr(ctx, global_obj, "Goo", goo_constructor_val, JS_PROP_ENUMERABLE | JS_PROP_CONFIGURABLE);
 
@@ -180,6 +181,8 @@ void foo()
     free(source);
     JS_FreeValue(ctx, rval);
 
+JS_FreeValue(ctx, foo_proto_val);
+JS_FreeValue(ctx, goo_proto_val);
     // JS_FreeValue(ctx, foo_proto_val);
     // JS_FreeValue(ctx, foo_constructor_val);
     JS_FreeValue(ctx, global_obj);

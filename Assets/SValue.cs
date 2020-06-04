@@ -14,11 +14,8 @@ namespace jsb
         {
             var rt = ScriptEngine.GetRuntime(ctx);
             var cache = rt.GetObjectCache();
-            JSValue proto = JSApi.JS_GetProperty(ctx, new_target, JSApi.JS_ATOM_prototype);
-            JSValue obj = JSApi.JS_NewObjectProtoClass(ctx, proto, rt._def_struct_id);
-            var sv = JSApi.JSB_NewStructPayload(ctx, obj, rt._def_struct_id, 0, 0, sizeof(float) * 3);
-            JSApi.jsb_set_float_3(sv, 1f, 2f, 3f);
-            JSApi.JS_FreeValue(ctx, proto);
+            JSValue obj = JSApi.JSB_NewBridgeClassValue(ctx, new_target, sizeof(float) * 3);
+            // JSApi.jsb_set_float_3(obj, 1f, 2f, 3f);
             return obj;
         }
 
@@ -27,11 +24,10 @@ namespace jsb
         {
             var rt = ScriptEngine.GetRuntime(ctx);
             var cache = rt.GetObjectCache();
-            var payload = JSApi.jsb_get_payload(this_obj, rt._def_struct_id);
 
             float x, y, z;
-            JSApi.jsb_get_float_3(payload, out x, out y, out z);
-            JSApi.jsb_set_float_3(payload, 1f + x, 1f + y, 1f + z);
+            JSApi.jsb_get_float_3(this_obj, out x, out y, out z);
+            JSApi.jsb_set_float_3(this_obj, 1f + x, 1f + y, 1f + z);
             Debug.LogFormat("Vector3.Test: {0}, {1}, {2}", x, y, z);
             return JSApi.JS_UNDEFINED;
         }

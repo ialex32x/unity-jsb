@@ -28,19 +28,20 @@ enum
     JS_ATOM_END,
 };
 
-#define DEF(name, str) JSAtom JSB_ATOM_##name() { return JS_ATOM_##name; }
+#define DEF(name, str) \
+    JSAtom JSB_ATOM_##name() { return JS_ATOM_##name; }
 #include "quickjs-atom.h"
 #undef DEF
 
 int JSB_ToUint32(JSContext *ctx, uint32_t *pres, JSValueConst val)
 {
-    return JS_ToInt32(ctx, (int32_t*)pres, val);
+    return JS_ToInt32(ctx, (int32_t *)pres, val);
 }
 
 uint32_t JSB_ToUint32z(JSContext *ctx, JSValueConst val)
 {
     uint32_t pres = 0;
-    JS_ToInt32(ctx, (int32_t*)&pres, val);
+    JS_ToInt32(ctx, (int32_t *)&pres, val);
     return pres;
 }
 
@@ -146,30 +147,45 @@ JSClassID JSB_GetBridgeClassID()
 #define JS_BO_OBJECT 2
 #define JS_BO_VALUE 3
 
-typedef struct JSPayloadHeader {
+typedef struct JSPayloadHeader
+{
     int32_t type_id; // JS_BO_*
     int32_t value;
 } JSPayloadHeader;
 
-static JSPayloadHeader _null_payload = { .type_id = 0, .value = 0 };
+static JSPayloadHeader _null_payload = {.type_id = 0, .value = 0};
 
-typedef struct JSPayload {
+typedef struct JSPayload
+{
     JSPayloadHeader header;
     char data[1];
 } JSPayload;
 
-JSValue JSB_NewBridgeObject(JSContext *ctx, JSValue proto, int32_t value)
+JSValue JSB_NewBridgeObject(JSContext *ctx, JSValue proto, int32_t object_id)
 {
     JSValue obj = JS_NewObjectProtoClass(ctx, proto, js_bridge_class_id);
     if (!JS_IsException(obj))
     {
-        JSPayload *sv = (JSPayload *) js_malloc(ctx, sizeof(JSPayloadHeader));
+        JSPayload *sv = (JSPayload *)js_malloc(ctx, sizeof(JSPayloadHeader));
         sv->header.type_id = JS_BO_OBJECT;
-        sv->header.value = value;
+        sv->header.value = object_id;
         JS_SetOpaque(obj, sv);
     }
 
     return obj;
+}
+
+JSValue JSB_NewBridgeClassObject(JSContext *ctx, JSValue new_target, int32_t object_id)
+{
+    JSValue proto = JS_GetProperty(ctx, new_target, JS_ATOM_prototype);
+    if (JS_IsException(proto))
+    {
+        JSValue obj = JSB_NewBridgeObject(ctx, proto, object_id);
+        JS_FreeValue(ctx, proto);
+        return obj;
+    }
+
+    return proto;
 }
 
 JSValue JSB_NewBridgeValue(JSContext *ctx, JSValue proto, int32_t size)
@@ -177,7 +193,7 @@ JSValue JSB_NewBridgeValue(JSContext *ctx, JSValue proto, int32_t size)
     JSValue obj = JS_NewObjectProtoClass(ctx, proto, js_bridge_class_id);
     if (!JS_IsException(obj))
     {
-        JSPayload *sv = (JSPayload *) js_mallocz(ctx, sizeof(JSPayloadHeader) + size);
+        JSPayload *sv = (JSPayload *)js_mallocz(ctx, sizeof(JSPayloadHeader) + size);
         sv->header.type_id = JS_BO_VALUE;
         sv->header.value = size;
         JS_SetOpaque(obj, sv);
@@ -186,9 +202,22 @@ JSValue JSB_NewBridgeValue(JSContext *ctx, JSValue proto, int32_t size)
     return obj;
 }
 
+JSValue JSB_NewBridgeClassValue(JSContext *ctx, JSValue new_target, int32_t size)
+{
+    JSValue proto = JS_GetProperty(ctx, new_target, JS_ATOM_prototype);
+    if (JS_IsException(proto))
+    {
+        JSValue obj = JSB_NewBridgeValue(ctx, proto, size);
+        JS_FreeValue(ctx, proto);
+        return obj;
+    }
+
+    return proto;
+}
+
 void JSB_SetBridgeType(JSContext *ctx, JSValue obj, int32_t type)
 {
-    JSPayload *sv = (JSPayload *) js_mallocz(ctx, sizeof(JSPayloadHeader));
+    JSPayload *sv = (JSPayload *)js_mallocz(ctx, sizeof(JSPayloadHeader));
     sv->header.type_id = JS_BO_TYPE;
     sv->header.value = type;
     JS_SetOpaque(obj, sv);
@@ -198,7 +227,7 @@ void JSB_SetBridgeType(JSContext *ctx, JSValue obj, int32_t type)
 JSPayloadHeader JSB_FreePayload(JSContext *ctx, JSValue val)
 {
     void *sv = JS_GetOpaque(val, js_bridge_class_id);
-    if (sv) 
+    if (sv)
     {
         JSPayloadHeader header = *(JSPayloadHeader *)sv;
         JS_SetOpaque(val, NULL);
@@ -211,7 +240,7 @@ JSPayloadHeader JSB_FreePayload(JSContext *ctx, JSValue val)
 JSPayloadHeader JSB_FreePayloadRT(JSRuntime *rt, JSValue val)
 {
     void *sv = JS_GetOpaque(val, js_bridge_class_id);
-    if (sv) 
+    if (sv)
     {
         JSPayloadHeader header = *(JSPayloadHeader *)sv;
         JS_SetOpaque(val, NULL);
@@ -224,7 +253,7 @@ JSPayloadHeader JSB_FreePayloadRT(JSRuntime *rt, JSValue val)
 JSPayloadHeader jsb_get_payload_header(JSValue val)
 {
     JSPayloadHeader *sv = JS_GetOpaque(val, js_bridge_class_id);
-    if (sv) 
+    if (sv)
     {
         return *sv;
     }
@@ -234,124 +263,180 @@ JSPayloadHeader jsb_get_payload_header(JSValue val)
 JSPayload *jsb_get_payload(JSValue val)
 {
     JSPayload *sv = JS_GetOpaque(val, js_bridge_class_id);
-    if (sv) 
+    if (sv)
     {
         return sv;
     }
     return 0;
 }
 
-void jsb_get_floats(JSPayload *sv, int n, float *v0) 
+void jsb_get_floats(JSValue val, int n, float *v0)
 {
-    float *ptr = (float *)&(sv->data[0]);
-    for (int i = 0; i < n; ++i) 
+    JSPayload *sv = JS_GetOpaque(val, js_bridge_class_id);
+    if (sv)
     {
-        *(v0 + i) = ptr[0];
+        float *ptr = (float *)&(sv->data[0]);
+        for (int i = 0; i < n; ++i)
+        {
+            *(v0 + i) = ptr[0];
+        }
     }
 }
 
-void jsb_set_floats(JSPayload *sv, int n, float *v0) 
+void jsb_set_floats(JSValue val, int n, float *v0)
 {
-    float *ptr = (float *)&(sv->data[0]);
-    for (int i = 0; i < n; ++i) 
+    JSPayload *sv = JS_GetOpaque(val, js_bridge_class_id);
+    if (sv)
     {
-        ptr[i] = *(v0 + i);
+        float *ptr = (float *)&(sv->data[0]);
+        for (int i = 0; i < n; ++i)
+        {
+            ptr[i] = *(v0 + i);
+        }
     }
 }
 
-void jsb_get_float_2(JSPayload *sv, float *v0, float *v1) 
+void jsb_get_float_2(JSValue val, float *v0, float *v1)
 {
-    float *ptr = (float *)&(sv->data[0]);
-    *v0 = ptr[0];
-    *v1 = ptr[1];
+    JSPayload *sv = JS_GetOpaque(val, js_bridge_class_id);
+    if (sv)
+    {
+        float *ptr = (float *)&(sv->data[0]);
+        *v0 = ptr[0];
+        *v1 = ptr[1];
+    }
 }
 
-void jsb_set_float_2(JSPayload *sv, float v0, float v1) 
+void jsb_set_float_2(JSValue val, float v0, float v1)
 {
-    float *ptr = (float *)&(sv->data[0]);
-    ptr[0] = v0;
-    ptr[1] = v1;
+    JSPayload *sv = JS_GetOpaque(val, js_bridge_class_id);
+    if (sv)
+    {
+        float *ptr = (float *)&(sv->data[0]);
+        ptr[0] = v0;
+        ptr[1] = v1;
+    }
 }
 
-void jsb_get_float_3(JSPayload *sv, float *v0, float *v1, float *v2) 
+void jsb_get_float_3(JSValue val, float *v0, float *v1, float *v2)
 {
-    float *ptr = (float *)&(sv->data[0]);
-    *v0 = ptr[0];
-    *v1 = ptr[1];
-    *v2 = ptr[2];
+    JSPayload *sv = JS_GetOpaque(val, js_bridge_class_id);
+    if (sv)
+    {
+        float *ptr = (float *)&(sv->data[0]);
+        *v0 = ptr[0];
+        *v1 = ptr[1];
+        *v2 = ptr[2];
+    }
 }
 
-void jsb_set_float_3(JSPayload *sv, float v0, float v1, float v2) 
+void jsb_set_float_3(JSValue val, float v0, float v1, float v2)
 {
-    float *ptr = (float *)&(sv->data[0]);
-    ptr[0] = v0;
-    ptr[1] = v1;
-    ptr[2] = v2;
+    JSPayload *sv = JS_GetOpaque(val, js_bridge_class_id);
+    if (sv)
+    {
+        float *ptr = (float *)&(sv->data[0]);
+        ptr[0] = v0;
+        ptr[1] = v1;
+        ptr[2] = v2;
+    }
 }
 
-void jsb_get_float_4(JSPayload *sv, float *v0, float *v1, float *v2, float *v3) 
+void jsb_get_float_4(JSValue val, float *v0, float *v1, float *v2, float *v3)
 {
-    float *ptr = (float *)&(sv->data[0]);
-    *v0 = ptr[0];
-    *v1 = ptr[1];
-    *v2 = ptr[2];
-    *v3 = ptr[3];
+    JSPayload *sv = JS_GetOpaque(val, js_bridge_class_id);
+    if (sv)
+    {
+        float *ptr = (float *)&(sv->data[0]);
+        *v0 = ptr[0];
+        *v1 = ptr[1];
+        *v2 = ptr[2];
+        *v3 = ptr[3];
+    }
 }
 
-void jsb_set_float_4(JSPayload *sv, float v0, float v1, float v2, float v3) 
+void jsb_set_float_4(JSValue val, float v0, float v1, float v2, float v3)
 {
-    float *ptr = (float *)&(sv->data[0]);
-    ptr[0] = v0;
-    ptr[1] = v1;
-    ptr[2] = v2;
-    ptr[3] = v3;
+    JSPayload *sv = JS_GetOpaque(val, js_bridge_class_id);
+    if (sv)
+    {
+        float *ptr = (float *)&(sv->data[0]);
+        ptr[0] = v0;
+        ptr[1] = v1;
+        ptr[2] = v2;
+        ptr[3] = v3;
+    }
 }
 
-void jsb_get_int_1(JSPayload *sv, int *v0) 
+void jsb_get_int_1(JSValue val, int *v0)
 {
-    int *ptr = (int *)&(sv->data[0]);
-    *v0 = ptr[0];
+    JSPayload *sv = JS_GetOpaque(val, js_bridge_class_id);
+    if (sv)
+    {
+        int *ptr = (int *)&(sv->data[0]);
+        *v0 = ptr[0];
+    }
 }
 
-void jsb_set_int_1(JSPayload *sv, int v0) 
+void jsb_set_int_1(JSValue val, int v0)
 {
-    int *ptr = (int *)&(sv->data[0]);
-    ptr[0] = v0;
+    JSPayload *sv = JS_GetOpaque(val, js_bridge_class_id);
+    if (sv)
+    {
+        int *ptr = (int *)&(sv->data[0]);
+        ptr[0] = v0;
+    }
 }
 
-void jsb_get_int_2(JSPayload *sv, int *v0, int *v1) 
+void jsb_get_int_2(JSValue val, int *v0, int *v1)
 {
-    int *ptr = (int *)&(sv->data[0]);
-    *v0 = ptr[0];
-    *v1 = ptr[1];
+    JSPayload *sv = JS_GetOpaque(val, js_bridge_class_id);
+    if (sv)
+    {
+        int *ptr = (int *)&(sv->data[0]);
+        *v0 = ptr[0];
+        *v1 = ptr[1];
+    }
 }
 
-void jsb_set_int_2(JSPayload *sv, int v0, int v1) 
+void jsb_set_int_2(JSValue val, int v0, int v1)
 {
-    int *ptr = (int *)&(sv->data[0]);
-    ptr[0] = v0;
-    ptr[1] = v1;
+    JSPayload *sv = JS_GetOpaque(val, js_bridge_class_id);
+    if (sv)
+    {
+        int *ptr = (int *)&(sv->data[0]);
+        ptr[0] = v0;
+        ptr[1] = v1;
+    }
 }
 
-void jsb_get_int_3(JSPayload *sv, int *v0, int *v1, int *v2) 
+void jsb_get_int_3(JSValue val, int *v0, int *v1, int *v2)
 {
-    int *ptr = (int *)&(sv->data[0]);
-    *v0 = ptr[0];
-    *v1 = ptr[1];
-    *v2 = ptr[2];
+    JSPayload *sv = JS_GetOpaque(val, js_bridge_class_id);
+    if (sv)
+    {
+        int *ptr = (int *)&(sv->data[0]);
+        *v0 = ptr[0];
+        *v1 = ptr[1];
+        *v2 = ptr[2];
+    }
 }
 
-void jsb_set_int_3(JSPayload *sv, int v0, int v1, int v2) 
+void jsb_set_int_3(JSValue val, int v0, int v1, int v2)
 {
-    int *ptr = (int *)&(sv->data[0]);
-    ptr[0] = v0;
-    ptr[1] = v1;
-    ptr[2] = v2;
+    JSPayload *sv = JS_GetOpaque(val, js_bridge_class_id);
+    if (sv)
+    {
+        int *ptr = (int *)&(sv->data[0]);
+        ptr[0] = v0;
+        ptr[1] = v1;
+        ptr[2] = v2;
+    }
 }
 
 void JSB_Init()
 {
-    if (js_class_id_begin == 0) 
+    if (js_class_id_begin == 0)
     {
         JS_NewClassID(&js_bridge_class_id);
         JS_NewClassID(&js_class_id_begin);

@@ -28,10 +28,12 @@ namespace QuickJS.Binding
             return _context;
         }
 
-        public TypeRegister(ScriptContext context)
+        public TypeRegister(ScriptRuntime runtime, ScriptContext context)
         {
             _db = new TypeDB();
             _context = context;
+            
+            JSApi.JS_NewClass(runtime, JSApi.JSB_GetBridgeClassID(), "CSharpClass", JSApi.class_finalizer);
         }
 
         public TypeDB GetTypeDB()
