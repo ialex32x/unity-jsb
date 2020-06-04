@@ -178,7 +178,7 @@ JSValue JSB_NewBridgeObject(JSContext *ctx, JSValue proto, int32_t object_id)
 JSValue JSB_NewBridgeClassObject(JSContext *ctx, JSValue new_target, int32_t object_id)
 {
     JSValue proto = JS_GetProperty(ctx, new_target, JS_ATOM_prototype);
-    if (JS_IsException(proto))
+    if (!JS_IsException(proto))
     {
         JSValue obj = JSB_NewBridgeObject(ctx, proto, object_id);
         JS_FreeValue(ctx, proto);
@@ -205,7 +205,7 @@ JSValue JSB_NewBridgeValue(JSContext *ctx, JSValue proto, int32_t size)
 JSValue JSB_NewBridgeClassValue(JSContext *ctx, JSValue new_target, int32_t size)
 {
     JSValue proto = JS_GetProperty(ctx, new_target, JS_ATOM_prototype);
-    if (JS_IsException(proto))
+    if (!JS_IsException(proto))
     {
         JSValue obj = JSB_NewBridgeValue(ctx, proto, size);
         JS_FreeValue(ctx, proto);

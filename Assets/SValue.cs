@@ -12,10 +12,9 @@ namespace jsb
         [MonoPInvokeCallback(typeof(JSCFunctionMagic))]
         private static JSValue BindConstructor(JSContext ctx, JSValue new_target, int argc, JSValue[] argv, int magic)
         {
-            var rt = ScriptEngine.GetRuntime(ctx);
-            var cache = rt.GetObjectCache();
+            var cache = ScriptEngine.GetObjectCache(ctx);
             JSValue obj = JSApi.JSB_NewBridgeClassValue(ctx, new_target, sizeof(float) * 3);
-            // JSApi.jsb_set_float_3(obj, 1f, 2f, 3f);
+            JSApi.jsb_set_float_3(obj, 1f, 2f, 3f);
             return obj;
         }
 

@@ -21,8 +21,7 @@ namespace jsb
         [MonoPInvokeCallback(typeof(JSCFunctionMagic))]
         private static JSValue BindConstructor(JSContext ctx, JSValue new_target, int argc, JSValue[] argv, int magic)
         {
-            var rt = ScriptEngine.GetRuntime(ctx);
-            var cache = rt.GetObjectCache();
+            var cache = ScriptEngine.GetObjectCache(ctx);
             var object_id = cache.AddObject(new Foo());
             JSValue obj = JSApi.JSB_NewBridgeClassObject(ctx, new_target, object_id);
             return obj;
