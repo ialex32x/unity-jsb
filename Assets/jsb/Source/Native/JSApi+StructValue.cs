@@ -10,24 +10,26 @@ namespace QuickJS.Native
     public partial class JSApi
     {
         [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern JSPayloadHeader JSB_NewTypePayload(JSContext ctx, JSValue val, JSClassID class_id, int32_t type_id);
-        [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern JSPayloadHeader JSB_NewClassPayload(JSContext ctx, JSValue val, JSClassID class_id, int32_t type_id, int32_t object_id);
+        public static extern JSClassID JSB_GetBridgeClassID();
 
         [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern JSPayload JSB_NewStructPayload(JSContext ctx, JSValue val, JSClassID class_id, int32_t type_id, int32_t object_id,
-            uint32_t size);
+        public static extern JSValue JSB_NewBridgeObject(JSContext ctx, JSValue proto, int object_id);
+        [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern void JSB_SetBridgeType(JSContext ctx, JSValue obj, int32_t type);
 
         [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern JSPayloadHeader JSB_FreePayload(JSContext ctx, JSValue val, JSClassID class_id);
+        public static extern JSValue JSB_NewBridgeValue(JSContext ctx, JSValue proto, uint32_t size);
+
         [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern JSPayloadHeader JSB_FreePayloadRT(JSRuntime rt, JSValue val, JSClassID class_id);
+        public static extern JSPayloadHeader JSB_FreePayload(JSContext ctx, JSValue val);
+        [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern JSPayloadHeader JSB_FreePayloadRT(JSRuntime rt, JSValue val);
         
         [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern JSPayloadHeader jsb_get_payload_header(JSValue val, JSClassID class_id);
+        public static extern JSPayloadHeader jsb_get_payload_header(JSValue val);
 
         [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern JSPayload jsb_get_payload(JSValue val, JSClassID class_id);
+        public static extern JSPayload jsb_get_payload(JSValue val);
 
         [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern unsafe void jsb_get_floats(JSPayload sv, int n, float* v0);

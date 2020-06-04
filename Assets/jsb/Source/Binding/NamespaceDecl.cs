@@ -40,7 +40,6 @@ namespace QuickJS.Binding
         {
             var ctx = _register.GetContext();
             var runtime = ctx.GetRuntime();
-            var class_id = runtime._def_class_id;
             var proto_val = ctx.NewObject();
             var type_id = _register.Add(type, proto_val);
             var ctor_val =

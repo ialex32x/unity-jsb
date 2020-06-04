@@ -26,9 +26,6 @@ namespace QuickJS
         private int _mainThreadId;
         private uint _class_id_alloc = JSApi.__JSB_GetClassID();
 
-        public uint _def_class_id;
-        public uint _def_struct_id;
-        public uint _def_type_id;
 
         private IFileResolver _fileResolver;
         private ObjectCache _objectCache = new ObjectCache();
@@ -41,9 +38,7 @@ namespace QuickJS
             _mainThreadId = Thread.CurrentThread.ManagedThreadId;
             _timerManager = new TimerManager();
             _rt = JSApi.JS_NewRuntime();
-            _def_class_id = JSApi.JS_NewClass(_rt, NewClassID(), "CSharpClass", JSApi.class_finalizer);
-            _def_struct_id = JSApi.JS_NewClass(_rt, NewClassID(), "CSharpStruct", JSApi.struct_finalizer);
-            _def_type_id = JSApi.JS_NewClass(_rt, NewClassID(), "CSharpType", JSApi.type_finalizer);
+            JSApi.JS_NewClass(_rt, JSApi.JSB_GetBridgeClassID(), "CSharpClass", JSApi.class_finalizer);
             JSApi.JS_SetModuleLoaderFunc(_rt, module_normalize, module_loader, IntPtr.Zero);
             _mainContext = CreateContext();
         }

@@ -14,43 +14,21 @@ namespace QuickJS.Native
             return JSApi.JS_UNDEFINED;
         }
 
-        [MonoPInvokeCallback(typeof(JSCFunctionMagic))]
-        public static JSValue struct_private_ctor(JSContext ctx, JSValue this_val, int argc, JSValue[] argv, int magic)
-        {
-            JSApi.JS_ThrowInternalError(ctx, "cant call constructor on this type");
-            return JSApi.JS_UNDEFINED;
-        }
-        
         // 通用析构函数
         [MonoPInvokeCallback(typeof(JSClassFinalizer))]
         public static void class_finalizer(JSRuntime rt, JSValue val)
         {
             var runtime = ScriptEngine.GetRuntime(rt);
-            var class_id = runtime._def_class_id;
-            var payload = JSApi.JSB_FreePayloadRT(rt, val, class_id);
-            var objectCache = runtime.GetObjectCache();
-            
-            if (objectCache != null)
+            var header = JSApi.JSB_FreePayloadRT(rt, val);
+            if (header.type_id == BridgeObjectType.ObjectRef)
             {
-                objectCache.RemoveObject(payload.object_id);
+                var objectCache = runtime.GetObjectCache();
+
+                if (objectCache != null)
+                {
+                    objectCache.RemoveObject(header.value);
+                }
             }
-        }
-
-        // 通用析构函数
-        [MonoPInvokeCallback(typeof(JSClassFinalizer))]
-        public static void type_finalizer(JSRuntime rt, JSValue val)
-        {
-            var runtime = ScriptEngine.GetRuntime(rt);
-            var class_id = runtime._def_type_id;
-            JSApi.JSB_FreePayloadRT(rt, val, class_id);
-        }
-
-        [MonoPInvokeCallback(typeof(JSCFunction))]
-        public static void struct_finalizer(JSRuntime rt, JSValue val)
-        {
-            var runtime = ScriptEngine.GetRuntime(rt);
-            var class_id = runtime._def_struct_id;
-            JSApi.JSB_FreePayloadRT(rt, val, class_id);
         }
 
         public static string GetString(JSContext ctx, JSValue val)

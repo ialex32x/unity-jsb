@@ -137,6 +137,11 @@ JSClassID JSB_GetClassID()
     return js_class_id_begin;
 }
 
+JSClassID JSB_GetBridgeClassID()
+{
+    return js_bridge_class_id;
+}
+
 #define JS_BO_TYPE 1
 #define JS_BO_OBJECT 2
 #define JS_BO_VALUE 3
@@ -181,20 +186,15 @@ JSValue JSB_NewBridgeValue(JSContext *ctx, JSValue proto, int32_t size)
     return obj;
 }
 
-JSValue JSB_NewBridgeType(JSContext *ctx, JSValue proto, int32_t type)
+void JSB_SetBridgeType(JSContext *ctx, JSValue obj, int32_t type)
 {
-    JSValue obj = JS_NewObjectProtoClass(ctx, proto, js_bridge_class_id);
-    if (!JS_IsException(obj))
-    {
-        JSPayload *sv = (JSPayload *) js_mallocz(ctx, sizeof(JSPayloadHeader));
-        sv->header.type_id = JS_BO_TYPE;
-        sv->header.value = type;
-        JS_SetOpaque(obj, sv);
-    }
-
-    return obj;
+    JSPayload *sv = (JSPayload *) js_mallocz(ctx, sizeof(JSPayloadHeader));
+    sv->header.type_id = JS_BO_TYPE;
+    sv->header.value = type;
+    JS_SetOpaque(obj, sv);
 }
 
+// 释放数据, 返回头信息副本
 JSPayloadHeader JSB_FreePayload(JSContext *ctx, JSValue val)
 {
     void *sv = JS_GetOpaque(val, js_bridge_class_id);
