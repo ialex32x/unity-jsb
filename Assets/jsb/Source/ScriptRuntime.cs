@@ -51,7 +51,7 @@ namespace QuickJS
 
         private IEnumerator _InitializeStep(ScriptContext context, IScriptRuntimeListener runner, int step)
         {
-            var register = new TypeRegister(context);
+            var register = new TypeRegister(this, context);
             var regArgs = new object[] { register };
             var bindingTypes = new List<Type>();
             var assemblies = AppDomain.CurrentDomain.GetAssemblies();
