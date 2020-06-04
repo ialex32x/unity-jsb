@@ -32,5 +32,9 @@ setTimeout(() => {
     print("[timeout] test");
 }, 1500);
 
+let v3 = new jsb.Vector3();
+v3.Test();
+v3.Test();
+
 print("end of script");
 

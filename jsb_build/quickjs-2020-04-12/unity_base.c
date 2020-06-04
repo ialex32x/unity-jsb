@@ -129,66 +129,75 @@ JSClassID JSB_NewClass(JSRuntime *rt, JSClassID class_id, const char *class_name
 }
 
 static JSClassID js_class_id_begin = 0;
+static JSClassID js_bridge_class_id = 0;
 
 // quickjs 内置 class id 之后的第一个可用 id
 JSClassID JSB_GetClassID()
 {
-    if (js_class_id_begin == 0) 
-    {
-        JS_NewClassID(&js_class_id_begin);
-    }
     return js_class_id_begin;
 }
 
+#define JS_BO_TYPE 1
+#define JS_BO_OBJECT 2
+#define JS_BO_VALUE 3
+
 typedef struct JSPayloadHeader {
-    int32_t type_id; // registered type id (exported types in csharp)
-    union {
-        int32_t object_id;
-        uint32_t size;
-    };
+    int32_t type_id; // JS_BO_*
+    int32_t value;
 } JSPayloadHeader;
 
-static JSPayloadHeader _null_payload = { .type_id = 0, .object_id = 0 };
+static JSPayloadHeader _null_payload = { .type_id = 0, .value = 0 };
 
-typedef struct JSTypePayload {
-    JSPayloadHeader header; 
-} JSTypePayload;
-
-typedef struct JSClassPayload {
-    JSPayloadHeader header; 
-} JSClassPayload;
-
-typedef struct JSStructPayload {
+typedef struct JSPayload {
     JSPayloadHeader header;
     char data[1];
-} JSStructPayload;
+} JSPayload;
 
-void JSB_NewTypePayload(JSContext *ctx, JSValue val, JSClassID class_id, int32_t type_id)
+JSValue JSB_NewBridgeObject(JSContext *ctx, JSValue proto, int32_t value)
 {
-    JSTypePayload *sv = (JSTypePayload *) js_malloc(ctx, sizeof(JSTypePayload));
-    sv->header.type_id = type_id;
-    JS_SetOpaque(val, sv);
+    JSValue obj = JS_NewObjectProtoClass(ctx, proto, js_bridge_class_id);
+    if (!JS_IsException(obj))
+    {
+        JSPayload *sv = (JSPayload *) js_malloc(ctx, sizeof(JSPayloadHeader));
+        sv->header.type_id = JS_BO_OBJECT;
+        sv->header.value = value;
+        JS_SetOpaque(obj, sv);
+    }
+
+    return obj;
 }
 
-void JSB_NewClassPayload(JSContext *ctx, JSValue val, JSClassID class_id, int32_t type_id, int32_t object_id)
+JSValue JSB_NewBridgeValue(JSContext *ctx, JSValue proto, int32_t size)
 {
-    JSClassPayload *sv = (JSClassPayload *) js_malloc(ctx, sizeof(JSClassPayload));
-    sv->header.type_id = type_id;
-    sv->header.object_id = object_id;
-    JS_SetOpaque(val, sv);
+    JSValue obj = JS_NewObjectProtoClass(ctx, proto, js_bridge_class_id);
+    if (!JS_IsException(obj))
+    {
+        JSPayload *sv = (JSPayload *) js_mallocz(ctx, sizeof(JSPayloadHeader) + size);
+        sv->header.type_id = JS_BO_VALUE;
+        sv->header.value = size;
+        JS_SetOpaque(obj, sv);
+    }
+
+    return obj;
 }
 
-void JSB_NewStructPayload(JSContext *ctx, JSValue val, JSClassID class_id, int32_t type_id, int32_t object_id, uint32_t size)
+JSValue JSB_NewBridgeType(JSContext *ctx, JSValue proto, int32_t type)
 {
-    JSStructPayload *sv = (JSStructPayload *) js_malloc(ctx, sizeof(JSPayloadHeader) + size);
-    sv->header.type_id = type_id;
-    sv->header.size = size;
-    JS_SetOpaque(val, sv);
+    JSValue obj = JS_NewObjectProtoClass(ctx, proto, js_bridge_class_id);
+    if (!JS_IsException(obj))
+    {
+        JSPayload *sv = (JSPayload *) js_mallocz(ctx, sizeof(JSPayloadHeader));
+        sv->header.type_id = JS_BO_TYPE;
+        sv->header.value = type;
+        JS_SetOpaque(obj, sv);
+    }
+
+    return obj;
 }
 
-JSPayloadHeader JSB_FreePayload(JSContext *ctx, JSValue val, JSClassID class_id)
+JSPayloadHeader JSB_FreePayload(JSContext *ctx, JSValue val)
 {
-    void *sv = JS_GetOpaque(val, class_id);
+    void *sv = JS_GetOpaque(val, js_bridge_class_id);
     if (sv) 
     {
         JSPayloadHeader header = *(JSPayloadHeader *)sv;
@@ -199,9 +208,9 @@ JSPayloadHeader JSB_FreePayload(JSContext *ctx, JSValue val, JSClassID class_id)
     return _null_payload;
 }
 
-JSPayloadHeader JSB_FreePayloadRT(JSRuntime *rt, JSValue val, JSClassID class_id)
+JSPayloadHeader JSB_FreePayloadRT(JSRuntime *rt, JSValue val)
 {
-    void *sv = JS_GetOpaque(val, class_id);
+    void *sv = JS_GetOpaque(val, js_bridge_class_id);
     if (sv) 
     {
         JSPayloadHeader header = *(JSPayloadHeader *)sv;
@@ -212,9 +221,9 @@ JSPayloadHeader JSB_FreePayloadRT(JSRuntime *rt, JSValue val, JSClassID class_id
     return _null_payload;
 }
 
-JSPayloadHeader jsb_get_payload(JSValue val, JSClassID class_id)
+JSPayloadHeader jsb_get_payload_header(JSValue val)
 {
-    JSPayloadHeader *sv = JS_GetOpaque(val, class_id);
+    JSPayloadHeader *sv = JS_GetOpaque(val, js_bridge_class_id);
     if (sv) 
     {
         return *sv;
@@ -222,7 +231,17 @@ JSPayloadHeader jsb_get_payload(JSValue val, JSClassID class_id)
     return _null_payload;
 }
 
-void jsb_get_floats(JSStructPayload *sv, int n, float *v0) 
+JSPayload *jsb_get_payload(JSValue val)
+{
+    JSPayload *sv = JS_GetOpaque(val, js_bridge_class_id);
+    if (sv) 
+    {
+        return sv;
+    }
+    return 0;
+}
+
+void jsb_get_floats(JSPayload *sv, int n, float *v0) 
 {
     float *ptr = (float *)&(sv->data[0]);
     for (int i = 0; i < n; ++i) 
@@ -231,7 +250,7 @@ void jsb_get_floats(JSStructPayload *sv, int n, float *v0)
     }
 }
 
-void jsb_set_floats(JSStructPayload *sv, int n, float *v0) 
+void jsb_set_floats(JSPayload *sv, int n, float *v0) 
 {
     float *ptr = (float *)&(sv->data[0]);
     for (int i = 0; i < n; ++i) 
@@ -240,21 +259,21 @@ void jsb_set_floats(JSStructPayload *sv, int n, float *v0)
     }
 }
 
-void jsb_get_float_2(JSStructPayload *sv, float *v0, float *v1) 
+void jsb_get_float_2(JSPayload *sv, float *v0, float *v1) 
 {
     float *ptr = (float *)&(sv->data[0]);
     *v0 = ptr[0];
     *v1 = ptr[1];
 }
 
-void jsb_set_float_2(JSStructPayload *sv, float v0, float v1) 
+void jsb_set_float_2(JSPayload *sv, float v0, float v1) 
 {
     float *ptr = (float *)&(sv->data[0]);
     ptr[0] = v0;
     ptr[1] = v1;
 }
 
-void jsb_get_float_3(JSStructPayload *sv, float *v0, float *v1, float *v2) 
+void jsb_get_float_3(JSPayload *sv, float *v0, float *v1, float *v2) 
 {
     float *ptr = (float *)&(sv->data[0]);
     *v0 = ptr[0];
@@ -262,7 +281,7 @@ void jsb_get_float_3(JSStructPayload *sv, float *v0, float *v1, float *v2)
     *v2 = ptr[2];
 }
 
-void jsb_set_float_3(JSStructPayload *sv, float v0, float v1, float v2) 
+void jsb_set_float_3(JSPayload *sv, float v0, float v1, float v2) 
 {
     float *ptr = (float *)&(sv->data[0]);
     ptr[0] = v0;
@@ -270,7 +289,7 @@ void jsb_set_float_3(JSStructPayload *sv, float v0, float v1, float v2)
     ptr[2] = v2;
 }
 
-void jsb_get_float_4(JSStructPayload *sv, float *v0, float *v1, float *v2, float *v3) 
+void jsb_get_float_4(JSPayload *sv, float *v0, float *v1, float *v2, float *v3) 
 {
     float *ptr = (float *)&(sv->data[0]);
     *v0 = ptr[0];
@@ -279,7 +298,7 @@ void jsb_get_float_4(JSStructPayload *sv, float *v0, float *v1, float *v2, float
     *v3 = ptr[3];
 }
 
-void jsb_set_float_4(JSStructPayload *sv, float v0, float v1, float v2, float v3) 
+void jsb_set_float_4(JSPayload *sv, float v0, float v1, float v2, float v3) 
 {
     float *ptr = (float *)&(sv->data[0]);
     ptr[0] = v0;
@@ -288,33 +307,33 @@ void jsb_set_float_4(JSStructPayload *sv, float v0, float v1, float v2, float v3
     ptr[3] = v3;
 }
 
-void jsb_get_int_1(JSStructPayload *sv, int *v0) 
+void jsb_get_int_1(JSPayload *sv, int *v0) 
 {
     int *ptr = (int *)&(sv->data[0]);
     *v0 = ptr[0];
 }
 
-void jsb_set_int_1(JSStructPayload *sv, int v0) 
+void jsb_set_int_1(JSPayload *sv, int v0) 
 {
     int *ptr = (int *)&(sv->data[0]);
     ptr[0] = v0;
 }
 
-void jsb_get_int_2(JSStructPayload *sv, int *v0, int *v1) 
+void jsb_get_int_2(JSPayload *sv, int *v0, int *v1) 
 {
     int *ptr = (int *)&(sv->data[0]);
     *v0 = ptr[0];
     *v1 = ptr[1];
 }
 
-void jsb_set_int_2(JSStructPayload *sv, int v0, int v1) 
+void jsb_set_int_2(JSPayload *sv, int v0, int v1) 
 {
     int *ptr = (int *)&(sv->data[0]);
     ptr[0] = v0;
     ptr[1] = v1;
 }
 
-void jsb_get_int_3(JSStructPayload *sv, int *v0, int *v1, int *v2) 
+void jsb_get_int_3(JSPayload *sv, int *v0, int *v1, int *v2) 
 {
     int *ptr = (int *)&(sv->data[0]);
     *v0 = ptr[0];
@@ -322,7 +341,7 @@ void jsb_get_int_3(JSStructPayload *sv, int *v0, int *v1, int *v2)
     *v2 = ptr[2];
 }
 
-void jsb_set_int_3(JSStructPayload *sv, int v0, int v1, int v2) 
+void jsb_set_int_3(JSPayload *sv, int v0, int v1, int v2) 
 {
     int *ptr = (int *)&(sv->data[0]);
     ptr[0] = v0;
@@ -332,4 +351,9 @@ void jsb_set_int_3(JSStructPayload *sv, int v0, int v1, int v2)
 
 void JSB_Init()
 {
+    if (js_class_id_begin == 0) 
+    {
+        JS_NewClassID(&js_bridge_class_id);
+        JS_NewClassID(&js_class_id_begin);
+    }
 }

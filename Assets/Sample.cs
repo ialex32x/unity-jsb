@@ -35,7 +35,8 @@ _rt = ScriptEngine.CreateRuntime();
 
         public void OnBind(ScriptRuntime runtime, TypeRegister register)
         {
-            Foo.Bind(register);
+            FooBinding.Bind(register);
+            Vector3Binding.Bind(register);
         }
 
         public void OnComplete(ScriptRuntime runtime)

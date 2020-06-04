@@ -32,7 +32,7 @@ namespace QuickJS.Native
             
             if (objectCache != null)
             {
-                objectCache.RemoveObject(payload.header.object_id);
+                objectCache.RemoveObject(payload.object_id);
             }
         }
 
