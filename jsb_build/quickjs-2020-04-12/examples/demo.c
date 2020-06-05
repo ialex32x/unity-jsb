@@ -33,8 +33,17 @@ static JSValue foo_constructor(JSContext *ctx, JSValueConst new_target, int argc
     JSValue obj = JS_NewObjectProtoClass(ctx, proto, unity_object_class_id);
     JS_SetOpaque(obj, (void *)iii);
     JS_FreeValue(ctx, proto);
+    JSB_SetBridgeType(ctx, obj, 233);
     // return new_target;
     return obj;
+}
+
+static JSValue foo_call(JSContext *ctx, JSValueConst this_obj, int argc, JSValueConst *argv)
+{
+    void *data = JS_GetOpaque(this_obj, unity_object_class_id);
+    printf("foo.call %d\n", (int)data);
+    assert(JSB_GetBridgeType(ctx, this_obj) == 233);
+    return JS_UNDEFINED;
 }
 
 static JSValue goo_constructor(JSContext *ctx, JSValueConst new_target, int argc, JSValueConst *argv)
@@ -170,6 +179,12 @@ void foo()
     assert(JSB_GetBridgeType(ctx, foo_constructor_val) == 123);
     JS_DefinePropertyValue(ctx, global_obj, atom_test, foo_constructor_val, JS_PROP_ENUMERABLE | JS_PROP_CONFIGURABLE);
     JSValue foo_prop = JSB_NewPropertyObject(ctx, foo_constructor_val, atom_test, JS_PROP_ENUMERABLE | JS_PROP_CONFIGURABLE);
+
+    JSAtom atom_call = JS_NewAtom(ctx, "call");
+    JSValue foo_call_val = JSB_NewCFunction(ctx, foo_call, atom_call, 0, JS_CFUNC_generic, 0);
+    JS_DefinePropertyValue(ctx, foo_proto_val, atom_call, foo_call_val, JS_PROP_ENUMERABLE | JS_PROP_CONFIGURABLE);
+    JS_FreeAtom(ctx, atom_call);
+
     JS_FreeValue(ctx, foo_prop);
     JS_FreeAtom(ctx, atom_test);
 

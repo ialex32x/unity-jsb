@@ -18,12 +18,13 @@ namespace jsb
     
     public class FooBinding : Values
     {
-        [MonoPInvokeCallback(typeof(JSCFunction))]
-        private static JSValue BindConstructor(JSContext ctx, JSValue new_target, int argc, JSValue[] argv)
+        [MonoPInvokeCallback(typeof(JSCFunctionMagic))]
+        private static JSValue BindConstructor(JSContext ctx, JSValue new_target, int argc, JSValue[] argv, int magic)
         {
             var cache = ScriptEngine.GetObjectCache(ctx);
             var object_id = cache.AddObject(new Foo());
             JSValue obj = JSApi.JSB_NewBridgeClassObject(ctx, new_target, object_id);
+            JSApi.JSB_SetBridgeType(ctx, obj, magic);
             return obj;
         }
 
