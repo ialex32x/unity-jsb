@@ -3,6 +3,8 @@ using System.Collections.Generic;
 
 namespace QuickJS.Utils
 {
+    using Native;
+
     public class ObjectCache
     {
         private class ObjectRef
@@ -15,10 +17,10 @@ namespace QuickJS.Utils
 
         // id => host object
         private List<ObjectRef> _map = new List<ObjectRef>();
-        // host object => jsvalue heapptr (dangerous)
-        private Dictionary<object, IntPtr> _rmap = new Dictionary<object, IntPtr>(EqualityComparer.Default);
-        // weak reference table for delegates
-        private Dictionary<IntPtr, WeakReference> _delegateMap = new Dictionary<IntPtr, WeakReference>();
+        // host object => jsvalue heapptr (dangerous, no ref count)
+        private Dictionary<object, JSValue> _rmap = new Dictionary<object, JSValue>(EqualityComparer.Default);
+        // weak reference table for delegates (dangerous, no ref count)
+        private Dictionary<JSValue, WeakReference> _delegateMap = new Dictionary<JSValue, WeakReference>();
 
         public int GetManagedObjectCount()
         {
@@ -43,7 +45,7 @@ namespace QuickJS.Utils
             _delegateMap.Clear();
         }
 
-        public void AddJSValue(object o, IntPtr heapptr)
+        public void AddJSValue(object o, JSValue heapptr)
         {
             if (o != null)
             {
@@ -51,11 +53,11 @@ namespace QuickJS.Utils
             }
         }
 
-        public bool TryGetJSValue(object o, out IntPtr heapptr)
+        public bool TryGetJSValue(object o, out JSValue heapptr)
         {
             if (o == null)
             {
-                heapptr = IntPtr.Zero;
+                heapptr = JSApi.JS_UNDEFINED;
                 return false;
             }
             return _rmap.TryGetValue(o, out heapptr);
@@ -66,7 +68,7 @@ namespace QuickJS.Utils
             return o != null && _rmap.Remove(o);
         }
 
-        public void AddDelegate(IntPtr jso, ScriptDelegate o)
+        public void AddDelegate(JSValue jso, ScriptDelegate o)
         {
             _delegateMap[jso] = new WeakReference(o);
             // 不能直接保留 o -> jso 的映射 (会产生o的强引用)
@@ -74,7 +76,7 @@ namespace QuickJS.Utils
             // AddJSValue(o, jso); 
         }
 
-        public bool TryGetDelegate(IntPtr jso, out ScriptDelegate o)
+        public bool TryGetDelegate(JSValue jso, out ScriptDelegate o)
         {
             WeakReference weakRef;
             if (_delegateMap.TryGetValue(jso, out weakRef))
@@ -86,7 +88,7 @@ namespace QuickJS.Utils
             return false;
         }
 
-        public bool RemoveDelegate(IntPtr jso)
+        public bool RemoveDelegate(JSValue jso)
         {
             WeakReference weakRef;
             var r = false;
@@ -167,7 +169,7 @@ namespace QuickJS.Utils
                 var entry = _map[id];
                 entry.target = o;
                 // UnityEngine.Debug.LogFormat("[cache] replace object at {0}", id);
-                IntPtr heapptr;
+                JSValue heapptr;
                 if (oldValue != null && _rmap.TryGetValue(oldValue, out heapptr))
                 {
                     _rmap.Remove(oldValue);

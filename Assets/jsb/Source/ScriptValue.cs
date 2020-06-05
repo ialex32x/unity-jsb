@@ -20,6 +20,11 @@ namespace QuickJS
             JSApi.JS_DupValue(context, jsValue);
         }
 
+        public static implicit operator JSValue(ScriptValue value)
+        {
+            return value._jsValue;
+        }
+
         ~ScriptValue()
         {
             Dispose(false);
@@ -51,7 +56,7 @@ namespace QuickJS
         {
             if (obj is ScriptValue)
             {
-                var other = (ScriptValue) obj;
+                var other = (ScriptValue)obj;
                 return other._jsValue.Equals(_jsValue);
             }
 

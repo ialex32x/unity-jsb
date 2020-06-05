@@ -29,7 +29,7 @@ namespace QuickJS.Native
 
         public bool Equals(JSValue other)
         {
-            return other.tag == tag && other.u.int32 == u.int32;
+            return this == other;
         }
         
         public override bool Equals(object obj)
@@ -37,10 +37,27 @@ namespace QuickJS.Native
             if (obj is JSValue)
             {
                 var other = (JSValue) obj;
-                return other.tag == tag && other.u.int32 == u.int32;
+                return this == other;
             }
 
             return false;
+        }
+
+        public static bool operator ==(JSValue a, JSValue b)
+        {
+            if (b.tag == a.tag)
+            {
+                if (a.tag >= 0)
+                {
+                    return a.tag == JSApi.JS_TAG_FLOAT64 ? a.u.float64 == b.u.float64 : a.u.int32 == b.u.int32;
+                }
+            }
+            return false;
+        }
+
+        public static bool operator !=(JSValue a, JSValue b)
+        {
+            return !(a == b);
         }
     }
 }
