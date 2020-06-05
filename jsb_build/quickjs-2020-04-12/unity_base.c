@@ -11,6 +11,8 @@ make
 
 #include "quickjs.h"
 
+#define JS_HIDDEN_PROP(s) ("\xFF" s)
+
 #ifndef FALSE
 enum
 {
@@ -118,6 +120,20 @@ JSValue JSB_NewCFunctionMagic(JSContext *ctx, JSCFunctionMagic *func, JSAtom ato
     JSValue funcVal = JS_NewCFunction2(ctx, (JSCFunction *)func, name, length, cproto, magic);
     JS_FreeCString(ctx, name);
     return funcVal;
+}
+
+JSValue JSB_NewPropertyObject(JSContext *ctx, JSValueConst this_obj, JSAtom atom, int flags)
+{
+    JSValue p = JS_GetProperty(ctx, this_obj, atom);
+    if (JS_IsObject(p))
+    {
+        return p;
+    }
+    JS_FreeValue(ctx, p);
+    p = JS_NewObject(ctx);
+    JS_DupValue(ctx, p);
+    JS_DefinePropertyValue(ctx, this_obj, atom, p, flags);
+    return p;
 }
 
 JSValue JSB_NewPropertyObjectStr(JSContext *ctx, JSValueConst this_obj, const char *name, int flags)
@@ -239,12 +255,29 @@ JSValue JSB_NewBridgeClassValue(JSContext *ctx, JSValue new_target, int32_t size
     return proto;
 }
 
-void JSB_SetBridgeType(JSContext *ctx, JSValue obj, int32_t type)
+JS_BOOL JSB_SetBridgeType(JSContext *ctx, JSValue obj, int32_t type)
 {
-    JSPayload *sv = (JSPayload *)js_mallocz(ctx, sizeof(JSPayloadHeader));
-    sv->header.type_id = JS_BO_TYPE;
-    sv->header.value = type;
-    JS_SetOpaque(obj, sv);
+    if (JS_VALUE_GET_TAG(obj) == JS_TAG_OBJECT) 
+    {
+        JS_SetPropertyStr(ctx, obj, JS_HIDDEN_PROP("type"), JS_NewInt32(ctx, type));
+        return TRUE;
+    }
+    return FALSE;
+}
+
+int32_t JSB_GetBridgeType(JSContext *ctx, JSValue obj)
+{
+    if (JS_VALUE_GET_TAG(obj) == JS_TAG_OBJECT) 
+    {
+        JSValue val = JS_GetPropertyStr(ctx, obj, JS_HIDDEN_PROP("type"));
+        JS_FreeValue(ctx, val);
+        int32_t pres;
+        if (JS_ToInt32(ctx, &pres, val) == 0)
+        {
+            return pres;
+        }
+    }
+    return -1;
 }
 
 // 释放数据, 返回头信息副本

@@ -73,16 +73,18 @@ namespace QuickJS.Binding
 
         private JSValue _AutoProperty(string name)
         {
-            var this_obj = _context.GetGlobalObject();
-            var ns = JSApi.JSB_NewPropertyObjectStr(_context, this_obj, name, JSPropFlags.JS_PROP_C_W_E);
-            JSApi.JS_FreeValue(_context, this_obj);
+            var globalObject = _context.GetGlobalObject();
+            var nameAtom = GetAtom(name);
+            var ns = JSApi.JSB_NewPropertyObject(_context, globalObject, nameAtom, JSPropFlags.JS_PROP_C_W_E);
+            JSApi.JS_FreeValue(_context, globalObject);
             return ns;
         }
 
-        private JSValue _AutoProperty(JSValue this_obj, string name)
+        private JSValue _AutoProperty(JSValue thisObject, string name)
         {
-            var ns = JSApi.JSB_NewPropertyObjectStr(_context, this_obj, name, JSPropFlags.JS_PROP_C_W_E);
-            JSApi.JS_FreeValue(_context, this_obj);
+            var nameAtom = GetAtom(name);
+            var ns = JSApi.JSB_NewPropertyObject(_context, thisObject, nameAtom, JSPropFlags.JS_PROP_C_W_E);
+            JSApi.JS_FreeValue(_context, thisObject);
             return ns;
         }
 
@@ -124,17 +126,18 @@ namespace QuickJS.Binding
 
         public void Cleanup()
         {
+            JSContext ctx = _context;
             foreach (var kv in _atoms)
             {
                 var atom = kv.Value;
-                JSApi.JS_FreeAtom(_context, atom);
+                JSApi.JS_FreeAtom(ctx, atom);
             }
 
 
             foreach (var kv in _prototypes)
             {
                 var jsValue = kv.Value;
-                JSApi.JS_FreeValue(_context, jsValue);
+                JSApi.JS_FreeValue(ctx, jsValue);
             }
 
             _atoms.Clear();

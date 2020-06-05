@@ -6,6 +6,7 @@ namespace QuickJS.Native
 {
     using int32_t = Int32;
     using uint32_t = UInt32;
+    using JS_BOOL = Int32;
     
     public partial class JSApi
     {
@@ -24,8 +25,11 @@ namespace QuickJS.Native
         public static extern JSValue JSB_NewBridgeClassValue(JSContext ctx, JSValue new_target, int32_t size);
 
         [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern void JSB_SetBridgeType(JSContext ctx, JSValue obj, int32_t type);
+        public static extern JS_BOOL JSB_SetBridgeType(JSContext ctx, JSValue obj, int32_t type);
 
+        [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern int32_t JSB_GetBridgeType(JSContext ctx, JSValue obj);
+        
         // !!!
 
         [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]

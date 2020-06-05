@@ -150,6 +150,10 @@ namespace QuickJS.Native
             [MarshalAs(UnmanagedType.LPStr)] string name, JSPropFlags flags);
 
         [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern JSValue JSB_NewPropertyObject(JSContext ctx, JSValueConst this_obj,
+            JSAtom name, JSPropFlags flags);
+
+        [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern JSValue JS_GetPropertyStr(JSContext ctx, JSValueConst this_obj,
             [MarshalAs(UnmanagedType.LPStr)] string prop);
 

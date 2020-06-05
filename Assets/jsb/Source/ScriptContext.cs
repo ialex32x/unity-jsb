@@ -72,12 +72,6 @@ namespace QuickJS
             return JSApi.JS_GetGlobalObject(_ctx);
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public JSValue NewObject()
-        {
-            return JSApi.JS_NewObject(_ctx);
-        }
-
         #region Builtins
 
         public void print_exception()

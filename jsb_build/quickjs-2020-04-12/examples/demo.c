@@ -1,17 +1,19 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <assert.h>
 #include "../quickjs.h"
 #include "../quickjs-libc.h"
+#include "../unity_base.c"
 
-enum
-{
-    JS_ATOM_NULL,
-#define DEF(name, str) JS_ATOM_##name,
-#include "../quickjs-atom.h"
-#undef DEF
-    JS_ATOM_END,
-};
+// enum
+// {
+//     JS_ATOM_NULL,
+// #define DEF(name, str) JS_ATOM_##name,
+// #include "../quickjs-atom.h"
+// #undef DEF
+//     JS_ATOM_END,
+// };
 
 static int running = 1;
 static JSClassID unity_object_class_id;
@@ -133,6 +135,7 @@ static JSModuleDef *js_module_loader_test(JSContext *ctx,
 
 void foo()
 {
+    JSB_Init();
     JSRuntime *rt = JS_NewRuntime();
     JSContext *ctx = JS_NewContext(rt);
 
@@ -157,12 +160,18 @@ void foo()
     JS_SetPropertyStr(ctx, global_obj, "print", JS_NewCFunction(ctx, js_print, "print", 1));
     JS_SetPropertyStr(ctx, global_obj, "quit", JS_NewCFunction(ctx, js_quit, "quit", 0));
 
+    JSAtom atom_test = JS_NewAtom(ctx, "Foo");
     JSValue foo_proto_val = JS_NewObject(ctx);
-    JSValue foo_constructor_val = JS_NewCFunction2(ctx, foo_constructor, "Foo", 0, JS_CFUNC_constructor, 0);
+    JSValue foo_constructor_val = JSB_NewCFunction(ctx, foo_constructor, atom_test, 0, JS_CFUNC_constructor, 0);
     JS_SetConstructor(ctx, foo_constructor_val, foo_proto_val);
     // JS_SetClassProto(ctx, cls_id, foo_proto_val);
     // JS_SetPrototype( __this_is_super_base_class__ );
-    JS_DefinePropertyValueStr(ctx, global_obj, "Foo", foo_constructor_val, JS_PROP_ENUMERABLE | JS_PROP_CONFIGURABLE);
+    JSB_SetBridgeType(ctx, foo_constructor_val, 123);
+    assert(JSB_GetBridgeType(ctx, foo_constructor_val) == 123);
+    JS_DefinePropertyValue(ctx, global_obj, atom_test, foo_constructor_val, JS_PROP_ENUMERABLE | JS_PROP_CONFIGURABLE);
+    JSValue foo_prop = JSB_NewPropertyObject(ctx, foo_constructor_val, atom_test, JS_PROP_ENUMERABLE | JS_PROP_CONFIGURABLE);
+    JS_FreeValue(ctx, foo_prop);
+    JS_FreeAtom(ctx, atom_test);
 
     JSValue goo_proto_val = JS_NewObject(ctx);
     JSValue goo_constructor_val = JS_NewCFunction2(ctx, goo_constructor, "Goo", 0, JS_CFUNC_constructor, 0);

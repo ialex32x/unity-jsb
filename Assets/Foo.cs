@@ -46,7 +46,7 @@ namespace jsb
         public static void Bind(TypeRegister register)
         {
             var ns = register.CreateNamespace("jsb");
-            var cls = ns.CreateClass("Foo", typeof(FooBinding), BindConstructor);
+            var cls = ns.CreateClass("Foo", typeof(Foo), BindConstructor);
             cls.AddMethod(false, "Test", BindTest, 0);
             cls.AddConstValue("greet", "hello, world");
             cls.Close();
