@@ -257,7 +257,7 @@ JSValue JSB_NewBridgeClassValue(JSContext *ctx, JSValue new_target, int32_t size
 
 JS_BOOL JSB_SetBridgeType(JSContext *ctx, JSValue obj, int32_t type)
 {
-    if (JS_VALUE_GET_TAG(obj) == JS_TAG_OBJECT) 
+    if (JS_VALUE_GET_TAG(obj) == JS_TAG_OBJECT)
     {
         JS_SetPropertyStr(ctx, obj, JS_HIDDEN_PROP("type"), JS_NewInt32(ctx, type));
         return TRUE;
@@ -267,7 +267,7 @@ JS_BOOL JSB_SetBridgeType(JSContext *ctx, JSValue obj, int32_t type)
 
 int32_t JSB_GetBridgeType(JSContext *ctx, JSValue obj)
 {
-    if (JS_VALUE_GET_TAG(obj) == JS_TAG_OBJECT) 
+    if (JS_VALUE_GET_TAG(obj) == JS_TAG_OBJECT)
     {
         JSValue val = JS_GetPropertyStr(ctx, obj, JS_HIDDEN_PROP("type"));
         JS_FreeValue(ctx, val);
@@ -327,7 +327,7 @@ JSPayload *jsb_get_payload(JSValue val)
     return 0;
 }
 
-void jsb_get_floats(JSValue val, int n, float *v0)
+JS_BOOL jsb_get_floats(JSValue val, int n, float *v0)
 {
     JSPayload *sv = JS_GetOpaque(val, js_bridge_class_id);
     if (sv)
@@ -337,10 +337,12 @@ void jsb_get_floats(JSValue val, int n, float *v0)
         {
             *(v0 + i) = ptr[0];
         }
+        return TRUE;
     }
+    return FALSE;
 }
 
-void jsb_set_floats(JSValue val, int n, float *v0)
+JS_BOOL jsb_set_floats(JSValue val, int n, float *v0)
 {
     JSPayload *sv = JS_GetOpaque(val, js_bridge_class_id);
     if (sv)
@@ -350,10 +352,12 @@ void jsb_set_floats(JSValue val, int n, float *v0)
         {
             ptr[i] = *(v0 + i);
         }
+        return TRUE;
     }
+    return FALSE;
 }
 
-void jsb_get_float_2(JSValue val, float *v0, float *v1)
+JS_BOOL jsb_get_float_2(JSValue val, float *v0, float *v1)
 {
     JSPayload *sv = JS_GetOpaque(val, js_bridge_class_id);
     if (sv)
@@ -361,10 +365,12 @@ void jsb_get_float_2(JSValue val, float *v0, float *v1)
         float *ptr = (float *)&(sv->data[0]);
         *v0 = ptr[0];
         *v1 = ptr[1];
+        return TRUE;
     }
+    return FALSE;
 }
 
-void jsb_set_float_2(JSValue val, float v0, float v1)
+JS_BOOL jsb_set_float_2(JSValue val, float v0, float v1)
 {
     JSPayload *sv = JS_GetOpaque(val, js_bridge_class_id);
     if (sv)
@@ -372,10 +378,12 @@ void jsb_set_float_2(JSValue val, float v0, float v1)
         float *ptr = (float *)&(sv->data[0]);
         ptr[0] = v0;
         ptr[1] = v1;
+        return TRUE;
     }
+    return FALSE;
 }
 
-void jsb_get_float_3(JSValue val, float *v0, float *v1, float *v2)
+JS_BOOL jsb_get_float_3(JSValue val, float *v0, float *v1, float *v2)
 {
     JSPayload *sv = JS_GetOpaque(val, js_bridge_class_id);
     if (sv)
@@ -384,10 +392,12 @@ void jsb_get_float_3(JSValue val, float *v0, float *v1, float *v2)
         *v0 = ptr[0];
         *v1 = ptr[1];
         *v2 = ptr[2];
+        return TRUE;
     }
+    return FALSE;
 }
 
-void jsb_set_float_3(JSValue val, float v0, float v1, float v2)
+JS_BOOL jsb_set_float_3(JSValue val, float v0, float v1, float v2)
 {
     JSPayload *sv = JS_GetOpaque(val, js_bridge_class_id);
     if (sv)
@@ -396,10 +406,12 @@ void jsb_set_float_3(JSValue val, float v0, float v1, float v2)
         ptr[0] = v0;
         ptr[1] = v1;
         ptr[2] = v2;
+        return TRUE;
     }
+    return FALSE;
 }
 
-void jsb_get_float_4(JSValue val, float *v0, float *v1, float *v2, float *v3)
+JS_BOOL jsb_get_float_4(JSValue val, float *v0, float *v1, float *v2, float *v3)
 {
     JSPayload *sv = JS_GetOpaque(val, js_bridge_class_id);
     if (sv)
@@ -409,10 +421,12 @@ void jsb_get_float_4(JSValue val, float *v0, float *v1, float *v2, float *v3)
         *v1 = ptr[1];
         *v2 = ptr[2];
         *v3 = ptr[3];
+        return TRUE;
     }
+    return FALSE;
 }
 
-void jsb_set_float_4(JSValue val, float v0, float v1, float v2, float v3)
+JS_BOOL jsb_set_float_4(JSValue val, float v0, float v1, float v2, float v3)
 {
     JSPayload *sv = JS_GetOpaque(val, js_bridge_class_id);
     if (sv)
@@ -422,30 +436,36 @@ void jsb_set_float_4(JSValue val, float v0, float v1, float v2, float v3)
         ptr[1] = v1;
         ptr[2] = v2;
         ptr[3] = v3;
+        return TRUE;
     }
+    return FALSE;
 }
 
-void jsb_get_int_1(JSValue val, int *v0)
+JS_BOOL jsb_get_int_1(JSValue val, int *v0)
 {
     JSPayload *sv = JS_GetOpaque(val, js_bridge_class_id);
     if (sv)
     {
         int *ptr = (int *)&(sv->data[0]);
         *v0 = ptr[0];
+        return TRUE;
     }
+    return FALSE;
 }
 
-void jsb_set_int_1(JSValue val, int v0)
+JS_BOOL jsb_set_int_1(JSValue val, int v0)
 {
     JSPayload *sv = JS_GetOpaque(val, js_bridge_class_id);
     if (sv)
     {
         int *ptr = (int *)&(sv->data[0]);
         ptr[0] = v0;
+        return TRUE;
     }
+    return FALSE;
 }
 
-void jsb_get_int_2(JSValue val, int *v0, int *v1)
+JS_BOOL jsb_get_int_2(JSValue val, int *v0, int *v1)
 {
     JSPayload *sv = JS_GetOpaque(val, js_bridge_class_id);
     if (sv)
@@ -453,10 +473,12 @@ void jsb_get_int_2(JSValue val, int *v0, int *v1)
         int *ptr = (int *)&(sv->data[0]);
         *v0 = ptr[0];
         *v1 = ptr[1];
+        return TRUE;
     }
+    return FALSE;
 }
 
-void jsb_set_int_2(JSValue val, int v0, int v1)
+JS_BOOL jsb_set_int_2(JSValue val, int v0, int v1)
 {
     JSPayload *sv = JS_GetOpaque(val, js_bridge_class_id);
     if (sv)
@@ -464,10 +486,12 @@ void jsb_set_int_2(JSValue val, int v0, int v1)
         int *ptr = (int *)&(sv->data[0]);
         ptr[0] = v0;
         ptr[1] = v1;
+        return TRUE;
     }
+    return FALSE;
 }
 
-void jsb_get_int_3(JSValue val, int *v0, int *v1, int *v2)
+JS_BOOL jsb_get_int_3(JSValue val, int *v0, int *v1, int *v2)
 {
     JSPayload *sv = JS_GetOpaque(val, js_bridge_class_id);
     if (sv)
@@ -476,10 +500,12 @@ void jsb_get_int_3(JSValue val, int *v0, int *v1, int *v2)
         *v0 = ptr[0];
         *v1 = ptr[1];
         *v2 = ptr[2];
+        return TRUE;
     }
+    return FALSE;
 }
 
-void jsb_set_int_3(JSValue val, int v0, int v1, int v2)
+JS_BOOL jsb_set_int_3(JSValue val, int v0, int v1, int v2)
 {
     JSPayload *sv = JS_GetOpaque(val, js_bridge_class_id);
     if (sv)
@@ -488,7 +514,9 @@ void jsb_set_int_3(JSValue val, int v0, int v1, int v2)
         ptr[0] = v0;
         ptr[1] = v1;
         ptr[2] = v2;
+        return TRUE;
     }
+    return FALSE;
 }
 
 void JSB_Init()

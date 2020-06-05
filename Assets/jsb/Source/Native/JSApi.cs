@@ -16,6 +16,7 @@ namespace QuickJS.Native
     using int32_t = Int32;
     using uint32_t = UInt32;
     using int64_t = Int64;
+    using uint64_t = UInt64;
 
 #if UNITY_EDITOR_WIN || UNITY_STANDALONE_WIN
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
@@ -88,13 +89,13 @@ namespace QuickJS.Native
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool JS_VALUE_HAS_REF_COUNT(JSValue v)
         {
-            return (ulong) v.tag >= unchecked((ulong) JS_TAG_FIRST);
+            return (ulong)v.tag >= unchecked((ulong)JS_TAG_FIRST);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static JSValue JS_MKVAL(long tag, int val)
         {
-            return new JSValue() {u = new JSValueUnion() {int32 = val}, tag = tag};
+            return new JSValue() { u = new JSValueUnion() { int32 = val }, tag = tag };
         }
 
         public static readonly JSValue JS_NULL = JS_MKVAL(JS_TAG_NULL, 0);
@@ -134,6 +135,8 @@ namespace QuickJS.Native
         public static extern int JS_IsInstanceOf(JSContext ctx, JSValueConst val, JSValueConst obj);
 
         #region property
+        [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern JSValue JS_GetPropertyUint32(JSContext ctx, JSValueConst this_obj, uint32_t idx);
 
         [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern JSValue JS_GetPropertyInternal(JSContext ctx, JSValueConst obj, JSAtom prop,
@@ -292,7 +295,7 @@ namespace QuickJS.Native
             JSValue v;
             if (val <= 0x7fffffff)
             {
-                v = JS_NewInt32(ctx, (int) val);
+                v = JS_NewInt32(ctx, (int)val);
             }
             else
             {
@@ -363,6 +366,7 @@ namespace QuickJS.Native
         [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern JSValue JS_NewArray(JSContext ctx);
 
+        /* return -1 if exception (proxy case) or TRUE/FALSE */
         [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern int JS_IsArray(JSContext ctx, JSValueConst val);
 
@@ -449,7 +453,7 @@ namespace QuickJS.Native
 
         public static int JS_SetProperty(JSContext ctx, JSValueConst this_obj, JSAtom prop, JSValue val)
         {
-            return JS_SetPropertyInternal(ctx, this_obj, prop, val, (int) JSPropFlags.JS_PROP_THROW);
+            return JS_SetPropertyInternal(ctx, this_obj, prop, val, (int)JSPropFlags.JS_PROP_THROW);
         }
 
         [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
@@ -507,9 +511,19 @@ namespace QuickJS.Native
         [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern JS_BOOL JS_IsLiveObject(JSRuntime rt, JSValueConst obj);
 
+        [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern int JS_ToBool(JSContext ctx, JSValueConst val);
+
         // 返回 <0 表示失败
         [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern int JS_ToInt32(JSContext ctx, out int pres, JSValue val);
+
+        [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern int JS_ToInt64(JSContext ctx, out int64_t pres, JSValueConst val);
+        [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern int JS_ToIndex(JSContext ctx, out uint64_t plen, JSValueConst val);
+        [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern int JS_ToFloat64(JSContext ctx, out double pres, JSValueConst val);
 
         [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern uint32_t JSB_ToUint32z(JSContext ctx, JSValueConst val);
@@ -527,7 +541,7 @@ namespace QuickJS.Native
             fixed (byte* input_ptr = input_bytes)
             fixed (byte* fn_ptr = fn_bytes)
             {
-                var input_len = (size_t) (input_bytes.Length - 1);
+                var input_len = (size_t)(input_bytes.Length - 1);
                 // return JS_Eval(ctx, input_ptr, input_len, fn_ptr, JSEvalFlags.JS_EVAL_TYPE_GLOBAL);
                 return JS_Eval(ctx, input_ptr, input_len, fn_ptr,
                     JSEvalFlags.JS_EVAL_TYPE_MODULE | JSEvalFlags.JS_EVAL_FLAG_STRICT);
@@ -648,6 +662,11 @@ namespace QuickJS.Native
         public static readonly JSAtom JS_ATOM_lineNumber = JSB_ATOM_lineNumber();
 
         [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern JSAtom JSB_ATOM_length();
+
+        public static readonly JSAtom JS_ATOM_length = JSB_ATOM_length();
+
+        [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern JSAtom JSB_ATOM_stack();
 
         public static readonly JSAtom JS_ATOM_stack = JSB_ATOM_stack();
@@ -733,6 +752,13 @@ namespace QuickJS.Native
                 return JSApi.js_strndup(ctx, ptr, bytes.Length - 1);
             }
         }
+
+        #endregion
+
+        #region array buffer
+
+        [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern IntPtr JS_GetArrayBuffer(JSContext ctx, out size_t psize, JSValueConst obj);
 
         #endregion
     }

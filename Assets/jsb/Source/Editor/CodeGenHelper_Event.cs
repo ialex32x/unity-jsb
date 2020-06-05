@@ -82,7 +82,7 @@ namespace QuickJS.Editor
             var eventInfo = this.eventBindingInfo.eventInfo;
             var declaringType = eventInfo.DeclaringType;
             var tsFieldVar = BindingManager.GetTSVariable(eventBindingInfo.regName);
-            this.cg.cs.AppendLine("DuktapeDLL.duk_push_this(ctx);");
+            // this.cg.cs.AppendLine("DuktapeDLL.duk_push_this(ctx);");
             this.cg.cs.AppendLine($"duk_add_event_instanced(ctx, \"{tsFieldVar}\", {this.eventBindingInfo.adderName}, {this.eventBindingInfo.removerName}, -1);");
             this.cg.cs.AppendLine("DuktapeDLL.duk_remove(ctx, -2);");
             this.cg.cs.AppendLine("return 1;");

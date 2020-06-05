@@ -29,6 +29,11 @@ namespace QuickJS
             return _runtime.GetObjectCache();
         }
 
+        public static TypeDB GetTypeDB(JSContext ctx)
+        {
+            return _runtime.GetTypeDB();
+        }
+
         public static ScriptRuntime GetRuntime(JSContext ctx)
         {
             return _runtime;

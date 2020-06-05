@@ -68,7 +68,7 @@ namespace QuickJS.Editor
                                 this.bindingManager.OnPostGenerateDelegate(bindingInfo);
                             }
 
-                            this.tsDeclare.AppendLine("declare namespace QuickJS.EditorJS {");
+                            this.tsDeclare.AppendLine("declare namespace QuickJS.Internal {");
                             this.tsDeclare.AddTabLevel();
                             // this.jsSource.AppendLine($"// dummy code");
                             foreach (var spec in specs)
@@ -250,7 +250,7 @@ namespace QuickJS.Editor
             {
                 caller = "self";
                 this.cs.AppendLine($"{this.bindingManager.GetCSTypeFullName(declaringType)} {caller};");
-                this.cs.AppendLine($"DuktapeDLL.duk_push_this(ctx);");
+                // this.cs.AppendLine($"DuktapeDLL.duk_push_this(ctx);");
                 this.cs.AppendLine(this.bindingManager.GetDuktapeGetter(declaringType, "ctx", "-1", caller));
                 this.cs.AppendLine($"DuktapeDLL.duk_pop(ctx);");
             }
@@ -282,7 +282,7 @@ namespace QuickJS.Editor
             {
                 caller = "self";
                 this.cs.AppendLine($"{this.bindingManager.GetCSTypeFullName(declaringType)} {caller};");
-                this.cs.AppendLine($"DuktapeDLL.duk_push_this(ctx);");
+                // this.cs.AppendLine($"DuktapeDLL.duk_push_this(ctx);");
                 this.cs.AppendLine(this.bindingManager.GetDuktapeGetter(declaringType, "ctx", "-1", caller));
                 this.cs.AppendLine($"DuktapeDLL.duk_pop(ctx);");
             }

@@ -124,6 +124,11 @@ namespace QuickJS
             runner.OnComplete(this);
         }
 
+        public IO.ByteBufferAllocator GetByteBufferAllocator()
+        {
+            return _byteBufferAllocator;
+        }
+
         public TimerManager GetTimerManager()
         {
             return _timerManager;

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
 using AOT;
@@ -31,6 +32,7 @@ namespace QuickJS.Native
             }
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static string GetString(JSContext ctx, JSValue val)
         {
             size_t len;
@@ -45,6 +47,7 @@ namespace QuickJS.Native
             return str;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static string GetString(IntPtr ptr, int len)
         {
             var str = Marshal.PtrToStringAnsi(ptr, len);

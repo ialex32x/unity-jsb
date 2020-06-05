@@ -9,7 +9,7 @@ using System.Reflection;
 namespace QuickJS.Utils
 {
     using UnityEngine;
-    
+
     public class TypeDB
     {
         private Dictionary<Type, MethodInfo> _delegates = new Dictionary<Type, MethodInfo>(); // 委托对应的 duktape 绑定函数
@@ -21,9 +21,9 @@ namespace QuickJS.Utils
             get { return _types.Count; }
         }
 
-        public Type this[int index]
+        public Type GetType(int index)
         {
-            get { return _types[index]; }
+            return _types[index];
         }
 
         public void AddDelegate(Type type, MethodInfo method)

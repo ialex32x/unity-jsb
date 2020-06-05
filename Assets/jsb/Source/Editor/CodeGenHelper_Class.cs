@@ -33,9 +33,9 @@ namespace QuickJS.Editor
             // 构造函数
             if (this.bindingInfo.constructors.available)
             {
-                using (new PInvokeGuardCodeGen(cg))
+                using (new PInvokeGuardCodeGen(cg, typeof(Native.JSCFunctionMagic)))
                 {
-                    using (new BindingFuncDeclareCodeGen(cg, this.bindingInfo.constructors.name))
+                    using (new BindingConstructorDeclareCodeGen(cg, this.bindingInfo.constructors.name))
                     {
                         using (new TryCatchGuradCodeGen(cg))
                         {

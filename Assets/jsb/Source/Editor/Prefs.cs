@@ -25,7 +25,7 @@ namespace QuickJS.Editor
         public string typeBindingPrefix = "QuickJS_";
 
         // 生成的绑定类所在命名空间
-        public string ns = "QuickJS";
+        public string ns = "jsb";
 
         public List<string> cleanupDir = new List<string>(new string[]
         {

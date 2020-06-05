@@ -428,7 +428,6 @@ namespace QuickJS.Editor
                 if (parametersByRef.Count > 0)
                 {
                     _WriteBackParametersByRef(isExtension, parametersByRef);
-
                 }
                 if (!method.IsStatic && method.DeclaringType.IsValueType) // struct 非静态方法 检查 Mutable 属性
                 {
@@ -437,7 +436,7 @@ namespace QuickJS.Editor
                         cg.cs.AppendLine($"duk_rebind_this(ctx, {caller});");
                     }
                 }
-                cg.cs.AppendLine("return 0;");
+                cg.cs.AppendLine("return JSApi.JS_UNDEFINED;");
             }
             else
             {
@@ -483,6 +482,17 @@ namespace QuickJS.Editor
             return null;
         }
 
+        // 写入默认构造函数 (struct 无参构造)
+        private void WriteDefaultConstructorBinding()
+        {
+            var decalringTypeName = this.cg.bindingManager.GetCSTypeFullName(this.bindingInfo.decalringType);
+            this.cg.cs.AppendLine("var o = new {0}();", decalringTypeName);
+            this.cg.cs.AppendLine("var val = NewBridgeClassObject(ctx, new_target, o, magic);");
+            this.cg.cs.AppendLine("return val;");
+
+            this.cg.tsDeclare.AppendLine($"{this.bindingInfo.regName}()");
+        }
+
         protected override string GetInvokeBinding(string caller, ConstructorInfo method, bool hasParams, bool isExtension, string nargs, ParameterInfo[] parameters, List<ParameterInfo> parametersByRef)
         {
             var arglist = this.AppendGetParameters(hasParams, nargs, parameters, parametersByRef);
@@ -492,7 +502,7 @@ namespace QuickJS.Editor
 
         protected override void EndInvokeBinding()
         {
-            this.cg.cs.AppendLine("duk_bind_native(ctx, o);");
+            this.cg.cs.AppendLine("var val = NewBridgeClassObject(ctx, new_target, o, magic);");
         }
 
         public ConstructorCodeGen(CodeGenerator cg, TypeBindingInfo bindingInfo)
@@ -535,17 +545,6 @@ namespace QuickJS.Editor
         //         this.cg.cs.AppendLine("DuktapeDLL.duk_pop(ctx);");
         //     }
         // }
-
-        // 写入默认构造函数 (struct 无参构造)
-        private void WriteDefaultConstructorBinding()
-        {
-            var decalringTypeName = this.cg.bindingManager.GetCSTypeFullName(this.bindingInfo.decalringType);
-            this.cg.cs.AppendLine($"var o = new {decalringTypeName}();");
-            this.cg.cs.AppendLine("duk_bind_native(ctx, o);");
-            this.cg.cs.AppendLine("return 0;");
-
-            this.cg.tsDeclare.AppendLine($"{this.bindingInfo.regName}()");
-        }
     }
 
     // 生成成员方法绑定代码
