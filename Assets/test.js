@@ -1,10 +1,10 @@
-﻿
-// import { fib } from "./fib_module.js";
+﻿// import { fib } from "./fib_module.js";
 import {fib} from "Assets/fib.js";
 
 print(jsb);
 print(jsb.Foo);
-print(new jsb.Foo());
+let foo = new jsb.Foo();
+print(foo);
 print(123, 456);
 
 // print(new jsb.Goo());
@@ -35,6 +35,11 @@ setTimeout(() => {
 let v3 = new jsb.Vector3();
 v3.Test();
 v3.Test();
+
+print("foo instanceof jsb.Foo:", foo instanceof jsb.Foo);
+print("foo instanceof jsb.Vector3:", foo instanceof jsb.Vector3);
+print("v3 instanceof jsb.Vector3:", v3 instanceof jsb.Vector3);
+print("v3 instanceof jsb.Foo:", v3 instanceof jsb.Foo);
 
 print("end of script");
 

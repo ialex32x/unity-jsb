@@ -9,21 +9,18 @@ namespace jsb
 {
     public class Vector3Binding : Values
     {
-        [MonoPInvokeCallback(typeof(JSCFunctionMagic))]
-        private static JSValue BindConstructor(JSContext ctx, JSValue new_target, int argc, JSValue[] argv, int magic)
+        [MonoPInvokeCallback(typeof(JSCFunction))]
+        private static JSValue BindConstructor(JSContext ctx, JSValue new_target, int argc, JSValue[] argv)
         {
-            var cache = ScriptEngine.GetObjectCache(ctx);
             JSValue obj = JSApi.JSB_NewBridgeClassValue(ctx, new_target, sizeof(float) * 3);
             JSApi.jsb_set_float_3(obj, 1f, 2f, 3f);
             return obj;
         }
 
-        [MonoPInvokeCallback(typeof(JSCFunctionMagic))]
-        private static JSValue BindTest(JSContext ctx, JSValue this_obj, int argc, JSValue[] argv, int magic)
+        [MonoPInvokeCallback(typeof(JSCFunction))]
+        private static JSValue BindTest(JSContext ctx, JSValue this_obj, int argc, JSValue[] argv)
         {
             var rt = ScriptEngine.GetRuntime(ctx);
-            var cache = rt.GetObjectCache();
-
             float x, y, z;
             JSApi.jsb_get_float_3(this_obj, out x, out y, out z);
             JSApi.jsb_set_float_3(this_obj, 1f + x, 1f + y, 1f + z);
@@ -35,7 +32,7 @@ namespace jsb
         {
             var ns = register.CreateNamespace("jsb");
             var cls = ns.CreateClass("Vector3", typeof(Vector3), BindConstructor);
-            cls.AddMethod("Test", BindTest, 0, false);
+            cls.AddMethod(false, "Test", BindTest, 0);
             cls.Close();
             ns.Close();
         }

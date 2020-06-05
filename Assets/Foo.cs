@@ -18,8 +18,8 @@ namespace jsb
     
     public class FooBinding : Values
     {
-        [MonoPInvokeCallback(typeof(JSCFunctionMagic))]
-        private static JSValue BindConstructor(JSContext ctx, JSValue new_target, int argc, JSValue[] argv, int magic)
+        [MonoPInvokeCallback(typeof(JSCFunction))]
+        private static JSValue BindConstructor(JSContext ctx, JSValue new_target, int argc, JSValue[] argv)
         {
             var cache = ScriptEngine.GetObjectCache(ctx);
             var object_id = cache.AddObject(new Foo());
@@ -27,8 +27,8 @@ namespace jsb
             return obj;
         }
 
-        [MonoPInvokeCallback(typeof(JSCFunctionMagic))]
-        private static JSValue BindTest(JSContext ctx, JSValue this_obj, int argc, JSValue[] argv, int magic)
+        [MonoPInvokeCallback(typeof(JSCFunction))]
+        private static JSValue BindTest(JSContext ctx, JSValue this_obj, int argc, JSValue[] argv)
         {
             var rt = ScriptEngine.GetRuntime(ctx);
             var cache = rt.GetObjectCache();
@@ -47,7 +47,7 @@ namespace jsb
         {
             var ns = register.CreateNamespace("jsb");
             var cls = ns.CreateClass("Foo", typeof(FooBinding), BindConstructor);
-            cls.AddMethod("Test", BindTest, 0, false);
+            cls.AddMethod(false, "Test", BindTest, 0);
             cls.AddConstValue("greet", "hello, world");
             cls.Close();
             ns.Close();

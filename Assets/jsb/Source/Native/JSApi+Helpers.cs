@@ -7,8 +7,8 @@ namespace QuickJS.Native
 {
     public partial class JSApi
     {
-        [MonoPInvokeCallback(typeof(JSCFunctionMagic))]
-        public static JSValue class_private_ctor(JSContext ctx, JSValue new_target, int argc, JSValue[] argv, int magic)
+        [MonoPInvokeCallback(typeof(JSCFunction))]
+        public static JSValue class_private_ctor(JSContext ctx, JSValue new_target, int argc, JSValue[] argv)
         {
             JSApi.JS_ThrowInternalError(ctx, "cant call constructor on this type");
             return JSApi.JS_UNDEFINED;

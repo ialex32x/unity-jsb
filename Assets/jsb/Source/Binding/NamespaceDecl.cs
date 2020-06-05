@@ -7,19 +7,19 @@ namespace QuickJS.Binding
     {
         private TypeRegister _register;
         private JSValue _nsValue;
-        
+
         public NamespaceDecl(TypeRegister register, JSValue jsNsValue)
         {
             _register = register;
             _nsValue = jsNsValue;
         }
-        
+
         public void Close()
         {
             JSApi.JS_FreeValue(_register, _nsValue);
             _nsValue = JSApi.JS_UNDEFINED;
         }
-        
+
         public void AddFunction(string name, JSCFunctionMagic func, int length)
         {
             var ctx = _register.GetContext();
@@ -36,20 +36,38 @@ namespace QuickJS.Binding
             JSApi.JS_DefinePropertyValueStr(ctx, _nsValue, name, cfun, JSPropFlags.JS_PROP_C_W_E);
         }
 
-        public ClassDecl CreateClass(string typename, Type type, JSCFunctionMagic ctor)
+        public ClassDecl CreateClass(string typename, Type type, JSCFunction ctorFunc)
         {
             var ctx = _register.GetContext();
-            var runtime = ctx.GetRuntime();
-            var proto_val = ctx.NewObject();
-            var type_id = _register.Add(type, proto_val);
-            var ctor_val =
-                JSApi.JS_NewCFunctionMagic(ctx, ctor, typename, 0, JSCFunctionEnum.JS_CFUNC_constructor_magic, type_id);
-            var decl = new ClassDecl(_register, JSApi.JS_DupValue(_register, ctor_val), JSApi.JS_DupValue(_register, proto_val));
-            JSApi.JS_SetConstructor(ctx, ctor_val, proto_val);
-            // JSApi.JS_SetClassProto(ctx, class_id, proto_val);
-            JSApi.JS_DefinePropertyValueStr(ctx, _nsValue, typename, ctor_val,
+            var protoVal = ctx.NewObject();
+            var type_id = _register.Add(type, protoVal);
+            var ctorVal =
+                JSApi.JS_NewCFunction2(ctx, ctorFunc, typename, 0, JSCFunctionEnum.JS_CFUNC_constructor, 0);
+            var decl = new ClassDecl(_register, JSApi.JS_DupValue(_register, ctorVal),
+                JSApi.JS_DupValue(_register, protoVal));
+            JSApi.JS_SetConstructor(ctx, ctorVal, protoVal);
+            JSApi.JSB_SetBridgeType(ctx, ctorVal, type_id);
+            JSApi.JS_DefinePropertyValueStr(ctx, _nsValue, typename, ctorVal,
                 JSPropFlags.JS_PROP_ENUMERABLE | JSPropFlags.JS_PROP_CONFIGURABLE);
-            JSApi.JS_FreeValue(ctx, proto_val);
+            JSApi.JS_FreeValue(ctx, protoVal);
+            return decl;
+        }
+
+        public ClassDecl CreateClass(string typename, Type type, JSCFunctionMagic ctorFunc, int magic)
+        {
+            var ctx = _register.GetContext();
+            var protoVal = ctx.NewObject();
+            var type_id = _register.Add(type, protoVal);
+            var ctorVal =
+                JSApi.JS_NewCFunctionMagic(ctx, ctorFunc, typename, 0, JSCFunctionEnum.JS_CFUNC_constructor_magic,
+                    magic);
+            var decl = new ClassDecl(_register, JSApi.JS_DupValue(_register, ctorVal),
+                JSApi.JS_DupValue(_register, protoVal));
+            JSApi.JS_SetConstructor(ctx, ctorVal, protoVal);
+            JSApi.JSB_SetBridgeType(ctx, ctorVal, type_id);
+            JSApi.JS_DefinePropertyValueStr(ctx, _nsValue, typename, ctorVal,
+                JSPropFlags.JS_PROP_ENUMERABLE | JSPropFlags.JS_PROP_CONFIGURABLE);
+            JSApi.JS_FreeValue(ctx, protoVal);
             return decl;
         }
 

@@ -96,6 +96,30 @@ JSValue JSB_Eval(JSContext *ctx, const char *input, int input_len,
     return JS_Eval(ctx, input, input_len, filename, eval_flags);
 }
 
+JSValue JSB_NewCFunction(JSContext *ctx, JSCFunction *func, JSAtom atom, int length, JSCFunctionEnum cproto, int magic)
+{
+    const char *name = JS_AtomToCString(ctx, atom);
+    if (!name)
+    {
+        return JS_ThrowInternalError(ctx, "no such atom: %d", atom);
+    }
+    JSValue funcVal = JS_NewCFunction2(ctx, func, name, length, cproto, magic);
+    JS_FreeCString(ctx, name);
+    return funcVal;
+}
+
+JSValue JSB_NewCFunctionMagic(JSContext *ctx, JSCFunctionMagic *func, JSAtom atom, int length, JSCFunctionEnum cproto, int magic)
+{
+    const char *name = JS_AtomToCString(ctx, atom);
+    if (!name)
+    {
+        return JS_ThrowInternalError(ctx, "no such atom: %d", atom);
+    }
+    JSValue funcVal = JS_NewCFunction2(ctx, (JSCFunction *)func, name, length, cproto, magic);
+    JS_FreeCString(ctx, name);
+    return funcVal;
+}
+
 JSValue JSB_NewPropertyObjectStr(JSContext *ctx, JSValueConst this_obj, const char *name, int flags)
 {
     JSValue p = JS_GetPropertyStr(ctx, this_obj, name);
@@ -161,7 +185,7 @@ typedef struct JSPayload
     char data[1];
 } JSPayload;
 
-JSValue JSB_NewBridgeObject(JSContext *ctx, JSValue proto, int32_t object_id)
+JSValue jsb_new_bridge_object(JSContext *ctx, JSValue proto, int32_t object_id)
 {
     JSValue obj = JS_NewObjectProtoClass(ctx, proto, js_bridge_class_id);
     if (!JS_IsException(obj))
@@ -180,7 +204,7 @@ JSValue JSB_NewBridgeClassObject(JSContext *ctx, JSValue new_target, int32_t obj
     JSValue proto = JS_GetProperty(ctx, new_target, JS_ATOM_prototype);
     if (!JS_IsException(proto))
     {
-        JSValue obj = JSB_NewBridgeObject(ctx, proto, object_id);
+        JSValue obj = jsb_new_bridge_object(ctx, proto, object_id);
         JS_FreeValue(ctx, proto);
         return obj;
     }
@@ -188,7 +212,7 @@ JSValue JSB_NewBridgeClassObject(JSContext *ctx, JSValue new_target, int32_t obj
     return proto;
 }
 
-JSValue JSB_NewBridgeValue(JSContext *ctx, JSValue proto, int32_t size)
+JSValue jsb_new_bridge_value(JSContext *ctx, JSValue proto, int32_t size)
 {
     JSValue obj = JS_NewObjectProtoClass(ctx, proto, js_bridge_class_id);
     if (!JS_IsException(obj))
@@ -207,7 +231,7 @@ JSValue JSB_NewBridgeClassValue(JSContext *ctx, JSValue new_target, int32_t size
     JSValue proto = JS_GetProperty(ctx, new_target, JS_ATOM_prototype);
     if (!JS_IsException(proto))
     {
-        JSValue obj = JSB_NewBridgeValue(ctx, proto, size);
+        JSValue obj = jsb_new_bridge_value(ctx, proto, size);
         JS_FreeValue(ctx, proto);
         return obj;
     }

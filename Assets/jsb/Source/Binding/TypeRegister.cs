@@ -10,13 +10,16 @@ namespace QuickJS.Binding
 {
     using Utils;
     using UnityEngine;
-    
+
     public class TypeRegister
     {
         private ScriptContext _context;
 
         private TypeDB _db;
         private Dictionary<Type, JSValue> _prototypes = new Dictionary<Type, JSValue>();
+
+        // 注册过程中产生的 atom, 完成后自动释放 
+        private Dictionary<string, JSAtom> _atoms = new Dictionary<string, JSAtom>();
 
         public static implicit operator JSContext(TypeRegister register)
         {
@@ -28,11 +31,32 @@ namespace QuickJS.Binding
             return _context;
         }
 
+        public unsafe JSAtom GetAtom(string name)
+        {
+            JSAtom atom;
+            if (!_atoms.TryGetValue(name, out atom))
+            {
+                if (char.IsDigit(name[0]))
+                {
+                    throw new InvalidOperationException("invalid atom:" + name);
+                }
+                var bytes = TextUtils.GetNullTerminatedBytes(name);
+                fixed (byte* ptr = bytes)
+                {
+                    atom = JSApi.JS_NewAtomLen(_context, ptr, bytes.Length - 1);
+                }
+
+                _atoms[name] = atom;
+            }
+
+            return atom;
+        }
+
         public TypeRegister(ScriptRuntime runtime, ScriptContext context)
         {
             _db = new TypeDB();
             _context = context;
-            
+
             JSApi.JS_NewClass(runtime, JSApi.JSB_GetBridgeClassID(), "CSharpClass", JSApi.class_finalizer);
         }
 
@@ -100,14 +124,23 @@ namespace QuickJS.Binding
 
         public void Cleanup()
         {
+            foreach (var kv in _atoms)
+            {
+                var atom = kv.Value;
+                JSApi.JS_FreeAtom(_context, atom);
+            }
+
+
             foreach (var kv in _prototypes)
             {
                 var jsValue = kv.Value;
                 JSApi.JS_FreeValue(_context, jsValue);
             }
+
+            _atoms.Clear();
             _prototypes.Clear();
         }
-        
+
         // 将 type 的 prototype 压栈 （未导出则向父类追溯）
         // 没有对应的基类 prototype 时, 不压栈
         public JSValue GetChainedPrototypeOf(Type baseType)
@@ -116,15 +149,18 @@ namespace QuickJS.Binding
             {
                 return JSApi.JS_UNDEFINED;
             }
+
             if (baseType == typeof(Enum))
             {
                 return JSApi.JS_UNDEFINED;
             }
+
             JSValue fn;
             if (_prototypes.TryGetValue(baseType, out fn))
             {
                 return fn;
             }
+
             return GetChainedPrototypeOf(baseType.BaseType);
         }
 
