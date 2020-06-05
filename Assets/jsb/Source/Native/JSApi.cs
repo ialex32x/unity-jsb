@@ -268,6 +268,9 @@ namespace QuickJS.Native
             }
         }
 
+        [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern JSValue JSB_NewInt64(JSContext ctx, int64_t val);
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static JSValue JS_NewBool(JSContext ctx, bool val)
         {
