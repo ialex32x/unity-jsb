@@ -519,6 +519,36 @@ JS_BOOL jsb_set_int_3(JSValue val, int v0, int v1, int v2)
     return FALSE;
 }
 
+JS_BOOL jsb_get_int_4(JSValue val, int *v0, int *v1, int *v2, int *v3)
+{
+    JSPayload *sv = JS_GetOpaque(val, js_bridge_class_id);
+    if (sv)
+    {
+        int *ptr = (int *)&(sv->data[0]);
+        *v0 = ptr[0];
+        *v1 = ptr[1];
+        *v2 = ptr[2];
+        *v3 = ptr[3];
+        return TRUE;
+    }
+    return FALSE;
+}
+
+JS_BOOL jsb_set_int_4(JSValue val, int v0, int v1, int v2, int v3)
+{
+    JSPayload *sv = JS_GetOpaque(val, js_bridge_class_id);
+    if (sv)
+    {
+        int *ptr = (int *)&(sv->data[0]);
+        ptr[0] = v0;
+        ptr[1] = v1;
+        ptr[2] = v2;
+        ptr[3] = v3;
+        return TRUE;
+    }
+    return FALSE;
+}
+
 void JSB_Init()
 {
     if (js_class_id_begin == 0)

@@ -78,6 +78,12 @@ namespace QuickJS.Native
         
         [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern JS_BOOL jsb_set_int_3(JSValue val, int v0, int v1, int v2);
+
+        [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern JS_BOOL jsb_get_int_4(JSValue val, out int v0, out int v1, out int v2, out int v3);
+        
+        [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern JS_BOOL jsb_set_int_4(JSValue val, int v0, int v1, int v2, int v3);
         
     }
 }

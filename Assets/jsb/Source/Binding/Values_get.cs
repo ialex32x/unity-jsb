@@ -11,15 +11,15 @@ namespace QuickJS.Binding
     // 处理常规值, class, struct
     public partial class Values
     {
-        public static bool duk_get_primitive(JSContext ctx, JSValue this_val, JSValue val, out IntPtr o)
+        public static bool js_get_primitive(JSContext ctx, JSValue this_val, JSValue val, out IntPtr o)
         {
             object o_t;
-            var ret = duk_get_object(ctx, this_val, val, out o_t);
+            var ret = js_get_object(ctx, this_val, val, out o_t);
             o = (IntPtr)o_t;
             return ret;
         }
 
-        public static bool duk_get_primitive_array(JSContext ctx, JSValue this_val, JSValue val, out IntPtr[] o)
+        public static bool js_get_primitive_array(JSContext ctx, JSValue this_val, JSValue val, out IntPtr[] o)
         {
             var isArray = JSApi.JS_IsArray(ctx, val);
             if (isArray == 1)
@@ -37,7 +37,7 @@ namespace QuickJS.Binding
                 {
                     var eVal = JSApi.JS_GetPropertyUint32(ctx, val, i);
                     IntPtr e;
-                    duk_get_primitive(ctx, this_val, eVal, out e);
+                    js_get_primitive(ctx, this_val, eVal, out e);
                     o[i] = e;
                     JSApi.JS_FreeValue(ctx, eVal);
                 }
@@ -48,18 +48,18 @@ namespace QuickJS.Binding
                 o = null;
                 return false;
             }
-            duk_get_classvalue<IntPtr[]>(ctx, this_val, val, out o);
+            js_get_classvalue<IntPtr[]>(ctx, this_val, val, out o);
             return true;
         }
 
-        public static bool duk_get_primitive(JSContext ctx, JSValue val, out bool o)
+        public static bool js_get_primitive(JSContext ctx, JSValue val, out bool o)
         {
             var r = JSApi.JS_ToBool(ctx, val);
             o = r != 0;
             return r >= 0;
         }
 
-        //         public static bool duk_get_primitive_array(JSContext ctx, JSValue this_obj, JSValue val, out bool[] o)
+        //         public static bool js_get_primitive_array(JSContext ctx, JSValue this_obj, JSValue val, out bool[] o)
         //         {
         //             if (JSApi.duk_is_array(ctx, idx))
         //             {
@@ -68,25 +68,25 @@ namespace QuickJS.Binding
         //                 o = new bool[length];
         //                 for (var i = 0U; i < length; i++)
         //                 {
-        //                     JSApi.duk_get_prop_index(ctx, idx, i);
+        //                     JSApi.js_get_prop_index(ctx, idx, i);
         //                     bool e;
-        //                     e = JSApi.duk_get_boolean(ctx, -1); //duk_get_primitive(ctx, -1, out e);
+        //                     e = JSApi.js_get_boolean(ctx, -1); //js_get_primitive(ctx, -1, out e);
         //                     o[i] = e;
         //                     JSApi.duk_pop(ctx);
         //                 }
         //                 return true;
         //             }
-        //             duk_get_classvalue<bool[]>(ctx, idx, out o);
+        //             js_get_classvalue<bool[]>(ctx, idx, out o);
         //             return true;
         //         }
         //
-        //         public static bool duk_get_primitive(JSContext ctx, JSValue this_obj, JSValue val, out sbyte o)
+        //         public static bool js_get_primitive(JSContext ctx, JSValue this_obj, JSValue val, out sbyte o)
         //         {
-        //             o = (sbyte)JSApi.duk_get_int(ctx, idx); // no check
+        //             o = (sbyte)JSApi.js_get_int(ctx, idx); // no check
         //             return true;
         //         }
         //
-        //         public static bool duk_get_primitive_array(JSContext ctx, JSValue this_obj, JSValue val, out sbyte[] o)
+        //         public static bool js_get_primitive_array(JSContext ctx, JSValue this_obj, JSValue val, out sbyte[] o)
         //         {
         //             if (JSApi.duk_is_array(ctx, idx))
         //             {
@@ -95,25 +95,25 @@ namespace QuickJS.Binding
         //                 o = new sbyte[length];
         //                 for (var i = 0U; i < length; i++)
         //                 {
-        //                     JSApi.duk_get_prop_index(ctx, idx, i);
+        //                     JSApi.js_get_prop_index(ctx, idx, i);
         //                     sbyte e;
-        //                     e = (sbyte)JSApi.duk_get_int(ctx, -1); // duk_get_primitive(ctx, -1, out e);
+        //                     e = (sbyte)JSApi.js_get_int(ctx, -1); // js_get_primitive(ctx, -1, out e);
         //                     o[i] = e;
         //                     JSApi.duk_pop(ctx);
         //                 }
         //                 return true;
         //             }
-        //             duk_get_classvalue<sbyte[]>(ctx, idx, out o);
+        //             js_get_classvalue<sbyte[]>(ctx, idx, out o);
         //             return true;
         //         }
         //
-        //         public static bool duk_get_primitive(JSContext ctx, JSValue this_obj, JSValue val, out byte o)
+        //         public static bool js_get_primitive(JSContext ctx, JSValue this_obj, JSValue val, out byte o)
         //         {
-        //             o = (byte)JSApi.duk_get_int(ctx, idx); // no check
+        //             o = (byte)JSApi.js_get_int(ctx, idx); // no check
         //             return true;
         //         }
         //
-        //         public static bool duk_get_primitive_array(JSContext ctx, JSValue this_obj, JSValue val, out byte[] o)
+        //         public static bool js_get_primitive_array(JSContext ctx, JSValue this_obj, JSValue val, out byte[] o)
         //         {
         //             if (JSApi.duk_is_array(ctx, idx))
         //             {
@@ -122,9 +122,9 @@ namespace QuickJS.Binding
         //                 o = new byte[length];
         //                 for (var i = 0U; i < length; i++)
         //                 {
-        //                     JSApi.duk_get_prop_index(ctx, idx, i);
+        //                     JSApi.js_get_prop_index(ctx, idx, i);
         //                     byte e;
-        //                     e = (byte)JSApi.duk_get_int(ctx, -1); // duk_get_primitive(ctx, -1, out e);
+        //                     e = (byte)JSApi.js_get_int(ctx, -1); // js_get_primitive(ctx, -1, out e);
         //                     o[i] = e;
         //                     JSApi.duk_pop(ctx);
         //                 }
@@ -138,11 +138,11 @@ namespace QuickJS.Binding
         //                 Marshal.Copy(pointer, o, 0, (int)length);
         //                 return true;
         //             }
-        //             duk_get_classvalue<byte[]>(ctx, idx, out o);
+        //             js_get_classvalue<byte[]>(ctx, idx, out o);
         //             return true;
         //         }
 
-        public static bool duk_get_primitive(JSContext ctx, JSValue this_obj, JSValue val, out char o)
+        public static bool js_get_primitive(JSContext ctx, JSValue this_obj, JSValue val, out char o)
         {
             int pres;
             JSApi.JS_ToInt32(ctx, out pres, val);
@@ -150,7 +150,7 @@ namespace QuickJS.Binding
             return true;
         }
 
-        //         public static bool duk_get_primitive_array(JSContext ctx, JSValue this_obj, JSValue val, out char[] o)
+        //         public static bool js_get_primitive_array(JSContext ctx, JSValue this_obj, JSValue val, out char[] o)
         //         {
         //             if (JSApi.duk_is_array(ctx, idx))
         //             {
@@ -159,25 +159,25 @@ namespace QuickJS.Binding
         //                 o = new char[length];
         //                 for (var i = 0U; i < length; i++)
         //                 {
-        //                     JSApi.duk_get_prop_index(ctx, idx, i);
+        //                     JSApi.js_get_prop_index(ctx, idx, i);
         //                     char e;
-        //                     e = (char)JSApi.duk_get_int(ctx, -1); // duk_get_primitive(ctx, -1, out e);
+        //                     e = (char)JSApi.js_get_int(ctx, -1); // js_get_primitive(ctx, -1, out e);
         //                     o[i] = e;
         //                     JSApi.duk_pop(ctx);
         //                 }
         //                 return true;
         //             }
-        //             duk_get_classvalue<char[]>(ctx, idx, out o);
+        //             js_get_classvalue<char[]>(ctx, idx, out o);
         //             return true;
         //         }
 
-        public static bool duk_get_primitive(JSContext ctx, JSValue this_obj, JSValue val, out string o)
+        public static bool js_get_primitive(JSContext ctx, JSValue this_obj, JSValue val, out string o)
         {
             o = JSApi.GetString(ctx, val); // no check
             return true;
         }
 
-        //         public static bool duk_get_primitive_array(JSContext ctx, JSValue this_obj, JSValue val, out string[] o)
+        //         public static bool js_get_primitive_array(JSContext ctx, JSValue this_obj, JSValue val, out string[] o)
         //         {
         //             if (JSApi.duk_is_array(ctx, idx))
         //             {
@@ -186,19 +186,19 @@ namespace QuickJS.Binding
         //                 o = new string[length];
         //                 for (var i = 0U; i < length; i++)
         //                 {
-        //                     JSApi.duk_get_prop_index(ctx, idx, i);
+        //                     JSApi.js_get_prop_index(ctx, idx, i);
         //                     string e;
-        //                     e = JSApi.duk_get_string(ctx, -1); // duk_get_primitive(ctx, -1, out e);
+        //                     e = JSApi.js_get_string(ctx, -1); // js_get_primitive(ctx, -1, out e);
         //                     o[i] = e;
         //                     JSApi.duk_pop(ctx);
         //                 }
         //                 return true;
         //             }
-        //             duk_get_classvalue<string[]>(ctx, idx, out o);
+        //             js_get_classvalue<string[]>(ctx, idx, out o);
         //             return true;
         //         }
 
-        public static bool duk_get_primitive(JSContext ctx, JSValue this_obj, JSValue val, out short o)
+        public static bool js_get_primitive(JSContext ctx, JSValue this_obj, JSValue val, out short o)
         {
             int pres;
             JSApi.JS_ToInt32(ctx, out pres, val);
@@ -206,7 +206,7 @@ namespace QuickJS.Binding
             return true;
         }
 
-        //         public static bool duk_get_primitive_array(JSContext ctx, JSValue this_obj, JSValue val, out short[] o)
+        //         public static bool js_get_primitive_array(JSContext ctx, JSValue this_obj, JSValue val, out short[] o)
         //         {
         //             if (JSApi.duk_is_array(ctx, idx))
         //             {
@@ -215,19 +215,19 @@ namespace QuickJS.Binding
         //                 o = new short[length];
         //                 for (var i = 0U; i < length; i++)
         //                 {
-        //                     JSApi.duk_get_prop_index(ctx, idx, i);
+        //                     JSApi.js_get_prop_index(ctx, idx, i);
         //                     short e;
-        //                     e = (short)JSApi.duk_get_int(ctx, -1); // duk_get_primitive(ctx, -1, out e);
+        //                     e = (short)JSApi.js_get_int(ctx, -1); // js_get_primitive(ctx, -1, out e);
         //                     o[i] = e;
         //                     JSApi.duk_pop(ctx);
         //                 }
         //                 return true;
         //             }
-        //             duk_get_classvalue<short[]>(ctx, idx, out o);
+        //             js_get_classvalue<short[]>(ctx, idx, out o);
         //             return true;
         //         }
 
-        public static bool duk_get_primitive(JSContext ctx, JSValue this_obj, JSValue val, out ushort o)
+        public static bool js_get_primitive(JSContext ctx, JSValue this_obj, JSValue val, out ushort o)
         {
             int pres;
             JSApi.JS_ToInt32(ctx, out pres, val);
@@ -235,7 +235,7 @@ namespace QuickJS.Binding
             return true;
         }
 
-        //         public static bool duk_get_primitive_array(JSContext ctx, JSValue this_obj, JSValue val, out ushort[] o)
+        //         public static bool js_get_primitive_array(JSContext ctx, JSValue this_obj, JSValue val, out ushort[] o)
         //         {
         //             if (JSApi.duk_is_array(ctx, idx))
         //             {
@@ -244,19 +244,19 @@ namespace QuickJS.Binding
         //                 o = new ushort[length];
         //                 for (var i = 0U; i < length; i++)
         //                 {
-        //                     JSApi.duk_get_prop_index(ctx, idx, i);
+        //                     JSApi.js_get_prop_index(ctx, idx, i);
         //                     ushort e;
-        //                     e = (ushort)JSApi.duk_get_int(ctx, -1); // duk_get_primitive(ctx, -1, out e);
+        //                     e = (ushort)JSApi.js_get_int(ctx, -1); // js_get_primitive(ctx, -1, out e);
         //                     o[i] = e;
         //                     JSApi.duk_pop(ctx);
         //                 }
         //                 return true;
         //             }
-        //             duk_get_classvalue<ushort[]>(ctx, idx, out o);
+        //             js_get_classvalue<ushort[]>(ctx, idx, out o);
         //             return true;
         //         }
 
-        public static bool duk_get_primitive(JSContext ctx, JSValue this_obj, JSValue val, out int o)
+        public static bool js_get_primitive(JSContext ctx, JSValue this_obj, JSValue val, out int o)
         {
             int pres;
             JSApi.JS_ToInt32(ctx, out pres, val);
@@ -264,7 +264,7 @@ namespace QuickJS.Binding
             return true;
         }
 
-        //         public static bool duk_get_primitive_array(JSContext ctx, JSValue this_obj, JSValue val, out int[] o)
+        //         public static bool js_get_primitive_array(JSContext ctx, JSValue this_obj, JSValue val, out int[] o)
         //         {
         //             if (JSApi.duk_is_array(ctx, idx))
         //             {
@@ -273,19 +273,19 @@ namespace QuickJS.Binding
         //                 o = new int[length];
         //                 for (var i = 0U; i < length; i++)
         //                 {
-        //                     JSApi.duk_get_prop_index(ctx, idx, i);
+        //                     JSApi.js_get_prop_index(ctx, idx, i);
         //                     int e;
-        //                     e = JSApi.duk_get_int(ctx, -1); // duk_get_primitive(ctx, -1, out e);
+        //                     e = JSApi.js_get_int(ctx, -1); // js_get_primitive(ctx, -1, out e);
         //                     o[i] = e;
         //                     JSApi.duk_pop(ctx);
         //                 }
         //                 return true;
         //             }
-        //             duk_get_classvalue<int[]>(ctx, idx, out o);
+        //             js_get_classvalue<int[]>(ctx, idx, out o);
         //             return true;
         //         }
 
-        public static bool duk_get_primitive(JSContext ctx, JSValue this_obj, JSValue val, out uint o)
+        public static bool js_get_primitive(JSContext ctx, JSValue this_obj, JSValue val, out uint o)
         {
             uint pres;
             JSApi.JSB_ToUint32(ctx, out pres, val);
@@ -293,7 +293,7 @@ namespace QuickJS.Binding
             return true;
         }
 
-        //         public static bool duk_get_primitive_array(JSContext ctx, JSValue this_obj, JSValue val, out uint[] o)
+        //         public static bool js_get_primitive_array(JSContext ctx, JSValue this_obj, JSValue val, out uint[] o)
         //         {
         //             if (JSApi.duk_is_array(ctx, idx))
         //             {
@@ -302,19 +302,19 @@ namespace QuickJS.Binding
         //                 o = new uint[length];
         //                 for (var i = 0U; i < length; i++)
         //                 {
-        //                     JSApi.duk_get_prop_index(ctx, idx, i);
+        //                     JSApi.js_get_prop_index(ctx, idx, i);
         //                     uint e;
-        //                     e = JSApi.duk_get_uint(ctx, -1); // duk_get_primitive(ctx, -1, out e); 
+        //                     e = JSApi.js_get_uint(ctx, -1); // js_get_primitive(ctx, -1, out e); 
         //                     o[i] = e;
         //                     JSApi.duk_pop(ctx);
         //                 }
         //                 return true;
         //             }
-        //             duk_get_classvalue<uint[]>(ctx, idx, out o);
+        //             js_get_classvalue<uint[]>(ctx, idx, out o);
         //             return true;
         //         }
 
-        public static bool duk_get_primitive(JSContext ctx, JSValue this_obj, JSValue val, out long o)
+        public static bool js_get_primitive(JSContext ctx, JSValue this_obj, JSValue val, out long o)
         {
             long pres;
             JSApi.JS_ToInt64(ctx, out pres, val);
@@ -322,7 +322,7 @@ namespace QuickJS.Binding
             return true;
         }
 
-        //         public static bool duk_get_primitive_array(JSContext ctx, JSValue this_obj, JSValue val, out long[] o)
+        //         public static bool js_get_primitive_array(JSContext ctx, JSValue this_obj, JSValue val, out long[] o)
         //         {
         //             if (JSApi.duk_is_array(ctx, idx))
         //             {
@@ -331,19 +331,19 @@ namespace QuickJS.Binding
         //                 o = new long[length];
         //                 for (var i = 0U; i < length; i++)
         //                 {
-        //                     JSApi.duk_get_prop_index(ctx, idx, i);
+        //                     JSApi.js_get_prop_index(ctx, idx, i);
         //                     long e;
-        //                     e = (long)JSApi.duk_get_number(ctx, -1); // duk_get_primitive(ctx, -1, out e);
+        //                     e = (long)JSApi.js_get_number(ctx, -1); // js_get_primitive(ctx, -1, out e);
         //                     o[i] = e;
         //                     JSApi.duk_pop(ctx);
         //                 }
         //                 return true;
         //             }
-        //             duk_get_classvalue<long[]>(ctx, idx, out o);
+        //             js_get_classvalue<long[]>(ctx, idx, out o);
         //             return true;
         //         }
 
-        public static bool duk_get_primitive(JSContext ctx, JSValue this_obj, JSValue val, out ulong o)
+        public static bool js_get_primitive(JSContext ctx, JSValue this_obj, JSValue val, out ulong o)
         {
             ulong pres;
             JSApi.JS_ToIndex(ctx, out pres, val);
@@ -351,7 +351,7 @@ namespace QuickJS.Binding
             return true;
         }
 
-        //         public static bool duk_get_primitive_array(JSContext ctx, JSValue this_obj, JSValue val, out ulong[] o)
+        //         public static bool js_get_primitive_array(JSContext ctx, JSValue this_obj, JSValue val, out ulong[] o)
         //         {
         //             if (JSApi.duk_is_array(ctx, idx))
         //             {
@@ -360,19 +360,19 @@ namespace QuickJS.Binding
         //                 o = new ulong[length];
         //                 for (var i = 0U; i < length; i++)
         //                 {
-        //                     JSApi.duk_get_prop_index(ctx, idx, i);
+        //                     JSApi.js_get_prop_index(ctx, idx, i);
         //                     ulong e;
-        //                     e = (ulong)JSApi.duk_get_number(ctx, -1); // duk_get_primitive(ctx, -1, out e);
+        //                     e = (ulong)JSApi.js_get_number(ctx, -1); // js_get_primitive(ctx, -1, out e);
         //                     o[i] = e;
         //                     JSApi.duk_pop(ctx);
         //                 }
         //                 return true;
         //             }
-        //             duk_get_classvalue<ulong[]>(ctx, idx, out o);
+        //             js_get_classvalue<ulong[]>(ctx, idx, out o);
         //             return true;
         //         }
 
-        public static bool duk_get_primitive(JSContext ctx, JSValue this_obj, JSValue val, out float o)
+        public static bool js_get_primitive(JSContext ctx, JSValue this_obj, JSValue val, out float o)
         {
             double pres;
             JSApi.JS_ToFloat64(ctx, out pres, val);
@@ -380,7 +380,7 @@ namespace QuickJS.Binding
             return true;
         }
 
-        //         public static bool duk_get_primitive_array(JSContext ctx, JSValue this_obj, JSValue val, out float[] o)
+        //         public static bool js_get_primitive_array(JSContext ctx, JSValue this_obj, JSValue val, out float[] o)
         //         {
         //             if (JSApi.duk_is_array(ctx, idx))
         //             {
@@ -389,19 +389,19 @@ namespace QuickJS.Binding
         //                 o = new float[length];
         //                 for (var i = 0U; i < length; i++)
         //                 {
-        //                     JSApi.duk_get_prop_index(ctx, idx, i);
+        //                     JSApi.js_get_prop_index(ctx, idx, i);
         //                     float e;
-        //                     e = (float)JSApi.duk_get_number(ctx, -1); // duk_get_primitive(ctx, -1, out e);
+        //                     e = (float)JSApi.js_get_number(ctx, -1); // js_get_primitive(ctx, -1, out e);
         //                     o[i] = e;
         //                     JSApi.duk_pop(ctx);
         //                 }
         //                 return true;
         //             }
-        //             duk_get_classvalue<float[]>(ctx, idx, out o);
+        //             js_get_classvalue<float[]>(ctx, idx, out o);
         //             return true;
         //         }
 
-        public static bool duk_get_primitive(JSContext ctx, JSValue this_obj, JSValue val, out double o)
+        public static bool js_get_primitive(JSContext ctx, JSValue this_obj, JSValue val, out double o)
         {
 
             double pres;
@@ -410,7 +410,7 @@ namespace QuickJS.Binding
             return true;
         }
 
-        //         public static bool duk_get_primitive_array(JSContext ctx, JSValue this_obj, JSValue val, out double[] o)
+        //         public static bool js_get_primitive_array(JSContext ctx, JSValue this_obj, JSValue val, out double[] o)
         //         {
         //             if (JSApi.duk_is_array(ctx, idx))
         //             {
@@ -419,19 +419,19 @@ namespace QuickJS.Binding
         //                 o = new double[length];
         //                 for (var i = 0U; i < length; i++)
         //                 {
-        //                     JSApi.duk_get_prop_index(ctx, idx, i);
+        //                     JSApi.js_get_prop_index(ctx, idx, i);
         //                     double e;
-        //                     e = JSApi.duk_get_number(ctx, -1); // duk_get_primitive(ctx, -1, out e);
+        //                     e = JSApi.js_get_number(ctx, -1); // js_get_primitive(ctx, -1, out e);
         //                     o[i] = e;
         //                     JSApi.duk_pop(ctx);
         //                 }
         //                 return true;
         //             }
-        //             duk_get_classvalue<double[]>(ctx, idx, out o);
+        //             js_get_classvalue<double[]>(ctx, idx, out o);
         //             return true;
         //         }
 
-        public static bool duk_get_structvalue(JSContext ctx, JSValue this_obj, JSValue val, out LayerMask o)
+        public static bool js_get_structvalue(JSContext ctx, JSValue this_obj, JSValue val, out LayerMask o)
         {
             int pres;
             JSApi.JS_ToInt32(ctx, out pres, val);
@@ -439,23 +439,23 @@ namespace QuickJS.Binding
             return true;
         }
 
-        //         public static bool duk_get_structvalue(JSContext ctx, JSValue this_obj, JSValue val, out Color o)
-        //         {
-        //             float r, g, b, a;
-        //             var ret = JSApi.duk_unity_get4f(ctx, idx, out r, out g, out b, out a);
-        //             o = new Color(r, g, b, a);
-        //             return ret;
-        //         }
-        //
-        //         public static bool duk_get_structvalue(JSContext ctx, JSValue this_obj, JSValue val, out Color32 o)
-        //         {
-        //             int r, g, b, a;
-        //             var ret = JSApi.duk_unity_get4i(ctx, idx, out r, out g, out b, out a);
-        //             o = new Color32((byte)r, (byte)g, (byte)b, (byte)a);
-        //             return ret;
-        //         }
+        public static bool js_get_structvalue(JSContext ctx, JSValue this_obj, JSValue val, out Color o)
+        {
+            float r, g, b, a;
+            var ret = JSApi.jsb_get_float_4(val, out r, out g, out b, out a);
+            o = new Color(r, g, b, a);
+            return ret != 0;
+        }
 
-        public static bool duk_get_structvalue(JSContext ctx, JSValue this_obj, JSValue val, out Vector2 o)
+        public static bool js_get_structvalue(JSContext ctx, JSValue this_obj, JSValue val, out Color32 o)
+        {
+            int r, g, b, a;
+            var ret = JSApi.jsb_get_int_4(val, out r, out g, out b, out a);
+            o = new Color32((byte)r, (byte)g, (byte)b, (byte)a);
+            return ret != 0;
+        }
+
+        public static bool js_get_structvalue(JSContext ctx, JSValue this_obj, JSValue val, out Vector2 o)
         {
             float x, y;
             var ret = JSApi.jsb_get_float_2(val, out x, out y);
@@ -463,7 +463,7 @@ namespace QuickJS.Binding
             return ret != 0;
         }
 
-        public static bool duk_get_structvalue(JSContext ctx, JSValue this_obj, JSValue val, out Vector2Int o)
+        public static bool js_get_structvalue(JSContext ctx, JSValue this_obj, JSValue val, out Vector2Int o)
         {
             int x, y;
             var ret = JSApi.jsb_get_int_2(val, out x, out y);
@@ -471,7 +471,7 @@ namespace QuickJS.Binding
             return ret != 0;
         }
 
-        public static bool duk_get_structvalue(JSContext ctx, JSValue this_obj, JSValue val, out Vector3 o)
+        public static bool js_get_structvalue(JSContext ctx, JSValue this_obj, JSValue val, out Vector3 o)
         {
             float x, y, z;
             var ret = JSApi.jsb_get_float_3(val, out x, out y, out z);
@@ -479,7 +479,7 @@ namespace QuickJS.Binding
             return ret != 0;
         }
 
-        public static bool duk_get_structvalue(JSContext ctx, JSValue this_obj, JSValue val, out Vector3Int o)
+        public static bool js_get_structvalue(JSContext ctx, JSValue this_obj, JSValue val, out Vector3Int o)
         {
             int x, y, z;
             var ret = JSApi.jsb_get_int_3(val, out x, out y, out z);
@@ -487,7 +487,7 @@ namespace QuickJS.Binding
             return ret != 0;
         }
 
-        public static bool duk_get_structvalue(JSContext ctx, JSValue this_obj, JSValue val, out Vector4 o)
+        public static bool js_get_structvalue(JSContext ctx, JSValue this_obj, JSValue val, out Vector4 o)
         {
             float x, y, z, w;
             var ret = JSApi.jsb_get_float_4(val, out x, out y, out z, out w);
@@ -495,7 +495,7 @@ namespace QuickJS.Binding
             return ret != 0;
         }
 
-        public static bool duk_get_structvalue(JSContext ctx, JSValue this_obj, JSValue val, out Quaternion o)
+        public static bool js_get_structvalue(JSContext ctx, JSValue this_obj, JSValue val, out Quaternion o)
         {
             float x, y, z, w;
             var ret = JSApi.jsb_get_float_4(val, out x, out y, out z, out w);
@@ -503,33 +503,43 @@ namespace QuickJS.Binding
             return ret != 0;
         }
 
-        // public static bool duk_get_structvalue(JSContext ctx, JSValue this_obj, JSValue val, out Matrix4x4 o)
-        // {
-        //     var ret = JSApi.duk_unity_get16f(ctx, idx, ...);
-        //     o = new Matrix4x4(...);
-        //     return ret;
-        // }
+        private static float[] _matrix_floats_buffer = new float[16];
+
+        public static unsafe bool js_get_structvalue(JSContext ctx, JSValue this_obj, JSValue val, out Matrix4x4 o)
+        {
+            int ret;
+            fixed (float* ptr = _matrix_floats_buffer)
+            {
+                ret = JSApi.jsb_get_floats(val, 16, ptr);
+            }
+            var c0 = new Vector4(_matrix_floats_buffer[0], _matrix_floats_buffer[1], _matrix_floats_buffer[2], _matrix_floats_buffer[3]);
+            var c1 = new Vector4(_matrix_floats_buffer[4], _matrix_floats_buffer[5], _matrix_floats_buffer[6], _matrix_floats_buffer[7]);
+            var c2 = new Vector4(_matrix_floats_buffer[8], _matrix_floats_buffer[8], _matrix_floats_buffer[10], _matrix_floats_buffer[11]);
+            var c3 = new Vector4(_matrix_floats_buffer[12], _matrix_floats_buffer[13], _matrix_floats_buffer[14], _matrix_floats_buffer[15]);
+            o = new Matrix4x4(c0, c1, c2, c3);
+            return ret != 0;
+        }
 
         // fallthrough
-        public static bool duk_get_structvalue<T>(JSContext ctx, JSValue this_obj, JSValue val, out T o)
+        public static bool js_get_structvalue<T>(JSContext ctx, JSValue this_obj, JSValue val, out T o)
         where T : struct
         {
             object o_t;
-            var ret = duk_get_object(ctx, this_obj, val, out o_t);
+            var ret = js_get_object(ctx, this_obj, val, out o_t);
             o = (T)o_t;
             return ret;
         }
 
-        //         public static bool duk_get_structvalue<T>(JSContext ctx, JSValue this_obj, JSValue val, out T? o)
-        //         where T : struct
-        //         {
-        //             object o_t;
-        //             var ret = duk_get_object(ctx, idx, out o_t);
-        //             o = (T)o_t;
-        //             return ret;
-        //         }
-        //
-        //         public static bool duk_get_structvalue_array<T>(JSContext ctx, JSValue this_obj, JSValue val, out T[] o)
+        public static bool js_get_structvalue<T>(JSContext ctx, JSValue this_obj, JSValue val, out T? o)
+        where T : struct
+        {
+            object o_t;
+            var ret = js_get_object(ctx, this_obj, val, out o_t);
+            o = (T)o_t;
+            return ret;
+        }
+
+        //         public static bool js_get_structvalue_array<T>(JSContext ctx, JSValue this_obj, JSValue val, out T[] o)
         //         where T : struct
         //         {
         //             if (JSApi.duk_is_array(ctx, idx))
@@ -539,9 +549,9 @@ namespace QuickJS.Binding
         //                 idx = JSApi.duk_normalize_index(ctx, idx);
         //                 for (var i = 0U; i < length; i++)
         //                 {
-        //                     JSApi.duk_get_prop_index(ctx, idx, i);
+        //                     JSApi.js_get_prop_index(ctx, idx, i);
         //                     T e;
-        //                     if (duk_get_structvalue(ctx, -1, out e))
+        //                     if (js_get_structvalue(ctx, -1, out e))
         //                     {
         //                         o[i] = e;
         //                     }
@@ -552,7 +562,7 @@ namespace QuickJS.Binding
         //             return false;
         //         }
         //
-        //         public static bool duk_get_structvalue_array<T>(JSContext ctx, JSValue this_obj, JSValue val, out T?[] o)
+        //         public static bool js_get_structvalue_array<T>(JSContext ctx, JSValue this_obj, JSValue val, out T?[] o)
         //         where T : struct
         //         {
         //             if (JSApi.duk_is_array(ctx, idx))
@@ -562,9 +572,9 @@ namespace QuickJS.Binding
         //                 idx = JSApi.duk_normalize_index(ctx, idx);
         //                 for (var i = 0U; i < length; i++)
         //                 {
-        //                     JSApi.duk_get_prop_index(ctx, idx, i);
+        //                     JSApi.js_get_prop_index(ctx, idx, i);
         //                     T? e;
-        //                     if (duk_get_structvalue(ctx, -1, out e))
+        //                     if (js_get_structvalue(ctx, -1, out e))
         //                     {
         //                         o[i] = e;
         //                     }
@@ -576,11 +586,11 @@ namespace QuickJS.Binding
         //         }
 
         // not value type (except string/array)
-        public static bool duk_get_classvalue<T>(JSContext ctx, JSValue this_obj, JSValue val, out T o)
+        public static bool js_get_classvalue<T>(JSContext ctx, JSValue this_obj, JSValue val, out T o)
         where T : class
         {
             object o_t;
-            if (duk_get_cached_object(ctx, val, out o_t))
+            if (js_get_cached_object(ctx, val, out o_t))
             {
                 o = o_t as T;
                 if (o_t != null && o == null)
@@ -600,10 +610,10 @@ namespace QuickJS.Binding
             throw new InvalidCastException(string.Format("{0} type mismatch {1}", jsType, typeof(T)));
         }
 
-        public static bool duk_get_classvalue(JSContext ctx, JSValue this_obj, JSValue val, out ScriptValue o)
+        public static bool js_get_classvalue(JSContext ctx, JSValue this_obj, JSValue val, out ScriptValue o)
         {
             object obj;
-            if (duk_get_cached_object(ctx, val, out obj))
+            if (js_get_cached_object(ctx, val, out obj))
             {
                 if (obj is ScriptValue)
                 {
@@ -620,10 +630,10 @@ namespace QuickJS.Binding
             return false;
         }
 
-        public static bool duk_get_classvalue(JSContext ctx, JSValue this_obj, JSValue val, out QuickJS.IO.ByteBuffer o)
+        public static bool js_get_classvalue(JSContext ctx, JSValue this_obj, JSValue val, out QuickJS.IO.ByteBuffer o)
         {
             object obj;
-            if (duk_get_cached_object(ctx, val, out obj))
+            if (js_get_cached_object(ctx, val, out obj))
             {
                 if (obj is QuickJS.IO.ByteBuffer)
                 {
@@ -652,10 +662,10 @@ namespace QuickJS.Binding
             return false;
         }
 
-        public static bool duk_get_classvalue(JSContext ctx, JSValue this_obj, JSValue val, out ScriptValueArray o)
+        public static bool js_get_classvalue(JSContext ctx, JSValue this_obj, JSValue val, out ScriptValueArray o)
         {
             object obj;
-            if (duk_get_cached_object(ctx, val, out obj))
+            if (js_get_cached_object(ctx, val, out obj))
             {
                 if (obj is ScriptValueArray)
                 {
@@ -672,12 +682,12 @@ namespace QuickJS.Binding
             return false;
         }
 
-        public static bool duk_get_classvalue(JSContext ctx, JSValue this_obj, JSValue val, out ScriptFunction o)
+        public static bool js_get_classvalue(JSContext ctx, JSValue this_obj, JSValue val, out ScriptFunction o)
         {
             if (JSApi.JS_IsFunction(ctx, val) != 0)
             {
                 object obj;
-                if (duk_get_cached_object(ctx, val, out obj))
+                if (js_get_cached_object(ctx, val, out obj))
                 {
                     if (obj is ScriptFunction)
                     {
@@ -694,7 +704,7 @@ namespace QuickJS.Binding
             return false;
         }
 
-        public static bool duk_get_cached_object(JSContext ctx, JSValue val, out object o)
+        public static bool js_get_cached_object(JSContext ctx, JSValue val, out object o)
         {
             var header = JSApi.jsb_get_payload_header(val);
             switch (header.type_id)
@@ -712,15 +722,15 @@ namespace QuickJS.Binding
         }
 
         // 只处理 JS_OBJECT
-        public static bool duk_get_object(JSContext ctx, JSValue this_obj, JSValue val, out object o)
+        public static bool js_get_object(JSContext ctx, JSValue this_obj, JSValue val, out object o)
         {
             if (JSApi.JS_IsObject(val))
             {
-                return duk_get_cached_object(ctx, val, out o);
+                return js_get_cached_object(ctx, val, out o);
             }
-            // Debug.LogFormat("duk_get_object({0})", jstype);
+            // Debug.LogFormat("js_get_object({0})", jstype);
             //     case duk_type_t.DUK_TYPE_STRING:
-            //         o = JSApi.duk_get_string(ctx, idx);
+            //         o = JSApi.js_get_string(ctx, idx);
             //         return true;
             //     default: break;
             // }
@@ -729,30 +739,30 @@ namespace QuickJS.Binding
             return false;
         }
 
-        //         public static bool duk_get_var(JSContext ctx, JSValue this_obj, JSValue val, out object o)
+        //         public static bool js_get_var(JSContext ctx, JSValue this_obj, JSValue val, out object o)
         //         {
-        //             var jstype = JSApi.duk_get_type(ctx, idx);
+        //             var jstype = JSApi.js_get_type(ctx, idx);
         //
         //             switch (jstype)
         //             {
         //                 case duk_type_t.DUK_TYPE_BOOLEAN: /* ECMAScript boolean: 0 or 1 */
         //                     {
-        //                         o = JSApi.duk_get_boolean(ctx, idx);
+        //                         o = JSApi.js_get_boolean(ctx, idx);
         //                         return true;
         //                     }
         //                 case duk_type_t.DUK_TYPE_NUMBER: /* ECMAScript number: double */
         //                     {
-        //                         o = JSApi.duk_get_number(ctx, idx);
+        //                         o = JSApi.js_get_number(ctx, idx);
         //                         return true;
         //                     }
         //                 case duk_type_t.DUK_TYPE_STRING: /* ECMAScript string: CESU-8 / extended UTF-8 encoded */
         //                     {
-        //                         o = JSApi.duk_get_string(ctx, idx);
+        //                         o = JSApi.js_get_string(ctx, idx);
         //                         return true;
         //                     }
         //                 case duk_type_t.DUK_TYPE_OBJECT: /* ECMAScript object: includes objects, arrays, functions, threads */
         //                     {
-        //                         return duk_get_cached_object(ctx, idx, out o);
+        //                         return js_get_cached_object(ctx, idx, out o);
         //                     }
         //                 case duk_type_t.DUK_TYPE_BUFFER: /* fixed or dynamic, garbage collected byte buffer */
         //                     {
@@ -779,26 +789,26 @@ namespace QuickJS.Binding
         //             return false;
         //         }
         //
-        //         // public static bool duk_get_object(JSContext ctx, JSValue this_obj, JSValue val, out object o)
+        //         // public static bool js_get_object(JSContext ctx, JSValue this_obj, JSValue val, out object o)
         //         // {
         //         //     if (JSApi.duk_is_null_or_undefined(ctx, idx)) // or check for object?
         //         //     {
         //         //         o = null;
         //         //         return true;
         //         //     }
-        //         //     var jstype = JSApi.duk_get_type(ctx, idx);
-        //         //     Debug.LogFormat("duk_get_object({0})", jstype);
+        //         //     var jstype = JSApi.js_get_type(ctx, idx);
+        //         //     Debug.LogFormat("js_get_object({0})", jstype);
         //         //     switch (jstype)
         //         //     {
         //         //         case duk_type_t.DUK_TYPE_STRING:
-        //         //             o = JSApi.duk_get_string(ctx, idx);
+        //         //             o = JSApi.js_get_string(ctx, idx);
         //         //             return true;
         //         //         default: break;
         //         //     }
-        //         //     return duk_get_cached_object(ctx, idx, out o);
+        //         //     return js_get_cached_object(ctx, idx, out o);
         //         // }
         //
-        //         public static bool duk_get_classvalue_array<T>(JSContext ctx, JSValue this_obj, JSValue val, out T[] o)
+        //         public static bool js_get_classvalue_array<T>(JSContext ctx, JSValue this_obj, JSValue val, out T[] o)
         //         where T : class
         //         {
         //             if (JSApi.duk_is_array(ctx, idx))
@@ -808,9 +818,9 @@ namespace QuickJS.Binding
         //                 idx = JSApi.duk_normalize_index(ctx, idx);
         //                 for (var i = 0U; i < length; i++)
         //                 {
-        //                     JSApi.duk_get_prop_index(ctx, idx, i);
+        //                     JSApi.js_get_prop_index(ctx, idx, i);
         //                     T e;
-        //                     if (duk_get_classvalue(ctx, -1, out e))
+        //                     if (js_get_classvalue(ctx, -1, out e))
         //                     {
         //                         o[i] = e;
         //                     }
@@ -821,16 +831,16 @@ namespace QuickJS.Binding
         //             return false;
         //         }
 
-        public static bool duk_get_enumvalue<T>(JSContext ctx, JSValue this_obj, JSValue val, out T o)
+        public static bool js_get_enumvalue<T>(JSContext ctx, JSValue this_obj, JSValue val, out T o)
         where T : Enum
         {
             int v;
-            var ret = duk_get_primitive(ctx, this_obj, val, out v);
+            var ret = js_get_primitive(ctx, this_obj, val, out v);
             o = (T)Enum.ToObject(typeof(T), v);
             return ret;
         }
 
-        //         public static bool duk_get_enumvalue_array<T>(JSContext ctx, JSValue this_obj, JSValue val, out T[] o)
+        //         public static bool js_get_enumvalue_array<T>(JSContext ctx, JSValue this_obj, JSValue val, out T[] o)
         //         where T : Enum
         //         {
         //             if (JSApi.duk_is_array(ctx, idx))
@@ -840,15 +850,15 @@ namespace QuickJS.Binding
         //                 o = new T[length];
         //                 for (var i = 0U; i < length; i++)
         //                 {
-        //                     JSApi.duk_get_prop_index(ctx, idx, i);
+        //                     JSApi.js_get_prop_index(ctx, idx, i);
         //                     T e;
-        //                     duk_get_enumvalue(ctx, -1, out e);
+        //                     js_get_enumvalue(ctx, -1, out e);
         //                     o[i] = e;
         //                     JSApi.duk_pop(ctx);
         //                 }
         //                 return true;
         //             }
-        //             duk_get_classvalue<T[]>(ctx, idx, out o);
+        //             js_get_classvalue<T[]>(ctx, idx, out o);
         //             return true;
         //         }
     }
