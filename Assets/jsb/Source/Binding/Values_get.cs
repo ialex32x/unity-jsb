@@ -1,7 +1,8 @@
+using AOT;
 using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
-using AOT;
+using System.Runtime.CompilerServices;
 
 namespace QuickJS.Binding
 {
@@ -11,6 +12,7 @@ namespace QuickJS.Binding
     // 处理常规值, class, struct
     public partial class Values
     {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool js_get_primitive(JSContext ctx, JSValue val, out IntPtr o)
         {
             object o_t;
@@ -27,7 +29,8 @@ namespace QuickJS.Binding
                 var lengthVal = JSApi.JS_GetProperty(ctx, val, JSApi.JS_ATOM_length);
                 if (JSApi.JS_IsException(lengthVal))
                 {
-                    throw new Exception(ctx.GetExceptionString());
+                    o = null;
+                    return js_script_error(ctx);
                 }
                 int length;
                 JSApi.JS_ToInt32(ctx, out length, lengthVal);
@@ -37,9 +40,17 @@ namespace QuickJS.Binding
                 {
                     var eVal = JSApi.JS_GetPropertyUint32(ctx, val, i);
                     IntPtr e;
-                    js_get_primitive(ctx, eVal, out e);
-                    o[i] = e;
-                    JSApi.JS_FreeValue(ctx, eVal);
+                    if (js_get_primitive(ctx, eVal, out e))
+                    {
+                        o[i] = e;
+                        JSApi.JS_FreeValue(ctx, eVal);
+                    }
+                    else
+                    {
+                        o = null;
+                        JSApi.JS_FreeValue(ctx, eVal);
+                        return false;
+                    }
                 }
                 return true;
             }
@@ -48,10 +59,10 @@ namespace QuickJS.Binding
                 o = null;
                 return false;
             }
-            js_get_classvalue<IntPtr[]>(ctx, val, out o);
-            return true;
+            return js_get_classvalue<IntPtr[]>(ctx, val, out o);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool js_get_primitive(JSContext ctx, JSValue val, out bool o)
         {
             var r = JSApi.JS_ToBool(ctx, val);
@@ -59,89 +70,148 @@ namespace QuickJS.Binding
             return r >= 0;
         }
 
-        //         public static bool js_get_primitive_array(JSContext ctx, JSValue val, out bool[] o)
-        //         {
-        //             if (JSApi.duk_is_array(ctx, idx))
-        //             {
-        //                 var length = JSApi.duk_unity_get_length(ctx, idx);
-        //                 var nidx = JSApi.duk_normalize_index(ctx, idx);
-        //                 o = new bool[length];
-        //                 for (var i = 0U; i < length; i++)
-        //                 {
-        //                     JSApi.js_get_prop_index(ctx, idx, i);
-        //                     bool e;
-        //                     e = JSApi.js_get_boolean(ctx, -1); //js_get_primitive(ctx, -1, out e);
-        //                     o[i] = e;
-        //                     JSApi.duk_pop(ctx);
-        //                 }
-        //                 return true;
-        //             }
-        //             js_get_classvalue<bool[]>(ctx, idx, out o);
-        //             return true;
-        //         }
-        //
-        //         public static bool js_get_primitive(JSContext ctx, JSValue val, out sbyte o)
-        //         {
-        //             o = (sbyte)JSApi.js_get_int(ctx, idx); // no check
-        //             return true;
-        //         }
-        //
-        //         public static bool js_get_primitive_array(JSContext ctx, JSValue val, out sbyte[] o)
-        //         {
-        //             if (JSApi.duk_is_array(ctx, idx))
-        //             {
-        //                 var length = JSApi.duk_unity_get_length(ctx, idx);
-        //                 var nidx = JSApi.duk_normalize_index(ctx, idx);
-        //                 o = new sbyte[length];
-        //                 for (var i = 0U; i < length; i++)
-        //                 {
-        //                     JSApi.js_get_prop_index(ctx, idx, i);
-        //                     sbyte e;
-        //                     e = (sbyte)JSApi.js_get_int(ctx, -1); // js_get_primitive(ctx, -1, out e);
-        //                     o[i] = e;
-        //                     JSApi.duk_pop(ctx);
-        //                 }
-        //                 return true;
-        //             }
-        //             js_get_classvalue<sbyte[]>(ctx, idx, out o);
-        //             return true;
-        //         }
-        //
-        //         public static bool js_get_primitive(JSContext ctx, JSValue val, out byte o)
-        //         {
-        //             o = (byte)JSApi.js_get_int(ctx, idx); // no check
-        //             return true;
-        //         }
-        //
-        //         public static bool js_get_primitive_array(JSContext ctx, JSValue val, out byte[] o)
-        //         {
-        //             if (JSApi.duk_is_array(ctx, idx))
-        //             {
-        //                 var length = JSApi.duk_unity_get_length(ctx, idx);
-        //                 var nidx = JSApi.duk_normalize_index(ctx, idx);
-        //                 o = new byte[length];
-        //                 for (var i = 0U; i < length; i++)
-        //                 {
-        //                     JSApi.js_get_prop_index(ctx, idx, i);
-        //                     byte e;
-        //                     e = (byte)JSApi.js_get_int(ctx, -1); // js_get_primitive(ctx, -1, out e);
-        //                     o[i] = e;
-        //                     JSApi.duk_pop(ctx);
-        //                 }
-        //                 return true;
-        //             }
-        //             if (JSApi.duk_is_buffer_data(ctx, idx))
-        //             {
-        //                 uint length;
-        //                 var pointer = JSApi.duk_unity_get_buffer_data(ctx, idx, out length);
-        //                 o = new byte[length];
-        //                 Marshal.Copy(pointer, o, 0, (int)length);
-        //                 return true;
-        //             }
-        //             js_get_classvalue<byte[]>(ctx, idx, out o);
-        //             return true;
-        //         }
+        public static bool js_get_primitive_array(JSContext ctx, JSValue val, out bool[] o)
+        {
+            var isArray = JSApi.JS_IsArray(ctx, val);
+            if (isArray == 1)
+            {
+                var lengthVal = JSApi.JS_GetProperty(ctx, val, JSApi.JS_ATOM_length);
+                if (JSApi.JS_IsException(lengthVal))
+                {
+                    o = null;
+                    return js_script_error(ctx);
+                }
+                int length;
+                JSApi.JS_ToInt32(ctx, out length, lengthVal);
+                JSApi.JS_FreeValue(ctx, lengthVal);
+                o = new bool[length];
+                for (var i = 0U; i < length; i++)
+                {
+                    var eVal = JSApi.JS_GetPropertyUint32(ctx, val, i);
+                    bool e;
+                    if (js_get_primitive(ctx, eVal, out e))
+                    {
+                        o[i] = e;
+                        JSApi.JS_FreeValue(ctx, eVal);
+                    }
+                    else
+                    {
+                        o = null;
+                        JSApi.JS_FreeValue(ctx, eVal);
+                        return false;
+                    }
+                }
+                return true;
+            }
+            if (isArray == -1)
+            {
+                o = null;
+                return false;
+            }
+            return js_get_classvalue<bool[]>(ctx, val, out o);
+        }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool js_get_primitive(JSContext ctx, JSValue val, out sbyte o)
+        {
+            int pres;
+            JSApi.JS_ToInt32(ctx, out pres, val);
+            o = (sbyte)pres; // no check
+            return true;
+        }
+
+        public static bool js_get_primitive_array(JSContext ctx, JSValue val, out sbyte[] o)
+        {
+            var isArray = JSApi.JS_IsArray(ctx, val);
+            if (isArray == 1)
+            {
+                var lengthVal = JSApi.JS_GetProperty(ctx, val, JSApi.JS_ATOM_length);
+                if (JSApi.JS_IsException(lengthVal))
+                {
+                    o = null;
+                    return js_script_error(ctx);
+                }
+                int length;
+                JSApi.JS_ToInt32(ctx, out length, lengthVal);
+                JSApi.JS_FreeValue(ctx, lengthVal);
+                o = new sbyte[length];
+                for (var i = 0U; i < length; i++)
+                {
+                    var eVal = JSApi.JS_GetPropertyUint32(ctx, val, i);
+                    sbyte e;
+                    if (js_get_primitive(ctx, eVal, out e))
+                    {
+                        o[i] = e;
+                        JSApi.JS_FreeValue(ctx, eVal);
+                    }
+                    else
+                    {
+                        o = null;
+                        JSApi.JS_FreeValue(ctx, eVal);
+                        return false;
+                    }
+                }
+                return true;
+            }
+            if (isArray == -1)
+            {
+                o = null;
+                return false;
+            }
+            return js_get_classvalue<sbyte[]>(ctx, val, out o);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool js_get_primitive(JSContext ctx, JSValue val, out byte o)
+        {
+            int pres;
+            JSApi.JS_ToInt32(ctx, out pres, val);
+            o = (byte)pres; // no check
+            return true;
+        }
+
+        public static bool js_get_primitive_array(JSContext ctx, JSValue val, out byte[] o)
+        {
+            var isArray = JSApi.JS_IsArray(ctx, val);
+            if (isArray == 1)
+            {
+                var lengthVal = JSApi.JS_GetProperty(ctx, val, JSApi.JS_ATOM_length);
+                if (JSApi.JS_IsException(lengthVal))
+                {
+                    o = null;
+                    return js_script_error(ctx);
+                }
+                int length;
+                JSApi.JS_ToInt32(ctx, out length, lengthVal);
+                JSApi.JS_FreeValue(ctx, lengthVal);
+                o = new byte[length];
+                for (var i = 0U; i < length; i++)
+                {
+                    var eVal = JSApi.JS_GetPropertyUint32(ctx, val, i);
+                    byte e;
+                    if (js_get_primitive(ctx, eVal, out e))
+                    {
+                        o[i] = e;
+                        JSApi.JS_FreeValue(ctx, eVal);
+                    }
+                    else
+                    {
+                        o = null;
+                        JSApi.JS_FreeValue(ctx, eVal);
+                        return false;
+                    }
+                }
+                return true;
+            }
+            if (isArray == -1)
+            {
+                o = null;
+                return false;
+            }
+            return js_get_classvalue<byte[]>(ctx, val, out o);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool js_get_primitive(JSContext ctx, JSValue val, out char o)
         {
             int pres;
@@ -150,54 +220,96 @@ namespace QuickJS.Binding
             return true;
         }
 
-        //         public static bool js_get_primitive_array(JSContext ctx, JSValue val, out char[] o)
-        //         {
-        //             if (JSApi.duk_is_array(ctx, idx))
-        //             {
-        //                 var length = JSApi.duk_unity_get_length(ctx, idx);
-        //                 var nidx = JSApi.duk_normalize_index(ctx, idx);
-        //                 o = new char[length];
-        //                 for (var i = 0U; i < length; i++)
-        //                 {
-        //                     JSApi.js_get_prop_index(ctx, idx, i);
-        //                     char e;
-        //                     e = (char)JSApi.js_get_int(ctx, -1); // js_get_primitive(ctx, -1, out e);
-        //                     o[i] = e;
-        //                     JSApi.duk_pop(ctx);
-        //                 }
-        //                 return true;
-        //             }
-        //             js_get_classvalue<char[]>(ctx, idx, out o);
-        //             return true;
-        //         }
+        public static bool js_get_primitive_array(JSContext ctx, JSValue val, out char[] o)
+        {
+            var isArray = JSApi.JS_IsArray(ctx, val);
+            if (isArray == 1)
+            {
+                var lengthVal = JSApi.JS_GetProperty(ctx, val, JSApi.JS_ATOM_length);
+                if (JSApi.JS_IsException(lengthVal))
+                {
+                    o = null;
+                    return js_script_error(ctx);
+                }
+                int length;
+                JSApi.JS_ToInt32(ctx, out length, lengthVal);
+                JSApi.JS_FreeValue(ctx, lengthVal);
+                o = new char[length];
+                for (var i = 0U; i < length; i++)
+                {
+                    var eVal = JSApi.JS_GetPropertyUint32(ctx, val, i);
+                    char e;
+                    if (js_get_primitive(ctx, eVal, out e))
+                    {
+                        o[i] = e;
+                        JSApi.JS_FreeValue(ctx, eVal);
+                    }
+                    else
+                    {
+                        o = null;
+                        JSApi.JS_FreeValue(ctx, eVal);
+                        return false;
+                    }
+                }
+                return true;
+            }
+            if (isArray == -1)
+            {
+                o = null;
+                return false;
+            }
+            return js_get_classvalue<char[]>(ctx, val, out o);
+        }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool js_get_primitive(JSContext ctx, JSValue val, out string o)
         {
             o = JSApi.GetString(ctx, val); // no check
             return true;
         }
 
-        //         public static bool js_get_primitive_array(JSContext ctx, JSValue val, out string[] o)
-        //         {
-        //             if (JSApi.duk_is_array(ctx, idx))
-        //             {
-        //                 var length = JSApi.duk_unity_get_length(ctx, idx);
-        //                 var nidx = JSApi.duk_normalize_index(ctx, idx);
-        //                 o = new string[length];
-        //                 for (var i = 0U; i < length; i++)
-        //                 {
-        //                     JSApi.js_get_prop_index(ctx, idx, i);
-        //                     string e;
-        //                     e = JSApi.js_get_string(ctx, -1); // js_get_primitive(ctx, -1, out e);
-        //                     o[i] = e;
-        //                     JSApi.duk_pop(ctx);
-        //                 }
-        //                 return true;
-        //             }
-        //             js_get_classvalue<string[]>(ctx, idx, out o);
-        //             return true;
-        //         }
+        public static bool js_get_primitive_array(JSContext ctx, JSValue val, out string[] o)
+        {
+            var isArray = JSApi.JS_IsArray(ctx, val);
+            if (isArray == 1)
+            {
+                var lengthVal = JSApi.JS_GetProperty(ctx, val, JSApi.JS_ATOM_length);
+                if (JSApi.JS_IsException(lengthVal))
+                {
+                    o = null;
+                    return js_script_error(ctx);
+                }
+                int length;
+                JSApi.JS_ToInt32(ctx, out length, lengthVal);
+                JSApi.JS_FreeValue(ctx, lengthVal);
+                o = new string[length];
+                for (var i = 0U; i < length; i++)
+                {
+                    var eVal = JSApi.JS_GetPropertyUint32(ctx, val, i);
+                    string e;
+                    if (js_get_primitive(ctx, eVal, out e))
+                    {
+                        o[i] = e;
+                        JSApi.JS_FreeValue(ctx, eVal);
+                    }
+                    else
+                    {
+                        o = null;
+                        JSApi.JS_FreeValue(ctx, eVal);
+                        return false;
+                    }
+                }
+                return true;
+            }
+            if (isArray == -1)
+            {
+                o = null;
+                return false;
+            }
+            return js_get_classvalue<string[]>(ctx, val, out o);
+        }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool js_get_primitive(JSContext ctx, JSValue val, out short o)
         {
             int pres;
@@ -206,27 +318,48 @@ namespace QuickJS.Binding
             return true;
         }
 
-        //         public static bool js_get_primitive_array(JSContext ctx, JSValue val, out short[] o)
-        //         {
-        //             if (JSApi.duk_is_array(ctx, idx))
-        //             {
-        //                 var length = JSApi.duk_unity_get_length(ctx, idx);
-        //                 var nidx = JSApi.duk_normalize_index(ctx, idx);
-        //                 o = new short[length];
-        //                 for (var i = 0U; i < length; i++)
-        //                 {
-        //                     JSApi.js_get_prop_index(ctx, idx, i);
-        //                     short e;
-        //                     e = (short)JSApi.js_get_int(ctx, -1); // js_get_primitive(ctx, -1, out e);
-        //                     o[i] = e;
-        //                     JSApi.duk_pop(ctx);
-        //                 }
-        //                 return true;
-        //             }
-        //             js_get_classvalue<short[]>(ctx, idx, out o);
-        //             return true;
-        //         }
+        public static bool js_get_primitive_array(JSContext ctx, JSValue val, out short[] o)
+        {
+            var isArray = JSApi.JS_IsArray(ctx, val);
+            if (isArray == 1)
+            {
+                var lengthVal = JSApi.JS_GetProperty(ctx, val, JSApi.JS_ATOM_length);
+                if (JSApi.JS_IsException(lengthVal))
+                {
+                    o = null;
+                    return js_script_error(ctx);
+                }
+                int length;
+                JSApi.JS_ToInt32(ctx, out length, lengthVal);
+                JSApi.JS_FreeValue(ctx, lengthVal);
+                o = new short[length];
+                for (var i = 0U; i < length; i++)
+                {
+                    var eVal = JSApi.JS_GetPropertyUint32(ctx, val, i);
+                    short e;
+                    if (js_get_primitive(ctx, eVal, out e))
+                    {
+                        o[i] = e;
+                        JSApi.JS_FreeValue(ctx, eVal);
+                    }
+                    else
+                    {
+                        o = null;
+                        JSApi.JS_FreeValue(ctx, eVal);
+                        return false;
+                    }
+                }
+                return true;
+            }
+            if (isArray == -1)
+            {
+                o = null;
+                return false;
+            }
+            return js_get_classvalue<short[]>(ctx, val, out o);
+        }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool js_get_primitive(JSContext ctx, JSValue val, out ushort o)
         {
             int pres;
@@ -235,27 +368,48 @@ namespace QuickJS.Binding
             return true;
         }
 
-        //         public static bool js_get_primitive_array(JSContext ctx, JSValue val, out ushort[] o)
-        //         {
-        //             if (JSApi.duk_is_array(ctx, idx))
-        //             {
-        //                 var length = JSApi.duk_unity_get_length(ctx, idx);
-        //                 var nidx = JSApi.duk_normalize_index(ctx, idx);
-        //                 o = new ushort[length];
-        //                 for (var i = 0U; i < length; i++)
-        //                 {
-        //                     JSApi.js_get_prop_index(ctx, idx, i);
-        //                     ushort e;
-        //                     e = (ushort)JSApi.js_get_int(ctx, -1); // js_get_primitive(ctx, -1, out e);
-        //                     o[i] = e;
-        //                     JSApi.duk_pop(ctx);
-        //                 }
-        //                 return true;
-        //             }
-        //             js_get_classvalue<ushort[]>(ctx, idx, out o);
-        //             return true;
-        //         }
+        public static bool js_get_primitive_array(JSContext ctx, JSValue val, out ushort[] o)
+        {
+            var isArray = JSApi.JS_IsArray(ctx, val);
+            if (isArray == 1)
+            {
+                var lengthVal = JSApi.JS_GetProperty(ctx, val, JSApi.JS_ATOM_length);
+                if (JSApi.JS_IsException(lengthVal))
+                {
+                    o = null;
+                    return js_script_error(ctx);
+                }
+                int length;
+                JSApi.JS_ToInt32(ctx, out length, lengthVal);
+                JSApi.JS_FreeValue(ctx, lengthVal);
+                o = new ushort[length];
+                for (var i = 0U; i < length; i++)
+                {
+                    var eVal = JSApi.JS_GetPropertyUint32(ctx, val, i);
+                    ushort e;
+                    if (js_get_primitive(ctx, eVal, out e))
+                    {
+                        o[i] = e;
+                        JSApi.JS_FreeValue(ctx, eVal);
+                    }
+                    else
+                    {
+                        o = null;
+                        JSApi.JS_FreeValue(ctx, eVal);
+                        return false;
+                    }
+                }
+                return true;
+            }
+            if (isArray == -1)
+            {
+                o = null;
+                return false;
+            }
+            return js_get_classvalue<ushort[]>(ctx, val, out o);
+        }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool js_get_primitive(JSContext ctx, JSValue val, out int o)
         {
             int pres;
@@ -264,27 +418,48 @@ namespace QuickJS.Binding
             return true;
         }
 
-        //         public static bool js_get_primitive_array(JSContext ctx, JSValue val, out int[] o)
-        //         {
-        //             if (JSApi.duk_is_array(ctx, idx))
-        //             {
-        //                 var length = JSApi.duk_unity_get_length(ctx, idx);
-        //                 var nidx = JSApi.duk_normalize_index(ctx, idx);
-        //                 o = new int[length];
-        //                 for (var i = 0U; i < length; i++)
-        //                 {
-        //                     JSApi.js_get_prop_index(ctx, idx, i);
-        //                     int e;
-        //                     e = JSApi.js_get_int(ctx, -1); // js_get_primitive(ctx, -1, out e);
-        //                     o[i] = e;
-        //                     JSApi.duk_pop(ctx);
-        //                 }
-        //                 return true;
-        //             }
-        //             js_get_classvalue<int[]>(ctx, idx, out o);
-        //             return true;
-        //         }
+        public static bool js_get_primitive_array(JSContext ctx, JSValue val, out int[] o)
+        {
+            var isArray = JSApi.JS_IsArray(ctx, val);
+            if (isArray == 1)
+            {
+                var lengthVal = JSApi.JS_GetProperty(ctx, val, JSApi.JS_ATOM_length);
+                if (JSApi.JS_IsException(lengthVal))
+                {
+                    o = null;
+                    return js_script_error(ctx);
+                }
+                int length;
+                JSApi.JS_ToInt32(ctx, out length, lengthVal);
+                JSApi.JS_FreeValue(ctx, lengthVal);
+                o = new int[length];
+                for (var i = 0U; i < length; i++)
+                {
+                    var eVal = JSApi.JS_GetPropertyUint32(ctx, val, i);
+                    int e;
+                    if (js_get_primitive(ctx, eVal, out e))
+                    {
+                        o[i] = e;
+                        JSApi.JS_FreeValue(ctx, eVal);
+                    }
+                    else
+                    {
+                        o = null;
+                        JSApi.JS_FreeValue(ctx, eVal);
+                        return false;
+                    }
+                }
+                return true;
+            }
+            if (isArray == -1)
+            {
+                o = null;
+                return false;
+            }
+            return js_get_classvalue<int[]>(ctx, val, out o);
+        }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool js_get_primitive(JSContext ctx, JSValue val, out uint o)
         {
             uint pres;
@@ -293,27 +468,48 @@ namespace QuickJS.Binding
             return true;
         }
 
-        //         public static bool js_get_primitive_array(JSContext ctx, JSValue val, out uint[] o)
-        //         {
-        //             if (JSApi.duk_is_array(ctx, idx))
-        //             {
-        //                 var length = JSApi.duk_unity_get_length(ctx, idx);
-        //                 var nidx = JSApi.duk_normalize_index(ctx, idx);
-        //                 o = new uint[length];
-        //                 for (var i = 0U; i < length; i++)
-        //                 {
-        //                     JSApi.js_get_prop_index(ctx, idx, i);
-        //                     uint e;
-        //                     e = JSApi.js_get_uint(ctx, -1); // js_get_primitive(ctx, -1, out e); 
-        //                     o[i] = e;
-        //                     JSApi.duk_pop(ctx);
-        //                 }
-        //                 return true;
-        //             }
-        //             js_get_classvalue<uint[]>(ctx, idx, out o);
-        //             return true;
-        //         }
+        public static bool js_get_primitive_array(JSContext ctx, JSValue val, out uint[] o)
+        {
+            var isArray = JSApi.JS_IsArray(ctx, val);
+            if (isArray == 1)
+            {
+                var lengthVal = JSApi.JS_GetProperty(ctx, val, JSApi.JS_ATOM_length);
+                if (JSApi.JS_IsException(lengthVal))
+                {
+                    o = null;
+                    return js_script_error(ctx);
+                }
+                int length;
+                JSApi.JS_ToInt32(ctx, out length, lengthVal);
+                JSApi.JS_FreeValue(ctx, lengthVal);
+                o = new uint[length];
+                for (var i = 0U; i < length; i++)
+                {
+                    var eVal = JSApi.JS_GetPropertyUint32(ctx, val, i);
+                    uint e;
+                    if (js_get_primitive(ctx, eVal, out e))
+                    {
+                        o[i] = e;
+                        JSApi.JS_FreeValue(ctx, eVal);
+                    }
+                    else
+                    {
+                        o = null;
+                        JSApi.JS_FreeValue(ctx, eVal);
+                        return false;
+                    }
+                }
+                return true;
+            }
+            if (isArray == -1)
+            {
+                o = null;
+                return false;
+            }
+            return js_get_classvalue<uint[]>(ctx, val, out o);
+        }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool js_get_primitive(JSContext ctx, JSValue val, out long o)
         {
             long pres;
@@ -322,27 +518,48 @@ namespace QuickJS.Binding
             return true;
         }
 
-        //         public static bool js_get_primitive_array(JSContext ctx, JSValue val, out long[] o)
-        //         {
-        //             if (JSApi.duk_is_array(ctx, idx))
-        //             {
-        //                 var length = JSApi.duk_unity_get_length(ctx, idx);
-        //                 var nidx = JSApi.duk_normalize_index(ctx, idx);
-        //                 o = new long[length];
-        //                 for (var i = 0U; i < length; i++)
-        //                 {
-        //                     JSApi.js_get_prop_index(ctx, idx, i);
-        //                     long e;
-        //                     e = (long)JSApi.js_get_number(ctx, -1); // js_get_primitive(ctx, -1, out e);
-        //                     o[i] = e;
-        //                     JSApi.duk_pop(ctx);
-        //                 }
-        //                 return true;
-        //             }
-        //             js_get_classvalue<long[]>(ctx, idx, out o);
-        //             return true;
-        //         }
+        public static bool js_get_primitive_array(JSContext ctx, JSValue val, out long[] o)
+        {
+            var isArray = JSApi.JS_IsArray(ctx, val);
+            if (isArray == 1)
+            {
+                var lengthVal = JSApi.JS_GetProperty(ctx, val, JSApi.JS_ATOM_length);
+                if (JSApi.JS_IsException(lengthVal))
+                {
+                    o = null;
+                    return js_script_error(ctx);
+                }
+                int length;
+                JSApi.JS_ToInt32(ctx, out length, lengthVal);
+                JSApi.JS_FreeValue(ctx, lengthVal);
+                o = new long[length];
+                for (var i = 0U; i < length; i++)
+                {
+                    var eVal = JSApi.JS_GetPropertyUint32(ctx, val, i);
+                    long e;
+                    if (js_get_primitive(ctx, eVal, out e))
+                    {
+                        o[i] = e;
+                        JSApi.JS_FreeValue(ctx, eVal);
+                    }
+                    else
+                    {
+                        o = null;
+                        JSApi.JS_FreeValue(ctx, eVal);
+                        return false;
+                    }
+                }
+                return true;
+            }
+            if (isArray == -1)
+            {
+                o = null;
+                return false;
+            }
+            return js_get_classvalue<long[]>(ctx, val, out o);
+        }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool js_get_primitive(JSContext ctx, JSValue val, out ulong o)
         {
             ulong pres;
@@ -351,27 +568,48 @@ namespace QuickJS.Binding
             return true;
         }
 
-        //         public static bool js_get_primitive_array(JSContext ctx, JSValue val, out ulong[] o)
-        //         {
-        //             if (JSApi.duk_is_array(ctx, idx))
-        //             {
-        //                 var length = JSApi.duk_unity_get_length(ctx, idx);
-        //                 var nidx = JSApi.duk_normalize_index(ctx, idx);
-        //                 o = new ulong[length];
-        //                 for (var i = 0U; i < length; i++)
-        //                 {
-        //                     JSApi.js_get_prop_index(ctx, idx, i);
-        //                     ulong e;
-        //                     e = (ulong)JSApi.js_get_number(ctx, -1); // js_get_primitive(ctx, -1, out e);
-        //                     o[i] = e;
-        //                     JSApi.duk_pop(ctx);
-        //                 }
-        //                 return true;
-        //             }
-        //             js_get_classvalue<ulong[]>(ctx, idx, out o);
-        //             return true;
-        //         }
+        public static bool js_get_primitive_array(JSContext ctx, JSValue val, out ulong[] o)
+        {
+            var isArray = JSApi.JS_IsArray(ctx, val);
+            if (isArray == 1)
+            {
+                var lengthVal = JSApi.JS_GetProperty(ctx, val, JSApi.JS_ATOM_length);
+                if (JSApi.JS_IsException(lengthVal))
+                {
+                    o = null;
+                    return js_script_error(ctx);
+                }
+                int length;
+                JSApi.JS_ToInt32(ctx, out length, lengthVal);
+                JSApi.JS_FreeValue(ctx, lengthVal);
+                o = new ulong[length];
+                for (var i = 0U; i < length; i++)
+                {
+                    var eVal = JSApi.JS_GetPropertyUint32(ctx, val, i);
+                    ulong e;
+                    if (js_get_primitive(ctx, eVal, out e))
+                    {
+                        o[i] = e;
+                        JSApi.JS_FreeValue(ctx, eVal);
+                    }
+                    else
+                    {
+                        o = null;
+                        JSApi.JS_FreeValue(ctx, eVal);
+                        return false;
+                    }
+                }
+                return true;
+            }
+            if (isArray == -1)
+            {
+                o = null;
+                return false;
+            }
+            return js_get_classvalue<ulong[]>(ctx, val, out o);
+        }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool js_get_primitive(JSContext ctx, JSValue val, out float o)
         {
             double pres;
@@ -380,57 +618,98 @@ namespace QuickJS.Binding
             return true;
         }
 
-        //         public static bool js_get_primitive_array(JSContext ctx, JSValue val, out float[] o)
-        //         {
-        //             if (JSApi.duk_is_array(ctx, idx))
-        //             {
-        //                 var length = JSApi.duk_unity_get_length(ctx, idx);
-        //                 var nidx = JSApi.duk_normalize_index(ctx, idx);
-        //                 o = new float[length];
-        //                 for (var i = 0U; i < length; i++)
-        //                 {
-        //                     JSApi.js_get_prop_index(ctx, idx, i);
-        //                     float e;
-        //                     e = (float)JSApi.js_get_number(ctx, -1); // js_get_primitive(ctx, -1, out e);
-        //                     o[i] = e;
-        //                     JSApi.duk_pop(ctx);
-        //                 }
-        //                 return true;
-        //             }
-        //             js_get_classvalue<float[]>(ctx, idx, out o);
-        //             return true;
-        //         }
+        public static bool js_get_primitive_array(JSContext ctx, JSValue val, out float[] o)
+        {
+            var isArray = JSApi.JS_IsArray(ctx, val);
+            if (isArray == 1)
+            {
+                var lengthVal = JSApi.JS_GetProperty(ctx, val, JSApi.JS_ATOM_length);
+                if (JSApi.JS_IsException(lengthVal))
+                {
+                    o = null;
+                    return js_script_error(ctx);
+                }
+                int length;
+                JSApi.JS_ToInt32(ctx, out length, lengthVal);
+                JSApi.JS_FreeValue(ctx, lengthVal);
+                o = new float[length];
+                for (var i = 0U; i < length; i++)
+                {
+                    var eVal = JSApi.JS_GetPropertyUint32(ctx, val, i);
+                    float e;
+                    if (js_get_primitive(ctx, eVal, out e))
+                    {
+                        o[i] = e;
+                        JSApi.JS_FreeValue(ctx, eVal);
+                    }
+                    else
+                    {
+                        o = null;
+                        JSApi.JS_FreeValue(ctx, eVal);
+                        return false;
+                    }
+                }
+                return true;
+            }
+            if (isArray == -1)
+            {
+                o = null;
+                return false;
+            }
+            return js_get_classvalue<float[]>(ctx, val, out o);
+        }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool js_get_primitive(JSContext ctx, JSValue val, out double o)
         {
-
             double pres;
             JSApi.JS_ToFloat64(ctx, out pres, val);
             o = pres; // no check
             return true;
         }
 
-        //         public static bool js_get_primitive_array(JSContext ctx, JSValue val, out double[] o)
-        //         {
-        //             if (JSApi.duk_is_array(ctx, idx))
-        //             {
-        //                 var length = JSApi.duk_unity_get_length(ctx, idx);
-        //                 var nidx = JSApi.duk_normalize_index(ctx, idx);
-        //                 o = new double[length];
-        //                 for (var i = 0U; i < length; i++)
-        //                 {
-        //                     JSApi.js_get_prop_index(ctx, idx, i);
-        //                     double e;
-        //                     e = JSApi.js_get_number(ctx, -1); // js_get_primitive(ctx, -1, out e);
-        //                     o[i] = e;
-        //                     JSApi.duk_pop(ctx);
-        //                 }
-        //                 return true;
-        //             }
-        //             js_get_classvalue<double[]>(ctx, idx, out o);
-        //             return true;
-        //         }
+        public static bool js_get_primitive_array(JSContext ctx, JSValue val, out double[] o)
+        {
+            var isArray = JSApi.JS_IsArray(ctx, val);
+            if (isArray == 1)
+            {
+                var lengthVal = JSApi.JS_GetProperty(ctx, val, JSApi.JS_ATOM_length);
+                if (JSApi.JS_IsException(lengthVal))
+                {
+                    o = null;
+                    return js_script_error(ctx);
+                }
+                int length;
+                JSApi.JS_ToInt32(ctx, out length, lengthVal);
+                JSApi.JS_FreeValue(ctx, lengthVal);
+                o = new double[length];
+                for (var i = 0U; i < length; i++)
+                {
+                    var eVal = JSApi.JS_GetPropertyUint32(ctx, val, i);
+                    double e;
+                    if (js_get_primitive(ctx, eVal, out e))
+                    {
+                        o[i] = e;
+                        JSApi.JS_FreeValue(ctx, eVal);
+                    }
+                    else
+                    {
+                        o = null;
+                        JSApi.JS_FreeValue(ctx, eVal);
+                        return false;
+                    }
+                }
+                return true;
+            }
+            if (isArray == -1)
+            {
+                o = null;
+                return false;
+            }
+            return js_get_classvalue<double[]>(ctx, val, out o);
+        }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool js_get_structvalue(JSContext ctx, JSValue val, out LayerMask o)
         {
             int pres;
@@ -439,6 +718,7 @@ namespace QuickJS.Binding
             return true;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool js_get_structvalue(JSContext ctx, JSValue val, out Color o)
         {
             float r, g, b, a;
@@ -447,6 +727,7 @@ namespace QuickJS.Binding
             return ret != 0;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool js_get_structvalue(JSContext ctx, JSValue val, out Color32 o)
         {
             int r, g, b, a;
@@ -455,6 +736,7 @@ namespace QuickJS.Binding
             return ret != 0;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool js_get_structvalue(JSContext ctx, JSValue val, out Vector2 o)
         {
             float x, y;
@@ -463,6 +745,7 @@ namespace QuickJS.Binding
             return ret != 0;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool js_get_structvalue(JSContext ctx, JSValue val, out Vector2Int o)
         {
             int x, y;
@@ -471,6 +754,7 @@ namespace QuickJS.Binding
             return ret != 0;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool js_get_structvalue(JSContext ctx, JSValue val, out Vector3 o)
         {
             float x, y, z;
@@ -479,6 +763,7 @@ namespace QuickJS.Binding
             return ret != 0;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool js_get_structvalue(JSContext ctx, JSValue val, out Vector3Int o)
         {
             int x, y, z;
@@ -487,6 +772,7 @@ namespace QuickJS.Binding
             return ret != 0;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool js_get_structvalue(JSContext ctx, JSValue val, out Vector4 o)
         {
             float x, y, z, w;
@@ -495,6 +781,7 @@ namespace QuickJS.Binding
             return ret != 0;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool js_get_structvalue(JSContext ctx, JSValue val, out Quaternion o)
         {
             float x, y, z, w;
@@ -521,6 +808,7 @@ namespace QuickJS.Binding
         }
 
         // fallthrough
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool js_get_structvalue<T>(JSContext ctx, JSValue val, out T o)
         where T : struct
         {
@@ -530,6 +818,7 @@ namespace QuickJS.Binding
             return ret;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool js_get_structvalue<T>(JSContext ctx, JSValue val, out T? o)
         where T : struct
         {
@@ -539,51 +828,89 @@ namespace QuickJS.Binding
             return ret;
         }
 
-        //         public static bool js_get_structvalue_array<T>(JSContext ctx, JSValue val, out T[] o)
-        //         where T : struct
-        //         {
-        //             if (JSApi.duk_is_array(ctx, idx))
-        //             {
-        //                 var length = JSApi.duk_unity_get_length(ctx, idx);
-        //                 o = new T[length];
-        //                 idx = JSApi.duk_normalize_index(ctx, idx);
-        //                 for (var i = 0U; i < length; i++)
-        //                 {
-        //                     JSApi.js_get_prop_index(ctx, idx, i);
-        //                     T e;
-        //                     if (js_get_structvalue(ctx, -1, out e))
-        //                     {
-        //                         o[i] = e;
-        //                     }
-        //                 }
-        //                 return true;
-        //             }
-        //             o = null;
-        //             return false;
-        //         }
-        //
-        //         public static bool js_get_structvalue_array<T>(JSContext ctx, JSValue val, out T?[] o)
-        //         where T : struct
-        //         {
-        //             if (JSApi.duk_is_array(ctx, idx))
-        //             {
-        //                 var length = JSApi.duk_unity_get_length(ctx, idx);
-        //                 o = new T?[length];
-        //                 idx = JSApi.duk_normalize_index(ctx, idx);
-        //                 for (var i = 0U; i < length; i++)
-        //                 {
-        //                     JSApi.js_get_prop_index(ctx, idx, i);
-        //                     T? e;
-        //                     if (js_get_structvalue(ctx, -1, out e))
-        //                     {
-        //                         o[i] = e;
-        //                     }
-        //                 }
-        //                 return true;
-        //             }
-        //             o = null;
-        //             return false;
-        //         }
+        public static bool js_get_structvalue_array<T>(JSContext ctx, JSValue val, out T[] o)
+        where T : struct
+        {
+            var isArray = JSApi.JS_IsArray(ctx, val);
+            if (isArray == 1)
+            {
+                var lengthVal = JSApi.JS_GetProperty(ctx, val, JSApi.JS_ATOM_length);
+                if (JSApi.JS_IsException(lengthVal))
+                {
+                    o = null;
+                    return js_script_error(ctx);
+                }
+                int length;
+                JSApi.JS_ToInt32(ctx, out length, lengthVal);
+                JSApi.JS_FreeValue(ctx, lengthVal);
+                o = new T[length];
+                for (var i = 0U; i < length; i++)
+                {
+                    var eVal = JSApi.JS_GetPropertyUint32(ctx, val, i);
+                    T e;
+                    if (js_get_structvalue(ctx, eVal, out e))
+                    {
+                        o[i] = e;
+                        JSApi.JS_FreeValue(ctx, eVal);
+                    }
+                    else
+                    {
+                        o = null;
+                        JSApi.JS_FreeValue(ctx, eVal);
+                        return false;
+                    }
+                }
+                return true;
+            }
+            if (isArray == -1)
+            {
+                o = null;
+                return false;
+            }
+            return js_get_classvalue<T[]>(ctx, val, out o);
+        }
+
+        public static bool js_get_structvalue_array<T>(JSContext ctx, JSValue val, out T?[] o)
+        where T : struct
+        {
+            var isArray = JSApi.JS_IsArray(ctx, val);
+            if (isArray == 1)
+            {
+                var lengthVal = JSApi.JS_GetProperty(ctx, val, JSApi.JS_ATOM_length);
+                if (JSApi.JS_IsException(lengthVal))
+                {
+                    o = null;
+                    return js_script_error(ctx);
+                }
+                int length;
+                JSApi.JS_ToInt32(ctx, out length, lengthVal);
+                JSApi.JS_FreeValue(ctx, lengthVal);
+                o = new T?[length];
+                for (var i = 0U; i < length; i++)
+                {
+                    var eVal = JSApi.JS_GetPropertyUint32(ctx, val, i);
+                    T? e;
+                    if (js_get_structvalue(ctx, eVal, out e))
+                    {
+                        o[i] = e;
+                        JSApi.JS_FreeValue(ctx, eVal);
+                    }
+                    else
+                    {
+                        o = null;
+                        JSApi.JS_FreeValue(ctx, eVal);
+                        return false;
+                    }
+                }
+                return true;
+            }
+            if (isArray == -1)
+            {
+                o = null;
+                return false;
+            }
+            return js_get_classvalue<T?[]>(ctx, val, out o);
+        }
 
         // not value type (except string/array)
         public static bool js_get_classvalue<T>(JSContext ctx, JSValue val, out T o)
@@ -595,19 +922,21 @@ namespace QuickJS.Binding
                 o = o_t as T;
                 if (o_t != null && o == null)
                 {
-                    throw new InvalidCastException(string.Format("{0} type mismatch {1}", o_t.GetType(), typeof(T)));
-                    // return false;
+                    // throw new InvalidCastException(string.Format("{0} type mismatch {1}", o_t.GetType(), typeof(T)));
+                    return false;
                 }
                 return true;
             }
-            var type_id = JSApi.JSB_GetBridgeType(ctx, val);
-            if (type_id >= 0)
-            {
-                var valType = ScriptEngine.GetTypeDB(ctx).GetType(type_id);
-                throw new InvalidCastException(string.Format("{0} type mismatch {1}", valType, typeof(T)));
-            }
-            var jsType = val.tag;
-            throw new InvalidCastException(string.Format("{0} type mismatch {1}", jsType, typeof(T)));
+            // var type_id = JSApi.JSB_GetBridgeType(ctx, val);
+            // if (type_id >= 0)
+            // {
+            //     var valType = ScriptEngine.GetTypeDB(ctx).GetType(type_id);
+            //     throw new InvalidCastException(string.Format("{0} type mismatch {1}", valType, typeof(T)));
+            // }
+            // var jsType = val.tag;
+            // throw new InvalidCastException(string.Format("{0} type mismatch {1}", jsType, typeof(T)));
+            o = default(T);
+            return false;
         }
 
         public static bool js_get_classvalue(JSContext ctx, JSValue val, out ScriptValue o)
@@ -738,99 +1067,50 @@ namespace QuickJS.Binding
             o = null;
             return false;
         }
+        
+        public static bool js_get_classvalue_array<T>(JSContext ctx, JSValue val, out T[] o)
+        where T : class
+        {
+            var isArray = JSApi.JS_IsArray(ctx, val);
+            if (isArray == 1)
+            {
+                var lengthVal = JSApi.JS_GetProperty(ctx, val, JSApi.JS_ATOM_length);
+                if (JSApi.JS_IsException(lengthVal))
+                {
+                    o = null;
+                    return js_script_error(ctx);
+                }
+                int length;
+                JSApi.JS_ToInt32(ctx, out length, lengthVal);
+                JSApi.JS_FreeValue(ctx, lengthVal);
+                o = new T[length];
+                for (var i = 0U; i < length; i++)
+                {
+                    var eVal = JSApi.JS_GetPropertyUint32(ctx, val, i);
+                    T e;
+                    if (js_get_classvalue(ctx, eVal, out e))
+                    {
+                        o[i] = e;
+                        JSApi.JS_FreeValue(ctx, eVal);
+                    }
+                    else
+                    {
+                        o = null;
+                        JSApi.JS_FreeValue(ctx, eVal);
+                        return false;
+                    }
+                }
+                return true;
+            }
+            if (isArray == -1)
+            {
+                o = null;
+                return false;
+            }
+            return js_get_classvalue<T[]>(ctx, val, out o);
+        }
 
-        //         public static bool js_get_var(JSContext ctx, JSValue val, out object o)
-        //         {
-        //             var jstype = JSApi.js_get_type(ctx, idx);
-        //
-        //             switch (jstype)
-        //             {
-        //                 case duk_type_t.DUK_TYPE_BOOLEAN: /* ECMAScript boolean: 0 or 1 */
-        //                     {
-        //                         o = JSApi.js_get_boolean(ctx, idx);
-        //                         return true;
-        //                     }
-        //                 case duk_type_t.DUK_TYPE_NUMBER: /* ECMAScript number: double */
-        //                     {
-        //                         o = JSApi.js_get_number(ctx, idx);
-        //                         return true;
-        //                     }
-        //                 case duk_type_t.DUK_TYPE_STRING: /* ECMAScript string: CESU-8 / extended UTF-8 encoded */
-        //                     {
-        //                         o = JSApi.js_get_string(ctx, idx);
-        //                         return true;
-        //                     }
-        //                 case duk_type_t.DUK_TYPE_OBJECT: /* ECMAScript object: includes objects, arrays, functions, threads */
-        //                     {
-        //                         return js_get_cached_object(ctx, idx, out o);
-        //                     }
-        //                 case duk_type_t.DUK_TYPE_BUFFER: /* fixed or dynamic, garbage collected byte buffer */
-        //                     {
-        //                         uint length;
-        //                         var pointer = JSApi.duk_unity_get_buffer_data(ctx, idx, out length);
-        //                         var buffer = new byte[length];
-        //                         o = buffer;
-        //                         Marshal.Copy(pointer, buffer, 0, (int)length);
-        //                         return true;
-        //                     }
-        //                 case duk_type_t.DUK_TYPE_POINTER:    /* raw void pointer */
-        //                 case duk_type_t.DUK_TYPE_LIGHTFUNC:    /* lightweight function pointer */
-        //                     throw new NotImplementedException();
-        //                 case duk_type_t.DUK_TYPE_NONE:    /* no value, e.g. invalid index */
-        //                     o = null;
-        //                     return false;
-        //                 case duk_type_t.DUK_TYPE_UNDEFINED:    /* ECMAScript undefined */
-        //                 case duk_type_t.DUK_TYPE_NULL:    /* ECMAScript null */
-        //                     o = null;
-        //                     return true;
-        //             }
-        //
-        //             o = null;
-        //             return false;
-        //         }
-        //
-        //         // public static bool js_get_object(JSContext ctx, JSValue val, out object o)
-        //         // {
-        //         //     if (JSApi.duk_is_null_or_undefined(ctx, idx)) // or check for object?
-        //         //     {
-        //         //         o = null;
-        //         //         return true;
-        //         //     }
-        //         //     var jstype = JSApi.js_get_type(ctx, idx);
-        //         //     Debug.LogFormat("js_get_object({0})", jstype);
-        //         //     switch (jstype)
-        //         //     {
-        //         //         case duk_type_t.DUK_TYPE_STRING:
-        //         //             o = JSApi.js_get_string(ctx, idx);
-        //         //             return true;
-        //         //         default: break;
-        //         //     }
-        //         //     return js_get_cached_object(ctx, idx, out o);
-        //         // }
-        //
-        //         public static bool js_get_classvalue_array<T>(JSContext ctx, JSValue val, out T[] o)
-        //         where T : class
-        //         {
-        //             if (JSApi.duk_is_array(ctx, idx))
-        //             {
-        //                 var length = JSApi.duk_unity_get_length(ctx, idx);
-        //                 o = new T[length];
-        //                 idx = JSApi.duk_normalize_index(ctx, idx);
-        //                 for (var i = 0U; i < length; i++)
-        //                 {
-        //                     JSApi.js_get_prop_index(ctx, idx, i);
-        //                     T e;
-        //                     if (js_get_classvalue(ctx, -1, out e))
-        //                     {
-        //                         o[i] = e;
-        //                     }
-        //                 }
-        //                 return true;
-        //             }
-        //             o = null;
-        //             return false;
-        //         }
-
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool js_get_enumvalue<T>(JSContext ctx, JSValue val, out T o)
         where T : Enum
         {
@@ -840,26 +1120,46 @@ namespace QuickJS.Binding
             return ret;
         }
 
-        //         public static bool js_get_enumvalue_array<T>(JSContext ctx, JSValue val, out T[] o)
-        //         where T : Enum
-        //         {
-        //             if (JSApi.duk_is_array(ctx, idx))
-        //             {
-        //                 var length = JSApi.duk_unity_get_length(ctx, idx);
-        //                 var nidx = JSApi.duk_normalize_index(ctx, idx);
-        //                 o = new T[length];
-        //                 for (var i = 0U; i < length; i++)
-        //                 {
-        //                     JSApi.js_get_prop_index(ctx, idx, i);
-        //                     T e;
-        //                     js_get_enumvalue(ctx, -1, out e);
-        //                     o[i] = e;
-        //                     JSApi.duk_pop(ctx);
-        //                 }
-        //                 return true;
-        //             }
-        //             js_get_classvalue<T[]>(ctx, idx, out o);
-        //             return true;
-        //         }
+        public static bool js_get_enumvalue_array<T>(JSContext ctx, JSValue val, out T[] o)
+        where T : Enum
+        {
+            var isArray = JSApi.JS_IsArray(ctx, val);
+            if (isArray == 1)
+            {
+                var lengthVal = JSApi.JS_GetProperty(ctx, val, JSApi.JS_ATOM_length);
+                if (JSApi.JS_IsException(lengthVal))
+                {
+                    o = null;
+                    return js_script_error(ctx);
+                }
+                int length;
+                JSApi.JS_ToInt32(ctx, out length, lengthVal);
+                JSApi.JS_FreeValue(ctx, lengthVal);
+                o = new T[length];
+                for (var i = 0U; i < length; i++)
+                {
+                    var eVal = JSApi.JS_GetPropertyUint32(ctx, val, i);
+                    T e;
+                    if (js_get_enumvalue(ctx, eVal, out e))
+                    {
+                        o[i] = e;
+                        JSApi.JS_FreeValue(ctx, eVal);
+                    }
+                    else
+                    {
+                        o = null;
+                        JSApi.JS_FreeValue(ctx, eVal);
+                        return false;
+                    }
+                }
+                return true;
+            }
+            if (isArray == -1)
+            {
+                o = null;
+                return false;
+            }
+            return js_get_classvalue<T[]>(ctx, val, out o);
+        }
     }
 }

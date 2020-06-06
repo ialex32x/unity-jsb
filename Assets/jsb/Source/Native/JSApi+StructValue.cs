@@ -69,6 +69,12 @@ namespace QuickJS.Native
         public static extern JS_BOOL jsb_set_float_4(JSValue val, float v0, float v1, float v2, float v3);
         
         [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern JS_BOOL jsb_get_int_1(JSValue val, out int v0);
+        
+        [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern JS_BOOL jsb_set_int_1(JSValue val, int v0);
+        
+        [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern JS_BOOL jsb_get_int_2(JSValue val, out int v0, out int v1);
         
         [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]

@@ -276,6 +276,16 @@ namespace QuickJS.Editor
 
             AddExportedType(typeof(ScriptBehaviour));
             AddExportedType(typeof(QuickJS.IO.ByteBuffer));
+            AddExportedType(typeof(LayerMask));
+            AddExportedType(typeof(Color));
+            AddExportedType(typeof(Color32));
+            AddExportedType(typeof(Vector2));
+            AddExportedType(typeof(Vector2Int));
+            AddExportedType(typeof(Vector3));
+            AddExportedType(typeof(Vector3Int));
+            AddExportedType(typeof(Vector4));
+            AddExportedType(typeof(Quaternion));
+            AddExportedType(typeof(Matrix4x4));
 
             AddCSTypeNameMap(typeof(sbyte), "sbyte");
             AddCSTypeNameMap(typeof(byte), "byte");

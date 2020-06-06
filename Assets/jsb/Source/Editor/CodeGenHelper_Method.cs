@@ -384,7 +384,7 @@ namespace QuickJS.Editor
         protected virtual void EndInvokeBinding() { }
 
         // 写入无返回值的C#方法的返回代码
-        protected virtual void InvokeVoidReturn() 
+        protected virtual void InvokeVoidReturn()
         {
             cg.cs.AppendLine("return JSApi.JS_UNDEFINED;");
         }
@@ -439,7 +439,7 @@ namespace QuickJS.Editor
                 {
                     if (!string.IsNullOrEmpty(caller))
                     {
-                        cg.cs.AppendLine($"duk_rebind_this(ctx, {caller});");
+                        cg.cs.AppendLine($"js_rebind_this(ctx, this_obj, {caller});");
                     }
                 }
                 this.InvokeVoidReturn();
@@ -467,15 +467,21 @@ namespace QuickJS.Editor
             {
                 var parameter = parametersByRef[i];
                 var position = isExtension ? parameter.Position - 1 : parameter.Position;
-                cg.cs.AppendLine("if (!DuktapeDLL.duk_is_null_or_undefined(ctx, {0}))", position);
-                cg.cs.AppendLine("{");
-                cg.cs.AddTabLevel();
                 var argname = $"arg{position}";
                 var pusher = cg.AppendValuePusher(parameter.ParameterType, argname);
-                cg.cs.AppendLine("//TODO: {0}", pusher);
-                cg.cs.AppendLine("DuktapeDLL.duk_unity_put_target_i(ctx, {0});", position);
+                cg.cs.AppendLine("var out{0} = {1}", position, pusher);
+                cg.cs.AppendLine("if (JSApi.JS_IsException(out{0}))", position);
+                cg.cs.AppendLine("{");
+                cg.cs.AddTabLevel();
+                // for (var j = 0; j < i; j++)
+                // {
+                //     cg.cs.AppendLine("JSApi.JS_FreeValue(ctx, out{0});", j);
+                // }
+                cg.cs.AppendLine("return out{0};", position);
                 cg.cs.DecTabLevel();
                 cg.cs.AppendLine("}");
+                cg.cs.AppendLine("JSApi.JS_SetPropertyStr(ctx, argv[{0}], \"target\", out{1});", position, position);
+
             }
         }
     }

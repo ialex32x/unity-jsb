@@ -29,7 +29,7 @@ namespace QuickJS.Editor
             if (declaringType.IsValueType && !eventInfo.GetAddMethod().IsStatic)
             {
                 // 非静态结构体属性修改, 尝试替换实例
-                this.cg.cs.AppendLine($"duk_rebind_this(ctx, {caller});");
+                this.cg.cs.AppendLine($"js_rebind_this(ctx, this_obj, {caller});");
             }
             this.cg.cs.AppendLine("return 0;");
         }
@@ -59,7 +59,7 @@ namespace QuickJS.Editor
             if (declaringType.IsValueType && !eventInfo.GetAddMethod().IsStatic)
             {
                 // 非静态结构体属性修改, 尝试替换实例
-                this.cg.cs.AppendLine($"duk_rebind_this(ctx, {caller});");
+                this.cg.cs.AppendLine($"js_rebind_this(ctx, this_obj, {caller});");
             }
             this.cg.cs.AppendLine("return 0;");
         }

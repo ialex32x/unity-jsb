@@ -271,7 +271,7 @@ namespace QuickJS.Editor
                 {
                     using (new RegFuncNamespaceCodeGen(cg, bindingInfo))
                     {
-                        var constructor = bindingInfo.constructors.available ? bindingInfo.constructors.name : "class_private_ctor";
+                        var constructor = bindingInfo.constructors.available ? bindingInfo.constructors.name : "JSApi.class_private_ctor";
                         if (!bindingInfo.constructors.available && !bindingInfo.type.IsAbstract)
                         {
                             if (bindingInfo.type.IsSubclassOf(typeof(Component)))
@@ -332,7 +332,7 @@ namespace QuickJS.Editor
                                 cg.AppendJSDoc(bindingInfo.propertyInfo);
                                 cg.tsDeclare.AppendLine($"{tsPropertyPrefix}{tsPropertyVar}: {tsPropertyType}");
                             }
-                            
+
                             if (bindingInfo.instancePair.IsValid())
                             {
                                 var tsPropertyVar = BindingManager.GetTSVariable(bindingInfo.regName);
@@ -363,8 +363,8 @@ namespace QuickJS.Editor
                             }
                             else
                             {
-                                cg.cs.AppendLine("cls.AddField(ctx, \"{0}\", {1}, {2}, {3});",
-                                    bStatic ? "cls.ctor" : "cls.proto",
+                                cg.cs.AppendLine("cls.AddField({0}, \"{1}\", {2}, {3});",
+                                    bStatic ? "true" : "false",
                                     tsFieldVar,
                                     bindingInfo.getterName != null ? bindingInfo.getterName : "null",
                                     bindingInfo.setterName != null ? bindingInfo.setterName : "null");

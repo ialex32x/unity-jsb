@@ -20,6 +20,20 @@ namespace QuickJS.Binding
             _nsValue = JSApi.JS_UNDEFINED;
         }
 
+        public void Copy(string oldName, string newName)
+        {
+            var ctx = (JSContext) _register.GetContext();
+            var oldVal = JSApi.JS_GetPropertyStr(ctx, _nsValue, oldName);
+            if (JSApi.JS_IsException(oldVal))
+            {
+                ctx.print_exception();
+            }
+            else
+            {
+                JSApi.JS_SetPropertyStr(ctx, _nsValue, newName, oldVal);
+            }
+        }
+
         public void AddFunction(string name, JSCFunction func, int length)
         {
             var ctx = _register.GetContext();

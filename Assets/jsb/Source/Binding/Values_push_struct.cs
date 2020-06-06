@@ -13,7 +13,10 @@ namespace QuickJS.Binding
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static JSValue js_push_structvalue(JSContext ctx, LayerMask o)
         {
-            return js_push_primitive(ctx, (int)o);
+            var proto = FindPrototypeOf(ctx, typeof(LayerMask));
+            JSValue val = JSApi.jsb_new_bridge_value(ctx, proto, sizeof(int) * 1);
+            JSApi.jsb_set_int_1(val, o.value);
+            return val;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

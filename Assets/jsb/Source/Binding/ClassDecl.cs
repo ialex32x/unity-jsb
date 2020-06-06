@@ -1,5 +1,6 @@
 ﻿using System;
 using QuickJS.Native;
+using System.Runtime.CompilerServices;
 
 namespace QuickJS.Binding
 {
@@ -47,6 +48,12 @@ namespace QuickJS.Binding
             var nameAtom = _register.GetAtom(name);
             var funcVal = JSApi.JSB_NewCFunction(_ctx, func, nameAtom, length, JSCFunctionEnum.JS_CFUNC_generic, 0);
             JSApi.JS_DefinePropertyValue(_ctx, bStatic ? _ctor : _proto, nameAtom, funcVal, JSPropFlags.JS_PROP_C_W_E);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void AddField(bool bStatic, string name, JSCFunction getter, JSCFunction setter)
+        {
+            AddProperty(bStatic, name, getter, setter);
         }
 
         public void AddProperty(bool bStatic, string name, JSCFunction getter, JSCFunction setter)

@@ -34,7 +34,18 @@ namespace QuickJS.Editor
 
         private void AppendCommonHead()
         {
-            this.cg.cs.AppendLine("/*");
+            if (cg.bindingManager.prefs.debugCodegen)
+            {
+                this.cg.cs.AppendLine("/*");
+            }
+        }
+
+        private void AppendCommonTail()
+        {
+            if (cg.bindingManager.prefs.debugCodegen)
+            {
+                this.cg.cs.AppendLine("*/");
+            }
         }
 
         private void AppendCommon()
@@ -47,7 +58,7 @@ namespace QuickJS.Editor
 
         public void Dispose()
         {
-            this.cg.cs.AppendLine("*/");
+            AppendCommonTail();
         }
     }
 

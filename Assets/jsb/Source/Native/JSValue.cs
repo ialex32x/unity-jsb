@@ -52,6 +52,12 @@ namespace QuickJS.Native
             return JSApi.JS_IsNumber(this);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public bool IsObject()
+        {
+            return JSApi.JS_IsObject(this);
+        }
+
         public override int GetHashCode()
         {
             return u.int32 << 2 | (int)tag;

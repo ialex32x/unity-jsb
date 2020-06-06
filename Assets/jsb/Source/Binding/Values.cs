@@ -26,5 +26,27 @@ namespace QuickJS.Binding
             _assignableFromArray.Add(typeof(Quaternion));
             _assignableFromArray.Add(typeof(Matrix4x4));
         }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static JSValue FindPrototypeOf(JSContext ctx, Type type, out int type_id)
+        {
+            var types = ScriptEngine.GetTypeDB(ctx);
+            return types.FindPrototypeOf(type, out type_id);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static JSValue FindPrototypeOf(JSContext ctx, Type type)
+        {
+            int type_id;
+            var types = ScriptEngine.GetTypeDB(ctx);
+            return types.FindPrototypeOf(type, out type_id);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        protected static bool js_script_error(JSContext ctx)
+        {
+            Debug.LogError(ctx.GetExceptionString());
+            return false;
+        }
     }
 }
