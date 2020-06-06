@@ -1,0 +1,39 @@
+{
+    "compilerOptions": {
+        "newLine": "CRLF",
+        "module": "es2020",
+        "target": "es2020",
+        "sourceRoot": "",
+        "outDir": "Assets/Examples/Scripts/out",
+        // "outFile": "Assets/Examples/Scripts/out/code.js",
+        "typeRoots": [
+            "Assets/jsb/Typings",
+            "Assets/Generated/Typings",
+            "Assets/Examples/Scripts/types"
+        ],
+        "moduleResolution": "node",
+        "types": [
+            "node"
+        ],
+        // "listEmittedFiles": true,
+        "experimentalDecorators": true,
+        "noImplicitAny": false,
+        // use 'skipLibCheck' if compilation reports error TS2300 on Promise/Proxy type definition
+        // or just ignore the errors (the typescript source will still be compiled into js)
+        "skipLibCheck": true,
+        // "strictNullChecks": true,
+        "allowJs": true,
+        "inlineSourceMap": false,
+        "sourceMap": true
+    },
+    "compileOnSave": true,
+    "include": [
+        "Assets/jsb/Typings/**/*.ts",
+        "Assets/Generated/**/*.ts",
+        "Assets/Examples/Scripts/types/**/*.ts", 
+        "Assets/Examples/Scripts/src/**/*.ts"
+    ],
+    "exclude": [
+        "Assets/Examples/Scripts/out/**/*"
+    ]
+}

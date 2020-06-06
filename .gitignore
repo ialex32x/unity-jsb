@@ -40,6 +40,8 @@ sysinfo.txt
 
 /Assets/Generated
 /Assets/Generated.meta
+/Assets/Examples/Scripts/out
+/Assets/Examples/Scripts/out.meta
 
 /jsb_build/out
 /jsb_build/quickjs*/.obj
