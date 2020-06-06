@@ -87,7 +87,7 @@ namespace QuickJS.Binding
             {
                 return js_push_delegate(ctx, (Delegate)o);
             }
-            js_push_object(ctx, (object)o);
+            return js_push_object(ctx, (object)o);
         }
 
         // push 一个对象实例 （调用者需要自行负责提前null检查） 
