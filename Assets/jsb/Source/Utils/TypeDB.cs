@@ -30,7 +30,7 @@ namespace QuickJS.Utils
 
         public Type GetType(int index)
         {
-            return _types[index];
+            return index >= 0 && index < _types.Count ? _types[index] : null;
         }
 
         public void AddDelegate(Type type, MethodInfo method)

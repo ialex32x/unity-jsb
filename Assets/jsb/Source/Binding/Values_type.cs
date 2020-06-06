@@ -12,7 +12,7 @@ namespace QuickJS.Binding
     // 处理类型
     public partial class Values
     {
-        public static bool js_get_type(JSContext ctx, JSValue jsValue, out Type o)
+        public static bool js_get_type(JSContext ctx, JSValue this_obj, JSValue jsValue, out Type o)
         {
             if (JSApi.JS_IsString(jsValue))
             {
@@ -22,50 +22,69 @@ namespace QuickJS.Binding
             }
             else
             {
-                int typeid;
                 //TODO: 增加一个隐藏属性记录jsobject对应类型 (constructor, object)
-                if (DuktapeDLL.duk_unity_get_type_refid(ctx, idx, out typeid))
+                var type_id = JSApi.JSB_GetBridgeType(ctx, jsValue);
+                if (type_id >= 0)
                 {
-                    var vm = DuktapeVM.GetVM(ctx);
-                    o = vm.GetExportedType(typeid);
+                    var types = ScriptEngine.GetTypeDB(ctx);
+                    o = types.GetType(type_id);
                     // Debug.Log($"get type from exported registry {o}:{typeid}");
                     return o != null;
                 }
                 else
                 {
-                    int refid;
-                    if (DuktapeDLL.duk_unity_get_refid(ctx, idx, out refid))
+                    var header = JSApi.jsb_get_payload_header(jsValue);
+                    switch (header.type_id)
                     {
-                        var cache = DuktapeVM.GetObjectCache(ctx);
-                        cache.TryGetTypedObject(refid, out o);
-                        // Debug.Log($"get type from objectcache registry {o}:{refid}");
-                        return o != null;
+                        case BridgeObjectType.TypeRef:
+                        {
+                            var types = ScriptEngine.GetTypeDB(ctx);
+                            o = types.GetType(header.value);
+                            // Debug.Log($"get type from exported registry {o}:{typeid}");
+                            return o != null;
+                        }
+                        case BridgeObjectType.ObjectRef:
+                        {
+                            var cache = ScriptEngine.GetObjectCache(ctx);
+                            object obj;
+                            cache.TryGetObject(header.value, out obj);
+                            o = obj.GetType();
+                            return o != null;
+                        }
                     }
                 }
             }
+            
             o = null;
             return false;
         }
 
-        public static bool js_get_type_array(IntPtr ctx, int idx, out Type[] o)
+        public static bool js_get_type_array(JSContext ctx, JSValue this_obj, JSValue val, out Type[] o)
         {
-            if (DuktapeDLL.duk_is_array(ctx, idx))
+            if (JSApi.JS_IsArray(ctx, val) == 1)
             {
-                var length = DuktapeDLL.duk_unity_get_length(ctx, idx);
-                var nidx = DuktapeDLL.duk_normalize_index(ctx, idx);
-                o = new Type[length];
-                for (var i = 0U; i < length; i++)
+                var lengthVal = JSApi.JS_GetProperty(ctx, val, JSApi.JS_ATOM_length);
+                if (JSApi.JS_IsException(lengthVal))
                 {
-                    DuktapeDLL.js_get_prop_index(ctx, idx, i);
+                    throw new Exception(ctx.GetExceptionString());
+                }
+                uint length;
+                JSApi.JSB_ToUint32(ctx, out length, lengthVal);
+                JSApi.JS_FreeValue(ctx, lengthVal);
+                o = new Type[length];
+                for (uint i = 0; i < length; i++)
+                {
+                    var eVal = JSApi.JS_GetPropertyUint32(ctx, val, i);
                     Type e;
-                    js_get_type(ctx, -1, out e);
+                    js_get_type(ctx, this_obj, eVal, out e);
                     o[i] = e;
-                    DuktapeDLL.duk_pop(ctx);
+                    JSApi.JS_FreeValue(ctx, eVal);
                 }
                 return true;
             }
-            js_get_classvalue<Type[]>(ctx, idx, out o);
-            return true;
+            
+            // fallthrough
+            return js_get_classvalue<Type[]>(ctx, this_obj, val, out o);
         }
     }
 }

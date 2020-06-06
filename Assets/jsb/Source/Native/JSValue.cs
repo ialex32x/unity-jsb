@@ -34,6 +34,24 @@ namespace QuickJS.Native
             return JSApi.JS_IsNull(this) || JSApi.JS_IsUndefined(this);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public bool IsBoolean()
+        {
+            return JSApi.JS_IsBool(this);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public bool IsString()
+        {
+            return JSApi.JS_IsString(this);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public bool IsNumber()
+        {
+            return JSApi.JS_IsNumber(this);
+        }
+
         public override int GetHashCode()
         {
             return u.int32 << 2 | (int)tag;

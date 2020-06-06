@@ -15,5 +15,16 @@ namespace QuickJS
         public ScriptDelegate(ScriptContext context, JSValue jsValue) : base(context, jsValue)
         {
         }
+
+        protected override void Dispose(bool bManaged)
+        {
+            if (_context != null)
+            {
+                var context = _context;
+
+                _context = null;
+                context.GetRuntime().FreeDelegationValue(_jsValue);
+            }
+        }
     }
 }

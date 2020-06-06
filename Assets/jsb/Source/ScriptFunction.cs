@@ -49,7 +49,7 @@ namespace QuickJS
                 var rVal = JSApi.JS_Call(ctx, _jsValue, _thisValue, 0, JSApi.EmptyValues);
                 if (JSApi.JS_IsException(rVal))
                 {
-                    _context.print_exception();
+                    ctx.print_exception();
                 }
             
                 JSApi.JS_FreeValue(ctx, rVal);
@@ -59,7 +59,7 @@ namespace QuickJS
                 var rVal = JSApi.JS_Call(ctx, _jsValue, _thisValue, _args.Length, _args);
                 if (JSApi.JS_IsException(rVal))
                 {
-                    _context.print_exception();
+                    ctx.print_exception();
                 }
             
                 JSApi.JS_FreeValue(ctx, rVal);

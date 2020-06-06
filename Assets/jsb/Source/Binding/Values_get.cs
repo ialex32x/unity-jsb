@@ -27,7 +27,7 @@ namespace QuickJS.Binding
                 var lengthVal = JSApi.JS_GetProperty(ctx, val, JSApi.JS_ATOM_length);
                 if (JSApi.JS_IsException(lengthVal))
                 {
-                    throw new Exception(ctx.GetExceptionString(lengthVal));
+                    throw new Exception(ctx.GetExceptionString());
                 }
                 int length;
                 JSApi.JS_ToInt32(ctx, out length, lengthVal);

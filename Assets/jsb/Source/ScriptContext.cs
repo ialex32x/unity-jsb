@@ -74,11 +74,6 @@ namespace QuickJS
 
         #region Builtins
 
-        public void print_exception()
-        {
-            _ctx.print_exception();
-        }
-
         [MonoPInvokeCallback(typeof(JSCFunction))]
         private static JSValue _print(JSContext ctx, JSValue this_obj, int argc, JSValue[] argv)
         {

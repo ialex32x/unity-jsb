@@ -41,7 +41,8 @@ namespace QuickJS.Native
             JSApi.JS_FreeValue(this, ex);
         }
 
-        public unsafe string GetExceptionString(JSValue value)
+        // 在外部已确定存在异常
+        public string GetExceptionString()
         {
             var ex = JSApi.JS_GetException(this);
             var err_message = JSApi.JS_GetProperty(this, ex, JSApi.JS_ATOM_message);

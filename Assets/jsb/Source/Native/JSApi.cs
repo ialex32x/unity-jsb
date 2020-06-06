@@ -370,7 +370,9 @@ namespace QuickJS.Native
         [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern JSValue JS_NewArray(JSContext ctx);
 
-        /* return -1 if exception (proxy case) or TRUE/FALSE */
+        /// <summary>
+        /// return -1 if exception (proxy case) or TRUE/FALSE
+        /// </summary>
         [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern int JS_IsArray(JSContext ctx, JSValueConst val);
 
@@ -519,7 +521,9 @@ namespace QuickJS.Native
         [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern int JS_ToBool(JSContext ctx, JSValueConst val);
 
-        // 返回 <0 表示失败
+        /// <summary>
+        /// 返回 <0 表示失败
+        /// </summary>
         [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern int JS_ToInt32(JSContext ctx, out int pres, JSValue val);
 
