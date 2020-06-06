@@ -1,6 +1,7 @@
+using AOT;
 using System;
 using System.Collections.Generic;
-using AOT;
+using System.Runtime.CompilerServices;
 
 namespace QuickJS.Binding
 {
@@ -10,6 +11,8 @@ namespace QuickJS.Binding
     // 处理特殊操作, 关联本地对象等
     public partial class Values
     {
+        //NOTE: 代替 bind_native, 用于对 c# 对象产生 js 包装对象
+        // 分两种情况, 这里是第1种, 在构造中使用
         private static JSValue NewBridgeClassObject(JSContext ctx, JSValue new_target, object o, int type_id)
         {
             var cache = ScriptEngine.GetObjectCache(ctx);
@@ -18,7 +21,6 @@ namespace QuickJS.Binding
             if (JSApi.JS_IsException(val))
             {
                 cache.RemoveObject(object_id);
-                throw new InvalidOperationException(nameof(JSApi.JSB_NewBridgeClassObject));
             }
             else
             {
@@ -27,45 +29,52 @@ namespace QuickJS.Binding
             return val;
         }
 
-        //         public static void duk_bind_native(IntPtr ctx, object o)
-        //         {
-        //             DuktapeDLL.duk_push_this(ctx);
-        //             duk_bind_native(ctx, -1, o);
-        //             DuktapeDLL.duk_pop(ctx);
-        //         }
-        //
-        //         public static void duk_bind_native_pop(IntPtr ctx, int idx, object o)
-        //         {
-        //             duk_bind_native(ctx, -1, o);
-        //             DuktapeDLL.duk_pop(ctx);
-        //         }
-        //
-        //         public static void duk_bind_native(IntPtr ctx, int idx, object o)
-        //         {
-        //             var type = o.GetType();
-        //             var vm = DuktapeVM.GetVM(ctx);
-        //             var cache = vm.GetObjectCache();
-        //             var id = cache.AddObject(o);
-        //
-        //             if (id >= 0) 
-        //             {
-        //                 DuktapeDLL.duk_unity_set_refid(ctx, idx, id);
-        //             }
-        //
-        //             if (DuktapeVM.GetVM(ctx).PushChainedPrototypeOf(ctx, type))
-        //             {
-        //                 DuktapeDLL.duk_set_prototype(ctx, -2);
-        //             }
-        //             else 
-        //             {
-        //                 Debug.LogWarning($"no prototype found for {type}");
-        //             }
-        //             if (!type.IsValueType)
-        //             {
-        //                 var heapptr = DuktapeDLL.duk_get_heapptr(ctx, idx);
-        //                 cache.AddJSValue(o, heapptr);
-        //             }
-        //         }
+        //NOTE: 代替 bind_native, 用于对 c# 对象产生 js 包装对象
+        // 分两种情况, 这里是第2种, 用于一般情况
+        public static JSValue NewBridgeClassObject(JSContext ctx, object o)
+        {
+            if (o == null)
+            {
+                return JS_UNDEFINED;
+            }
+            int type_id;
+            var type = o.GetType();
+            var proto = FindPrototypeOf(ctx, type, out type_id);
+
+            if (proto.IsNullish())
+            {
+                return JSApi.JS_ThrowInternalError(ctx, string.Format("no prototype found for {0}", type));
+            }
+
+            var cache = ScriptEngine.GetObjectCache(ctx);
+            var object_id = cache.AddObject(o);
+            var val = JSApi.jsb_new_bridge_object(ctx, proto, object_id);
+            if (val.IsException())
+            {
+                cache.RemoveObject(object_id);
+            }
+            else
+            {
+                JSApi.JSB_SetBridgeType(ctx, val, type_id);
+            }
+            return val;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static JSValue FindPrototypeOf(JSContext ctx, Type type, out int type_id)
+        {
+            var types = ScriptEngine.GetTypeDB(ctx);
+            return types.FindPrototypeOf(type, out type_id);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static JSValue FindPrototypeOf(JSContext ctx, Type type)
+        {
+            int type_id;
+            var types = ScriptEngine.GetTypeDB(ctx);
+            return types.FindPrototypeOf(type, out type_id);
+        }
+
         //
         //         public static bool duk_rebind_this(IntPtr ctx, object o)
         //         {

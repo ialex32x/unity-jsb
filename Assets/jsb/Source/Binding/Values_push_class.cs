@@ -50,21 +50,35 @@ namespace QuickJS.Binding
             return js_push_object(ctx, (object)o);
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        // [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static JSValue js_push_classvalue(JSContext ctx, IO.ByteBuffer o)
         {
             if (o == null)
             {
                 return JSApi.JS_UNDEFINED;
             }
-
-            var mem_ptr = DuktapeDLL.js_push_fixed_buffer(ctx, (uint)o.readableBytes);
-            if (mem_ptr != IntPtr.Zero)
-            {
-                o.ReadAllBytes(mem_ptr);
-            }
+            return JSApi.JS_ThrowInternalError(ctx, "not implemented: 在c端实现内存分配返回内存地址以及JSValue");
+            // var mem_ptr = DuktapeDLL.js_push_fixed_buffer(ctx, (uint)o.readableBytes);
+            // if (mem_ptr != IntPtr.Zero)
+            // {
+            //     o.ReadAllBytes(mem_ptr);
+            // }
         }
 
+        // 尝试还原 js function/dispatcher
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static JSValue js_push_delegate(JSContext ctx, Delegate o)
+        {
+            var dDelegate = o.Target as ScriptDelegate;
+            if (dDelegate != null)
+            {
+                return JSApi.JS_DupValue(ctx, dDelegate);
+            }
+        
+            // fallback
+            return js_push_object(ctx, (object)o);
+        }
+        
         // variant push
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static JSValue js_push_classvalue(JSContext ctx, object o)
@@ -73,24 +87,23 @@ namespace QuickJS.Binding
             {
                 return JSApi.JS_UNDEFINED;
             }
+
             var type = o.GetType();
             if (type.IsEnum)
             {
                 return js_push_primitive(ctx, Convert.ToInt32(o));
             }
-            // if (type.IsArray)
-            // {
-            //     js_push_any(ctx, (Array)o);
-            //     return;
-            // }
+
             if (type.BaseType == typeof(MulticastDelegate))
             {
                 return js_push_delegate(ctx, (Delegate)o);
             }
+
             return js_push_object(ctx, (object)o);
         }
 
-        // push 一个对象实例 （调用者需要自行负责提前null检查） 
+        // push 一个对象实例 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static JSValue js_push_object(JSContext ctx, object o)
         {
             var cache = ScriptEngine.GetObjectCache(ctx);
@@ -100,12 +113,11 @@ namespace QuickJS.Binding
                 // Debug.LogWarningFormat("cache hit push {0}", heapptr);
                 return JSApi.JS_DupValue(ctx, heapptr);
             }
-            DuktapeDLL.js_push_object(ctx);
-            duk_bind_native(ctx, -1, o);
+            return NewBridgeClassObject(ctx, o);
         }
 
         // 自动判断类型
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        // [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static JSValue js_push_var(JSContext ctx, object o)
         {
             if (o == null)
@@ -113,7 +125,7 @@ namespace QuickJS.Binding
                 return JSApi.JS_UNDEFINED;
             }
             var type = o.GetType();
-
+        
             //NOTE: 1. push as simple types
             if (type.IsValueType)
             {
@@ -183,7 +195,7 @@ namespace QuickJS.Binding
                     return js_push_primitive(ctx, (string)o);
                 }
             }
-
+        
             //NOTE: 2. fallthrough, push as object
             return js_push_classvalue(ctx, o);
         }

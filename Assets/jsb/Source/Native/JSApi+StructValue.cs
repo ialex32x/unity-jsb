@@ -14,12 +14,13 @@ namespace QuickJS.Native
         public static extern JSClassID JSB_GetBridgeClassID();
 
         [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern JSValue JSB_NewBridgeObject(JSContext ctx, JSValue proto, int object_id);
+        public static extern JSValue jsb_new_bridge_object(JSContext ctx, JSValue proto, int object_id);
+
         [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern JSValue JSB_NewBridgeClassObject(JSContext ctx, JSValue new_target, int object_id);
 
         [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern JSValue JSB_NewBridgeValue(JSContext ctx, JSValue proto, uint32_t size);
+        public static extern JSValue jsb_new_bridge_value(JSContext ctx, JSValue proto, uint32_t size);
 
         [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern JSValue JSB_NewBridgeClassValue(JSContext ctx, JSValue new_target, int32_t size);
@@ -84,6 +85,12 @@ namespace QuickJS.Native
         
         [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern JS_BOOL jsb_set_int_4(JSValue val, int v0, int v1, int v2, int v3);
+        
+        [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern JS_BOOL jsb_get_byte_4(JSValue val, out byte v0, out byte v1, out byte v2, out byte v3);
+        
+        [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern JS_BOOL jsb_set_byte_4(JSValue val, byte v0, byte v1, byte v2, byte v3);
         
     }
 }

@@ -11,6 +11,7 @@ make
 
 #include "quickjs.h"
 
+#define byte unsigned char
 #define JS_HIDDEN_PROP(s) ("\xFF" s)
 
 #ifndef FALSE
@@ -220,6 +221,7 @@ JSValue jsb_new_bridge_object(JSContext *ctx, JSValue proto, int32_t object_id)
     return obj;
 }
 
+// for constructor new_target
 JSValue JSB_NewBridgeClassObject(JSContext *ctx, JSValue new_target, int32_t object_id)
 {
     JSValue proto = JS_GetProperty(ctx, new_target, JS_ATOM_prototype);
@@ -545,6 +547,36 @@ JS_BOOL jsb_set_int_4(JSValue val, int v0, int v1, int v2, int v3)
     if (sv)
     {
         int *ptr = (int *)&(sv->data[0]);
+        ptr[0] = v0;
+        ptr[1] = v1;
+        ptr[2] = v2;
+        ptr[3] = v3;
+        return TRUE;
+    }
+    return FALSE;
+}
+
+JS_BOOL jsb_get_byte_4(JSValue val, byte *v0, byte *v1, byte *v2, byte *v3)
+{
+    JSPayload *sv = JS_GetOpaque(val, js_bridge_class_id);
+    if (sv)
+    {
+        byte *ptr = (byte *)&(sv->data[0]);
+        *v0 = ptr[0];
+        *v1 = ptr[1];
+        *v2 = ptr[2];
+        *v3 = ptr[3];
+        return TRUE;
+    }
+    return FALSE;
+}
+
+JS_BOOL jsb_set_byte_4(JSValue val, byte v0, byte v1, byte v2, byte v3)
+{
+    JSPayload *sv = JS_GetOpaque(val, js_bridge_class_id);
+    if (sv)
+    {
+        byte *ptr = (byte *)&(sv->data[0]);
         ptr[0] = v0;
         ptr[1] = v1;
         ptr[2] = v2;

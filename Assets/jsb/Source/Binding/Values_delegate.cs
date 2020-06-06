@@ -9,20 +9,6 @@ namespace QuickJS.Binding
     // 处理委托的绑定
     public partial class Values
     {
-        // 尝试还原 js function/dispatcher
-        // public static void duk_push_delegate(IntPtr ctx, Delegate o)
-        // {
-        //     var dDelegate = o.Target is ScriptDelegate;
-        //     if (dDelegate != null)
-        //     {
-        //         dDelegate.Push(ctx);
-        //         return;
-        //     }
-        //
-        //     // fallback
-        //     duk_push_object(ctx, (object)o);
-        // }
-        //
         // public static bool duk_get_delegate_array<T>(IntPtr ctx, int idx, out T[] o)
         // where T : class
         // {

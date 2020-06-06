@@ -16,7 +16,6 @@ namespace QuickJS.Binding
         private ScriptContext _context;
 
         private TypeDB _db;
-        private Dictionary<Type, JSValue> _prototypes = new Dictionary<Type, JSValue>();
 
         // 注册过程中产生的 atom, 完成后自动释放 
         private Dictionary<string, JSAtom> _atoms = new Dictionary<string, JSAtom>();
@@ -54,7 +53,7 @@ namespace QuickJS.Binding
 
         public TypeRegister(ScriptRuntime runtime, ScriptContext context)
         {
-            _db = new TypeDB();
+            _db = new TypeDB(runtime);
             _context = context;
 
             JSApi.JS_NewClass(runtime, JSApi.JSB_GetBridgeClassID(), "CSharpClass", JSApi.class_finalizer);
@@ -119,9 +118,7 @@ namespace QuickJS.Binding
         // return type id
         public int Add(Type type, JSValue jsValue)
         {
-            JSApi.JS_DupValue(_context, jsValue);
-            _prototypes.Add(type, jsValue);
-            return _db.AddType(type);
+            return _db.AddType(type, JSApi.JS_DupValue(_context, jsValue));
         }
 
         public void Cleanup()
@@ -133,56 +130,13 @@ namespace QuickJS.Binding
                 JSApi.JS_FreeAtom(ctx, atom);
             }
 
-
-            foreach (var kv in _prototypes)
-            {
-                var jsValue = kv.Value;
-                JSApi.JS_FreeValue(ctx, jsValue);
-            }
-
             _atoms.Clear();
-            _prototypes.Clear();
-        }
-
-        // 将 type 的 prototype 压栈 （未导出则向父类追溯）
-        // 没有对应的基类 prototype 时, 不压栈
-        public JSValue GetChainedPrototypeOf(Type baseType)
-        {
-            if (baseType == null)
-            {
-                return JSApi.JS_UNDEFINED;
-            }
-
-            if (baseType == typeof(Enum))
-            {
-                return JSApi.JS_UNDEFINED;
-            }
-
-            JSValue fn;
-            if (_prototypes.TryGetValue(baseType, out fn))
-            {
-                return fn;
-            }
-
-            return GetChainedPrototypeOf(baseType.BaseType);
         }
 
         public TypeDB Finish()
         {
-            foreach (var kv in _prototypes)
-            {
-                var type = kv.Key;
-                var baseType = type.BaseType;
-                var parent = GetChainedPrototypeOf(baseType);
-                if (!JSApi.JS_IsUndefined(parent))
-                {
-                    var fn = kv.Value;
-                    JSApi.JS_SetPrototype(_context, fn, parent);
-                }
-            }
-
             Cleanup();
-            return GetTypeDB();
+            return _db.Finish();
         }
     }
 }

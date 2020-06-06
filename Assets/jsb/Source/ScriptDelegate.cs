@@ -8,8 +8,12 @@ using UnityEngine;
 
 namespace QuickJS
 {
-    public class ScriptDelegate
+    public class ScriptDelegate : ScriptValue
     {
         public Delegate target;
+
+        public ScriptDelegate(ScriptContext context, JSValue jsValue) : base(context, jsValue)
+        {
+        }
     }
 }

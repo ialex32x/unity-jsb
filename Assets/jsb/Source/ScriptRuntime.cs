@@ -42,8 +42,9 @@ namespace QuickJS
             _mainContext = CreateContext();
         }
 
-        public void Initialize(IFileResolver fileResolver, IScriptRuntimeListener runner, int step = 30)
+        public void Initialize(IFileResolver fileResolver, IScriptRuntimeListener runner, IO.ByteBufferAllocator byteBufferAllocator = null, int step = 30)
         {
+            _byteBufferAllocator = byteBufferAllocator;
             _fileResolver = fileResolver;
             var e = _InitializeStep(_mainContext, runner, step);
             while (e.MoveNext()) ;
@@ -252,6 +253,11 @@ namespace QuickJS
             // poll here;
             var ms = (int) (deltaTime * 1000f);
             _timerManager.Update(ms);
+            
+            if (_byteBufferAllocator != null)
+            {
+                _byteBufferAllocator.Drain();
+            }
         }
 
         private void CollectPendingGarbage()
@@ -274,6 +280,7 @@ namespace QuickJS
         {
             _timerManager.Destroy();
             _objectCache.Clear();
+            _typeDB.Destroy();
             GC.Collect();
             CollectPendingGarbage();
             for (int i = 0, count = _contexts.Count; i < count; i++)

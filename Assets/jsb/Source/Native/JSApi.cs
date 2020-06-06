@@ -142,6 +142,7 @@ namespace QuickJS.Native
         public static extern JSValue JS_GetPropertyInternal(JSContext ctx, JSValueConst obj, JSAtom prop,
             JSValueConst receiver, JS_BOOL throw_ref_error);
 
+        // 增引用, 需要 FreeValue
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static JSValue JS_GetProperty(JSContext ctx, JSValueConst this_obj, JSAtom prop)
         {
@@ -502,6 +503,7 @@ namespace QuickJS.Native
         [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern int JS_SetPrototype(JSContext ctx, JSValueConst obj, JSValueConst proto_val);
 
+        // 返回值不需要 FreeValue
         [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern JSValueConst JS_GetPrototype(JSContext ctx, JSValueConst val);
 
