@@ -47,6 +47,7 @@
 #include <sys/wait.h>
 #if defined(__APPLE__)
 typedef sig_t sighandler_t;
+extern char** environ;
 #endif
 #endif
 

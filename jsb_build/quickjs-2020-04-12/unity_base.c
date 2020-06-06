@@ -554,15 +554,15 @@ JS_BOOL jsb_set_int_4(JSValue val, int v0, int v1, int v2, int v3)
     return FALSE;
 }
 
-static void jsb_array_buffer_free(JSRuntime *rt, void *opaque, void *ptr)
-{
-    js_free_rt(rt, ptr);
-}
+// static void jsb_array_buffer_free(JSRuntime *rt, void *opaque, void *ptr)
+// {
+//     js_free_rt(rt, ptr);
+// }
 
-char *jsb_new_buffer()
-{
-    JS_NewArrayBuffer(ctx, buf, len, jsb_array_buffer_free, NULL, FALSE);
-}
+// char *jsb_new_buffer()
+// {
+//     JS_NewArrayBuffer(ctx, buf, len, jsb_array_buffer_free, NULL, FALSE);
+// }
 
 void JSB_Init()
 {
