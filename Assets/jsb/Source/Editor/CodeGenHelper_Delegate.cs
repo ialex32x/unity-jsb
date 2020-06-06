@@ -127,7 +127,8 @@ namespace QuickJS.Editor
                 for (var i = 0; i < nargs; i++)
                 {
                     var parameter = delegateBindingInfo.parameters[i];
-                    this.cg.AppendPushValue(parameter.ParameterType, parameter.Name);
+                    var pusher = this.cg.AppendValuePusher(parameter.ParameterType, parameter.Name);
+                    this.cg.cs.AppendLine(pusher);
                 }
                 this.cg.cs.AppendLine("fn.EndInvokeWithReturnValue(ctx);");
             }

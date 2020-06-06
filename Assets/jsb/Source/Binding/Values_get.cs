@@ -11,15 +11,15 @@ namespace QuickJS.Binding
     // 处理常规值, class, struct
     public partial class Values
     {
-        public static bool js_get_primitive(JSContext ctx, JSValue this_val, JSValue val, out IntPtr o)
+        public static bool js_get_primitive(JSContext ctx, JSValue val, out IntPtr o)
         {
             object o_t;
-            var ret = js_get_object(ctx, this_val, val, out o_t);
+            var ret = js_get_object(ctx, val, out o_t);
             o = (IntPtr)o_t;
             return ret;
         }
 
-        public static bool js_get_primitive_array(JSContext ctx, JSValue this_val, JSValue val, out IntPtr[] o)
+        public static bool js_get_primitive_array(JSContext ctx, JSValue val, out IntPtr[] o)
         {
             var isArray = JSApi.JS_IsArray(ctx, val);
             if (isArray == 1)
@@ -37,7 +37,7 @@ namespace QuickJS.Binding
                 {
                     var eVal = JSApi.JS_GetPropertyUint32(ctx, val, i);
                     IntPtr e;
-                    js_get_primitive(ctx, this_val, eVal, out e);
+                    js_get_primitive(ctx, eVal, out e);
                     o[i] = e;
                     JSApi.JS_FreeValue(ctx, eVal);
                 }
@@ -48,7 +48,7 @@ namespace QuickJS.Binding
                 o = null;
                 return false;
             }
-            js_get_classvalue<IntPtr[]>(ctx, this_val, val, out o);
+            js_get_classvalue<IntPtr[]>(ctx, val, out o);
             return true;
         }
 
@@ -59,7 +59,7 @@ namespace QuickJS.Binding
             return r >= 0;
         }
 
-        //         public static bool js_get_primitive_array(JSContext ctx, JSValue this_obj, JSValue val, out bool[] o)
+        //         public static bool js_get_primitive_array(JSContext ctx, JSValue val, out bool[] o)
         //         {
         //             if (JSApi.duk_is_array(ctx, idx))
         //             {
@@ -80,13 +80,13 @@ namespace QuickJS.Binding
         //             return true;
         //         }
         //
-        //         public static bool js_get_primitive(JSContext ctx, JSValue this_obj, JSValue val, out sbyte o)
+        //         public static bool js_get_primitive(JSContext ctx, JSValue val, out sbyte o)
         //         {
         //             o = (sbyte)JSApi.js_get_int(ctx, idx); // no check
         //             return true;
         //         }
         //
-        //         public static bool js_get_primitive_array(JSContext ctx, JSValue this_obj, JSValue val, out sbyte[] o)
+        //         public static bool js_get_primitive_array(JSContext ctx, JSValue val, out sbyte[] o)
         //         {
         //             if (JSApi.duk_is_array(ctx, idx))
         //             {
@@ -107,13 +107,13 @@ namespace QuickJS.Binding
         //             return true;
         //         }
         //
-        //         public static bool js_get_primitive(JSContext ctx, JSValue this_obj, JSValue val, out byte o)
+        //         public static bool js_get_primitive(JSContext ctx, JSValue val, out byte o)
         //         {
         //             o = (byte)JSApi.js_get_int(ctx, idx); // no check
         //             return true;
         //         }
         //
-        //         public static bool js_get_primitive_array(JSContext ctx, JSValue this_obj, JSValue val, out byte[] o)
+        //         public static bool js_get_primitive_array(JSContext ctx, JSValue val, out byte[] o)
         //         {
         //             if (JSApi.duk_is_array(ctx, idx))
         //             {
@@ -142,7 +142,7 @@ namespace QuickJS.Binding
         //             return true;
         //         }
 
-        public static bool js_get_primitive(JSContext ctx, JSValue this_obj, JSValue val, out char o)
+        public static bool js_get_primitive(JSContext ctx, JSValue val, out char o)
         {
             int pres;
             JSApi.JS_ToInt32(ctx, out pres, val);
@@ -150,7 +150,7 @@ namespace QuickJS.Binding
             return true;
         }
 
-        //         public static bool js_get_primitive_array(JSContext ctx, JSValue this_obj, JSValue val, out char[] o)
+        //         public static bool js_get_primitive_array(JSContext ctx, JSValue val, out char[] o)
         //         {
         //             if (JSApi.duk_is_array(ctx, idx))
         //             {
@@ -171,13 +171,13 @@ namespace QuickJS.Binding
         //             return true;
         //         }
 
-        public static bool js_get_primitive(JSContext ctx, JSValue this_obj, JSValue val, out string o)
+        public static bool js_get_primitive(JSContext ctx, JSValue val, out string o)
         {
             o = JSApi.GetString(ctx, val); // no check
             return true;
         }
 
-        //         public static bool js_get_primitive_array(JSContext ctx, JSValue this_obj, JSValue val, out string[] o)
+        //         public static bool js_get_primitive_array(JSContext ctx, JSValue val, out string[] o)
         //         {
         //             if (JSApi.duk_is_array(ctx, idx))
         //             {
@@ -198,7 +198,7 @@ namespace QuickJS.Binding
         //             return true;
         //         }
 
-        public static bool js_get_primitive(JSContext ctx, JSValue this_obj, JSValue val, out short o)
+        public static bool js_get_primitive(JSContext ctx, JSValue val, out short o)
         {
             int pres;
             JSApi.JS_ToInt32(ctx, out pres, val);
@@ -206,7 +206,7 @@ namespace QuickJS.Binding
             return true;
         }
 
-        //         public static bool js_get_primitive_array(JSContext ctx, JSValue this_obj, JSValue val, out short[] o)
+        //         public static bool js_get_primitive_array(JSContext ctx, JSValue val, out short[] o)
         //         {
         //             if (JSApi.duk_is_array(ctx, idx))
         //             {
@@ -227,7 +227,7 @@ namespace QuickJS.Binding
         //             return true;
         //         }
 
-        public static bool js_get_primitive(JSContext ctx, JSValue this_obj, JSValue val, out ushort o)
+        public static bool js_get_primitive(JSContext ctx, JSValue val, out ushort o)
         {
             int pres;
             JSApi.JS_ToInt32(ctx, out pres, val);
@@ -235,7 +235,7 @@ namespace QuickJS.Binding
             return true;
         }
 
-        //         public static bool js_get_primitive_array(JSContext ctx, JSValue this_obj, JSValue val, out ushort[] o)
+        //         public static bool js_get_primitive_array(JSContext ctx, JSValue val, out ushort[] o)
         //         {
         //             if (JSApi.duk_is_array(ctx, idx))
         //             {
@@ -256,7 +256,7 @@ namespace QuickJS.Binding
         //             return true;
         //         }
 
-        public static bool js_get_primitive(JSContext ctx, JSValue this_obj, JSValue val, out int o)
+        public static bool js_get_primitive(JSContext ctx, JSValue val, out int o)
         {
             int pres;
             JSApi.JS_ToInt32(ctx, out pres, val);
@@ -264,7 +264,7 @@ namespace QuickJS.Binding
             return true;
         }
 
-        //         public static bool js_get_primitive_array(JSContext ctx, JSValue this_obj, JSValue val, out int[] o)
+        //         public static bool js_get_primitive_array(JSContext ctx, JSValue val, out int[] o)
         //         {
         //             if (JSApi.duk_is_array(ctx, idx))
         //             {
@@ -285,7 +285,7 @@ namespace QuickJS.Binding
         //             return true;
         //         }
 
-        public static bool js_get_primitive(JSContext ctx, JSValue this_obj, JSValue val, out uint o)
+        public static bool js_get_primitive(JSContext ctx, JSValue val, out uint o)
         {
             uint pres;
             JSApi.JSB_ToUint32(ctx, out pres, val);
@@ -293,7 +293,7 @@ namespace QuickJS.Binding
             return true;
         }
 
-        //         public static bool js_get_primitive_array(JSContext ctx, JSValue this_obj, JSValue val, out uint[] o)
+        //         public static bool js_get_primitive_array(JSContext ctx, JSValue val, out uint[] o)
         //         {
         //             if (JSApi.duk_is_array(ctx, idx))
         //             {
@@ -314,7 +314,7 @@ namespace QuickJS.Binding
         //             return true;
         //         }
 
-        public static bool js_get_primitive(JSContext ctx, JSValue this_obj, JSValue val, out long o)
+        public static bool js_get_primitive(JSContext ctx, JSValue val, out long o)
         {
             long pres;
             JSApi.JS_ToInt64(ctx, out pres, val);
@@ -322,7 +322,7 @@ namespace QuickJS.Binding
             return true;
         }
 
-        //         public static bool js_get_primitive_array(JSContext ctx, JSValue this_obj, JSValue val, out long[] o)
+        //         public static bool js_get_primitive_array(JSContext ctx, JSValue val, out long[] o)
         //         {
         //             if (JSApi.duk_is_array(ctx, idx))
         //             {
@@ -343,7 +343,7 @@ namespace QuickJS.Binding
         //             return true;
         //         }
 
-        public static bool js_get_primitive(JSContext ctx, JSValue this_obj, JSValue val, out ulong o)
+        public static bool js_get_primitive(JSContext ctx, JSValue val, out ulong o)
         {
             ulong pres;
             JSApi.JS_ToIndex(ctx, out pres, val);
@@ -351,7 +351,7 @@ namespace QuickJS.Binding
             return true;
         }
 
-        //         public static bool js_get_primitive_array(JSContext ctx, JSValue this_obj, JSValue val, out ulong[] o)
+        //         public static bool js_get_primitive_array(JSContext ctx, JSValue val, out ulong[] o)
         //         {
         //             if (JSApi.duk_is_array(ctx, idx))
         //             {
@@ -372,7 +372,7 @@ namespace QuickJS.Binding
         //             return true;
         //         }
 
-        public static bool js_get_primitive(JSContext ctx, JSValue this_obj, JSValue val, out float o)
+        public static bool js_get_primitive(JSContext ctx, JSValue val, out float o)
         {
             double pres;
             JSApi.JS_ToFloat64(ctx, out pres, val);
@@ -380,7 +380,7 @@ namespace QuickJS.Binding
             return true;
         }
 
-        //         public static bool js_get_primitive_array(JSContext ctx, JSValue this_obj, JSValue val, out float[] o)
+        //         public static bool js_get_primitive_array(JSContext ctx, JSValue val, out float[] o)
         //         {
         //             if (JSApi.duk_is_array(ctx, idx))
         //             {
@@ -401,7 +401,7 @@ namespace QuickJS.Binding
         //             return true;
         //         }
 
-        public static bool js_get_primitive(JSContext ctx, JSValue this_obj, JSValue val, out double o)
+        public static bool js_get_primitive(JSContext ctx, JSValue val, out double o)
         {
 
             double pres;
@@ -410,7 +410,7 @@ namespace QuickJS.Binding
             return true;
         }
 
-        //         public static bool js_get_primitive_array(JSContext ctx, JSValue this_obj, JSValue val, out double[] o)
+        //         public static bool js_get_primitive_array(JSContext ctx, JSValue val, out double[] o)
         //         {
         //             if (JSApi.duk_is_array(ctx, idx))
         //             {
@@ -431,7 +431,7 @@ namespace QuickJS.Binding
         //             return true;
         //         }
 
-        public static bool js_get_structvalue(JSContext ctx, JSValue this_obj, JSValue val, out LayerMask o)
+        public static bool js_get_structvalue(JSContext ctx, JSValue val, out LayerMask o)
         {
             int pres;
             JSApi.JS_ToInt32(ctx, out pres, val);
@@ -439,7 +439,7 @@ namespace QuickJS.Binding
             return true;
         }
 
-        public static bool js_get_structvalue(JSContext ctx, JSValue this_obj, JSValue val, out Color o)
+        public static bool js_get_structvalue(JSContext ctx, JSValue val, out Color o)
         {
             float r, g, b, a;
             var ret = JSApi.jsb_get_float_4(val, out r, out g, out b, out a);
@@ -447,7 +447,7 @@ namespace QuickJS.Binding
             return ret != 0;
         }
 
-        public static bool js_get_structvalue(JSContext ctx, JSValue this_obj, JSValue val, out Color32 o)
+        public static bool js_get_structvalue(JSContext ctx, JSValue val, out Color32 o)
         {
             int r, g, b, a;
             var ret = JSApi.jsb_get_int_4(val, out r, out g, out b, out a);
@@ -455,7 +455,7 @@ namespace QuickJS.Binding
             return ret != 0;
         }
 
-        public static bool js_get_structvalue(JSContext ctx, JSValue this_obj, JSValue val, out Vector2 o)
+        public static bool js_get_structvalue(JSContext ctx, JSValue val, out Vector2 o)
         {
             float x, y;
             var ret = JSApi.jsb_get_float_2(val, out x, out y);
@@ -463,7 +463,7 @@ namespace QuickJS.Binding
             return ret != 0;
         }
 
-        public static bool js_get_structvalue(JSContext ctx, JSValue this_obj, JSValue val, out Vector2Int o)
+        public static bool js_get_structvalue(JSContext ctx, JSValue val, out Vector2Int o)
         {
             int x, y;
             var ret = JSApi.jsb_get_int_2(val, out x, out y);
@@ -471,7 +471,7 @@ namespace QuickJS.Binding
             return ret != 0;
         }
 
-        public static bool js_get_structvalue(JSContext ctx, JSValue this_obj, JSValue val, out Vector3 o)
+        public static bool js_get_structvalue(JSContext ctx, JSValue val, out Vector3 o)
         {
             float x, y, z;
             var ret = JSApi.jsb_get_float_3(val, out x, out y, out z);
@@ -479,7 +479,7 @@ namespace QuickJS.Binding
             return ret != 0;
         }
 
-        public static bool js_get_structvalue(JSContext ctx, JSValue this_obj, JSValue val, out Vector3Int o)
+        public static bool js_get_structvalue(JSContext ctx, JSValue val, out Vector3Int o)
         {
             int x, y, z;
             var ret = JSApi.jsb_get_int_3(val, out x, out y, out z);
@@ -487,7 +487,7 @@ namespace QuickJS.Binding
             return ret != 0;
         }
 
-        public static bool js_get_structvalue(JSContext ctx, JSValue this_obj, JSValue val, out Vector4 o)
+        public static bool js_get_structvalue(JSContext ctx, JSValue val, out Vector4 o)
         {
             float x, y, z, w;
             var ret = JSApi.jsb_get_float_4(val, out x, out y, out z, out w);
@@ -495,7 +495,7 @@ namespace QuickJS.Binding
             return ret != 0;
         }
 
-        public static bool js_get_structvalue(JSContext ctx, JSValue this_obj, JSValue val, out Quaternion o)
+        public static bool js_get_structvalue(JSContext ctx, JSValue val, out Quaternion o)
         {
             float x, y, z, w;
             var ret = JSApi.jsb_get_float_4(val, out x, out y, out z, out w);
@@ -505,7 +505,7 @@ namespace QuickJS.Binding
 
         private static float[] _matrix_floats_buffer = new float[16];
 
-        public static unsafe bool js_get_structvalue(JSContext ctx, JSValue this_obj, JSValue val, out Matrix4x4 o)
+        public static unsafe bool js_get_structvalue(JSContext ctx, JSValue val, out Matrix4x4 o)
         {
             int ret;
             fixed (float* ptr = _matrix_floats_buffer)
@@ -521,25 +521,25 @@ namespace QuickJS.Binding
         }
 
         // fallthrough
-        public static bool js_get_structvalue<T>(JSContext ctx, JSValue this_obj, JSValue val, out T o)
+        public static bool js_get_structvalue<T>(JSContext ctx, JSValue val, out T o)
         where T : struct
         {
             object o_t;
-            var ret = js_get_object(ctx, this_obj, val, out o_t);
+            var ret = js_get_object(ctx, val, out o_t);
             o = (T)o_t;
             return ret;
         }
 
-        public static bool js_get_structvalue<T>(JSContext ctx, JSValue this_obj, JSValue val, out T? o)
+        public static bool js_get_structvalue<T>(JSContext ctx, JSValue val, out T? o)
         where T : struct
         {
             object o_t;
-            var ret = js_get_object(ctx, this_obj, val, out o_t);
+            var ret = js_get_object(ctx, val, out o_t);
             o = (T)o_t;
             return ret;
         }
 
-        //         public static bool js_get_structvalue_array<T>(JSContext ctx, JSValue this_obj, JSValue val, out T[] o)
+        //         public static bool js_get_structvalue_array<T>(JSContext ctx, JSValue val, out T[] o)
         //         where T : struct
         //         {
         //             if (JSApi.duk_is_array(ctx, idx))
@@ -562,7 +562,7 @@ namespace QuickJS.Binding
         //             return false;
         //         }
         //
-        //         public static bool js_get_structvalue_array<T>(JSContext ctx, JSValue this_obj, JSValue val, out T?[] o)
+        //         public static bool js_get_structvalue_array<T>(JSContext ctx, JSValue val, out T?[] o)
         //         where T : struct
         //         {
         //             if (JSApi.duk_is_array(ctx, idx))
@@ -586,7 +586,7 @@ namespace QuickJS.Binding
         //         }
 
         // not value type (except string/array)
-        public static bool js_get_classvalue<T>(JSContext ctx, JSValue this_obj, JSValue val, out T o)
+        public static bool js_get_classvalue<T>(JSContext ctx, JSValue val, out T o)
         where T : class
         {
             object o_t;
@@ -610,7 +610,7 @@ namespace QuickJS.Binding
             throw new InvalidCastException(string.Format("{0} type mismatch {1}", jsType, typeof(T)));
         }
 
-        public static bool js_get_classvalue(JSContext ctx, JSValue this_obj, JSValue val, out ScriptValue o)
+        public static bool js_get_classvalue(JSContext ctx, JSValue val, out ScriptValue o)
         {
             object obj;
             if (js_get_cached_object(ctx, val, out obj))
@@ -630,7 +630,7 @@ namespace QuickJS.Binding
             return false;
         }
 
-        public static bool js_get_classvalue(JSContext ctx, JSValue this_obj, JSValue val, out QuickJS.IO.ByteBuffer o)
+        public static bool js_get_classvalue(JSContext ctx, JSValue val, out QuickJS.IO.ByteBuffer o)
         {
             object obj;
             if (js_get_cached_object(ctx, val, out obj))
@@ -662,7 +662,7 @@ namespace QuickJS.Binding
             return false;
         }
 
-        public static bool js_get_classvalue(JSContext ctx, JSValue this_obj, JSValue val, out ScriptValueArray o)
+        public static bool js_get_classvalue(JSContext ctx, JSValue val, out ScriptValueArray o)
         {
             object obj;
             if (js_get_cached_object(ctx, val, out obj))
@@ -682,7 +682,7 @@ namespace QuickJS.Binding
             return false;
         }
 
-        public static bool js_get_classvalue(JSContext ctx, JSValue this_obj, JSValue val, out ScriptFunction o)
+        public static bool js_get_classvalue(JSContext ctx, JSValue val, out ScriptFunction o)
         {
             if (JSApi.JS_IsFunction(ctx, val) != 0)
             {
@@ -696,7 +696,7 @@ namespace QuickJS.Binding
                     }
                 }
 
-                o = new ScriptFunction(ScriptEngine.GetContext(ctx), val, this_obj);
+                o = new ScriptFunction(ScriptEngine.GetContext(ctx), val);
                 return true;
             }
 
@@ -722,7 +722,7 @@ namespace QuickJS.Binding
         }
 
         // 只处理 JS_OBJECT
-        public static bool js_get_object(JSContext ctx, JSValue this_obj, JSValue val, out object o)
+        public static bool js_get_object(JSContext ctx, JSValue val, out object o)
         {
             if (JSApi.JS_IsObject(val))
             {
@@ -739,7 +739,7 @@ namespace QuickJS.Binding
             return false;
         }
 
-        //         public static bool js_get_var(JSContext ctx, JSValue this_obj, JSValue val, out object o)
+        //         public static bool js_get_var(JSContext ctx, JSValue val, out object o)
         //         {
         //             var jstype = JSApi.js_get_type(ctx, idx);
         //
@@ -789,7 +789,7 @@ namespace QuickJS.Binding
         //             return false;
         //         }
         //
-        //         // public static bool js_get_object(JSContext ctx, JSValue this_obj, JSValue val, out object o)
+        //         // public static bool js_get_object(JSContext ctx, JSValue val, out object o)
         //         // {
         //         //     if (JSApi.duk_is_null_or_undefined(ctx, idx)) // or check for object?
         //         //     {
@@ -808,7 +808,7 @@ namespace QuickJS.Binding
         //         //     return js_get_cached_object(ctx, idx, out o);
         //         // }
         //
-        //         public static bool js_get_classvalue_array<T>(JSContext ctx, JSValue this_obj, JSValue val, out T[] o)
+        //         public static bool js_get_classvalue_array<T>(JSContext ctx, JSValue val, out T[] o)
         //         where T : class
         //         {
         //             if (JSApi.duk_is_array(ctx, idx))
@@ -831,16 +831,16 @@ namespace QuickJS.Binding
         //             return false;
         //         }
 
-        public static bool js_get_enumvalue<T>(JSContext ctx, JSValue this_obj, JSValue val, out T o)
+        public static bool js_get_enumvalue<T>(JSContext ctx, JSValue val, out T o)
         where T : Enum
         {
             int v;
-            var ret = js_get_primitive(ctx, this_obj, val, out v);
+            var ret = js_get_primitive(ctx, val, out v);
             o = (T)Enum.ToObject(typeof(T), v);
             return ret;
         }
 
-        //         public static bool js_get_enumvalue_array<T>(JSContext ctx, JSValue this_obj, JSValue val, out T[] o)
+        //         public static bool js_get_enumvalue_array<T>(JSContext ctx, JSValue val, out T[] o)
         //         where T : Enum
         //         {
         //             if (JSApi.duk_is_array(ctx, idx))

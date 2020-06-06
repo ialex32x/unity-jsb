@@ -11,7 +11,7 @@ namespace QuickJS.Binding
     // 处理类型匹配
     public partial class Values
     {
-        protected static bool js_match_type(JSContext ctx, JSValue this_obj, JSValue jsValue, Type type)
+        protected static bool js_match_type(JSContext ctx, JSValue jsValue, Type type)
         {
             if (type == null)
             {
@@ -24,7 +24,7 @@ namespace QuickJS.Binding
             if (type == typeof(Type))
             {
                 Type otype;
-                return js_get_type(ctx, this_obj, jsValue, out otype); // 只要求匹配 Type 本身, 不比较具体 Type
+                return js_get_type(ctx, jsValue, out otype); // 只要求匹配 Type 本身, 不比较具体 Type
                 // return otype == type;
             }
 
@@ -101,12 +101,12 @@ namespace QuickJS.Binding
 
         // 检查变参参数
         // offset: 从偏移处开始为变参
-        protected static bool js_match_param_types(JSContext ctx, int offset, JSValue this_obj, JSValue[] argv, Type type)
+        protected static bool js_match_param_types(JSContext ctx, int offset, JSValue[] argv, Type type)
         {
             var nargs = argv.Length;
             for (var i = offset; i < nargs; i++)
             {
-                if (!js_match_type(ctx, this_obj, argv[i], type))
+                if (!js_match_type(ctx, argv[i], type))
                 {
                     return false;
                 }
@@ -115,46 +115,46 @@ namespace QuickJS.Binding
             return true;
         }
 
-        protected static bool js_match_types(JSContext ctx, JSValue this_obj, JSValue[] argv, Type t0)
+        protected static bool js_match_types(JSContext ctx, JSValue[] argv, Type t0)
         {
-            return js_match_type(ctx, this_obj, argv[0], t0);
+            return js_match_type(ctx, argv[0], t0);
         }
 
-        protected static bool js_match_types(JSContext ctx, JSValue this_obj, JSValue[] argv, Type t0, Type t1)
+        protected static bool js_match_types(JSContext ctx, JSValue[] argv, Type t0, Type t1)
         {
-            return js_match_type(ctx, this_obj, argv[0], t0) && js_match_type(ctx, this_obj, argv[1], t1);
+            return js_match_type(ctx, argv[0], t0) && js_match_type(ctx, argv[1], t1);
         }
 
-        protected static bool js_match_types(JSContext ctx, JSValue this_obj, JSValue[] argv, Type t0, Type t1, Type t2)
+        protected static bool js_match_types(JSContext ctx, JSValue[] argv, Type t0, Type t1, Type t2)
         {
-            return js_match_type(ctx, this_obj, argv[0], t0) && js_match_type(ctx, this_obj, argv[1], t1) && js_match_type(ctx, this_obj, argv[2], t2);
+            return js_match_type(ctx, argv[0], t0) && js_match_type(ctx, argv[1], t1) && js_match_type(ctx, argv[2], t2);
         }
 
-        protected static bool js_match_types(JSContext ctx, JSValue this_obj, JSValue[] argv, Type t0, Type t1, Type t2, Type t3)
+        protected static bool js_match_types(JSContext ctx, JSValue[] argv, Type t0, Type t1, Type t2, Type t3)
         {
-            return js_match_type(ctx, this_obj, argv[0], t0) && js_match_type(ctx, this_obj, argv[1], t1) && js_match_type(ctx, this_obj, argv[2], t2) && js_match_type(ctx, this_obj, argv[3], t3);
+            return js_match_type(ctx, argv[0], t0) && js_match_type(ctx, argv[1], t1) && js_match_type(ctx, argv[2], t2) && js_match_type(ctx, argv[3], t3);
         }
 
-        protected static bool js_match_types(JSContext ctx, JSValue this_obj, JSValue[] argv, Type t0, Type t1, Type t2, Type t3, Type t4)
+        protected static bool js_match_types(JSContext ctx, JSValue[] argv, Type t0, Type t1, Type t2, Type t3, Type t4)
         {
-            return js_match_type(ctx, this_obj, argv[0], t0) && js_match_type(ctx, this_obj, argv[1], t1) && js_match_type(ctx, this_obj, argv[2], t2) && js_match_type(ctx, this_obj, argv[3], t3) && js_match_type(ctx, this_obj, argv[4], t4);
+            return js_match_type(ctx, argv[0], t0) && js_match_type(ctx, argv[1], t1) && js_match_type(ctx, argv[2], t2) && js_match_type(ctx, argv[3], t3) && js_match_type(ctx, argv[4], t4);
         }
 
-        protected static bool js_match_types(JSContext ctx, JSValue this_obj, JSValue[] argv, Type t0, Type t1, Type t2, Type t3, Type t4, Type t5)
+        protected static bool js_match_types(JSContext ctx, JSValue[] argv, Type t0, Type t1, Type t2, Type t3, Type t4, Type t5)
         {
-            return js_match_type(ctx, this_obj, argv[0], t0) && js_match_type(ctx, this_obj, argv[1], t1) && js_match_type(ctx, this_obj, argv[2], t2) && js_match_type(ctx, this_obj, argv[3], t3) && js_match_type(ctx, this_obj, argv[4], t4) && js_match_type(ctx, this_obj, argv[5], t5);
+            return js_match_type(ctx, argv[0], t0) && js_match_type(ctx, argv[1], t1) && js_match_type(ctx, argv[2], t2) && js_match_type(ctx, argv[3], t3) && js_match_type(ctx, argv[4], t4) && js_match_type(ctx, argv[5], t5);
         }
 
-        protected static bool js_match_types(JSContext ctx, JSValue this_obj, JSValue[] argv, Type t0, Type t1, Type t2, Type t3, Type t4, Type t5, Type t6)
+        protected static bool js_match_types(JSContext ctx, JSValue[] argv, Type t0, Type t1, Type t2, Type t3, Type t4, Type t5, Type t6)
         {
-            return js_match_type(ctx, this_obj, argv[0], t0) && js_match_type(ctx, this_obj, argv[1], t1) && js_match_type(ctx, this_obj, argv[2], t2) && js_match_type(ctx, this_obj, argv[3], t3) && js_match_type(ctx, this_obj, argv[4], t4) && js_match_type(ctx, this_obj, argv[5], t5) && js_match_type(ctx, this_obj, argv[6], t6);
+            return js_match_type(ctx, argv[0], t0) && js_match_type(ctx, argv[1], t1) && js_match_type(ctx, argv[2], t2) && js_match_type(ctx, argv[3], t3) && js_match_type(ctx, argv[4], t4) && js_match_type(ctx, argv[5], t5) && js_match_type(ctx, argv[6], t6);
         }
 
-        protected static bool js_match_types(JSContext ctx, JSValue this_obj, JSValue[] argv, params Type[] types)
+        protected static bool js_match_types(JSContext ctx, JSValue[] argv, params Type[] types)
         {
             for (int i = 0, size = types.Length; i < size; i++)
             {
-                if (!js_match_type(ctx, this_obj, argv[i], types[i]))
+                if (!js_match_type(ctx, argv[i], types[i]))
                 {
                     return false;
                 }

@@ -118,14 +118,13 @@ namespace QuickJS.Editor
         public RegFuncCodeGen(CodeGenerator cg)
         {
             this.cg = cg;
-            this.cg.cs.AppendLine("public static int reg(IntPtr ctx)");
+            this.cg.cs.AppendLine("public static void Bind(TypeRegister register)");
             this.cg.cs.AppendLine("{");
             this.cg.cs.AddTabLevel();
         }
 
         public virtual void Dispose()
         {
-            this.cg.cs.AppendLine("return 0;");
             this.cg.cs.DecTabLevel();
             this.cg.cs.AppendLine("}");
         }
@@ -138,7 +137,7 @@ namespace QuickJS.Editor
         public RegFuncNamespaceCodeGen(CodeGenerator cg, TypeBindingInfo bindingInfo)
         {
             this.cg = cg;
-            this.cg.cs.Append("duk_begin_namespace(ctx");
+            this.cg.cs.Append("var ns = register.CreateNamespace(");
             // Debug.LogErrorFormat("{0}: {1}", bindingInfo.type, bindingInfo.Namespace);
             if (bindingInfo.jsNamespace != null)
             {
@@ -154,7 +153,7 @@ namespace QuickJS.Editor
 
         public virtual void Dispose()
         {
-            this.cg.cs.AppendLine("duk_end_namespace(ctx);");
+            this.cg.cs.AppendLine("ns.Close();");
         }
     }
 

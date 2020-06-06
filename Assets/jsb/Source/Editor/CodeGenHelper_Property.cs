@@ -22,8 +22,8 @@ namespace QuickJS.Editor
             var caller = this.cg.AppendGetThisCS(bindingInfo.propertyInfo.GetMethod);
 
             this.cg.cs.AppendLine("var ret = {0}.{1};", caller, bindingInfo.propertyInfo.Name);
-            this.cg.AppendPushValue(bindingInfo.propertyInfo.PropertyType, "ret");
-            this.cg.cs.AppendLine("return 1;");
+            var pusher = this.cg.AppendValuePusher(bindingInfo.propertyInfo.PropertyType, "ret");
+            this.cg.cs.AppendLine("return {0};", pusher);
         }
 
         public virtual void Dispose()

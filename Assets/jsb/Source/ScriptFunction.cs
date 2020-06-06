@@ -8,6 +8,12 @@ namespace QuickJS
         private JSValue _thisValue;
         private JSValue[] _args;
         
+        public ScriptFunction(ScriptContext context, JSValue fnValue)
+            : base(context, fnValue)
+        {
+            _thisValue = JSApi.JS_UNDEFINED;
+        }
+
         public ScriptFunction(ScriptContext context, JSValue fnValue, JSValue thisValue)
             : base(context, fnValue)
         {

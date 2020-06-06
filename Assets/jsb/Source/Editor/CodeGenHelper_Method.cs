@@ -145,7 +145,7 @@ namespace QuickJS.Editor
             // 非 out 参数才需要取值
             if (!parameter.IsOut || !parameter.ParameterType.IsByRef)
             {
-                this.cg.cs.AppendLine(this.cg.bindingManager.GetDuktapeGetter(ptype, "ctx", index + "", argname));
+                this.cg.cs.AppendLine(this.cg.bindingManager.GetScriptObjectGetter(ptype, "ctx", $"argv[{index}]", argname));
             }
         }
 
@@ -289,7 +289,7 @@ namespace QuickJS.Editor
             }
             cg.cs.DecTabLevel();
             cg.cs.AppendLine("} while(false);");
-            var error = this.cg.bindingManager.GetDuktapeGenericError("no matched method variant");
+            var error = this.cg.bindingManager.GetThrowError("no matched method variant");
             cg.cs.AppendLine($"return {error}");
         }
 
@@ -383,6 +383,12 @@ namespace QuickJS.Editor
 
         protected virtual void EndInvokeBinding() { }
 
+        // 写入无返回值的C#方法的返回代码
+        protected virtual void InvokeVoidReturn() 
+        {
+            cg.cs.AppendLine("return JSApi.JS_UNDEFINED;");
+        }
+
         // 写入绑定代码
         protected void WriteCSMethodBinding(T method, string argc, bool isVararg)
         {
@@ -412,7 +418,7 @@ namespace QuickJS.Editor
                                 return;
                             }
                         }
-                        cg.bindingManager.Error($"Invalid JSCFunction definition: {method}");
+                        cg.bindingManager.Error($"invalid JSCFunction definition: {method}");
                         break;
                     }
                     cg.bindingManager.Error($"Extension as JSCFunction is not supported: {method}");
@@ -436,7 +442,7 @@ namespace QuickJS.Editor
                         cg.cs.AppendLine($"duk_rebind_this(ctx, {caller});");
                     }
                 }
-                cg.cs.AppendLine("return JSApi.JS_UNDEFINED;");
+                this.InvokeVoidReturn();
             }
             else
             {
@@ -448,8 +454,8 @@ namespace QuickJS.Editor
                 {
                     _WriteBackParametersByRef(isExtension, parametersByRef);
                 }
-                cg.AppendPushValue(returnType, "ret");
-                cg.cs.AppendLine("return 1;");
+                var pusher = cg.AppendValuePusher(returnType, "ret");
+                cg.cs.AppendLine("return {0};", pusher);
             }
         }
 
@@ -461,12 +467,13 @@ namespace QuickJS.Editor
             {
                 var parameter = parametersByRef[i];
                 var position = isExtension ? parameter.Position - 1 : parameter.Position;
-                cg.cs.AppendLine($"if (!DuktapeDLL.duk_is_null_or_undefined(ctx, {position}))");
+                cg.cs.AppendLine("if (!DuktapeDLL.duk_is_null_or_undefined(ctx, {0}))", position);
                 cg.cs.AppendLine("{");
                 cg.cs.AddTabLevel();
                 var argname = $"arg{position}";
-                cg.AppendPushValue(parameter.ParameterType, argname);
-                cg.cs.AppendLine($"DuktapeDLL.duk_unity_put_target_i(ctx, {position});");
+                var pusher = cg.AppendValuePusher(parameter.ParameterType, argname);
+                cg.cs.AppendLine("//TODO: {0}", pusher);
+                cg.cs.AppendLine("DuktapeDLL.duk_unity_put_target_i(ctx, {0});", position);
                 cg.cs.DecTabLevel();
                 cg.cs.AppendLine("}");
             }
@@ -503,6 +510,11 @@ namespace QuickJS.Editor
         protected override void EndInvokeBinding()
         {
             this.cg.cs.AppendLine("var val = NewBridgeClassObject(ctx, new_target, o, magic);");
+        }
+
+        protected override void InvokeVoidReturn()
+        {
+            this.cg.cs.AppendLine("return val;");
         }
 
         public ConstructorCodeGen(CodeGenerator cg, TypeBindingInfo bindingInfo)

@@ -293,19 +293,19 @@ namespace QuickJS.Editor
             AddCSTypeNameMap(typeof(System.Object), "object");
             AddCSTypeNameMap(typeof(void), "void");
 
-            AddCSTypePusherMap(typeof(bool), "DuktapeDLL.duk_push_boolean");
-            AddCSTypePusherMap(typeof(char), "DuktapeDLL.duk_push_int");
-            AddCSTypePusherMap(typeof(byte), "DuktapeDLL.duk_push_int");
-            AddCSTypePusherMap(typeof(sbyte), "DuktapeDLL.duk_push_int");
-            AddCSTypePusherMap(typeof(short), "DuktapeDLL.duk_push_int");
-            AddCSTypePusherMap(typeof(ushort), "DuktapeDLL.duk_push_int");
-            AddCSTypePusherMap(typeof(int), "DuktapeDLL.duk_push_int");
-            AddCSTypePusherMap(typeof(uint), "DuktapeDLL.duk_push_uint");
-            AddCSTypePusherMap(typeof(long), "DuktapeDLL.duk_push_number");
-            AddCSTypePusherMap(typeof(ulong), "DuktapeDLL.duk_push_number");
-            AddCSTypePusherMap(typeof(float), "DuktapeDLL.duk_push_number");
-            AddCSTypePusherMap(typeof(double), "DuktapeDLL.duk_push_number");
-            AddCSTypePusherMap(typeof(string), "DuktapeDLL.duk_push_string");
+            // AddCSTypePusherMap(typeof(bool), "DuktapeDLL.duk_push_boolean");
+            // AddCSTypePusherMap(typeof(char), "DuktapeDLL.duk_push_int");
+            // AddCSTypePusherMap(typeof(byte), "DuktapeDLL.duk_push_int");
+            // AddCSTypePusherMap(typeof(sbyte), "DuktapeDLL.duk_push_int");
+            // AddCSTypePusherMap(typeof(short), "DuktapeDLL.duk_push_int");
+            // AddCSTypePusherMap(typeof(ushort), "DuktapeDLL.duk_push_int");
+            // AddCSTypePusherMap(typeof(int), "DuktapeDLL.duk_push_int");
+            // AddCSTypePusherMap(typeof(uint), "DuktapeDLL.duk_push_uint");
+            // AddCSTypePusherMap(typeof(long), "DuktapeDLL.duk_push_number");
+            // AddCSTypePusherMap(typeof(ulong), "DuktapeDLL.duk_push_number");
+            // AddCSTypePusherMap(typeof(float), "DuktapeDLL.duk_push_number");
+            // AddCSTypePusherMap(typeof(double), "DuktapeDLL.duk_push_number");
+            // AddCSTypePusherMap(typeof(string), "DuktapeDLL.duk_push_string");
 
             Initialize();
         }
@@ -661,128 +661,66 @@ namespace QuickJS.Editor
             return arglist;
         }
 
-        public string GetDuktapeGenericError(string err)
+        public string GetThrowError(string err)
         {
-            return $"DuktapeDLL.duk_generic_error(ctx, \"{err}\");";
+            return $"JSApi.JS_ThrowInternalError(ctx, \"{err}\");";
         }
 
         public string GetDuktapeGetter(Type type, string ctx, string index, string varname)
         {
-            #region [临时做法] 并且是可选的优化, 可以避免一层函数调用
-            if (type == typeof(string))
-            {
-                return $"{varname} = DuktapeDLL.duk_get_string({ctx}, {index});";
-            }
-            if (type.IsValueType)
-            {
-                if (type.IsPrimitive)
-                {
-                    if (type == typeof(bool))
-                    {
-                        return $"{varname} = DuktapeDLL.duk_get_boolean({ctx}, {index});";
-                    }
-                    if (type == typeof(byte))
-                    {
-                        return $"{varname} = (byte)DuktapeDLL.duk_get_int({ctx}, {index});";
-                    }
-                    if (type == typeof(char))
-                    {
-                        return $"{varname} = (char)DuktapeDLL.duk_get_int({ctx}, {index});";
-                    }
-                    if (type == typeof(sbyte))
-                    {
-                        return $"{varname} = (sbyte)DuktapeDLL.duk_get_int({ctx}, {index});";
-                    }
-                    if (type == typeof(short))
-                    {
-                        return $"{varname} = (short)DuktapeDLL.duk_get_int({ctx}, {index});";
-                    }
-                    if (type == typeof(ushort))
-                    {
-                        return $"{varname} = (ushort)DuktapeDLL.duk_get_int({ctx}, {index});";
-                    }
-                    if (type == typeof(int))
-                    {
-                        return $"{varname} = DuktapeDLL.duk_get_int({ctx}, {index});";
-                    }
-                    if (type == typeof(uint))
-                    {
-                        return $"{varname} = DuktapeDLL.duk_get_uint({ctx}, {index});";
-                    }
-                    if (type == typeof(long))
-                    {
-                        return $"{varname} = (long)DuktapeDLL.duk_get_number({ctx}, {index});";
-                    }
-                    if (type == typeof(ulong))
-                    {
-                        return $"{varname} = (ulong)DuktapeDLL.duk_get_number({ctx}, {index});";
-                    }
-                    if (type == typeof(float))
-                    {
-                        return $"{varname} = (float)DuktapeDLL.duk_get_number({ctx}, {index});";
-                    }
-                    if (type == typeof(double))
-                    {
-                        return $"{varname} = DuktapeDLL.duk_get_number({ctx}, {index});";
-                    }
-                }
-                if (type.IsEnum)
-                {
-                    if (type.GetEnumUnderlyingType() == typeof(int))
-                    {
-                        var typeStr = this.GetCSTypeFullName(type);
-                        return $"{varname} = ({typeStr})DuktapeDLL.duk_get_int({ctx}, {index});";
-                    }
-                }
-            }
-            #endregion 
-            var getter = GetDuktapeGetter(type);
+            var getter = GetScriptObjectPropertyGetter(type);
             return $"{getter}({ctx}, {index}, out {varname});";
         }
 
-        private string GetDuktapeGetter(Type type)
+        public string GetScriptObjectGetter(Type type, string ctx, string index, string varname)
+        {
+            var getter = GetScriptObjectPropertyGetter(type);
+            return $"{getter}({ctx}, {index}, out {varname});";
+        }
+
+        private string GetScriptObjectPropertyGetter(Type type)
         {
             if (type.IsByRef)
             {
-                return GetDuktapeGetter(type.GetElementType());
+                return GetScriptObjectPropertyGetter(type.GetElementType());
             }
             if (type.IsArray)
             {
                 var elementType = type.GetElementType();
-                return GetDuktapeGetter(elementType) + "_array"; //TODO: 嵌套数组的问题
+                return GetScriptObjectPropertyGetter(elementType) + "_array"; //TODO: 嵌套数组的问题
             }
             if (type.IsValueType)
             {
                 if (type.IsPrimitive)
                 {
-                    return "duk_get_primitive";
+                    return "js_get_primitive";
                 }
                 if (type.IsEnum)
                 {
-                    return "duk_get_enumvalue";
+                    return "js_get_enumvalue";
                 }
-                return "duk_get_structvalue";
+                return "js_get_structvalue";
             }
             if (type == typeof(string))
             {
-                return "duk_get_primitive";
+                return "js_get_primitive";
             }
             if (type.BaseType == typeof(MulticastDelegate))
             {
-                return "duk_get_delegate";
+                return "js_get_delegate";
             }
             if (type == typeof(Type))
             {
-                return "duk_get_type";
+                return "js_get_type";
             }
-            return "duk_get_classvalue";
+            return "js_get_classvalue";
         }
 
-        public string GetDuktapePusher(Type type)
+        public string GetScriptObjectPusher(Type type)
         {
             if (type.IsByRef)
             {
-                return GetDuktapePusher(type.GetElementType());
+                return GetScriptObjectPusher(type.GetElementType());
             }
             string pusher;
             if (_csTypePusherMap.TryGetValue(type, out pusher))
@@ -791,25 +729,25 @@ namespace QuickJS.Editor
             }
             if (type.BaseType == typeof(MulticastDelegate))
             {
-                return "duk_push_delegate";
+                return "js_push_delegate";
             }
             if (type.IsValueType)
             {
                 if (type.IsPrimitive)
                 {
-                    return "duk_push_primitive";
+                    return "js_push_primitive";
                 }
                 if (type.IsEnum)
                 {
-                    return "duk_push_enumvalue";
+                    return "js_push_enumvalue";
                 }
-                return "duk_push_structvalue";
+                return "js_push_structvalue";
             }
             if (type == typeof(string))
             {
-                return "duk_push_primitive";
+                return "js_push_primitive";
             }
-            return "duk_push_classvalue";
+            return "js_push_classvalue";
         }
 
         public static string GetTSVariable(string name)

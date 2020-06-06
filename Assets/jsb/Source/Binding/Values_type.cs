@@ -12,7 +12,7 @@ namespace QuickJS.Binding
     // 处理类型
     public partial class Values
     {
-        public static bool js_get_type(JSContext ctx, JSValue this_obj, JSValue jsValue, out Type o)
+        public static bool js_get_type(JSContext ctx, JSValue jsValue, out Type o)
         {
             if (JSApi.JS_IsString(jsValue))
             {
@@ -59,7 +59,7 @@ namespace QuickJS.Binding
             return false;
         }
 
-        public static bool js_get_type_array(JSContext ctx, JSValue this_obj, JSValue val, out Type[] o)
+        public static bool js_get_type_array(JSContext ctx, JSValue val, out Type[] o)
         {
             if (JSApi.JS_IsArray(ctx, val) == 1)
             {
@@ -76,7 +76,7 @@ namespace QuickJS.Binding
                 {
                     var eVal = JSApi.JS_GetPropertyUint32(ctx, val, i);
                     Type e;
-                    js_get_type(ctx, this_obj, eVal, out e);
+                    js_get_type(ctx, eVal, out e);
                     o[i] = e;
                     JSApi.JS_FreeValue(ctx, eVal);
                 }
@@ -84,7 +84,7 @@ namespace QuickJS.Binding
             }
             
             // fallthrough
-            return js_get_classvalue<Type[]>(ctx, this_obj, val, out o);
+            return js_get_classvalue<Type[]>(ctx, val, out o);
         }
     }
 }

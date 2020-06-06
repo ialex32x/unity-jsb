@@ -10,7 +10,7 @@ namespace QuickJS.Binding
     // 处理委托的绑定
     public partial class Values
     {
-        public static bool js_get_delegate_array<T>(JSContext ctx, JSValue this_obj, JSValue val, out T[] o)
+        public static bool js_get_delegate_array<T>(JSContext ctx, JSValue val, out T[] o)
         where T : class
         {
             if (JSApi.JS_IsArray(ctx, val) == 1)
@@ -28,17 +28,17 @@ namespace QuickJS.Binding
                 {
                     var eVal = JSApi.JS_GetPropertyUint32(ctx, val, i);
                     T e;
-                    js_get_delegate(ctx, this_obj, eVal, out e);
+                    js_get_delegate(ctx, eVal, out e);
                     o[i] = e;
                     JSApi.JS_FreeValue(ctx, eVal);
                 }
                 return true;
             }
-            js_get_classvalue<T[]>(ctx, this_obj, val, out o);
+            js_get_classvalue<T[]>(ctx, val, out o);
             return true;
         }
         
-        public static bool js_get_delegate<T>(JSContext ctx, JSValue this_obj, JSValue val, out T o)
+        public static bool js_get_delegate<T>(JSContext ctx, JSValue val, out T o)
         where T : class
         {
             //TODO: 20200320 !!! 如果 o 不是 jsobject, 且是 Delegate 但不是 ScriptDelegate, 则 ... 处理
