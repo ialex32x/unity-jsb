@@ -13,7 +13,7 @@ namespace QuickJS.Binding
     {
         //NOTE: 代替 bind_native, 用于对 c# 对象产生 js 包装对象
         // 分两种情况, 这里是第1种, 在构造中使用
-        private static JSValue NewBridgeClassObject(JSContext ctx, JSValue new_target, object o, int type_id)
+        public static JSValue NewBridgeClassObject(JSContext ctx, JSValue new_target, object o, int type_id)
         {
             var cache = ScriptEngine.GetObjectCache(ctx);
             var object_id = cache.AddObject(o);

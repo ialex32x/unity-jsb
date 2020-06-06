@@ -35,6 +35,13 @@ namespace QuickJS.Binding
             JSApi.JS_DefinePropertyValue(_ctx, bStatic ? _ctor : _proto, nameAtom, funcVal, JSPropFlags.JS_PROP_C_W_E);
         }
 
+        public void AddMethod(bool bStatic, string name, JSCFunction func)
+        {
+            var nameAtom = _register.GetAtom(name);
+            var funcVal = JSApi.JSB_NewCFunction(_ctx, func, nameAtom, 0, JSCFunctionEnum.JS_CFUNC_generic, 0);
+            JSApi.JS_DefinePropertyValue(_ctx, bStatic ? _ctor : _proto, nameAtom, funcVal, JSPropFlags.JS_PROP_C_W_E);
+        }
+
         public void AddMethod(bool bStatic, string name, JSCFunction func, int length)
         {
             var nameAtom = _register.GetAtom(name);

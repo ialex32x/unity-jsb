@@ -46,14 +46,14 @@ namespace QuickJS.Editor
             var declaringType = fieldInfo.DeclaringType;
 
             this.cg.cs.AppendLine("{0} value;", this.cg.bindingManager.GetCSTypeFullName(fieldInfo.FieldType));
-            this.cg.cs.AppendLine(this.cg.bindingManager.GetDuktapeGetter(fieldInfo.FieldType, "ctx", "0", "value"));
+            this.cg.cs.AppendLine(this.cg.bindingManager.GetScriptObjectGetter(fieldInfo.FieldType, "ctx", "argv[0]", "value"));
             this.cg.cs.AppendLine("{0}.{1} = value;", caller, fieldInfo.Name);
             if (declaringType.IsValueType && !fieldInfo.IsStatic)
             {
                 // 非静态结构体字段修改, 尝试替换实例
                 this.cg.cs.AppendLine($"duk_rebind_this(ctx, {caller});");
             }
-            this.cg.cs.AppendLine("return 0;");
+            this.cg.cs.AppendLine("return JSApi.JS_UNDEFINED;");
         }
 
         public virtual void Dispose()

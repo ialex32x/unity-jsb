@@ -121,7 +121,7 @@ namespace QuickJS.Editor
                         {
                             var argElementOffset = i == 0 ? "" : " - " + i;
                             var argName = $"arg{i}[i{argElementOffset}]";
-                            this.cg.cs.AppendLine(this.cg.bindingManager.GetDuktapeGetter(parameter.ParameterType.GetElementType(), "ctx", "i", argName));
+                            this.cg.cs.AppendLine(this.cg.bindingManager.GetScriptObjectGetter(parameter.ParameterType.GetElementType(), "ctx", "argv[i]", argName));
                         }
                         this.cg.cs.DecTabLevel();
                         this.cg.cs.AppendLine("}");
@@ -248,7 +248,7 @@ namespace QuickJS.Editor
                         {
                             foreach (var method in variant.plainMethods)
                             {
-                                cg.cs.AppendLine($"if (duk_match_types(ctx, argc{GetFixedMatchTypes(method)}))");
+                                cg.cs.AppendLine($"if (js_match_types(ctx, argv{GetFixedMatchTypes(method)}))");
                                 cg.cs.AppendLine("{");
                                 cg.cs.AddTabLevel();
                                 this.WriteCSMethodBinding(method, argc, false);
@@ -271,8 +271,8 @@ namespace QuickJS.Editor
                     {
                         foreach (var method in variant.varargMethods)
                         {
-                            cg.cs.AppendLine($"if (duk_match_types(ctx, argc{GetFixedMatchTypes(method)})");
-                            cg.cs.AppendLine($" && duk_match_param_types(ctx, {args}, argc, {GetParamArrayMatchType(method)}))");
+                            cg.cs.AppendLine($"if (js_match_types(ctx, argv{GetFixedMatchTypes(method)})");
+                            cg.cs.AppendLine($" && js_match_param_types(ctx, {args}, argv, {GetParamArrayMatchType(method)}))");
                             cg.cs.AppendLine("{");
                             cg.cs.AddTabLevel();
                             this.WriteCSMethodBinding(method, argc, true);

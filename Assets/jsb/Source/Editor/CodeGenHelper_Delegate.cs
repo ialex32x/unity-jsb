@@ -141,7 +141,7 @@ namespace QuickJS.Editor
             if (delegateBindingInfo.returnType != typeof(void))
             {
                 this.cg.cs.AppendLine($"{this.cg.bindingManager.GetCSTypeFullName(delegateBindingInfo.returnType)} {retName};");
-                this.cg.cs.AppendLine(this.cg.bindingManager.GetDuktapeGetter(delegateBindingInfo.returnType, "ctx", "-1", retName));
+                this.cg.cs.AppendLine(this.cg.bindingManager.GetScriptObjectGetter(delegateBindingInfo.returnType, "ctx", "-1", retName)); //TODO: duktape-unity 旧代码, 需替换 this_obj
                 this.cg.cs.AppendLine("DuktapeDLL.duk_pop(ctx);");
                 this.cg.cs.AppendLine($"return {retName};");
             }

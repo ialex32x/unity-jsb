@@ -142,10 +142,18 @@ namespace QuickJS.Editor
             if (bindingInfo.jsNamespace != null)
             {
                 var split_ns = bindingInfo.jsNamespace.Split('.');
-                for (var i = 0; i < split_ns.Length; i++)
+                var ns_count = split_ns.Length;
+                for (var i = 0; i < ns_count; i++)
                 {
                     var el_ns = split_ns[i];
-                    this.cg.cs.AppendL(", \"{0}\"", el_ns);
+                    if (i == ns_count - 1)
+                    {
+                        this.cg.cs.AppendL("\"{0}\"", el_ns);
+                    }
+                    else
+                    {
+                        this.cg.cs.AppendL("\"{0}\", ", el_ns);
+                    }
                 }
             }
             this.cg.cs.AppendLineL(");");
@@ -242,7 +250,7 @@ namespace QuickJS.Editor
         public BindingConstructorDeclareCodeGen(CodeGenerator cg, string name)
         {
             this.cg = cg;
-            this.cg.cs.AppendLine("public static JSValue {0}(JSContext ctx, JSValue this_obj, int argc, JSValue[] argv, int magic)", name);
+            this.cg.cs.AppendLine("public static JSValue {0}(JSContext ctx, JSValue new_target, int argc, JSValue[] argv, int magic)", name);
             this.cg.cs.AppendLine("{");
             this.cg.cs.AddTabLevel();
         }

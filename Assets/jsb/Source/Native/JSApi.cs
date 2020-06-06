@@ -220,6 +220,13 @@ namespace QuickJS.Native
             }
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static JSValue ThrowException(JSContext ctx, Exception exception)
+        {
+            var message = string.Format("{0}\n{1}", exception.Message, exception.StackTrace);
+            return JS_ThrowInternalError(ctx, message);
+        }
+
         [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern unsafe JSValue JSB_ThrowRangeError(JSContext ctx, byte* msg);
 

@@ -666,12 +666,6 @@ namespace QuickJS.Editor
             return $"JSApi.JS_ThrowInternalError(ctx, \"{err}\");";
         }
 
-        public string GetDuktapeGetter(Type type, string ctx, string index, string varname)
-        {
-            var getter = GetScriptObjectPropertyGetter(type);
-            return $"{getter}({ctx}, {index}, out {varname});";
-        }
-
         public string GetScriptObjectGetter(Type type, string ctx, string index, string varname)
         {
             var getter = GetScriptObjectPropertyGetter(type);
