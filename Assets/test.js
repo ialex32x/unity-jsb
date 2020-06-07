@@ -11,18 +11,18 @@ print(123, 456);
 
 print("fib:", fib(12));
 
-function delay() {
+function delay(secs) {
     return new Promise((resolve, reject) => {
         setTimeout(() => {
             print("[async] resolve");
             resolve();
-        }, 1000);
+        }, secs * 1000);
     });
 }
 
 async function test() {
     print("[async] begin");
-    await delay();
+    await delay(3);
     print("[async] end");
 }
 
@@ -46,6 +46,14 @@ let u = new UnityEngine.Vector3(1, 2, 3);
 console.log(u.x);
 u.Normalize();
 console.log(u.x, u.y, u.z);
+
+let go = new UnityEngine.GameObject("test");
+
+async function destroy() {
+    await delay(5);
+    UnityEngine.Object.Destroy(go);
+}
+destroy();
 
 print("end of script");
 
