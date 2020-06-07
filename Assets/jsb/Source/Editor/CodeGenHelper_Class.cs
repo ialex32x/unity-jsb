@@ -33,9 +33,9 @@ namespace QuickJS.Editor
             // 构造函数
             if (this.bindingInfo.constructors.available)
             {
-                using (new PInvokeGuardCodeGen(cg))
+                using (new PInvokeGuardCodeGen(cg, typeof(Native.JSCFunctionMagic)))
                 {
-                    using (new BindingFuncDeclareCodeGen(cg, this.bindingInfo.constructors.name))
+                    using (new BindingConstructorDeclareCodeGen(cg, this.bindingInfo.constructors.name))
                     {
                         using (new TryCatchGuradCodeGen(cg))
                         {
@@ -271,7 +271,7 @@ namespace QuickJS.Editor
                 {
                     using (new RegFuncNamespaceCodeGen(cg, bindingInfo))
                     {
-                        var constructor = bindingInfo.constructors.available ? bindingInfo.constructors.name : "class_private_ctor";
+                        var constructor = bindingInfo.constructors.available ? bindingInfo.constructors.name : "JSApi.class_private_ctor";
                         if (!bindingInfo.constructors.available && !bindingInfo.type.IsAbstract)
                         {
                             if (bindingInfo.type.IsSubclassOf(typeof(Component)))
@@ -285,36 +285,32 @@ namespace QuickJS.Editor
                                 cg.tsDeclare.AppendLine("protected constructor()");
                             }
                         }
-                        cg.cs.AppendLine("using (var cls = CreateClass(reg, ns, \"{0}\", typeof({1}), {2}))",
+                        cg.cs.AppendLine("var cls = ns.CreateClass(\"{0}\", typeof({1}), {2});",
                             bindingInfo.jsName,
                             this.cg.bindingManager.GetCSTypeFullName(bindingInfo.type),
                             constructor);
-                        cg.cs.AppendLine("{");
-                        cg.cs.AddTabLevel();
                         foreach (var kv in bindingInfo.methods)
                         {
                             var regName = kv.Value.regName;
                             var funcName = kv.Value.name;
-                            var bStatic = false;
                             string redirect;
                             if (this.bindingInfo.transform != null && this.bindingInfo.transform.TryRedirectMethod(regName, out redirect))
                             {
                                 funcName = redirect;
                             }
 
-                            cg.cs.AppendLine("AddMethod(ctx, {0}, \"{1}\", {2});", bStatic ? "cls.ctor" : "cls.proto", regName, funcName);
+                            cg.cs.AppendLine("cls.AddMethod(false, \"{0}\", {1});", regName, funcName);
                         }
                         foreach (var kv in bindingInfo.staticMethods)
                         {
                             var regName = kv.Value.regName;
                             var funcName = kv.Value.name;
-                            var bStatic = true;
                             string redirect;
                             if (this.bindingInfo.transform != null && this.bindingInfo.transform.TryRedirectMethod(regName, out redirect))
                             {
                                 funcName = redirect;
                             }
-                            cg.cs.AppendLine("AddMethod(ctx, cls, \"{0}\", {1}, {2});", bStatic ? "cls.ctor" : "cls.proto", regName, funcName);
+                            cg.cs.AppendLine("cls.AddMethod(true, \"{0}\", {1});", regName, funcName);
                         }
                         foreach (var kv in bindingInfo.properties)
                         {
@@ -322,7 +318,7 @@ namespace QuickJS.Editor
                             if (bindingInfo.staticPair.IsValid())
                             {
                                 var tsPropertyVar = BindingManager.GetTSVariable(bindingInfo.regName);
-                                cg.cs.AppendLine("AddProperty(ctx, cls.ctor, \"{0}\", {1}, {2});",
+                                cg.cs.AppendLine("cls.AddProperty(true, \"{0}\", {1}, {2});",
                                     tsPropertyVar,
                                     bindingInfo.staticPair.getterName != null ? bindingInfo.staticPair.getterName : "null",
                                     bindingInfo.staticPair.setterName != null ? bindingInfo.staticPair.setterName : "null");
@@ -336,11 +332,11 @@ namespace QuickJS.Editor
                                 cg.AppendJSDoc(bindingInfo.propertyInfo);
                                 cg.tsDeclare.AppendLine($"{tsPropertyPrefix}{tsPropertyVar}: {tsPropertyType}");
                             }
-                            
+
                             if (bindingInfo.instancePair.IsValid())
                             {
                                 var tsPropertyVar = BindingManager.GetTSVariable(bindingInfo.regName);
-                                cg.cs.AppendLine("AddProperty(ctx, cls.proto, \"{0}\", {1}, {2});",
+                                cg.cs.AppendLine("cls.AddProperty(false, \"{0}\", {1}, {2});",
                                     tsPropertyVar,
                                     bindingInfo.instancePair.getterName != null ? bindingInfo.instancePair.getterName : "null",
                                     bindingInfo.instancePair.setterName != null ? bindingInfo.instancePair.setterName : "null");
@@ -363,12 +359,12 @@ namespace QuickJS.Editor
                             if (bindingInfo.constantValue != null)
                             {
                                 var cv = bindingInfo.constantValue;
-                                cg.cs.AppendLine($"AddConstValue(ctx, cls.ctor, \"{tsFieldVar}\", {cv});");
+                                cg.cs.AppendLine($"cls.AddConstValue(\"{tsFieldVar}\", {cv});");
                             }
                             else
                             {
-                                cg.cs.AppendLine("AddField(ctx, \"{0}\", {1}, {2}, {3});",
-                                    bStatic ? "cls.ctor" : "cls.proto",
+                                cg.cs.AppendLine("cls.AddField({0}, \"{1}\", {2}, {3});",
+                                    bStatic ? "true" : "false",
                                     tsFieldVar,
                                     bindingInfo.getterName != null ? bindingInfo.getterName : "null",
                                     bindingInfo.setterName != null ? bindingInfo.setterName : "null");
@@ -393,16 +389,15 @@ namespace QuickJS.Editor
                             if (bStatic)
                             {
                                 tsFieldPrefix += "static ";
-                                cg.cs.AppendLine($"AddEvent(ctx, cls.ctor, \"{tsFieldVar}\", {eventBindingInfo.adderName}, {eventBindingInfo.removerName});");
+                                cg.cs.AppendLine($"cls.AddEvent(true, \"{tsFieldVar}\", {eventBindingInfo.adderName}, {eventBindingInfo.removerName});");
                             }
                             else
                             {
-                                cg.cs.AppendLine($"AddProperty(ctx, cls.proto, \"{tsFieldVar}\", {eventBindingInfo.proxyName}, null);");
+                                cg.cs.AppendLine($"cls.AddProperty(false, \"{tsFieldVar}\", {eventBindingInfo.proxyName}, null);");
                             }
                             cg.tsDeclare.AppendLine($"{tsFieldPrefix}{tsFieldVar}: DuktapeJS.event<{tsFieldType}>");
                         }
-                        cg.cs.DecTabLevel();
-                        cg.cs.AppendLine("}");
+                        cg.cs.AppendLine("cls.Close();");
                     }
                 }
                 base.Dispose();

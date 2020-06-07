@@ -24,10 +24,11 @@
 
 ifeq ($(shell uname -s),Darwin)
 CONFIG_DARWIN=y
-endif
+else
 # Windows cross compilation from Linux
 CONFIG_WIN32=y
 CONFIG_WIN32_64=y
+endif
 # use link time optimization (smaller and faster executables but slower build)
 CONFIG_LTO=y
 # consider warnings as errors (for development)
@@ -231,6 +232,14 @@ else
 LTOEXT=
 endif
 
+# ************************* CUSTOM BUILD TARGET BEGIN *************************
+# ************************* CUSTOM BUILD TARGET BEGIN *************************
+
+ifdef CONFIG_DARWIN
+libquickjs.so: $(QJS_LIB_OBJS)
+	$(CC) $(LDFLAGS) -shared -o $@ $^
+endif
+
 ifdef CONFIG_WIN32
 ifdef CONFIG_WIN32_64
 libquickjs.dll: $(QJS_LIB_OBJS)
@@ -240,6 +249,9 @@ libquickjs.dll: $(QJS_LIB_OBJS)
 	$(CC) -m32 $(LDFLAGS) $(LDEXPORT) -fPIC -shared $^ -o $@ $(LIBS) 
 endif
 endif
+
+# ************************* CUSTOM BUILD TARGET END *************************
+# ************************* CUSTOM BUILD TARGET END *************************
 
 libquickjs$(LTOEXT).a: $(QJS_LIB_OBJS)
 	$(AR) rcs $@ $^

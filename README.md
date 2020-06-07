@@ -6,3 +6,9 @@ sudo apt-get install mingw-w64
 
 ./configure --host=i686-w64-mingw32
 x86_64-w64-mingw32
+
+
+# TODO
+* console.* compatible
+* sourcemap helper
+* event dispatcher

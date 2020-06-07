@@ -24,12 +24,12 @@ namespace QuickJS.Editor
 
             var caller = this.cg.AppendGetThisCS(bindingInfo);
             this.cg.cs.AppendLine("{0} value;", this.cg.bindingManager.GetCSTypeFullName(eventInfo.EventHandlerType));
-            this.cg.cs.AppendLine(this.cg.bindingManager.GetDuktapeGetter(eventInfo.EventHandlerType, "ctx", "0", "value"));
+            this.cg.cs.AppendLine(this.cg.bindingManager.GetScriptObjectGetter(eventInfo.EventHandlerType, "ctx", "argv[0]", "value"));
             this.cg.cs.AppendLine("{0}.{1} += value;", caller, eventInfo.Name);
             if (declaringType.IsValueType && !eventInfo.GetAddMethod().IsStatic)
             {
                 // 非静态结构体属性修改, 尝试替换实例
-                this.cg.cs.AppendLine($"duk_rebind_this(ctx, {caller});");
+                this.cg.cs.AppendLine($"js_rebind_this(ctx, this_obj, {caller});");
             }
             this.cg.cs.AppendLine("return 0;");
         }
@@ -54,12 +54,12 @@ namespace QuickJS.Editor
 
             var caller = this.cg.AppendGetThisCS(bindingInfo);
             this.cg.cs.AppendLine("{0} value;", this.cg.bindingManager.GetCSTypeFullName(eventInfo.EventHandlerType));
-            this.cg.cs.AppendLine(this.cg.bindingManager.GetDuktapeGetter(eventInfo.EventHandlerType, "ctx", "0", "value"));
+            this.cg.cs.AppendLine(this.cg.bindingManager.GetScriptObjectGetter(eventInfo.EventHandlerType, "ctx", "argv[0]", "value"));
             this.cg.cs.AppendLine("{0}.{1} -= value;", caller, eventInfo.Name);
             if (declaringType.IsValueType && !eventInfo.GetAddMethod().IsStatic)
             {
                 // 非静态结构体属性修改, 尝试替换实例
-                this.cg.cs.AppendLine($"duk_rebind_this(ctx, {caller});");
+                this.cg.cs.AppendLine($"js_rebind_this(ctx, this_obj, {caller});");
             }
             this.cg.cs.AppendLine("return 0;");
         }
@@ -82,7 +82,7 @@ namespace QuickJS.Editor
             var eventInfo = this.eventBindingInfo.eventInfo;
             var declaringType = eventInfo.DeclaringType;
             var tsFieldVar = BindingManager.GetTSVariable(eventBindingInfo.regName);
-            this.cg.cs.AppendLine("DuktapeDLL.duk_push_this(ctx);");
+            // this.cg.cs.AppendLine("DuktapeDLL.duk_push_this(ctx);");
             this.cg.cs.AppendLine($"duk_add_event_instanced(ctx, \"{tsFieldVar}\", {this.eventBindingInfo.adderName}, {this.eventBindingInfo.removerName}, -1);");
             this.cg.cs.AppendLine("DuktapeDLL.duk_remove(ctx, -2);");
             this.cg.cs.AppendLine("return 1;");

@@ -165,13 +165,18 @@ namespace QuickJS.IO
 
         public int ReadBytes(byte[] dst, int dstOffset, int size)
         {
-            CheckReadalbe(1);
+            // CheckReadalbe(1);
             if (size > readableBytes)
             {
                 size = readableBytes;
             }
-            Buffer.BlockCopy(_data, _readPosition, dst, dstOffset, size);
-            _readPosition += size;
+
+            if (size > 0)
+            {
+                Buffer.BlockCopy(_data, _readPosition, dst, dstOffset, size);
+                _readPosition += size;
+            }
+
             return size;
         }
 

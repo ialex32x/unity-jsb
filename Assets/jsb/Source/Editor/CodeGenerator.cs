@@ -68,7 +68,7 @@ namespace QuickJS.Editor
                                 this.bindingManager.OnPostGenerateDelegate(bindingInfo);
                             }
 
-                            this.tsDeclare.AppendLine("declare namespace QuickJS.EditorJS {");
+                            this.tsDeclare.AppendLine("declare namespace QuickJS.Internal {");
                             this.tsDeclare.AddTabLevel();
                             // this.jsSource.AppendLine($"// dummy code");
                             foreach (var spec in specs)
@@ -220,16 +220,17 @@ namespace QuickJS.Editor
             // }
         }
 
-        public void AppendPushValue(Type type, string value)
+        // type: csharp 方法本身返回值的类型
+        // value: csharp 方法本身的返回值名字
+        public string AppendValuePusher(Type type, string value)
         {
             if (type.IsEnum)
             {
                 var eType = type.GetEnumUnderlyingType();
                 var eTypeName = this.bindingManager.GetCSTypeFullName(eType);
-                this.cs.AppendLine($"{this.bindingManager.GetDuktapePusher(eType)}(ctx, ({eTypeName}){value});");
-                return;
+                return $"{this.bindingManager.GetScriptObjectPusher(eType)}(ctx, ({eTypeName}){value});";
             }
-            this.cs.AppendLine($"{this.bindingManager.GetDuktapePusher(type)}(ctx, {value});");
+            return $"{this.bindingManager.GetScriptObjectPusher(type)}(ctx, {value});";
         }
 
         public string AppendGetThisCS(FieldBindingInfo bindingInfo)
@@ -250,8 +251,8 @@ namespace QuickJS.Editor
             {
                 caller = "self";
                 this.cs.AppendLine($"{this.bindingManager.GetCSTypeFullName(declaringType)} {caller};");
-                this.cs.AppendLine($"DuktapeDLL.duk_push_this(ctx);");
-                this.cs.AppendLine(this.bindingManager.GetDuktapeGetter(declaringType, "ctx", "-1", caller));
+                // this.cs.AppendLine($"DuktapeDLL.duk_push_this(ctx);");
+                this.cs.AppendLine(this.bindingManager.GetScriptObjectGetter(declaringType, "ctx", "this_obj", caller));
                 this.cs.AppendLine($"DuktapeDLL.duk_pop(ctx);");
             }
             return caller;
@@ -282,9 +283,9 @@ namespace QuickJS.Editor
             {
                 caller = "self";
                 this.cs.AppendLine($"{this.bindingManager.GetCSTypeFullName(declaringType)} {caller};");
-                this.cs.AppendLine($"DuktapeDLL.duk_push_this(ctx);");
-                this.cs.AppendLine(this.bindingManager.GetDuktapeGetter(declaringType, "ctx", "-1", caller));
-                this.cs.AppendLine($"DuktapeDLL.duk_pop(ctx);");
+                // this.cs.AppendLine($"DuktapeDLL.duk_push_this(ctx);");
+                this.cs.AppendLine(this.bindingManager.GetScriptObjectGetter(declaringType, "ctx", "this_obj", caller));
+                // this.cs.AppendLine($"DuktapeDLL.duk_pop(ctx);");
             }
             return caller;
         }
@@ -294,7 +295,7 @@ namespace QuickJS.Editor
             if (isVararg)
             {
                 var varName = "argc";
-                cs.AppendLine("var {0} = DuktapeDLL.duk_get_top(ctx);", varName);
+                // cs.AppendLine("var {0} = DuktapeDLL.duk_get_top(ctx);", varName);
                 return varName;
             }
             return null;

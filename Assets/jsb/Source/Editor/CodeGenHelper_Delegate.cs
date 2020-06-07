@@ -31,8 +31,9 @@ namespace QuickJS.Editor
                 using (new RegFuncCodeGen(cg))
                 {
                     this.cg.cs.AppendLine("var type = typeof({0});", CodeGenerator.NameOfDelegates);
-                    this.cg.cs.AppendLine("var vm = DuktapeVM.GetVM(ctx);");
+                    this.cg.cs.AppendLine("var types = ScriptEngine.GetTypeDB(register);");
                     this.cg.cs.AppendLine("var methods = type.GetMethods(System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.Public);");
+                    this.cg.cs.AppendLine("var ns = register.CreateNamespace(\"QuickJS\");");
                     this.cg.cs.AppendLine("for (int i = 0, size = methods.Length; i < size; i++)");
                     this.cg.cs.AppendLine("{");
                     {
@@ -49,30 +50,30 @@ namespace QuickJS.Editor
                             this.cg.cs.AddTabLevel();
                             {
                                 this.cg.cs.AppendLine("var attribute = attributes[a] as JSDelegateAttribute;");
-                                this.cg.cs.AppendLine("vm.AddDelegate(attribute.target, method);");
+                                this.cg.cs.AppendLine("types.AddDelegate(attribute.target, method);");
                             }
                             this.cg.cs.DecTabLevel();
                             this.cg.cs.AppendLine("}");
 
-                            this.cg.cs.AppendLine("duk_begin_namespace(ctx, \"DuktapeJS\");");
                             this.cg.cs.AppendLine("var name = \"Delegate\" + (method.GetParameters().Length - 1);");
-                            this.cg.cs.AppendLine("if (!DuktapeDLL.duk_get_prop_string(ctx, -1, name))");
-                            this.cg.cs.AppendLine("{");
-                            this.cg.cs.AddTabLevel();
-                            {
-                                this.cg.cs.AppendLine("DuktapeDLL.duk_get_prop_string(ctx, -2, \"Dispatcher\");");
-                                this.cg.cs.AppendLine("DuktapeDLL.duk_put_prop_string(ctx, -3, name);");
-                            }
-                            this.cg.cs.DecTabLevel();
-                            this.cg.cs.AppendLine("}");
-                            this.cg.cs.AppendLine("DuktapeDLL.duk_pop(ctx);");
-                            this.cg.cs.AppendLine("duk_end_namespace(ctx);");
+                            this.cg.cs.AppendLine("ns.Copy(\"Dispatcher\", name);");
+                            // this.cg.cs.AppendLine("if (!DuktapeDLL.duk_get_prop_string(ctx, -1, name))");
+                            // this.cg.cs.AppendLine("{");
+                            // this.cg.cs.AddTabLevel();
+                            // {
+                            //     this.cg.cs.AppendLine("DuktapeDLL.duk_get_prop_string(ctx, -2, \"Dispatcher\");");
+                            //     this.cg.cs.AppendLine("DuktapeDLL.duk_put_prop_string(ctx, -3, name);");
+                            // }
+                            // this.cg.cs.DecTabLevel();
+                            // this.cg.cs.AppendLine("}");
+                            // this.cg.cs.AppendLine("DuktapeDLL.duk_pop(ctx);");
                         }
                         this.cg.cs.DecTabLevel();
                         this.cg.cs.AppendLine("}");
                     }
                     this.cg.cs.DecTabLevel();
                     this.cg.cs.AppendLine("}");
+                    this.cg.cs.AppendLine("ns.Close();");
 
 
                     // for (var i = 0; i < delegateBindingInfos.Length; i++)
@@ -127,7 +128,8 @@ namespace QuickJS.Editor
                 for (var i = 0; i < nargs; i++)
                 {
                     var parameter = delegateBindingInfo.parameters[i];
-                    this.cg.AppendPushValue(parameter.ParameterType, parameter.Name);
+                    var pusher = this.cg.AppendValuePusher(parameter.ParameterType, parameter.Name);
+                    this.cg.cs.AppendLine(pusher);
                 }
                 this.cg.cs.AppendLine("fn.EndInvokeWithReturnValue(ctx);");
             }
@@ -140,7 +142,7 @@ namespace QuickJS.Editor
             if (delegateBindingInfo.returnType != typeof(void))
             {
                 this.cg.cs.AppendLine($"{this.cg.bindingManager.GetCSTypeFullName(delegateBindingInfo.returnType)} {retName};");
-                this.cg.cs.AppendLine(this.cg.bindingManager.GetDuktapeGetter(delegateBindingInfo.returnType, "ctx", "-1", retName));
+                this.cg.cs.AppendLine(this.cg.bindingManager.GetScriptObjectGetter(delegateBindingInfo.returnType, "ctx", "-1", retName)); //TODO: duktape-unity 旧代码, 需替换 this_obj
                 this.cg.cs.AppendLine("DuktapeDLL.duk_pop(ctx);");
                 this.cg.cs.AppendLine($"return {retName};");
             }

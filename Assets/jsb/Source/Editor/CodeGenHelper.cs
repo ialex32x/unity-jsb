@@ -16,6 +16,7 @@ namespace QuickJS.Editor
         public TopLevelCodeGen(CodeGenerator cg, TypeBindingInfo type)
         {
             this.cg = cg;
+            this.AppendCommonHead();
             this.cg.cs.AppendLine("// Assembly: {0}", type.Assembly.GetName());
             this.cg.cs.AppendLine("// Type: {0}", type.FullName);
             this.AppendCommon();
@@ -26,8 +27,25 @@ namespace QuickJS.Editor
         public TopLevelCodeGen(CodeGenerator cg, string name)
         {
             this.cg = cg;
+            this.AppendCommonHead();
             this.cg.cs.AppendLine("// Special: {0}", name);
             this.AppendCommon();
+        }
+
+        private void AppendCommonHead()
+        {
+            if (cg.bindingManager.prefs.debugCodegen)
+            {
+                this.cg.cs.AppendLine("/*");
+            }
+        }
+
+        private void AppendCommonTail()
+        {
+            if (cg.bindingManager.prefs.debugCodegen)
+            {
+                this.cg.cs.AppendLine("*/");
+            }
         }
 
         private void AppendCommon()
@@ -40,6 +58,7 @@ namespace QuickJS.Editor
 
         public void Dispose()
         {
+            AppendCommonTail();
         }
     }
 
@@ -59,7 +78,7 @@ namespace QuickJS.Editor
                 this.cg.cs.AppendLine("namespace {0} {{", csNamespace);
                 this.cg.cs.AddTabLevel();
             }
-            this.cg.cs.AppendLine("using Duktape;");
+            this.AddUsingStatements();
         }
 
         public NamespaceCodeGen(CodeGenerator cg, string csNamespace, string tsNamespace)
@@ -72,14 +91,20 @@ namespace QuickJS.Editor
                 this.cg.cs.AppendLine("namespace {0} {{", csNamespace);
                 this.cg.cs.AddTabLevel();
             }
-            this.cg.cs.AppendLine("using Duktape;");
-            // cg.csharp.AppendLine("using UnityEngine;");
+            this.AddUsingStatements();
             if (!string.IsNullOrEmpty(tsNamespace))
             {
                 tsNamespaceWrite = true;
                 this.cg.tsDeclare.AppendLine("declare namespace {0} {{", tsNamespace);
                 this.cg.tsDeclare.AddTabLevel();
             }
+        }
+
+        private void AddUsingStatements()
+        {
+            this.cg.cs.AppendLine("using QuickJS;");
+            this.cg.cs.AppendLine("using QuickJS.Binding;");
+            this.cg.cs.AppendLine("using QuickJS.Native;");
         }
 
         public void Dispose()
@@ -104,14 +129,13 @@ namespace QuickJS.Editor
         public RegFuncCodeGen(CodeGenerator cg)
         {
             this.cg = cg;
-            this.cg.cs.AppendLine("public static int reg(IntPtr ctx)");
+            this.cg.cs.AppendLine("public static void Bind(TypeRegister register)");
             this.cg.cs.AppendLine("{");
             this.cg.cs.AddTabLevel();
         }
 
         public virtual void Dispose()
         {
-            this.cg.cs.AppendLine("return 0;");
             this.cg.cs.DecTabLevel();
             this.cg.cs.AppendLine("}");
         }
@@ -124,15 +148,23 @@ namespace QuickJS.Editor
         public RegFuncNamespaceCodeGen(CodeGenerator cg, TypeBindingInfo bindingInfo)
         {
             this.cg = cg;
-            this.cg.cs.Append("duk_begin_namespace(ctx");
+            this.cg.cs.Append("var ns = register.CreateNamespace(");
             // Debug.LogErrorFormat("{0}: {1}", bindingInfo.type, bindingInfo.Namespace);
             if (bindingInfo.jsNamespace != null)
             {
                 var split_ns = bindingInfo.jsNamespace.Split('.');
-                for (var i = 0; i < split_ns.Length; i++)
+                var ns_count = split_ns.Length;
+                for (var i = 0; i < ns_count; i++)
                 {
                     var el_ns = split_ns[i];
-                    this.cg.cs.AppendL(", \"{0}\"", el_ns);
+                    if (i == ns_count - 1)
+                    {
+                        this.cg.cs.AppendL("\"{0}\"", el_ns);
+                    }
+                    else
+                    {
+                        this.cg.cs.AppendL("\"{0}\", ", el_ns);
+                    }
                 }
             }
             this.cg.cs.AppendLineL(");");
@@ -140,7 +172,7 @@ namespace QuickJS.Editor
 
         public virtual void Dispose()
         {
-            this.cg.cs.AppendLine("duk_end_namespace(ctx);");
+            this.cg.cs.AppendLine("ns.Close();");
         }
     }
 
@@ -191,10 +223,17 @@ namespace QuickJS.Editor
         public PInvokeGuardCodeGen(CodeGenerator cg)
         : base(cg)
         {
-            this.cg.cs.AppendLine("[AOT.MonoPInvokeCallbackAttribute(typeof(DuktapeDLL.duk_c_function))]");
+            this.cg.cs.AppendLine("[AOT.MonoPInvokeCallbackAttribute(typeof({0}))]", typeof(QuickJS.Native.JSCFunction).Name);
+        }
+
+        public PInvokeGuardCodeGen(CodeGenerator cg, Type target)
+        : base(cg)
+        {
+            this.cg.cs.AppendLine("[AOT.MonoPInvokeCallbackAttribute(typeof({0}))]", target.FullName);
         }
     }
 
+    // 方法绑定
     public class BindingFuncDeclareCodeGen : IDisposable
     {
         protected CodeGenerator cg;
@@ -202,7 +241,27 @@ namespace QuickJS.Editor
         public BindingFuncDeclareCodeGen(CodeGenerator cg, string name)
         {
             this.cg = cg;
-            this.cg.cs.AppendLine("public static int {0}(IntPtr ctx)", name);
+            this.cg.cs.AppendLine("public static JSValue {0}(JSContext ctx, JSValue this_obj, int argc, JSValue[] argv)", name);
+            this.cg.cs.AppendLine("{");
+            this.cg.cs.AddTabLevel();
+        }
+
+        public virtual void Dispose()
+        {
+            this.cg.cs.DecTabLevel();
+            this.cg.cs.AppendLine("}");
+        }
+    }
+
+    // 构造方法绑定
+    public class BindingConstructorDeclareCodeGen : IDisposable
+    {
+        protected CodeGenerator cg;
+
+        public BindingConstructorDeclareCodeGen(CodeGenerator cg, string name)
+        {
+            this.cg = cg;
+            this.cg.cs.AppendLine("public static JSValue {0}(JSContext ctx, JSValue new_target, int argc, JSValue[] argv, int magic)", name);
             this.cg.cs.AppendLine("{");
             this.cg.cs.AddTabLevel();
         }
@@ -231,14 +290,14 @@ namespace QuickJS.Editor
             return name[0].ToString().ToLower() + name.Substring(1);
         }
 
-        private void AddCatchClause(Type exceptionType, string handler)
+        private void AddCatchClause(Type exceptionType)
         {
             var varName = GetVarName(exceptionType);
             this.cg.cs.AppendLine("catch ({0} {1})", exceptionType.Name, varName);
             this.cg.cs.AppendLine("{");
             this.cg.cs.AddTabLevel();
             {
-                this.cg.cs.AppendLine("return DuktapeDLL.{0}(ctx, {1});", handler, varName);
+                this.cg.cs.AppendLine("return JSApi.ThrowException(ctx, {0});", varName);
             }
             this.cg.cs.DecTabLevel();
             this.cg.cs.AppendLine("}");
@@ -250,7 +309,7 @@ namespace QuickJS.Editor
             this.cg.cs.AppendLine("}");
             // this.AddCatchClause(typeof(NullReferenceException), "duk_reference_error");
             // this.AddCatchClause(typeof(IndexOutOfRangeException), "duk_range_error");
-            this.AddCatchClause(typeof(Exception), "duk_exception");
+            this.AddCatchClause(typeof(Exception));
         }
     }
 

@@ -15,10 +15,10 @@ namespace jsb
     public class Sample : MonoBehaviour, IScriptRuntimeListener
     {
         private ScriptRuntime _rt;
-        
+
         void Awake()
         {
-_rt = ScriptEngine.CreateRuntime();
+            _rt = ScriptEngine.CreateRuntime();
             var fileResolver = new FileResolver(new DefaultFileSystem());
             _rt.Initialize(fileResolver, this);
         }
@@ -35,7 +35,8 @@ _rt = ScriptEngine.CreateRuntime();
 
         public void OnBind(ScriptRuntime runtime, TypeRegister register)
         {
-            Foo.Bind(register);
+            FooBinding.Bind(register);
+            SValueBinding.Bind(register);
         }
 
         public void OnComplete(ScriptRuntime runtime)

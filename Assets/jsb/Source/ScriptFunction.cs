@@ -8,6 +8,12 @@ namespace QuickJS
         private JSValue _thisValue;
         private JSValue[] _args;
         
+        public ScriptFunction(ScriptContext context, JSValue fnValue)
+            : base(context, fnValue)
+        {
+            _thisValue = JSApi.JS_UNDEFINED;
+        }
+
         public ScriptFunction(ScriptContext context, JSValue fnValue, JSValue thisValue)
             : base(context, fnValue)
         {
@@ -49,7 +55,7 @@ namespace QuickJS
                 var rVal = JSApi.JS_Call(ctx, _jsValue, _thisValue, 0, JSApi.EmptyValues);
                 if (JSApi.JS_IsException(rVal))
                 {
-                    _context.print_exception();
+                    ctx.print_exception();
                 }
             
                 JSApi.JS_FreeValue(ctx, rVal);
@@ -59,7 +65,7 @@ namespace QuickJS
                 var rVal = JSApi.JS_Call(ctx, _jsValue, _thisValue, _args.Length, _args);
                 if (JSApi.JS_IsException(rVal))
                 {
-                    _context.print_exception();
+                    ctx.print_exception();
                 }
             
                 JSApi.JS_FreeValue(ctx, rVal);

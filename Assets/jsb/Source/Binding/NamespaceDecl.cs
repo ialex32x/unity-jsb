@@ -7,49 +7,74 @@ namespace QuickJS.Binding
     {
         private TypeRegister _register;
         private JSValue _nsValue;
-        
+
         public NamespaceDecl(TypeRegister register, JSValue jsNsValue)
         {
             _register = register;
             _nsValue = jsNsValue;
         }
-        
+
         public void Close()
         {
             JSApi.JS_FreeValue(_register, _nsValue);
             _nsValue = JSApi.JS_UNDEFINED;
         }
-        
-        public void AddFunction(string name, JSCFunctionMagic func, int length)
+
+        public void Copy(string oldName, string newName)
         {
-            var ctx = _register.GetContext();
-            var magic = 0;
-            var cfun = JSApi.JS_NewCFunctionMagic(ctx, func, name, length, JSCFunctionEnum.JS_CFUNC_generic_magic,
-                magic);
-            JSApi.JS_DefinePropertyValueStr(ctx, _nsValue, name, cfun, JSPropFlags.JS_PROP_C_W_E);
+            var ctx = (JSContext) _register.GetContext();
+            var oldVal = JSApi.JS_GetPropertyStr(ctx, _nsValue, oldName);
+            if (JSApi.JS_IsException(oldVal))
+            {
+                ctx.print_exception();
+            }
+            else
+            {
+                JSApi.JS_SetPropertyStr(ctx, _nsValue, newName, oldVal);
+            }
         }
 
         public void AddFunction(string name, JSCFunction func, int length)
         {
             var ctx = _register.GetContext();
-            var cfun = JSApi.JS_NewCFunction(ctx, func, name, length);
-            JSApi.JS_DefinePropertyValueStr(ctx, _nsValue, name, cfun, JSPropFlags.JS_PROP_C_W_E);
+            var nameAtom = _register.GetAtom(name);
+            var cfun = JSApi.JSB_NewCFunction(ctx, func, nameAtom, length, JSCFunctionEnum.JS_CFUNC_generic, 0);
+            JSApi.JS_DefinePropertyValue(ctx, _nsValue, nameAtom, cfun, JSPropFlags.JS_PROP_C_W_E);
         }
 
-        public ClassDecl CreateClass(string typename, Type type, JSCFunctionMagic ctor)
+        public ClassDecl CreateClass(string typename, Type type, JSCFunction ctorFunc)
         {
-            var ctx = _register.GetContext();
-            var runtime = ctx.GetRuntime();
-            var class_id = runtime._def_class_id;
-            var proto_val = ctx.NewObject();
-            var type_id = _register.Add(type, proto_val);
-            var ctor_val =
-                JSApi.JS_NewCFunctionMagic(ctx, ctor, typename, 0, JSCFunctionEnum.JS_CFUNC_constructor_magic, type_id);
-            var decl = new ClassDecl(_register, JSApi.JS_DupValue(_register, ctor_val), JSApi.JS_DupValue(_register, proto_val));
-            JSApi.JS_SetConstructor(ctx, ctor_val, proto_val);
-            JSApi.JS_SetClassProto(ctx, class_id, proto_val);
-            JSApi.JS_DefinePropertyValueStr(ctx, _nsValue, typename, ctor_val,
+            var nameAtom = _register.GetAtom(typename);
+            JSContext ctx = _register.GetContext();
+            var protoVal = JSApi.JS_NewObject(ctx);
+            var type_id = _register.Add(type, protoVal);
+            var ctorVal =
+                JSApi.JSB_NewCFunction(ctx, ctorFunc, nameAtom, 0, JSCFunctionEnum.JS_CFUNC_constructor, 0);
+            var decl = new ClassDecl(_register, JSApi.JS_DupValue(_register, ctorVal),
+                JSApi.JS_DupValue(_register, protoVal));
+            JSApi.JS_SetConstructor(ctx, ctorVal, protoVal);
+            JSApi.JSB_SetBridgeType(ctx, ctorVal, type_id);
+            JSApi.JS_DefinePropertyValue(ctx, _nsValue, nameAtom, ctorVal,
                 JSPropFlags.JS_PROP_ENUMERABLE | JSPropFlags.JS_PROP_CONFIGURABLE);
+            JSApi.JS_FreeValue(ctx, protoVal);
+            return decl;
+        }
+
+        public ClassDecl CreateClass(string typename, Type type, JSCFunctionMagic ctorFunc)
+        {
+            var nameAtom = _register.GetAtom(typename);
+            JSContext ctx = _register.GetContext();
+            var protoVal = JSApi.JS_NewObject(ctx);
+            var type_id = _register.Add(type, protoVal);
+            var ctorVal =
+                JSApi.JSB_NewCFunctionMagic(ctx, ctorFunc, nameAtom, 0, JSCFunctionEnum.JS_CFUNC_constructor_magic, type_id);
+            var decl = new ClassDecl(_register, JSApi.JS_DupValue(_register, ctorVal),
+                JSApi.JS_DupValue(_register, protoVal));
+            JSApi.JS_SetConstructor(ctx, ctorVal, protoVal);
+            JSApi.JSB_SetBridgeType(ctx, ctorVal, type_id);
+            JSApi.JS_DefinePropertyValue(ctx, _nsValue, nameAtom, ctorVal,
+                JSPropFlags.JS_PROP_ENUMERABLE | JSPropFlags.JS_PROP_CONFIGURABLE);
+            JSApi.JS_FreeValue(ctx, protoVal);
             return decl;
         }
 

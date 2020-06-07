@@ -21,14 +21,11 @@ namespace QuickJS
         private JSRuntime _rt;
         private List<ScriptContext> _contexts = new List<ScriptContext>();
         private ScriptContext _mainContext;
-        private Queue<JSValue> _pendingGC = new Queue<JSValue>();
+        private Queue<JSAction> _pendingGC = new Queue<JSAction>();
 
         private int _mainThreadId;
         private uint _class_id_alloc = JSApi.__JSB_GetClassID();
 
-        public uint _def_class_id;
-        public uint _def_struct_id;
-        public uint _def_type_id;
 
         private IFileResolver _fileResolver;
         private ObjectCache _objectCache = new ObjectCache();
@@ -41,15 +38,14 @@ namespace QuickJS
             _mainThreadId = Thread.CurrentThread.ManagedThreadId;
             _timerManager = new TimerManager();
             _rt = JSApi.JS_NewRuntime();
-            _def_class_id = JSApi.JS_NewClass(_rt, NewClassID(), "CSharpClass", JSApi.class_finalizer);
-            _def_struct_id = JSApi.JS_NewClass(_rt, NewClassID(), "CSharpStruct", JSApi.struct_finalizer);
-            _def_type_id = JSApi.JS_NewClass(_rt, NewClassID(), "CSharpType", JSApi.type_finalizer);
             JSApi.JS_SetModuleLoaderFunc(_rt, module_normalize, module_loader, IntPtr.Zero);
             _mainContext = CreateContext();
         }
 
-        public void Initialize(IFileResolver fileResolver, IScriptRuntimeListener runner, int step = 30)
+        public void Initialize(IFileResolver fileResolver, IScriptRuntimeListener runner,
+            IO.ByteBufferAllocator byteBufferAllocator = null, int step = 30)
         {
+            _byteBufferAllocator = byteBufferAllocator;
             _fileResolver = fileResolver;
             var e = _InitializeStep(_mainContext, runner, step);
             while (e.MoveNext()) ;
@@ -57,11 +53,13 @@ namespace QuickJS
 
         private IEnumerator _InitializeStep(ScriptContext context, IScriptRuntimeListener runner, int step)
         {
-            var register = new TypeRegister(context);
-            var regArgs = new object[] { register };
+            var register = new TypeRegister(this, context);
+            var regArgs = new object[] {register};
             var bindingTypes = new List<Type>();
             var assemblies = AppDomain.CurrentDomain.GetAssemblies();
-            for (int assemblyIndex = 0, assemblyCount = assemblies.Length; assemblyIndex < assemblyCount; assemblyIndex++)
+            for (int assemblyIndex = 0, assemblyCount = assemblies.Length;
+                assemblyIndex < assemblyCount;
+                assemblyIndex++)
             {
                 var assembly = assemblies[assemblyIndex];
                 try
@@ -70,6 +68,7 @@ namespace QuickJS
                     {
                         continue;
                     }
+
                     var exportedTypes = assembly.GetExportedTypes();
                     for (int i = 0, size = exportedTypes.Length; i < size; i++)
                     {
@@ -89,6 +88,7 @@ namespace QuickJS
                             {
                                 Debug.LogWarning($"JSAutoRun failed: {exception}");
                             }
+
                             continue;
                         }
 #endif
@@ -108,6 +108,7 @@ namespace QuickJS
                     Debug.LogErrorFormat("assembly: {0}, {1}", assembly, e);
                 }
             }
+
             var numRegInvoked = bindingTypes.Count;
             for (var i = 0; i < numRegInvoked; ++i)
             {
@@ -116,7 +117,7 @@ namespace QuickJS
                 if (reg != null)
                 {
                     reg.Invoke(null, regArgs);
-                    
+
                     if (i % step == 0)
                     {
                         yield return null;
@@ -128,6 +129,11 @@ namespace QuickJS
             _timerManager.Bind(register);
             _typeDB = register.Finish();
             runner.OnComplete(this);
+        }
+
+        public IO.ByteBufferAllocator GetByteBufferAllocator()
+        {
+            return _byteBufferAllocator;
         }
 
         public TimerManager GetTimerManager()
@@ -179,7 +185,41 @@ namespace QuickJS
                     return context;
                 }
             }
+
             return null;
+        }
+
+        private static void _FreeValueAction(ScriptRuntime rt, JSValue value)
+        {
+            JSApi.JS_FreeValueRT(rt, value);
+        }
+
+        private static void _FreeValueAndDelegationAction(ScriptRuntime rt, JSValue value)
+        {
+            var cache = rt.GetObjectCache();
+            cache.RemoveDelegate(value);
+            JSApi.JS_FreeValueRT(rt, value);
+        }
+
+        public void FreeDelegationValue(JSValue value)
+        {
+            if (_mainThreadId == Thread.CurrentThread.ManagedThreadId)
+            {
+                _objectCache.RemoveDelegate(value);
+                JSApi.JS_FreeValueRT(_rt, value);
+            }
+            else
+            {
+                var act = new JSAction()
+                {
+                    value = value,
+                    callback = _FreeValueAndDelegationAction,
+                };
+                lock (_pendingGC)
+                {
+                    _pendingGC.Enqueue(act);
+                }
+            }
         }
 
         public void FreeValue(JSValue value)
@@ -190,9 +230,14 @@ namespace QuickJS
             }
             else
             {
+                var act = new JSAction()
+                {
+                    value = value,
+                    callback = _FreeValueAction,
+                };
                 lock (_pendingGC)
                 {
-                    _pendingGC.Enqueue(value);
+                    _pendingGC.Enqueue(act);
                 }
             }
         }
@@ -212,7 +257,12 @@ namespace QuickJS
                 {
                     for (int i = 0, len = values.Length; i < len; i++)
                     {
-                        _pendingGC.Enqueue(values[i]);
+                        var act = new JSAction()
+                        {
+                            value = values[i],
+                            callback = _FreeValueAction,
+                        };
+                        _pendingGC.Enqueue(act);
                     }
                 }
             }
@@ -224,8 +274,9 @@ namespace QuickJS
             var jsValue = JSApi.JS_Eval(_mainContext, source, fileName);
             if (JSApi.JS_IsException(jsValue))
             {
-                _mainContext.print_exception();
+                ((JSContext) _mainContext).print_exception();
             }
+
             FreeValue(jsValue);
         }
 
@@ -236,15 +287,17 @@ namespace QuickJS
             {
                 CollectPendingGarbage();
             }
+
             JSContext ctx;
-            while(true)
+            while (true)
             {
                 var err = JSApi.JS_ExecutePendingJob(_rt, out ctx);
                 if (err == 0)
                 {
                     break;
                 }
-                if (err < 0) 
+
+                if (err < 0)
                 {
                     ctx.print_exception();
                 }
@@ -253,6 +306,11 @@ namespace QuickJS
             // poll here;
             var ms = (int) (deltaTime * 1000f);
             _timerManager.Update(ms);
+
+            if (_byteBufferAllocator != null)
+            {
+                _byteBufferAllocator.Drain();
+            }
         }
 
         private void CollectPendingGarbage()
@@ -265,8 +323,9 @@ namespace QuickJS
                     {
                         break;
                     }
-                    var value = _pendingGC.Dequeue();
-                    JSApi.JS_FreeValueRT(_rt, value);
+
+                    var action = _pendingGC.Dequeue();
+                    action.callback(this, action.value);
                 }
             }
         }
@@ -275,6 +334,7 @@ namespace QuickJS
         {
             _timerManager.Destroy();
             _objectCache.Clear();
+            _typeDB.Destroy();
             GC.Collect();
             CollectPendingGarbage();
             for (int i = 0, count = _contexts.Count; i < count; i++)
@@ -282,6 +342,7 @@ namespace QuickJS
                 var context = _contexts[i];
                 context.Destroy();
             }
+
             _contexts.Clear();
             JSApi.JS_FreeRuntime(_rt);
             _rt = JSRuntime.Null;

@@ -18,14 +18,15 @@ namespace QuickJS.Editor
         private string _filePath;
 
         // 静态绑定代码的生成目录
-        public string outDir = "Assets/Generated";
-        public string typescriptDir = "Assets/Generated";
+        public string outDir = "Assets/Generated/CSharp";
+        public string typescriptDir = "Assets/Generated/Typings";
+        public bool debugCodegen = false;
 
         // 生成类型绑定代码类型前缀
         public string typeBindingPrefix = "QuickJS_";
 
         // 生成的绑定类所在命名空间
-        public string ns = "QuickJS";
+        public string ns = "jsb";
 
         public List<string> cleanupDir = new List<string>(new string[]
         {

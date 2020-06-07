@@ -1,6 +1,7 @@
 using System;
 using AOT;
 using QuickJS.Native;
+using QuickJS.Utils;
 
 namespace QuickJS
 {
@@ -16,6 +17,21 @@ namespace QuickJS
         public static ScriptRuntime GetRuntime()
         {
             return _runtime;
+        }
+
+        public static ObjectCache GetObjectCache(JSRuntime rt)
+        {
+            return _runtime.GetObjectCache();
+        }
+
+        public static ObjectCache GetObjectCache(JSContext ctx)
+        {
+            return _runtime.GetObjectCache();
+        }
+
+        public static TypeDB GetTypeDB(JSContext ctx)
+        {
+            return _runtime.GetTypeDB();
         }
 
         public static ScriptRuntime GetRuntime(JSContext ctx)
