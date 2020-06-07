@@ -33,7 +33,7 @@ namespace QuickJS.Editor
                     this.cg.cs.AppendLine("var type = typeof({0});", CodeGenerator.NameOfDelegates);
                     this.cg.cs.AppendLine("var types = ScriptEngine.GetTypeDB(register);");
                     this.cg.cs.AppendLine("var methods = type.GetMethods(System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.Public);");
-                    this.cg.cs.AppendLine("var ns = register.CreateNamespace(\"DuktapeJS\");");
+                    this.cg.cs.AppendLine("var ns = register.CreateNamespace(\"QuickJS\");");
                     this.cg.cs.AppendLine("for (int i = 0, size = methods.Length; i < size; i++)");
                     this.cg.cs.AppendLine("{");
                     {
@@ -71,9 +71,9 @@ namespace QuickJS.Editor
                         this.cg.cs.DecTabLevel();
                         this.cg.cs.AppendLine("}");
                     }
-                    this.cg.cs.AppendLine("ns.Close();");
                     this.cg.cs.DecTabLevel();
                     this.cg.cs.AppendLine("}");
+                    this.cg.cs.AppendLine("ns.Close();");
 
 
                     // for (var i = 0; i < delegateBindingInfos.Length; i++)
