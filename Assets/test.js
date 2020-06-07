@@ -41,5 +41,11 @@ print("foo instanceof jsb.SValue:", foo instanceof jsb.SValue);
 print("v3 instanceof jsb.SValue:", v3 instanceof jsb.SValue);
 print("v3 instanceof jsb.Foo:", v3 instanceof jsb.Foo);
 
+let u = new UnityEngine.Vector3(1, 2, 3);
+
+console.log(u.x);
+u.Normalize();
+console.log(u.x, u.y, u.z);
+
 print("end of script");
 
