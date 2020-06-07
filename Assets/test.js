@@ -32,13 +32,13 @@ setTimeout(() => {
     print("[timeout] test");
 }, 1500);
 
-let v3 = new jsb.Vector3();
+let v3 = new jsb.SValue();
 v3.Test();
 v3.Test();
 
 print("foo instanceof jsb.Foo:", foo instanceof jsb.Foo);
-print("foo instanceof jsb.Vector3:", foo instanceof jsb.Vector3);
-print("v3 instanceof jsb.Vector3:", v3 instanceof jsb.Vector3);
+print("foo instanceof jsb.SValue:", foo instanceof jsb.SValue);
+print("v3 instanceof jsb.SValue:", v3 instanceof jsb.SValue);
 print("v3 instanceof jsb.Foo:", v3 instanceof jsb.Foo);
 
 print("end of script");
