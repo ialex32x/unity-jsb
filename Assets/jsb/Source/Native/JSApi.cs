@@ -161,6 +161,9 @@ namespace QuickJS.Native
         public static extern JSValue JS_GetPropertyStr(JSContext ctx, JSValueConst this_obj,
             [MarshalAs(UnmanagedType.LPStr)] string prop);
 
+        ///<summary>
+        /// 不会减引用, getter/setter 需要自己 FreeValue
+        ///</summary>
         [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern int JS_DefineProperty(JSContext ctx, JSValueConst this_obj,
             JSAtom prop, JSValueConst val,

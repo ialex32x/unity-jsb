@@ -44,12 +44,28 @@ namespace jsb
             return JSApi.JS_ThrowInternalError(ctx, "unbounded value");
         }
         
+        [MonoPInvokeCallback(typeof(JSCFunction))]
+        private static JSValue BindRead_wall(JSContext ctx, JSValue this_obj, int argc, JSValue[] argv)
+        {
+            return JSApi.JS_ThrowInternalError(ctx, "not implemented");
+        }
+        
+        [MonoPInvokeCallback(typeof(JSCFunction))]
+        private static JSValue BindWrite_wall(JSContext ctx, JSValue this_obj, int argc, JSValue[] argv)
+        {
+            return JSApi.JS_ThrowInternalError(ctx, "not implemented");
+        }
+        
         public static void Bind(TypeRegister register)
         {
             var ns = register.CreateNamespace("jsb");
             var cls = ns.CreateClass("Foo", typeof(Foo), BindConstructor);
             cls.AddMethod(false, "Test", BindTest, 0);
             cls.AddConstValue("greet", "hello, world");
+            cls.AddProperty(true, "wall", BindRead_wall, BindWrite_wall);
+            cls.AddProperty(true, "rwall", BindRead_wall, null);
+            cls.AddProperty(false, "xwall", BindRead_wall, BindWrite_wall);
+            cls.AddProperty(false, "rxwall", BindRead_wall, null);
             cls.Close();
             ns.Close();
         }

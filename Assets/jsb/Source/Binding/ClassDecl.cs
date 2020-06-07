@@ -58,24 +58,31 @@ namespace QuickJS.Binding
 
         public void AddProperty(bool bStatic, string name, JSCFunction getter, JSCFunction setter)
         {
+            var ctx = (JSContext)_ctx;
             var nameAtom = _register.GetAtom(name);
             var getterVal = JSApi.JS_UNDEFINED;
             var setterVal = JSApi.JS_UNDEFINED;
-            var flags = JSPropFlags.JS_PROP_HAS_CONFIGURABLE | JSPropFlags.JS_PROP_HAS_ENUMERABLE;
+            var flags = JSPropFlags.JS_PROP_CONFIGURABLE | JSPropFlags.JS_PROP_ENUMERABLE;
             if (getter != null)
             {
                 flags |= JSPropFlags.JS_PROP_HAS_GET;
-                getterVal = JSApi.JSB_NewCFunction(_ctx, getter, nameAtom, 0, JSCFunctionEnum.JS_CFUNC_getter, 0);
+                getterVal = JSApi.JSB_NewCFunction(ctx, getter, nameAtom, 0, JSCFunctionEnum.JS_CFUNC_getter, 0);
             }
 
             if (setter != null)
             {
                 flags |= JSPropFlags.JS_PROP_HAS_SET;
-                setterVal = JSApi.JSB_NewCFunction(_ctx, setter, nameAtom, 0, JSCFunctionEnum.JS_CFUNC_setter, 0);
+                setterVal = JSApi.JSB_NewCFunction(ctx, setter, nameAtom, 0, JSCFunctionEnum.JS_CFUNC_setter, 1);
             }
 
-            JSApi.JS_DefineProperty(_ctx, bStatic ? _ctor : _proto, nameAtom, JSApi.JS_UNDEFINED, getterVal, setterVal,
+            var rs = JSApi.JS_DefineProperty(ctx, bStatic ? _ctor : _proto, nameAtom, JSApi.JS_UNDEFINED, getterVal, setterVal,
                 flags);
+            if (rs != 1)
+            {
+                UnityEngine.Debug.LogErrorFormat("define property failed: {0}", ctx.GetExceptionString());
+            }
+            JSApi.JS_FreeValue(ctx, getterVal);
+            JSApi.JS_FreeValue(ctx, setterVal);
         }
 
         #region 常量 (静态)
