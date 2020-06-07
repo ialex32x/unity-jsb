@@ -60,7 +60,7 @@ namespace QuickJS
         {
             _runtime.FreeValue(value);
         }
-        
+
         public void FreeValues(JSValue[] values)
         {
             _runtime.FreeValues(values);
@@ -74,8 +74,8 @@ namespace QuickJS
 
         #region Builtins
 
-        [MonoPInvokeCallback(typeof(JSCFunction))]
-        private static JSValue _print(JSContext ctx, JSValue this_obj, int argc, JSValue[] argv)
+        [MonoPInvokeCallback(typeof(JSCFunctionMagic))]
+        private static JSValue _print(JSContext ctx, JSValue this_obj, int argc, JSValue[] argv, int magic)
         {
             int i;
             var sb = new StringBuilder();
@@ -104,7 +104,22 @@ namespace QuickJS
             }
 
             sb.AppendLine();
-            Debug.Log(sb.ToString());
+            switch (magic)
+            {
+                case 0:
+                    Debug.Log(sb.ToString());
+                    break;
+                case 1:
+                    Debug.LogWarning(sb.ToString());
+                    break;
+                case 2:
+                    Debug.LogError(sb.ToString());
+                    break;
+                case 3:
+                    Debug.LogError(sb.ToString());
+                    //TODO: assert 
+                    break;
+            }
             return JSApi.JS_UNDEFINED;
         }
 
@@ -112,11 +127,22 @@ namespace QuickJS
 
         public void RegisterBuiltins()
         {
-            var global_object = JSApi.JS_GetGlobalObject(this);
-
-            _ctx.SetProperty(global_object, "print", _print, 1);
-
-            JSApi.JS_FreeValue(this, global_object);
+            var ctx = (JSContext)this;
+            var global_object = JSApi.JS_GetGlobalObject(ctx);
+            {
+                JSApi.JS_SetPropertyStr(ctx, global_object, "print", JSApi.JS_NewCFunctionMagic(ctx, _print, "print", 1, JSCFunctionEnum.JS_CFUNC_generic_magic, 0));
+                var console = JSApi.JS_NewObject(ctx);
+                {
+                    JSApi.JS_SetPropertyStr(ctx, console, "log", JSApi.JS_NewCFunctionMagic(ctx, _print, "log", 1, JSCFunctionEnum.JS_CFUNC_generic_magic, 0));
+                    JSApi.JS_SetPropertyStr(ctx, console, "info", JSApi.JS_NewCFunctionMagic(ctx, _print, "info", 1, JSCFunctionEnum.JS_CFUNC_generic_magic, 0));
+                    JSApi.JS_SetPropertyStr(ctx, console, "debug", JSApi.JS_NewCFunctionMagic(ctx, _print, "debug", 1, JSCFunctionEnum.JS_CFUNC_generic_magic, 0));
+                    JSApi.JS_SetPropertyStr(ctx, console, "warn", JSApi.JS_NewCFunctionMagic(ctx, _print, "warn", 1, JSCFunctionEnum.JS_CFUNC_generic_magic, 1));
+                    JSApi.JS_SetPropertyStr(ctx, console, "error", JSApi.JS_NewCFunctionMagic(ctx, _print, "error", 1, JSCFunctionEnum.JS_CFUNC_generic_magic, 2));
+                    JSApi.JS_SetPropertyStr(ctx, console, "assert", JSApi.JS_NewCFunctionMagic(ctx, _print, "assert", 1, JSCFunctionEnum.JS_CFUNC_generic_magic, 3));
+                }
+                JSApi.JS_SetPropertyStr(ctx, global_object, "console", console);
+            }
+            JSApi.JS_FreeValue(ctx, global_object);
         }
 
         public static implicit operator JSContext(ScriptContext sc)

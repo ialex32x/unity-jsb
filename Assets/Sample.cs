@@ -36,7 +36,7 @@ namespace jsb
         public void OnBind(ScriptRuntime runtime, TypeRegister register)
         {
             FooBinding.Bind(register);
-            Vector3Binding.Bind(register);
+            SValueBinding.Bind(register);
         }
 
         public void OnComplete(ScriptRuntime runtime)
