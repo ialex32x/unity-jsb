@@ -16,6 +16,21 @@ namespace QuickJS
         {
         }
 
+        public unsafe JSValue Invoke(JSContext ctx)
+        {
+            JSValue rval = JSApi.JS_Call(ctx, _jsValue, JSApi.JS_UNDEFINED, 0, (JSValue*) 0);
+            return rval;
+        }
+        
+        public unsafe JSValue Invoke(JSContext ctx, int argc, JSValue[] argv)
+        {
+            fixed (JSValue* ptr = argv)
+            {
+                JSValue rval = JSApi.JS_Call(ctx, _jsValue, JSApi.JS_UNDEFINED, argc, ptr);
+                return rval;
+            }
+        }
+
         protected override void Dispose(bool bManaged)
         {
             if (_context != null)

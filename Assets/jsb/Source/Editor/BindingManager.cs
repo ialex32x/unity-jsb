@@ -564,7 +564,7 @@ namespace QuickJS.Editor
 
         public string GetTSRefWrap(string name)
         {
-            return $"DuktapeJS.Ref<{name}>";
+            return $"{CodeGenerator.NamespaceOfScriptTypes}.Ref<{name}>";
         }
 
         public string GetTSTypeFullName(ParameterInfo parameter)
@@ -589,9 +589,9 @@ namespace QuickJS.Editor
             {
                 if (isOut)
                 {
-                    return $"DuktapeJS.Out<{GetTSTypeFullName(type.GetElementType())}>";
+                    return $"{CodeGenerator.NamespaceOfScriptTypes}.Out<{GetTSTypeFullName(type.GetElementType())}>";
                 }
-                return $"DuktapeJS.Ref<{GetTSTypeFullName(type.GetElementType())}>";
+                return $"{CodeGenerator.NamespaceOfScriptTypes}.Ref<{GetTSTypeFullName(type.GetElementType())}>";
             }
             List<string> names;
             if (_tsTypeNameMap.TryGetValue(type, out names))
@@ -621,7 +621,7 @@ namespace QuickJS.Editor
                     var ret = GetTSTypeFullName(delegateBindingInfo.returnType);
                     var t_arglist = (nargs > 0 ? ", " : "") + GetTSArglistTypes(delegateBindingInfo.parameters, false);
                     var v_arglist = GetTSArglistTypes(delegateBindingInfo.parameters, true);
-                    return $"DuktapeJS.Delegate{nargs}<{ret}{t_arglist}> | (({v_arglist}) => {ret})";
+                    return $"{CodeGenerator.NamespaceOfInternalScriptTypes}.Delegate{nargs}<{ret}{t_arglist}> | (({v_arglist}) => {ret})";
                 }
             }
             return "any";
@@ -675,13 +675,13 @@ namespace QuickJS.Editor
 
         public string GetThrowError(string err)
         {
-            return $"JSApi.JS_ThrowInternalError(ctx, \"{err}\");";
+            return $"JSApi.JS_ThrowInternalError(ctx, \"{err}\")";
         }
 
         public string GetScriptObjectGetter(Type type, string ctx, string index, string varname)
         {
             var getter = GetScriptObjectPropertyGetter(type);
-            return $"{getter}({ctx}, {index}, out {varname});";
+            return $"{getter}({ctx}, {index}, out {varname})";
         }
 
         private string GetScriptObjectPropertyGetter(Type type)

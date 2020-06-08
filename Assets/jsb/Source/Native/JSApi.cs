@@ -46,6 +46,16 @@ namespace QuickJS.Native
 #if UNITY_EDITOR_WIN || UNITY_STANDALONE_WIN
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
 #endif
+    public delegate JSValue JSSetterCFunction(JSContext ctx, JSValueConst this_val, JSValueConst val);
+    
+#if UNITY_EDITOR_WIN || UNITY_STANDALONE_WIN
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+#endif
+    public delegate JSValue JSGetterCFunction(JSContext ctx, JSValueConst this_val);
+
+#if UNITY_EDITOR_WIN || UNITY_STANDALONE_WIN
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+#endif
     public delegate JSValue JSCFunctionMagic(JSContext ctx, JSValueConst this_val, int argc,
         [MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 2)]
         JSValueConst[] argv, int magic);
@@ -399,6 +409,22 @@ namespace QuickJS.Native
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static JSValue JSB_NewCFunction(JSContext ctx, JSCFunction func, JSAtom atom, int length,
+            JSCFunctionEnum cproto, int magic)
+        {
+            var fn = Marshal.GetFunctionPointerForDelegate(func);
+            return JSB_NewCFunction(ctx, fn, atom, length, cproto, magic);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static JSValue JSB_NewCFunction(JSContext ctx, JSGetterCFunction func, JSAtom atom, int length,
+            JSCFunctionEnum cproto, int magic)
+        {
+            var fn = Marshal.GetFunctionPointerForDelegate(func);
+            return JSB_NewCFunction(ctx, fn, atom, length, cproto, magic);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static JSValue JSB_NewCFunction(JSContext ctx, JSSetterCFunction func, JSAtom atom, int length,
             JSCFunctionEnum cproto, int magic)
         {
             var fn = Marshal.GetFunctionPointerForDelegate(func);

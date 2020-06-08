@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.IO;
 using System.Reflection;
+using QuickJS.Native;
 
 namespace QuickJS.Editor
 {
@@ -114,9 +115,9 @@ namespace QuickJS.Editor
                     // 可读属性
                     if (propertyBindingInfo.staticPair.getterName != null)
                     {
-                        using (new PInvokeGuardCodeGen(cg))
+                        using (new PInvokeGuardCodeGen(cg, typeof(JSGetterCFunction)))
                         {
-                            using (new BindingFuncDeclareCodeGen(cg, propertyBindingInfo.staticPair.getterName))
+                            using (new BindingGetterFuncDeclareCodeGen(cg, propertyBindingInfo.staticPair.getterName))
                             {
                                 using (new TryCatchGuradCodeGen(cg))
                                 {
@@ -130,9 +131,9 @@ namespace QuickJS.Editor
                     // 可写属性
                     if (propertyBindingInfo.staticPair.setterName != null)
                     {
-                        using (new PInvokeGuardCodeGen(cg))
+                        using (new PInvokeGuardCodeGen(cg, typeof(JSSetterCFunction)))
                         {
-                            using (new BindingFuncDeclareCodeGen(cg, propertyBindingInfo.staticPair.setterName))
+                            using (new BindingSetterFuncDeclareCodeGen(cg, propertyBindingInfo.staticPair.setterName))
                             {
                                 using (new TryCatchGuradCodeGen(cg))
                                 {
@@ -150,9 +151,9 @@ namespace QuickJS.Editor
                     // 可读属性
                     if (propertyBindingInfo.instancePair.getterName != null)
                     {
-                        using (new PInvokeGuardCodeGen(cg))
+                        using (new PInvokeGuardCodeGen(cg, typeof(JSGetterCFunction)))
                         {
-                            using (new BindingFuncDeclareCodeGen(cg, propertyBindingInfo.instancePair.getterName))
+                            using (new BindingGetterFuncDeclareCodeGen(cg, propertyBindingInfo.instancePair.getterName))
                             {
                                 using (new TryCatchGuradCodeGen(cg))
                                 {
@@ -166,9 +167,9 @@ namespace QuickJS.Editor
                     // 可写属性
                     if (propertyBindingInfo.instancePair.setterName != null)
                     {
-                        using (new PInvokeGuardCodeGen(cg))
+                        using (new PInvokeGuardCodeGen(cg, typeof(JSSetterCFunction)))
                         {
-                            using (new BindingFuncDeclareCodeGen(cg, propertyBindingInfo.instancePair.setterName))
+                            using (new BindingSetterFuncDeclareCodeGen(cg, propertyBindingInfo.instancePair.setterName))
                             {
                                 using (new TryCatchGuradCodeGen(cg))
                                 {
@@ -187,9 +188,9 @@ namespace QuickJS.Editor
                 var fieldBindingInfo = kv.Value;
                 if (fieldBindingInfo.getterName != null)
                 {
-                    using (new PInvokeGuardCodeGen(cg))
+                    using (new PInvokeGuardCodeGen(cg, typeof(JSGetterCFunction)))
                     {
-                        using (new BindingFuncDeclareCodeGen(cg, fieldBindingInfo.getterName))
+                        using (new BindingGetterFuncDeclareCodeGen(cg, fieldBindingInfo.getterName))
                         {
                             using (new TryCatchGuradCodeGen(cg))
                             {
@@ -203,9 +204,9 @@ namespace QuickJS.Editor
                 // 可写字段 
                 if (fieldBindingInfo.setterName != null)
                 {
-                    using (new PInvokeGuardCodeGen(cg))
+                    using (new PInvokeGuardCodeGen(cg, typeof(JSSetterCFunction)))
                     {
-                        using (new BindingFuncDeclareCodeGen(cg, fieldBindingInfo.setterName))
+                        using (new BindingSetterFuncDeclareCodeGen(cg, fieldBindingInfo.setterName))
                         {
                             using (new TryCatchGuradCodeGen(cg))
                             {
@@ -395,7 +396,7 @@ namespace QuickJS.Editor
                             {
                                 cg.cs.AppendLine($"cls.AddProperty(false, \"{tsFieldVar}\", {eventBindingInfo.proxyName}, null);");
                             }
-                            cg.tsDeclare.AppendLine($"{tsFieldPrefix}{tsFieldVar}: DuktapeJS.event<{tsFieldType}>");
+                            cg.tsDeclare.AppendLine($"{tsFieldPrefix}{tsFieldVar}: {CodeGenerator.NamespaceOfScriptTypes}.event<{tsFieldType}>");
                         }
                         cg.cs.AppendLine("cls.Close();");
                     }

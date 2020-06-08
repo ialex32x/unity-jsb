@@ -183,13 +183,18 @@ namespace QuickJS.IO
         // dangerous: read bytes to destination pointer
         public int ReadBytes(IntPtr pointer, int size)
         {
-            CheckReadalbe(1);
+            // CheckReadalbe(1);
             if (size > readableBytes)
             {
                 size = readableBytes;
             }
-            System.Runtime.InteropServices.Marshal.Copy(_data, _readPosition, pointer, size);
-            _readPosition += size;
+            
+            if (size > 0)
+            {
+                System.Runtime.InteropServices.Marshal.Copy(_data, _readPosition, pointer, size);
+                _readPosition += size;
+            }
+
             return size;
         }
 

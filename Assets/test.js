@@ -48,12 +48,21 @@ u.Normalize();
 console.log(u.x, u.y, u.z);
 
 let go = new UnityEngine.GameObject("test");
+console.log(go.name);
+go.name = "testing";
+console.log(go.name);
 
 async function destroy() {
     await delay(5);
     UnityEngine.Object.Destroy(go);
 }
 destroy();
+
+// let actions = new jsb.DelegateTest();
+// actions.onAction = function () {
+//     console.log("js action");
+// };
+// actions.CallAction();
 
 print("end of script");
 

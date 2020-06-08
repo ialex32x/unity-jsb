@@ -31,7 +31,7 @@ namespace QuickJS.Editor
                 using (new RegFuncCodeGen(cg))
                 {
                     this.cg.cs.AppendLine("var type = typeof({0});", CodeGenerator.NameOfDelegates);
-                    this.cg.cs.AppendLine("var types = ScriptEngine.GetTypeDB(register);");
+                    this.cg.cs.AppendLine("var types = register.GetTypeDB();");
                     this.cg.cs.AppendLine("var methods = type.GetMethods(System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.Public);");
                     this.cg.cs.AppendLine("var ns = register.CreateNamespace(\"QuickJS\");");
                     this.cg.cs.AppendLine("for (int i = 0, size = methods.Length; i < size; i++)");
@@ -113,42 +113,81 @@ namespace QuickJS.Editor
             }
             this.cg.cs.AppendLine($"public static {returnTypeName} {delegateName}({firstArgument}{arglist}) {{");
             this.cg.cs.AddTabLevel();
-
             this.cg.cs.AppendLine("var ctx = fn.ctx;");
-            this.cg.cs.AppendLine("if (ctx == IntPtr.Zero)");
-            this.cg.cs.AppendLine("{");
-            this.cg.cs.AddTabLevel();
-            this.cg.cs.AppendLine("throw new InvalidOperationException(\"duktape vm context has already been released.\");");
-            this.cg.cs.DecTabLevel();
-            this.cg.cs.AppendLine("}");
 
             if (nargs > 0)
             {
-                this.cg.cs.AppendLine("fn.BeginInvoke(ctx);");
+                this.cg.cs.AppendLine("var argv = new JSValue[{0}];", nargs);
                 for (var i = 0; i < nargs; i++)
                 {
                     var parameter = delegateBindingInfo.parameters[i];
                     var pusher = this.cg.AppendValuePusher(parameter.ParameterType, parameter.Name);
-                    this.cg.cs.AppendLine(pusher);
+                    this.cg.cs.AppendLine("argv[{0}] = {1};", i, pusher);
+                    this.cg.cs.AppendLine("if (argv[{0}].IsException())", i);
+                    this.cg.cs.AppendLine("{");
+                    this.cg.cs.AddTabLevel();
+                    for (var j = 0; j < i; j++)
+                    {
+                        this.cg.cs.AppendLine("JSApi.JS_FreeValue(ctx, argv[{0}]);", j);
+                    }
+
+                    this.cg.cs.AppendLine("throw new Exception(ctx.GetExceptionString());");
+                    this.cg.cs.DecTabLevel();
+                    this.cg.cs.AppendLine("}");
                 }
-                this.cg.cs.AppendLine("fn.EndInvokeWithReturnValue(ctx);");
+                this.cg.cs.AppendLine("var rval = fn.Invoke(ctx, {0}, argv);", nargs);
             }
             else
             {
-                this.cg.cs.AppendLine("fn.BeginInvoke(ctx);");
-                this.cg.cs.AppendLine("fn.EndInvokeWithReturnValue(ctx);");
+                this.cg.cs.AppendLine("var rval = fn.Invoke(ctx);");
             }
 
             if (delegateBindingInfo.returnType != typeof(void))
             {
                 this.cg.cs.AppendLine($"{this.cg.bindingManager.GetCSTypeFullName(delegateBindingInfo.returnType)} {retName};");
-                this.cg.cs.AppendLine(this.cg.bindingManager.GetScriptObjectGetter(delegateBindingInfo.returnType, "ctx", "-1", retName)); //TODO: duktape-unity 旧代码, 需替换 this_obj
-                this.cg.cs.AppendLine("DuktapeDLL.duk_pop(ctx);");
+                var getter = this.cg.bindingManager.GetScriptObjectGetter(delegateBindingInfo.returnType, "ctx", "rval", retName);
+                this.cg.cs.AppendLine("var succ = {0};", getter);
+
+                FreeArgs(nargs);
+                CheckReturnValue();
+
+                this.cg.cs.AppendLine("if (succ)");
+                this.cg.cs.AppendLine("{");
+                this.cg.cs.AddTabLevel();
                 this.cg.cs.AppendLine($"return {retName};");
+                this.cg.cs.DecTabLevel();
+                this.cg.cs.AppendLine("}");
+                this.cg.cs.AppendLine("else");
+                this.cg.cs.AppendLine("{");
+                this.cg.cs.AddTabLevel();
+                this.cg.cs.AppendLine($"throw new Exception(\"js exception caught\");");
+                this.cg.cs.DecTabLevel();
+                this.cg.cs.AppendLine("}");
             }
             else
             {
-                this.cg.cs.AppendLine("DuktapeDLL.duk_pop(ctx);");
+                FreeArgs(nargs);
+                CheckReturnValue();
+            }
+        }
+
+        private void CheckReturnValue()
+        {
+            this.cg.cs.AppendLine("if (rval.IsException())");
+            this.cg.cs.AppendLine("{");
+            this.cg.cs.AddTabLevel();
+            this.cg.cs.AppendLine("throw new Exception(ctx.GetExceptionString());");
+            this.cg.cs.DecTabLevel();
+            this.cg.cs.AppendLine("}");
+            this.cg.cs.AppendLine("JSApi.JS_FreeValue(ctx, rval);");
+        }
+
+        private void FreeArgs(int nargs)
+        {
+            for (var i = 0; i < nargs; i++)
+            {
+                this.cg.cs.AppendLine("JSApi.JS_FreeValue(ctx, argv[{0}]);", i);
+                // this.cg.cs.AppendLine("argv[{0}] = JSApi.JS_UNDEFINED;", i);
             }
         }
 

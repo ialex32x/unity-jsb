@@ -51,12 +51,12 @@ namespace QuickJS.Binding
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void AddField(bool bStatic, string name, JSCFunction getter, JSCFunction setter)
+        public void AddField(bool bStatic, string name, JSGetterCFunction getter, JSSetterCFunction setter)
         {
             AddProperty(bStatic, name, getter, setter);
         }
 
-        public void AddProperty(bool bStatic, string name, JSCFunction getter, JSCFunction setter)
+        public void AddProperty(bool bStatic, string name, JSGetterCFunction getter, JSSetterCFunction setter)
         {
             var ctx = (JSContext)_ctx;
             var nameAtom = _register.GetAtom(name);
@@ -72,7 +72,8 @@ namespace QuickJS.Binding
             if (setter != null)
             {
                 flags |= JSPropFlags.JS_PROP_HAS_SET;
-                setterVal = JSApi.JSB_NewCFunction(ctx, setter, nameAtom, 0, JSCFunctionEnum.JS_CFUNC_setter, 1);
+                flags |= JSPropFlags.JS_PROP_WRITABLE;
+                setterVal = JSApi.JSB_NewCFunction(ctx, setter, nameAtom, 1, JSCFunctionEnum.JS_CFUNC_setter, 0);
             }
 
             var rs = JSApi.JS_DefineProperty(ctx, bStatic ? _ctor : _proto, nameAtom, JSApi.JS_UNDEFINED, getterVal, setterVal,

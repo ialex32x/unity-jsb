@@ -12,6 +12,11 @@ namespace QuickJS
     {
         protected ScriptContext _context;
         protected /*readonly*/ JSValue _jsValue;
+        
+        public JSContext ctx
+        {
+            get { return _context; }
+        }
 
         public ScriptValue(ScriptContext context, JSValue jsValue)
         {
