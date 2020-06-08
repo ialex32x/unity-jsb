@@ -42,7 +42,12 @@ namespace QuickJS.Binding
         where T : class
         {
             //TODO: 20200320 !!! 如果 o 不是 jsobject, 且是 Delegate 但不是 ScriptDelegate, 则 ... 处理
-        
+            if (val.IsNullish())
+            {
+                o = null;
+                return true;
+            }
+            
             if (JSApi.JS_IsObject(val) || JSApi.JS_IsFunction(ctx, val) == 1)
             {
                 ScriptDelegate fn;
