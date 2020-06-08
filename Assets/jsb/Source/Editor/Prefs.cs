@@ -12,7 +12,7 @@ namespace QuickJS.Editor
     {
         public const string PATH = "js-bridge.json";
 
-        public string logPath = "Temp/js-bridge.log";
+        public string logPath = "Logs/js-bridge.log";
 
         private bool _dirty;
         private string _filePath;

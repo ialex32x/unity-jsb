@@ -102,6 +102,8 @@ namespace QuickJS.Native
                 {
                     return a.tag == JSApi.JS_TAG_FLOAT64 ? a.u.float64 == b.u.float64 : a.u.int32 == b.u.int32;
                 }
+
+                return a.u.ptr == b.u.ptr;
             }
             return false;
         }

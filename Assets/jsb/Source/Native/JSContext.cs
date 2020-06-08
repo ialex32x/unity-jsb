@@ -45,12 +45,25 @@ namespace QuickJS.Native
         public string GetExceptionString()
         {
             var ex = JSApi.JS_GetException(this);
+            var err_fileName = JSApi.JS_GetProperty(this, ex, JSApi.JS_ATOM_fileName);
+            var err_lineNumber = JSApi.JS_GetProperty(this, ex, JSApi.JS_ATOM_lineNumber);
             var err_message = JSApi.JS_GetProperty(this, ex, JSApi.JS_ATOM_message);
-            var message = this.GetString(err_message);
+            var err_stack = JSApi.JS_GetProperty(this, ex, JSApi.JS_ATOM_stack);
 
+            var fileName = this.GetString(err_fileName);
+            var lineNumber = this.GetString(err_lineNumber);
+            var message = this.GetString(err_message);
+            var stack = this.GetString(err_stack);
+
+            var exceptionString = string.Format("[JS] {0}:{1} {2}\n{3}", fileName, lineNumber, message, stack);
+
+            JSApi.JS_FreeValue(this, err_fileName);
+            JSApi.JS_FreeValue(this, err_lineNumber);
             JSApi.JS_FreeValue(this, err_message);
+            JSApi.JS_FreeValue(this, err_stack);
             JSApi.JS_FreeValue(this, ex);
-            return message;
+
+            return exceptionString;
         }
 
         public unsafe string GetString(JSValue jsValue)

@@ -10,6 +10,24 @@ namespace QuickJS.Editor
 
     public class TextGenerator
     {
+        public class CodeBlock : IDisposable
+        {
+            private TextGenerator _generator;
+
+            public CodeBlock(TextGenerator generator)
+            {
+                _generator = generator;
+                _generator.AppendLine("{");
+                _generator.AddTabLevel();
+            }
+
+            public void Dispose()
+            {
+                _generator.DecTabLevel();
+                _generator.AppendLine("}");
+            }
+        }
+
         public bool enabled = true;
         private string newline;
         private string tab;
@@ -28,6 +46,23 @@ namespace QuickJS.Editor
         public override string ToString()
         {
             return sb.ToString();
+        }
+
+        public CodeBlock Block()
+        {
+            return new CodeBlock(this);
+        }
+
+        public void BeginBlock()
+        {
+            AppendLine("{");
+            tabLevel++;
+        }
+
+        public void EndBlock()
+        {
+            tabLevel--;
+            AppendLine("}");
         }
 
         public void AddTabLevel()

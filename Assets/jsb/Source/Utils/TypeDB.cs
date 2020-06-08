@@ -117,6 +117,30 @@ namespace QuickJS.Utils
             return FindPrototypeOf(cType.BaseType);
         }
 
+        public JSValue FindPrototypeOf(Type cType, out Type pType)
+        {
+            if (cType == null)
+            {
+                pType = null;
+                return JSApi.JS_UNDEFINED;
+            }
+
+            if (cType == typeof(Enum))
+            {
+                pType = null;
+                return JSApi.JS_UNDEFINED;
+            }
+
+            JSValue proto;
+            if (_prototypes.TryGetValue(cType, out proto))
+            {
+                pType = cType;
+                return proto;
+            }
+
+            return FindPrototypeOf(cType.BaseType, out pType);
+        }
+
         public TypeDB Finish()
         {
             var ctx = _runtime.GetMainContext();

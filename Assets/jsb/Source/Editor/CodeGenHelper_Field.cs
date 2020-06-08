@@ -44,9 +44,14 @@ namespace QuickJS.Editor
             var caller = this.cg.AppendGetThisCS(bindingInfo);
             var fieldInfo = bindingInfo.fieldInfo;
             var declaringType = fieldInfo.DeclaringType;
-
-            this.cg.cs.AppendLine("{0} value;", this.cg.bindingManager.GetCSTypeFullName(fieldInfo.FieldType));
-            this.cg.cs.AppendLine(this.cg.bindingManager.GetScriptObjectGetter(fieldInfo.FieldType, "ctx", "argv[0]", "value"));
+            var fieldType = this.cg.bindingManager.GetCSTypeFullName(fieldInfo.FieldType);
+            this.cg.cs.AppendLine("{0} value;", fieldType);
+            var getter = this.cg.bindingManager.GetScriptObjectGetter(fieldInfo.FieldType, "ctx", "arg_val", "value");
+            this.cg.cs.AppendLine("if (!{0})", getter);
+            using (this.cg.cs.Block())
+            {
+                this.cg.cs.AppendLine("throw new ParameterException(typeof({0}), 0);", fieldType);
+            }
             this.cg.cs.AppendLine("{0}.{1} = value;", caller, fieldInfo.Name);
             if (declaringType.IsValueType && !fieldInfo.IsStatic)
             {

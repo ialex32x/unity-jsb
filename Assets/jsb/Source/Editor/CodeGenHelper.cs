@@ -253,6 +253,44 @@ namespace QuickJS.Editor
         }
     }
 
+    public class BindingGetterFuncDeclareCodeGen : IDisposable
+    {
+        protected CodeGenerator cg;
+
+        public BindingGetterFuncDeclareCodeGen(CodeGenerator cg, string name)
+        {
+            this.cg = cg;
+            this.cg.cs.AppendLine("public static JSValue {0}(JSContext ctx, JSValue this_obj)", name);
+            this.cg.cs.AppendLine("{");
+            this.cg.cs.AddTabLevel();
+        }
+
+        public virtual void Dispose()
+        {
+            this.cg.cs.DecTabLevel();
+            this.cg.cs.AppendLine("}");
+        }
+    }
+
+    public class BindingSetterFuncDeclareCodeGen : IDisposable
+    {
+        protected CodeGenerator cg;
+
+        public BindingSetterFuncDeclareCodeGen(CodeGenerator cg, string name)
+        {
+            this.cg = cg;
+            this.cg.cs.AppendLine("public static JSValue {0}(JSContext ctx, JSValue this_obj, JSValue arg_val)", name);
+            this.cg.cs.AppendLine("{");
+            this.cg.cs.AddTabLevel();
+        }
+
+        public virtual void Dispose()
+        {
+            this.cg.cs.DecTabLevel();
+            this.cg.cs.AppendLine("}");
+        }
+    }
+
     // 构造方法绑定
     public class BindingConstructorDeclareCodeGen : IDisposable
     {

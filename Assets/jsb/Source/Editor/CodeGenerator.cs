@@ -12,6 +12,8 @@ namespace QuickJS.Editor
     public partial class CodeGenerator
     {
         public const string NameOfDelegates = "_QuickJSDelegates";
+        public const string NamespaceOfScriptTypes = "QuickJS";
+        public const string NamespaceOfInternalScriptTypes = "QuickJS.Internal";
 
         public BindingManager bindingManager;
         public TextGenerator cs;
@@ -68,7 +70,7 @@ namespace QuickJS.Editor
                                 this.bindingManager.OnPostGenerateDelegate(bindingInfo);
                             }
 
-                            this.tsDeclare.AppendLine("declare namespace QuickJS.Internal {");
+                            this.tsDeclare.AppendLine("declare namespace {0} {{", NamespaceOfInternalScriptTypes);
                             this.tsDeclare.AddTabLevel();
                             // this.jsSource.AppendLine($"// dummy code");
                             foreach (var spec in specs)
@@ -87,8 +89,7 @@ namespace QuickJS.Editor
                                         argvarlist += ", ";
                                     }
                                 }
-                                this.tsDeclare.AppendLine($"class Delegate{spec.Key}<R{argtypelist}> extends Dispatcher {{");
-                                // this.jsSource.AppendLine($"DuktapeJS.Delegate{spec.Key} = DuktapeJS.Dispatcher;");
+                                this.tsDeclare.AppendLine($"class Delegate{spec.Key}<R{argtypelist}> extends jsb.Dispatcher {{");
                                 this.tsDeclare.AddTabLevel();
                                 {
                                     this.tsDeclare.AppendLine($"on(caller: any, fn: ({argdecllist}) => R): Delegate{spec.Key}<R{argtypelist}>");
@@ -252,8 +253,9 @@ namespace QuickJS.Editor
                 caller = "self";
                 this.cs.AppendLine($"{this.bindingManager.GetCSTypeFullName(declaringType)} {caller};");
                 // this.cs.AppendLine($"DuktapeDLL.duk_push_this(ctx);");
-                this.cs.AppendLine(this.bindingManager.GetScriptObjectGetter(declaringType, "ctx", "this_obj", caller));
-                this.cs.AppendLine($"DuktapeDLL.duk_pop(ctx);");
+                var getter = this.bindingManager.GetScriptObjectGetter(declaringType, "ctx", "this_obj", caller);
+                this.cs.AppendLine("{0};", getter);
+                // this.cs.AppendLine($"DuktapeDLL.duk_pop(ctx);"); 
             }
             return caller;
         }
@@ -284,7 +286,12 @@ namespace QuickJS.Editor
                 caller = "self";
                 this.cs.AppendLine($"{this.bindingManager.GetCSTypeFullName(declaringType)} {caller};");
                 // this.cs.AppendLine($"DuktapeDLL.duk_push_this(ctx);");
-                this.cs.AppendLine(this.bindingManager.GetScriptObjectGetter(declaringType, "ctx", "this_obj", caller));
+                var getter = this.bindingManager.GetScriptObjectGetter(declaringType, "ctx", "this_obj", caller);
+                this.cs.AppendLine("if (!{0})", getter);
+                using (this.cs.Block())
+                {
+                    this.cs.AppendLine("throw new ThisBoundException();");
+                }
                 // this.cs.AppendLine($"DuktapeDLL.duk_pop(ctx);");
             }
             return caller;

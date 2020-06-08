@@ -121,7 +121,8 @@ namespace QuickJS.Editor
                         {
                             var argElementOffset = i == 0 ? "" : " - " + i;
                             var argName = $"arg{i}[i{argElementOffset}]";
-                            this.cg.cs.AppendLine(this.cg.bindingManager.GetScriptObjectGetter(parameter.ParameterType.GetElementType(), "ctx", "argv[i]", argName));
+                            var argGetter = this.cg.bindingManager.GetScriptObjectGetter(parameter.ParameterType.GetElementType(), "ctx", "argv[i]", argName);
+                            this.cg.cs.AppendLine("{0};", argGetter);
                         }
                         this.cg.cs.DecTabLevel();
                         this.cg.cs.AppendLine("}");
@@ -145,7 +146,12 @@ namespace QuickJS.Editor
             // 非 out 参数才需要取值
             if (!parameter.IsOut || !parameter.ParameterType.IsByRef)
             {
-                this.cg.cs.AppendLine(this.cg.bindingManager.GetScriptObjectGetter(ptype, "ctx", $"argv[{index}]", argname));
+                var getter = this.cg.bindingManager.GetScriptObjectGetter(ptype, "ctx", $"argv[{index}]", argname);
+                this.cg.cs.AppendLine("if (!{0})", getter);
+                using (this.cg.cs.Block())
+                {
+                    this.cg.cs.AppendLine("throw new ParameterException(typeof({0}), {1});", argType, index);
+                }
             }
         }
 
@@ -290,7 +296,7 @@ namespace QuickJS.Editor
             cg.cs.DecTabLevel();
             cg.cs.AppendLine("} while(false);");
             var error = this.cg.bindingManager.GetThrowError("no matched method variant");
-            cg.cs.AppendLine($"return {error}");
+            cg.cs.AppendLine($"return {error};");
         }
 
         protected List<ParameterInfo> WriteTSDeclaration(T method, MethodBaseBindingInfo<T> bindingInfo)

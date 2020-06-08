@@ -56,6 +56,7 @@ namespace QuickJS.Binding
             {
                 return JSApi.JS_UNDEFINED;
             }
+            //TODO: not implemented: 在c端实现内存分配返回内存地址以及JSValue
             return JSApi.JS_ThrowInternalError(ctx, "not implemented: 在c端实现内存分配返回内存地址以及JSValue");
             // var mem_ptr = DuktapeDLL.js_push_fixed_buffer(ctx, (uint)o.readableBytes);
             // if (mem_ptr != IntPtr.Zero)

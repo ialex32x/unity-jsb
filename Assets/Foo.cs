@@ -44,14 +44,14 @@ namespace jsb
             return JSApi.JS_ThrowInternalError(ctx, "unbounded value");
         }
         
-        [MonoPInvokeCallback(typeof(JSCFunction))]
-        private static JSValue BindRead_wall(JSContext ctx, JSValue this_obj, int argc, JSValue[] argv)
+        [MonoPInvokeCallback(typeof(JSGetterCFunction))]
+        private static JSValue BindRead_wall(JSContext ctx, JSValue this_obj)
         {
             return JSApi.JS_ThrowInternalError(ctx, "not implemented");
         }
         
-        [MonoPInvokeCallback(typeof(JSCFunction))]
-        private static JSValue BindWrite_wall(JSContext ctx, JSValue this_obj, int argc, JSValue[] argv)
+        [MonoPInvokeCallback(typeof(JSSetterCFunction))]
+        private static JSValue BindWrite_wall(JSContext ctx, JSValue this_obj, JSValue val)
         {
             return JSApi.JS_ThrowInternalError(ctx, "not implemented");
         }

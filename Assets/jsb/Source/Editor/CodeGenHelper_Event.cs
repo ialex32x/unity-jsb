@@ -24,7 +24,8 @@ namespace QuickJS.Editor
 
             var caller = this.cg.AppendGetThisCS(bindingInfo);
             this.cg.cs.AppendLine("{0} value;", this.cg.bindingManager.GetCSTypeFullName(eventInfo.EventHandlerType));
-            this.cg.cs.AppendLine(this.cg.bindingManager.GetScriptObjectGetter(eventInfo.EventHandlerType, "ctx", "argv[0]", "value"));
+            var getter = this.cg.bindingManager.GetScriptObjectGetter(eventInfo.EventHandlerType, "ctx", "argv[0]", "value");
+            this.cg.cs.AppendLine("{0};", getter);
             this.cg.cs.AppendLine("{0}.{1} += value;", caller, eventInfo.Name);
             if (declaringType.IsValueType && !eventInfo.GetAddMethod().IsStatic)
             {
@@ -54,7 +55,8 @@ namespace QuickJS.Editor
 
             var caller = this.cg.AppendGetThisCS(bindingInfo);
             this.cg.cs.AppendLine("{0} value;", this.cg.bindingManager.GetCSTypeFullName(eventInfo.EventHandlerType));
-            this.cg.cs.AppendLine(this.cg.bindingManager.GetScriptObjectGetter(eventInfo.EventHandlerType, "ctx", "argv[0]", "value"));
+            var getter = this.cg.bindingManager.GetScriptObjectGetter(eventInfo.EventHandlerType, "ctx", "argv[0]", "value");
+            this.cg.cs.AppendLine("{0};", getter);
             this.cg.cs.AppendLine("{0}.{1} -= value;", caller, eventInfo.Name);
             if (declaringType.IsValueType && !eventInfo.GetAddMethod().IsStatic)
             {
