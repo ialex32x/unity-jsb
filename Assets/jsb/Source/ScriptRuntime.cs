@@ -54,7 +54,7 @@ namespace QuickJS
         private IEnumerator _InitializeStep(ScriptContext context, IScriptRuntimeListener runner, int step)
         {
             var register = new TypeRegister(this, context);
-            var regArgs = new object[] {register};
+            var regArgs = new object[] { register };
             var bindingTypes = new List<Type>();
             var assemblies = AppDomain.CurrentDomain.GetAssemblies();
             for (int assemblyIndex = 0, assemblyCount = assemblies.Length;
@@ -206,7 +206,10 @@ namespace QuickJS
             if (_mainThreadId == Thread.CurrentThread.ManagedThreadId)
             {
                 _objectCache.RemoveDelegate(value);
-                JSApi.JS_FreeValueRT(_rt, value);
+                if (_rt != JSRuntime.Null)
+                {
+                    JSApi.JS_FreeValueRT(_rt, value);
+                }
             }
             else
             {
@@ -226,7 +229,10 @@ namespace QuickJS
         {
             if (_mainThreadId == Thread.CurrentThread.ManagedThreadId)
             {
-                JSApi.JS_FreeValueRT(_rt, value);
+                if (_rt != JSRuntime.Null)
+                {
+                    JSApi.JS_FreeValueRT(_rt, value);
+                }
             }
             else
             {
@@ -244,6 +250,10 @@ namespace QuickJS
 
         public void FreeValues(JSValue[] values)
         {
+            if (values == null)
+            {
+                return;
+            }
             if (_mainThreadId == Thread.CurrentThread.ManagedThreadId)
             {
                 for (int i = 0, len = values.Length; i < len; i++)
@@ -274,7 +284,7 @@ namespace QuickJS
             var jsValue = JSApi.JS_Eval(_mainContext, source, fileName);
             if (JSApi.JS_IsException(jsValue))
             {
-                ((JSContext) _mainContext).print_exception();
+                ((JSContext)_mainContext).print_exception();
             }
 
             FreeValue(jsValue);
@@ -304,7 +314,7 @@ namespace QuickJS
             }
 
             // poll here;
-            var ms = (int) (deltaTime * 1000f);
+            var ms = (int)(deltaTime * 1000f);
             _timerManager.Update(ms);
 
             if (_byteBufferAllocator != null)

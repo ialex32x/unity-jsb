@@ -74,8 +74,8 @@ namespace QuickJS.Editor
                 "this",
                 "new",
                 "in",
-                "await", 
-                "async", 
+                "await",
+                "async",
                 "extends",
                 "static",
                 "package",
@@ -1424,8 +1424,19 @@ namespace QuickJS.Editor
                 }
             }
 
-            var logPath = prefs.logPath;
-            File.WriteAllText(logPath, log.ToString());
+            try
+            {
+                var logPath = prefs.logPath;
+                var logDir = Path.GetDirectoryName(logPath);
+                if (!Directory.Exists(logDir))
+                {
+                    Directory.CreateDirectory(logDir);
+                }
+                File.WriteAllText(logPath, log.ToString());
+            }
+            catch (Exception)
+            {
+            }
             EditorUtility.ClearProgressBar();
         }
 
