@@ -58,11 +58,20 @@ async function destroy() {
 }
 destroy();
 
-// let actions = new jsb.DelegateTest();
-// actions.onAction = function () {
-//     console.log("js action");
-// };
-// actions.CallAction();
+let actions = new jsb.DelegateTest();
+actions.onAction = function () {
+    console.log("js action");
+};
+actions.CallAction();
+
+actions.onActionWithArgs = (a, b, c) => {
+    console.log(a, b, c);
+}
+actions.CallActionWithArgs("string", 123, 456);
+
+actions.onFunc = v => v * 2;
+console.log(actions.CallFunc(111));
+actions.onFunc = undefined;
 
 print("end of script");
 
