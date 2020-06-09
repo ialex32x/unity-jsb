@@ -27,13 +27,14 @@ namespace QuickJS
             return fileName != null && (fileName.EndsWith(".js") || fileName.EndsWith(".jsx") || fileName.EndsWith(".json")) ? fileName : fileName + ".js";
         }
 
-        public static string module_resolve(string module_base_name, string module_name)
+        public static string module_resolve(IFileSystem fs, IFileResolver resolver, string module_base_name, string module_id)
         {
-            var module_id = EnsureExtension(module_name);
+            // var module_id = EnsureExtension(module_name);
             var parent_id = module_base_name;
-            var resolve_to = module_id;
+            var resolving = module_id;
             // Debug.LogFormat("module_normalize module_id:'{0}', parent_id:'{1}'", module_id, parent_id);
 
+            // 将相对目录展开
             if (module_id.StartsWith("./") || module_id.StartsWith("../") || module_id.Contains("/./") ||
                 module_id.Contains("/../"))
             {
@@ -41,7 +42,7 @@ namespace QuickJS
                 var parent_path = PathUtils.GetDirectoryName(parent_id);
                 try
                 {
-                    resolve_to = PathUtils.ExtractPath(PathUtils.Combine(parent_path, module_id), '/');
+                    resolving = PathUtils.ExtractPath(PathUtils.Combine(parent_path, module_id), '/');
                 }
                 catch
                 {
@@ -50,9 +51,10 @@ namespace QuickJS
                 }
             }
 
-            if (resolve_to != null)
+            string resolved;
+            if (resolver.ResolvePath(fs, resolving, out resolved))
             {
-                return resolve_to;
+                return resolved;
             }
 
             throw new Exception(string.Format("module not found: {0}", module_id));
@@ -185,7 +187,9 @@ namespace QuickJS
 
             try
             {
-                var resolved_id = module_resolve(parent_module_id, id); // csharp exception
+                var fileSystem = runtime._fileSystem;
+                var fileResolver = runtime._fileResolver;
+                var resolved_id = module_resolve(fileSystem, fileResolver, parent_module_id, id); // csharp exception
                 var cache = runtime.FindCommonJSModule(resolved_id);
                 if (cache != null)
                 {
@@ -193,8 +197,7 @@ namespace QuickJS
                 }
 
                 var resolved_id_bytes = Utils.TextUtils.GetNullTerminatedBytes(resolved_id);
-                var fileResolver = runtime._fileResolver;
-                var source = fileResolver.ReadAllBytes(resolved_id);
+                var source = fileSystem.ReadAllBytes(resolved_id);
                 if (source == null)
                 {
                     return JSApi.JS_ThrowInternalError(ctx, "require module load failed");
@@ -291,7 +294,10 @@ namespace QuickJS
         {
             try
             {
-                var resolve_to = module_resolve(module_base_name, module_name);
+                var runtime = ScriptEngine.GetRuntime(ctx);
+                var fileResolver = runtime._fileResolver;
+                var fileSystem = runtime._fileSystem;
+                var resolve_to = module_resolve(fileSystem, fileResolver, module_base_name, module_name);
                 return JSApi.js_strndup(ctx, resolve_to);
             }
             catch (Exception exception)
@@ -305,12 +311,12 @@ namespace QuickJS
         public static unsafe JSModuleDef module_loader(JSContext ctx, string module_name, IntPtr opaque)
         {
             // Debug.LogFormat("module_loader: {0}", module_name);
-            var m = JSModuleDef.Null;
-            if (File.Exists(module_name))
+            var mod = JSModuleDef.Null;
+            var runtime = ScriptEngine.GetRuntime(ctx);
+            var fileSystem = runtime._fileSystem;
+            if (fileSystem.Exists(module_name))
             {
-                var runtime = ScriptEngine.GetRuntime(ctx);
-                var fileResolver = runtime._fileResolver;
-                var source = fileResolver.ReadAllBytes(module_name);
+                var source = fileSystem.ReadAllBytes(module_name);
                 var input_bytes = Utils.TextUtils.GetNullTerminatedBytes(source);
                 var fn_bytes = Utils.TextUtils.GetNullTerminatedBytes(module_name);
 
@@ -327,8 +333,8 @@ namespace QuickJS
                     }
                     else
                     {
-                        m = new JSModuleDef(func_val.u.ptr);
-                        var meta = JSApi.JS_GetImportMeta(ctx, m);
+                        mod = new JSModuleDef(func_val.u.ptr);
+                        var meta = JSApi.JS_GetImportMeta(ctx, mod);
                         JSApi.JS_DefinePropertyValueStr(ctx, meta, "url",
                             JSApi.JS_NewString(ctx, $"file://{module_name}"), JSPropFlags.JS_PROP_C_W_E);
                         JSApi.JS_DefinePropertyValueStr(ctx, meta, "main",
@@ -339,10 +345,10 @@ namespace QuickJS
             }
             else
             {
-                JSApi.JS_ThrowReferenceError(ctx, "File Not Found");
+                JSApi.JS_ThrowReferenceError(ctx, "module load failed: file not found");
             }
 
-            return m;
+            return mod;
         }
     }
 }

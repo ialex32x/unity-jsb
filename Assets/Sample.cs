@@ -19,9 +19,10 @@ namespace jsb
         void Awake()
         {
             _rt = ScriptEngine.CreateRuntime();
-            var fileResolver = new FileResolver(new DefaultFileSystem());
-            fileResolver.AddSearchPath("Assets");
-            _rt.Initialize(fileResolver, this, new UnityLogger());
+            var fileSystem = new DefaultFileSystem();
+            _rt.AddSearchPath("Assets");
+            _rt.AddSearchPath("node_modules");
+            _rt.Initialize(fileSystem, this, new UnityLogger());
         }
 
         void Update()

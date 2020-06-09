@@ -70,3 +70,5 @@ sysinfo.txt
 /jsb_build/jsb/*.dll
 /jsb_build/jsb/*.a
 /jsb_build/jsb/*.so
+
+/node_modules

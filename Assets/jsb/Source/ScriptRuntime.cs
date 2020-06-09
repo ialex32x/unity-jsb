@@ -29,6 +29,7 @@ namespace QuickJS
 
 
         private IFileResolver _fileResolver;
+        private IFileSystem _fileSystem;
         private ObjectCache _objectCache = new ObjectCache();
         private TypeDB _typeDB;
         private TimerManager _timerManager;
@@ -36,6 +37,7 @@ namespace QuickJS
 
         public ScriptRuntime()
         {
+            _fileResolver = new FileResolver();
             _mainThreadId = Thread.CurrentThread.ManagedThreadId;
             _timerManager = new TimerManager();
             _rt = JSApi.JS_NewRuntime();
@@ -48,7 +50,7 @@ namespace QuickJS
             _fileResolver.AddSearchPath(path);
         }
 
-        public void Initialize(IFileResolver fileResolver, IScriptRuntimeListener runner,
+        public void Initialize(IFileSystem fileSystem, IScriptRuntimeListener runner,
             IScriptLogger logger,
             IO.ByteBufferAllocator byteBufferAllocator = null, int step = 30)
         {
@@ -60,12 +62,12 @@ namespace QuickJS
             {
                 throw new NullReferenceException(nameof(runner));
             }
-            if (fileResolver == null)
+            if (fileSystem == null)
             {
-                throw new NullReferenceException(nameof(fileResolver));
+                throw new NullReferenceException(nameof(fileSystem));
             }
             _byteBufferAllocator = byteBufferAllocator;
-            _fileResolver = fileResolver;
+            _fileSystem = fileSystem;
             _logger = logger;
             var e = _InitializeStep(_mainContext, runner, step);
             while (e.MoveNext()) ;
