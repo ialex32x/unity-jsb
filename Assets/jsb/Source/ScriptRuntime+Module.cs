@@ -34,7 +34,8 @@ namespace QuickJS
             var resolve_to = module_id;
             // Debug.LogFormat("module_normalize module_id:'{0}', parent_id:'{1}'", module_id, parent_id);
 
-            if (module_id.StartsWith("./") || module_id.StartsWith("../") || module_id.Contains("/./") || module_id.Contains("/../"))
+            if (module_id.StartsWith("./") || module_id.StartsWith("../") || module_id.Contains("/./") ||
+                module_id.Contains("/../"))
             {
                 // 显式相对路径直接从 parent 模块路径拼接
                 var parent_path = PathUtils.GetDirectoryName(parent_id);
@@ -53,6 +54,7 @@ namespace QuickJS
             {
                 return resolve_to;
             }
+
             throw new Exception(string.Format("module not found: {0}", module_id));
         }
 
@@ -85,12 +87,14 @@ namespace QuickJS
             {
                 return null;
             }
+
             CommonJSModule module;
             var module_id = _moduleIndeices[index];
             if (_modules.TryGetValue(module_id, out module))
             {
                 return module;
             }
+
             return null;
         }
 
@@ -101,6 +105,7 @@ namespace QuickJS
             {
                 return module;
             }
+
             return null;
         }
 
@@ -112,25 +117,55 @@ namespace QuickJS
             {
                 count--;
             }
+
             var header_size = _header.Length;
             var footer_size = _footer.Length;
-            var bytes = new byte[header_size + count + footer_size + 1];
-            Array.Copy(_header, 0, bytes, 0, header_size);
-            Array.Copy(str, 0, bytes, header_size, count);
-
-            if (str[0] == 35 && str[1] == 33)
+            var bom_size = 0;
+            if (count >= 3)
             {
-                bytes[header_size] = 47;
-                bytes[header_size + 1] = 47;
+                // utf8 with bom
+                if (str[0] == 239 && str[1] == 187 && str[2] == 191)
+                {
+                    bom_size = 3;
+                }
             }
 
-            Array.Copy(_footer, 0, bytes, header_size + count, footer_size);
+            var bytes = new byte[header_size + count + footer_size + 1 - bom_size];
+            Array.Copy(_header, 0, bytes, 0, header_size);
+            Array.Copy(str, bom_size, bytes, header_size, count - bom_size);
+
+            if (count >= 2)
+            {
+                // skip shebang line (replace #! => //)
+                if (str[0] == 35 && str[1] == 33)
+                {
+                    bytes[header_size] = 47;
+                    bytes[header_size + 1] = 47;
+                }
+                else
+                {
+                    if (bom_size > 0)
+                    {
+                        if (count > bom_size + 1)
+                        {
+                            if (str[bom_size] == 35 && str[bom_size + 1] == 33)
+                            {
+                                bytes[header_size] = 47;
+                                bytes[header_size + 1] = 47;
+                            }
+                        }
+                    }
+                }
+            }
+
+            Array.Copy(_footer, 0, bytes, header_size + count - bom_size, footer_size);
             return bytes;
         }
 
         // require(id);
         [MonoPInvokeCallback(typeof(JSCFunctionMagic))]
-        public static unsafe JSValue module_require(JSContext ctx, JSValue this_obj, int argc, JSValue[] argv, int magic)
+        public static unsafe JSValue module_require(JSContext ctx, JSValue this_obj, int argc, JSValue[] argv,
+            int magic)
         {
             if (argc < 1)
             {
@@ -141,6 +176,7 @@ namespace QuickJS
             {
                 return JSApi.JS_ThrowInternalError(ctx, "require module id (string)");
             }
+
             var context = ScriptEngine.GetContext(ctx);
             var runtime = context.GetRuntime();
             var parent_mod = runtime.FindCommonJSModule(magic);
@@ -155,6 +191,7 @@ namespace QuickJS
                 {
                     return JSApi.JS_GetProperty(ctx, cache.module, context.GetAtom("exports"));
                 }
+
                 var resolved_id_bytes = Utils.TextUtils.GetNullTerminatedBytes(resolved_id);
                 var fileResolver = runtime._fileResolver;
                 var source = fileResolver.ReadAllBytes(resolved_id);
@@ -162,6 +199,7 @@ namespace QuickJS
                 {
                     return JSApi.JS_ThrowInternalError(ctx, "require module load failed");
                 }
+
                 var input_bytes = GetShebangNullTerminatedBytes(source);
 
                 var filename_obj = JSApi.JS_NewString(ctx, resolved_id);
@@ -171,7 +209,7 @@ namespace QuickJS
                 JSApi.JS_SetProperty(ctx, module_obj, context.GetAtom("exports"), JSApi.JS_DupValue(ctx, exports_obj));
                 runtime.AddCommonJSModule(resolved_id, JSApi.JS_DupValue(ctx, module_obj));
                 var require_obj = JSApi.JSB_NewCFunctionMagic(ctx, module_require, context.GetAtom("require"), 1,
-                                JSCFunctionEnum.JS_CFUNC_generic_magic, parent_mod != null ? parent_mod.index : -1);
+                    JSCFunctionEnum.JS_CFUNC_generic_magic, parent_mod != null ? parent_mod.index : -1);
                 var require_argv = new JSValue[5]
                 {
                     exports_obj, require_obj, module_obj, filename_obj, JSApi.JS_UNDEFINED,
@@ -179,7 +217,7 @@ namespace QuickJS
                 fixed (byte* input_ptr = input_bytes)
                 fixed (byte* resolved_id_ptr = resolved_id_bytes)
                 {
-                    var input_len = (size_t)(input_bytes.Length - 1);
+                    var input_len = (size_t) (input_bytes.Length - 1);
                     var func_val = JSApi.JS_Eval(ctx, input_ptr, input_len, resolved_id_ptr,
                         JSEvalFlags.JS_EVAL_TYPE_GLOBAL | JSEvalFlags.JS_EVAL_FLAG_STRICT);
                     if (func_val.IsException())
@@ -203,8 +241,10 @@ namespace QuickJS
                             return func_val;
                         }
                     }
+
                     JSApi.JS_FreeValue(ctx, func_val);
                 }
+
                 JSApi.JS_SetProperty(ctx, module_obj, context.GetAtom("loaded"), JSApi.JS_NewBool(ctx, true));
 
                 JSApi.JS_FreeValue(ctx, require_obj);
@@ -251,7 +291,7 @@ namespace QuickJS
                 fixed (byte* input_ptr = input_bytes)
                 fixed (byte* fn_ptr = fn_bytes)
                 {
-                    var input_len = (size_t)(input_bytes.Length - 1);
+                    var input_len = (size_t) (input_bytes.Length - 1);
                     var func_val = JSApi.JS_Eval(ctx, input_ptr, input_len, fn_ptr,
                         JSEvalFlags.JS_EVAL_TYPE_MODULE | JSEvalFlags.JS_EVAL_FLAG_COMPILE_ONLY);
                     if (JSApi.JS_IsException(func_val))
