@@ -83,3 +83,7 @@ console.log("js/vector3/normailize", (Date.now() - start) / 1000);
 
 print("end of script");
 
+print("require 1:", require("./req_test1").test);
+print("require 2:", require("./req_test1").test);
+print("require 3:", require("./req_test1").test);
+

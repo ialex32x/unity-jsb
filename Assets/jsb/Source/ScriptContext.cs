@@ -129,7 +129,7 @@ namespace QuickJS
             var ctx = (JSContext)this;
             var global_object = JSApi.JS_GetGlobalObject(ctx);
             {
-                var require_func_obj = JSApi.JS_NewCFunction(ctx, ScriptRuntime.module_require, "require", 1);
+                var require_func_obj = JSApi.JSB_NewCFunctionMagic(ctx, ScriptRuntime.module_require, GetAtom("require"), 1, JSCFunctionEnum.JS_CFUNC_generic_magic, -1);
                 JSApi.JS_SetPropertyStr(ctx, global_object, "require", require_func_obj);
 
                 JSApi.JS_SetPropertyStr(ctx, global_object, "print", JSApi.JS_NewCFunctionMagic(ctx, _print, "print", 1, JSCFunctionEnum.JS_CFUNC_generic_magic, 0));

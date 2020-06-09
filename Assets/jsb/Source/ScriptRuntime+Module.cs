@@ -19,7 +19,7 @@ namespace QuickJS
         static ScriptRuntime()
         {
             _header = Encoding.UTF8.GetBytes("(function(exports,require,module,__filename,__dirname){");
-            _footer = Encoding.UTF8.GetBytes("\n}");
+            _footer = Encoding.UTF8.GetBytes("\n})");
         }
 
         public static string EnsureExtension(string fileName)
@@ -58,21 +58,40 @@ namespace QuickJS
 
         public class CommonJSModule
         {
+            public int index;
             public string module_id;
             public JSValue module;
         }
 
         private Dictionary<string, CommonJSModule> _modules = new Dictionary<string, CommonJSModule>();
+        private List<string> _moduleIndeices = new List<string>();
 
         private CommonJSModule AddCommonJSModule(string module_id, JSValue module)
         {
             var mod = new CommonJSModule()
             {
+                index = _moduleIndeices.Count,
                 module_id = module_id,
                 module = module,
             };
+            _moduleIndeices.Add(module_id);
             _modules[module_id] = mod;
             return mod;
+        }
+
+        private CommonJSModule FindCommonJSModule(int index)
+        {
+            if (index < 0 || index >= _moduleIndeices.Count)
+            {
+                return null;
+            }
+            CommonJSModule module;
+            var module_id = _moduleIndeices[index];
+            if (_modules.TryGetValue(module_id, out module))
+            {
+                return module;
+            }
+            return null;
         }
 
         private CommonJSModule FindCommonJSModule(string module_id)
@@ -110,8 +129,8 @@ namespace QuickJS
         }
 
         // require(id);
-        [MonoPInvokeCallback(typeof(JSCFunction))]
-        public static unsafe JSValue module_require(JSContext ctx, JSValue this_obj, int argc, JSValue[] argv)
+        [MonoPInvokeCallback(typeof(JSCFunctionMagic))]
+        public static unsafe JSValue module_require(JSContext ctx, JSValue this_obj, int argc, JSValue[] argv, int magic)
         {
             if (argc < 1)
             {
@@ -123,20 +142,13 @@ namespace QuickJS
                 return JSApi.JS_ThrowInternalError(ctx, "require module id (string)");
             }
             var context = ScriptEngine.GetContext(ctx);
-            var callee = JSApi.JS_GetActiveFunction(ctx);
-            var parent_module_val = JSApi.JS_GetProperty(ctx, callee, context.GetAtom("moduleId"));
-
-            if (parent_module_val.IsException())
-            {
-                return parent_module_val;
-            }
-
-            var parent_module_id = JSApi.GetString(ctx, parent_module_val);
+            var runtime = context.GetRuntime();
+            var parent_mod = runtime.FindCommonJSModule(magic);
+            var parent_module_id = parent_mod != null ? parent_mod.module_id : "";
             var id = JSApi.GetString(ctx, argv[0]);
 
             try
             {
-                var runtime = ScriptEngine.GetRuntime(ctx);
                 var resolved_id = module_resolve(parent_module_id, id); // csharp exception
                 var cache = runtime.FindCommonJSModule(resolved_id);
                 if (cache != null)
@@ -146,6 +158,10 @@ namespace QuickJS
                 var resolved_id_bytes = Utils.TextUtils.GetNullTerminatedBytes(resolved_id);
                 var fileResolver = runtime._fileResolver;
                 var source = fileResolver.ReadAllBytes(resolved_id);
+                if (source == null)
+                {
+                    return JSApi.JS_ThrowInternalError(ctx, "require module load failed");
+                }
                 var input_bytes = GetShebangNullTerminatedBytes(source);
 
                 var filename_obj = JSApi.JS_NewString(ctx, resolved_id);
@@ -154,8 +170,8 @@ namespace QuickJS
                 JSApi.JS_SetProperty(ctx, module_obj, context.GetAtom("loaded"), JSApi.JS_NewBool(ctx, false));
                 JSApi.JS_SetProperty(ctx, module_obj, context.GetAtom("exports"), JSApi.JS_DupValue(ctx, exports_obj));
                 runtime.AddCommonJSModule(resolved_id, JSApi.JS_DupValue(ctx, module_obj));
-                var require_obj = JSApi.JS_NewCFunction(ctx, module_require, "require", 1);
-                JSApi.JS_SetProperty(ctx, require_obj, context.GetAtom("moduleId"), JSApi.JS_DupValue(ctx, parent_module_val));
+                var require_obj = JSApi.JSB_NewCFunctionMagic(ctx, module_require, context.GetAtom("require"), 1,
+                                JSCFunctionEnum.JS_CFUNC_generic_magic, parent_mod != null ? parent_mod.index : -1);
                 var require_argv = new JSValue[5]
                 {
                     exports_obj, require_obj, module_obj, filename_obj, JSApi.JS_UNDEFINED,
@@ -174,17 +190,31 @@ namespace QuickJS
                         JSApi.JS_FreeValue(ctx, filename_obj);
                         return func_val;
                     }
+
+                    if (JSApi.JS_IsFunction(ctx, func_val) == 1)
+                    {
+                        var rval = JSApi.JS_Call(ctx, func_val, JSApi.JS_UNDEFINED, require_argv.Length, require_argv);
+                        if (rval.IsException())
+                        {
+                            JSApi.JS_FreeValue(ctx, exports_obj);
+                            JSApi.JS_FreeValue(ctx, require_obj);
+                            JSApi.JS_FreeValue(ctx, module_obj);
+                            JSApi.JS_FreeValue(ctx, filename_obj);
+                            return func_val;
+                        }
+                    }
                     JSApi.JS_FreeValue(ctx, func_val);
                 }
                 JSApi.JS_SetProperty(ctx, module_obj, context.GetAtom("loaded"), JSApi.JS_NewBool(ctx, true));
+
                 JSApi.JS_FreeValue(ctx, require_obj);
                 JSApi.JS_FreeValue(ctx, module_obj);
                 JSApi.JS_FreeValue(ctx, filename_obj);
+
                 return exports_obj;
             }
             catch (Exception exception)
             {
-                JSApi.JS_FreeValue(ctx, parent_module_val);
                 return JSApi.JS_ThrowInternalError(ctx, exception.Message);
             }
         }

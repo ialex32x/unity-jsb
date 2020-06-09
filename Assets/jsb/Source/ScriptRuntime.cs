@@ -43,6 +43,11 @@ namespace QuickJS
             _mainContext = CreateContext();
         }
 
+        public void AddSearchPath(string path)
+        {
+            _fileResolver.AddSearchPath(path);
+        }
+
         public void Initialize(IFileResolver fileResolver, IScriptRuntimeListener runner,
             IScriptLogger logger,
             IO.ByteBufferAllocator byteBufferAllocator = null, int step = 30)
@@ -120,7 +125,7 @@ namespace QuickJS
                 }
                 catch (Exception e)
                 {
-                   _logger.Write(LogLevel.Error, "assembly: {0}, {1}", assembly, e);
+                    _logger.Write(LogLevel.Error, "assembly: {0}, {1}", assembly, e);
                 }
             }
 
@@ -365,6 +370,13 @@ namespace QuickJS
             _timerManager.Destroy();
             _objectCache.Clear();
             _typeDB.Destroy();
+            foreach (var kv in _modules)
+            {
+                var mod = kv.Value;
+                JSApi.JS_FreeValueRT(_rt, mod.module);
+                mod.module = JSApi.JS_UNDEFINED;
+            }
+            _modules.Clear();
             GC.Collect();
             CollectPendingGarbage();
             for (int i = 0, count = _contexts.Count; i < count; i++)

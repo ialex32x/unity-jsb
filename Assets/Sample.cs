@@ -20,6 +20,7 @@ namespace jsb
         {
             _rt = ScriptEngine.CreateRuntime();
             var fileResolver = new FileResolver(new DefaultFileSystem());
+            fileResolver.AddSearchPath("Assets");
             _rt.Initialize(fileResolver, this, new UnityLogger());
         }
 
