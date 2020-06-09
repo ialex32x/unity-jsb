@@ -68,5 +68,18 @@ namespace QuickJS.Utils
             Array.Copy(str, 0, bytes, 0, count);
             return bytes;
         }
+
+        public static int GetBomSize(byte[] str)
+        {
+            var count = str.Length;
+            if (count > 3)
+            {
+                if (str[0] == 239 && str[1] == 187 && str[2] == 191)
+                {
+                    return 3;
+                }
+            }
+            return 0;
+        }
     }
 }

@@ -87,3 +87,5 @@ print("require 1:", require("./req_test1").test);
 print("require 2:", require("./req_test1").test);
 print("require 3:", require("./req_test1").test);
 
+// 通过 require 直接读 json
+print("json:", require("./data.json").name);

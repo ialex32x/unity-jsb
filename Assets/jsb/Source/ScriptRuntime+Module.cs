@@ -24,7 +24,7 @@ namespace QuickJS
 
         public static string EnsureExtension(string fileName)
         {
-            return fileName != null && fileName.EndsWith(".js") ? fileName : fileName + ".js";
+            return fileName != null && (fileName.EndsWith(".js") || fileName.EndsWith(".jsx") || fileName.EndsWith(".json")) ? fileName : fileName + ".js";
         }
 
         public static string module_resolve(string module_base_name, string module_name)
@@ -200,39 +200,52 @@ namespace QuickJS
                     return JSApi.JS_ThrowInternalError(ctx, "require module load failed");
                 }
 
-                var input_bytes = GetShebangNullTerminatedBytes(source);
-
-                var filename_obj = JSApi.JS_NewString(ctx, resolved_id);
-                var module_obj = JSApi.JS_NewObject(ctx);
-                var exports_obj = JSApi.JS_NewObject(ctx);
-                JSApi.JS_SetProperty(ctx, module_obj, context.GetAtom("loaded"), JSApi.JS_NewBool(ctx, false));
-                JSApi.JS_SetProperty(ctx, module_obj, context.GetAtom("exports"), JSApi.JS_DupValue(ctx, exports_obj));
-                runtime.AddCommonJSModule(resolved_id, JSApi.JS_DupValue(ctx, module_obj));
-                var require_obj = JSApi.JSB_NewCFunctionMagic(ctx, module_require, context.GetAtom("require"), 1,
-                    JSCFunctionEnum.JS_CFUNC_generic_magic, parent_mod != null ? parent_mod.index : -1);
-                var require_argv = new JSValue[5]
+                if (resolved_id.EndsWith(".json"))
                 {
-                    exports_obj, require_obj, module_obj, filename_obj, JSApi.JS_UNDEFINED,
-                };
-                fixed (byte* input_ptr = input_bytes)
-                fixed (byte* resolved_id_ptr = resolved_id_bytes)
-                {
-                    var input_len = (size_t) (input_bytes.Length - 1);
-                    var func_val = JSApi.JS_Eval(ctx, input_ptr, input_len, resolved_id_ptr,
-                        JSEvalFlags.JS_EVAL_TYPE_GLOBAL | JSEvalFlags.JS_EVAL_FLAG_STRICT);
-                    if (func_val.IsException())
-                    {
-                        JSApi.JS_FreeValue(ctx, exports_obj);
-                        JSApi.JS_FreeValue(ctx, require_obj);
-                        JSApi.JS_FreeValue(ctx, module_obj);
-                        JSApi.JS_FreeValue(ctx, filename_obj);
-                        return func_val;
-                    }
+                    var input_bytes = TextUtils.GetNullTerminatedBytes(source);
+                    var input_bom = TextUtils.GetBomSize(source);
 
-                    if (JSApi.JS_IsFunction(ctx, func_val) == 1)
+                    fixed (byte* input_ptr = &input_bytes[input_bom])
+                    fixed (byte* filename_ptr = resolved_id_bytes)
                     {
-                        var rval = JSApi.JS_Call(ctx, func_val, JSApi.JS_UNDEFINED, require_argv.Length, require_argv);
+                        var rval = JSApi.JS_ParseJSON(ctx, input_ptr, input_bytes.Length - 1 - input_bom, filename_ptr);
                         if (rval.IsException())
+                        {
+                            return rval;
+                        }
+
+                        var module_obj = JSApi.JS_NewObject(ctx);
+
+                        JSApi.JS_SetProperty(ctx, module_obj, context.GetAtom("loaded"), JSApi.JS_NewBool(ctx, true));
+                        JSApi.JS_SetProperty(ctx, module_obj, context.GetAtom("exports"), JSApi.JS_DupValue(ctx, rval));
+                        runtime.AddCommonJSModule(resolved_id, module_obj);
+
+                        return rval;
+                    }
+                }
+                else
+                {
+                    var input_bytes = GetShebangNullTerminatedBytes(source);
+                    var filename_obj = JSApi.JS_NewString(ctx, resolved_id);
+                    var module_obj = JSApi.JS_NewObject(ctx);
+                    var exports_obj = JSApi.JS_NewObject(ctx);
+
+                    JSApi.JS_SetProperty(ctx, module_obj, context.GetAtom("loaded"), JSApi.JS_NewBool(ctx, false));
+                    JSApi.JS_SetProperty(ctx, module_obj, context.GetAtom("exports"), JSApi.JS_DupValue(ctx, exports_obj));
+                    runtime.AddCommonJSModule(resolved_id, JSApi.JS_DupValue(ctx, module_obj));
+                    var require_obj = JSApi.JSB_NewCFunctionMagic(ctx, module_require, context.GetAtom("require"), 1,
+                        JSCFunctionEnum.JS_CFUNC_generic_magic, parent_mod != null ? parent_mod.index : -1);
+                    var require_argv = new JSValue[5]
+                    {
+                        exports_obj, require_obj, module_obj, filename_obj, JSApi.JS_UNDEFINED,
+                    };
+                    fixed (byte* input_ptr = input_bytes)
+                    fixed (byte* resolved_id_ptr = resolved_id_bytes)
+                    {
+                        var input_len = (size_t)(input_bytes.Length - 1);
+                        var func_val = JSApi.JS_Eval(ctx, input_ptr, input_len, resolved_id_ptr,
+                            JSEvalFlags.JS_EVAL_TYPE_GLOBAL | JSEvalFlags.JS_EVAL_FLAG_STRICT);
+                        if (func_val.IsException())
                         {
                             JSApi.JS_FreeValue(ctx, exports_obj);
                             JSApi.JS_FreeValue(ctx, require_obj);
@@ -240,18 +253,31 @@ namespace QuickJS
                             JSApi.JS_FreeValue(ctx, filename_obj);
                             return func_val;
                         }
+
+                        if (JSApi.JS_IsFunction(ctx, func_val) == 1)
+                        {
+                            var rval = JSApi.JS_Call(ctx, func_val, JSApi.JS_UNDEFINED, require_argv.Length, require_argv);
+                            if (rval.IsException())
+                            {
+                                JSApi.JS_FreeValue(ctx, exports_obj);
+                                JSApi.JS_FreeValue(ctx, require_obj);
+                                JSApi.JS_FreeValue(ctx, module_obj);
+                                JSApi.JS_FreeValue(ctx, filename_obj);
+                                return func_val;
+                            }
+                        }
+
+                        JSApi.JS_FreeValue(ctx, func_val);
                     }
 
-                    JSApi.JS_FreeValue(ctx, func_val);
+                    JSApi.JS_SetProperty(ctx, module_obj, context.GetAtom("loaded"), JSApi.JS_NewBool(ctx, true));
+
+                    JSApi.JS_FreeValue(ctx, require_obj);
+                    JSApi.JS_FreeValue(ctx, module_obj);
+                    JSApi.JS_FreeValue(ctx, filename_obj);
+
+                    return exports_obj;
                 }
-
-                JSApi.JS_SetProperty(ctx, module_obj, context.GetAtom("loaded"), JSApi.JS_NewBool(ctx, true));
-
-                JSApi.JS_FreeValue(ctx, require_obj);
-                JSApi.JS_FreeValue(ctx, module_obj);
-                JSApi.JS_FreeValue(ctx, filename_obj);
-
-                return exports_obj;
             }
             catch (Exception exception)
             {
@@ -291,7 +317,7 @@ namespace QuickJS
                 fixed (byte* input_ptr = input_bytes)
                 fixed (byte* fn_ptr = fn_bytes)
                 {
-                    var input_len = (size_t) (input_bytes.Length - 1);
+                    var input_len = (size_t)(input_bytes.Length - 1);
                     var func_val = JSApi.JS_Eval(ctx, input_ptr, input_len, fn_ptr,
                         JSEvalFlags.JS_EVAL_TYPE_MODULE | JSEvalFlags.JS_EVAL_FLAG_COMPILE_ONLY);
                     if (JSApi.JS_IsException(func_val))
