@@ -18,7 +18,7 @@ namespace QuickJS.Binding
         private TypeDB _db;
 
         // 注册过程中产生的 atom, 完成后自动释放 
-        private Dictionary<string, JSAtom> _atoms = new Dictionary<string, JSAtom>();
+        private AtomCache _atoms;
 
         public static implicit operator JSContext(TypeRegister register)
         {
@@ -30,31 +30,21 @@ namespace QuickJS.Binding
             return _context;
         }
 
-        public unsafe JSAtom GetAtom(string name)
+        public IScriptLogger GetLogger()
         {
-            JSAtom atom;
-            if (!_atoms.TryGetValue(name, out atom))
-            {
-                if (char.IsDigit(name[0]))
-                {
-                    throw new InvalidOperationException("invalid atom:" + name);
-                }
-                var bytes = TextUtils.GetNullTerminatedBytes(name);
-                fixed (byte* ptr = bytes)
-                {
-                    atom = JSApi.JS_NewAtomLen(_context, ptr, bytes.Length - 1);
-                }
+            return _context.GetLogger();
+        }
 
-                _atoms[name] = atom;
-            }
-
-            return atom;
+        public JSAtom GetAtom(string name)
+        {
+            return _atoms.GetAtom(name);
         }
 
         public TypeRegister(ScriptRuntime runtime, ScriptContext context)
         {
             _db = new TypeDB(runtime);
             _context = context;
+            _atoms = new AtomCache(_context);
 
             JSApi.JS_NewClass(runtime, JSApi.JSB_GetBridgeClassID(), "CSharpClass", JSApi.class_finalizer);
         }
@@ -123,13 +113,6 @@ namespace QuickJS.Binding
 
         public void Cleanup()
         {
-            JSContext ctx = _context;
-            foreach (var kv in _atoms)
-            {
-                var atom = kv.Value;
-                JSApi.JS_FreeAtom(ctx, atom);
-            }
-
             _atoms.Clear();
         }
 

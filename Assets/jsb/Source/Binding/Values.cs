@@ -45,7 +45,8 @@ namespace QuickJS.Binding
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         protected static bool js_script_error(JSContext ctx)
         {
-            Debug.LogError(ctx.GetExceptionString());
+            var logger = ScriptEngine.GetLogger(ctx);
+            logger.ScriptWrite(LogLevel.Error, ctx.GetExceptionString());
             return false;
         }
     }

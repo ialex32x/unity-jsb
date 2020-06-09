@@ -516,6 +516,9 @@ namespace QuickJS.Native
         public static extern int JS_HasProperty(JSContext ctx, JSValueConst this_obj, JSAtom prop);
 
         [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern JSValueConst JS_GetActiveFunction(JSContext ctx);
+
+        [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern JSValue JS_Call(JSContext ctx, JSValueConst func_obj, JSValueConst this_obj,
             int argc, [MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 3)]
             JSValueConst[] argv);

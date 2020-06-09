@@ -26,7 +26,8 @@ namespace QuickJS.Utils
             }
             catch (Exception exception)
             {
-                Debug.LogError($"{path}: {exception}");
+                var logger = ScriptEngine.GetLogger();
+                logger.Write(LogLevel.Error, "{0}: {1}\n{2}", path, exception.Message, exception.StackTrace);
                 return null;
             }
         }

@@ -24,7 +24,8 @@ namespace QuickJS.Utils
             }
             catch (Exception exception)
             {
-                UnityEngine.Debug.LogError(exception);
+                var logger = ScriptEngine.GetLogger();
+                logger.Error(exception);
             }
         }
 

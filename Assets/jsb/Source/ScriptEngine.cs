@@ -14,6 +14,16 @@ namespace QuickJS
 
         private static ScriptRuntime _runtime;
 
+        public static IScriptLogger GetLogger()
+        {
+            return _runtime.GetLogger();
+        }
+
+        public static IScriptLogger GetLogger(JSContext ctx)
+        {
+            return _runtime.GetLogger();
+        }
+
         public static ScriptRuntime GetRuntime()
         {
             return _runtime;

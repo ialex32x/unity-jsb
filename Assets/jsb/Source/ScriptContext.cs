@@ -15,16 +15,23 @@ namespace QuickJS
 
         private ScriptRuntime _runtime;
         private JSContext _ctx;
+        private AtomCache _atoms;
 
         public ScriptContext(ScriptRuntime runtime)
         {
             _runtime = runtime;
             _ctx = JSApi.JS_NewContext(_runtime);
+            _atoms = new AtomCache(_ctx);
         }
 
         public TimerManager GetTimerManager()
         {
             return _runtime.GetTimerManager();
+        }
+
+        public IScriptLogger GetLogger()
+        {
+            return _runtime.GetLogger();
         }
 
         public ScriptRuntime GetRuntime()
@@ -37,6 +44,11 @@ namespace QuickJS
             return ctx.IsContext(_ctx);
         }
 
+        public JSAtom GetAtom(string name)
+        {
+            return _atoms.GetAtom(name);
+        }
+
         public void Destroy()
         {
             try
@@ -45,8 +57,9 @@ namespace QuickJS
             }
             catch (Exception e)
             {
-                Debug.LogError(e);
+                _runtime.GetLogger().Error(e);
             }
+            _atoms.Clear();
             JSApi.JS_FreeContext(_ctx);
             _ctx = JSContext.Null;
         }
@@ -104,22 +117,8 @@ namespace QuickJS
             }
 
             sb.AppendLine();
-            switch (magic)
-            {
-                case 0:
-                    Debug.Log(sb.ToString());
-                    break;
-                case 1:
-                    Debug.LogWarning(sb.ToString());
-                    break;
-                case 2:
-                    Debug.LogError(sb.ToString());
-                    break;
-                case 3:
-                    Debug.LogError(sb.ToString());
-                    //TODO: assert 
-                    break;
-            }
+            var logger = ScriptEngine.GetLogger(ctx);
+            logger.ScriptWrite((LogLevel)magic, sb.ToString());
             return JSApi.JS_UNDEFINED;
         }
 
@@ -130,6 +129,9 @@ namespace QuickJS
             var ctx = (JSContext)this;
             var global_object = JSApi.JS_GetGlobalObject(ctx);
             {
+                var require_func_obj = JSApi.JS_NewCFunction(ctx, ScriptRuntime.module_require, "require", 1);
+                JSApi.JS_SetPropertyStr(ctx, global_object, "require", require_func_obj);
+
                 JSApi.JS_SetPropertyStr(ctx, global_object, "print", JSApi.JS_NewCFunctionMagic(ctx, _print, "print", 1, JSCFunctionEnum.JS_CFUNC_generic_magic, 0));
                 var console = JSApi.JS_NewObject(ctx);
                 {

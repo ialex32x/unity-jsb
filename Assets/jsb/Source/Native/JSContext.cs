@@ -32,7 +32,8 @@ namespace QuickJS.Native
             var message = this.GetString(err_message);
             var stack = this.GetString(err_stack);
 
-            Debug.LogErrorFormat("[JS] {0}:{1} {2}\n{3}", fileName, lineNumber, message, stack);
+            var logger = ScriptEngine.GetLogger(this);
+            logger.ScriptWrite(LogLevel.Error, "{0}:{1} {2}\n{3}", fileName, lineNumber, message, stack);
 
             JSApi.JS_FreeValue(this, err_fileName);
             JSApi.JS_FreeValue(this, err_lineNumber);

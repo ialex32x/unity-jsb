@@ -10,8 +10,6 @@ namespace QuickJS.Binding
 
     public partial class Values
     {
-        protected static readonly JSValue JS_UNDEFINED = JSApi.JS_UNDEFINED;
-        
         // protected static void duk_begin_object(JSContext ctx, string objectname, Type type)
         // {
         //     DuktapeDLL.duk_push_object(ctx);

@@ -80,7 +80,9 @@ namespace QuickJS.Binding
                 flags);
             if (rs != 1)
             {
-                UnityEngine.Debug.LogErrorFormat("define property failed: {0}", ctx.GetExceptionString());
+                var logger = _register.GetLogger();
+                
+                logger.Write(LogLevel.Error, "define property failed: {0}", ctx.GetExceptionString());
             }
             JSApi.JS_FreeValue(ctx, getterVal);
             JSApi.JS_FreeValue(ctx, setterVal);

@@ -19,6 +19,7 @@ namespace QuickJS
         public event Action<ScriptRuntime> OnDestroy;
 
         private JSRuntime _rt;
+        private IScriptLogger _logger;
         private List<ScriptContext> _contexts = new List<ScriptContext>();
         private ScriptContext _mainContext;
         private Queue<JSAction> _pendingGC = new Queue<JSAction>();
@@ -43,10 +44,24 @@ namespace QuickJS
         }
 
         public void Initialize(IFileResolver fileResolver, IScriptRuntimeListener runner,
+            IScriptLogger logger,
             IO.ByteBufferAllocator byteBufferAllocator = null, int step = 30)
         {
+            if (logger == null)
+            {
+                throw new NullReferenceException(nameof(logger));
+            }
+            if (runner == null)
+            {
+                throw new NullReferenceException(nameof(runner));
+            }
+            if (fileResolver == null)
+            {
+                throw new NullReferenceException(nameof(fileResolver));
+            }
             _byteBufferAllocator = byteBufferAllocator;
             _fileResolver = fileResolver;
+            _logger = logger;
             var e = _InitializeStep(_mainContext, runner, step);
             while (e.MoveNext()) ;
         }
@@ -86,7 +101,7 @@ namespace QuickJS
                             }
                             catch (Exception exception)
                             {
-                                Debug.LogWarning($"JSAutoRun failed: {exception}");
+                                _logger.Error(exception);
                             }
 
                             continue;
@@ -105,7 +120,7 @@ namespace QuickJS
                 }
                 catch (Exception e)
                 {
-                    Debug.LogErrorFormat("assembly: {0}, {1}", assembly, e);
+                   _logger.Write(LogLevel.Error, "assembly: {0}, {1}", assembly, e);
                 }
             }
 
@@ -139,6 +154,11 @@ namespace QuickJS
         public TimerManager GetTimerManager()
         {
             return _timerManager;
+        }
+
+        public IScriptLogger GetLogger()
+        {
+            return _logger;
         }
 
         public TypeDB GetTypeDB()
@@ -362,7 +382,7 @@ namespace QuickJS
             }
             catch (Exception e)
             {
-                Debug.LogError(e);
+                _logger.Error(e);
             }
         }
 
