@@ -8,18 +8,21 @@ namespace QuickJS.Utils
     public interface IFileResolver
     {
         void AddSearchPath(string path);
+        bool ResolvePath(IFileSystem fileSystem, string fileName, out string resolvedPath);
+    }
 
-        byte[] ReadAllBytes(string filename);
+    [Serializable]
+    public class PackageConfig
+    {
+        public string main;
     }
 
     public class FileResolver : IFileResolver
     {
         private List<string> _searchPaths = new List<string>();
-        private IFileSystem _fileSystem;
 
-        public FileResolver(IFileSystem fileSystem)
+        public FileResolver()
         {
-            _fileSystem = fileSystem;
         }
 
         public void AddSearchPath(string path)
@@ -30,22 +33,84 @@ namespace QuickJS.Utils
             }
         }
 
-        public byte[] ReadAllBytes(string filename)
+        public bool ResolvePath(IFileSystem fileSystem, string fileName, out string resolvedPath)
         {
-            if (_fileSystem.Exists(filename))
+            string searchPath;
+            if (_ResolvePath(fileSystem, fileName, out searchPath, out resolvedPath))
             {
-                return _fileSystem.ReadAllBytes(filename);
+                return true;
             }
-            for (int i = 0, count = _searchPaths.Count; i < count; i++)
+
+            var extIndex = fileName.LastIndexOf('.');
+            var slashIndex = fileName.LastIndexOf('/');
+            
+            if (extIndex < 0 || slashIndex > extIndex)
             {
-                var path = _searchPaths[i];
-                var vpath = PathUtils.Combine(path, filename);
-                if (_fileSystem.Exists(vpath))
+                if (_ResolvePath(fileSystem, fileName + ".js", out searchPath, out resolvedPath))
                 {
-                    return _fileSystem.ReadAllBytes(vpath);
+                    return true;
+                }
+                
+                if (_ResolvePath(fileSystem, PathUtils.Combine(fileName, "index.js"), out searchPath, out resolvedPath))
+                {
+                    return true;
+                }
+            
+                if (_ResolvePath(fileSystem, PathUtils.Combine(fileName, "package.json"), out searchPath, out resolvedPath))
+                {
+                    var packageData = fileSystem.ReadAllText(resolvedPath);
+                    if (packageData != null)
+                    {
+                        var packageConfig = JsonUtility.FromJson<PackageConfig>(packageData);
+                        if (packageConfig != null)
+                        {
+                            var main = PathUtils.Combine(searchPath, fileName, packageConfig.main);
+                            if (!main.EndsWith(".js"))
+                            {
+                                main += ".js";
+                            }
+                            main = PathUtils.ExtractPath(main, '/');
+                            if (fileSystem.Exists(main))
+                            {
+                                resolvedPath = main;
+                                return true;
+                            }
+                        }
+                    }
                 }
             }
-            return null;
+
+            resolvedPath = null;
+            return false;
+        }
+        
+        private bool _ResolvePath(IFileSystem fileSystem, string fileName, out string searchPath, out string resolvedPath)
+        {
+            if (fileSystem.Exists(fileName))
+            {
+                resolvedPath = fileName;
+                searchPath = "";
+                return true;
+            }
+
+            if (!fileName.StartsWith("/"))
+            {
+                for (int i = 0, count = _searchPaths.Count; i < count; i++)
+                {
+                    var path = _searchPaths[i];
+                    var vpath = PathUtils.Combine(path, fileName);
+                    if (fileSystem.Exists(vpath))
+                    {
+                        searchPath = path;
+                        resolvedPath = vpath;
+                        return true;
+                    }
+                }
+            }
+
+            searchPath = null;
+            resolvedPath = null;
+            return false;
         }
     }
 }

@@ -89,3 +89,6 @@ print("require 3:", require("./req_test1").test);
 
 // 通过 require 直接读 json
 print("json:", require("./data.json").name);
+
+// print("require (node_modules): ", require("blink1").test);
+// print("require (node_modules): ", require("blink3").test);
