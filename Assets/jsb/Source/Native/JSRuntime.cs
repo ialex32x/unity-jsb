@@ -25,5 +25,20 @@ namespace QuickJS.Native
 
             return false;
         }
+
+        public override unsafe string ToString()
+        {
+            return string.Format("JSRuntime:{0}", (IntPtr)_ptr);
+        }
+
+        public static unsafe bool operator ==(JSRuntime a, JSRuntime b)
+        {
+            return a._ptr == b._ptr;
+        }
+
+        public static unsafe bool operator !=(JSRuntime a, JSRuntime b)
+        {
+            return a._ptr != b._ptr;
+        }
     }
 }

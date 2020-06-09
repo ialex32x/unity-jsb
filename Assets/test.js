@@ -1,5 +1,5 @@
 ﻿// import { fib } from "./fib_module.js";
-import {fib} from "Assets/fib.js";
+import { fib } from "Assets/fib.js";
 
 print(jsb);
 print(jsb.Foo);
@@ -73,5 +73,17 @@ actions.onFunc = v => v * 2;
 console.log(actions.CallFunc(111));
 actions.onFunc = undefined;
 
+let v1 = new UnityEngine.Vector3(0, 0, 0)
+let start = Date.now();
+for (let i = 1; i < 200000; i++) {
+    v1.Set(i, i, i)
+    v1.Normalize()
+}
+console.log("js/vector3/normailize", (Date.now() - start) / 1000);
+
 print("end of script");
+
+print("require 1:", require("./req_test1").test);
+print("require 2:", require("./req_test1").test);
+print("require 3:", require("./req_test1").test);
 

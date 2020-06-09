@@ -7,7 +7,7 @@ namespace QuickJS
     {
         private JSValue _thisValue;
         private JSValue[] _args;
-        
+
         public ScriptFunction(ScriptContext context, JSValue fnValue)
             : base(context, fnValue)
         {
@@ -43,33 +43,39 @@ namespace QuickJS
                 _context = null;
                 context.FreeValue(_jsValue);
                 context.FreeValue(_thisValue);
-                context.FreeValues(_args);
+                if (_args != null)
+                {
+                    context.FreeValues(_args);
+                }
             }
         }
 
-        public void Invoke()
+        public unsafe void Invoke()
         {
             JSContext ctx = _context;
-            if (_args == null)
+            var argc = _args == null ? 0 : _args.Length;
+            fixed (JSValue* ptr = _args)
             {
-                var rVal = JSApi.JS_Call(ctx, _jsValue, _thisValue, 0, JSApi.EmptyValues);
+                var rVal = JSApi.JS_Call(ctx, _jsValue, _thisValue, argc, ptr);
                 if (JSApi.JS_IsException(rVal))
                 {
                     ctx.print_exception();
                 }
-            
+
                 JSApi.JS_FreeValue(ctx, rVal);
             }
-            else
+        }
+
+        public void Invoke(JSValue[] argv)
+        {
+            JSContext ctx = _context;
+            var rVal = JSApi.JS_Call(ctx, _jsValue, _thisValue, argv.Length, argv);
+            if (JSApi.JS_IsException(rVal))
             {
-                var rVal = JSApi.JS_Call(ctx, _jsValue, _thisValue, _args.Length, _args);
-                if (JSApi.JS_IsException(rVal))
-                {
-                    ctx.print_exception();
-                }
-            
-                JSApi.JS_FreeValue(ctx, rVal);
+                ctx.print_exception();
             }
+
+            JSApi.JS_FreeValue(ctx, rVal);
         }
     }
 }

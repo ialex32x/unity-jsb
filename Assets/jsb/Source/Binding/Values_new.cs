@@ -179,7 +179,7 @@ namespace QuickJS.Binding
         {
             if (o == null)
             {
-                return JS_UNDEFINED;
+                return JSApi.JS_UNDEFINED;
             }
             int type_id;
             var type = o.GetType();

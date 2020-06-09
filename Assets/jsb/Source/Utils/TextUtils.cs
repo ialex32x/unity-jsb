@@ -60,7 +60,7 @@ namespace QuickJS.Utils
         public static byte[] GetNullTerminatedBytes(byte[] str)
         {
             var count = str.Length;
-            if (str[count-1] == 0)
+            if (str[count - 1] == 0)
             {
                 return str;
             }

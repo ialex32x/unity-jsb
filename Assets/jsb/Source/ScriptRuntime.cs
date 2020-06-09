@@ -19,6 +19,7 @@ namespace QuickJS
         public event Action<ScriptRuntime> OnDestroy;
 
         private JSRuntime _rt;
+        private IScriptLogger _logger;
         private List<ScriptContext> _contexts = new List<ScriptContext>();
         private ScriptContext _mainContext;
         private Queue<JSAction> _pendingGC = new Queue<JSAction>();
@@ -42,11 +43,30 @@ namespace QuickJS
             _mainContext = CreateContext();
         }
 
+        public void AddSearchPath(string path)
+        {
+            _fileResolver.AddSearchPath(path);
+        }
+
         public void Initialize(IFileResolver fileResolver, IScriptRuntimeListener runner,
+            IScriptLogger logger,
             IO.ByteBufferAllocator byteBufferAllocator = null, int step = 30)
         {
+            if (logger == null)
+            {
+                throw new NullReferenceException(nameof(logger));
+            }
+            if (runner == null)
+            {
+                throw new NullReferenceException(nameof(runner));
+            }
+            if (fileResolver == null)
+            {
+                throw new NullReferenceException(nameof(fileResolver));
+            }
             _byteBufferAllocator = byteBufferAllocator;
             _fileResolver = fileResolver;
+            _logger = logger;
             var e = _InitializeStep(_mainContext, runner, step);
             while (e.MoveNext()) ;
         }
@@ -54,7 +74,7 @@ namespace QuickJS
         private IEnumerator _InitializeStep(ScriptContext context, IScriptRuntimeListener runner, int step)
         {
             var register = new TypeRegister(this, context);
-            var regArgs = new object[] {register};
+            var regArgs = new object[] { register };
             var bindingTypes = new List<Type>();
             var assemblies = AppDomain.CurrentDomain.GetAssemblies();
             for (int assemblyIndex = 0, assemblyCount = assemblies.Length;
@@ -86,7 +106,7 @@ namespace QuickJS
                             }
                             catch (Exception exception)
                             {
-                                Debug.LogWarning($"JSAutoRun failed: {exception}");
+                                _logger.Error(exception);
                             }
 
                             continue;
@@ -105,7 +125,7 @@ namespace QuickJS
                 }
                 catch (Exception e)
                 {
-                    Debug.LogErrorFormat("assembly: {0}, {1}", assembly, e);
+                    _logger.Write(LogLevel.Error, "assembly: {0}, {1}", assembly, e);
                 }
             }
 
@@ -139,6 +159,11 @@ namespace QuickJS
         public TimerManager GetTimerManager()
         {
             return _timerManager;
+        }
+
+        public IScriptLogger GetLogger()
+        {
+            return _logger;
         }
 
         public TypeDB GetTypeDB()
@@ -206,7 +231,10 @@ namespace QuickJS
             if (_mainThreadId == Thread.CurrentThread.ManagedThreadId)
             {
                 _objectCache.RemoveDelegate(value);
-                JSApi.JS_FreeValueRT(_rt, value);
+                if (_rt != JSRuntime.Null)
+                {
+                    JSApi.JS_FreeValueRT(_rt, value);
+                }
             }
             else
             {
@@ -226,7 +254,10 @@ namespace QuickJS
         {
             if (_mainThreadId == Thread.CurrentThread.ManagedThreadId)
             {
-                JSApi.JS_FreeValueRT(_rt, value);
+                if (_rt != JSRuntime.Null)
+                {
+                    JSApi.JS_FreeValueRT(_rt, value);
+                }
             }
             else
             {
@@ -244,6 +275,10 @@ namespace QuickJS
 
         public void FreeValues(JSValue[] values)
         {
+            if (values == null)
+            {
+                return;
+            }
             if (_mainThreadId == Thread.CurrentThread.ManagedThreadId)
             {
                 for (int i = 0, len = values.Length; i < len; i++)
@@ -274,7 +309,7 @@ namespace QuickJS
             var jsValue = JSApi.JS_Eval(_mainContext, source, fileName);
             if (JSApi.JS_IsException(jsValue))
             {
-                ((JSContext) _mainContext).print_exception();
+                ((JSContext)_mainContext).print_exception();
             }
 
             FreeValue(jsValue);
@@ -304,7 +339,7 @@ namespace QuickJS
             }
 
             // poll here;
-            var ms = (int) (deltaTime * 1000f);
+            var ms = (int)(deltaTime * 1000f);
             _timerManager.Update(ms);
 
             if (_byteBufferAllocator != null)
@@ -335,6 +370,13 @@ namespace QuickJS
             _timerManager.Destroy();
             _objectCache.Clear();
             _typeDB.Destroy();
+            foreach (var kv in _modules)
+            {
+                var mod = kv.Value;
+                JSApi.JS_FreeValueRT(_rt, mod.module);
+                mod.module = JSApi.JS_UNDEFINED;
+            }
+            _modules.Clear();
             GC.Collect();
             CollectPendingGarbage();
             for (int i = 0, count = _contexts.Count; i < count; i++)
@@ -352,7 +394,7 @@ namespace QuickJS
             }
             catch (Exception e)
             {
-                Debug.LogError(e);
+                _logger.Error(e);
             }
         }
 
