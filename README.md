@@ -42,6 +42,8 @@ Object.keys(require.cache).forEach(key => console.log(key));
 * [X] commonjs module 
 * [X] timer
 * [X] unity YieldInstruction => promise
+* [X] JSMemoryUsage window
+* [ ] compile into bytecode
 * [ ] websocket
 * [ ] sourcemap helper
 * [ ] event dispatcher

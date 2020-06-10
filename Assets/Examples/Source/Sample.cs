@@ -37,13 +37,11 @@ namespace jsb
 
         public void OnBind(ScriptRuntime runtime, TypeRegister register)
         {
-            FooBinding.Bind(register);
-            SValueBinding.Bind(register);
         }
 
         public void OnComplete(ScriptRuntime runtime)
         {
-            _rt.EvalMain("Assets/Examples/test.js");
+            _rt.EvalMain("Assets/Examples/Scripts/out/main.js");
         }
     }
 }

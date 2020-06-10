@@ -88,7 +88,7 @@ namespace QuickJS
         public void Destroy()
         {
             _isValid = false;
-            
+
             try
             {
                 OnDestroy?.Invoke(this);
@@ -101,13 +101,13 @@ namespace QuickJS
             JSApi.JS_FreeValue(_ctx, _moduleCache);
             JSApi.JS_FreeValue(_ctx, _require);
             JSApi.JS_FreeContext(_ctx);
-            
+
             if (_coroutines != null)
             {
                 Object.DestroyImmediate(_coroutines);
                 _coroutines = null;
             }
-            
+
             _ctx = JSContext.Null;
         }
 
@@ -141,11 +141,18 @@ namespace QuickJS
             return JSApi.JS_GetProperty(_ctx, _moduleCache, prop);
         }
 
-        public void _new_commonjs_module(string module_id, JSValue module_obj)
+        //NOTE: 返回值需要调用者 free
+        public JSValue _new_commonjs_module(string module_id, JSValue exports_obj, bool loaded)
         {
+            var module_obj = JSApi.JS_NewObject(_ctx);
             var prop = GetAtom(module_id);
-            JSApi.JS_SetProperty(_ctx, _moduleCache, prop, module_obj);
+
+            JSApi.JS_SetProperty(_ctx, _moduleCache, prop, JSApi.JS_DupValue(_ctx, module_obj));
             JSApi.JS_SetProperty(_ctx, module_obj, GetAtom("cache"), JSApi.JS_DupValue(_ctx, _moduleCache));
+            JSApi.JS_SetProperty(_ctx, module_obj, GetAtom("loaded"), JSApi.JS_NewBool(_ctx, loaded));
+            JSApi.JS_SetProperty(_ctx, module_obj, GetAtom("exports"), JSApi.JS_DupValue(_ctx, exports_obj));
+
+            return module_obj;
         }
 
         [MonoPInvokeCallback(typeof(JSCFunctionMagic))]
@@ -209,16 +216,48 @@ namespace QuickJS
             ns.Close();
         }
 
-        public void EvalMain(string source, string fileName)
+        public unsafe void EvalMain(byte[] input_bytes, string fileName)
         {
-            JSApi.JS_SetProperty(_ctx, _require, GetAtom("moduleId"), JSApi.JS_NewString(_ctx, fileName));
-            var jsValue = JSApi.JS_Eval(_ctx, source, fileName);
-            if (JSApi.JS_IsException(jsValue))
-            {
-                _ctx.print_exception();
-            }
+            var dirname = PathUtils.GetDirectoryName(fileName);
+            var filename_bytes = TextUtils.GetNullTerminatedBytes(fileName);
+            var filename_atom = GetAtom(fileName);
+            var dirname_atom = GetAtom(dirname);
 
-            JSApi.JS_FreeValue(_ctx, jsValue);
+            var exports_obj = JSApi.JS_NewObject(_ctx);
+            var require_obj = JSApi.JS_DupValue(_ctx, _require);
+            var module_obj = _new_commonjs_module("", exports_obj, true);
+            var filename_obj = JSApi.JS_AtomToString(_ctx, filename_atom);
+            var dirname_obj = JSApi.JS_AtomToString(_ctx, dirname_atom);
+            var require_argv = new JSValue[5] { exports_obj, require_obj, module_obj, filename_obj, dirname_obj };
+            JSApi.JS_SetProperty(_ctx, require_obj, GetAtom("moduleId"), JSApi.JS_DupValue(_ctx, filename_obj));
+
+            fixed (byte* input_ptr = input_bytes)
+            fixed (byte* resolved_id_ptr = filename_bytes)
+            {
+                var input_len = (size_t)(input_bytes.Length - 1);
+                var func_val = JSApi.JS_Eval(_ctx, input_ptr, input_len, resolved_id_ptr, JSEvalFlags.JS_EVAL_TYPE_GLOBAL | JSEvalFlags.JS_EVAL_FLAG_STRICT);
+                if (func_val.IsException())
+                {
+                    FreeValues(require_argv);
+                    _ctx.print_exception();
+                    return;
+                }
+
+                if (JSApi.JS_IsFunction(_ctx, func_val) == 1)
+                {
+                    var rval = JSApi.JS_Call(_ctx, func_val, JSApi.JS_UNDEFINED, require_argv.Length, require_argv);
+                    if (rval.IsException())
+                    {
+                        JSApi.JS_FreeValue(_ctx, func_val);
+                        FreeValues(require_argv);
+                        _ctx.print_exception();
+                        return;
+                    }
+                }
+
+                JSApi.JS_FreeValue(_ctx, func_val);
+                FreeValues(require_argv);
+            }
         }
 
         public void EvalSource(string source, string fileName)

@@ -829,6 +829,14 @@ namespace QuickJS.Native
 
         [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern unsafe JSValue JS_NewArrayBufferCopy(JSContext ctx, byte* buf, size_t len);
+
         #endregion
+
+        #region diagnostics
+
+        [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern unsafe void JS_ComputeMemoryUsage(JSRuntime rt, JSMemoryUsage* s);
+
+        #endregion 
     }
 }

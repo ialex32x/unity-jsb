@@ -94,7 +94,7 @@ namespace QuickJS.Editor
             AssetDatabase.Refresh();
         }
 
-        [MenuItem("JS Bridge/Prefs ...")]
+        [MenuItem("JS Bridge/Prefs ...", false, 5001)]
         public static void OpenPrefsEditor()
         {
             EditorWindow.GetWindow<PrefsEditor>().Show();
