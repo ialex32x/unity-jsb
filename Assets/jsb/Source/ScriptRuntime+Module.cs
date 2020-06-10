@@ -156,6 +156,7 @@ namespace QuickJS
                 }
 
                 var resolved_id_bytes = Utils.TextUtils.GetNullTerminatedBytes(resolved_id);
+                var dirname = PathUtils.GetDirectoryName(resolved_id);
                 var source = fileSystem.ReadAllBytes(resolved_id);
                 if (source == null)
                 {
@@ -189,7 +190,9 @@ namespace QuickJS
                 {
                     var input_bytes = GetShebangNullTerminatedBytes(source);
                     var module_id_atom = context.GetAtom(resolved_id);
+                    var dirname_atom = context.GetAtom(dirname);
                     var filename_obj = JSApi.JS_AtomToString(ctx, module_id_atom);
+                    var dirname_obj = JSApi.JS_AtomToString(ctx, dirname_atom);
                     var module_obj = JSApi.JS_NewObject(ctx);
                     var exports_obj = JSApi.JS_NewObject(ctx);
 
@@ -201,7 +204,7 @@ namespace QuickJS
                     JSApi.JS_SetProperty(ctx, require_obj, context.GetAtom("moduleId"), JSApi.JS_DupValue(ctx, filename_obj));
                     var require_argv = new JSValue[5]
                     {
-                        exports_obj, require_obj, module_obj, filename_obj, JSApi.JS_UNDEFINED,
+                        exports_obj, require_obj, module_obj, filename_obj, dirname_obj,
                     };
                     fixed (byte* input_ptr = input_bytes)
                     fixed (byte* resolved_id_ptr = resolved_id_bytes)
@@ -215,6 +218,7 @@ namespace QuickJS
                             JSApi.JS_FreeValue(ctx, require_obj);
                             JSApi.JS_FreeValue(ctx, module_obj);
                             JSApi.JS_FreeValue(ctx, filename_obj);
+                            JSApi.JS_FreeValue(ctx, dirname_obj);
                             return func_val;
                         }
 
@@ -227,6 +231,7 @@ namespace QuickJS
                                 JSApi.JS_FreeValue(ctx, require_obj);
                                 JSApi.JS_FreeValue(ctx, module_obj);
                                 JSApi.JS_FreeValue(ctx, filename_obj);
+                                JSApi.JS_FreeValue(ctx, dirname_obj);
                                 return func_val;
                             }
                         }
@@ -238,6 +243,7 @@ namespace QuickJS
                     JSApi.JS_FreeValue(ctx, require_obj);
                     JSApi.JS_FreeValue(ctx, module_obj);
                     JSApi.JS_FreeValue(ctx, filename_obj);
+                    JSApi.JS_FreeValue(ctx, dirname_obj);
 
                     return exports_obj;
                 }
