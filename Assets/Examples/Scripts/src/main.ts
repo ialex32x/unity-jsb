@@ -76,8 +76,6 @@ for (let i = 1; i < 200000; i++) {
 }
 console.log("js/vector3/normailize", (Date.now() - start) / 1000);
 
-print("end of script");
-
 print("require.require:");
 print("require 1:", require("./req_test1").test);
 print("require 2:", require("./req_test1").test);
@@ -90,3 +88,9 @@ Object.keys(require.cache).forEach(key => console.log("module loaded:", key));
 
 // print("require (node_modules): ", require("blink1").test);
 // print("require (node_modules): ", require("blink3").test);
+
+setInterval(() => {
+    console.log("interval tick");
+}, 1000 * 10);
+
+print("end of script");
