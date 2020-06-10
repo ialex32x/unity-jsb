@@ -8,7 +8,7 @@ namespace QuickJS.Utils
 {
     using UnityEngine;
 
-    public class TimerManager : Scheduler, IBinding
+    public class TimerManager : Scheduler
     {
         private uint _idgen;
         private Dictionary<uint, ulong> _timers = new Dictionary<uint, ulong>();
@@ -152,7 +152,7 @@ namespace QuickJS.Utils
             return JSApi.JS_UNDEFINED;
         }
 
-        public void Bind(TypeRegister register)
+        public static void Bind(TypeRegister register)
         {
             var ns = register.CreateNamespace();
             

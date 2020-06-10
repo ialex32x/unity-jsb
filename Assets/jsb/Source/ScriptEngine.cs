@@ -62,7 +62,7 @@ namespace QuickJS
         public static ScriptRuntime CreateRuntime()
         {
             _runtime = new ScriptRuntime();
-            _runtime.OnDestroy += OnRuntimeDestroy;
+            _runtime.OnAfterDestroy += OnRuntimeAfterDestroy;
             return _runtime;
         }
 
@@ -74,7 +74,7 @@ namespace QuickJS
             }
         }
 
-        private static void OnRuntimeDestroy(ScriptRuntime runtime)
+        private static void OnRuntimeAfterDestroy(ScriptRuntime runtime)
         {
             _runtime = null;
         }

@@ -29,5 +29,15 @@ namespace QuickJS.Native
 
             return false;
         }
+
+        public static bool operator ==(JSAtom a, JSAtom b)
+        {
+            return a._value == b._value;
+        }
+
+        public static bool operator !=(JSAtom a, JSAtom b)
+        {
+            return !(a == b);
+        }
     }
 }

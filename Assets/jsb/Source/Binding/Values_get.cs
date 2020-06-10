@@ -1035,6 +1035,11 @@ namespace QuickJS.Binding
 
         public static bool js_get_cached_object(JSContext ctx, JSValue val, out object o)
         {
+            if (val.IsNullish())
+            {
+                o = null;
+                return true;
+            }
             var header = JSApi.jsb_get_payload_header(val);
             switch (header.type_id)
             {

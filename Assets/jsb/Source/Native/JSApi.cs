@@ -144,6 +144,18 @@ namespace QuickJS.Native
         [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern int JS_IsInstanceOf(JSContext ctx, JSValueConst val, JSValueConst obj);
 
+        [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern unsafe JSValue JS_NewPromiseCapability(JSContext ctx, JSValue *resolving_funcs);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static unsafe JSValue JS_NewPromiseCapability(JSContext ctx, JSValue[] resolving_funcs)
+        {
+            fixed (JSValue* ptr = resolving_funcs)
+            {
+                return JS_NewPromiseCapability(ctx, ptr);
+            }
+        }
+
         #region property
         [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern JSValue JS_GetPropertyUint32(JSContext ctx, JSValueConst this_obj, uint32_t idx);
@@ -275,6 +287,9 @@ namespace QuickJS.Native
         #endregion
 
         #region new values
+
+        [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern JSValue JSB_NewEmptyString(JSContext ctx);
 
         [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern unsafe JSValue JS_NewString(JSContext ctx, byte* str);
@@ -515,9 +530,9 @@ namespace QuickJS.Native
         [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern int JS_HasProperty(JSContext ctx, JSValueConst this_obj, JSAtom prop);
 
-        // private 
-        // [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
-        // public static extern JSValueConst JS_GetActiveFunction(JSContext ctx);
+        // 不修改计数
+        [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
+        /* private */ public static extern JSValueConst JS_GetActiveFunction(JSContext ctx);
 
          [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern unsafe JSValue JS_ParseJSON(JSContext ctx, byte* buf, size_t buf_len, byte* filename);

@@ -15259,7 +15259,7 @@ static __exception int JS_CopyDataProperties(JSContext *ctx,
 }
 
 /* only valid inside C functions */
-static JSValueConst JS_GetActiveFunction(JSContext *ctx)
+JSValueConst JS_GetActiveFunction(JSContext *ctx)
 {
     return ctx->rt->current_stack_frame->cur_func;
 }
