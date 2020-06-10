@@ -14,6 +14,11 @@ namespace QuickJS.Native
 
         private unsafe void* _ptr;
 
+        public unsafe bool IsValid()
+        {
+            return _ptr != (void*) 0;
+        }
+
         public unsafe bool IsContext(JSContext c)
         {
             return _ptr == c._ptr;

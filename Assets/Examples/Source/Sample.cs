@@ -43,7 +43,7 @@ namespace jsb
 
         public void OnComplete(ScriptRuntime runtime)
         {
-            _rt.EvalSource("Assets/test.js");
+            _rt.EvalMain("Assets/Examples/test.js");
         }
     }
 }

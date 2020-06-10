@@ -52,6 +52,10 @@ namespace QuickJS
 
         public unsafe void Invoke()
         {
+            if (_context == null)
+            {
+                return;
+            }
             JSContext ctx = _context;
             var argc = _args == null ? 0 : _args.Length;
             fixed (JSValue* ptr = _args)
@@ -66,8 +70,23 @@ namespace QuickJS
             }
         }
 
+        public void Invoke(object arg1)
+        {
+            if (_context == null)
+            {
+                return;
+            }
+            var ctx = (JSContext) _context;
+            var val = Binding.Values.js_push_classvalue(ctx, arg1);
+            Invoke(new[] {val});
+        }
+
         public void Invoke(JSValue[] argv)
         {
+            if (_context == null)
+            {
+                return;
+            }
             JSContext ctx = _context;
             var rVal = JSApi.JS_Call(ctx, _jsValue, _thisValue, argv.Length, argv);
             if (JSApi.JS_IsException(rVal))

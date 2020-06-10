@@ -17,6 +17,7 @@ namespace QuickJS
     public partial class ScriptRuntime
     {
         public event Action<ScriptRuntime> OnDestroy;
+        public event Action<ScriptRuntime> OnAfterDestroy;
 
         private JSRuntime _rt;
         private IScriptLogger _logger;
@@ -27,22 +28,35 @@ namespace QuickJS
         private int _mainThreadId;
         private uint _class_id_alloc = JSApi.__JSB_GetClassID();
 
-
         private IFileResolver _fileResolver;
         private IFileSystem _fileSystem;
         private ObjectCache _objectCache = new ObjectCache();
         private TypeDB _typeDB;
         private TimerManager _timerManager;
         private IO.ByteBufferAllocator _byteBufferAllocator;
+        private GameObject _container;
+        private bool _isValid; // destroy 调用后立即 = false
 
         public ScriptRuntime()
         {
+            _isValid = true;
             _fileResolver = new FileResolver();
             _mainThreadId = Thread.CurrentThread.ManagedThreadId;
             _timerManager = new TimerManager();
             _rt = JSApi.JS_NewRuntime();
             JSApi.JS_SetModuleLoaderFunc(_rt, module_normalize, module_loader, IntPtr.Zero);
             _mainContext = CreateContext();
+        }
+
+        public GameObject GetContainer()
+        {
+            if (_container == null && _isValid)
+            {
+                _container = new GameObject("JSRuntimeContainer");
+                _container.hideFlags = HideFlags.HideInHierarchy;
+                Object.DontDestroyOnLoad(_container);
+            }
+            return _container;
         }
 
         public void AddSearchPath(string path)
@@ -148,7 +162,8 @@ namespace QuickJS
             }
 
             runner.OnBind(this, register);
-            _timerManager.Bind(register);
+            TimerManager.Bind(register);
+            ScriptContext.Bind(register);
             _typeDB = register.Finish();
             runner.OnComplete(this);
         }
@@ -305,16 +320,16 @@ namespace QuickJS
             }
         }
 
+        public void EvalMain(string fileName)
+        {
+            var source = File.ReadAllText(fileName);
+            _mainContext.EvalMain(source, fileName);
+        }
+
         public void EvalSource(string fileName)
         {
             var source = File.ReadAllText(fileName);
-            var jsValue = JSApi.JS_Eval(_mainContext, source, fileName);
-            if (JSApi.JS_IsException(jsValue))
-            {
-                ((JSContext)_mainContext).print_exception();
-            }
-
-            FreeValue(jsValue);
+            _mainContext.EvalSource(source, fileName);
         }
 
         // main loop
@@ -325,6 +340,20 @@ namespace QuickJS
                 CollectPendingGarbage();
             }
 
+            ExecutePendingJob();
+
+            // poll here;
+            var ms = (int)(deltaTime * 1000f);
+            _timerManager.Update(ms);
+
+            if (_byteBufferAllocator != null)
+            {
+                _byteBufferAllocator.Drain();
+            }
+        }
+
+        public void ExecutePendingJob()
+        {
             JSContext ctx;
             while (true)
             {
@@ -338,15 +367,6 @@ namespace QuickJS
                 {
                     ctx.print_exception();
                 }
-            }
-
-            // poll here;
-            var ms = (int)(deltaTime * 1000f);
-            _timerManager.Update(ms);
-
-            if (_byteBufferAllocator != null)
-            {
-                _byteBufferAllocator.Drain();
             }
         }
 
@@ -369,20 +389,7 @@ namespace QuickJS
 
         public void Destroy()
         {
-            _timerManager.Destroy();
-            _objectCache.Clear();
-            _typeDB.Destroy();
-            GC.Collect();
-            CollectPendingGarbage();
-            for (int i = 0, count = _contexts.Count; i < count; i++)
-            {
-                var context = _contexts[i];
-                context.Destroy();
-            }
-
-            _contexts.Clear();
-            JSApi.JS_FreeRuntime(_rt);
-            _rt = JSRuntime.Null;
+            _isValid = false;
             try
             {
                 OnDestroy?.Invoke(this);
@@ -391,6 +398,39 @@ namespace QuickJS
             {
                 _logger.Error(e);
             }
+
+            _timerManager.Destroy();
+            _objectCache.Clear();
+            _typeDB.Destroy();
+            GC.Collect();
+            CollectPendingGarbage();
+            
+            for (int i = 0, count = _contexts.Count; i < count; i++)
+            {
+                var context = _contexts[i];
+                context.Destroy();
+            }
+
+            _contexts.Clear();
+            
+            if (_container != null)
+            {
+                Object.DestroyImmediate(_container);
+                _container = null;
+            }
+            
+            JSApi.JS_FreeRuntime(_rt);
+            _rt = JSRuntime.Null;
+            
+            try
+            {
+                OnAfterDestroy?.Invoke(this);
+            }
+            catch (Exception e)
+            {
+                _logger.Error(e);
+            }
+
         }
 
         public static implicit operator JSRuntime(ScriptRuntime se)

@@ -1,5 +1,5 @@
 ﻿// import { fib } from "./fib_module.js";
-import { fib } from "Assets/fib.js";
+import { fib } from "./fib.js";
 
 print(jsb);
 print(jsb.Foo);
@@ -57,6 +57,16 @@ async function destroy() {
     UnityEngine.Object.Destroy(go);
 }
 destroy();
+
+async function testUnityYieldInstructions() {
+    console.warn("wait for unity YieldInstruction, begin");
+    await jsb.Yield(new UnityEngine.WaitForSeconds(3));
+
+    console.warn("wait for unity YieldInstruction, end;", UnityEngine.Time.frameCount);
+    await jsb.Yield(null);
+    console.warn("wait for unity YieldInstruction, next frame;", UnityEngine.Time.frameCount);
+}
+testUnityYieldInstructions();
 
 let actions = new jsb.DelegateTest();
 actions.onAction = function () {

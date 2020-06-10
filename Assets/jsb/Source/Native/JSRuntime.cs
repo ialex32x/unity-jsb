@@ -10,6 +10,11 @@ namespace QuickJS.Native
 
         public static readonly JSRuntime Null;
 
+        public unsafe bool IsValid()
+        {
+            return _ptr != (void*) 0;
+        }
+
         public override unsafe int GetHashCode()
         {
             return (int)_ptr;
