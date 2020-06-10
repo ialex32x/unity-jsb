@@ -274,7 +274,6 @@ namespace QuickJS.Editor
                 .SetMethodBlocked("ReadAllBytes", typeof(IntPtr))
                 .SetMethodBlocked("WriteBytes", typeof(IntPtr), typeof(int));
 
-            AddExportedType(typeof(ScriptBehaviour));
             AddExportedType(typeof(QuickJS.IO.ByteBuffer));
             AddExportedType(typeof(LayerMask));
             AddExportedType(typeof(Color));

@@ -161,6 +161,7 @@ namespace QuickJS
                 }
             }
 
+            register.Add(typeof(ScriptBehaviour));
             runner.OnBind(this, register);
             TimerManager.Bind(register);
             ScriptContext.Bind(register);

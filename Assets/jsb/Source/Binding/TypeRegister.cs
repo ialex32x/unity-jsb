@@ -111,6 +111,11 @@ namespace QuickJS.Binding
             return _db.AddType(type, JSApi.JS_DupValue(_context, jsValue));
         }
 
+        public int Add(Type type)
+        {
+            return _db.AddType(type, JSApi.JS_UNDEFINED);
+        }
+
         public void Cleanup()
         {
             _atoms.Clear();

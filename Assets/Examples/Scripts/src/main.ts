@@ -94,3 +94,34 @@ setInterval(() => {
 }, 1000 * 10);
 
 print("end of script");
+
+// 未完成
+
+// class MyClass extends UnityEngine.MonoBehaviour {
+//     private _tick = 0;
+
+//     Awake() {
+//         console.log("MyClass.Awake", this._tick++);
+//     }
+
+//     OnEnable() {
+//         console.log("MyClass.OnEnable", this._tick++);
+//     }
+
+//     OnDisable() {
+//         console.log("MyClass.OnDisable", this._tick++);
+//     }
+
+//     OnDestroy() {
+//         console.log("MyClass.OnDestroy", this._tick++);
+//     }
+
+//     test() {
+//     }
+// }
+
+// let gameObject = new UnityEngine.GameObject();
+// gameObject.AddComponent(MyClass);
+// let comp = gameObject.GetComponent(MyClass);
+// comp.test();
+
