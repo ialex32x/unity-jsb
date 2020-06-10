@@ -1,7 +1,8 @@
 {
     "compilerOptions": {
         "newLine": "CRLF",
-        "module": "es2020",
+        // "module": "ESNext",
+        "module": "commonjs",
         "target": "es2020",
         "sourceRoot": "",
         "outDir": "Assets/Examples/Scripts/out",

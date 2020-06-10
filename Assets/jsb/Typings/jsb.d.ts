@@ -2,33 +2,31 @@
 
 declare function print(...args: any[]): void;
 
-/**
- * 执行指定脚本 （类似eval）
- * @param source 脚本源码
- * @param filename 为此脚本指定命名 
- */
-declare function dostring(source: string, filename?: string): void
+// /**
+//  * 执行指定脚本 （类似eval）
+//  * @param source 脚本源码
+//  * @param filename 为此脚本指定命名 
+//  */
+// declare function dostring(source: string, filename?: string): void
 
-/**
- * 执行指定脚本
- */
-declare function dofile(filename: string): void
+// /**
+//  * 执行指定脚本
+//  */
+// declare function dofile(filename: string): void
 
-/**
- * 将指定路径添加到 duktape 加载脚本的搜索目录列表
- */
-declare function addSearchPath(path: string): void
+// /**
+//  * 将指定路径添加到 duktape 加载脚本的搜索目录列表
+//  */
+// declare function addSearchPath(path: string): void
 
-/**
- * 是否开启 print 函数的 stacktrace 输出 (默认关闭)
- */
-declare function enableStacktrace(enabled: boolean): void
+// /**
+//  * 是否开启 print 函数的 stacktrace 输出 (默认关闭)
+//  */
+// declare function enableStacktrace(enabled: boolean): void
 
 declare namespace jsb {
-    const DUK_VERSION: string
     
-    const COMPLETE: string
-    const ERROR: string
+    function Yield(instruction?: any): Promise;
 
     /**
      * 封装 C# event 调用约定
@@ -122,110 +120,4 @@ declare namespace jsb {
 
         clear(type: string): void
     }
-
-    class Enum {
-        static GetName(type: any, val: number): string
-    }
-
-    class Array {
-        static Create(type: any, size: number): any
-    }
-
-    class CSharp {
-        /**
-         * [dangerous] List<T>
-         */
-        CreateList(type: any): any 
-        GetType(name: string): any
-        IsNull(v: any): boolean
-    }
-
-    // class Delegate {
-    //     static on<R>(caller: any, fn: () => R): Delegate
-    //     static on<R, T0>(caller: any, fn: (arg0: T0) => R): Delegate
-    //     static on<R, T0, T1>(caller: any, fn: (arg0: T0, arg1: T1) => R): Delegate
-    // }
-
-    class WebSocket extends EventDispatcher {
-        readonly connected: boolean
-        constructor(protocols?: Array<string>)
-        
-        connect(url: string, ssl_verify?: boolean)
-        close()
-        poll()
-        send(data: any): boolean
-    }
-
-    enum SocketType {
-        TCP = 0,
-        UDP = 1, 
-    }
-
-    enum SocketFamily {
-        IPV4 = 0,
-        IPV6 = 1, 
-    }
-
-    /**
-     * raw socket [experimental]
-     */
-    class Socket {
-        constructor(type: SocketType, family: SocketFamily);
-        setnonblocking(): void;
-        connect(host: string, port: number);
-        // connect_addr(addr: Buffer, len: number);
-        close(): void;
-        send(text: string): number;
-        send(buf: Buffer, index: number, size: number): number;
-        recv(buf: Buffer, index: number, size: number): number;
-    }
-
-    /**
-     * kcp [experimental]
-     */
-    class Kcp {
-        constructor(conv: number, family: SocketFamily, bufferSize: number);
-        connect(host: string, port: number);
-        // connect_addr(addr: Buffer, len: number);
-        wndsize(sndwnd: number, rcvwnd: number);
-        nodelay(nodelay: number, interval: number, resend: number, nc: number);
-        update(current: number);
-        /**
-         * 返回值 <0 时异常
-         */
-        send(text: string): number; 
-        /**
-         * 返回值 <0 时异常
-         */
-        send(buf: Buffer, size?: number): number;
-        recv(buf: Buffer, index: number, size: number): number;
-        close(): void;
-    }
-    
-    /*
-    class Socket extends Dispatcher {
-        readonly connected: boolean
-
-        constructor()
-        connect(host: string, port: number): void
-        close(): void
-        send(data: any): void
-    }
-
-    class HttpRequest extends Dispatcher {
-        send(url: string, data?: any, method?: string, type?: string, headers?: any[]): void
-    }
-    */
-}
-
-/**
- * polyfills for es5
- */
-declare interface Object {
-    /**
-     * Sets the prototype of a specified object o to  object proto or null. Returns the object o.
-     * @param o The object to change its prototype.
-     * @param proto The value of the new prototype or null.
-     */
-    setPrototypeOf(o: any, proto: object | null): any
 }

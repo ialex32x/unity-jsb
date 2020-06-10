@@ -26,10 +26,6 @@ namespace QuickJS.Utils
             JSAtom atom;
             if (!_atoms.TryGetValue(name, out atom))
             {
-                if (char.IsDigit(name[0]))
-                {
-                    throw new InvalidOperationException("invalid atom:" + name);
-                }
                 var bytes = TextUtils.GetNullTerminatedBytes(name);
                 fixed (byte* ptr = bytes)
                 {

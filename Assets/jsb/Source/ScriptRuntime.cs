@@ -322,14 +322,13 @@ namespace QuickJS
 
         public void EvalMain(string fileName)
         {
-            var source = File.ReadAllText(fileName);
-            _mainContext.EvalMain(source, fileName);
-        }
-
-        public void EvalSource(string fileName)
-        {
-            var source = File.ReadAllText(fileName);
-            _mainContext.EvalSource(source, fileName);
+            string resolvedPath;
+            if (_fileResolver.ResolvePath(_fileSystem, fileName, out resolvedPath))
+            {
+                var source = _fileSystem.ReadAllBytes(resolvedPath);
+                var input_bytes = GetShebangNullTerminatedBytes(source);
+                _mainContext.EvalMain(input_bytes, resolvedPath);
+            }
         }
 
         // main loop
@@ -404,7 +403,7 @@ namespace QuickJS
             _typeDB.Destroy();
             GC.Collect();
             CollectPendingGarbage();
-            
+
             for (int i = 0, count = _contexts.Count; i < count; i++)
             {
                 var context = _contexts[i];
@@ -412,16 +411,16 @@ namespace QuickJS
             }
 
             _contexts.Clear();
-            
+
             if (_container != null)
             {
                 Object.DestroyImmediate(_container);
                 _container = null;
             }
-            
+
             JSApi.JS_FreeRuntime(_rt);
             _rt = JSRuntime.Null;
-            
+
             try
             {
                 OnAfterDestroy?.Invoke(this);
