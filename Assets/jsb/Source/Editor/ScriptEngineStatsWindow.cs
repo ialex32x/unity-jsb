@@ -14,7 +14,7 @@ namespace QuickJS.Editor
         private bool _touch;
         private Native.JSMemoryUsage _memoryUsage;
 
-        [MenuItem("JS Bridge/Stats Viewer")]
+        [MenuItem("JS Bridge/Stats Viewer", false, 5000)]
         static void OpenThis()
         {
             GetWindow<ScriptEngineStatsWindow>().Show();
