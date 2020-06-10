@@ -372,13 +372,6 @@ namespace QuickJS
             _timerManager.Destroy();
             _objectCache.Clear();
             _typeDB.Destroy();
-            foreach (var kv in _modules)
-            {
-                var mod = kv.Value;
-                JSApi.JS_FreeValueRT(_rt, mod.module);
-                mod.module = JSApi.JS_UNDEFINED;
-            }
-            _modules.Clear();
             GC.Collect();
             CollectPendingGarbage();
             for (int i = 0, count = _contexts.Count; i < count; i++)

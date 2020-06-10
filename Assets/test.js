@@ -83,12 +83,15 @@ console.log("js/vector3/normailize", (Date.now() - start) / 1000);
 
 print("end of script");
 
+print("require.require:");
 print("require 1:", require("./req_test1").test);
 print("require 2:", require("./req_test1").test);
 print("require 3:", require("./req_test1").test);
 
 // 通过 require 直接读 json
 print("json:", require("./data.json").name);
+
+Object.keys(require.cache).forEach(key => console.log("module loaded:", key));
 
 // print("require (node_modules): ", require("blink1").test);
 // print("require (node_modules): ", require("blink3").test);

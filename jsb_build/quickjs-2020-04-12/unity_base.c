@@ -36,6 +36,11 @@ enum
 #include "quickjs-atom.h"
 #undef DEF
 
+JSValue JSB_NewEmptyString(JSContext *ctx)
+{
+    return JS_NewStringLen(ctx, "", 0);
+}
+
 JSValue JSB_NewInt64(JSContext *ctx, int64_t val)
 {
     return JS_NewInt64(ctx, val);

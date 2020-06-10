@@ -277,6 +277,9 @@ namespace QuickJS.Native
         #region new values
 
         [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern JSValue JSB_NewEmptyString(JSContext ctx);
+        
+        [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern unsafe JSValue JS_NewString(JSContext ctx, byte* str);
 
         public static unsafe JSValue JS_NewString(JSContext ctx, string str)
@@ -515,9 +518,9 @@ namespace QuickJS.Native
         [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern int JS_HasProperty(JSContext ctx, JSValueConst this_obj, JSAtom prop);
 
-        // private 
-        // [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
-        // public static extern JSValueConst JS_GetActiveFunction(JSContext ctx);
+        // 不修改计数
+        [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
+        /* private */ public static extern JSValueConst JS_GetActiveFunction(JSContext ctx);
 
          [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern unsafe JSValue JS_ParseJSON(JSContext ctx, byte* buf, size_t buf_len, byte* filename);

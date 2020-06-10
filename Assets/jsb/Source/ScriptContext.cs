@@ -16,12 +16,14 @@ namespace QuickJS
         private ScriptRuntime _runtime;
         private JSContext _ctx;
         private AtomCache _atoms;
+        private JSValue _moduleCache; // commonjs module cache
 
         public ScriptContext(ScriptRuntime runtime)
         {
             _runtime = runtime;
             _ctx = JSApi.JS_NewContext(_runtime);
             _atoms = new AtomCache(_ctx);
+            _moduleCache = JSApi.JS_NewObject(_ctx);
         }
 
         public TimerManager GetTimerManager()
@@ -44,6 +46,7 @@ namespace QuickJS
             return ctx.IsContext(_ctx);
         }
 
+        //NOTE: 返回值不需要释放, context 销毁时会自动释放所管理的 Atom
         public JSAtom GetAtom(string name)
         {
             return _atoms.GetAtom(name);
@@ -60,6 +63,7 @@ namespace QuickJS
                 _runtime.GetLogger().Error(e);
             }
             _atoms.Clear();
+            JSApi.JS_FreeValue(_ctx, _moduleCache);
             JSApi.JS_FreeContext(_ctx);
             _ctx = JSContext.Null;
         }
@@ -86,6 +90,20 @@ namespace QuickJS
         }
 
         #region Builtins
+
+        //NOTE: 返回值需要调用者 free 
+        public JSValue _get_commonjs_module(string module_id)
+        {
+            var prop = GetAtom(module_id);
+            return JSApi.JS_GetProperty(_ctx, _moduleCache, prop);
+        }
+
+        public void _new_commonjs_module(string module_id, JSValue module_obj)
+        {
+            var prop = GetAtom(module_id);
+            JSApi.JS_SetProperty(_ctx, _moduleCache, prop, module_obj);
+            JSApi.JS_SetProperty(_ctx, module_obj, GetAtom("cache"), JSApi.JS_DupValue(_ctx, _moduleCache));
+        }
 
         [MonoPInvokeCallback(typeof(JSCFunctionMagic))]
         private static JSValue _print(JSContext ctx, JSValue this_obj, int argc, JSValue[] argv, int magic)
@@ -129,8 +147,10 @@ namespace QuickJS
             var ctx = (JSContext)this;
             var global_object = JSApi.JS_GetGlobalObject(ctx);
             {
-                var require_func_obj = JSApi.JSB_NewCFunctionMagic(ctx, ScriptRuntime.module_require, GetAtom("require"), 1, JSCFunctionEnum.JS_CFUNC_generic_magic, -1);
-                JSApi.JS_SetPropertyStr(ctx, global_object, "require", require_func_obj);
+                var require_func_obj = JSApi.JSB_NewCFunction(ctx, ScriptRuntime.module_require, GetAtom("require"), 1, JSCFunctionEnum.JS_CFUNC_generic, 0);
+                JSApi.JS_SetProperty(ctx, require_func_obj, GetAtom("moduleId"), JSApi.JS_NewString(ctx, ""));
+                JSApi.JS_SetProperty(ctx, require_func_obj, GetAtom("cache"), JSApi.JS_DupValue(ctx, _moduleCache));
+                JSApi.JS_SetProperty(ctx, global_object, GetAtom("require"), require_func_obj);
 
                 JSApi.JS_SetPropertyStr(ctx, global_object, "print", JSApi.JS_NewCFunctionMagic(ctx, _print, "print", 1, JSCFunctionEnum.JS_CFUNC_generic_magic, 0));
                 var console = JSApi.JS_NewObject(ctx);
