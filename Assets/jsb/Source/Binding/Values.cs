@@ -11,6 +11,8 @@ namespace QuickJS.Binding
 
     public partial class Values
     {
+        private static float[] _matrix_floats_buffer = new float[16];
+
         protected static HashSet<Type> _assignableFromArray = new HashSet<Type>();
 
         static Values()

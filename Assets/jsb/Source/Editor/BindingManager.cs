@@ -285,7 +285,9 @@ namespace QuickJS.Editor
             AddExportedType(typeof(Vector4));
             AddExportedType(typeof(Quaternion));
             AddExportedType(typeof(Matrix4x4));
+            AddExportedType(typeof(PrimitiveType));
             AddExportedType(typeof(GameObject), true);
+            AddExportedType(typeof(Transform), true);
             AddExportedType(typeof(MonoBehaviour), true);
 
             AddCSTypeNameMap(typeof(sbyte), "sbyte");

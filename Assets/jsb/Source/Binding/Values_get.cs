@@ -790,8 +790,6 @@ namespace QuickJS.Binding
             return ret != 0;
         }
 
-        private static float[] _matrix_floats_buffer = new float[16];
-
         public static unsafe bool js_get_structvalue(JSContext ctx, JSValue val, out Matrix4x4 o)
         {
             int ret;
