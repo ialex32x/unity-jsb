@@ -152,6 +152,36 @@ namespace QuickJS.Editor
                 {
                     if (bindPoint == BindingPoints.METHOD_BINDING_BEFORE_INVOKE)
                     {
+                        cg.cs.AppendLine("var inject = _js_game_object_get_components(ctx, argv[0], self, arg0);");
+                        cg.cs.AppendLine("if (!inject.IsUndefined())");
+                        using (cg.cs.Block())
+                        {
+                            cg.cs.AppendLine("return inject;");
+                        }
+
+                        return true;
+                    }
+                    return false;
+                }, "GetComponents", typeof(Type))
+                .WriteCSMethodBinding((bindPoint, cg, info) =>
+                {
+                    if (bindPoint == BindingPoints.METHOD_BINDING_BEFORE_INVOKE)
+                    {
+                        cg.cs.AppendLine("var inject = _js_game_object_get_components(ctx, argv[0], self, arg0, arg1);");
+                        cg.cs.AppendLine("if (!inject.IsUndefined())");
+                        using (cg.cs.Block())
+                        {
+                            cg.cs.AppendLine("return inject;");
+                        }
+
+                        return true;
+                    }
+                    return false;
+                }, "GetComponents", typeof(Type), typeof(List<Component>))
+                .WriteCSMethodBinding((bindPoint, cg, info) =>
+                {
+                    if (bindPoint == BindingPoints.METHOD_BINDING_BEFORE_INVOKE)
+                    {
                         cg.cs.AppendLine("var inject = _js_game_object_add_component(ctx, argv[0], self, arg0);");
                         cg.cs.AppendLine("if (!inject.IsUndefined())");
                         using (cg.cs.Block())
