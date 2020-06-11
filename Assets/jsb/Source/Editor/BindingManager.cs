@@ -133,7 +133,49 @@ namespace QuickJS.Editor
                     "GetComponentsInParent", typeof(Type), typeof(bool))
                 .AddTSMethodDeclaration("GetComponentsInParent<T extends UnityEngine.Component>(type: { new(): T }): T[]",
                     "GetComponentsInParent", typeof(Type))
+                .WriteCSMethodBinding((bindPoint, cg, info) =>
+                {
+                    if (bindPoint == BindingPoints.METHOD_BINDING_BEFORE_INVOKE)
+                    {
+                        cg.cs.AppendLine("var inject = _js_game_object_get_component(ctx, argv[0], self, arg0);");
+                        cg.cs.AppendLine("if (!inject.IsUndefined())");
+                        using (cg.cs.Block())
+                        {
+                            cg.cs.AppendLine("return inject;");
+                        }
+
+                        return true;
+                    }
+                    return false;
+                }, "GetComponent", typeof(Type))
+                .WriteCSMethodBinding((bindPoint, cg, info) =>
+                {
+                    if (bindPoint == BindingPoints.METHOD_BINDING_BEFORE_INVOKE)
+                    {
+                        cg.cs.AppendLine("var inject = _js_game_object_add_component(ctx, argv[0], self, arg0);");
+                        cg.cs.AppendLine("if (!inject.IsUndefined())");
+                        using (cg.cs.Block())
+                        {
+                            cg.cs.AppendLine("return inject;");
+                        }
+
+                        return true;
+                    }
+                    return false;
+                }, "AddComponent", typeof(Type));
             ;
+            
+            TransformType(typeof(MonoBehaviour))
+                .WriteCSConstructorBinding((bindPoint, cg, info) =>
+                {
+                    if (bindPoint == BindingPoints.METHOD_BINDING_FULL)
+                    {
+                        cg.cs.AppendLine("return _js_mono_behaviour_constructor(ctx, new_target);");
+                        return true;
+                    }
+
+                    return false;
+                });
 
             TransformType(typeof(Component))
                 .AddTSMethodDeclaration("GetComponent<T extends UnityEngine.Component>(type: { new(): T }): T",
@@ -274,7 +316,6 @@ namespace QuickJS.Editor
                 .SetMethodBlocked("ReadAllBytes", typeof(IntPtr))
                 .SetMethodBlocked("WriteBytes", typeof(IntPtr), typeof(int));
 
-            AddExportedType(typeof(ScriptBehaviour));
             AddExportedType(typeof(QuickJS.IO.ByteBuffer));
             AddExportedType(typeof(LayerMask));
             AddExportedType(typeof(Color));
@@ -286,7 +327,9 @@ namespace QuickJS.Editor
             AddExportedType(typeof(Vector4));
             AddExportedType(typeof(Quaternion));
             AddExportedType(typeof(Matrix4x4));
+            AddExportedType(typeof(PrimitiveType));
             AddExportedType(typeof(GameObject), true);
+            AddExportedType(typeof(Transform), true);
             AddExportedType(typeof(MonoBehaviour), true);
 
             AddCSTypeNameMap(typeof(sbyte), "sbyte");

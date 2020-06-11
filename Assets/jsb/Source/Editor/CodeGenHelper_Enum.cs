@@ -28,7 +28,7 @@ namespace QuickJS.Editor
                 {
                     using (new RegFuncNamespaceCodeGen(cg, bindingInfo))
                     {
-                        this.cg.cs.AppendLine("duk_begin_enum(ctx, \"{0}\", typeof({1}));",
+                        this.cg.cs.AppendLine("var cls = ns.CreateEnum(\"{0}\", typeof({1}));",
                             bindingInfo.jsName,
                             this.cg.bindingManager.GetCSTypeFullName(bindingInfo.type));
                         var values = new Dictionary<string, object>();
@@ -41,11 +41,11 @@ namespace QuickJS.Editor
                             var name = kv.Key;
                             var value = kv.Value;
                             var pvalue = Convert.ToInt32(value);
-                            this.cg.cs.AppendLine($"duk_add_const(ctx, \"{name}\", {pvalue}, {-2});");
+                            this.cg.cs.AppendLine($"cls.AddConstValue(\"{name}\", {pvalue});");
                             this.cg.AppendEnumJSDoc(bindingInfo.type, value);
                             this.cg.tsDeclare.AppendLine($"{name} = {pvalue},");
                         }
-                        this.cg.cs.AppendLine("duk_end_enum(ctx);");
+                        this.cg.cs.AppendLine("cls.Close();");
                     }
                 }
                 base.Dispose();

@@ -2,6 +2,8 @@
 
 declare function print(...args: any[]): void;
 
+declare function require(id: string): any;
+
 // /**
 //  * 执行指定脚本 （类似eval）
 //  * @param source 脚本源码

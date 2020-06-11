@@ -9,6 +9,12 @@ namespace QuickJS.Editor
     using UnityEngine;
     using UnityEditor;
 
+    public class BindingPoints
+    {
+        public const string METHOD_BINDING_FULL = "METHOD_BINDING_FULL";
+        public const string METHOD_BINDING_BEFORE_INVOKE = "METHOD_BINDING_BEFORE_INVOKE";
+    }
+
     public class TypeTransform
     {
         private Type _type;
@@ -23,6 +29,7 @@ namespace QuickJS.Editor
         // 针对特定方法的 ts 声明优化
         private Dictionary<MethodBase, string> _tsMethodDeclarations = new Dictionary<MethodBase, string>();
         private Dictionary<MethodBase, string> _tsMethodRenames = new Dictionary<MethodBase, string>();
+        private Dictionary<MethodBase, Func<string, CodeGenerator, object, bool>> _csMethodWriter = new Dictionary<MethodBase, Func<string, CodeGenerator, object, bool>>();
 
         // d.ts 中额外输出附加方法声明 (例如 Vector3, js中需要通过方法调用进行 +-*/== 等运算)
         private List<string> _tsAdditionalMethodDeclarations = new List<string>();
@@ -128,6 +135,39 @@ namespace QuickJS.Editor
                 _tsMethodRenames[method] = newName;
             }
             return this;
+        }
+
+        public TypeTransform WriteCSConstructorBinding(Func<string, CodeGenerator, object, bool> writer, params Type[] parameters)
+        {
+            var ctor = _type.GetConstructor(parameters);
+            if (ctor != null)
+            {
+                _csMethodWriter[ctor] = writer;
+            }
+
+            return this;
+        }
+
+        public TypeTransform WriteCSMethodBinding(Func<string, CodeGenerator, object, bool> writer, string methodName, params Type[] parameters)
+        {
+            var method = _type.GetMethod(methodName, parameters);
+            if (method != null)
+            {
+                _csMethodWriter[method] = writer;
+            }
+
+            return this;
+        }
+
+        public bool OnBinding(string bindPoint, MethodBase method, CodeGenerator cg, object info = null)
+        {
+            Func<string, CodeGenerator, object, bool> act;
+            if (_csMethodWriter.TryGetValue(method, out act))
+            {
+                return act(bindPoint, cg, info);
+            }
+
+            return false;
         }
 
         public bool GetTSMethodRename(MethodBase method, out string name)

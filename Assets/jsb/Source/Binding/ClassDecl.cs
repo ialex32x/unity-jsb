@@ -11,12 +11,12 @@ namespace QuickJS.Binding
         public JSValue _ctor;
         public JSValue _proto;
 
-        public ClassDecl(TypeRegister register, JSValue ctor, JSValue proto)
+        public ClassDecl(TypeRegister register, JSValue ctorVal, JSValue protoVal)
         {
             _register = register;
             _ctx = _register.GetContext();
-            _ctor = ctor;
-            _proto = proto;
+            _ctor = JSApi.JS_DupValue(_ctx, ctorVal);
+            _proto = JSApi.JS_DupValue(_ctx, protoVal);
         }
 
         public void Close()

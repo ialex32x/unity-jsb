@@ -164,7 +164,7 @@ namespace QuickJS.Editor
             if (hasOverrides)
             {
                 // 需要处理重载
-                GenMethodVariants(variants);
+                GenMethodVariants(bindingInfo, variants);
             }
             else
             {
@@ -179,13 +179,13 @@ namespace QuickJS.Editor
                     {
                         var method = variant.varargMethods[0];
                         // Debug.Log($"varargMethods {method}");
-                        WriteCSMethodBinding(method, argc, true);
+                        WriteCSMethodBinding(bindingInfo, method, argc, true);
                     }
                     else
                     {
                         var method = variant.plainMethods[0];
                         // Debug.Log($"plainMethods {method}");
-                        WriteCSMethodBinding(method, argc, false);
+                        WriteCSMethodBinding(bindingInfo, method, argc, false);
                     }
                 }
             }
@@ -225,7 +225,7 @@ namespace QuickJS.Editor
             }
         }
 
-        protected void GenMethodVariants(SortedDictionary<int, MethodBaseVariant<T>> variants)
+        protected void GenMethodVariants(MethodBaseBindingInfo<T> bindingInfo, SortedDictionary<int, MethodBaseVariant<T>> variants)
         {
             var argc = cg.AppendGetArgCount(true);
             cg.cs.AppendLine("do");
@@ -257,7 +257,7 @@ namespace QuickJS.Editor
                                 cg.cs.AppendLine($"if (js_match_types(ctx, argv{GetFixedMatchTypes(method)}))");
                                 cg.cs.AppendLine("{");
                                 cg.cs.AddTabLevel();
-                                this.WriteCSMethodBinding(method, argc, false);
+                                this.WriteCSMethodBinding(bindingInfo, method, argc, false);
                                 cg.cs.DecTabLevel();
                                 cg.cs.AppendLine("}");
                             }
@@ -267,7 +267,7 @@ namespace QuickJS.Editor
                         {
                             // 只有一个定参方法时, 不再判定类型匹配
                             var method = variant.plainMethods[0];
-                            this.WriteCSMethodBinding(method, argc, false);
+                            this.WriteCSMethodBinding(bindingInfo, method, argc, false);
                         }
                         cg.cs.DecTabLevel();
                         cg.cs.AppendLine("}");
@@ -281,7 +281,7 @@ namespace QuickJS.Editor
                             cg.cs.AppendLine($" && js_match_param_types(ctx, {args}, argv, {GetParamArrayMatchType(method)}))");
                             cg.cs.AppendLine("{");
                             cg.cs.AddTabLevel();
-                            this.WriteCSMethodBinding(method, argc, true);
+                            this.WriteCSMethodBinding(bindingInfo, method, argc, true);
                             cg.cs.DecTabLevel();
                             cg.cs.AppendLine("}");
                         }
@@ -396,8 +396,15 @@ namespace QuickJS.Editor
         }
 
         // 写入绑定代码
-        protected void WriteCSMethodBinding(T method, string argc, bool isVararg)
+        protected void WriteCSMethodBinding(MethodBaseBindingInfo<T> bindingInfo, T method, string argc, bool isVararg)
         {
+            // 是否接管 cs 绑定代码生成
+            var transform = cg.bindingManager.GetTypeTransform(method.DeclaringType);
+            if (transform != null && transform.OnBinding(BindingPoints.METHOD_BINDING_FULL, method, cg))
+            {
+                return;
+            }
+            
             var parameters = method.GetParameters();
             var isExtension = method.IsDefined(typeof(System.Runtime.CompilerServices.ExtensionAttribute));
             var isRaw = method.IsDefined(typeof(JSCFunctionAttribute));
@@ -452,7 +459,6 @@ namespace QuickJS.Editor
             }
             else
             {
-                // 方法本身有返回值
                 this.BeginInvokeBinding();
                 cg.cs.AppendLine($"var ret = {this.GetInvokeBinding(caller, method, isVararg, isExtension, argc, parameters, parametersByRef)};");
                 this.EndInvokeBinding();
@@ -516,6 +522,11 @@ namespace QuickJS.Editor
         {
             var arglist = this.AppendGetParameters(hasParams, nargs, parameters, parametersByRef);
             var decalringTypeName = this.cg.bindingManager.GetCSTypeFullName(this.bindingInfo.decalringType);
+            // 方法本身有返回值
+            var transform = cg.bindingManager.GetTypeTransform(method.DeclaringType);
+            if (transform == null || !transform.OnBinding(BindingPoints.METHOD_BINDING_BEFORE_INVOKE, method, cg, arglist))
+            {
+            }
             return $"var o = new {decalringTypeName}({arglist})";
         }
 
@@ -621,6 +632,10 @@ namespace QuickJS.Editor
                 }
             }
             var arglist = this.AppendGetParameters(hasParams, nargs, parameters, parametersByRef);
+            var transform = cg.bindingManager.GetTypeTransform(method.DeclaringType);
+            if (transform == null || !transform.OnBinding(BindingPoints.METHOD_BINDING_BEFORE_INVOKE, method, cg))
+            {
+            }
             if (isExtension)
             {
                 var methodDeclType = this.cg.bindingManager.GetCSTypeFullName(method.DeclaringType);

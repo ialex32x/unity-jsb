@@ -22,7 +22,6 @@ namespace QuickJS.Binding
             }
             else
             {
-                //TODO: 增加一个隐藏属性记录jsobject对应类型 (constructor, object)
                 var type_id = JSApi.JSB_GetBridgeType(ctx, jsValue);
                 if (type_id >= 0)
                 {
