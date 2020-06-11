@@ -479,6 +479,7 @@ namespace QuickJS.Editor
             AddExportedType(typeof(Matrix4x4));
             AddExportedType(typeof(PrimitiveType));
             AddExportedType(typeof(GameObject), true);
+            AddExportedType(typeof(Camera), true);
             AddExportedType(typeof(Transform), true);
             AddExportedType(typeof(MonoBehaviour), true);
 

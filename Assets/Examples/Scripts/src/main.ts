@@ -155,3 +155,7 @@ comp1.play();
     let results = gameObject.GetComponents(MyClass);
     results.forEach(it => console.log("GetComponents(MyClass):", it.vv));
 }
+
+let camera = UnityEngine.GameObject.Find("/Main Camera").GetComponent(UnityEngine.Camera);
+
+console.log(camera.name);
