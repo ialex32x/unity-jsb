@@ -12,9 +12,7 @@ namespace QuickJS.Binding
         public JSValue _ctor;
         public JSValue _proto;
 
-        private JSValue _self_operators;
-        private JSValue _left_operators;
-        private JSValue _right_operators;
+        private List<JSValue> _operators;
 
         public JSAtom GetAtom(string name)
         {
@@ -27,31 +25,19 @@ namespace QuickJS.Binding
             _ctx = _register.GetContext();
             _ctor = JSApi.JS_DupValue(_ctx, ctorVal);
             _proto = JSApi.JS_DupValue(_ctx, protoVal);
-            _self_operators = JSApi.JS_UNDEFINED;
-            _left_operators = JSApi.JS_UNDEFINED;
-            _right_operators = JSApi.JS_UNDEFINED;
+            _operators = null;
         }
 
         public void Close()
         {
             var ctx = (JSContext)_ctx;
-            var opc =
-                (_self_operators.IsNullish() ? 0 : 1) +
-                (_left_operators.IsNullish() ? 0 : 1) +
-                (_right_operators.IsNullish() ? 0 : 1);
 
-            if (opc > 0)
+            if (_operators != null)
             {
                 // 提交运算符重载
-                if (_self_operators.IsNullish())
-                {
-                    // 保证 self 运算符定义存在
-                    _self_operators = JSApi.JS_NewObject(ctx);
-                    opc++;
-                }
-
                 var globalObj = JSApi.JS_GetGlobalObject(ctx);
                 var operators = JSApi.JS_GetProperty(ctx, globalObj, JSApi.JS_ATOM_Operators);
+
                 if (!operators.IsNullish())
                 {
                     if (operators.IsException())
@@ -61,10 +47,7 @@ namespace QuickJS.Binding
                     else
                     {
                         var create = JSApi.JS_GetProperty(ctx, operators, GetAtom("create"));
-                        var js_operators = new JSValue[opc];
-                        js_operators[0] = _self_operators;
-                        if (!_left_operators.IsNullish()) js_operators[--opc] = _left_operators;
-                        if (!_right_operators.IsNullish()) js_operators[--opc] = _right_operators;
+                        var js_operators = _operators.ToArray();
 
                         JSValue rval;
                         unsafe
@@ -86,13 +69,17 @@ namespace QuickJS.Binding
                         JSApi.JS_FreeValue(ctx, create);
                     }
                 }
+
                 JSApi.JS_FreeValue(ctx, operators);
                 JSApi.JS_FreeValue(ctx, globalObj);
+                
+                for (int i = 0, count = _operators.Count; i < count; i++)
+                {
+                    JSApi.JS_FreeValue(ctx, _operators[i]);
+                }
+                _operators = null;
             }
 
-            JSApi.JS_FreeValue(ctx, _self_operators);
-            JSApi.JS_FreeValue(ctx, _left_operators);
-            JSApi.JS_FreeValue(ctx, _right_operators);
 
             JSApi.JS_FreeValue(ctx, _ctor);
             JSApi.JS_FreeValue(ctx, _proto);
@@ -101,36 +88,40 @@ namespace QuickJS.Binding
             _ctx = null;
         }
 
+        private void EnsureOperators()
+        {
+            if (_operators == null)
+            {
+                _operators = new List<JSValue>();
+                _operators.Add(JSApi.JS_NewObject(_ctx));
+            }
+        }
+
         public void AddSelfOperator(string op, JSCFunction func, int length)
         {
-            if (_self_operators.IsNullish())
-            {
-                _self_operators = JSApi.JS_NewObject(_ctx);
-            }
+            EnsureOperators();
             var funcVal = JSApi.JS_NewCFunction(_ctx, func, op, length);
-            JSApi.JS_DefinePropertyValue(_ctx, _self_operators, GetAtom(op), funcVal, JSPropFlags.JS_PROP_C_W_E);
+            JSApi.JS_DefinePropertyValue(_ctx, _operators[0], GetAtom(op), funcVal, JSPropFlags.DEFAULT);
         }
 
         public void AddLeftOperator(string op, JSCFunction func, int length, string leftTypeName)
         {
-            if (_left_operators.IsNullish())
-            {
-                _left_operators = JSApi.JS_NewObject(_ctx);
-                JSApi.JS_SetProperty(_ctx, _left_operators, GetAtom("left"), JSApi.JS_NewString(_ctx, leftTypeName));
-            }
+            EnsureOperators();
+            var left_operator = JSApi.JS_NewObject(_ctx);
+            JSApi.JS_SetProperty(_ctx, left_operator, GetAtom("left"), JSApi.JS_NewString(_ctx, leftTypeName));
             var funcVal = JSApi.JS_NewCFunction(_ctx, func, op, length);
-            JSApi.JS_DefinePropertyValue(_ctx, _left_operators, GetAtom(op), funcVal, JSPropFlags.JS_PROP_C_W_E);
+            JSApi.JS_DefinePropertyValue(_ctx, left_operator, GetAtom(op), funcVal, JSPropFlags.DEFAULT);
+            _operators.Add(left_operator);
         }
 
         public void AddRightOperator(string op, JSCFunction func, int length, string rightTypeName)
         {
-            if (_right_operators.IsNullish())
-            {
-                _right_operators = JSApi.JS_NewObject(_ctx);
-                JSApi.JS_SetProperty(_ctx, _left_operators, GetAtom("right"), JSApi.JS_NewString(_ctx, rightTypeName));
-            }
+            EnsureOperators();
+            var right_operator = JSApi.JS_NewObject(_ctx);
+            JSApi.JS_SetProperty(_ctx, right_operator, GetAtom("right"), JSApi.JS_NewString(_ctx, rightTypeName));
             var funcVal = JSApi.JS_NewCFunction(_ctx, func, op, length);
-            JSApi.JS_DefinePropertyValue(_ctx, _right_operators, GetAtom(op), funcVal, JSPropFlags.JS_PROP_C_W_E);
+            JSApi.JS_DefinePropertyValue(_ctx, right_operator, GetAtom(op), funcVal, JSPropFlags.DEFAULT);
+            _operators.Add(right_operator);
         }
 
         public void AddMethod(bool bStatic, string name, JSCFunctionMagic func, int length, int magic)
@@ -138,21 +129,21 @@ namespace QuickJS.Binding
             var nameAtom = _register.GetAtom(name);
             var funcVal = JSApi.JSB_NewCFunctionMagic(_ctx, func, nameAtom, length, JSCFunctionEnum.JS_CFUNC_generic_magic,
                 magic);
-            JSApi.JS_DefinePropertyValue(_ctx, bStatic ? _ctor : _proto, nameAtom, funcVal, JSPropFlags.JS_PROP_C_W_E);
+            JSApi.JS_DefinePropertyValue(_ctx, bStatic ? _ctor : _proto, nameAtom, funcVal, JSPropFlags.DEFAULT);
         }
 
         public void AddMethod(bool bStatic, string name, JSCFunction func)
         {
             var nameAtom = _register.GetAtom(name);
             var funcVal = JSApi.JSB_NewCFunction(_ctx, func, nameAtom, 0, JSCFunctionEnum.JS_CFUNC_generic, 0);
-            JSApi.JS_DefinePropertyValue(_ctx, bStatic ? _ctor : _proto, nameAtom, funcVal, JSPropFlags.JS_PROP_C_W_E);
+            JSApi.JS_DefinePropertyValue(_ctx, bStatic ? _ctor : _proto, nameAtom, funcVal, JSPropFlags.DEFAULT);
         }
 
         public void AddMethod(bool bStatic, string name, JSCFunction func, int length)
         {
             var nameAtom = _register.GetAtom(name);
             var funcVal = JSApi.JSB_NewCFunction(_ctx, func, nameAtom, length, JSCFunctionEnum.JS_CFUNC_generic, 0);
-            JSApi.JS_DefinePropertyValue(_ctx, bStatic ? _ctor : _proto, nameAtom, funcVal, JSPropFlags.JS_PROP_C_W_E);
+            JSApi.JS_DefinePropertyValue(_ctx, bStatic ? _ctor : _proto, nameAtom, funcVal, JSPropFlags.DEFAULT);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

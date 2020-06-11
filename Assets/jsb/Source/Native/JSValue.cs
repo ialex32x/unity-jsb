@@ -89,15 +89,22 @@ namespace QuickJS.Native
         {
             if (tag >= 0)
             {
-                if (tag == JSApi.JS_TAG_FLOAT64)
+                switch (tag)
                 {
-                    return u.float64.ToString();
+                    case JSApi.JS_TAG_FLOAT64: return u.float64.ToString();
+                    case JSApi.JS_TAG_NULL: return "null";
+                    case JSApi.JS_TAG_UNDEFINED: return "undefined";
+                    case JSApi.JS_TAG_EXCEPTION: return "exception";
+                    default: return u.int32.ToString();
                 }
-
-                return u.int32.ToString();
             }
 
-            return string.Format("Ref:{0}", u.ptr);
+            switch (tag)
+            {
+                case JSApi.JS_TAG_SYMBOL: return string.Format("Symbol:{0}", u.ptr); 
+                case JSApi.JS_TAG_STRING: return string.Format("String:{0}", u.ptr); 
+                default: return string.Format("Ref:{0}", u.ptr);
+            }
         }
 
         public static bool operator ==(JSValue a, JSValue b)
