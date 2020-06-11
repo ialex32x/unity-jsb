@@ -137,19 +137,26 @@ namespace QuickJS.Editor
             return this;
         }
 
-        public void WriteCSConstructorBinding(Func<string, CodeGenerator, object, bool> writer, params Type[] parameters)
+        public TypeTransform WriteCSConstructorBinding(Func<string, CodeGenerator, object, bool> writer, params Type[] parameters)
         {
             var ctor = _type.GetConstructor(parameters);
-            _csMethodWriter[ctor] = writer;
+            if (ctor != null)
+            {
+                _csMethodWriter[ctor] = writer;
+            }
+
+            return this;
         }
 
-        public void WriteCSMethodBinding(Func<string, CodeGenerator, object, bool> writer, string methodName, params Type[] parameters)
+        public TypeTransform WriteCSMethodBinding(Func<string, CodeGenerator, object, bool> writer, string methodName, params Type[] parameters)
         {
             var method = _type.GetMethod(methodName, parameters);
             if (method != null)
             {
                 _csMethodWriter[method] = writer;
             }
+
+            return this;
         }
 
         public bool OnBinding(string bindPoint, MethodBase method, CodeGenerator cg, object info = null)

@@ -57,5 +57,39 @@ namespace QuickJS.Binding
 
             return JSApi.JS_UNDEFINED;
         }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        protected static JSValue _js_game_object_get_component(JSContext ctx, JSValue ctor, GameObject gameObject, Type type)
+        {
+            if (JSApi.JS_IsConstructor(ctx, ctor) == 1)
+            {
+                var header = JSApi.jsb_get_payload_header(ctor);
+                if (header.type_id == BridgeObjectType.None) // it's a plain js value
+                {
+                    if (type == typeof(MonoBehaviour))
+                    {
+                        var allBridges = gameObject.GetComponents<ScriptBridge>();
+                        for (int i = 0, size = allBridges.Length; i < size; i++)
+                        {
+                            var bridge = allBridges[i];
+                            var instanceOf = bridge.IsInstanceOf(ctor);
+                            if (instanceOf == 1)
+                            {
+                                return bridge.CloneValue();
+                            }
+
+                            if (instanceOf == -1)
+                            {
+                                ctx.print_exception();
+                            }
+                        }
+
+                        return JSApi.JS_NULL; // or return an empty array?
+                    }
+                }
+            }
+
+            return JSApi.JS_UNDEFINED;
+        }
     }
 }

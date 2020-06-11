@@ -128,12 +128,17 @@ class MySubClass extends MyClass {
         super.Awake();
         console.log("MySubClass.Awake", this._tick++);
     }
+
+    play() {
+        console.log("MySubClass.play");
+    }
 }
 
 let gameObject = new UnityEngine.GameObject();
 let comp = gameObject.AddComponent(MySubClass);
 
-comp.test();
-// let comp = gameObject.GetComponent(MyClass);
-// comp.test();
+comp.play();
+
+let comp_bySuperClass = gameObject.GetComponent(MyClass);
+comp_bySuperClass.test();
 

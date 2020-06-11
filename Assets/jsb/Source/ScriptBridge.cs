@@ -51,6 +51,16 @@ namespace QuickJS
         private bool _onDestroyValid;
         private JSValue _onDestroyFunc;
 
+        public int IsInstanceOf(JSValue ctor)
+        {
+            return JSApi.JS_IsInstanceOf(_ctx, _this_obj, ctor);
+        }
+
+        public JSValue CloneValue()
+        {
+            return JSApi.JS_DupValue(_ctx, _this_obj);
+        }
+
         public void SetBridge(JSContext ctx, JSValue this_obj, JSValue ctor)
         {
             var context = ScriptEngine.GetContext(ctx);

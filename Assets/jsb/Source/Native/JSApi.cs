@@ -141,6 +141,11 @@ namespace QuickJS.Native
         [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern JSValue JS_GetGlobalObject(JSContext ctx);
 
+        /// <summary>
+        /// return TRUE, FALSE or (-1) in case of exception
+        /// </summary>
+        /// <param name="val"></param>
+        /// <param name="obj"></param>
         [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern int JS_IsInstanceOf(JSContext ctx, JSValueConst val, JSValueConst obj);
 
