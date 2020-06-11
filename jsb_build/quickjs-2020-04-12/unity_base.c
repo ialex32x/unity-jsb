@@ -140,7 +140,7 @@ JSValue JSB_NewPropertyObject(JSContext *ctx, JSValueConst this_obj, JSAtom atom
     {
         return p;
     }
-    JS_FreeValue(ctx, p);
+    JS_FreeValue(ctx, p); // release old value
     p = JS_NewObject(ctx);
     JS_DupValue(ctx, p);
     JS_DefinePropertyValue(ctx, this_obj, atom, p, flags);
@@ -154,7 +154,7 @@ JSValue JSB_NewPropertyObjectStr(JSContext *ctx, JSValueConst this_obj, const ch
     {
         return p;
     }
-    JS_FreeValue(ctx, p);
+    JS_FreeValue(ctx, p); // release old value
     p = JS_NewObject(ctx);
     JS_DupValue(ctx, p);
     JS_DefinePropertyValueStr(ctx, this_obj, name, p, flags);
@@ -282,12 +282,13 @@ int32_t JSB_GetBridgeType(JSContext *ctx, JSValue obj)
     if (JS_VALUE_GET_TAG(obj) == JS_TAG_OBJECT)
     {
         JSValue val = JS_GetPropertyStr(ctx, obj, JS_HIDDEN_PROP("type"));
-        JS_FreeValue(ctx, val);
         int32_t pres;
         if (JS_ToInt32(ctx, &pres, val) == 0)
         {
+            JS_FreeValue(ctx, val);
             return pres;
         }
+        JS_FreeValue(ctx, val);
     }
     return -1;
 }
