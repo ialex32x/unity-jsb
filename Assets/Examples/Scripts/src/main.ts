@@ -84,7 +84,7 @@ print("require 3:", require("./req_test1").test);
 // 通过 require 直接读 json
 print("json:", require("../config/data.json").name);
 
-Object.keys(require.cache).forEach(key => console.log("module loaded:", key));
+// Object.keys(require.cache).forEach(key => console.log("module loaded:", key));
 
 // print("require (node_modules): ", require("blink1").test);
 // print("require (node_modules): ", require("blink3").test);
@@ -97,31 +97,43 @@ print("end of script");
 
 // 未完成
 
-// class MyClass extends UnityEngine.MonoBehaviour {
-//     private _tick = 0;
+class MyClass extends UnityEngine.MonoBehaviour {
+    protected _tick = 0;
 
-//     Awake() {
-//         console.log("MyClass.Awake", this._tick++);
-//     }
+    Awake() {
+        console.log("MyClass.Awake", this._tick++);
+    }
 
-//     OnEnable() {
-//         console.log("MyClass.OnEnable", this._tick++);
-//     }
+    OnEnable() {
+        console.log("MyClass.OnEnable", this._tick++);
+    }
 
-//     OnDisable() {
-//         console.log("MyClass.OnDisable", this._tick++);
-//     }
+    OnDisable() {
+        console.log("MyClass.OnDisable", this._tick++);
+    }
 
-//     OnDestroy() {
-//         console.log("MyClass.OnDestroy", this._tick++);
-//     }
+    OnDestroy() {
+        console.log("MyClass.OnDestroy", this._tick++);
+    }
 
-//     test() {
-//     }
-// }
+    async test() {
+        console.log("MyClass.test (will be destroied after 5 secs.", this.transform);
+        await jsb.Yield(new UnityEngine.WaitForSeconds(5));
+        UnityEngine.Object.Destroy(this.gameObject);
+    }
+}
 
-// let gameObject = new UnityEngine.GameObject();
-// gameObject.AddComponent(MyClass);
+class MySubClass extends MyClass {
+    Awake() {
+        super.Awake();
+        console.log("MySubClass.Awake", this._tick++);
+    }
+}
+
+let gameObject = new UnityEngine.GameObject();
+let comp = gameObject.AddComponent(MySubClass);
+
+comp.test();
 // let comp = gameObject.GetComponent(MyClass);
 // comp.test();
 

@@ -14,6 +14,9 @@ namespace QuickJS.Native
         public static extern JSClassID JSB_GetBridgeClassID();
 
         [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern JSValue jsb_construct_bridge_object(JSContext ctx, JSValue proto, int32_t object_id);
+
+        [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern JSValue jsb_new_bridge_object(JSContext ctx, JSValue proto, int object_id);
 
         [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]

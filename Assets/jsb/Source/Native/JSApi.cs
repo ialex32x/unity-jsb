@@ -396,6 +396,9 @@ namespace QuickJS.Native
         [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern JS_BOOL JS_IsFunction(JSContext ctx, JSValueConst val);
 
+        /// <summary>
+        /// return 1:true 0:false 
+        /// </summary>
         [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern JS_BOOL JS_IsConstructor(JSContext ctx, JSValueConst val);
 
@@ -540,6 +543,15 @@ namespace QuickJS.Native
 
         [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern JSValue JS_CallConstructor(JSContext ctx, JSValueConst func_obj, int argc, [MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 2)] JSValueConst[] argv);
+
+        [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern unsafe JSValue JS_CallConstructor(JSContext ctx, JSValueConst func_obj, int argc, JSValueConst* argv);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static unsafe JSValue JS_CallConstructor(JSContext ctx, JSValueConst func_obj)
+        {
+            return JS_CallConstructor(ctx, func_obj, 0, (JSValueConst*) 0);
+        }
         
         [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern JSValue JS_Call(JSContext ctx, JSValueConst func_obj, JSValueConst this_obj,
@@ -722,6 +734,11 @@ namespace QuickJS.Native
         #endregion
 
         #region unity base
+
+        [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern JSAtom JSB_ATOM_name();
+
+        public static readonly JSAtom JS_ATOM_name = JSB_ATOM_name();
 
         [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern JSAtom JSB_ATOM_message();

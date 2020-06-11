@@ -212,6 +212,20 @@ typedef struct JSPayload
     char data[1];
 } JSPayload;
 
+JSValue jsb_construct_bridge_object(JSContext *ctx, JSValue proto, int32_t object_id)
+{
+    JSValue obj = JS_CallConstructor(ctx, proto, 0, NULL);
+    if (!JS_IsException(obj))
+    {
+        JSPayload *sv = (JSPayload *)js_malloc(ctx, sizeof(JSPayloadHeader));
+        sv->header.type_id = JS_BO_OBJECT;
+        sv->header.value = object_id;
+        JS_SetOpaque(obj, sv);
+    }
+
+    return obj;
+}
+
 JSValue jsb_new_bridge_object(JSContext *ctx, JSValue proto, int32_t object_id)
 {
     JSValue obj = JS_NewObjectProtoClass(ctx, proto, js_bridge_class_id);

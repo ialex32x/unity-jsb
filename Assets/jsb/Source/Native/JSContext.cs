@@ -32,13 +32,23 @@ namespace QuickJS.Native
             var err_message = JSApi.JS_GetProperty(this, ex, JSApi.JS_ATOM_message);
             var err_stack = JSApi.JS_GetProperty(this, ex, JSApi.JS_ATOM_stack);
 
-            var fileName = this.GetString(err_fileName);
-            var lineNumber = this.GetString(err_lineNumber);
-            var message = this.GetString(err_message);
-            var stack = this.GetString(err_stack);
+            var fileName = err_fileName.IsNullish() ? "<native>" : GetString(err_fileName);
+            var lineNumber = err_lineNumber.IsNullish() ? null : GetString(err_lineNumber);
+            var message = GetString(err_message);
+            var stack = GetString(err_stack);
 
             var logger = ScriptEngine.GetLogger(this);
-            logger.ScriptWrite(LogLevel.Error, "{0}:{1} {2}\n{3}", fileName, lineNumber, message, stack);
+
+            if (string.IsNullOrEmpty(lineNumber))
+            {
+                logger.ScriptWrite(LogLevel.Error, "[{0}] {1}\n{2}",
+                    fileName, message, stack);
+            }
+            else
+            {
+                logger.ScriptWrite(LogLevel.Error, "[{0}:{1}] {2}\n{3}",
+                    fileName, lineNumber, message, stack);
+            }
 
             JSApi.JS_FreeValue(this, err_fileName);
             JSApi.JS_FreeValue(this, err_lineNumber);
