@@ -104,8 +104,10 @@ class MyClass extends UnityEngine.MonoBehaviour {
         console.log("MyClass.Awake", this._tick++);
     }
 
-    OnEnable() {
+    async OnEnable() {
         console.log("MyClass.OnEnable", this._tick++);
+        await jsb.Yield(new UnityEngine.WaitForSeconds(1));
+        console.log("MyClass.OnEnable (delayed)", this._tick++);
     }
 
     OnDisable() {
