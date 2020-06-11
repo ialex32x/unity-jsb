@@ -229,9 +229,9 @@ namespace QuickJS.Editor
             {
                 var eType = type.GetEnumUnderlyingType();
                 var eTypeName = this.bindingManager.GetCSTypeFullName(eType);
-                return $"{this.bindingManager.GetScriptObjectPusher(eType)}(ctx, ({eTypeName}){value});";
+                return $"{this.bindingManager.GetScriptObjectPusher(eType)}(ctx, ({eTypeName}){value})";
             }
-            return $"{this.bindingManager.GetScriptObjectPusher(type)}(ctx, {value});";
+            return $"{this.bindingManager.GetScriptObjectPusher(type)}(ctx, {value})";
         }
 
         public string AppendGetThisCS(FieldBindingInfo bindingInfo)

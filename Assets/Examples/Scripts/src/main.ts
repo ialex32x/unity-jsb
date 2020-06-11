@@ -98,6 +98,7 @@ print("end of script");
 // 未完成
 
 class MyClass extends UnityEngine.MonoBehaviour {
+    vv = 0;
     protected _tick = 0;
 
     Awake() {
@@ -137,10 +138,20 @@ class MySubClass extends MyClass {
 }
 
 let gameObject = new UnityEngine.GameObject();
-let comp = gameObject.AddComponent(MySubClass);
+let comp1 = gameObject.AddComponent(MySubClass);
+let comp2 = gameObject.AddComponent(MyClass);
 
-comp.play();
+comp1.vv = 1;
+comp2.vv = 2;
 
-let comp_bySuperClass = gameObject.GetComponent(MyClass);
-comp_bySuperClass.test();
+comp1.play();
 
+{
+    let results = gameObject.GetComponents(MySubClass);
+    results.forEach(it => console.log("GetComponents(MySubClass):", it.vv));
+}
+
+{
+    let results = gameObject.GetComponents(MyClass);
+    results.forEach(it => console.log("GetComponents(MyClass):", it.vv));
+}

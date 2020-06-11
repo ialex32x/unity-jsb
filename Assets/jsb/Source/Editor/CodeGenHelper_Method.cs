@@ -481,7 +481,7 @@ namespace QuickJS.Editor
                 var position = isExtension ? parameter.Position - 1 : parameter.Position;
                 var argname = $"arg{position}";
                 var pusher = cg.AppendValuePusher(parameter.ParameterType, argname);
-                cg.cs.AppendLine("var out{0} = {1}", position, pusher);
+                cg.cs.AppendLine("var out{0} = {1};", position, pusher);
                 cg.cs.AppendLine("if (JSApi.JS_IsException(out{0}))", position);
                 cg.cs.AppendLine("{");
                 cg.cs.AddTabLevel();
