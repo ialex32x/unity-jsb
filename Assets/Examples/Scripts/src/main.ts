@@ -160,7 +160,7 @@ let camera = UnityEngine.GameObject.Find("/Main Camera").GetComponent(UnityEngin
 
 console.log(camera.name);
 
-console.log(Operators);
+// console.log(Operators.create);
 
 // let vec1 = new UnityEngine.Vector3(1, 2, 3);
 // let vec2 = new UnityEngine.Vector3(9, 8, 7);

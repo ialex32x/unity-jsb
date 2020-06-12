@@ -54,7 +54,7 @@ namespace QuickJS.Binding
                         {
                             fixed (JSValue* ptr = js_operators)
                             {
-                                rval = JSApi.JS_Call(ctx, create, JSApi.JS_UNDEFINED, 3, ptr);
+                                rval = JSApi.JS_Call(ctx, create, JSApi.JS_UNDEFINED, js_operators.Length, ptr);
                                 if (rval.IsException())
                                 {
                                     ctx.print_exception();
