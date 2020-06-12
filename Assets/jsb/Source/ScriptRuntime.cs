@@ -59,6 +59,16 @@ namespace QuickJS
             return _container;
         }
 
+        public IFileResolver GetFileResolver()
+        {
+            return _fileResolver;
+        }
+
+        public IFileSystem GetFileSystem()
+        {
+            return _fileSystem;
+        }
+
         public void AddSearchPath(string path)
         {
             _fileResolver.AddSearchPath(path);
