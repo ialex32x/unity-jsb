@@ -120,16 +120,19 @@ namespace QuickJS.Editor
     {
         public int length; // 参数数
         public string bindName;
+        public string cs_op; // 绑定代码中的运算符
         public MethodInfo methodInfo;
         public bool isExtension;
 
-        public OperatorBindingInfo(MethodInfo methodInfo, bool isExtension, bool bStatic, string bindName, string regName, int length)
+        // regName: js 中的重载运算符
+        public OperatorBindingInfo(MethodInfo methodInfo, bool isExtension, bool bStatic, string bindName, string regName, string cs_op, int length)
         {
             this.methodInfo = methodInfo;
             this.isExtension = isExtension;
             this.length = length;
             this.bindName = bindName;
             this.regName = regName;
+            this.cs_op = cs_op;
             this.name = (bStatic ? "BindStatic_" : "Bind_") + bindName;
 
             this.Add(methodInfo, isExtension); //NOTE: 旧代码, 待更替
@@ -541,7 +544,7 @@ namespace QuickJS.Editor
                         {
                             if (parameters[0].ParameterType == declaringType && parameters[1].ParameterType == declaringType)
                             {
-                                var bindingInfo = new OperatorBindingInfo(methodInfo, isExtension, isStatic, methodName, "+", 2);
+                                var bindingInfo = new OperatorBindingInfo(methodInfo, isExtension, isStatic, methodName, "+", "+", 2);
                                 operators.Add(bindingInfo);
                             }
                         }
@@ -551,7 +554,7 @@ namespace QuickJS.Editor
                         {
                             if (parameters[0].ParameterType == declaringType && parameters[1].ParameterType == declaringType)
                             {
-                                var bindingInfo = new OperatorBindingInfo(methodInfo, isExtension, isStatic, methodName, "-", 2);
+                                var bindingInfo = new OperatorBindingInfo(methodInfo, isExtension, isStatic, methodName, "-", "-", 2);
                                 operators.Add(bindingInfo);
                             }
                         }
@@ -561,7 +564,7 @@ namespace QuickJS.Editor
                         {
                             if (parameters[0].ParameterType == declaringType && parameters[1].ParameterType == declaringType)
                             {
-                                var bindingInfo = new OperatorBindingInfo(methodInfo, isExtension, isStatic, methodName, "==", 2);
+                                var bindingInfo = new OperatorBindingInfo(methodInfo, isExtension, isStatic, methodName, "==", "==", 2);
                                 operators.Add(bindingInfo);
                             }
                         }
@@ -576,7 +579,7 @@ namespace QuickJS.Editor
                                 return;
                             }
                             var bindingName = methodName + "_" + op0.name + "_" + op1.name;
-                            var bindingInfo = new OperatorBindingInfo(methodInfo, isExtension, isStatic, bindingName, "*", 2);
+                            var bindingInfo = new OperatorBindingInfo(methodInfo, isExtension, isStatic, bindingName, "*", "*", 2);
                             operators.Add(bindingInfo);
                         }
                         break;
@@ -590,7 +593,13 @@ namespace QuickJS.Editor
                                 return;
                             }
                             var bindingName = methodName + "_" + op0.name + "_" + op1.name;
-                            var bindingInfo = new OperatorBindingInfo(methodInfo, isExtension, isStatic, bindingName, "/", 2);
+                            var bindingInfo = new OperatorBindingInfo(methodInfo, isExtension, isStatic, bindingName, "/", "/", 2);
+                            operators.Add(bindingInfo);
+                        }
+                        break;
+                    case "op_UnaryNegation":
+                        {
+                            var bindingInfo = new OperatorBindingInfo(methodInfo, isExtension, isStatic, methodName, "neg", "-", 1);
                             operators.Add(bindingInfo);
                         }
                         break;
