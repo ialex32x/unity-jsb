@@ -11,6 +11,12 @@ make
 
 #include "quickjs.h"
 
+#if !defined(EMSCRIPTEN)
+#if !defined(CONFIG_ATOMICS)
+#define CONFIG_ATOMICS
+#endif
+#endif
+
 #define byte unsigned char
 #define JS_HIDDEN_PROP(s) ("\xFF" s)
 

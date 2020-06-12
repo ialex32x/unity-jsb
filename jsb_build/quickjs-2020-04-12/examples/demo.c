@@ -147,6 +147,20 @@ void foo()
     JSB_Init();
     JSRuntime *rt = JS_NewRuntime();
     JSContext *ctx = JS_NewContext(rt);
+    JS_AddIntrinsicOperators(ctx);
+
+    JSAtom op = JS_NewAtom(ctx, "Operators");
+    printf("Operators: %d ?? %d\n", op, JSB_ATOM_Operators());
+    JS_FreeAtom(ctx, op);
+
+    JSValue globalObj = JS_GetGlobalObject(ctx);
+    JSValue operators = JS_GetPropertyStr(ctx, globalObj, "Operators");
+    if (JS_IsUndefined(operators))
+    {
+        printf("?????????????????\n");
+    }
+    JS_FreeValue(ctx, operators);
+    JS_FreeValue(ctx, globalObj);
 
     JS_SetModuleLoaderFunc(rt, NULL, js_module_loader_test, NULL);
 

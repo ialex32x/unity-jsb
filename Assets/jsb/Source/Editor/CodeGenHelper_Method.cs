@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 
 namespace QuickJS.Editor
@@ -73,18 +74,35 @@ namespace QuickJS.Editor
             return snippet;
         }
 
+        public string Concat(List<string> args, string sp = ", ")
+        {
+            var len = args.Count;
+            var res = "";
+            for (var i = 0; i < len; i++)
+            {
+                res += args[i];
+                if (i != len - 1)
+                {
+                    res += sp;
+                }
+            }
+
+            return res;
+        }
+
         // parametersByRef: 可修改参数将被加入此列表
         // hasParams: 是否包含变参 (最后一个参数将按数组处理)
-        public string AppendGetParameters(bool hasParams, string nargs, ParameterInfo[] parameters, List<ParameterInfo> parametersByRef)
+        public List<string> AppendGetParameters(bool hasParams, string nargs, ParameterInfo[] parameters, List<ParameterInfo> parametersByRef)
         {
-            var arglist = "";
+            var arglist = new List<string>();
             var argBase = 0;
             for (var i = argBase; i < parameters.Length; i++)
             {
+                var argitem = "";
                 var parameter = parameters[i];
                 if (parameter.IsOut && parameter.ParameterType.IsByRef)
                 {
-                    arglist += "out ";
+                    argitem += "out ";
                     if (parametersByRef != null)
                     {
                         parametersByRef.Add(parameter);
@@ -92,17 +110,14 @@ namespace QuickJS.Editor
                 }
                 else if (parameter.ParameterType.IsByRef)
                 {
-                    arglist += "ref ";
+                    argitem += "ref ";
                     if (parametersByRef != null)
                     {
                         parametersByRef.Add(parameter);
                     }
                 }
-                arglist += "arg" + i;
-                if (i != parameters.Length - 1)
-                {
-                    arglist += ", ";
-                }
+                argitem += "arg" + i;
+                arglist.Add(argitem);
                 if (hasParams && i == parameters.Length - 1)
                 {
                     // 处理数组
@@ -314,9 +329,13 @@ namespace QuickJS.Editor
             //TODO: 需要处理参数类型归并问题, 因为如果类型没有导入 ts 中, 可能会在声明中出现相同参数列表的定义
             //      在 MethodVariant 中创建每个方法对应的TS类型名参数列表, 完全相同的不再输出
             var prefix = "";
+            if (method.Name.StartsWith("op_"))
+            {
+                prefix += "//";
+            }
             if (method.IsStatic && !isExtension)
             {
-                prefix = "static ";
+                prefix += "static ";
             }
             string tsMethodRename;
             if (this.cg.bindingManager.GetTSMethodRename(method, out tsMethodRename))
@@ -520,7 +539,7 @@ namespace QuickJS.Editor
 
         protected override string GetInvokeBinding(string caller, ConstructorInfo method, bool hasParams, bool isExtension, string nargs, ParameterInfo[] parameters, List<ParameterInfo> parametersByRef)
         {
-            var arglist = this.AppendGetParameters(hasParams, nargs, parameters, parametersByRef);
+            var arglist = Concat(AppendGetParameters(hasParams, nargs, parameters, parametersByRef));
             var decalringTypeName = this.cg.bindingManager.GetCSTypeFullName(this.bindingInfo.decalringType);
             // 方法本身有返回值
             var transform = cg.bindingManager.GetTypeTransform(method.DeclaringType);
@@ -631,7 +650,7 @@ namespace QuickJS.Editor
                     return $"{caller}[{arglist_t}]"; // getter
                 }
             }
-            var arglist = this.AppendGetParameters(hasParams, nargs, parameters, parametersByRef);
+            var arglist = Concat(AppendGetParameters(hasParams, nargs, parameters, parametersByRef));
             var transform = cg.bindingManager.GetTypeTransform(method.DeclaringType);
             if (transform == null || !transform.OnBinding(BindingPoints.METHOD_BINDING_BEFORE_INVOKE, method, cg))
             {
@@ -643,8 +662,10 @@ namespace QuickJS.Editor
                 {
                     arglist = ", " + arglist;
                 }
+                
                 return $"{methodDeclType}.{method.Name}({caller}{arglist})";
             }
+            
             return $"{caller}.{method.Name}({arglist})";
         }
 
@@ -672,7 +693,7 @@ namespace QuickJS.Editor
         }
 
         public TSMethodCodeGen(CodeGenerator cg, MethodBindingInfo bindingInfo)
-        : base(cg)
+            : base(cg)
         {
             this.bindingInfo = bindingInfo;
             WriteTSAllVariants(this.bindingInfo);

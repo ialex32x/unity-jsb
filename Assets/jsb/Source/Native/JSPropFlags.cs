@@ -43,5 +43,6 @@ namespace QuickJS.Native
         
         // custom values
         CONST_VALUE = JS_PROP_HAS_VALUE | JS_PROP_ENUMERABLE, 
+        DEFAULT = JS_PROP_CONFIGURABLE | JS_PROP_ENUMERABLE, 
     }
 }

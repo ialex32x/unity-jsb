@@ -12,18 +12,18 @@ namespace QuickJS.Editor
 
     public class ClassCodeGen : TypeCodeGen
     {
-        public ClassCodeGen(CodeGenerator cg, TypeBindingInfo bindingInfo)
-        : base(cg, bindingInfo)
+        public ClassCodeGen(CodeGenerator cg, TypeBindingInfo typeBindingInfo)
+        : base(cg, typeBindingInfo)
         {
-            this.cg.AppendJSDoc(this.bindingInfo.type);
-            var transform = this.bindingInfo.transform;
-            var prefix = this.bindingInfo.jsNamespace != null ? "" : "declare ";
-            var super = this.cg.bindingManager.GetTSSuperName(this.bindingInfo);
-            var interfaces = this.cg.bindingManager.GetTSInterfacesName(this.bindingInfo);
+            this.cg.AppendJSDoc(this.typeBindingInfo.type);
+            var transform = this.typeBindingInfo.transform;
+            var prefix = this.typeBindingInfo.jsNamespace != null ? "" : "declare ";
+            var super = this.cg.bindingManager.GetTSSuperName(this.typeBindingInfo);
+            var interfaces = this.cg.bindingManager.GetTSInterfacesName(this.typeBindingInfo);
             var extends = string.IsNullOrEmpty(super) ? "" : $" extends {super}";
             var implements = string.IsNullOrEmpty(interfaces) ? "" : $" implements {interfaces}";
-            var regName = this.bindingInfo.jsName;
-            if (bindingInfo.type.IsAbstract)
+            var regName = this.typeBindingInfo.jsName;
+            if (typeBindingInfo.type.IsAbstract)
             {
                 prefix += "abstract ";
             }
@@ -32,25 +32,27 @@ namespace QuickJS.Editor
 
             // 生成函数体
             // 构造函数
-            if (this.bindingInfo.constructors.available)
+            if (this.typeBindingInfo.constructors.available)
             {
                 using (new PInvokeGuardCodeGen(cg, typeof(Native.JSCFunctionMagic)))
                 {
-                    using (new BindingConstructorDeclareCodeGen(cg, this.bindingInfo.constructors.name))
+                    using (new BindingConstructorDeclareCodeGen(cg, this.typeBindingInfo.constructors.name))
                     {
                         using (new TryCatchGuradCodeGen(cg))
                         {
-                            using (new ConstructorCodeGen(cg, this.bindingInfo))
+                            using (new ConstructorCodeGen(cg, this.typeBindingInfo))
                             {
                             }
                         }
                     }
                 }
             }
+            
             // 非静态成员方法
-            foreach (var kv in this.bindingInfo.methods)
+            foreach (var kv in this.typeBindingInfo.methods)
             {
                 var methodBindingInfo = kv.Value;
+                
                 if (transform == null || !transform.IsRedirectedMethod(methodBindingInfo.regName))
                 {
                     using (new PInvokeGuardCodeGen(cg))
@@ -66,16 +68,18 @@ namespace QuickJS.Editor
                         }
                     }
                 }
+                
                 using (new TSMethodCodeGen(cg, methodBindingInfo))
                 {
                 }
             }
+            
             //TODO: C# 抽象类可以不提供方法实现, d.ts 需要补充声明
             // if (this.bindingInfo.type.IsAbstract && !this.bindingInfo.type.IsInterface)
             // {
             // }
             // 静态成员方法
-            foreach (var kv in this.bindingInfo.staticMethods)
+            foreach (var kv in this.typeBindingInfo.staticMethods)
             {
                 var methodBindingInfo = kv.Value;
                 if (transform == null || !transform.IsRedirectedMethod(methodBindingInfo.regName))
@@ -93,10 +97,36 @@ namespace QuickJS.Editor
                         }
                     }
                 }
+                
                 using (new TSMethodCodeGen(cg, methodBindingInfo))
                 {
                 }
             }
+            
+            foreach (var kv in this.typeBindingInfo.operators)
+            {
+                var operatorBindingInfo = kv.Value;
+                if (transform == null || !transform.IsRedirectedMethod(operatorBindingInfo.regName))
+                {
+                    using (new PInvokeGuardCodeGen(cg))
+                    {
+                        using (new BindingFuncDeclareCodeGen(cg, operatorBindingInfo.name))
+                        {
+                            using (new TryCatchGuradCodeGen(cg))
+                            {
+                                using (new OperatorCodeGen(cg, operatorBindingInfo))
+                                {
+                                }
+                            }
+                        }
+                    }
+                }
+                
+                using (new TSOperatorCodeGen(cg, operatorBindingInfo))
+                {
+                }
+            }
+            
             // 所有附加方法
             if (transform != null)
             {
@@ -105,8 +135,9 @@ namespace QuickJS.Editor
                     this.cg.tsDeclare.AppendLine(decl);
                 });
             }
+            
             // 所有属性
-            foreach (var kv in this.bindingInfo.properties)
+            foreach (var kv in this.typeBindingInfo.properties)
             {
                 var propertyBindingInfo = kv.Value;
                 // 静态
@@ -183,7 +214,7 @@ namespace QuickJS.Editor
                 }
             }
             // 所有字段
-            foreach (var kv in this.bindingInfo.fields)
+            foreach (var kv in this.typeBindingInfo.fields)
             {
                 var fieldBindingInfo = kv.Value;
                 if (fieldBindingInfo.getterName != null)
@@ -219,7 +250,7 @@ namespace QuickJS.Editor
                 }
             }
             // 所有事件 (当做field相似处理)
-            foreach (var kv in this.bindingInfo.events)
+            foreach (var kv in this.typeBindingInfo.events)
             {
                 var eventBindingInfo = kv.Value;
                 using (new PInvokeGuardCodeGen(cg))
@@ -270,12 +301,12 @@ namespace QuickJS.Editor
             {
                 using (new RegFuncCodeGen(cg))
                 {
-                    using (new RegFuncNamespaceCodeGen(cg, bindingInfo))
+                    using (new RegFuncNamespaceCodeGen(cg, typeBindingInfo))
                     {
-                        var constructor = bindingInfo.constructors.available ? bindingInfo.constructors.name : "JSApi.class_private_ctor";
-                        if (!bindingInfo.constructors.available && !bindingInfo.type.IsAbstract)
+                        var constructor = typeBindingInfo.constructors.available ? typeBindingInfo.constructors.name : "JSApi.class_private_ctor";
+                        if (!typeBindingInfo.constructors.available && !typeBindingInfo.type.IsAbstract)
                         {
-                            if (bindingInfo.type.IsSubclassOf(typeof(Component)))
+                            if (typeBindingInfo.type.IsSubclassOf(typeof(Component)))
                             {
                                 // 因为 ts 泛型约束需要 new() 形式, 所以在定义中产生一个 public 定义
                                 // 例如: GetComponent<T extends Component>(type: { new(): T }): T
@@ -287,33 +318,54 @@ namespace QuickJS.Editor
                             }
                         }
                         cg.cs.AppendLine("var cls = ns.CreateClass(\"{0}\", typeof({1}), {2});",
-                            bindingInfo.jsName,
-                            this.cg.bindingManager.GetCSTypeFullName(bindingInfo.type),
+                            typeBindingInfo.jsName,
+                            this.cg.bindingManager.GetCSTypeFullName(typeBindingInfo.type),
                             constructor);
-                        foreach (var kv in bindingInfo.methods)
+                        
+                        // 运算符
+                        foreach (var kv in typeBindingInfo.operators)
+                        {
+                            var info = kv.Value;
+                            var regName = info.regName;
+                            var funcName = info.name;
+                            string redirect;
+                            if (this.typeBindingInfo.transform != null && this.typeBindingInfo.transform.TryRedirectMethod(regName, out redirect))
+                            {
+                                funcName = redirect;
+                            }
+                            
+                            cg.cs.AppendLine("cls.AddSelfOperator(\"{0}\", {1}, {2});", regName, funcName, info.length);
+                        }
+                        
+                        // 非静态方法
+                        foreach (var kv in typeBindingInfo.methods)
                         {
                             var regName = kv.Value.regName;
                             var funcName = kv.Value.name;
                             string redirect;
-                            if (this.bindingInfo.transform != null && this.bindingInfo.transform.TryRedirectMethod(regName, out redirect))
+                            if (this.typeBindingInfo.transform != null && this.typeBindingInfo.transform.TryRedirectMethod(regName, out redirect))
                             {
                                 funcName = redirect;
                             }
 
                             cg.cs.AppendLine("cls.AddMethod(false, \"{0}\", {1});", regName, funcName);
                         }
-                        foreach (var kv in bindingInfo.staticMethods)
+                        
+                        // 静态方法
+                        foreach (var kv in typeBindingInfo.staticMethods)
                         {
                             var regName = kv.Value.regName;
                             var funcName = kv.Value.name;
                             string redirect;
-                            if (this.bindingInfo.transform != null && this.bindingInfo.transform.TryRedirectMethod(regName, out redirect))
+                            if (this.typeBindingInfo.transform != null && this.typeBindingInfo.transform.TryRedirectMethod(regName, out redirect))
                             {
                                 funcName = redirect;
                             }
                             cg.cs.AppendLine("cls.AddMethod(true, \"{0}\", {1});", regName, funcName);
                         }
-                        foreach (var kv in bindingInfo.properties)
+                        
+                        // 属性
+                        foreach (var kv in typeBindingInfo.properties)
                         {
                             var bindingInfo = kv.Value;
                             if (bindingInfo.staticPair.IsValid())
@@ -352,7 +404,7 @@ namespace QuickJS.Editor
                                 cg.tsDeclare.AppendLine($"{tsPropertyPrefix}{tsPropertyVar}: {tsPropertyType}");
                             }
                         }
-                        foreach (var kv in bindingInfo.fields)
+                        foreach (var kv in typeBindingInfo.fields)
                         {
                             var bindingInfo = kv.Value;
                             var bStatic = bindingInfo.isStatic;
@@ -379,7 +431,7 @@ namespace QuickJS.Editor
                             cg.AppendJSDoc(bindingInfo.fieldInfo);
                             cg.tsDeclare.AppendLine($"{tsFieldPrefix}{tsFieldVar}: {tsFieldType}");
                         }
-                        foreach (var kv in bindingInfo.events)
+                        foreach (var kv in typeBindingInfo.events)
                         {
                             var eventBindingInfo = kv.Value;
                             var bStatic = eventBindingInfo.isStatic;

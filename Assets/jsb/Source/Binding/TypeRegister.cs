@@ -20,6 +20,10 @@ namespace QuickJS.Binding
         // 注册过程中产生的 atom, 完成后自动释放 
         private AtomCache _atoms;
 
+        private JSValue _globalObject;
+        private JSValue _operatorCreate;
+        private List<OperatorDecl> _operatorDecls = new List<OperatorDecl>();
+
         public static implicit operator JSContext(TypeRegister register)
         {
             return register._context;
@@ -45,6 +49,39 @@ namespace QuickJS.Binding
             _db = new TypeDB(runtime);
             _context = context;
             _atoms = new AtomCache(_context);
+            var ctx = (JSContext) _context;
+
+            _globalObject = JSApi.JS_GetGlobalObject(ctx);
+            _operatorCreate = JSApi.JS_UNDEFINED;
+            
+            var operators = JSApi.JS_GetProperty(ctx, _globalObject, JSApi.JS_ATOM_Operators);
+            if (!operators.IsNullish())
+            {
+                if (operators.IsException())
+                {
+                    ctx.print_exception();
+                }
+                else
+                {
+                    var create = JSApi.JS_GetProperty(ctx, operators, GetAtom("create"));
+                    JSApi.JS_FreeValue(ctx, operators);
+                    if (create.IsException())
+                    {
+                        ctx.print_exception();
+                    }
+                    else
+                    {
+                        if (JSApi.JS_IsFunction(ctx, create) == 1)
+                        {
+                            _operatorCreate = create;
+                        }
+                        else
+                        {
+                            JSApi.JS_FreeValue(ctx, create);
+                        }
+                    }
+                }
+            }
 
             JSApi.JS_NewClass(runtime, JSApi.JSB_GetBridgeClassID(), "CSharpClass", JSApi.class_finalizer);
         }
@@ -106,24 +143,40 @@ namespace QuickJS.Binding
         }
 
         // return type id
-        public int Add(Type type, JSValue jsValue)
+        public int RegisterType(Type type, JSValue jsValue)
         {
             return _db.AddType(type, JSApi.JS_DupValue(_context, jsValue));
         }
 
-        public int Add(Type type)
+        public int RegisterType(Type type)
         {
             return _db.AddType(type, JSApi.JS_UNDEFINED);
         }
 
-        public void Cleanup()
+        private void SubmitOperators()
         {
-            _atoms.Clear();
+            // 提交运算符重载
+            var ctx = (JSContext) _context;
+            
+            for (int i = 0, count = _operatorDecls.Count; i < count; i++)
+            {
+                _operatorDecls[i].Register(ctx, _operatorCreate);
+            }
+            
+            _operatorDecls.Clear();
+        }
+
+        public void AddOperatorDecl(JSValue proto, JSValue[] operators)
+        {
+            _operatorDecls.Add(new OperatorDecl(proto, operators));
         }
 
         public TypeDB Finish()
         {
-            Cleanup();
+            SubmitOperators();
+            JSApi.JS_FreeValue(_context, _globalObject);
+            JSApi.JS_FreeValue(_context, _operatorCreate);
+            _atoms.Clear();
             return _db.Finish();
         }
     }

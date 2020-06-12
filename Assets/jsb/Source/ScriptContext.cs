@@ -28,6 +28,7 @@ namespace QuickJS
             _isValid = true;
             _runtime = runtime;
             _ctx = JSApi.JS_NewContext(_runtime);
+            JSApi.JS_AddIntrinsicOperators(_ctx);
             _atoms = new AtomCache(_ctx);
             _moduleCache = JSApi.JS_NewObject(_ctx);
         }
@@ -109,11 +110,6 @@ namespace QuickJS
             }
 
             _ctx = JSContext.Null;
-        }
-
-        public void AddIntrinsicOperators()
-        {
-            JSApi.JS_AddIntrinsicOperators(_ctx);
         }
 
         public void FreeValue(JSValue value)
