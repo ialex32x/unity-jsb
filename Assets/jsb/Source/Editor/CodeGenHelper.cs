@@ -179,15 +179,15 @@ namespace QuickJS.Editor
     public class TypeCodeGen : IDisposable
     {
         protected CodeGenerator cg;
-        protected TypeBindingInfo bindingInfo;
+        protected TypeBindingInfo typeBindingInfo;
 
-        public TypeCodeGen(CodeGenerator cg, TypeBindingInfo bindingInfo)
+        public TypeCodeGen(CodeGenerator cg, TypeBindingInfo typeBindingInfo)
         {
             this.cg = cg;
-            this.bindingInfo = bindingInfo;
+            this.typeBindingInfo = typeBindingInfo;
             this.cg.cs.AppendLine("[{0}({1})]", typeof(JSBindingAttribute).Name, ScriptEngine.VERSION);
             this.cg.cs.AppendLine("[UnityEngine.Scripting.Preserve]");
-            this.cg.cs.AppendLine("public class {0} : {1} {{", bindingInfo.name, typeof(Binding.Values).Name);
+            this.cg.cs.AppendLine("public class {0} : {1} {{", typeBindingInfo.name, typeof(Binding.Values).Name);
             this.cg.cs.AddTabLevel();
         }
 

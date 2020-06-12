@@ -11,7 +11,7 @@ namespace QuickJS.Editor
 
     // 所有具有相同参数数量的方法变体 (最少参数的情况下)
     public class MethodBaseVariant<T>
-    where T : MethodBase
+        where T : MethodBase
     {
         public int argc; // 最少参数数要求
         public List<T> plainMethods = new List<T>();
@@ -56,9 +56,9 @@ namespace QuickJS.Editor
     }
 
     public abstract class MethodBaseBindingInfo<T>
-    where T : MethodBase
+        where T : MethodBase
     {
-        public string name { get; set; }    // 绑定代码名
+        public string name { get; set; } // 绑定代码名
         public string regName { get; set; } // 导出名
 
         private int _count = 0;
@@ -87,15 +87,18 @@ namespace QuickJS.Editor
             {
                 nargs--;
             }
+
             if (isExtension)
             {
                 nargs--;
             }
+
             if (!this.variants.TryGetValue(nargs, out variants))
             {
                 variants = new MethodBaseVariant<T>(nargs);
                 this.variants.Add(nargs, variants);
             }
+
             _count++;
             variants.Add(method, isVararg);
         }
@@ -104,9 +107,22 @@ namespace QuickJS.Editor
     public class MethodBindingInfo : MethodBaseBindingInfo<MethodInfo>
     {
         public bool isIndexer;
+
         public MethodBindingInfo(bool isIndexer, bool bStatic, string bindName, string regName)
         {
             this.isIndexer = isIndexer;
+            this.name = (bStatic ? "BindStatic_" : "Bind_") + bindName;
+            this.regName = regName;
+        }
+    }
+
+    public class OperatorBindingInfo : MethodBaseBindingInfo<MethodInfo>
+    {
+        public int length; // 参数数
+
+        public OperatorBindingInfo(bool bStatic, string bindName, string regName, int length)
+        {
+            this.length = length;
             this.name = (bStatic ? "BindStatic_" : "Bind_") + bindName;
             this.regName = regName;
         }
@@ -125,6 +141,7 @@ namespace QuickJS.Editor
                 {
                     return true; // default constructor for struct
                 }
+
                 return variants.Count > 0;
             }
         }
@@ -151,7 +168,9 @@ namespace QuickJS.Editor
     public class PropertyBindingInfo
     {
         public PropertyBindingPair staticPair;
+
         public PropertyBindingPair instancePair;
+
         // public string getterName; // 绑定代码名
         // public string setterName;
         public string regName; // js 注册名
@@ -171,6 +190,7 @@ namespace QuickJS.Editor
                     instancePair.getterName = "BindRead_" + propertyInfo.Name;
                 }
             }
+
             if (propertyInfo.CanWrite && propertyInfo.SetMethod != null && propertyInfo.SetMethod.IsPublic)
             {
                 if (propertyInfo.SetMethod.IsStatic)
@@ -182,6 +202,7 @@ namespace QuickJS.Editor
                     instancePair.setterName = "BindWrite_" + propertyInfo.Name;
                 }
             }
+
             this.regName = TypeBindingInfo.GetNamingAttribute(propertyInfo);
         }
     }
@@ -196,7 +217,10 @@ namespace QuickJS.Editor
 
         public string constantValue;
 
-        public bool isStatic { get { return fieldInfo.IsStatic; } }
+        public bool isStatic
+        {
+            get { return fieldInfo.IsStatic; }
+        }
 
         public FieldBindingInfo(FieldInfo fieldInfo)
         {
@@ -213,27 +237,30 @@ namespace QuickJS.Editor
                             constantValue = $"\"{cv}\"";
                             break;
                         }
+
                         if (cvType == typeof(int)
-                         || cvType == typeof(uint)
-                         || cvType == typeof(byte)
-                         || cvType == typeof(sbyte)
-                         || cvType == typeof(short)
-                         || cvType == typeof(ushort)
-                         || cvType == typeof(bool))
+                            || cvType == typeof(uint)
+                            || cvType == typeof(byte)
+                            || cvType == typeof(sbyte)
+                            || cvType == typeof(short)
+                            || cvType == typeof(ushort)
+                            || cvType == typeof(bool))
                         {
                             constantValue = $"{cv}";
                             break;
                         }
+
                         if (cvType == typeof(float))
                         {
-                            var fcv = (float)cv;
+                            var fcv = (float) cv;
                             if (!float.IsInfinity(fcv)
-                            && !float.IsNaN(fcv))
+                                && !float.IsNaN(fcv))
                             {
                                 constantValue = $"{cv}";
                                 break;
                             }
                         }
+
                         // if (cvType.IsPrimitive && cvType.IsValueType)
                         // {
                         //     constantValue = $"{cv}";
@@ -244,6 +271,7 @@ namespace QuickJS.Editor
                     {
                     }
                 }
+
                 if (fieldInfo.IsStatic)
                 {
                     this.getterName = "BindStaticRead_" + fieldInfo.Name;
@@ -261,6 +289,7 @@ namespace QuickJS.Editor
                     }
                 }
             } while (false);
+
             this.regName = TypeBindingInfo.GetNamingAttribute(fieldInfo);
             this.fieldInfo = fieldInfo;
         }
@@ -276,7 +305,10 @@ namespace QuickJS.Editor
         public Type declaringType;
         public EventInfo eventInfo;
 
-        public bool isStatic { get { return eventInfo.GetAddMethod().IsStatic; } }
+        public bool isStatic
+        {
+            get { return eventInfo.GetAddMethod().IsStatic; }
+        }
 
         public EventBindingInfo(Type declaringType, EventInfo eventInfo)
         {
@@ -296,6 +328,7 @@ namespace QuickJS.Editor
                     this.proxyName = "BindProxy_" + eventInfo.Name;
                 }
             } while (false);
+
             this.regName = TypeBindingInfo.GetNamingAttribute(eventInfo);
         }
     }
@@ -305,7 +338,11 @@ namespace QuickJS.Editor
         public BindingManager bindingManager;
         public Type type;
         public TypeTransform transform;
-        public Type super { get { return type.BaseType; } } // 父类类型
+
+        public Type super
+        {
+            get { return type.BaseType; }
+        } // 父类类型
 
         public bool omit
         {
@@ -318,6 +355,7 @@ namespace QuickJS.Editor
 
         public string jsName; // js注册名
 
+        public Dictionary<string, OperatorBindingInfo> operators = new Dictionary<string, OperatorBindingInfo>();
         public Dictionary<string, MethodBindingInfo> methods = new Dictionary<string, MethodBindingInfo>();
         public Dictionary<string, MethodBindingInfo> staticMethods = new Dictionary<string, MethodBindingInfo>();
         public Dictionary<string, PropertyBindingInfo> properties = new Dictionary<string, PropertyBindingInfo>();
@@ -352,6 +390,7 @@ namespace QuickJS.Editor
             {
                 return naming.name;
             }
+
             return info.Name;
         }
 
@@ -391,6 +430,7 @@ namespace QuickJS.Editor
                     this.jsName = naming;
                 }
             }
+
             this.name = bindingManager.prefs.typeBindingPrefix + (this.jsNamespace + "_" + this.jsName).Replace('.', '_').Replace('+', '_');
             this.constructors = new ConstructorBindingInfo(type);
         }
@@ -406,8 +446,10 @@ namespace QuickJS.Editor
                 {
                     selfname += "_" + gp.Name;
                 }
+
                 return selfname.Replace(".", "_").Replace("<", "_").Replace(">", "_").Replace("`", "_");
             }
+
             var filename = type.FullName.Replace(".", "_").Replace("<", "_").Replace(">", "_").Replace("`", "_");
             return filename;
         }
@@ -459,6 +501,22 @@ namespace QuickJS.Editor
             AddMethod(methodInfo, false, null);
         }
 
+        private static HashSet<string> _supportedOperators = new HashSet<string>(new string[]
+        {
+            "op_Addition",
+            "op_Subtraction"
+        });
+        
+        public static bool IsSupportedOperators(MethodInfo methodInfo)
+        {
+            if (methodInfo.IsSpecialName)
+            {
+                return _supportedOperators.Contains(methodInfo.Name);
+            }
+
+            return false;
+        }
+
         public void AddMethod(MethodInfo methodInfo, bool isIndexer, string renameRegName)
         {
             if (this.transform != null)
@@ -469,17 +527,53 @@ namespace QuickJS.Editor
                     return;
                 }
             }
+
             var isExtension = methodInfo.IsDefined(typeof(System.Runtime.CompilerServices.ExtensionAttribute));
             var isStatic = methodInfo.IsStatic && !isExtension;
-            var group = isStatic ? staticMethods : methods;
-            MethodBindingInfo overrides;
-            var methodName = TypeBindingInfo.GetNamingAttribute(methodInfo);
-            if (!group.TryGetValue(methodName, out overrides))
+            if (IsSupportedOperators(methodInfo))
             {
-                overrides = new MethodBindingInfo(isIndexer, isStatic, methodName, renameRegName ?? methodName);
-                group.Add(methodName, overrides);
+                OperatorBindingInfo bindingInfo;
+                var methodName = TypeBindingInfo.GetNamingAttribute(methodInfo);
+                if (!operators.TryGetValue(methodName, out bindingInfo))
+                {
+                    var length = 0;
+                    var regName = renameRegName;
+                    if (regName == null)
+                    {
+                        switch (methodName)
+                        {
+                            case "op_Addition":
+                                regName = "+";
+                                length = 2;
+                                break;
+                            case "op_Subtraction":
+                                regName = "-";
+                                length = 2;
+                                break;
+                            default:
+                                regName = methodName;
+                                break;
+                        }
+                    }
+
+                    bindingInfo = new OperatorBindingInfo(isStatic, methodName, regName, length);
+                    operators.Add(methodName, bindingInfo);
+                    bindingInfo.Add(methodInfo, isExtension);
+                }
             }
-            overrides.Add(methodInfo, isExtension);
+            else
+            {
+                var group = isStatic ? staticMethods : methods;
+                MethodBindingInfo overrides;
+                var methodName = TypeBindingInfo.GetNamingAttribute(methodInfo);
+                if (!group.TryGetValue(methodName, out overrides))
+                {
+                    overrides = new MethodBindingInfo(isIndexer, isStatic, methodName, renameRegName ?? methodName);
+                    group.Add(methodName, overrides);
+                }
+                overrides.Add(methodInfo, isExtension);
+            }
+
             CollectDelegate(methodInfo);
             bindingManager.Info("[AddMethod] {0}.{1}", type, methodInfo);
         }
@@ -503,6 +597,7 @@ namespace QuickJS.Editor
                     return;
                 }
             }
+
             constructors.Add(constructorInfo, false);
             CollectDelegate(constructorInfo);
             this.bindingManager.Info("[AddConstructor] {0}.{1}", type, constructorInfo);
@@ -525,28 +620,34 @@ namespace QuickJS.Editor
                     bindingManager.Info("skip special field: {0}", field.Name);
                     continue;
                 }
+
                 if (field.FieldType.IsPointer)
                 {
                     bindingManager.Info("skip pointer field: {0}", field.Name);
                     continue;
                 }
+
                 if (field.IsDefined(typeof(JSOmitAttribute), false))
                 {
                     bindingManager.Info("skip omitted field: {0}", field.Name);
                     continue;
                 }
+
                 if (field.IsDefined(typeof(ObsoleteAttribute), false))
                 {
                     bindingManager.Info("skip obsolete field: {0}", field.Name);
                     continue;
                 }
+
                 if (transform != null && transform.IsMemberBlocked(field.Name))
                 {
                     bindingManager.Info("skip blocked field: {0}", field.Name);
                     continue;
                 }
+
                 AddField(field);
             }
+
             var events = type.GetEvents(bindingFlags);
             foreach (var evt in events)
             {
@@ -555,28 +656,34 @@ namespace QuickJS.Editor
                     bindingManager.Info("skip special event: {0}", evt.Name);
                     continue;
                 }
+
                 if (evt.EventHandlerType.IsPointer)
                 {
                     bindingManager.Info("skip pointer event: {0}", evt.Name);
                     continue;
                 }
+
                 if (evt.IsDefined(typeof(ObsoleteAttribute), false))
                 {
                     bindingManager.Info("skip obsolete event: {0}", evt.Name);
                     continue;
                 }
+
                 if (evt.IsDefined(typeof(JSOmitAttribute), false))
                 {
                     bindingManager.Info("skip omitted event: {0}", evt.Name);
                     continue;
                 }
+
                 if (transform != null && transform.IsMemberBlocked(evt.Name))
                 {
                     bindingManager.Info("skip blocked event: {0}", evt.Name);
                     continue;
                 }
+
                 AddEvent(evt);
             }
+
             var properties = type.GetProperties(bindingFlags);
             foreach (var property in properties)
             {
@@ -585,26 +692,31 @@ namespace QuickJS.Editor
                     bindingManager.Info("skip special property: {0}", property.Name);
                     continue;
                 }
+
                 if (property.PropertyType.IsPointer)
                 {
                     bindingManager.Info("skip pointer property: {0}", property.Name);
                     continue;
                 }
+
                 if (property.IsDefined(typeof(JSOmitAttribute), false))
                 {
                     bindingManager.Info("skip omitted property: {0}", property.Name);
                     continue;
                 }
+
                 if (property.IsDefined(typeof(ObsoleteAttribute), false))
                 {
                     bindingManager.Info("skip obsolete property: {0}", property.Name);
                     continue;
                 }
+
                 if (transform != null && transform.IsMemberBlocked(property.Name))
                 {
                     bindingManager.Info("skip blocked property: {0}", property.Name);
                     continue;
                 }
+
                 //NOTE: 索引访问
                 if (property.Name == "Item")
                 {
@@ -615,8 +727,10 @@ namespace QuickJS.Editor
                             bindingManager.Info("skip unsupported get-method: {0}", property.GetMethod);
                             continue;
                         }
+
                         AddMethod(property.GetMethod, true, "$GetValue");
                     }
+
                     if (property.CanWrite && property.SetMethod != null)
                     {
                         if (BindingManager.IsUnsupported(property.SetMethod))
@@ -624,13 +738,17 @@ namespace QuickJS.Editor
                             bindingManager.Info("skip unsupported set-method: {0}", property.SetMethod);
                             continue;
                         }
+
                         AddMethod(property.SetMethod, true, "$SetValue");
                     }
+
                     // bindingManager.Info("skip indexer property: {0}", property.Name);
                     continue;
                 }
+
                 AddProperty(property);
             }
+
             if (!type.IsAbstract)
             {
                 var constructors = type.GetConstructors();
@@ -641,19 +759,23 @@ namespace QuickJS.Editor
                         bindingManager.Info("skip omitted constructor: {0}", constructor);
                         continue;
                     }
+
                     if (constructor.IsDefined(typeof(ObsoleteAttribute), false))
                     {
                         bindingManager.Info("skip obsolete constructor: {0}", constructor);
                         continue;
                     }
+
                     if (BindingManager.ContainsPointer(constructor))
                     {
                         bindingManager.Info("skip pointer constructor: {0}", constructor);
                         continue;
                     }
+
                     AddConstructor(constructor);
                 }
             }
+
             var methods = type.GetMethods(bindingFlags);
             foreach (var method in methods)
             {
@@ -662,50 +784,59 @@ namespace QuickJS.Editor
                     bindingManager.Info("skip generic method: {0}", method);
                     continue;
                 }
+
                 if (BindingManager.ContainsPointer(method))
                 {
                     bindingManager.Info("skip unsafe (pointer) method: {0}", method);
                     continue;
                 }
+
                 if (method.IsSpecialName)
                 {
-                    bindingManager.Info("skip special method: {0}", method);
-                    continue;
+                    if (!IsSupportedOperators(method))
+                    {
+                        bindingManager.Info("skip special method: {0}", method);
+                        continue;
+                    }
                 }
+
                 if (method.IsDefined(typeof(JSOmitAttribute), false))
                 {
                     bindingManager.Info("skip omitted method: {0}", method);
                     continue;
                 }
+
                 if (method.IsDefined(typeof(ObsoleteAttribute), false))
                 {
                     bindingManager.Info("skip obsolete method: {0}", method);
                     continue;
                 }
+
                 if (transform != null && transform.IsMemberBlocked(method.Name))
                 {
                     bindingManager.Info("skip blocked method: {0}", method.Name);
                     continue;
                 }
+
                 // if (IsPropertyMethod(method))
                 // {
                 //     continue;
                 // }
-                do
+
+                if (IsExtensionMethod(method))
                 {
-                    if (IsExtensionMethod(method))
+                    var targetType = method.GetParameters()[0].ParameterType;
+                    var targetInfo = bindingManager.GetExportedType(targetType);
+                    if (targetInfo != null)
                     {
-                        var targetType = method.GetParameters()[0].ParameterType;
-                        var targetInfo = bindingManager.GetExportedType(targetType);
-                        if (targetInfo != null)
-                        {
-                            targetInfo.AddMethod(method);
-                            break;
-                        }
-                        // else fallthrough (as normal static method)
+                        targetInfo.AddMethod(method);
+                        continue;
                     }
-                    AddMethod(method);
-                } while (false);
+
+                    // else fallthrough (as normal static method)
+                }
+
+                AddMethod(method);
             }
         }
     }
