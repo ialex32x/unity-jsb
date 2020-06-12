@@ -61,25 +61,26 @@ namespace QuickJS.Binding
             JSApi.JS_DefinePropertyValue(_ctx, _operators[0], GetAtom(op), funcVal, JSPropFlags.DEFAULT);
         }
 
-        public void AddLeftOperator(string op, JSCFunction func, int length, string leftTypeName)
-        {
-            EnsureOperators();
-            var left_operator = JSApi.JS_NewObject(_ctx);
-            JSApi.JS_SetProperty(_ctx, left_operator, GetAtom("left"), JSApi.JS_NewString(_ctx, leftTypeName));
-            var funcVal = JSApi.JS_NewCFunction(_ctx, func, op, length);
-            JSApi.JS_DefinePropertyValue(_ctx, left_operator, GetAtom(op), funcVal, JSPropFlags.DEFAULT);
-            _operators.Add(left_operator);
-        }
+        //TODO: left/right type 需要传入 jsvalue, 拆分 Bind 执行流程?
+        // public void AddLeftOperator(string op, JSCFunction func, int length, string leftTypeName)
+        // {
+        //     EnsureOperators();
+        //     var left_operator = JSApi.JS_NewObject(_ctx);
+        //     JSApi.JS_SetProperty(_ctx, left_operator, GetAtom("left"), JSApi.JS_NewString(_ctx, leftTypeName));
+        //     var funcVal = JSApi.JS_NewCFunction(_ctx, func, op, length);
+        //     JSApi.JS_DefinePropertyValue(_ctx, left_operator, GetAtom(op), funcVal, JSPropFlags.DEFAULT);
+        //     _operators.Add(left_operator);
+        // }
 
-        public void AddRightOperator(string op, JSCFunction func, int length, string rightTypeName)
-        {
-            EnsureOperators();
-            var right_operator = JSApi.JS_NewObject(_ctx);
-            JSApi.JS_SetProperty(_ctx, right_operator, GetAtom("right"), JSApi.JS_NewString(_ctx, rightTypeName));
-            var funcVal = JSApi.JS_NewCFunction(_ctx, func, op, length);
-            JSApi.JS_DefinePropertyValue(_ctx, right_operator, GetAtom(op), funcVal, JSPropFlags.DEFAULT);
-            _operators.Add(right_operator);
-        }
+        // public void AddRightOperator(string op, JSCFunction func, int length, string rightTypeName)
+        // {
+        //     EnsureOperators();
+        //     var right_operator = JSApi.JS_NewObject(_ctx);
+        //     JSApi.JS_SetProperty(_ctx, right_operator, GetAtom("right"), JSApi.JS_NewString(_ctx, rightTypeName));
+        //     var funcVal = JSApi.JS_NewCFunction(_ctx, func, op, length);
+        //     JSApi.JS_DefinePropertyValue(_ctx, right_operator, GetAtom(op), funcVal, JSPropFlags.DEFAULT);
+        //     _operators.Add(right_operator);
+        // }
 
         public void AddMethod(bool bStatic, string name, JSCFunctionMagic func, int length, int magic)
         {

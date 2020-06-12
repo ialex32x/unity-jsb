@@ -119,12 +119,20 @@ namespace QuickJS.Editor
     public class OperatorBindingInfo : MethodBaseBindingInfo<MethodInfo>
     {
         public int length; // 参数数
+        public string bindName;
+        public MethodInfo methodInfo;
+        public bool isExtension;
 
-        public OperatorBindingInfo(bool bStatic, string bindName, string regName, int length)
+        public OperatorBindingInfo(MethodInfo methodInfo, bool isExtension, bool bStatic, string bindName, string regName, int length)
         {
+            this.methodInfo = methodInfo;
+            this.isExtension = isExtension;
             this.length = length;
-            this.name = (bStatic ? "BindStatic_" : "Bind_") + bindName;
+            this.bindName = bindName;
             this.regName = regName;
+            this.name = (bStatic ? "BindStatic_" : "Bind_") + bindName;
+
+            this.Add(methodInfo, isExtension); //NOTE: 旧代码, 待更替
         }
     }
 
@@ -252,7 +260,7 @@ namespace QuickJS.Editor
 
                         if (cvType == typeof(float))
                         {
-                            var fcv = (float) cv;
+                            var fcv = (float)cv;
                             if (!float.IsInfinity(fcv)
                                 && !float.IsNaN(fcv))
                             {
@@ -355,9 +363,11 @@ namespace QuickJS.Editor
 
         public string jsName; // js注册名
 
-        public Dictionary<string, OperatorBindingInfo> operators = new Dictionary<string, OperatorBindingInfo>();
+        public List<OperatorBindingInfo> operators = new List<OperatorBindingInfo>();
+
         public Dictionary<string, MethodBindingInfo> methods = new Dictionary<string, MethodBindingInfo>();
         public Dictionary<string, MethodBindingInfo> staticMethods = new Dictionary<string, MethodBindingInfo>();
+
         public Dictionary<string, PropertyBindingInfo> properties = new Dictionary<string, PropertyBindingInfo>();
         public Dictionary<string, FieldBindingInfo> fields = new Dictionary<string, FieldBindingInfo>();
         public Dictionary<string, EventBindingInfo> events = new Dictionary<string, EventBindingInfo>();
@@ -501,20 +511,9 @@ namespace QuickJS.Editor
             AddMethod(methodInfo, false, null);
         }
 
-        private static HashSet<string> _supportedOperators = new HashSet<string>(new string[]
-        {
-            "op_Addition",
-            "op_Subtraction"
-        });
-        
         public static bool IsSupportedOperators(MethodInfo methodInfo)
         {
-            if (methodInfo.IsSpecialName)
-            {
-                return _supportedOperators.Contains(methodInfo.Name);
-            }
-
-            return false;
+            return methodInfo.IsSpecialName && methodInfo.Name.StartsWith("op_");
         }
 
         public void AddMethod(MethodInfo methodInfo, bool isIndexer, string renameRegName)
@@ -532,33 +531,59 @@ namespace QuickJS.Editor
             var isStatic = methodInfo.IsStatic && !isExtension;
             if (IsSupportedOperators(methodInfo))
             {
-                OperatorBindingInfo bindingInfo;
                 var methodName = TypeBindingInfo.GetNamingAttribute(methodInfo);
-                if (!operators.TryGetValue(methodName, out bindingInfo))
+                var parameters = methodInfo.GetParameters();
+                var declaringType = methodInfo.DeclaringType;
+                switch (methodName)
                 {
-                    var length = 0;
-                    var regName = renameRegName;
-                    if (regName == null)
-                    {
-                        switch (methodName)
+                    case "op_Addition":
+                        if (parameters.Length == 2)
                         {
-                            case "op_Addition":
-                                regName = "+";
-                                length = 2;
-                                break;
-                            case "op_Subtraction":
-                                regName = "-";
-                                length = 2;
-                                break;
-                            default:
-                                regName = methodName;
-                                break;
+                            if (parameters[0].ParameterType == declaringType && parameters[1].ParameterType == declaringType)
+                            {
+                                var bindingInfo = new OperatorBindingInfo(methodInfo, isExtension, isStatic, methodName, "+", 2);
+                                operators.Add(bindingInfo);
+                            }
                         }
-                    }
-
-                    bindingInfo = new OperatorBindingInfo(isStatic, methodName, regName, length);
-                    operators.Add(methodName, bindingInfo);
-                    bindingInfo.Add(methodInfo, isExtension);
+                        break;
+                    case "op_Subtraction":
+                        if (parameters.Length == 2)
+                        {
+                            if (parameters[0].ParameterType == declaringType && parameters[1].ParameterType == declaringType)
+                            {
+                                var bindingInfo = new OperatorBindingInfo(methodInfo, isExtension, isStatic, methodName, "-", 2);
+                                operators.Add(bindingInfo);
+                            }
+                        }
+                        break;
+                    case "op_Equality":
+                        if (parameters.Length == 2)
+                        {
+                            if (parameters[0].ParameterType == declaringType && parameters[1].ParameterType == declaringType)
+                            {
+                                var bindingInfo = new OperatorBindingInfo(methodInfo, isExtension, isStatic, methodName, "==", 2);
+                                operators.Add(bindingInfo);
+                            }
+                        }
+                        break;
+                    case "op_Multiply":
+                        //TODO: left/right 处理
+                        // if (parameters.Length == 2)
+                        // {
+                        //     var op0 = bindingManager.GetExportedType(parameters[0].ParameterType);
+                        //     var op1 = bindingManager.GetExportedType(parameters[0].ParameterType);
+                        //     if (op0 == null && op1 == null)
+                        //     {
+                        //         return;
+                        //     }
+                        //     var bindingName = methodName + "_" + op0.name + "_" + op1.name;
+                        //     var bindingInfo = new OperatorBindingInfo(methodInfo, isExtension, isStatic, bindingName, "*", 2);
+                        //     operators.Add(bindingInfo);
+                        // }
+                        break;
+                    default:
+                        bindingManager.Info("skip unsupported operator method: {0}", methodInfo.Name);
+                        return;
                 }
             }
             else
