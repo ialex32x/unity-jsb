@@ -22,6 +22,8 @@ namespace QuickJS.Editor
         public string typescriptDir = "Assets/Generated/Typings";
         public bool debugCodegen = false;
 
+        public bool optToString = true; // 自动转换为 toString()
+
         // 生成类型绑定代码类型前缀
         public string typeBindingPrefix = "QuickJS_";
 
