@@ -47,7 +47,7 @@ namespace QuickJS.Binding
             var nameAtom = _register.GetAtom(typename);
             JSContext ctx = _register.GetContext();
             var protoVal = JSApi.JS_NewObject(ctx);
-            var type_id = _register.Add(type, protoVal);
+            var type_id = _register.RegisterType(type, protoVal);
             var ctorVal =
                 JSApi.JSB_NewCFunctionMagic(ctx, ctorFunc, nameAtom, 0, JSCFunctionEnum.JS_CFUNC_constructor_magic, type_id);
             var decl = new ClassDecl(_register, ctorVal, protoVal);

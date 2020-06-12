@@ -34,52 +34,9 @@ namespace QuickJS.Binding
 
             if (_operators != null)
             {
-                // 提交运算符重载
-                var globalObj = JSApi.JS_GetGlobalObject(ctx);
-                var operators = JSApi.JS_GetProperty(ctx, globalObj, JSApi.JS_ATOM_Operators);
-
-                if (!operators.IsNullish())
-                {
-                    if (operators.IsException())
-                    {
-                        ctx.print_exception();
-                    }
-                    else
-                    {
-                        var create = JSApi.JS_GetProperty(ctx, operators, GetAtom("create"));
-                        var js_operators = _operators.ToArray();
-
-                        JSValue rval;
-                        unsafe
-                        {
-                            fixed (JSValue* ptr = js_operators)
-                            {
-                                rval = JSApi.JS_Call(ctx, create, JSApi.JS_UNDEFINED, js_operators.Length, ptr);
-                                if (rval.IsException())
-                                {
-                                    ctx.print_exception();
-                                }
-                                else
-                                {
-                                    JSApi.JS_DefinePropertyValue(ctx, _proto, JSApi.JS_ATOM_Symbol_operatorSet, rval, JSPropFlags.DEFAULT);
-                                }
-                            }
-                        }
-
-                        JSApi.JS_FreeValue(ctx, create);
-                    }
-                }
-
-                JSApi.JS_FreeValue(ctx, operators);
-                JSApi.JS_FreeValue(ctx, globalObj);
-                
-                for (int i = 0, count = _operators.Count; i < count; i++)
-                {
-                    JSApi.JS_FreeValue(ctx, _operators[i]);
-                }
+                _register.AddOperatorDecl(JSApi.JS_DupValue(_ctx, _proto), _operators.ToArray());
                 _operators = null;
             }
-
 
             JSApi.JS_FreeValue(ctx, _ctor);
             JSApi.JS_FreeValue(ctx, _proto);
