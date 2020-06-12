@@ -351,130 +351,133 @@ namespace QuickJS.Editor
                                         break;
                                     }
                                 }
+
                                 cg.cs.AppendLine("cls.AddSelfOperator(\"{0}\", {1}, {2});", regName, funcName, operatorBindingInfo.length);
                             } while (false);
-
-                            // 非静态方法
-                            foreach (var kv in typeBindingInfo.methods)
-                            {
-                                var regName = kv.Value.regName;
-                                var funcName = kv.Value.name;
-                                string redirect;
-                                if (this.typeBindingInfo.transform != null && this.typeBindingInfo.transform.TryRedirectMethod(regName, out redirect))
-                                {
-                                    funcName = redirect;
-                                }
-
-                                cg.cs.AppendLine("cls.AddMethod(false, \"{0}\", {1});", regName, funcName);
-                            }
-
-                            // 静态方法
-                            foreach (var kv in typeBindingInfo.staticMethods)
-                            {
-                                var regName = kv.Value.regName;
-                                var funcName = kv.Value.name;
-                                string redirect;
-                                if (this.typeBindingInfo.transform != null && this.typeBindingInfo.transform.TryRedirectMethod(regName, out redirect))
-                                {
-                                    funcName = redirect;
-                                }
-                                cg.cs.AppendLine("cls.AddMethod(true, \"{0}\", {1});", regName, funcName);
-                            }
-
-                            // 属性
-                            foreach (var kv in typeBindingInfo.properties)
-                            {
-                                var bindingInfo = kv.Value;
-                                if (bindingInfo.staticPair.IsValid())
-                                {
-                                    var tsPropertyVar = BindingManager.GetTSVariable(bindingInfo.regName);
-                                    cg.cs.AppendLine("cls.AddProperty(true, \"{0}\", {1}, {2});",
-                                        tsPropertyVar,
-                                        bindingInfo.staticPair.getterName != null ? bindingInfo.staticPair.getterName : "null",
-                                        bindingInfo.staticPair.setterName != null ? bindingInfo.staticPair.setterName : "null");
-
-                                    var tsPropertyPrefix = "static ";
-                                    if (bindingInfo.staticPair.setterName == null)
-                                    {
-                                        tsPropertyPrefix += "readonly ";
-                                    }
-                                    var tsPropertyType = this.cg.bindingManager.GetTSTypeFullName(bindingInfo.propertyInfo.PropertyType);
-                                    cg.AppendJSDoc(bindingInfo.propertyInfo);
-                                    cg.tsDeclare.AppendLine($"{tsPropertyPrefix}{tsPropertyVar}: {tsPropertyType}");
-                                }
-
-                                if (bindingInfo.instancePair.IsValid())
-                                {
-                                    var tsPropertyVar = BindingManager.GetTSVariable(bindingInfo.regName);
-                                    cg.cs.AppendLine("cls.AddProperty(false, \"{0}\", {1}, {2});",
-                                        tsPropertyVar,
-                                        bindingInfo.instancePair.getterName != null ? bindingInfo.instancePair.getterName : "null",
-                                        bindingInfo.instancePair.setterName != null ? bindingInfo.instancePair.setterName : "null");
-
-                                    var tsPropertyPrefix = "";
-                                    if (bindingInfo.instancePair.setterName == null)
-                                    {
-                                        tsPropertyPrefix += "readonly ";
-                                    }
-                                    var tsPropertyType = this.cg.bindingManager.GetTSTypeFullName(bindingInfo.propertyInfo.PropertyType);
-                                    cg.AppendJSDoc(bindingInfo.propertyInfo);
-                                    cg.tsDeclare.AppendLine($"{tsPropertyPrefix}{tsPropertyVar}: {tsPropertyType}");
-                                }
-                            }
-                            foreach (var kv in typeBindingInfo.fields)
-                            {
-                                var bindingInfo = kv.Value;
-                                var bStatic = bindingInfo.isStatic;
-                                var tsFieldVar = BindingManager.GetTSVariable(bindingInfo.regName);
-                                if (bindingInfo.constantValue != null)
-                                {
-                                    var cv = bindingInfo.constantValue;
-                                    cg.cs.AppendLine($"cls.AddConstValue(\"{tsFieldVar}\", {cv});");
-                                }
-                                else
-                                {
-                                    cg.cs.AppendLine("cls.AddField({0}, \"{1}\", {2}, {3});",
-                                        bStatic ? "true" : "false",
-                                        tsFieldVar,
-                                        bindingInfo.getterName != null ? bindingInfo.getterName : "null",
-                                        bindingInfo.setterName != null ? bindingInfo.setterName : "null");
-                                }
-                                var tsFieldPrefix = bStatic ? "static " : "";
-                                if (bindingInfo.setterName == null)
-                                {
-                                    tsFieldPrefix += "readonly ";
-                                }
-                                var tsFieldType = this.cg.bindingManager.GetTSTypeFullName(bindingInfo.fieldInfo.FieldType);
-                                cg.AppendJSDoc(bindingInfo.fieldInfo);
-                                cg.tsDeclare.AppendLine($"{tsFieldPrefix}{tsFieldVar}: {tsFieldType}");
-                            }
-                            foreach (var kv in typeBindingInfo.events)
-                            {
-                                var eventBindingInfo = kv.Value;
-                                var bStatic = eventBindingInfo.isStatic;
-                                //NOTE: 静态事件在绑定过程直接定义， 非静态事件推迟到构造时直接赋值创建
-                                var tsFieldVar = BindingManager.GetTSVariable(eventBindingInfo.regName);
-                                var tsFieldType = this.cg.bindingManager.GetTSTypeFullName(eventBindingInfo.eventInfo.EventHandlerType);
-                                var tsFieldPrefix = "";
-                                if (bStatic)
-                                {
-                                    tsFieldPrefix += "static ";
-                                    cg.cs.AppendLine($"cls.AddEvent(true, \"{tsFieldVar}\", {eventBindingInfo.adderName}, {eventBindingInfo.removerName});");
-                                }
-                                else
-                                {
-                                    cg.cs.AppendLine($"cls.AddProperty(false, \"{tsFieldVar}\", {eventBindingInfo.proxyName}, null);");
-                                }
-                                cg.tsDeclare.AppendLine($"{tsFieldPrefix}{tsFieldVar}: {CodeGenerator.NamespaceOfScriptTypes}.event<{tsFieldType}>");
-                            }
-                            cg.cs.AppendLine("cls.Close();");
                         }
-                    }
-                    base.Dispose();
-                }
 
-                this.cg.tsDeclare.DecTabLevel();
-                this.cg.tsDeclare.AppendLine("}");
+                        // 非静态方法
+                        foreach (var kv in typeBindingInfo.methods)
+                        {
+                            var regName = kv.Value.regName;
+                            var funcName = kv.Value.name;
+                            string redirect;
+                            if (this.typeBindingInfo.transform != null && this.typeBindingInfo.transform.TryRedirectMethod(regName, out redirect))
+                            {
+                                funcName = redirect;
+                            }
+
+                            cg.cs.AppendLine("cls.AddMethod(false, \"{0}\", {1});", regName, funcName);
+                        }
+
+                        // 静态方法
+                        foreach (var kv in typeBindingInfo.staticMethods)
+                        {
+                            var regName = kv.Value.regName;
+                            var funcName = kv.Value.name;
+                            string redirect;
+                            if (this.typeBindingInfo.transform != null && this.typeBindingInfo.transform.TryRedirectMethod(regName, out redirect))
+                            {
+                                funcName = redirect;
+                            }
+                            cg.cs.AppendLine("cls.AddMethod(true, \"{0}\", {1});", regName, funcName);
+                        }
+
+                        // 属性
+                        foreach (var kv in typeBindingInfo.properties)
+                        {
+                            var bindingInfo = kv.Value;
+                            if (bindingInfo.staticPair.IsValid())
+                            {
+                                var tsPropertyVar = BindingManager.GetTSVariable(bindingInfo.regName);
+                                cg.cs.AppendLine("cls.AddProperty(true, \"{0}\", {1}, {2});",
+                                    tsPropertyVar,
+                                    bindingInfo.staticPair.getterName != null ? bindingInfo.staticPair.getterName : "null",
+                                    bindingInfo.staticPair.setterName != null ? bindingInfo.staticPair.setterName : "null");
+
+                                var tsPropertyPrefix = "static ";
+                                if (bindingInfo.staticPair.setterName == null)
+                                {
+                                    tsPropertyPrefix += "readonly ";
+                                }
+                                var tsPropertyType = this.cg.bindingManager.GetTSTypeFullName(bindingInfo.propertyInfo.PropertyType);
+                                cg.AppendJSDoc(bindingInfo.propertyInfo);
+                                cg.tsDeclare.AppendLine($"{tsPropertyPrefix}{tsPropertyVar}: {tsPropertyType}");
+                            }
+
+                            if (bindingInfo.instancePair.IsValid())
+                            {
+                                var tsPropertyVar = BindingManager.GetTSVariable(bindingInfo.regName);
+                                cg.cs.AppendLine("cls.AddProperty(false, \"{0}\", {1}, {2});",
+                                    tsPropertyVar,
+                                    bindingInfo.instancePair.getterName != null ? bindingInfo.instancePair.getterName : "null",
+                                    bindingInfo.instancePair.setterName != null ? bindingInfo.instancePair.setterName : "null");
+
+                                var tsPropertyPrefix = "";
+                                if (bindingInfo.instancePair.setterName == null)
+                                {
+                                    tsPropertyPrefix += "readonly ";
+                                }
+                                var tsPropertyType = this.cg.bindingManager.GetTSTypeFullName(bindingInfo.propertyInfo.PropertyType);
+                                cg.AppendJSDoc(bindingInfo.propertyInfo);
+                                cg.tsDeclare.AppendLine($"{tsPropertyPrefix}{tsPropertyVar}: {tsPropertyType}");
+                            }
+                        }
+                        foreach (var kv in typeBindingInfo.fields)
+                        {
+                            var bindingInfo = kv.Value;
+                            var bStatic = bindingInfo.isStatic;
+                            var tsFieldVar = BindingManager.GetTSVariable(bindingInfo.regName);
+                            if (bindingInfo.constantValue != null)
+                            {
+                                var cv = bindingInfo.constantValue;
+                                cg.cs.AppendLine($"cls.AddConstValue(\"{tsFieldVar}\", {cv});");
+                            }
+                            else
+                            {
+                                cg.cs.AppendLine("cls.AddField({0}, \"{1}\", {2}, {3});",
+                                    bStatic ? "true" : "false",
+                                    tsFieldVar,
+                                    bindingInfo.getterName != null ? bindingInfo.getterName : "null",
+                                    bindingInfo.setterName != null ? bindingInfo.setterName : "null");
+                            }
+                            var tsFieldPrefix = bStatic ? "static " : "";
+                            if (bindingInfo.setterName == null)
+                            {
+                                tsFieldPrefix += "readonly ";
+                            }
+                            var tsFieldType = this.cg.bindingManager.GetTSTypeFullName(bindingInfo.fieldInfo.FieldType);
+                            cg.AppendJSDoc(bindingInfo.fieldInfo);
+                            cg.tsDeclare.AppendLine($"{tsFieldPrefix}{tsFieldVar}: {tsFieldType}");
+                        }
+                        foreach (var kv in typeBindingInfo.events)
+                        {
+                            var eventBindingInfo = kv.Value;
+                            var bStatic = eventBindingInfo.isStatic;
+                            //NOTE: 静态事件在绑定过程直接定义， 非静态事件推迟到构造时直接赋值创建
+                            var tsFieldVar = BindingManager.GetTSVariable(eventBindingInfo.regName);
+                            var tsFieldType = this.cg.bindingManager.GetTSTypeFullName(eventBindingInfo.eventInfo.EventHandlerType);
+                            var tsFieldPrefix = "";
+                            if (bStatic)
+                            {
+                                tsFieldPrefix += "static ";
+                                cg.cs.AppendLine($"cls.AddEvent(true, \"{tsFieldVar}\", {eventBindingInfo.adderName}, {eventBindingInfo.removerName});");
+                            }
+                            else
+                            {
+                                cg.cs.AppendLine($"cls.AddProperty(false, \"{tsFieldVar}\", {eventBindingInfo.proxyName}, null);");
+                            }
+                            cg.tsDeclare.AppendLine($"{tsFieldPrefix}{tsFieldVar}: {CodeGenerator.NamespaceOfScriptTypes}.event<{tsFieldType}>");
+                        }
+                        cg.cs.AppendLine("cls.Close();");
+                    }
+                }
+                base.Dispose();
             }
+
+            this.cg.tsDeclare.DecTabLevel();
+            this.cg.tsDeclare.AppendLine("}");
         }
     }
+}
+
