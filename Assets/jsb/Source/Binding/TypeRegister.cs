@@ -177,12 +177,26 @@ namespace QuickJS.Binding
         {
             // 提交运算符重载
             var ctx = (JSContext)_context;
-            for (int i = 0, count = _operatorDecls.Count; i < count; i++)
+            var count = _operatorDecls.Count;
+            for (var i = 0; i < count; i++)
+            {
+                var defs = _operatorDecls[i].operatorDefs;
+                for (int j = 0, defsCount = defs.Count; j < defsCount; j++)
+                {
+                    Transfer(defs[j].type, i + 1, count);
+                }
+            }
+            for (var i = 0; i < count; i++)
             {
                 _operatorDecls[i].Register(this, ctx, _operatorCreate);
             }
 
             _operatorDecls.Clear();
+        }
+
+        private void Transfer(Type type, int offset, int count)
+        {
+            
         }
 
         public void RegisterOperator(Type type, JSValue proto, List<SelfOperatorDef> selfOperators, List<OperatorDef> operators)
