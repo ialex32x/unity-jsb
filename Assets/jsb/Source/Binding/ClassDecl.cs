@@ -5,27 +5,63 @@ using System.Runtime.CompilerServices;
 
 namespace QuickJS.Binding
 {
+    public struct SelfOperatorDef
+    {
+        public string op;
+        public JSCFunction func;
+        public int length;
+
+        public SelfOperatorDef(JSCFunction func, int length, string op)
+        {
+            this.func = func;
+            this.length = length;
+            this.op = op;
+        }
+    }
+
+    public struct OperatorDef
+    {
+        public string side;
+        public Type type;
+        public JSCFunction func;
+        public int length;
+        public string op;
+
+        public OperatorDef(string side, Type type, JSCFunction func, int length, string op)
+        {
+            this.side = side;
+            this.type = type;
+            this.func = func;
+            this.length = length;
+            this.op = op;
+        }
+    }
+
     public struct ClassDecl
     {
-        public TypeRegister _register;
+        private TypeRegister _register;
         private ScriptContext _ctx;
-        public JSValue _ctor;
-        public JSValue _proto;
+        private JSValue _ctor;
+        private JSValue _proto;
+        private Type _type;
 
-        private List<JSValue> _operators;
+        private List<SelfOperatorDef> _selfOperators;
+        private List<OperatorDef> _operators;
 
         public JSAtom GetAtom(string name)
         {
             return _register.GetAtom(name);
         }
 
-        public ClassDecl(TypeRegister register, JSValue ctorVal, JSValue protoVal)
+        public ClassDecl(TypeRegister register, JSValue ctorVal, JSValue protoVal, Type type)
         {
+            _type = type;
             _register = register;
             _ctx = _register.GetContext();
             _ctor = JSApi.JS_DupValue(_ctx, ctorVal);
             _proto = JSApi.JS_DupValue(_ctx, protoVal);
             _operators = null;
+            _selfOperators = null;
         }
 
         public void Close()
@@ -34,7 +70,11 @@ namespace QuickJS.Binding
 
             if (_operators != null)
             {
-                _register.AddOperatorDecl(JSApi.JS_DupValue(_ctx, _proto), _operators.ToArray());
+                if (_selfOperators == null)
+                {
+                    UnityEngine.Debug.LogWarning("no self operators?");
+                }
+                _register.RegisterOperator(_type, JSApi.JS_DupValue(_ctx, _proto), _selfOperators, _operators);
                 _operators = null;
             }
 
@@ -45,42 +85,32 @@ namespace QuickJS.Binding
             _ctx = null;
         }
 
-        private void EnsureOperators()
+        public void AddSelfOperator(string op, JSCFunction func, int length)
+        {
+            if (_selfOperators == null)
+            {
+                _selfOperators = new List<SelfOperatorDef>();
+            }
+            _selfOperators.Add(new SelfOperatorDef(func, length, op));
+        }
+
+        public void AddLeftOperator(string op, JSCFunction func, int length, Type type)
         {
             if (_operators == null)
             {
-                _operators = new List<JSValue>();
-                _operators.Add(JSApi.JS_NewObject(_ctx));
+                _operators = new List<OperatorDef>();
             }
+            _operators.Add(new OperatorDef("left", type, func, length, op));
         }
 
-        public void AddSelfOperator(string op, JSCFunction func, int length)
+        public void AddRightOperator(string op, JSCFunction func, int length, Type type)
         {
-            EnsureOperators();
-            var funcVal = JSApi.JS_NewCFunction(_ctx, func, op, length);
-            JSApi.JS_DefinePropertyValue(_ctx, _operators[0], GetAtom(op), funcVal, JSPropFlags.DEFAULT);
+            if (_operators == null)
+            {
+                _operators = new List<OperatorDef>();
+            }
+            _operators.Add(new OperatorDef("right", type, func, length, op));
         }
-
-        //TODO: left/right type 需要传入 jsvalue, 拆分 Bind 执行流程?
-        // public void AddLeftOperator(string op, JSCFunction func, int length, string leftTypeName)
-        // {
-        //     EnsureOperators();
-        //     var left_operator = JSApi.JS_NewObject(_ctx);
-        //     JSApi.JS_SetProperty(_ctx, left_operator, GetAtom("left"), JSApi.JS_NewString(_ctx, leftTypeName));
-        //     var funcVal = JSApi.JS_NewCFunction(_ctx, func, op, length);
-        //     JSApi.JS_DefinePropertyValue(_ctx, left_operator, GetAtom(op), funcVal, JSPropFlags.DEFAULT);
-        //     _operators.Add(left_operator);
-        // }
-
-        // public void AddRightOperator(string op, JSCFunction func, int length, string rightTypeName)
-        // {
-        //     EnsureOperators();
-        //     var right_operator = JSApi.JS_NewObject(_ctx);
-        //     JSApi.JS_SetProperty(_ctx, right_operator, GetAtom("right"), JSApi.JS_NewString(_ctx, rightTypeName));
-        //     var funcVal = JSApi.JS_NewCFunction(_ctx, func, op, length);
-        //     JSApi.JS_DefinePropertyValue(_ctx, right_operator, GetAtom(op), funcVal, JSPropFlags.DEFAULT);
-        //     _operators.Add(right_operator);
-        // }
 
         public void AddMethod(bool bStatic, string name, JSCFunctionMagic func, int length, int magic)
         {

@@ -340,14 +340,14 @@ namespace QuickJS.Editor
                                 {
                                     if (parameters[0].ParameterType != declaringType)
                                     {
-                                        //TODO: left/right 处理
-                                        // cg.cs.AppendLine("cls.AddLeftOperator(\"{0}\", {1}, {2});", regName, funcName, operatorBindingInfo.length);
+                                        var leftType = typeBindingInfo.bindingManager.GetCSTypeFullName(parameters[0].ParameterType);
+                                        cg.cs.AppendLine("cls.AddLeftOperator(\"{0}\", {1}, {2}, typeof({3}));", regName, funcName, operatorBindingInfo.length, leftType);
                                         break;
                                     }
-                                    else
+                                    else if (parameters[1].ParameterType != declaringType)
                                     {
-                                        //TODO: left/right 处理
-                                        // cg.cs.AppendLine("cls.AddRightOperator(\"{0}\", {1}, {2});", regName, funcName, operatorBindingInfo.length);
+                                        var rightType = typeBindingInfo.bindingManager.GetCSTypeFullName(parameters[1].ParameterType);
+                                        cg.cs.AppendLine("cls.AddRightOperator(\"{0}\", {1}, {2}, typeof({3}));", regName, funcName, operatorBindingInfo.length, rightType);
                                         break;
                                     }
                                 }

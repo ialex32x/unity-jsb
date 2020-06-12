@@ -22,6 +22,8 @@ namespace QuickJS.Binding
 
         private JSValue _globalObject;
         private JSValue _operatorCreate;
+        private JSValue _numberProto;
+        private JSValue _stringProto;
         private List<OperatorDecl> _operatorDecls = new List<OperatorDecl>();
 
         public static implicit operator JSContext(TypeRegister register)
@@ -49,11 +51,13 @@ namespace QuickJS.Binding
             _db = new TypeDB(runtime);
             _context = context;
             _atoms = new AtomCache(_context);
-            var ctx = (JSContext) _context;
+            var ctx = (JSContext)_context;
 
             _globalObject = JSApi.JS_GetGlobalObject(ctx);
+            _numberProto = JSApi.JS_GetProperty(ctx, _globalObject, JSApi.JS_ATOM_Number);
+            _stringProto = JSApi.JS_GetProperty(ctx, _globalObject, JSApi.JS_ATOM_String);
             _operatorCreate = JSApi.JS_UNDEFINED;
-            
+
             var operators = JSApi.JS_GetProperty(ctx, _globalObject, JSApi.JS_ATOM_Operators);
             if (!operators.IsNullish())
             {
@@ -89,6 +93,22 @@ namespace QuickJS.Binding
         public TypeDB GetTypeDB()
         {
             return _db;
+        }
+
+        public JSValue FindPrototypeOf(Type type)
+        {
+            if (type == typeof(string))
+            {
+                return _stringProto;
+            }
+
+            if (type.IsValueType && (type.IsPrimitive || type.IsEnum))
+            {
+                return _numberProto;
+            }
+
+            var val = _db.FindPrototypeOf(type);
+            return val;
         }
 
         // 无命名空间, 直接外围对象作为容器 (通常是global)
@@ -156,24 +176,29 @@ namespace QuickJS.Binding
         private void SubmitOperators()
         {
             // 提交运算符重载
-            var ctx = (JSContext) _context;
-            
+            var ctx = (JSContext)_context;
             for (int i = 0, count = _operatorDecls.Count; i < count; i++)
             {
-                _operatorDecls[i].Register(ctx, _operatorCreate);
+                _operatorDecls[i].Register(this, ctx, _operatorCreate);
             }
-            
+
             _operatorDecls.Clear();
         }
 
-        public void AddOperatorDecl(JSValue proto, JSValue[] operators)
+        public void RegisterOperator(Type type, JSValue proto, List<SelfOperatorDef> selfOperators, List<OperatorDef> operators)
         {
-            _operatorDecls.Add(new OperatorDecl(proto, operators));
+            if (selfOperators == null)
+            {
+                return;
+            }
+            _operatorDecls.Add(new OperatorDecl(type, proto, selfOperators, operators));
         }
 
         public TypeDB Finish()
         {
             SubmitOperators();
+            JSApi.JS_FreeValue(_context, _numberProto);
+            JSApi.JS_FreeValue(_context, _stringProto);
             JSApi.JS_FreeValue(_context, _globalObject);
             JSApi.JS_FreeValue(_context, _operatorCreate);
             _atoms.Clear();

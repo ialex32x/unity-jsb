@@ -567,19 +567,32 @@ namespace QuickJS.Editor
                         }
                         break;
                     case "op_Multiply":
-                        //TODO: left/right 处理
-                        // if (parameters.Length == 2)
-                        // {
-                        //     var op0 = bindingManager.GetExportedType(parameters[0].ParameterType);
-                        //     var op1 = bindingManager.GetExportedType(parameters[0].ParameterType);
-                        //     if (op0 == null && op1 == null)
-                        //     {
-                        //         return;
-                        //     }
-                        //     var bindingName = methodName + "_" + op0.name + "_" + op1.name;
-                        //     var bindingInfo = new OperatorBindingInfo(methodInfo, isExtension, isStatic, bindingName, "*", 2);
-                        //     operators.Add(bindingInfo);
-                        // }
+                        if (parameters.Length == 2)
+                        {
+                            var op0 = bindingManager.GetExportedType(parameters[0].ParameterType);
+                            var op1 = bindingManager.GetExportedType(parameters[1].ParameterType);
+                            if (op0 == null || op1 == null)
+                            {
+                                return;
+                            }
+                            var bindingName = methodName + "_" + op0.name + "_" + op1.name;
+                            var bindingInfo = new OperatorBindingInfo(methodInfo, isExtension, isStatic, bindingName, "*", 2);
+                            operators.Add(bindingInfo);
+                        }
+                        break;
+                    case "op_Division":
+                        if (parameters.Length == 2)
+                        {
+                            var op0 = bindingManager.GetExportedType(parameters[0].ParameterType);
+                            var op1 = bindingManager.GetExportedType(parameters[1].ParameterType);
+                            if (op0 == null || op1 == null)
+                            {
+                                return;
+                            }
+                            var bindingName = methodName + "_" + op0.name + "_" + op1.name;
+                            var bindingInfo = new OperatorBindingInfo(methodInfo, isExtension, isStatic, bindingName, "/", 2);
+                            operators.Add(bindingInfo);
+                        }
                         break;
                     default:
                         bindingManager.Info("skip unsupported operator method: {0}", methodInfo.Name);

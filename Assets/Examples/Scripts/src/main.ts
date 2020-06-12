@@ -166,6 +166,13 @@ console.log(camera.name);
     let vec2 = new UnityEngine.Vector3(9, 8, 7);
     let vec3 = vec1 + vec2;
     console.log(vec3.ToString());
+    console.log((vec3 * 2).ToString());
+    console.log((2 * vec3).ToString());
+    try {
+        console.log((vec3 / 2).ToString());
+    } catch(e) {
+        console.error(e);
+    }
 }
 {
     let vec1 = new UnityEngine.Vector2(1, 2);
