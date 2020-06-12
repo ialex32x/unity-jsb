@@ -93,10 +93,6 @@ setInterval(() => {
     console.log("interval tick");
 }, 1000 * 10);
 
-print("end of script");
-
-// 未完成
-
 class MyClass extends UnityEngine.MonoBehaviour {
     vv = 0;
     protected _tick = 0;
@@ -164,12 +160,25 @@ console.log(camera.name);
 {
     let vec1 = new UnityEngine.Vector3(1, 2, 3);
     let vec2 = new UnityEngine.Vector3(9, 8, 7);
+    // @ts-ignore
     let vec3 = vec1 + vec2;
-    console.log(vec3.ToString());
+    // @ts-ignore
+    let vec4 = vec1 + vec2;
+    console.log("v1 + v2 =", vec3);
+    // @ts-ignore
+    console.log("v3 * 2 =", vec3 * 2);
+    // @ts-ignore
+    console.log("2 * v3=", 2 * vec3);
+    // @ts-ignore
+    console.log("v3 / 2 =", vec3 / 2);
+    console.log("v3 == v4:", vec3 == vec4);
 }
+
 {
-    let vec1 = new UnityEngine.Vector2(1, 2);
-    let vec2 = new UnityEngine.Vector2(9, 8);
-    let vec3 = vec1 + vec2;
-    console.log(vec3.ToString());
+    let c1 = new UnityEngine.Color(0, 0, 0, 1);
+    let c2 = new UnityEngine.Color(0.5, 0.1, 0.2, 0);
+    let r = c2 / 3;
+    print(c1, c2, r);
 }
+
+print("end of script");

@@ -24,7 +24,7 @@ namespace QuickJS.Native
             return _ptr == c._ptr;
         }
 
-        public void print_exception()
+        public void print_exception(LogLevel logLevel = LogLevel.Error, string title = "")
         {
             var ex = JSApi.JS_GetException(this);
             var err_fileName = JSApi.JS_GetProperty(this, ex, JSApi.JS_ATOM_fileName);
@@ -32,7 +32,7 @@ namespace QuickJS.Native
             var err_message = JSApi.JS_GetProperty(this, ex, JSApi.JS_ATOM_message);
             var err_stack = JSApi.JS_GetProperty(this, ex, JSApi.JS_ATOM_stack);
 
-            var fileName = err_fileName.IsNullish() ? "<native>" : GetString(err_fileName);
+            var fileName = err_fileName.IsNullish() ? "native" : GetString(err_fileName);
             var lineNumber = err_lineNumber.IsNullish() ? null : GetString(err_lineNumber);
             var message = GetString(err_message);
             var stack = GetString(err_stack);
@@ -41,13 +41,13 @@ namespace QuickJS.Native
 
             if (string.IsNullOrEmpty(lineNumber))
             {
-                logger.ScriptWrite(LogLevel.Error, "[{0}] {1}\n{2}",
-                    fileName, message, stack);
+                logger.ScriptWrite(logLevel, "[{0}] {1} {2}\n{3}",
+                    fileName, title, message, stack);
             }
             else
             {
-                logger.ScriptWrite(LogLevel.Error, "[{0}:{1}] {2}\n{3}",
-                    fileName, lineNumber, message, stack);
+                logger.ScriptWrite(logLevel, "[{0}:{1}] {2} {3}\n{4}",
+                    fileName, lineNumber, title, message, stack);
             }
 
             JSApi.JS_FreeValue(this, err_fileName);

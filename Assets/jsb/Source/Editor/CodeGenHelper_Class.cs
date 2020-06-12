@@ -47,12 +47,12 @@ namespace QuickJS.Editor
                     }
                 }
             }
-            
+
             // 非静态成员方法
             foreach (var kv in this.typeBindingInfo.methods)
             {
                 var methodBindingInfo = kv.Value;
-                
+
                 if (transform == null || !transform.IsRedirectedMethod(methodBindingInfo.regName))
                 {
                     using (new PInvokeGuardCodeGen(cg))
@@ -68,12 +68,12 @@ namespace QuickJS.Editor
                         }
                     }
                 }
-                
+
                 using (new TSMethodCodeGen(cg, methodBindingInfo))
                 {
                 }
             }
-            
+
             //TODO: C# 抽象类可以不提供方法实现, d.ts 需要补充声明
             // if (this.bindingInfo.type.IsAbstract && !this.bindingInfo.type.IsInterface)
             // {
@@ -97,15 +97,14 @@ namespace QuickJS.Editor
                         }
                     }
                 }
-                
+
                 using (new TSMethodCodeGen(cg, methodBindingInfo))
                 {
                 }
             }
-            
-            foreach (var kv in this.typeBindingInfo.operators)
+
+            foreach (var operatorBindingInfo in this.typeBindingInfo.operators)
             {
-                var operatorBindingInfo = kv.Value;
                 if (transform == null || !transform.IsRedirectedMethod(operatorBindingInfo.regName))
                 {
                     using (new PInvokeGuardCodeGen(cg))
@@ -121,12 +120,12 @@ namespace QuickJS.Editor
                         }
                     }
                 }
-                
+
                 using (new TSOperatorCodeGen(cg, operatorBindingInfo))
                 {
                 }
             }
-            
+
             // 所有附加方法
             if (transform != null)
             {
@@ -135,7 +134,7 @@ namespace QuickJS.Editor
                     this.cg.tsDeclare.AppendLine(decl);
                 });
             }
-            
+
             // 所有属性
             foreach (var kv in this.typeBindingInfo.properties)
             {
@@ -321,22 +320,42 @@ namespace QuickJS.Editor
                             typeBindingInfo.jsName,
                             this.cg.bindingManager.GetCSTypeFullName(typeBindingInfo.type),
                             constructor);
-                        
+
                         // 运算符
-                        foreach (var kv in typeBindingInfo.operators)
+                        foreach (var operatorBindingInfo in typeBindingInfo.operators)
                         {
-                            var info = kv.Value;
-                            var regName = info.regName;
-                            var funcName = info.name;
+                            var regName = operatorBindingInfo.regName;
+                            var funcName = operatorBindingInfo.name;
+                            var parameters = operatorBindingInfo.methodInfo.GetParameters();
+                            var declaringType = operatorBindingInfo.methodInfo.DeclaringType;
                             string redirect;
                             if (this.typeBindingInfo.transform != null && this.typeBindingInfo.transform.TryRedirectMethod(regName, out redirect))
                             {
                                 funcName = redirect;
                             }
-                            
-                            cg.cs.AppendLine("cls.AddSelfOperator(\"{0}\", {1}, {2});", regName, funcName, info.length);
+
+                            do
+                            {
+                                if (parameters.Length == 2)
+                                {
+                                    if (parameters[0].ParameterType != declaringType)
+                                    {
+                                        var leftType = typeBindingInfo.bindingManager.GetCSTypeFullName(parameters[0].ParameterType);
+                                        cg.cs.AppendLine("cls.AddLeftOperator(\"{0}\", {1}, {2}, typeof({3}));", regName, funcName, operatorBindingInfo.length, leftType);
+                                        break;
+                                    }
+                                    else if (parameters[1].ParameterType != declaringType)
+                                    {
+                                        var rightType = typeBindingInfo.bindingManager.GetCSTypeFullName(parameters[1].ParameterType);
+                                        cg.cs.AppendLine("cls.AddRightOperator(\"{0}\", {1}, {2}, typeof({3}));", regName, funcName, operatorBindingInfo.length, rightType);
+                                        break;
+                                    }
+                                }
+
+                                cg.cs.AppendLine("cls.AddSelfOperator(\"{0}\", {1}, {2});", regName, funcName, operatorBindingInfo.length);
+                            } while (false);
                         }
-                        
+
                         // 非静态方法
                         foreach (var kv in typeBindingInfo.methods)
                         {
@@ -348,9 +367,16 @@ namespace QuickJS.Editor
                                 funcName = redirect;
                             }
 
-                            cg.cs.AppendLine("cls.AddMethod(false, \"{0}\", {1});", regName, funcName);
+                            if (typeBindingInfo.bindingManager.prefs.optToString && regName == "ToString")
+                            {
+                                cg.cs.AppendLine("cls.AddMethod(false, \"{0}\", {1});", "toString", funcName);
+                            }
+                            else
+                            {
+                                cg.cs.AppendLine("cls.AddMethod(false, \"{0}\", {1});", regName, funcName);
+                            }
                         }
-                        
+
                         // 静态方法
                         foreach (var kv in typeBindingInfo.staticMethods)
                         {
@@ -363,7 +389,7 @@ namespace QuickJS.Editor
                             }
                             cg.cs.AppendLine("cls.AddMethod(true, \"{0}\", {1});", regName, funcName);
                         }
-                        
+
                         // 属性
                         foreach (var kv in typeBindingInfo.properties)
                         {
@@ -461,3 +487,4 @@ namespace QuickJS.Editor
         }
     }
 }
+

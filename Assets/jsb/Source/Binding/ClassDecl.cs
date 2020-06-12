@@ -5,38 +5,57 @@ using System.Runtime.CompilerServices;
 
 namespace QuickJS.Binding
 {
+    public struct OperatorDef
+    {
+        public string op;
+        public JSCFunction func;
+        public int length;
+
+        public OperatorDef(string op, JSCFunction func, int length)
+        {
+            this.func = func;
+            this.length = length;
+            this.op = op;
+        }
+    }
+
+    public struct CrossOperatorDef
+    {
+        public Type type;
+        public List<OperatorDef> operators;
+
+        public CrossOperatorDef(Type type)
+        {
+            this.type = type;
+            this.operators = new List<OperatorDef>();
+        }
+    }
+
     public struct ClassDecl
     {
-        public TypeRegister _register;
+        private TypeRegister _register;
         private ScriptContext _ctx;
-        public JSValue _ctor;
-        public JSValue _proto;
-
-        private List<JSValue> _operators;
+        private JSValue _ctor;
+        private JSValue _proto;
+        private Type _type;
 
         public JSAtom GetAtom(string name)
         {
             return _register.GetAtom(name);
         }
 
-        public ClassDecl(TypeRegister register, JSValue ctorVal, JSValue protoVal)
+        public ClassDecl(TypeRegister register, JSValue ctorVal, JSValue protoVal, Type type)
         {
+            _type = type;
             _register = register;
             _ctx = _register.GetContext();
             _ctor = JSApi.JS_DupValue(_ctx, ctorVal);
             _proto = JSApi.JS_DupValue(_ctx, protoVal);
-            _operators = null;
         }
 
         public void Close()
         {
             var ctx = (JSContext)_ctx;
-
-            if (_operators != null)
-            {
-                _register.AddOperatorDecl(JSApi.JS_DupValue(_ctx, _proto), _operators.ToArray());
-                _operators = null;
-            }
 
             JSApi.JS_FreeValue(ctx, _ctor);
             JSApi.JS_FreeValue(ctx, _proto);
@@ -45,40 +64,19 @@ namespace QuickJS.Binding
             _ctx = null;
         }
 
-        private void EnsureOperators()
-        {
-            if (_operators == null)
-            {
-                _operators = new List<JSValue>();
-                _operators.Add(JSApi.JS_NewObject(_ctx));
-            }
-        }
-
         public void AddSelfOperator(string op, JSCFunction func, int length)
         {
-            EnsureOperators();
-            var funcVal = JSApi.JS_NewCFunction(_ctx, func, op, length);
-            JSApi.JS_DefinePropertyValue(_ctx, _operators[0], GetAtom(op), funcVal, JSPropFlags.DEFAULT);
+            _register.RegisterOperator(_type, op, func, length);
         }
 
-        public void AddLeftOperator(string op, JSCFunction func, int length, string leftTypeName)
+        public void AddLeftOperator(string op, JSCFunction func, int length, Type type)
         {
-            EnsureOperators();
-            var left_operator = JSApi.JS_NewObject(_ctx);
-            JSApi.JS_SetProperty(_ctx, left_operator, GetAtom("left"), JSApi.JS_NewString(_ctx, leftTypeName));
-            var funcVal = JSApi.JS_NewCFunction(_ctx, func, op, length);
-            JSApi.JS_DefinePropertyValue(_ctx, left_operator, GetAtom(op), funcVal, JSPropFlags.DEFAULT);
-            _operators.Add(left_operator);
+            _register.RegisterOperator(_type, op, func, length, true, type);
         }
 
-        public void AddRightOperator(string op, JSCFunction func, int length, string rightTypeName)
+        public void AddRightOperator(string op, JSCFunction func, int length, Type type)
         {
-            EnsureOperators();
-            var right_operator = JSApi.JS_NewObject(_ctx);
-            JSApi.JS_SetProperty(_ctx, right_operator, GetAtom("right"), JSApi.JS_NewString(_ctx, rightTypeName));
-            var funcVal = JSApi.JS_NewCFunction(_ctx, func, op, length);
-            JSApi.JS_DefinePropertyValue(_ctx, right_operator, GetAtom(op), funcVal, JSPropFlags.DEFAULT);
-            _operators.Add(right_operator);
+            _register.RegisterOperator(_type, op, func, length, false, type);
         }
 
         public void AddMethod(bool bStatic, string name, JSCFunctionMagic func, int length, int magic)
