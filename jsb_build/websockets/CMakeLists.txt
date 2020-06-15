@@ -114,6 +114,10 @@ if (ANDROID)
     )
 endif ()
 
+list(APPEND LIBWEBSOCKETS_SRCS
+    ${TOP_DIR}/unity_ws.c
+)
+
 if (APPLE) 
     if (IOS)
         add_library(websockets STATIC ${MBEDTLS_SRCS} ${LIBWEBSOCKETS_SRCS} ${ZLIB_SRCS})

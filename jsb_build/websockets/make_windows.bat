@@ -15,6 +15,7 @@ cd x64_release
 cmake -G "Visual Studio 16 2019" -A x64 ..\..\..\websockets
 cd %BUILD_PATH%
 cmake --build x64_release --config Release
+mkdir ..\..\prebuilt\Plugins\x64\
 xcopy /Y .\x64_release\Release\libwebsockets.dll ..\..\prebuilt\Plugins\x64\
 
 rd /s /q x86_release 2>nul
@@ -24,6 +25,7 @@ cd x86_release
 cmake -G "Visual Studio 16 2019" -A Win32 ..\..\..\websockets
 cd %BUILD_PATH%
 cmake --build x86_release --config Release
+mkdir ..\..\prebuilt\Plugins\x86\
 xcopy /Y .\x86_release\Release\libwebsockets.dll ..\..\prebuilt\Plugins\x86\
 
 cd %BASE_PATH%
