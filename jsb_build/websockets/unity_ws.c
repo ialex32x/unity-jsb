@@ -14,20 +14,22 @@ typedef int unity_bool_t;
 
 struct unity_websocket_payload_t {
     unity_bool_t is_binary;
-    void *buf;
+    unity_bool_t is_done;
     size_t len;
-    struct unity_websocket_payload_t *next;
+    void *buf;
 };
 
-struct unity_websocket_t {
-    struct unity_websocket_payload_t *pending_head;
-    struct unity_websocket_payload_t *pending_tail;
-    struct unity_websocket_payload_t *freelist;
-    
-    unity_bool_t is_binary;
-    void *buf;
-    size_t len;
+struct unity_websocket_t;
 
+struct unity_websocket_t {
+    void (*on_receive)(size_t len, void *ptr);
+    void (*on_receive_final)(unity_bool_t is_binary);
+    /*
+        lws_write(wsi, &(((char *)(payload->buf))[LWS_PRE]), payload->len, protocol);
+        lws_callback_on_writable(websocket->wsi);
+    */
+    void (*on_send)(struct lws *wsi);
+    
     struct lws_protocols *protocols;
     uint32_t protocols_size;
     const char *protocol_names;
@@ -42,48 +44,68 @@ struct unity_websocket_t {
     unity_bool_t is_context_destroyed;
 };
 
-UNITY_LOCAL void _delete_payload(struct unity_websocket_t *websocket, struct unity_websocket_payload_t *payload) {
-    payload->next = websocket->freelist;
-    websocket->freelist = payload;
-}
-
-UNITY_LOCAL struct unity_websocket_payload_t *_new_payload(struct unity_websocket_t *websocket) {
-    struct unity_websocket_payload_t *payload = websocket->freelist;
-    if (payload) {
-        websocket->freelist = payload->next;
-    } else {
-        payload = (struct unity_websocket_payload_t *)duk_alloc(websocket->ctx, sizeof(struct unity_websocket_payload_t));
-        duk_memzero(payload, sizeof(struct unity_websocket_payload_t));
-        payload->buf = duk_alloc(websocket->ctx, LWS_PAYLOAD_SIZE + LWS_PRE);
-        duk_memzero(payload->buf, LWS_PAYLOAD_SIZE + LWS_PRE);
-    }
-    payload->next = NULL;
-    payload->len = 0;
-    return payload;
-}
-
-// UNITY_LOCAL void _duk_lws_destroy(struct unity_websocket_t *websocket) {
-//     if (websocket == NULL || websocket->is_context_destroyed) {
-//         return;
-//     }
-//     if (websocket->is_polling) {
-//         websocket->is_context_destroying = _UNITY_TRUE;
-//         return;
-//     }
-//     websocket->is_context_destroyed = _UNITY_TRUE;
-//     if (websocket->context != NULL) {
-//         lws_context_destroy(websocket->context);
-//         websocket->context = NULL;
-//     }
-//     struct unity_websocket_payload_t *payload = websocket->pending_head;
-//     while (payload) {
-//         websocket->pending_head = payload->next;
-//         payload->next = websocket->freelist;
-//         websocket->freelist = payload;
-//         payload = websocket->pending_head;
-//     }
-//     websocket->pending_tail = NULL;
+// UNITY_LOCAL void _delete_payload(struct unity_websocket_t *websocket, struct unity_websocket_payload_t *payload) {
+//     payload->next = websocket->freelist;
+//     websocket->freelist = payload;
 // }
+
+// UNITY_LOCAL struct unity_websocket_payload_t *_new_payload(struct unity_websocket_t *websocket) {
+//     struct unity_websocket_payload_t *payload = websocket->freelist;
+//     if (payload) {
+//         websocket->freelist = payload->next;
+//     } else {
+//         payload = (struct unity_websocket_payload_t *)duk_alloc(websocket->ctx, sizeof(struct unity_websocket_payload_t));
+//         duk_memzero(payload, sizeof(struct unity_websocket_payload_t));
+//         payload->buf = duk_alloc(websocket->ctx, LWS_PAYLOAD_SIZE + LWS_PRE);
+//         duk_memzero(payload->buf, LWS_PAYLOAD_SIZE + LWS_PRE);
+//     }
+//     payload->next = NULL;
+//     payload->len = 0;
+//     return payload;
+// }
+
+UNITY_LOCAL duk_ret_t duk_WebSocket_poll(duk_context *ctx) {
+    duk_push_this(ctx);
+    struct unity_websocket_t *websocket = duk_get_websocket(ctx, -1);
+    duk_pop(ctx); // pop this
+    if (websocket == NULL || websocket->context == NULL) {
+        return 0;
+    }
+    websocket->is_polling = _UNITY_TRUE;
+    do {
+        websocket->is_servicing = _UNITY_FALSE;
+        lws_service(websocket->context, 0);
+    } while (websocket->is_servicing);
+    websocket->is_polling = _UNITY_FALSE;
+
+    if (websocket->is_context_destroying) {
+        _duk_lws_destroy(websocket);
+    }
+    return 0;
+}
+
+UNITY_LOCAL void unity_lws_destroy(struct unity_websocket_t *websocket) {
+    if (websocket == NULL || websocket->is_context_destroyed) {
+        return;
+    }
+    if (websocket->is_polling) {
+        websocket->is_context_destroying = _UNITY_TRUE;
+        return;
+    }
+    websocket->is_context_destroyed = _UNITY_TRUE;
+    if (websocket->context != NULL) {
+        lws_context_destroy(websocket->context);
+        websocket->context = NULL;
+    }
+    struct unity_websocket_payload_t *payload = websocket->pending_head;
+    while (payload) {
+        websocket->pending_head = payload->next;
+        payload->next = websocket->freelist;
+        websocket->freelist = payload;
+        payload = websocket->pending_head;
+    }
+    websocket->pending_tail = NULL;
+}
 
 // UNITY_LOCAL void _on_connect(struct unity_websocket_t *websocket, const char *protocol) {
 //     duk_context *ctx = websocket->ctx;
@@ -635,25 +657,5 @@ UNITY_LOCAL struct unity_websocket_payload_t *_new_payload(struct unity_websocke
 //     struct unity_websocket_t *websocket = duk_get_websocket(ctx, -1);
 //     duk_pop(ctx); // pop this
 //     _duk_lws_close(websocket);
-//     return 0;
-// }
-
-// UNITY_LOCAL duk_ret_t duk_WebSocket_poll(duk_context *ctx) {
-//     duk_push_this(ctx);
-//     struct unity_websocket_t *websocket = duk_get_websocket(ctx, -1);
-//     duk_pop(ctx); // pop this
-//     if (websocket == NULL || websocket->context == NULL) {
-//         return 0;
-//     }
-//     websocket->is_polling = _UNITY_TRUE;
-//     do {
-//         websocket->is_servicing = _UNITY_FALSE;
-//         lws_service(websocket->context, 0);
-//     } while (websocket->is_servicing);
-//     websocket->is_polling = _UNITY_FALSE;
-
-//     if (websocket->is_context_destroying) {
-//         _duk_lws_destroy(websocket);
-//     }
 //     return 0;
 // }
