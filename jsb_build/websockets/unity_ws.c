@@ -11,60 +11,56 @@
 #define LWS_PAYLOAD_SIZE 4096
 
 typedef int unity_bool_t;
-typedef size_t unity_size_t;
 
-// struct unity_websocket_payload_t {
-//     unity_bool_t is_binary;
-//     void *buf;
-//     unity_size_t len;
-//     struct unity_websocket_payload_t *next;
-// };
+struct unity_websocket_payload_t {
+    unity_bool_t is_binary;
+    void *buf;
+    size_t len;
+    struct unity_websocket_payload_t *next;
+};
 
-// struct unity_websocket_t {
-//     duk_context *ctx;
-//     void *heapptr;
-
-//     struct unity_websocket_payload_t *pending_head;
-//     struct unity_websocket_payload_t *pending_tail;
-//     struct unity_websocket_payload_t *freelist;
+struct unity_websocket_t {
+    struct unity_websocket_payload_t *pending_head;
+    struct unity_websocket_payload_t *pending_tail;
+    struct unity_websocket_payload_t *freelist;
     
-//     unity_bool_t is_binary;
-//     void *buf;
-//     unity_size_t len;
+    unity_bool_t is_binary;
+    void *buf;
+    size_t len;
 
-//     struct lws_protocols *protocols;
-//     duk_uarridx_t protocols_size;
-//     const char *protocol_names;
+    struct lws_protocols *protocols;
+    uint32_t protocols_size;
+    const char *protocol_names;
 
-//     struct lws_context *context;
-//     struct lws *wsi;
+    struct lws_context *context;
+    struct lws *wsi;
 
-//     unity_bool_t is_closing;
-//     unity_bool_t is_servicing;
-//     unity_bool_t is_polling;
-//     unity_bool_t is_context_destroying;
-//     unity_bool_t is_context_destroyed;
-// };
+    unity_bool_t is_closing;
+    unity_bool_t is_servicing;
+    unity_bool_t is_polling;
+    unity_bool_t is_context_destroying;
+    unity_bool_t is_context_destroyed;
+};
 
-// UNITY_LOCAL void _delete_payload(struct unity_websocket_t *websocket, struct unity_websocket_payload_t *payload) {
-//     payload->next = websocket->freelist;
-//     websocket->freelist = payload;
-// }
+UNITY_LOCAL void _delete_payload(struct unity_websocket_t *websocket, struct unity_websocket_payload_t *payload) {
+    payload->next = websocket->freelist;
+    websocket->freelist = payload;
+}
 
-// UNITY_LOCAL struct unity_websocket_payload_t *_new_payload(struct unity_websocket_t *websocket) {
-//     struct unity_websocket_payload_t *payload = websocket->freelist;
-//     if (payload) {
-//         websocket->freelist = payload->next;
-//     } else {
-//         payload = (struct unity_websocket_payload_t *)duk_alloc(websocket->ctx, sizeof(struct unity_websocket_payload_t));
-//         duk_memzero(payload, sizeof(struct unity_websocket_payload_t));
-//         payload->buf = duk_alloc(websocket->ctx, LWS_PAYLOAD_SIZE + LWS_PRE);
-//         duk_memzero(payload->buf, LWS_PAYLOAD_SIZE + LWS_PRE);
-//     }
-//     payload->next = NULL;
-//     payload->len = 0;
-//     return payload;
-// }
+UNITY_LOCAL struct unity_websocket_payload_t *_new_payload(struct unity_websocket_t *websocket) {
+    struct unity_websocket_payload_t *payload = websocket->freelist;
+    if (payload) {
+        websocket->freelist = payload->next;
+    } else {
+        payload = (struct unity_websocket_payload_t *)duk_alloc(websocket->ctx, sizeof(struct unity_websocket_payload_t));
+        duk_memzero(payload, sizeof(struct unity_websocket_payload_t));
+        payload->buf = duk_alloc(websocket->ctx, LWS_PAYLOAD_SIZE + LWS_PRE);
+        duk_memzero(payload->buf, LWS_PAYLOAD_SIZE + LWS_PRE);
+    }
+    payload->next = NULL;
+    payload->len = 0;
+    return payload;
+}
 
 // UNITY_LOCAL void _duk_lws_destroy(struct unity_websocket_t *websocket) {
 //     if (websocket == NULL || websocket->is_context_destroyed) {
@@ -344,7 +340,7 @@ typedef size_t unity_size_t;
 //             return duk_generic_error(ctx, "invalid arg #0 (protocols)");
 //         }
 //     }
-//     unity_size_t protocols_size = duk_get_length(ctx, 0);
+//     size_t protocols_size = duk_get_length(ctx, 0);
 //     struct unity_websocket_t *websocket = (struct unity_websocket_t *)duk_alloc(ctx, sizeof(struct unity_websocket_t));
 //     if (websocket == 0) {
 //         return duk_generic_error(ctx, "unable to alloc websocket");
@@ -374,9 +370,9 @@ typedef size_t unity_size_t;
 // 	websocket->protocols[websocket->protocols_size].rx_buffer_size = LWS_BUF_SIZE;
 // 	websocket->protocols[websocket->protocols_size].tx_packet_size = LWS_PACKET_SIZE;
 //     websocket->protocols_size = 1;
-//     for (unity_size_t i = 0; i < protocols_size; i++) {
+//     for (size_t i = 0; i < protocols_size; i++) {
 //         duk_get_prop_index(ctx, 0, i);
-//         unity_size_t protocol_name_length;
+//         size_t protocol_name_length;
 //         const char *protocol_name_ptr = duk_get_lstring(ctx, -1, &protocol_name_length);
 //         if (protocol_name_ptr != NULL) {
 //             char *protocol_name = duk_alloc(ctx, protocol_name_length + 1);
@@ -394,11 +390,11 @@ typedef size_t unity_size_t;
 //         duk_pop(ctx);
 //     }
 //     duk_push_literal(ctx, ",");
-//     for (unity_size_t i = 0; i < websocket->protocols_size; i++) {
+//     for (size_t i = 0; i < websocket->protocols_size; i++) {
 //         duk_push_string(ctx, websocket->protocols[i].name);
 //     }
 //     duk_join(ctx, websocket->protocols_size);
-//     unity_size_t protocol_names_length;
+//     size_t protocol_names_length;
 //     const char *protocol_names_ptr = duk_get_lstring(ctx, -1, &protocol_names_length);
 //     char *protocol_names = (char *)duk_alloc(ctx, protocol_names_length + 1);
 //     duk_memcpy(protocol_names, protocol_names_ptr, protocol_names_length);
@@ -586,7 +582,7 @@ typedef size_t unity_size_t;
 // }
 
 // UNITY_LOCAL duk_ret_t duk_WebSocket_send(duk_context *ctx) {
-//     unity_size_t len = 0;
+//     size_t len = 0;
 //     unity_bool_t is_binary = _UNITY_TRUE;
 //     void *buf = NULL;
 //     duk_idx_t top = duk_get_top(ctx);
