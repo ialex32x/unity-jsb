@@ -5,6 +5,8 @@ if (WIN32)
     add_definitions(-D_WINSOCKAPI_)
 endif ()
 
+add_definitions(-DLWS_DLL -DLWS_INTERNAL)
+
 set(TOP_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 set(OUT_DIR ${TOP_DIR}/build)
 
@@ -30,6 +32,7 @@ set(ZLIB_SRCS
     ${ZLIB_DIR}/zutil.c
 )
 
+include_directories(${TOP_DIR})
 include_directories(${LIBWEBSOCKETS_DIR})
 include_directories(${LIBWEBSOCKETS_DIR}/win32helpers)
 include_directories(${LIBWEBSOCKETS_DIR}/tls/mbedtls/wrapper/include)
