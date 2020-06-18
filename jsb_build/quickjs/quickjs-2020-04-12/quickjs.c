@@ -969,6 +969,11 @@ enum OPCodeEnum {
     OP_TEMP_END,
 };
 
+// remove this if log2 exists
+#if defined(JSB_DEF_LOG2)
+static double log2(double v) { return log(v) / log(2.0); }
+#endif
+
 static int JS_InitAtoms(JSRuntime *rt);
 static JSAtom __JS_NewAtomInit(JSRuntime *rt, const char *str, int len,
                                int atom_type);
@@ -1616,11 +1621,13 @@ static inline size_t js_def_malloc_usable_size(void *ptr)
     return _msize(ptr);
 #elif defined(EMSCRIPTEN)
     return 0;
+#elif defined(__ANDROID__)
+    return 0;
 #elif defined(__linux__)
     return malloc_usable_size(ptr);
 #else
     /* change this to `return 0;` if compilation fails */
-    return malloc_usable_size(ptr);
+    return 0;
 #endif
 }
 
@@ -1689,6 +1696,8 @@ static const JSMallocFunctions def_malloc_funcs = {
 #elif defined(_WIN32)
     (size_t (*)(const void *))_msize,
 #elif defined(EMSCRIPTEN)
+    NULL,
+#elif defined(__ANDROID__)
     NULL,
 #elif defined(__linux__)
     (size_t (*)(const void *))malloc_usable_size,
