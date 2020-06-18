@@ -34,12 +34,38 @@ namespace WebSockets
                 }
             }
         }
+        
+        [DllImport(WSDLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern lws_context lws_get_context(lws wsi);
 
         [DllImport(WSDLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern void lws_context_destroy(lws_context context);
 
         [DllImport(WSDLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern void lws_context_destroy(IntPtr context);
+
+        [DllImport(WSDLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern int lws_service(lws_context context, int timeout_ms);
+        
+        [DllImport(WSDLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern int lws_is_first_fragment(lws wsi);
+        
+        [DllImport(WSDLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern int lws_is_final_fragment(lws wsi);
+        
+        [DllImport(WSDLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern unsafe void lws_close_reason(lws wsi, lws_close_status status, byte* buf, size_t len);
+
+        public static void lws_close_reason(lws wsi, lws_close_status status, string buf)
+        {
+            var bytes = QuickJS.Utils.TextUtils.GetNullTerminatedBytes(buf);
+            unsafe
+            {
+                fixed (byte* pointer = bytes)
+                {
+                    lws_close_reason(wsi, status, pointer, bytes.Length - 1);
+                }
+            }
+        }
     }
 }
-

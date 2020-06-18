@@ -86,5 +86,6 @@ ULWS_EXTERNAL struct lws *ulws_connect(const struct lws_context *context,
 	i.path = path;
 	i.port = port;
 
-	lws_client_connect_via_info(&i);
+	return lws_client_connect_via_info(&i);
 }
+
