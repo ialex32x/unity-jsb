@@ -203,6 +203,7 @@ JSClassID JSB_GetBridgeClassID()
 #define JS_BO_TYPE 1
 #define JS_BO_OBJECT 2
 #define JS_BO_VALUE 3
+// #define JS_BO_STRICT_OBJECT 4
 
 typedef struct JSPayloadHeader
 {
@@ -232,7 +233,7 @@ JSValue jsb_construct_bridge_object(JSContext *ctx, JSValue proto, int32_t objec
     return obj;
 }
 
-JSValue jsb_new_bridge_object(JSContext *ctx, JSValue proto, int32_t object_id)
+JSValue jsb_new_bridge_object(JSContext *ctx, JSValue proto, int32_t object_id/*, int32_t type_id = JS_BO_OBJECT */)
 {
     JSValue obj = JS_NewObjectProtoClass(ctx, proto, js_bridge_class_id);
     if (!JS_IsException(obj))
@@ -247,12 +248,12 @@ JSValue jsb_new_bridge_object(JSContext *ctx, JSValue proto, int32_t object_id)
 }
 
 // for constructor new_target
-JSValue JSB_NewBridgeClassObject(JSContext *ctx, JSValue new_target, int32_t object_id)
+JSValue JSB_NewBridgeClassObject(JSContext *ctx, JSValue new_target, int32_t object_id/*, int32_t type_id = JS_BO_OBJECT */)
 {
     JSValue proto = JS_GetProperty(ctx, new_target, JS_ATOM_prototype);
     if (!JS_IsException(proto))
     {
-        JSValue obj = jsb_new_bridge_object(ctx, proto, object_id);
+        JSValue obj = jsb_new_bridge_object(ctx, proto, object_id/*, type_id*/);
         JS_FreeValue(ctx, proto);
         return obj;
     }

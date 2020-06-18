@@ -423,11 +423,18 @@ namespace QuickJS.Editor
             {
                 if (type.DeclaringType != null)
                 {
-                    this.jsNamespace = $"{type.Namespace}.{type.DeclaringType.Name}";
+                    if (string.IsNullOrEmpty(type.Namespace))
+                    {
+                        this.jsNamespace = type.DeclaringType.Name;
+                    }
+                    else
+                    {
+                        this.jsNamespace = $"{type.Namespace}.{type.DeclaringType.Name}";
+                    }
                 }
                 else
                 {
-                    this.jsNamespace = type.Namespace;
+                    this.jsNamespace = type.Namespace ?? "";
                 }
 
                 if (type.IsGenericType)

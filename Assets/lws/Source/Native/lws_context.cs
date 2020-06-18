@@ -7,6 +7,8 @@ namespace WebSockets
     [StructLayout(LayoutKind.Sequential)]
     public unsafe struct lws_context
     {
+        public static readonly lws_context Null = new lws_context();
+
         public void* _value;
 
         public bool IsValid()

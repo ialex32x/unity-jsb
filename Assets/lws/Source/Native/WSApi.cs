@@ -34,7 +34,10 @@ namespace WebSockets
                 }
             }
         }
-        
+
+        [DllImport(WSDLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern unsafe int lws_write(lws wsi, byte* buf, size_t len, lws_write_protocol wp);
+
         [DllImport(WSDLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern lws_context lws_get_context(lws wsi);
 
@@ -46,13 +49,19 @@ namespace WebSockets
 
         [DllImport(WSDLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern int lws_service(lws_context context, int timeout_ms);
-        
+
         [DllImport(WSDLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern int lws_is_first_fragment(lws wsi);
-        
+
+        [DllImport(WSDLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern int lws_frame_is_binary(lws wsi);
+
+        [DllImport(WSDLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern int lws_callback_on_writable(lws wsi);
+
         [DllImport(WSDLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern int lws_is_final_fragment(lws wsi);
-        
+
         [DllImport(WSDLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern unsafe void lws_close_reason(lws wsi, lws_close_status status, byte* buf, size_t len);
 
