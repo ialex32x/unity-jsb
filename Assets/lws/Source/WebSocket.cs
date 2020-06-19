@@ -284,16 +284,16 @@ namespace WebSockets
 
         private void Update()
         {
-            if (!_context.IsValid())
-            {
-                return;
-            }
-
             switch (_readyState)
             {
                 case ReadyState.OPEN:
                 case ReadyState.CLOSING:
                 case ReadyState.CONNECTING:
+                    if (!_context.IsValid())
+                    {
+                        return;
+                    }
+
                     _is_polling = true;
                     do
                     {
@@ -537,8 +537,8 @@ namespace WebSockets
                 {
                     throw new ParameterException("protocol", typeof(string), 1);
                 }
+                var url = JSApi.GetString(ctx, argv[0]);
                 var buffer = ScriptEngine.AllocByteBuffer(ctx);
-                var url = JSApi.GetString(ctx, argv[1]);
                 // var protocols = new List<string>();
                 var o = new WebSocket(buffer, url, null);
                 var val = NewBridgeClassObject(ctx, new_target, o, magic);
