@@ -73,6 +73,10 @@ async function testAsyncFunc () {
     await new Promise(resolve => {
         setTimeout(() => resolve(), 1000);    
     });
+
+    // System.Threading.Tasks.Task<System.Net.IPHostEntry>
+    let result = <System.Net.IPHostEntry> await jsb.Yield(jsb.AsyncTaskTest.GetHostEntryAsync("www.baidu.com"));
+    console.log("host entry:", result.HostName);
 }
 
 testAsyncFunc();
@@ -114,6 +118,7 @@ Object.keys(require.cache).forEach(key => console.log(key));
 * [X] commonjs module 
 * [X] timer
 * [X] unity YieldInstruction => promise
+* [X] await System.Threading.Tasks.Task (limited support)
 * [X] JSMemoryUsage window
 * [X] Vector3 operator overloading
 * [ ] compile into bytecode
@@ -122,5 +127,15 @@ Object.keys(require.cache).forEach(key => console.log(key));
 * [ ] event dispatcher
 * [ ] ref 传参时, 从 val.target 进行取值 (因为会需要回写target, 保持一致性)
 * [ ] Values_push_class.cs ```public static JSValue js_push_classvalue(JSContext ctx, IO.ByteBuffer o)```
-* [ ] mobile platform build
- 
+* [ ] mobile platform build: android
+* [ ] mobile platform build: ios
+* [ ] 运行时替换 C# 代码 (limited support)
+
+# Referenced libraries
+
+* [QuickJS](https://bellard.org/quickjs/)
+* [ECMAScript](https://github.com/Geequlim/ECMAScript.git) A Javascript (QuickJS) Binding for Godot 
+* [xLua](https://github.com/Tencent/xLua)
+* [libwebsockets](https://github.com/warmcat/libwebsockets)
+* [mbedtls](https://github.com/ARMmbed/mbedtls)
+* [zlib](https://zlib.net/)

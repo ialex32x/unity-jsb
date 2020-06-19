@@ -60,6 +60,28 @@ namespace QuickJS
             return JSApi.JS_UNDEFINED;
         }
 
+        public JSValue Yield(System.Threading.Tasks.Task task)
+        {
+            if (_isValid)
+            {
+                if (_coroutines == null)
+                {
+                    var go = _runtime.GetContainer();
+                    if (go != null)
+                    {
+                        _coroutines = go.AddComponent<CoroutineManager>();
+                    }
+                }
+            }
+
+            if (_coroutines != null)
+            {
+                return _coroutines.Yield(this, task);
+            }
+
+            return JSApi.JS_UNDEFINED;
+        }
+
         public TimerManager GetTimerManager()
         {
             return _runtime.GetTimerManager();
@@ -193,16 +215,23 @@ namespace QuickJS
         {
             if (argc < 1)
             {
-                return JSApi.JS_ThrowInternalError(ctx, "invalid arg0: YieldInstruction");
+                return JSApi.JS_ThrowInternalError(ctx, "type YieldInstruction or Task expected");
             }
-            YieldInstruction yieldInstruction;
-            if (!Values.js_get_classvalue(ctx, argv[0], out yieldInstruction))
+            object awaitObject;
+            if (Values.js_get_cached_object(ctx, argv[0], out awaitObject))
             {
-                return JSApi.JS_ThrowInternalError(ctx, "invalid arg0: YieldInstruction");
+                var context = ScriptEngine.GetContext(ctx);
+                var task = awaitObject as System.Threading.Tasks.Task;
+                if (task != null)
+                {
+                    return context.Yield(task);
+                }
+
+                var yieldInstruction = awaitObject as YieldInstruction;
+                return context.Yield(yieldInstruction);
             }
 
-            var context = ScriptEngine.GetContext(ctx);
-            return context.Yield(yieldInstruction);
+            return JSApi.JS_ThrowInternalError(ctx, "type YieldInstruction or Task expected");
         }
 
         public static void Bind(TypeRegister register)

@@ -27,8 +27,11 @@ declare function require(id: string): any;
 // declare function enableStacktrace(enabled: boolean): void
 
 declare namespace jsb {
+
+    interface Task<T> {
+    }
     
-    function Yield(instruction?: any): Promise;
+    function Yield(task: Task<T>): Promise<T>;
 
     /**
      * 封装 C# event 调用约定

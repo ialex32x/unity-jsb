@@ -7,9 +7,41 @@ using AOT;
 
 namespace WebSockets
 {
-    using size_t = QuickJS.Native.size_t;
+    using QuickJS;
+    using QuickJS.Native;
+    using QuickJS.Binding;
 
-    public class WebSocket
+    /*
+constructor:
+    new WebSocket(url, [protocol]);
+        url: 要连接的URL
+        protocol: 一个协议字符串或者一个包含协议字符串的数组。
+property:
+    binaryType 
+    bufferedAmount
+    protocol
+    url
+    readyState
+        0 (WebSocket.CONNECTING)
+            正在链接中
+        1 (WebSocket.OPEN)
+            已经链接并且可以通讯
+        2 (WebSocket.CLOSING)
+            连接正在关闭
+        3 (WebSocket.CLOSED)
+            连接已关闭或者没有链接成功 
+    onopen(event)
+    onmessage(event)
+    onerror(event)
+    onclose(event)
+event:
+    'message'
+method: 
+    send
+    close
+    + addEventListener('message', func)
+    */
+    public class WebSocket : Values, IScriptFinalize
     {
         private static List<WebSocket> _websockets = new List<WebSocket>();
 
@@ -217,11 +249,6 @@ namespace WebSockets
             //TODO: send
         }
 
-        private void _js_close()
-        {
-            SetClose();
-        }
-
         //TODO: make it auto update
         private int _js_poll()
         {
@@ -246,21 +273,67 @@ namespace WebSockets
             return 0;
         }
 
-        private int _js_constructor()
+        [MonoPInvokeCallback(typeof(JSCFunctionMagic))]
+        private static JSValue _js_constructor(JSContext ctx, JSValue new_target, int argc, JSValue[] argv, int magic)
         {
-            // JSB_NewBridgeClassObject(..., TYPE.StrictObjectRef);
-            return 0;
+            try
+            {
+                if (argc < 1 || !argv[0].IsString())
+                {
+                    throw new ParameterException("url", typeof(string), 0);
+                }
+                if (argc > 1 && !argv[1].IsString() && JSApi.JS_IsArray(ctx, argv[1]) != 1)
+                {
+                    throw new ParameterException("protocol", typeof(string), 1);
+                }
+                var url = JSApi.GetString(ctx, argv[1]);
+                // var protocols = new List<string>();
+                var o = new WebSocket(url, null);
+                var val = NewBridgeClassObject(ctx, new_target, o, magic);
+                return val;
+            }
+            catch (Exception exception)
+            {
+                return JSApi.ThrowException(ctx, exception);
+            }
         }
 
-        private int _js_finalizer()
+        [MonoPInvokeCallback(typeof(JSCFunction))]
+        private static JSValue _js_close(JSContext ctx, JSValue this_obj, int argc, JSValue[] argv)
         {
-            return 0;
+            try
+            {
+                WebSocket self;
+                if (!js_get_classvalue(ctx, this_obj, out self))
+                {
+                    throw new ThisBoundException();
+                }
+                self.SetClose();
+                return JSApi.JS_UNDEFINED;
+            }
+            catch (Exception exception)
+            {
+                return JSApi.ThrowException(ctx, exception);
+            }
         }
 
-        public void Bind(QuickJS.Binding.TypeRegister register)
+        private WebSocket(string url, List<string> protocols)
+        {
+            //TODO: resolve and connect
+        }
+
+        public void OnJSFinalize()
+        {
+            //TODO: on js value finalized
+        }
+
+        public static void Bind(TypeRegister register)
         {
             var ns = register.CreateNamespace();
-            // ns.CreateClass()
+            var cls = ns.CreateClass("WebSocket", typeof(WebSocket), _js_constructor);
+            cls.AddMethod(false, "close", _js_close);
+            // cls.AddMethod(false, "send", _js_send);
+            cls.Close();
             ns.Close();
         }
     }

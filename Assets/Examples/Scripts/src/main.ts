@@ -6,10 +6,10 @@ import { fib } from "./fib.js";
 print("fib:", fib(12));
 
 function delay(secs) {
-    return new Promise((resolve, reject) => {
+    return new Promise<number>((resolve, reject) => {
         setTimeout(() => {
             print("[async] resolve");
-            resolve();
+            resolve(123);
         }, secs * 1000);
     });
 }
@@ -18,6 +18,8 @@ async function test() {
     print("[async] begin");
     await delay(3);
     print("[async] end");
+    let result = <System.Net.IPHostEntry> await jsb.Yield(jsb.AsyncTaskTest.GetHostEntryAsync("www.baidu.com"));
+    console.log("host entry:", result.HostName);
 }
 
 test();
@@ -177,6 +179,7 @@ console.log(camera.name);
 {
     let c1 = new UnityEngine.Color(0, 0, 0, 1);
     let c2 = new UnityEngine.Color(0.5, 0.1, 0.2, 0);
+    // @ts-ignore
     let r = c2 / 3;
     print(c1, c2, r);
 }
