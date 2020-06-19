@@ -278,7 +278,6 @@ method:
             }
         }
 
-        //TODO: make it auto update
         private void Update()
         {
             if (!_context.IsValid())
@@ -426,8 +425,15 @@ method:
         {
             _jsContext = ctx;
             _jsThis = value;
-            var runtime = ScriptEngine.GetRuntime(ctx);
+            var context = ScriptEngine.GetContext(ctx);
+            var runtime = context.GetRuntime();
+
             runtime.OnUpdate += Update;
+            JSApi.JS_SetProperty(ctx, value, context.GetAtom("onopen"), JSApi.JS_NULL);
+            JSApi.JS_SetProperty(ctx, value, context.GetAtom("onclose"), JSApi.JS_NULL);
+            JSApi.JS_SetProperty(ctx, value, context.GetAtom("onerror"), JSApi.JS_NULL);
+            JSApi.JS_SetProperty(ctx, value, context.GetAtom("onmessage"), JSApi.JS_NULL);
+            JSApi.JS_SetProperty(ctx, value, context.GetAtom("url"), JSApi.JS_NewString(ctx, _url));
         }
 
         private async void Connect()
