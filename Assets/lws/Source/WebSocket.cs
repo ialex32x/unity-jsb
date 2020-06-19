@@ -13,34 +13,34 @@ namespace WebSockets
     using QuickJS.Binding;
 
     /*
-constructor:
-    new WebSocket(url, [protocol]);
-        url: 要连接的URL
-        protocol: 一个协议字符串或者一个包含协议字符串的数组。
-property:
-    binaryType 
-    bufferedAmount
-    protocol
-    url
-    readyState
-        0 (WebSocket.CONNECTING)
-            正在链接中
-        1 (WebSocket.OPEN)
-            已经链接并且可以通讯
-        2 (WebSocket.CLOSING)
-            连接正在关闭
-        3 (WebSocket.CLOSED)
-            连接已关闭或者没有链接成功 
-    onopen(event)
-    onmessage(event)
-    onerror(event)
-    onclose(event)
-event:
-    'message'
-method: 
-    send
-    close
-    + addEventListener('message', func)
+    constructor:
+        new WebSocket(url, [protocol]);
+            url: 要连接的URL
+            protocol: 一个协议字符串或者一个包含协议字符串的数组。
+    property:
+        x binaryType 
+        bufferedAmount
+        x protocol
+        url
+        readyState
+            0 (WebSocket.CONNECTING)
+                正在链接中
+            1 (WebSocket.OPEN)
+                已经链接并且可以通讯
+            2 (WebSocket.CLOSING)
+                连接正在关闭
+            3 (WebSocket.CLOSED)
+                连接已关闭或者没有链接成功 
+        onopen(event)
+        onmessage(event)
+        onerror(event)
+        onclose(event)
+    event:
+        x 'message'
+    method: 
+        send
+        close
+        x addEventListener('message', func)
     */
     public class WebSocket : Values, IScriptFinalize
     {
