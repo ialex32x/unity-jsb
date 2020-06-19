@@ -62,6 +62,11 @@ ULWS_EXTERNAL struct lws_context * ulws_create(const char *name, lws_callback_fu
     return context;
 }
 
+ULWS_EXTERNAL int ulws_pre()
+{
+	return LWS_PRE;
+}
+
 ULWS_EXTERNAL struct lws *ulws_connect(const struct lws_context *context, 
                                     const char *protocol_names, 
                                     ulws_ssl_type ssl_type, 

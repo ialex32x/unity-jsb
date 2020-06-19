@@ -1,13 +1,14 @@
 using System;
 using System.Collections.Generic;
-using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
-using System.Text;
+using System.Net;
+using System.Net.Sockets;
 using AOT;
+using System.Text;
 
 namespace WebSockets
 {
     using QuickJS;
+    using QuickJS.IO;
     using QuickJS.Native;
     using QuickJS.Binding;
 
@@ -43,6 +44,37 @@ method:
     */
     public class WebSocket : Values, IScriptFinalize
     {
+        private enum ReadyState
+        {
+            CONNECTING = 0,
+            OPEN = 1,
+            CLOSING = 2,
+            CLOSED = 3,
+
+            _CONSTRUCTED = -1,
+            _DNS = -2,
+        }
+        private struct Packet
+        {
+            public bool is_binary;
+            public ByteBuffer buffer;
+
+            public Packet(bool is_binary, ByteBuffer buffer)
+            {
+                this.is_binary = is_binary;
+                this.buffer = buffer;
+            }
+
+            public void Release()
+            {
+                if (buffer != null)
+                {
+                    buffer.Release();
+                    buffer = null;
+                }
+            }
+        }
+
         private static List<WebSocket> _websockets = new List<WebSocket>();
 
         private static WebSocket GetWebSocket(lws_context context)
@@ -62,11 +94,17 @@ method:
 
         private lws _wsi;
         private lws_context _context;
+        private ReadyState _readyState;
         private bool _is_closing;
         private bool _is_servicing;
         private bool _is_polling;
         private bool _is_context_destroying;
         private bool _is_context_destroyed;
+        private Queue<Packet> _pending = new Queue<Packet>();
+
+        private string _url;
+        private string _protocol;
+        private string[] _protocols;
 
         [MonoPInvokeCallback(typeof(lws_callback_function))]
         public static int _callback(lws wsi, lws_callback_reasons reason, IntPtr user, IntPtr @in, size_t len)
@@ -152,13 +190,23 @@ method:
             return true;
         }
 
+        private void SetReadyState(ReadyState readyState)
+        {
+            _readyState = readyState;
+        }
+
         private void SetClose()
         {
             if (_wsi.IsValid())
             {
                 _is_closing = true;
+                SetReadyState(ReadyState.CLOSING);
                 WSApi.lws_callback_on_writable(_wsi);
                 _wsi = lws.Null;
+            }
+            else
+            {
+                SetReadyState(ReadyState.CLOSED);
             }
         }
 
@@ -176,6 +224,7 @@ method:
                 return;
             }
 
+            SetReadyState(ReadyState.CLOSED);
             _is_context_destroyed = true;
             if (_context.IsValid())
             {
@@ -183,27 +232,78 @@ method:
                 _context = lws_context.Null;
             }
 
-            //TODO: free all pending buffer
-        }
-
-        private void OnClose()
-        {
-            //TODO: dispatch 'close' event
+            while (_pending.Count > 0)
+            {
+                var packet = _pending.Dequeue();
+                packet.Release();
+            }
         }
 
         private void OnWrite()
         {
-            //TODO: dequeue pending buf, write to wsi (lws_write)
-            // WSApi.lws_write(_wsi, &buf[LWS_PRE], len, protocol);
-            // if (pending queue not empty)
-            // {
-            //     WSApi.lws_callback_on_writable(_wsi);
-            // }
+            if (_pending.Count > 0)
+            {
+                var packet = _pending.Dequeue();
+                var protocol = packet.is_binary ? lws_write_protocol.LWS_WRITE_BINARY : lws_write_protocol.LWS_WRITE_TEXT;
+
+                unsafe
+                {
+                    fixed (byte* buf = packet.buffer.data)
+                    {
+                        WSApi.lws_write(_wsi, &buf[WSApi.LWS_PRE], packet.buffer.writerIndex - WSApi.LWS_PRE, protocol);
+                    }
+                }
+
+                packet.Release();
+                if (_pending.Count > 0)
+                {
+                    WSApi.lws_callback_on_writable(_wsi);
+                }
+            }
+        }
+
+        //TODO: make it auto update
+        private void Update()
+        {
+            if (!_context.IsValid())
+            {
+                return;
+            }
+
+            switch (_readyState)
+            {
+                case ReadyState.OPEN:
+                case ReadyState.CLOSING:
+                case ReadyState.CONNECTING:
+                    _is_polling = true;
+                    do
+                    {
+                        _is_servicing = false;
+                        WSApi.lws_service(_context, 0);
+                    } while (_is_servicing);
+                    _is_polling = false;
+                    break;
+                case ReadyState._CONSTRUCTED:
+                    Connect();
+                    break;
+            }
+
+            if (_is_context_destroying)
+            {
+                Destroy();
+            }
+        }
+
+        private void OnClose()
+        {
+            SetReadyState(ReadyState.CLOSED);
+            //TODO: dispatch 'close' event
         }
 
         // 已建立连接
         private void OnConnect()
         {
+            SetReadyState(ReadyState.OPEN);
             //TODO: dispatch 'open' event
         }
 
@@ -238,39 +338,99 @@ method:
             if (WSApi.lws_is_final_fragment(_wsi) == 1)
             {
                 var is_binary = WSApi.lws_frame_is_binary(_wsi);
-                // dispatch recv buf (data) event
+                //TODO: dispatch recv buf (data) event
             }
 
             return 0;
         }
 
-        private void _js_send()
+        private WebSocket(string url, List<string> protocols)
         {
-            //TODO: send
+            _url = url;
+            _protocols = protocols != null ? protocols.ToArray() : new string[] { "" };
+            SetReadyState(ReadyState._CONSTRUCTED);
         }
 
-        //TODO: make it auto update
-        private int _js_poll()
+        private async void Connect()
         {
-            if (!_context.IsValid())
+            if (_readyState != ReadyState._CONSTRUCTED)
             {
-                return -1;
+                return;
             }
-
-            _is_polling = true;
-            do
+            SetReadyState(ReadyState._DNS);
+            var uri = new Uri(_url);
+            var ssl_type = uri.Scheme == "ws" ? ulws_ssl_type.ULWS_DEFAULT : ulws_ssl_type.ULWS_USE_SSL_ALLOW_SELFSIGNED;
+            var protocol_names = QuickJS.Utils.TextUtils.GetNullTerminatedBytes(string.Join(",", _protocols));
+            var path = QuickJS.Utils.TextUtils.GetNullTerminatedBytes(uri.AbsolutePath);
+            var host = QuickJS.Utils.TextUtils.GetNullTerminatedBytes(uri.DnsSafeHost);
+            var port = uri.Port;
+            switch (uri.HostNameType)
             {
-                _is_servicing = false;
-                WSApi.lws_service(_context, 0);
-            } while (_is_servicing);
-            _is_polling = false;
-
-            if (_is_context_destroying)
-            {
-                Destroy();
+                case UriHostNameType.IPv4:
+                case UriHostNameType.IPv6:
+                    {
+                        var address = QuickJS.Utils.TextUtils.GetNullTerminatedBytes(uri.DnsSafeHost);
+                        unsafe
+                        {
+                            fixed (byte* protocol_names_ptr = protocol_names)
+                            fixed (byte* host_ptr = host)
+                            fixed (byte* address_ptr = address)
+                            fixed (byte* path_ptr = path)
+                            {
+                                WSApi.ulws_connect(_context, protocol_names_ptr, ssl_type, host_ptr, address_ptr, path_ptr, port);
+                            }
+                        }
+                    }
+                    break;
+                default:
+                    {
+                        var entry = await Dns.GetHostEntryAsync(uri.DnsSafeHost);
+                        if (_readyState != ReadyState._DNS)
+                        {
+                            // already closed
+                            return;
+                        }
+                        try
+                        {
+                            var ipAddress = Select(entry.AddressList);
+                            var address = QuickJS.Utils.TextUtils.GetNullTerminatedBytes(ipAddress.ToString());
+                            unsafe
+                            {
+                                fixed (byte* protocol_names_ptr = protocol_names)
+                                fixed (byte* host_ptr = host)
+                                fixed (byte* address_ptr = address)
+                                fixed (byte* path_ptr = path)
+                                {
+                                    WSApi.ulws_connect(_context, protocol_names_ptr, ssl_type, host_ptr, address_ptr, path_ptr, port);
+                                }
+                            }
+                        }
+                        catch (Exception)
+                        {
+                            SetReadyState(ReadyState.CLOSED);
+                            OnError();
+                        }
+                    }
+                    break;
             }
+        }
 
-            return 0;
+        private IPAddress Select(IPAddress[] list)
+        {
+            for (int i = 0, len = list.Length; i < len; i++)
+            {
+                var ipAddress = list[i];
+                if (ipAddress.AddressFamily == AddressFamily.InterNetwork || i == len - 1)
+                {
+                    return ipAddress;
+                }
+            }
+            throw new ArgumentOutOfRangeException("no IPAddress available");
+        }
+
+        public void OnJSFinalize()
+        {
+            Destroy();
         }
 
         [MonoPInvokeCallback(typeof(JSCFunctionMagic))]
@@ -317,14 +477,92 @@ method:
             }
         }
 
-        private WebSocket(string url, List<string> protocols)
+        [MonoPInvokeCallback(typeof(JSGetterCFunction))]
+        private static JSValue _js_readyState(JSContext ctx, JSValue this_obj)
         {
-            //TODO: resolve and connect
+            try
+            {
+                WebSocket self;
+                if (!js_get_classvalue(ctx, this_obj, out self))
+                {
+                    throw new ThisBoundException();
+                }
+                return JSApi.JS_NewInt32(ctx, (int)self._readyState);
+            }
+            catch (Exception exception)
+            {
+                return JSApi.ThrowException(ctx, exception);
+            }
         }
 
-        public void OnJSFinalize()
+        [MonoPInvokeCallback(typeof(JSCFunction))]
+        private static JSValue _js_send(JSContext ctx, JSValue this_obj, int argc, JSValue[] argv)
         {
-            //TODO: on js value finalized
+            try
+            {
+                WebSocket self;
+                if (!js_get_classvalue(ctx, this_obj, out self))
+                {
+                    throw new ThisBoundException();
+                }
+                if (argc == 0)
+                {
+                    throw new ParameterException("data", typeof(string), 0);
+                }
+                if (argv[0].IsString())
+                {
+                    // send text data
+                    size_t psize;
+                    var pointer = JSApi.JS_ToCStringLen(ctx, out psize, argv[0]);
+                    if (pointer != IntPtr.Zero && psize > 0)
+                    {
+                        var buffer = ScriptEngine.AllocByteBuffer(ctx, psize + WSApi.LWS_PRE);
+                        if (buffer != null)
+                        {
+                            buffer.WriteBytes(WSApi.LWS_PRE);
+                            buffer.WriteBytes(pointer, psize);
+                            self._pending.Enqueue(new Packet(false, buffer));
+                            WSApi.lws_callback_on_writable(self._wsi);
+                        }
+                        else
+                        {
+                            JSApi.JS_FreeCString(ctx, pointer);
+                            return JSApi.JS_ThrowInternalError(ctx, "buf alloc failed");
+                        }
+                    }
+                    JSApi.JS_FreeCString(ctx, pointer);
+                }
+                else
+                {
+                    size_t psize;
+                    var pointer = JSApi.JS_GetArrayBuffer(ctx, out psize, argv[0]);
+                    if (pointer != IntPtr.Zero && psize > 0)
+                    {
+                        var buffer = ScriptEngine.AllocByteBuffer(ctx, psize + WSApi.LWS_PRE);
+                        if (buffer != null)
+                        {
+                            buffer.WriteBytes(WSApi.LWS_PRE);
+                            buffer.WriteBytes(pointer, psize);
+                            self._pending.Enqueue(new Packet(false, buffer));
+                            WSApi.lws_callback_on_writable(self._wsi);
+                        }
+                        else
+                        {
+                            return JSApi.JS_ThrowInternalError(ctx, "buf alloc failed");
+                        }
+                    }
+                    else
+                    {
+                        return JSApi.JS_ThrowInternalError(ctx, "unknown buf type");
+                    }
+                }
+
+                return JSApi.JS_UNDEFINED;
+            }
+            catch (Exception exception)
+            {
+                return JSApi.ThrowException(ctx, exception);
+            }
         }
 
         public static void Bind(TypeRegister register)
@@ -332,7 +570,8 @@ method:
             var ns = register.CreateNamespace();
             var cls = ns.CreateClass("WebSocket", typeof(WebSocket), _js_constructor);
             cls.AddMethod(false, "close", _js_close);
-            // cls.AddMethod(false, "send", _js_send);
+            cls.AddMethod(false, "send", _js_send);
+            cls.AddProperty(false, "readyState", _js_readyState, null);
             cls.Close();
             ns.Close();
         }

@@ -35,6 +35,14 @@ namespace WebSockets
             }
         }
 
+         [DllImport(WSDLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern unsafe lws ulws_connect(lws_context context, byte* protocol_names, ulws_ssl_type ssl_type, byte* host, byte* address, byte* path, int port);
+        
+        [DllImport(WSDLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern int ulws_pre();
+
+        public static readonly int LWS_PRE = ulws_pre();
+        
         [DllImport(WSDLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern unsafe int lws_write(lws wsi, byte* buf, size_t len, lws_write_protocol wp);
 

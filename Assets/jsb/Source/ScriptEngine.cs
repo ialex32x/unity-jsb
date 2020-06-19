@@ -36,12 +36,27 @@ namespace QuickJS
 
         public static ObjectCache GetObjectCache(JSContext ctx)
         {
-            return _runtime.GetObjectCache();
+            return GetRuntime(ctx)?.GetObjectCache();
         }
 
         public static TypeDB GetTypeDB(JSContext ctx)
         {
-            return _runtime.GetTypeDB();
+            return GetRuntime(ctx)?.GetTypeDB();
+        }
+
+        public static IO.ByteBufferAllocator GetByteBufferAllocator(JSContext ctx)
+        {
+            return GetRuntime(ctx)?.GetByteBufferAllocator();
+        }
+
+        public static IO.ByteBuffer AllocByteBuffer(JSContext ctx)
+        {
+            return GetByteBufferAllocator(ctx)?.Alloc();
+        }
+
+        public static IO.ByteBuffer AllocByteBuffer(JSContext ctx, int size)
+        {
+            return GetByteBufferAllocator(ctx)?.Alloc(size);
         }
 
         public static ScriptRuntime GetRuntime(JSContext ctx)
