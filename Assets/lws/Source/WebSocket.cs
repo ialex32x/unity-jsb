@@ -102,6 +102,11 @@ method:
         private bool _is_context_destroyed;
         private Queue<Packet> _pending = new Queue<Packet>();
 
+        private ByteBuffer _buffer;
+
+        private JSValue _jsThis; // dangeous reference holder (no ref count)
+        private JSContext _jsContext; // dangeous reference holder
+
         private string _url;
         private string _protocol;
         private string[] _protocols;
@@ -237,6 +242,17 @@ method:
                 var packet = _pending.Dequeue();
                 packet.Release();
             }
+
+            if (_buffer != null)
+            {
+                _buffer.Release();
+                _buffer = null;
+            }
+            var runtime = ScriptEngine.GetRuntime(_jsContext);
+            if (runtime != null)
+            {
+                runtime.OnUpdate -= Update;
+            }
         }
 
         private void OnWrite()
@@ -297,20 +313,19 @@ method:
         private void OnClose()
         {
             SetReadyState(ReadyState.CLOSED);
-            //TODO: dispatch 'close' event
+            CallScript("onclose", JSApi.JS_UNDEFINED);
         }
 
         // 已建立连接
         private void OnConnect()
         {
             SetReadyState(ReadyState.OPEN);
-            //TODO: dispatch 'open' event
+            CallScript("onopen", JSApi.JS_UNDEFINED);
         }
 
         private void OnError()
         {
-            //TODO: dispatch 'event' event
-            // _duk_lws_destroy(websocket);
+            CallScript("onerror", JSApi.JS_UNDEFINED);
         }
 
         private void OnCloseRequest(IntPtr @in, size_t len)
@@ -319,7 +334,9 @@ method:
             string reason;
             if (TryParseReason(@in, len, out code, out reason))
             {
-                //TODO: dispatch 'close request' event
+                var val = JSApi.JS_NewInt32(_jsContext, code);
+                CallScript("oncloserequest", val);
+                JSApi.JS_FreeValue(_jsContext, val);
             }
         }
 
@@ -328,27 +345,89 @@ method:
         {
             if (WSApi.lws_is_first_fragment(_wsi) == 1)
             {
-                // init receive buffer .size = 0
+                _buffer.writerIndex = 0;
             }
-            //TODO: check recv buf size
-            // return -1;
-
-            //TODO: copy recv buf
+            _buffer.WriteBytes(@in, len);
 
             if (WSApi.lws_is_final_fragment(_wsi) == 1)
             {
-                var is_binary = WSApi.lws_frame_is_binary(_wsi);
-                //TODO: dispatch recv buf (data) event
+                var is_binary = WSApi.lws_frame_is_binary(_wsi) == 1;
+                if (is_binary)
+                {
+                    unsafe
+                    {
+                        fixed (byte* ptr = _buffer.data)
+                        {
+                            var val = JSApi.JS_NewArrayBufferCopy(_jsContext, ptr, _buffer.writerIndex);
+                            CallScript("onmessage", val);
+                            JSApi.JS_FreeValue(_jsContext, val);
+                        }
+                    }
+                }
+                else
+                {
+                    unsafe
+                    {
+                        _buffer.WriteByte(0); // make it null terminated
+                        fixed (byte* ptr = _buffer.data)
+                        {
+                            var val = JSApi.JS_NewString(_jsContext, ptr);
+                            CallScript("onmessage", val);
+                            JSApi.JS_FreeValue(_jsContext, val);
+                        }
+                    }
+                }
             }
 
             return 0;
         }
 
-        private WebSocket(string url, List<string> protocols)
+        private void CallScript(string eventName, JSValue eventArg)
+        {
+            if (eventArg.IsException())
+            {
+                _jsContext.print_exception();
+                return;
+            }
+            var scriptContext = ScriptEngine.GetContext(_jsContext);
+            if (scriptContext != null)
+            {
+                var eventFunc = JSApi.JS_GetProperty(_jsContext, _jsThis, scriptContext.GetAtom(eventName));
+                if (JSApi.JS_IsFunction(_jsContext, eventFunc) != 1)
+                {
+                    if (eventFunc.IsException())
+                    {
+                        _jsContext.print_exception();
+                    }
+                    JSApi.JS_FreeValue(_jsContext, eventFunc);
+                    return;
+                }
+
+                var rval = JSApi.JS_Call(_jsContext, eventFunc, _jsThis, 1, new JSValue[] { eventArg });
+                if (rval.IsException())
+                {
+                    _jsContext.print_exception();
+                }
+                JSApi.JS_FreeValue(_jsContext, rval);
+                JSApi.JS_FreeValue(_jsContext, eventFunc);
+            }
+        }
+
+        // buffer: buffer for recv
+        private WebSocket(ByteBuffer buffer, string url, List<string> protocols)
         {
             _url = url;
+            _buffer = buffer;
             _protocols = protocols != null ? protocols.ToArray() : new string[] { "" };
             SetReadyState(ReadyState._CONSTRUCTED);
+        }
+
+        private void _Transfer(JSContext ctx, JSValue value)
+        {
+            _jsContext = ctx;
+            _jsThis = value;
+            var runtime = ScriptEngine.GetRuntime(ctx);
+            runtime.OnUpdate += Update;
         }
 
         private async void Connect()
@@ -430,6 +509,8 @@ method:
 
         public void OnJSFinalize()
         {
+            _jsContext = JSContext.Null;
+            _jsThis = JSApi.JS_UNDEFINED;
             Destroy();
         }
 
@@ -446,10 +527,12 @@ method:
                 {
                     throw new ParameterException("protocol", typeof(string), 1);
                 }
+                var buffer = ScriptEngine.AllocByteBuffer(ctx);
                 var url = JSApi.GetString(ctx, argv[1]);
                 // var protocols = new List<string>();
-                var o = new WebSocket(url, null);
+                var o = new WebSocket(buffer, url, null);
                 var val = NewBridgeClassObject(ctx, new_target, o, magic);
+                o._Transfer(ctx, val);
                 return val;
             }
             catch (Exception exception)

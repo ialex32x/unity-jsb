@@ -18,6 +18,7 @@ namespace QuickJS
     {
         public event Action<ScriptRuntime> OnDestroy;
         public event Action<ScriptRuntime> OnAfterDestroy;
+        public event Action OnUpdate;
 
         private JSRuntime _rt;
         private IScriptLogger _logger;
@@ -350,6 +351,7 @@ namespace QuickJS
                 CollectPendingGarbage();
             }
 
+            OnUpdate?.Invoke(); //TODO: optimize
             ExecutePendingJob();
 
             // poll here;
