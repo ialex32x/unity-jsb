@@ -37,6 +37,7 @@ namespace jsb
 
         public void OnBind(ScriptRuntime runtime, TypeRegister register)
         {
+            WebSockets.WebSocket.Bind(register);
         }
 
         public void OnComplete(ScriptRuntime runtime)
