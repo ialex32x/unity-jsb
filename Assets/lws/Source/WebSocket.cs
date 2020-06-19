@@ -95,6 +95,7 @@ method:
         private lws _wsi;
         private lws_context _context;
         private ReadyState _readyState;
+        private int _bufferedAmount;
         private bool _is_closing;
         private bool _is_servicing;
         private bool _is_polling;
@@ -242,6 +243,7 @@ method:
                 var packet = _pending.Dequeue();
                 packet.Release();
             }
+            _bufferedAmount = 0;
 
             if (_buffer != null)
             {
@@ -261,15 +263,17 @@ method:
             {
                 var packet = _pending.Dequeue();
                 var protocol = packet.is_binary ? lws_write_protocol.LWS_WRITE_BINARY : lws_write_protocol.LWS_WRITE_TEXT;
+                var len = packet.buffer.writerIndex - WSApi.LWS_PRE;
 
                 unsafe
                 {
                     fixed (byte* buf = packet.buffer.data)
                     {
-                        WSApi.lws_write(_wsi, &buf[WSApi.LWS_PRE], packet.buffer.writerIndex - WSApi.LWS_PRE, protocol);
+                        WSApi.lws_write(_wsi, &buf[WSApi.LWS_PRE], len, protocol);
                     }
                 }
 
+                _bufferedAmount -= len;
                 packet.Release();
                 if (_pending.Count > 0)
                 {
@@ -567,6 +571,24 @@ method:
         }
 
         [MonoPInvokeCallback(typeof(JSGetterCFunction))]
+        private static JSValue _js_bufferedAmount(JSContext ctx, JSValue this_obj)
+        {
+            try
+            {
+                WebSocket self;
+                if (!js_get_classvalue(ctx, this_obj, out self))
+                {
+                    throw new ThisBoundException();
+                }
+                return JSApi.JS_NewInt32(ctx, self._bufferedAmount);
+            }
+            catch (Exception exception)
+            {
+                return JSApi.ThrowException(ctx, exception);
+            }
+        }
+
+        [MonoPInvokeCallback(typeof(JSGetterCFunction))]
         private static JSValue _js_readyState(JSContext ctx, JSValue this_obj)
         {
             try
@@ -611,6 +633,7 @@ method:
                             buffer.WriteBytes(WSApi.LWS_PRE);
                             buffer.WriteBytes(pointer, psize);
                             self._pending.Enqueue(new Packet(false, buffer));
+                            self._bufferedAmount += psize;
                             WSApi.lws_callback_on_writable(self._wsi);
                         }
                         else
@@ -633,6 +656,7 @@ method:
                             buffer.WriteBytes(WSApi.LWS_PRE);
                             buffer.WriteBytes(pointer, psize);
                             self._pending.Enqueue(new Packet(false, buffer));
+                            self._bufferedAmount += psize;
                             WSApi.lws_callback_on_writable(self._wsi);
                         }
                         else
@@ -661,6 +685,7 @@ method:
             cls.AddMethod(false, "close", _js_close);
             cls.AddMethod(false, "send", _js_send);
             cls.AddProperty(false, "readyState", _js_readyState, null);
+            cls.AddProperty(false, "bufferedAmount", _js_bufferedAmount, null);
             cls.Close();
             ns.Close();
         }
