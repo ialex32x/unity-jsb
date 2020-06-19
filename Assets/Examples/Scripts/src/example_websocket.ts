@@ -1,6 +1,6 @@
 
 export function run() {
-    let ws = new WebSocket("ws://192.168.0.1:8080/websocket");
+    let ws = new WebSocket("ws://192.168.0.1:8080/websocket", "default");
 
     console.log("ws.readyState:", ws.readyState);
 

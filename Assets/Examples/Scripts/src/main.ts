@@ -70,7 +70,7 @@ let camera = UnityEngine.GameObject.Find("/Main Camera").GetComponent(UnityEngin
 
 console.log(camera.name);
 
-import { run as run_websocket } from "./example_websocket";
-run_websocket();
+// import { run as run_websocket } from "./example_websocket";
+// run_websocket();
 
 print("end of script");

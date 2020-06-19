@@ -50,10 +50,7 @@ namespace WebSockets
         public static extern lws_context lws_get_context(lws wsi);
 
         [DllImport(WSDLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern void lws_context_destroy(lws_context context);
-
-        [DllImport(WSDLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern void lws_context_destroy(IntPtr context);
+        public static extern void ulws_destroy(lws_context context);
 
         [DllImport(WSDLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern int lws_service(lws_context context, int timeout_ms);

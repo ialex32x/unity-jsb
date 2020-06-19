@@ -234,7 +234,7 @@ namespace WebSockets
             _is_context_destroyed = true;
             if (_context.IsValid())
             {
-                WSApi.lws_context_destroy(_context);
+                WSApi.ulws_destroy(_context);
                 _context = lws_context.Null;
             }
 
@@ -422,7 +422,20 @@ namespace WebSockets
             _url = url;
             _buffer = buffer;
             _protocols = protocols != null ? protocols.ToArray() : new string[] { "" };
-            SetReadyState(ReadyState._CONSTRUCTED);
+            do
+            {
+                if (_protocols != null && _protocols.Length > 0)
+                {
+
+                    _context = WSApi.ulws_create(_protocols[0], _callback, 1024 * 4, 1024 * 4);
+                    if (_context.IsValid())
+                    {
+                        SetReadyState(ReadyState._CONSTRUCTED);
+                        break;
+                    }
+                }
+                SetReadyState(ReadyState.CLOSED);
+            } while (false);
         }
 
         private void _Transfer(JSContext ctx, JSValue value)
@@ -494,8 +507,9 @@ namespace WebSockets
                                 }
                             }
                         }
-                        catch (Exception)
+                        catch (Exception exception)
                         {
+                            UnityEngine.Debug.LogErrorFormat("{0}", exception);
                             SetReadyState(ReadyState.CLOSED);
                             OnError();
                         }
@@ -533,14 +547,41 @@ namespace WebSockets
                 {
                     throw new ParameterException("url", typeof(string), 0);
                 }
-                if (argc > 1 && !argv[1].IsString() && JSApi.JS_IsArray(ctx, argv[1]) != 1)
+                var protocols = new List<string>();
+                if (argc > 1)
                 {
-                    throw new ParameterException("protocol", typeof(string), 1);
+                    if (argv[1].IsString())
+                    {
+                        protocols.Add(JSApi.GetString(ctx, argv[1]));
+                    }
+                    else if (JSApi.JS_IsArray(ctx, argv[1]) == 1)
+                    {
+                        var length_prop = JSApi.JS_GetProperty(ctx, argv[1], JSApi.JS_ATOM_length);
+                        int length;
+                        if (JSApi.JS_ToInt32(ctx, out length, length_prop) >= 0)
+                        {
+                            for (uint i = 0; i < length; i++)
+                            {
+                                var element = JSApi.JS_GetPropertyUint32(ctx, argv[1], i);
+                                var protocol_element = JSApi.GetString(ctx, element);
+                                if (protocol_element != null)
+                                {
+                                    protocols.Add(protocol_element);
+                                }
+                                JSApi.JS_FreeValue(ctx, element);
+                            }
+                        }
+                        JSApi.JS_FreeValue(ctx, length_prop);
+                    }
+                    else
+                    {
+                        throw new ParameterException("protocol", typeof(string), 1);
+                    }
                 }
                 var url = JSApi.GetString(ctx, argv[0]);
                 var buffer = ScriptEngine.AllocByteBuffer(ctx);
-                // var protocols = new List<string>();
-                var o = new WebSocket(buffer, url, null);
+
+                var o = new WebSocket(buffer, url, protocols);
                 var val = NewBridgeClassObject(ctx, new_target, o, magic);
                 o._Transfer(ctx, val);
                 return val;
