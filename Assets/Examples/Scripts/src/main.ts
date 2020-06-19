@@ -5,34 +5,19 @@ import { fib } from "./fib.js";
 
 print("fib:", fib(12));
 
-function delay(secs) {
-    return new Promise<number>((resolve, reject) => {
-        setTimeout(() => {
-            print("[async] resolve");
-            resolve(123);
-        }, secs * 1000);
-    });
-}
-
-async function test() {
-    print("[async] begin");
-    await delay(3);
-    print("[async] end");
-    let result = <System.Net.IPHostEntry> await jsb.Yield(jsb.AsyncTaskTest.GetHostEntryAsync("www.baidu.com"));
-    console.log("host entry:", result.HostName);
-}
-
-test();
-
-setTimeout(() => {
-    print("[timeout] test");
-}, 1500);
-
 let u = new UnityEngine.Vector3(1, 2, 3);
 
 console.log(u.x);
 u.Normalize();
 console.log(u.x, u.y, u.z);
+
+setTimeout(() => {
+    print("[timeout] test");
+}, 1500);
+
+setInterval(() => {
+    console.log("interval tick");
+}, 1000 * 10);
 
 let go = new UnityEngine.GameObject("test");
 console.log(go.name);
@@ -40,20 +25,10 @@ go.name = "testing";
 console.log(go.name);
 
 async function destroy() {
-    await delay(5);
+    await jsb.Yield(new UnityEngine.WaitForSeconds(5));
     UnityEngine.Object.Destroy(go);
 }
 destroy();
-
-async function testUnityYieldInstructions() {
-    console.warn("wait for unity YieldInstruction, begin");
-    await jsb.Yield(new UnityEngine.WaitForSeconds(3));
-
-    console.warn("wait for unity YieldInstruction, end;", UnityEngine.Time.frameCount);
-    await jsb.Yield(null);
-    console.warn("wait for unity YieldInstruction, next frame;", UnityEngine.Time.frameCount);
-}
-testUnityYieldInstructions();
 
 let actions = new jsb.DelegateTest();
 actions.onAction = function () {
@@ -91,97 +66,11 @@ print("json:", require("../config/data.json").name);
 // print("require (node_modules): ", require("blink1").test);
 // print("require (node_modules): ", require("blink3").test);
 
-setInterval(() => {
-    console.log("interval tick");
-}, 1000 * 10);
-
-class MyClass extends UnityEngine.MonoBehaviour {
-    vv = 0;
-    protected _tick = 0;
-
-    Awake() {
-        console.log("MyClass.Awake", this._tick++);
-    }
-
-    async OnEnable() {
-        console.log("MyClass.OnEnable", this._tick++);
-        await jsb.Yield(new UnityEngine.WaitForSeconds(1));
-        console.log("MyClass.OnEnable (delayed)", this._tick++);
-    }
-
-    OnDisable() {
-        console.log("MyClass.OnDisable", this._tick++);
-    }
-
-    OnDestroy() {
-        console.log("MyClass.OnDestroy", this._tick++);
-    }
-
-    async test() {
-        console.log("MyClass.test (will be destroied after 5 secs.", this.transform);
-        await jsb.Yield(new UnityEngine.WaitForSeconds(5));
-        UnityEngine.Object.Destroy(this.gameObject);
-    }
-}
-
-class MySubClass extends MyClass {
-    Awake() {
-        super.Awake();
-        console.log("MySubClass.Awake", this._tick++);
-    }
-
-    play() {
-        console.log("MySubClass.play");
-    }
-}
-
-let gameObject = new UnityEngine.GameObject();
-let comp1 = gameObject.AddComponent(MySubClass);
-let comp2 = gameObject.AddComponent(MyClass);
-
-comp1.vv = 1;
-comp2.vv = 2;
-
-comp1.play();
-
-{
-    let results = gameObject.GetComponents(MySubClass);
-    results.forEach(it => console.log("GetComponents(MySubClass):", it.vv));
-}
-
-{
-    let results = gameObject.GetComponents(MyClass);
-    results.forEach(it => console.log("GetComponents(MyClass):", it.vv));
-}
-
 let camera = UnityEngine.GameObject.Find("/Main Camera").GetComponent(UnityEngine.Camera);
 
 console.log(camera.name);
 
-// operators
-{
-    let vec1 = new UnityEngine.Vector3(1, 2, 3);
-    let vec2 = new UnityEngine.Vector3(9, 8, 7);
-    // @ts-ignore
-    let vec3 = vec1 + vec2;
-    // @ts-ignore
-    let vec4 = vec1 + vec2;
-    console.log("v1 + v2 =", vec3);
-    // @ts-ignore
-    console.log("v3 * 2 =", vec3 * 2);
-    // @ts-ignore
-    console.log("2 * v3=", 2 * vec3);
-    // @ts-ignore
-    console.log("v3 / 2 =", vec3 / 2);
-    console.log("v3 == v4:", vec3 == vec4);
-}
-
-{
-    let c1 = new UnityEngine.Color(0, 0, 0, 1);
-    let c2 = new UnityEngine.Color(0.5, 0.1, 0.2, 0);
-    // @ts-ignore
-    let r = c2 / 3;
-    print(c1, c2, r);
-}
+import { run as run_websocket } from "./example_websocket";
+run_websocket();
 
 print("end of script");
