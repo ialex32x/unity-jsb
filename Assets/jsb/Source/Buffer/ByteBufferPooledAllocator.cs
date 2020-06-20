@@ -8,6 +8,11 @@ namespace QuickJS.IO
         private object __mutex = new object();
         private List<ByteBuffer> __freelist;
 
+        public ByteBufferPooledAllocator()
+        : this(24, 512, int.MaxValue, false)
+        {
+        }
+
         // 预分配缓冲池
         public ByteBufferPooledAllocator(int prealloc, int initialCapacity, int maxCapacity, bool traceMemoryLeak)
         {

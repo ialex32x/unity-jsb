@@ -261,8 +261,10 @@ lws_protocol_init(struct lws_context *context)
 			if (vh->protocols[n].callback(&wsi,
 					LWS_CALLBACK_PROTOCOL_INIT, NULL,
 					(void *)pvo, 0)) {
-				lws_free(vh->protocol_vh_privs[n]);
-				vh->protocol_vh_privs[n] = NULL;
+				if (vh->protocol_vh_privs) {
+					lws_free(vh->protocol_vh_privs[n]);
+					vh->protocol_vh_privs[n] = NULL;
+				}
 				lwsl_err("%s: protocol %s failed init\n", __func__,
 					 vh->protocols[n].name);
 			}

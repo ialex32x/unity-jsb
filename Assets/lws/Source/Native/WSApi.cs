@@ -19,7 +19,7 @@ namespace WebSockets
         const string WSDLL = "libwebsockets";
 #endif
         [DllImport(WSDLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern unsafe lws_context ulws_create(byte* name, IntPtr callback, size_t rx_buffer_size, size_t tx_packet_size);
+        public static extern unsafe lws_context ulws_create(byte* name, size_t len, IntPtr callback, size_t rx_buffer_size, size_t tx_packet_size);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static lws_context ulws_create(string name, lws_callback_function callback, size_t rx_buffer_size, size_t tx_packet_size)
@@ -30,7 +30,7 @@ namespace WebSockets
             {
                 fixed (byte* pointer = bytes)
                 {
-                    return ulws_create(pointer, fn, rx_buffer_size, tx_packet_size);
+                    return ulws_create(pointer, bytes.Length - 1,  fn, rx_buffer_size, tx_packet_size);
                 }
             }
         }

@@ -7,6 +7,7 @@ using QuickJS;
 using QuickJS.Binding;
 using QuickJS.Native;
 using QuickJS.Utils;
+using QuickJS.IO;
 
 namespace jsb
 {
@@ -22,7 +23,7 @@ namespace jsb
             var fileSystem = new DefaultFileSystem();
             _rt.AddSearchPath("Assets");
             _rt.AddSearchPath("node_modules");
-            _rt.Initialize(fileSystem, this, new UnityLogger());
+            _rt.Initialize(fileSystem, this, new UnityLogger(), new ByteBufferPooledAllocator());
         }
 
         void Update()

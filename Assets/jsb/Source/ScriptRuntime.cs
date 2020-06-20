@@ -75,9 +75,7 @@ namespace QuickJS
             _fileResolver.AddSearchPath(path);
         }
 
-        public void Initialize(IFileSystem fileSystem, IScriptRuntimeListener runner,
-            IScriptLogger logger,
-            IO.ByteBufferAllocator byteBufferAllocator = null, int step = 30)
+        public void Initialize(IFileSystem fileSystem, IScriptRuntimeListener runner, IScriptLogger logger, IO.ByteBufferAllocator byteBufferAllocator, int step = 30)
         {
             if (logger == null)
             {

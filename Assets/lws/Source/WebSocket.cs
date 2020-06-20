@@ -122,27 +122,49 @@ namespace WebSockets
                 return -1;
             }
 
-            websocket._is_servicing = true;
             switch (reason)
             {
+                case lws_callback_reasons.LWS_CALLBACK_CHANGE_MODE_POLL_FD:
+                    {
+                        return 0;
+                    }
+                case lws_callback_reasons.LWS_CALLBACK_CLIENT_RECEIVE:
+                    {
+                        websocket._is_servicing = true;
+                        return websocket.OnReceive(@in, len);
+                    }
+                case lws_callback_reasons.LWS_CALLBACK_CLIENT_WRITEABLE:
+                    {
+                        websocket._is_servicing = true;
+                        if (websocket._is_closing)
+                        {
+                            WSApi.lws_close_reason(wsi, lws_close_status.LWS_CLOSE_STATUS_NORMAL, "");
+                            return -1;
+                        }
+                        websocket.OnWrite();
+                        return 0;
+                    }
                 case lws_callback_reasons.LWS_CALLBACK_OPENSSL_LOAD_EXTRA_CLIENT_VERIFY_CERTS:
                     {
                         return 0;
                     }
                 case lws_callback_reasons.LWS_CALLBACK_CLIENT_ESTABLISHED:
                     {
+                        websocket._is_servicing = true;
                         websocket._wsi = wsi;
                         websocket.OnConnect(); // _on_connect(websocket, lws_get_protocol(wsi)->name);
                         return 0;
                     }
                 case lws_callback_reasons.LWS_CALLBACK_CLIENT_CONNECTION_ERROR:
                     {
-                        websocket.OnError();
+                        websocket._is_servicing = true;
+                        websocket.OnError(@in, len);
                         websocket.Destroy();
                         return -1;
                     }
                 case lws_callback_reasons.LWS_CALLBACK_WS_PEER_INITIATED_CLOSE:
                     {
+                        websocket._is_servicing = true;
                         websocket.OnCloseRequest(@in, len);
                         return 0;
                     }
@@ -151,20 +173,6 @@ namespace WebSockets
                         websocket.SetClose(); // _duk_lws_close(websocket);
                         websocket.Destroy();
                         websocket.OnClose();
-                        return 0;
-                    }
-                case lws_callback_reasons.LWS_CALLBACK_CLIENT_RECEIVE:
-                    {
-                        return websocket.OnReceive(@in, len);
-                    }
-                case lws_callback_reasons.LWS_CALLBACK_CLIENT_WRITEABLE:
-                    {
-                        if (websocket._is_closing)
-                        {
-                            WSApi.lws_close_reason(wsi, lws_close_status.LWS_CLOSE_STATUS_NORMAL, "");
-                            return -1;
-                        }
-                        websocket.OnWrite();
                         return 0;
                     }
                 default:
@@ -216,6 +224,11 @@ namespace WebSockets
             }
         }
 
+        private void Destroy(ScriptRuntime runtime)
+        {
+            Destroy();
+        }
+
         // _duk_lws_destroy
         private void Destroy()
         {
@@ -234,7 +247,7 @@ namespace WebSockets
             _is_context_destroyed = true;
             if (_context.IsValid())
             {
-                WSApi.ulws_destroy(_context);
+                // WSApi.ulws_destroy(_context);
                 _context = lws_context.Null;
             }
 
@@ -254,8 +267,10 @@ namespace WebSockets
             if (runtime != null)
             {
                 runtime.OnUpdate -= Update;
+                runtime.OnDestroy -= Destroy;
             }
             _websockets.Remove(this);
+            // UnityEngine.Debug.LogWarning("ws.destroy");
         }
 
         private void OnWrite()
@@ -327,9 +342,49 @@ namespace WebSockets
             CallScript("onopen", JSApi.JS_UNDEFINED);
         }
 
-        private void OnError()
+        private void OnError(IntPtr @in, size_t len)
         {
-            CallScript("onerror", JSApi.JS_UNDEFINED);
+            JSValue val = JSApi.JS_UNDEFINED;
+            if (len > 0)
+            {
+                unsafe
+                {
+                    byte* ptr = (byte*)@in;
+                    if (ptr[len] == 0)
+                    {
+                        val = JSApi.JS_NewString(_jsContext, ptr);
+                        if (val.IsException())
+                        {
+                            _jsContext.print_exception();
+                            val = JSApi.JS_UNDEFINED;
+                        }
+                    }
+                }
+            }
+            else
+            {
+                val = JSApi.JS_NewString(_jsContext, "connection timeout");
+                if (val.IsException())
+                {
+                    _jsContext.print_exception();
+                    val = JSApi.JS_UNDEFINED;
+                }
+            }
+            CallScript("onerror", val);
+            JSApi.JS_FreeValue(_jsContext, val);
+        }
+
+        private void OnError(Exception exception)
+        {
+            var val = JSApi.JS_NewString(_jsContext, exception.ToString());
+            if (val.IsException())
+            {
+                _jsContext.print_exception();
+                val = JSApi.JS_UNDEFINED;
+            }
+            CallScript("onerror", val);
+            JSApi.JS_FreeValue(_jsContext, val);
+
         }
 
         private void OnCloseRequest(IntPtr @in, size_t len)
@@ -447,6 +502,7 @@ namespace WebSockets
             var runtime = context.GetRuntime();
 
             runtime.OnUpdate += Update;
+            runtime.OnDestroy += Destroy;
             JSApi.JS_SetProperty(ctx, value, context.GetAtom("onopen"), JSApi.JS_NULL);
             JSApi.JS_SetProperty(ctx, value, context.GetAtom("onclose"), JSApi.JS_NULL);
             JSApi.JS_SetProperty(ctx, value, context.GetAtom("onerror"), JSApi.JS_NULL);
@@ -473,6 +529,7 @@ namespace WebSockets
                 case UriHostNameType.IPv6:
                     {
                         var address = QuickJS.Utils.TextUtils.GetNullTerminatedBytes(uri.DnsSafeHost);
+                        SetReadyState(ReadyState.CONNECTING);
                         unsafe
                         {
                             fixed (byte* protocol_names_ptr = protocol_names)
@@ -493,6 +550,7 @@ namespace WebSockets
                             // already closed
                             return;
                         }
+                        SetReadyState(ReadyState.CONNECTING);
                         try
                         {
                             var ipAddress = Select(entry.AddressList);
@@ -510,9 +568,9 @@ namespace WebSockets
                         }
                         catch (Exception exception)
                         {
-                            UnityEngine.Debug.LogErrorFormat("{0}", exception);
+                            // UnityEngine.Debug.LogErrorFormat("{0}", exception);
                             SetReadyState(ReadyState.CLOSED);
-                            OnError();
+                            OnError(exception);
                         }
                     }
                     break;
@@ -640,7 +698,7 @@ namespace WebSockets
                 {
                     throw new ThisBoundException();
                 }
-                return JSApi.JS_NewInt32(ctx, (int)self._readyState);
+                return JSApi.JS_NewInt32(ctx, (int)(self._readyState >= 0 ? self._readyState : ReadyState.CONNECTING));
             }
             catch (Exception exception)
             {
@@ -662,6 +720,11 @@ namespace WebSockets
                 {
                     throw new ParameterException("data", typeof(string), 0);
                 }
+                if (!self._wsi.IsValid() || !self._context.IsValid())
+                {
+                    return JSApi.JS_ThrowInternalError(ctx, "websocket closed");
+                }
+
                 if (argv[0].IsString())
                 {
                     // send text data
