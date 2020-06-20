@@ -1,14 +1,34 @@
 # unity-jsb
 
-# compile for windows on linux
-sudo apt-get update
-sudo apt-get install mingw-w64
+使用 [QuickJS](https://bellard.org/quickjs/) 为 Unity3D 项目提供 Javascript 运行时支持.  <br/>
+通过生成静态绑定代码的方式提供性能良好的 C#/JS 互操作支持.
 
-./configure --host=i686-w64-mingw32
-x86_64-w64-mingw32
+```text
+QuickJS is a small and embeddable Javascript engine. It supports the ES2020 specification including modules, asynchronous generators, proxies and BigInt. 
+```
 
-# Examples
+# 特性支持
+* console.* 基本的兼容性 
+* commonjs 模块 基本的兼容性 
+* 支持 timer (setTimeout/setInterval)
+* 支持在JS异步函数中等待 Unity YieldInstruction 对象
+* 支持在JS异步函数中等待 System.Threading.Tasks.Task 对象 (limited support)
+* 向 JS 导入 C# 运算符重载 +, -, *, /, ==, -(负)
+* 支持 Websocket (limited support)
+* [未完成] 支持 JS 字节码 (QuickJS)
+* [未完成] 支持 sourcemap 转换 JS 调用栈
+* [未完成] 运行时替换 C# 代码 (limited support)
 
+# TODO
+* [ ] event dispatcher
+* [ ] ref 传参时, 从 val.target 进行取值 (因为会需要回写target, 保持一致性)
+* [ ] Values_push_class.cs ```public static JSValue js_push_classvalue(JSContext ctx, IO.ByteBuffer o)```
+* [ ] mobile platform build: android
+* [ ] mobile platform build: ios
+
+# 特性示例
+
+## MonoBehaviour in Javascript
 ```ts
 // 支持 js class 直接继承 MonoBehaviour 
 // 所有响应函数支持异步函数
@@ -61,6 +81,7 @@ comp_bySuperClass.test();
 
 ```
 
+## 异步调用
 ```ts
 // 支持 await/async
 // 支持异步函数与Unity等待直接结合使用
@@ -73,13 +94,17 @@ async function testAsyncFunc () {
     await new Promise(resolve => {
         setTimeout(() => resolve(), 1000);    
     });
+
+    // System.Threading.Tasks.Task<System.Net.IPHostEntry>
+    let result = <System.Net.IPHostEntry> await jsb.Yield(jsb.AsyncTaskTest.GetHostEntryAsync("www.baidu.com"));
+    console.log("host entry:", result.HostName);
 }
 
 testAsyncFunc();
 ```
 
+## 重载运算符
 ```ts
-// 支持重载运算符
 {
     let vec1 = new UnityEngine.Vector3(1, 2, 3);
     let vec2 = new UnityEngine.Vector3(9, 8, 7);
@@ -97,6 +122,8 @@ testAsyncFunc();
 }
 ```
 
+## 支持模块
+
 ```ts
 // 支持 ES6 模块 (import)
 import { fib } from "./fib.js";
@@ -108,19 +135,46 @@ require("./test");
 Object.keys(require.cache).forEach(key => console.log(key));
 ```
 
+## 支持 WebSocket
 
-# TODO
-* [X] console.* 
-* [X] commonjs module 
-* [X] timer
-* [X] unity YieldInstruction => promise
-* [X] JSMemoryUsage window
-* [X] Vector3 operator overloading
-* [ ] compile into bytecode
-* [ ] websocket
-* [ ] sourcemap helper
-* [ ] event dispatcher
-* [ ] ref 传参时, 从 val.target 进行取值 (因为会需要回写target, 保持一致性)
-* [ ] Values_push_class.cs ```public static JSValue js_push_classvalue(JSContext ctx, IO.ByteBuffer o)```
-* [ ] mobile platform build
- 
+```ts
+let ws = new WebSocket("ws://127.0.0.1:8080/websocket", "default");
+
+console.log("websocket connecting:", ws.url);
+
+ws.onopen = function () {
+    console.log("[ws.onopen]", ws.readyState);
+    let count = 0;
+    setInterval(function () {
+        ws.send("websocket message test" + count++);
+    }, 1000);
+};
+ws.onclose = function () {
+    console.log("[ws.onclose]", ws.readyState);
+};
+ws.onerror = function (err) {
+    console.log("[ws.onerror]", err);
+};
+ws.onmessage = function (msg) {
+    console.log("[ws.recv]", msg);
+};
+```
+
+# compile for windows on linux
+
+```sh
+sudo apt-get update
+sudo apt-get install mingw-w64
+
+# i686-w64-mingw32
+# x86_64-w64-mingw32
+```
+
+# Referenced libraries
+
+* [QuickJS](https://bellard.org/quickjs/)
+* [ECMAScript](https://github.com/Geequlim/ECMAScript.git) A Javascript (QuickJS) Binding for Godot 
+* [xLua](https://github.com/Tencent/xLua)
+* [libwebsockets](https://github.com/warmcat/libwebsockets)
+* [mbedtls](https://github.com/ARMmbed/mbedtls)
+* [zlib](https://zlib.net/)

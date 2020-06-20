@@ -147,6 +147,11 @@ namespace QuickJS.Utils
         public bool RemoveObject(int id)
         {
             object o;
+            return RemoveObject(id, out o);
+        }
+
+        public bool RemoveObject(int id, out object o)
+        {
             if (TryGetObject(id, out o))
             {
                 var entry = _map[id];

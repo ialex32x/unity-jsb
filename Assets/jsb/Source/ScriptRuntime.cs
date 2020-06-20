@@ -18,6 +18,7 @@ namespace QuickJS
     {
         public event Action<ScriptRuntime> OnDestroy;
         public event Action<ScriptRuntime> OnAfterDestroy;
+        public event Action OnUpdate;
 
         private JSRuntime _rt;
         private IScriptLogger _logger;
@@ -59,14 +60,22 @@ namespace QuickJS
             return _container;
         }
 
+        public IFileResolver GetFileResolver()
+        {
+            return _fileResolver;
+        }
+
+        public IFileSystem GetFileSystem()
+        {
+            return _fileSystem;
+        }
+
         public void AddSearchPath(string path)
         {
             _fileResolver.AddSearchPath(path);
         }
 
-        public void Initialize(IFileSystem fileSystem, IScriptRuntimeListener runner,
-            IScriptLogger logger,
-            IO.ByteBufferAllocator byteBufferAllocator = null, int step = 30)
+        public void Initialize(IFileSystem fileSystem, IScriptRuntimeListener runner, IScriptLogger logger, IO.ByteBufferAllocator byteBufferAllocator, int step = 30)
         {
             if (logger == null)
             {
@@ -340,6 +349,7 @@ namespace QuickJS
                 CollectPendingGarbage();
             }
 
+            OnUpdate?.Invoke(); //TODO: optimize
             ExecutePendingJob();
 
             // poll here;

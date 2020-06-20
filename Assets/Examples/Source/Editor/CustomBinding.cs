@@ -10,6 +10,8 @@ namespace jsb.Editor
             bindingManager.AddExportedType(typeof(WaitForSeconds), true);
             bindingManager.AddExportedType(typeof(WaitForEndOfFrame), true);
             bindingManager.AddExportedType(typeof(Time));
+            // bindingManager.AddExportedType(typeof(System.Net.Dns));
+            bindingManager.AddExportedType(typeof(System.Net.IPHostEntry));
         }
     }
 }

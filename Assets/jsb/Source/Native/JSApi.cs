@@ -1,7 +1,6 @@
 using System;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-using System.Text;
 
 // Default Marshaling for Strings
 // https://docs.microsoft.com/en-us/dotnet/framework/interop/default-marshaling-for-strings

@@ -27,7 +27,15 @@ namespace QuickJS.Native
 
                 if (objectCache != null)
                 {
-                    objectCache.RemoveObject(header.value);
+                    object obj;
+                    if (objectCache.RemoveObject(header.value, out obj))
+                    {
+                        var jsf = obj as IScriptFinalize;
+                        if (jsf != null)
+                        {
+                            jsf.OnJSFinalize();
+                        }
+                    }
                 }
             }
         }

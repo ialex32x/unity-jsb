@@ -372,6 +372,13 @@ namespace QuickJS.IO
             }
         }
 
+        // 写入位置后移指定字节数 (内容不确定)
+        public void WriteBytes(int byteCount)
+        {
+            EnsureCapacity(_writePosition + byteCount);
+            _writePosition += byteCount;
+        }
+
         public void WriteBytes(byte[] data)
         {
             EnsureCapacity(_writePosition + data.Length);
