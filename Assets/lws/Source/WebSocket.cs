@@ -255,6 +255,7 @@ namespace WebSockets
             {
                 runtime.OnUpdate -= Update;
             }
+            _websockets.Remove(this);
         }
 
         private void OnWrite()
@@ -422,11 +423,11 @@ namespace WebSockets
             _url = url;
             _buffer = buffer;
             _protocols = protocols != null ? protocols.ToArray() : new string[] { "" };
+            _websockets.Add(this);
             do
             {
                 if (_protocols != null && _protocols.Length > 0)
                 {
-
                     _context = WSApi.ulws_create(_protocols[0], _callback, 1024 * 4, 1024 * 4);
                     if (_context.IsValid())
                     {
