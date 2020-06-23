@@ -231,6 +231,11 @@ namespace QuickJS
 
         public ScriptContext GetContext(JSContext ctx)
         {
+            if (_mainContext.IsContext(ctx))
+            {
+                return _mainContext;
+            }
+            
             for (int i = 0, count = _contexts.Count; i < count; i++)
             {
                 var context = _contexts[i];

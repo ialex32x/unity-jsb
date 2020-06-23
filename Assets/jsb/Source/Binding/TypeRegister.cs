@@ -50,10 +50,11 @@ namespace QuickJS.Binding
 
         public TypeRegister(ScriptRuntime runtime, ScriptContext context)
         {
-            _db = new TypeDB(runtime);
-            _context = context;
-            _atoms = new AtomCache(_context);
             var ctx = (JSContext)_context;
+
+            _context = context;
+            _db = new TypeDB(runtime, _context);
+            _atoms = new AtomCache(_context);
 
             _globalObject = JSApi.JS_GetGlobalObject(ctx);
             _numberConstructor = JSApi.JS_GetProperty(ctx, _globalObject, JSApi.JS_ATOM_Number);
