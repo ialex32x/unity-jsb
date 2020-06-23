@@ -18,6 +18,7 @@ QuickJS is a small and embeddable Javascript engine. It supports the ES2020 spec
 * [未完成] 支持 JS 字节码 (QuickJS)
 * [未完成] 未导出的类型通过反射方式进行 C#/JS 交互
 * [未完成] 运行时替换 C# 代码 (hotfix, limited support)
+* [未完成] 运行时模块热替换 (debug only)
 
 # TODO
 * [X] sourcemap 转换 JS 调用栈
