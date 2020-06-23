@@ -21,6 +21,8 @@ QuickJS is a small and embeddable Javascript engine. It supports the ES2020 spec
 
 # TODO
 * [X] sourcemap 转换 JS 调用栈
+* [ ] 针对嵌套类型的 Binding 过程调整
+* [ ] 静态 Bind 过程
 * [ ] event dispatcher
 * [ ] ref 传参时, 从 val.target 进行取值 (因为会需要回写target, 保持一致性)
 * [ ] Values_push_class.cs ```public static JSValue js_push_classvalue(JSContext ctx, IO.ByteBuffer o)```

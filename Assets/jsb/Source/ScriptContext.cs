@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -22,6 +23,7 @@ namespace QuickJS
         private JSValue _require; // require function object 
         private CoroutineManager _coroutines;
         private bool _isValid;
+        private List<IDynamicMethod> _dynamicMethods = new List<IDynamicMethod>();
 
         public ScriptContext(ScriptRuntime runtime)
         {
@@ -242,6 +244,31 @@ namespace QuickJS
             }
 
             return JSApi.JS_ThrowInternalError(ctx, "type YieldInstruction or Task expected");
+        }
+
+        [MonoPInvokeCallback(typeof(JSCFunctionMagic))]
+        public static JSValue _DynamicMethodInvoke(JSContext ctx, JSValue this_obj, int argc, JSValue[] argv, int magic)
+        {
+            var context = ScriptEngine.GetContext(ctx);
+            var method = context.GetDynamicMethod(magic);
+            if (method != null)
+            {
+                return method.Invoke(ctx, this_obj, argc, argv);
+            }
+            return JSApi.JS_ThrowInternalError(ctx, "dynamic method not found");
+        }
+
+        public JSValue NewDynamicMethod(string name, IDynamicMethod method)
+        {
+            var magic = _dynamicMethods.Count;
+            var funValue = JSApi.JS_NewCFunctionMagic(_ctx, _DynamicMethodInvoke, name, 0, JSCFunctionEnum.JS_CFUNC_generic_magic, magic);
+            _dynamicMethods.Add(method);
+            return funValue;
+        }
+
+        private IDynamicMethod GetDynamicMethod(int index)
+        {
+            return index >= 0 && index < _dynamicMethods.Count ? _dynamicMethods[index] : null;
         }
 
         public static void Bind(TypeRegister register)
