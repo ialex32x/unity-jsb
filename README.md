@@ -16,10 +16,11 @@ QuickJS is a small and embeddable Javascript engine. It supports the ES2020 spec
 * 向 JS 导入 C# 运算符重载 +, -, *, /, ==, -(负)
 * 支持 Websocket (limited support)
 * [未完成] 支持 JS 字节码 (QuickJS)
-* [未完成] 支持 sourcemap 转换 JS 调用栈
-* [未完成] 运行时替换 C# 代码 (limited support)
+* [未完成] 未导出的类型通过反射方式进行 C#/JS 交互
+* [未完成] 运行时替换 C# 代码 (hotfix, limited support)
 
 # TODO
+* [X] sourcemap 转换 JS 调用栈
 * [ ] event dispatcher
 * [ ] ref 传参时, 从 val.target 进行取值 (因为会需要回写target, 保持一致性)
 * [ ] Values_push_class.cs ```public static JSValue js_push_classvalue(JSContext ctx, IO.ByteBuffer o)```
@@ -168,6 +169,22 @@ sudo apt-get install mingw-w64
 
 # i686-w64-mingw32
 # x86_64-w64-mingw32
+```
+
+## 对 QuickJS 的修改
+```c
+// quickjs.c
+
+// 1: 
+// 在不存在log2的情况下提供替代的 log2 
+#if defined(JSB_DEF_LOG2)
+static double log2(double v) { return log(v) / log(2.0); }
+#endif
+
+// 2:
+// make JS_GetActiveFunction extern
+JSValueConst JS_GetActiveFunction(JSContext *ctx) { }
+
 ```
 
 # Referenced libraries

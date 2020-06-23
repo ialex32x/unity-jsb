@@ -176,6 +176,16 @@ namespace QuickJS
         [MonoPInvokeCallback(typeof(JSCFunctionMagic))]
         private static JSValue _print(JSContext ctx, JSValue this_obj, int argc, JSValue[] argv, int magic)
         {
+            var runtime = ScriptEngine.GetRuntime(ctx);
+            if (runtime == null)
+            {
+                return JSApi.JS_UNDEFINED;
+            }
+            var logger = runtime.GetLogger();
+            if (logger == null)
+            {
+                return JSApi.JS_UNDEFINED;
+            }
             int i;
             var sb = new StringBuilder();
             size_t len;
@@ -203,7 +213,7 @@ namespace QuickJS
             }
 
             sb.AppendLine();
-            var logger = ScriptEngine.GetLogger(ctx);
+            runtime.AppendStacktrace(ctx, sb);
             logger.ScriptWrite((LogLevel)magic, sb.ToString());
             return JSApi.JS_UNDEFINED;
         }

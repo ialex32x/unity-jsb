@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Text.RegularExpressions;
 using System.IO;
 using System.Text;
 using AOT;
@@ -19,6 +20,7 @@ namespace QuickJS
         public event Action<ScriptRuntime> OnDestroy;
         public event Action<ScriptRuntime> OnAfterDestroy;
         public event Action OnUpdate;
+        public Func<JSContext, string, string, int, string> OnStacktrace;
 
         private JSRuntime _rt;
         private IScriptLogger _logger;
@@ -395,6 +397,55 @@ namespace QuickJS
                     action.callback(this, action.value);
                 }
             }
+        }
+
+        private Regex _stRegex;
+        public void AppendStacktrace(JSContext ctx, StringBuilder sb)
+        {
+            if (OnStacktrace == null)
+            {
+                return;
+            }
+            var globalObject = JSApi.JS_GetGlobalObject(ctx);
+            var errorConstructor = JSApi.JS_GetProperty(ctx, globalObject, JSApi.JS_ATOM_Error);
+            var errorObject = JSApi.JS_CallConstructor(ctx, errorConstructor);
+            var stackValue = JSApi.JS_GetProperty(ctx, errorObject, JSApi.JS_ATOM_stack);
+            var stack = JSApi.GetString(ctx, stackValue);
+
+            if (!string.IsNullOrEmpty(stack))
+            {
+                var errlines = stack.Split('\n');
+                if (_stRegex == null)
+                {
+                    _stRegex = new Regex(@"^\s+at\s(.+)\s\((.+\.js):(\d+)\)(.*)$", RegexOptions.Compiled);
+                }
+                for (var i = 0; i < errlines.Length; i++)
+                {
+                    var line = errlines[i];
+                    var matches = _stRegex.Matches(line);
+                    if (matches.Count == 1)
+                    {
+                        var match = matches[0];
+                        if (match.Groups.Count >= 4)
+                        {
+                            var funcName = match.Groups[1].Value;
+                            var fileName = match.Groups[2].Value;
+                            var lineNumber = 0;
+                            int.TryParse(match.Groups[3].Value, out lineNumber);
+                            var extra = match.Groups.Count >= 5 ? match.Groups[4].Value : "";
+                            var sroucePosition = OnStacktrace(ctx, funcName, fileName, lineNumber);
+                            sb.AppendLine($"    at {sroucePosition}{extra}");
+                            continue;
+                        }
+                    }
+                    sb.AppendLine(line);
+                }
+            }
+
+            JSApi.JS_FreeValue(ctx, stackValue);
+            JSApi.JS_FreeValue(ctx, errorObject);
+            JSApi.JS_FreeValue(ctx, errorConstructor);
+            JSApi.JS_FreeValue(ctx, globalObject);
         }
 
         public void Destroy()

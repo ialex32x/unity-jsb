@@ -755,6 +755,11 @@ namespace QuickJS.Native
         public static readonly JSAtom JS_ATOM_String = JSB_ATOM_String();
 
         [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern JSAtom JSB_ATOM_Error();
+
+        public static readonly JSAtom JS_ATOM_Error = JSB_ATOM_Error();
+
+        [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern JSAtom JSB_ATOM_Symbol_operatorSet();
 
         public static readonly JSAtom JS_ATOM_Symbol_operatorSet = JSB_ATOM_Symbol_operatorSet();

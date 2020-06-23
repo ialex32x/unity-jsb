@@ -122,7 +122,13 @@ namespace QuickJS.Extra
             return $"{funcName} (<native code>)";
         }
 
-        public void Open(string workspace = null)
+        public void OpenSourceRoot(ScriptRuntime runtime, string sourceRoot)
+        {
+            _sourceRoot = sourceRoot;
+            runtime.OnStacktrace = js_source_position;
+        }
+
+        public void OpenWorkspace(ScriptRuntime runtime, string workspace)
         {
             var tsconfigPath = string.IsNullOrEmpty(workspace) ? "tsconfig.json" : Path.Combine(workspace, "tsconfig.json");
             if (File.Exists(tsconfigPath))
@@ -133,15 +139,12 @@ namespace QuickJS.Extra
 
                 if (string.IsNullOrEmpty(workspace) || Path.IsPathRooted(sourceRoot))
                 {
-                    _sourceRoot = sourceRoot;
+                    OpenSourceRoot(runtime, sourceRoot);
                 }
                 else
                 {
-                    _sourceRoot = Path.Combine(workspace, sourceRoot);
+                    OpenSourceRoot(runtime, Path.Combine(workspace, sourceRoot));
                 }
-                //TODO: quickjs stacktrace
-                // DuktapeAux.js_source_position = js_source_position;
-                // Debug.Log($"[SourceMapHelper] enabled {_sourceRoot}");
             }
             else
             {
