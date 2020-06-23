@@ -128,12 +128,12 @@ namespace QuickJS.Binding
 
         public NamespaceDecl CreateNamespace(string el1, string el2) // [parent]
         {
-            return new NamespaceDecl(this, _AutoProperty(_AutoProperty(el1), el1));
+            return new NamespaceDecl(this, _AutoProperty(_AutoProperty(el1), el2));
         }
 
         public NamespaceDecl CreateNamespace(string el1, string el2, string el3) // [parent]
         {
-            return new NamespaceDecl(this, _AutoProperty(_AutoProperty(_AutoProperty(el1), el1), el3));
+            return new NamespaceDecl(this, _AutoProperty(_AutoProperty(_AutoProperty(el1), el2), el3));
         }
 
         // return [parent, el]
