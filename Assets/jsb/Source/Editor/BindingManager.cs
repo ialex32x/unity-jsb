@@ -22,6 +22,7 @@ namespace QuickJS.Editor
         private HashSet<Type> whitelist;
         private List<string> typePrefixBlacklist;
         private Dictionary<Type, TypeBindingInfo> exportedTypes = new Dictionary<Type, TypeBindingInfo>();
+        private List<TypeBindingInfo> _collectedTypes = new List<TypeBindingInfo>(); // 已经完成导出的类型 
         private Dictionary<Type, DelegateBindingInfo> exportedDelegates = new Dictionary<Type, DelegateBindingInfo>();
         private Dictionary<Type, Type> redirectDelegates = new Dictionary<Type, Type>();
         // 类型修改
@@ -314,7 +315,7 @@ namespace QuickJS.Editor
                     return false;
                 }, "AddComponent", typeof(Type));
             ;
-            
+
             TransformType(typeof(MonoBehaviour))
                 .WriteCSConstructorBinding((bindPoint, cg, info) =>
                 {
@@ -1396,13 +1397,32 @@ namespace QuickJS.Editor
             OnPreCollectTypes();
             foreach (var typeBindingInfoKV in exportedTypes)
             {
-                var typeBindingInfo = typeBindingInfoKV.Value;
-                log.AppendLine("type: {0}", typeBindingInfo.type);
-                log.AddTabLevel();
-                typeBindingInfo.Collect();
-                log.DecTabLevel();
+                _CollectType(typeBindingInfoKV.Value.type);
+
             }
             OnPostCollectTypes();
+            log.DecTabLevel();
+        }
+
+        private void _CollectType(Type type)
+        {
+            if (type == null)
+            {
+                return;
+            }
+            var typeBindingInfo = GetExportedType(type);
+
+            _CollectType(type.DeclaringType);
+
+            if (typeBindingInfo == null || _collectedTypes.Contains(typeBindingInfo))
+            {
+                return;
+            }
+
+            _collectedTypes.Add(typeBindingInfo);
+            log.AppendLine("type: {0}", type);
+            log.AddTabLevel();
+            typeBindingInfo.Collect();
             log.DecTabLevel();
         }
 
@@ -1554,8 +1574,8 @@ namespace QuickJS.Editor
             var cg = new CodeGenerator(this);
             var csOutDir = prefs.procOutDir;
             var tsOutDir = prefs.procTypescriptDir;
-            var tx = prefs.extraExt;
-            // var tx = "";
+            var extraExt = prefs.extraExt;
+            // var extraExt = "";
 
             cg.tsDeclare.enabled = bTSDefinitionFiles;
             if (!Directory.Exists(csOutDir))
@@ -1590,7 +1610,7 @@ namespace QuickJS.Editor
                         OnPreGenerateType(typeBindingInfo);
                         cg.Generate(typeBindingInfo);
                         OnPostGenerateType(typeBindingInfo);
-                        cg.WriteTo(csOutDir, tsOutDir, typeBindingInfo.GetFileName(), tx);
+                        cg.WriteTo(csOutDir, tsOutDir, typeBindingInfo.GetFileName(), extraExt);
                     }
                 }
                 catch (Exception exception)
@@ -1609,7 +1629,22 @@ namespace QuickJS.Editor
 
                     cg.Clear();
                     cg.Generate(exportedDelegatesArray);
-                    cg.WriteTo(csOutDir, tsOutDir, CodeGenerator.NameOfDelegates, tx);
+                    cg.WriteTo(csOutDir, tsOutDir, CodeGenerator.NameOfDelegates, extraExt);
+                }
+                catch (Exception exception)
+                {
+                    Error($"generate delegates failed: {exception.Message}");
+                    Debug.LogError(exception.StackTrace);
+                }
+            }
+
+            if (!cancel)
+            {
+                try
+                {
+                    cg.Clear();
+                    cg.GenerateBindingList(_collectedTypes);
+                    cg.WriteTo(csOutDir, tsOutDir, CodeGenerator.NameOfBindingList, extraExt);
                 }
                 catch (Exception exception)
                 {

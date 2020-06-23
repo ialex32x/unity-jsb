@@ -50,7 +50,7 @@ namespace QuickJS.Binding
 
         public TypeRegister(ScriptRuntime runtime, ScriptContext context)
         {
-            var ctx = (JSContext)_context;
+            var ctx = (JSContext)context;
 
             _context = context;
             _db = new TypeDB(runtime, _context);

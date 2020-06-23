@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using System.IO;
 using System.Text;
 using AOT;
@@ -94,85 +95,10 @@ namespace QuickJS
             _byteBufferAllocator = byteBufferAllocator;
             _fileSystem = fileSystem;
             _logger = logger;
-            var e = _InitializeStep(_mainContext, runner, step);
-            while (e.MoveNext()) ;
-        }
-
-        private IEnumerator _InitializeStep(ScriptContext context, IScriptRuntimeListener runner, int step)
-        {
-            var register = new TypeRegister(this, context);
-            var regArgs = new object[] { register };
-            var bindingTypes = new List<Type>();
-            var assemblies = AppDomain.CurrentDomain.GetAssemblies();
-            for (int assemblyIndex = 0, assemblyCount = assemblies.Length;
-                assemblyIndex < assemblyCount;
-                assemblyIndex++)
-            {
-                var assembly = assemblies[assemblyIndex];
-                try
-                {
-                    if (assembly.IsDynamic)
-                    {
-                        continue;
-                    }
-
-                    var exportedTypes = assembly.GetExportedTypes();
-                    for (int i = 0, size = exportedTypes.Length; i < size; i++)
-                    {
-                        var type = exportedTypes[i];
-#if UNITY_EDITOR
-                        if (type.IsDefined(typeof(JSAutoRunAttribute), false))
-                        {
-                            try
-                            {
-                                var run = type.GetMethod("Run", BindingFlags.Static | BindingFlags.Public);
-                                if (run != null)
-                                {
-                                    run.Invoke(null, null);
-                                }
-                            }
-                            catch (Exception exception)
-                            {
-                                _logger.Error(exception);
-                            }
-
-                            continue;
-                        }
-#endif
-                        var attributes = type.GetCustomAttributes(typeof(JSBindingAttribute), false);
-                        if (attributes.Length == 1)
-                        {
-                            var jsBinding = attributes[0] as JSBindingAttribute;
-                            if (jsBinding.Version == 0 || jsBinding.Version == ScriptEngine.VERSION)
-                            {
-                                bindingTypes.Add(type);
-                            }
-                        }
-                    }
-                }
-                catch (Exception e)
-                {
-                    _logger.Write(LogLevel.Error, "assembly: {0}, {1}", assembly, e);
-                }
-            }
-
-            var numRegInvoked = bindingTypes.Count;
-            for (var i = 0; i < numRegInvoked; ++i)
-            {
-                var type = bindingTypes[i];
-                var reg = type.GetMethod("Bind");
-                if (reg != null)
-                {
-                    reg.Invoke(null, regArgs);
-
-                    if (i % step == 0)
-                    {
-                        yield return null;
-                    }
-                }
-            }
-
+            
+            var register = new TypeRegister(this, _mainContext);
             register.RegisterType(typeof(ScriptBridge));
+            // await Task.Run(() => runner.OnBind(this, register));
             runner.OnBind(this, register);
             TimerManager.Bind(register);
             ScriptContext.Bind(register);

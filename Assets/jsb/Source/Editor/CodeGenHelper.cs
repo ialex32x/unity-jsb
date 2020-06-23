@@ -213,23 +213,29 @@ namespace QuickJS.Editor
             this.cg.cs.AppendLine("[UnityEngine.Scripting.Preserve]");
         }
 
-        public virtual void Dispose()
+        public void Dispose()
         {
         }
     }
 
-    public class PInvokeGuardCodeGen : PreservedCodeGen
+    public class PInvokeGuardCodeGen : IDisposable
     {
+        protected CodeGenerator cg;
+
         public PInvokeGuardCodeGen(CodeGenerator cg)
-        : base(cg)
         {
+            this.cg = cg;
             this.cg.cs.AppendLine("[AOT.MonoPInvokeCallbackAttribute(typeof({0}))]", typeof(QuickJS.Native.JSCFunction).Name);
         }
 
         public PInvokeGuardCodeGen(CodeGenerator cg, Type target)
-        : base(cg)
         {
+            this.cg = cg;
             this.cg.cs.AppendLine("[AOT.MonoPInvokeCallbackAttribute(typeof({0}))]", target.FullName);
+        }
+
+        public void Dispose()
+        {
         }
     }
 

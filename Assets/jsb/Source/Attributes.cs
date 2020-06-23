@@ -122,10 +122,4 @@ namespace QuickJS
             this.lines = lines;
         }
     }
-
-    // 启动时自动执行 (仅编辑器环境生效)
-    [AttributeUsage(AttributeTargets.Class, AllowMultiple = false)]
-    public class JSAutoRunAttribute : Attribute
-    {
-    }
 }

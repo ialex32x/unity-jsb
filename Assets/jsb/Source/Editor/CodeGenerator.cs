@@ -12,6 +12,7 @@ namespace QuickJS.Editor
     public partial class CodeGenerator
     {
         public const string NameOfDelegates = "_QuickJSDelegates";
+        public const string NameOfBindingList = "_QuickJSBindings";
         public const string NamespaceOfScriptTypes = "QuickJS";
         public const string NamespaceOfInternalScriptTypes = "QuickJS.Internal";
 
@@ -40,6 +41,30 @@ namespace QuickJS.Editor
             // jsSource.Clear();
         }
 
+        public void GenerateBindingList(List<TypeBindingInfo> orderedTypes)
+        {
+            using (new PlatformCodeGen(this))
+            {
+                using (new TopLevelCodeGen(this, CodeGenerator.NameOfDelegates))
+                {
+                    using (new NamespaceCodeGen(this, this.bindingManager.prefs.ns))
+                    {
+                        using (new PlainClassCodeGen(this, CodeGenerator.NameOfBindingList))
+                        {
+                            using (var method = new PlainMethodCodeGen(this, "public static void Bind(TypeRegister register)"))
+                            {
+                                foreach (var type in orderedTypes)
+                                {
+                                    method.AddStatement("{0}.Bind(register);", type.name);
+                                }
+                                method.AddStatement("{0}.Bind(register);", CodeGenerator.NameOfDelegates);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
         // 生成委托绑定
         public void Generate(DelegateBindingInfo[] delegateBindingInfos)
         {
@@ -61,11 +86,8 @@ namespace QuickJS.Editor
                                     specs.Add(nargs, 0);
                                 }
                                 this.bindingManager.OnPreGenerateDelegate(bindingInfo);
-                                using (new PreservedCodeGen(this))
+                                using (new DelegateCodeGen(this, bindingInfo, i))
                                 {
-                                    using (new DelegateCodeGen(this, bindingInfo, i))
-                                    {
-                                    }
                                 }
                                 this.bindingManager.OnPostGenerateDelegate(bindingInfo);
                             }

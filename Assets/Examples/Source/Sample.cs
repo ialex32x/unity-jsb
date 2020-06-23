@@ -33,6 +33,7 @@ namespace jsb
 
         public void OnBind(ScriptRuntime runtime, TypeRegister register)
         {
+            _QuickJSBindings.Bind(register);
             WebSockets.WebSocket.Bind(register);
         }
 
