@@ -3,6 +3,9 @@ import { fib } from "./fib.js";
 
 // print(new jsb.Goo());
 
+print(jsb.DelegateTest);
+print(jsb.DelegateTest.InnerTest.hello);
+
 print("fib:", fib(12));
 
 let u = new UnityEngine.Vector3(1, 2, 3);
