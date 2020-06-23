@@ -9,6 +9,7 @@ namespace jsb
 
     public class Sample : MonoBehaviour, IScriptRuntimeListener
     {
+        public bool sourceMap;
         private ScriptRuntime _rt;
 
         void Awake()
@@ -18,6 +19,10 @@ namespace jsb
             _rt.AddSearchPath("Assets");
             _rt.AddSearchPath("node_modules");
             _rt.EnableStacktrace();
+            if (sourceMap)
+            {
+                _rt.EnableSourceMap();
+            }
             _rt.Initialize(fileSystem, this, new UnityLogger(), new ByteBufferPooledAllocator());
         }
 

@@ -21,9 +21,11 @@ namespace QuickJS
         public event Action<ScriptRuntime> OnDestroy;
         public event Action<ScriptRuntime> OnAfterDestroy;
         public event Action OnUpdate;
-        public Func<JSContext, string, string, int, string> OnStacktrace;
+        public Func<JSContext, string, string, int, string> OnSourceMap;
 
         private JSRuntime _rt;
+        private bool _dumpStacktrace;
+        private Regex _stRegex;
         private IScriptLogger _logger;
         private List<ScriptContext> _contexts = new List<ScriptContext>();
         private ScriptContext _mainContext;
@@ -95,7 +97,7 @@ namespace QuickJS
             _byteBufferAllocator = byteBufferAllocator;
             _fileSystem = fileSystem;
             _logger = logger;
-            
+
             var register = new TypeRegister(this, _mainContext);
             register.RegisterType(typeof(ScriptBridge));
             // await Task.Run(() => runner.OnBind(this, register));
@@ -161,7 +163,7 @@ namespace QuickJS
             {
                 return _mainContext;
             }
-            
+
             for (int i = 0, count = _contexts.Count; i < count; i++)
             {
                 var context = _contexts[i];
@@ -330,10 +332,24 @@ namespace QuickJS
             }
         }
 
-        private Regex _stRegex;
+        private string js_source_position(JSContext ctx, string funcName, string fileName, int lineNumber)
+        {
+            return $"{funcName} ({fileName}:{lineNumber})";
+        }
+
+        public void EnableStacktrace()
+        {
+            _dumpStacktrace = true;
+        }
+
+        public void DisableStacktrace()
+        {
+            _dumpStacktrace = false;
+        }
+
         public void AppendStacktrace(JSContext ctx, StringBuilder sb)
         {
-            if (OnStacktrace == null)
+            if (!_dumpStacktrace)
             {
                 return;
             }
@@ -364,7 +380,7 @@ namespace QuickJS
                             var lineNumber = 0;
                             int.TryParse(match.Groups[3].Value, out lineNumber);
                             var extra = match.Groups.Count >= 5 ? match.Groups[4].Value : "";
-                            var sroucePosition = OnStacktrace(ctx, funcName, fileName, lineNumber);
+                            var sroucePosition = (OnSourceMap ?? js_source_position)(ctx, funcName, fileName, lineNumber);
                             sb.AppendLine($"    at {sroucePosition}{extra}");
                             continue;
                         }

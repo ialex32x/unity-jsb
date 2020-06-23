@@ -1,7 +1,13 @@
+print("first line");
 // import { fib } from "./fib_module.js";
 import { fib } from "./fib.js";
 
+
+
+
+
 // print(new jsb.Goo());
+print("line 10");
 
 print(jsb.DelegateTest);
 print(jsb.DelegateTest.InnerTest.hello);
