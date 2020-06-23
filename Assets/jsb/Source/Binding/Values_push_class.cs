@@ -49,20 +49,18 @@ namespace QuickJS.Binding
             return js_push_object(ctx, (object)o);
         }
 
-        // [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static JSValue js_push_classvalue(JSContext ctx, IO.ByteBuffer o)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static unsafe JSValue js_push_classvalue(JSContext ctx, IO.ByteBuffer o)
         {
             if (o == null)
             {
                 return JSApi.JS_UNDEFINED;
             }
-            //TODO: not implemented: 在c端实现内存分配返回内存地址以及JSValue
-            return JSApi.JS_ThrowInternalError(ctx, "not implemented: 在c端实现内存分配返回内存地址以及JSValue");
-            // var mem_ptr = DuktapeDLL.js_push_fixed_buffer(ctx, (uint)o.readableBytes);
-            // if (mem_ptr != IntPtr.Zero)
-            // {
-            //     o.ReadAllBytes(mem_ptr);
-            // }
+
+            fixed (byte* buf = o.data)
+            {
+                return JSApi.JS_NewArrayBufferCopy(ctx, buf, o.readableBytes);
+            }
         }
 
         // 尝试还原 js function/dispatcher
@@ -74,11 +72,11 @@ namespace QuickJS.Binding
             {
                 return JSApi.JS_DupValue(ctx, dDelegate);
             }
-        
+
             // fallback
             return js_push_object(ctx, (object)o);
         }
-        
+
         // variant push
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static JSValue js_push_classvalue(JSContext ctx, object o)

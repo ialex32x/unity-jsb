@@ -3,9 +3,7 @@
 使用 [QuickJS](https://bellard.org/quickjs/) 为 Unity3D 项目提供 Javascript 运行时支持.  <br/>
 通过生成静态绑定代码的方式提供性能良好的 C#/JS 互操作支持.
 
-```text
-QuickJS is a small and embeddable Javascript engine. It supports the ES2020 specification including modules, asynchronous generators, proxies and BigInt. 
-```
+> QuickJS is a small and embeddable Javascript engine. It supports the ES2020 specification including modules, asynchronous generators, proxies and BigInt. 
 
 # 特性支持
 * console.* 基本的兼容性 
@@ -15,7 +13,7 @@ QuickJS is a small and embeddable Javascript engine. It supports the ES2020 spec
 * 支持在JS异步函数中等待 System.Threading.Tasks.Task 对象 (limited support)
 * 向 JS 导入 C# 运算符重载 +, -, *, /, ==, -(负)
 * 支持 Websocket (limited support)
-* [未完成] 支持 JS 字节码 (QuickJS)
+* 支持 JS 字节码 (QuickJS)
 * [未完成] 未导出的类型通过反射方式进行 C#/JS 交互
 * [未完成] 运行时替换 C# 代码 (hotfix, limited support)
 * [未完成] 运行时模块热替换 (debug only)
@@ -24,9 +22,10 @@ QuickJS is a small and embeddable Javascript engine. It supports the ES2020 spec
 * [X] sourcemap 转换 JS 调用栈
 * [X] 针对嵌套类型的 Binding 过程调整
 * [X] 静态 Bind 过程
+* [X] compile into JS bytecode (QuickJS)
+* [X] Values_push_class.cs ```public static JSValue js_push_classvalue(JSContext ctx, IO.ByteBuffer o)```
 * [ ] event dispatcher
 * [ ] ref 传参时, 从 val.target 进行取值 (因为会需要回写target, 保持一致性)
-* [ ] Values_push_class.cs ```public static JSValue js_push_classvalue(JSContext ctx, IO.ByteBuffer o)```
 * [ ] mobile platform build: android
 * [ ] mobile platform build: ios
 

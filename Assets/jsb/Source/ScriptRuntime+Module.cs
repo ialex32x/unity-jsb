@@ -270,12 +270,17 @@ namespace QuickJS
                 fixed (byte* fn_ptr = fn_bytes)
                 {
                     var input_len = (size_t)(input_bytes.Length - 1);
-                    var func_val = JSApi.JS_Eval(ctx, input_ptr, input_len, fn_ptr,
+                    JSValue func_val = JSApi.JS_UNDEFINED;
+                    func_val = JSApi.JS_Eval(ctx, input_ptr, input_len, fn_ptr,
                         JSEvalFlags.JS_EVAL_TYPE_MODULE | JSEvalFlags.JS_EVAL_FLAG_COMPILE_ONLY);
                     if (JSApi.JS_IsException(func_val))
                     {
                         ctx.print_exception();
-                        JSApi.JS_ThrowReferenceError(ctx, "Module Error");
+                        JSApi.JS_ThrowReferenceError(ctx, "module error");
+                    }
+                    else if (func_val.IsNullish())
+                    {
+                        JSApi.JS_ThrowReferenceError(ctx, "module is null");
                     }
                     else
                     {
