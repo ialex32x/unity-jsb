@@ -95,6 +95,8 @@ namespace QuickJS.Native
 
         // #define JS_WRITE_OBJ_BYTECODE (1 << 0) /* allow function/module */
         public const int JS_WRITE_OBJ_BYTECODE = 1 << 0;
+        // #define JS_READ_OBJ_BYTECODE  (1 << 0) /* allow function/module */
+        public const int JS_READ_OBJ_BYTECODE = 1 << 0;
 
         public static JSValue[] EmptyValues = new JSValue[0];
 
@@ -650,6 +652,9 @@ namespace QuickJS.Native
 
         [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern IntPtr JS_WriteObject(JSContext ctx, out size_t psize, JSValueConst obj, int flags);
+
+        [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern unsafe JSValue JS_ReadObject(JSContext ctx, byte* buf, size_t buf_len, int flags);
 
         [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern unsafe JSValue JS_Eval(JSContext ctx, byte* input, size_t input_len, byte* filename,

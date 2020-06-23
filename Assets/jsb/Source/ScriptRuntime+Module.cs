@@ -262,7 +262,16 @@ namespace QuickJS
             var fileSystem = runtime._fileSystem;
             if (fileSystem.Exists(module_name))
             {
-                var source = fileSystem.ReadAllBytes(module_name);
+                byte[] source = null;
+                var byteCodePath = module_name + ".bytes";
+                if (fileSystem.Exists(byteCodePath))
+                {
+                    source = fileSystem.ReadAllBytes(byteCodePath);
+                }
+                if (source == null)
+                {
+                    source = fileSystem.ReadAllBytes(module_name);
+                }
                 var input_bytes = Utils.TextUtils.GetNullTerminatedBytes(source);
                 var fn_bytes = Utils.TextUtils.GetNullTerminatedBytes(module_name);
 
@@ -271,8 +280,22 @@ namespace QuickJS
                 {
                     var input_len = (size_t)(input_bytes.Length - 1);
                     JSValue func_val = JSApi.JS_UNDEFINED;
-                    func_val = JSApi.JS_Eval(ctx, input_ptr, input_len, fn_ptr,
-                        JSEvalFlags.JS_EVAL_TYPE_MODULE | JSEvalFlags.JS_EVAL_FLAG_COMPILE_ONLY);
+                    if (input_len > 0 && (input_bytes[0] == 2 || input_bytes[0] == 1))
+                    {
+                        func_val = JSApi.JS_ReadObject(ctx, input_ptr, input_len, JSApi.JS_READ_OBJ_BYTECODE);
+                        if (func_val.IsException())
+                        {
+                            ctx.print_exception();
+                            func_val = JSApi.JS_UNDEFINED;
+                        }
+                    }
+
+                    if (func_val.IsNullish())
+                    {
+                        func_val = JSApi.JS_Eval(ctx, input_ptr, input_len, fn_ptr,
+                            JSEvalFlags.JS_EVAL_TYPE_MODULE | JSEvalFlags.JS_EVAL_FLAG_COMPILE_ONLY);
+                    }
+
                     if (JSApi.JS_IsException(func_val))
                     {
                         ctx.print_exception();
