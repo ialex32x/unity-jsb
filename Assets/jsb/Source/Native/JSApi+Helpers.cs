@@ -40,6 +40,87 @@ namespace QuickJS.Native
             }
         }
 
+        // 用于中转动态注册的反射调用
+        [MonoPInvokeCallback(typeof(JSCFunctionMagic))]
+        public static JSValue _DynamicMethodInvoke(JSContext ctx, JSValue this_obj, int argc, JSValue[] argv, int magic)
+        {
+            var typeDB = ScriptEngine.GetTypeDB(ctx);
+            
+            if (typeDB == null)
+            {
+                return JSApi.JS_ThrowInternalError(ctx, "type db is null");
+            }
+
+            var method = typeDB.GetDynamicMethod(magic);
+            if (method != null)
+            {
+                try
+                {
+                    return method.Invoke(ctx, this_obj, argc, argv);
+                }
+                catch (Exception exception)
+                {
+                    return JSApi.ThrowException(ctx, exception);
+                }
+            }
+
+            return JSApi.JS_ThrowInternalError(ctx, "dynamic method not found");
+        }
+
+        // 用于中转动态注册的反射调用
+        [MonoPInvokeCallback(typeof(JSGetterCFunctionMagic))]
+        public static JSValue _DynamicFieldGetter(JSContext ctx, JSValue this_obj, int magic)
+        {
+            var typeDB = ScriptEngine.GetTypeDB(ctx);
+            
+            if (typeDB == null)
+            {
+                return JSApi.JS_ThrowInternalError(ctx, "type db is null");
+            }
+
+            var field = typeDB.GetDynamicField(magic);
+            if (field != null)
+            {
+                try
+                {
+                    return field.GetValue(ctx, this_obj);
+                }
+                catch (Exception exception)
+                {
+                    return JSApi.ThrowException(ctx, exception);
+                }
+            }
+
+            return JSApi.JS_ThrowInternalError(ctx, "dynamic field not found");
+        }
+
+        // 用于中转动态注册的反射调用
+        [MonoPInvokeCallback(typeof(JSSetterCFunctionMagic))]
+        public static JSValue _DynamicFieldSetter(JSContext ctx, JSValue this_obj, JSValue val, int magic)
+        {
+            var typeDB = ScriptEngine.GetTypeDB(ctx);
+            
+            if (typeDB == null)
+            {
+                return JSApi.JS_ThrowInternalError(ctx, "type db is null");
+            }
+
+            var field = typeDB.GetDynamicField(magic);
+            if (field != null)
+            {
+                try
+                {
+                    return field.SetValue(ctx, this_obj, val);
+                }
+                catch (Exception exception)
+                {
+                    return JSApi.ThrowException(ctx, exception);
+                }
+            }
+
+            return JSApi.JS_ThrowInternalError(ctx, "dynamic field not found");
+        }
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static string GetString(JSContext ctx, JSValue val)
         {

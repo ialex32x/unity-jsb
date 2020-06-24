@@ -109,7 +109,63 @@ namespace QuickJS.Binding
             return new NamespaceDecl(this, ns);
         }
 
-        // return type id
+        public ClassDecl CreateClass(string typename, Type type, JSCFunctionMagic ctorFunc)
+        {
+            return CreateClass(JSApi.JS_UNDEFINED, typename, type, ctorFunc);
+        }
+
+        public ClassDecl CreateClass(JSValue nsValue, string typename, Type type, JSCFunctionMagic ctorFunc)
+        {
+            var nameAtom = GetAtom(typename);
+            JSContext ctx = _context;
+            var protoVal = JSApi.JS_NewObject(ctx);
+            var type_id = RegisterType(type, protoVal);
+            var ctorVal = JSApi.JSB_NewCFunctionMagic(ctx, ctorFunc, nameAtom, 0, JSCFunctionEnum.JS_CFUNC_constructor_magic, type_id);
+            var decl = new ClassDecl(this, ctorVal, protoVal, type);
+            JSApi.JS_SetConstructor(ctx, ctorVal, protoVal);
+            JSApi.JSB_SetBridgeType(ctx, ctorVal, type_id);
+            if (!nsValue.IsNullish())
+            {
+                JSApi.JS_DefinePropertyValue(ctx, nsValue, nameAtom, ctorVal, JSPropFlags.JS_PROP_ENUMERABLE | JSPropFlags.JS_PROP_CONFIGURABLE);
+            }
+            else
+            {
+                JSApi.JS_FreeValue(ctx, ctorVal);
+            }
+            // UnityEngine.Debug.LogFormat("define class {0}: {1}", type, protoVal);
+            JSApi.JS_FreeValue(ctx, protoVal);
+            return decl;
+        }
+
+        public ClassDecl CreateClass(string typename, Type type, IDynamicMethod dynamicMethod)
+        {
+            return CreateClass(JSApi.JS_UNDEFINED, typename, type, dynamicMethod);
+        }
+
+        public ClassDecl CreateClass(JSValue nsValue, string typename, Type type, IDynamicMethod dynamicMethod)
+        {
+            var nameAtom = GetAtom(typename);
+            JSContext ctx = _context;
+            var protoVal = JSApi.JS_NewObject(ctx);
+            var type_id = RegisterType(type, protoVal);
+            var ctorVal = _db.NewDynamicMethod(nameAtom, dynamicMethod);
+            var decl = new ClassDecl(this, ctorVal, protoVal, type);
+            JSApi.JS_SetConstructor(ctx, ctorVal, protoVal);
+            JSApi.JSB_SetBridgeType(ctx, ctorVal, type_id);
+            if (!nsValue.IsNullish())
+            {
+                JSApi.JS_DefinePropertyValue(ctx, nsValue, nameAtom, ctorVal, JSPropFlags.JS_PROP_ENUMERABLE | JSPropFlags.JS_PROP_CONFIGURABLE);
+            }
+            else
+            {
+                JSApi.JS_FreeValue(ctx, ctorVal);
+            }
+            // UnityEngine.Debug.LogFormat("define class {0}: {1}", type, protoVal);
+            JSApi.JS_FreeValue(ctx, protoVal);
+            return decl;
+        }
+
+        // return type id, 不可重复注册
         public int RegisterType(Type type, JSValue proto)
         {
             _pendingTypes.Add(type);
@@ -125,11 +181,11 @@ namespace QuickJS.Binding
         {
             // 提交运算符重载
             var ctx = (JSContext)_context;
-            var count = _operatorDecls.Count;
             var operatorCreate = _context.GetOperatorCreate();
 
             if (!operatorCreate.IsUndefined())
             {
+                var count = _operatorDecls.Count;
                 for (var i = 0; i < count; i++)
                 {
                     _operatorDecls[i].Register(this, ctx, operatorCreate);
@@ -209,7 +265,7 @@ namespace QuickJS.Binding
             }
         }
 
-        public TypeDB Finish()
+        public void Finish()
         {
             SubmitOperators();
             _atoms.Clear();
@@ -229,7 +285,6 @@ namespace QuickJS.Binding
                 }
             }
             _pendingTypes.Clear();
-            return _db;
         }
     }
 }

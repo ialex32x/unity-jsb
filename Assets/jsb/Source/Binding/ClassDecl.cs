@@ -107,6 +107,11 @@ namespace QuickJS.Binding
             AddProperty(bStatic, name, getter, setter);
         }
 
+        public void AddField(bool bStatic, string name, IDynamicField field)
+        {
+            AddProperty(bStatic, name, field);
+        }
+
         public void AddProperty(bool bStatic, string name, JSGetterCFunction getter, JSSetterCFunction setter)
         {
             var ctx = (JSContext)_ctx;
@@ -117,18 +122,40 @@ namespace QuickJS.Binding
             if (getter != null)
             {
                 flags |= JSPropFlags.JS_PROP_HAS_GET;
-                getterVal = JSApi.JSB_NewCFunction(ctx, getter, nameAtom, 0, JSCFunctionEnum.JS_CFUNC_getter, 0);
+                getterVal = JSApi.JSB_NewCFunction(ctx, getter, nameAtom);
             }
 
             if (setter != null)
             {
                 flags |= JSPropFlags.JS_PROP_HAS_SET;
                 flags |= JSPropFlags.JS_PROP_WRITABLE;
-                setterVal = JSApi.JSB_NewCFunction(ctx, setter, nameAtom, 1, JSCFunctionEnum.JS_CFUNC_setter, 0);
+                setterVal = JSApi.JSB_NewCFunction(ctx, setter, nameAtom);
             }
 
             var rs = JSApi.JS_DefineProperty(ctx, bStatic ? _ctor : _proto, nameAtom, JSApi.JS_UNDEFINED, getterVal, setterVal,
                 flags);
+            if (rs != 1)
+            {
+                var logger = _register.GetLogger();
+
+                logger.Write(LogLevel.Error, "define property failed: {0}", ctx.GetExceptionString());
+            }
+            JSApi.JS_FreeValue(ctx, getterVal);
+            JSApi.JS_FreeValue(ctx, setterVal);
+        }
+
+        public void AddProperty(bool bStatic, string name, IDynamicField field)
+        {
+            var ctx = (JSContext)_ctx;
+            var nameAtom = _register.GetAtom(name);
+            var getterVal = JSApi.JS_UNDEFINED;
+            var setterVal = JSApi.JS_UNDEFINED;
+            var flags = JSPropFlags.JS_PROP_CONFIGURABLE | JSPropFlags.JS_PROP_ENUMERABLE | JSPropFlags.JS_PROP_HAS_GET | JSPropFlags.JS_PROP_HAS_SET | JSPropFlags.JS_PROP_WRITABLE;
+            var db = _register.GetTypeDB();
+
+            db.NewDynamicFieldGetter(nameAtom, field, out getterVal, out setterVal);
+
+            var rs = JSApi.JS_DefineProperty(ctx, bStatic ? _ctor : _proto, nameAtom, JSApi.JS_UNDEFINED, getterVal, setterVal, flags);
             if (rs != 1)
             {
                 var logger = _register.GetLogger();
