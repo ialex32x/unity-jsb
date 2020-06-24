@@ -28,17 +28,18 @@ namespace QuickJS.Editor
             Dispose(false);
         }
 
-        public byte[] Compile(string filename)
-        {
-            return Compile(filename, Utils.TextUtils.GetNullTerminatedBytes(File.ReadAllText(filename)));
-        }
-
-        public unsafe byte[] Compile(string filename, byte[] input_bytes)
+        public unsafe byte[] Compile(string filename, byte[] input_bytes, bool commonJSModule)
         {
             byte[] outputBytes = null;
             try
             {
-                var fn_bytes = Utils.TextUtils.GetNullTerminatedBytes(filename);
+                byte[] fn_bytes = null;
+                if (commonJSModule)
+                {
+                    input_bytes = Utils.TextUtils.GetShebangNullTerminatedCommonJSBytes(input_bytes);
+                }
+
+                fn_bytes = Utils.TextUtils.GetNullTerminatedBytes(filename);
                 fixed (byte* input_ptr = input_bytes)
                 fixed (byte* fn_ptr = fn_bytes)
                 {
