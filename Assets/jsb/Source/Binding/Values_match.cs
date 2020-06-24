@@ -30,14 +30,7 @@ namespace QuickJS.Binding
 
             if (JSApi.JS_IsObject(jsValue))
             {
-                if (JSApi.JS_IsArray(ctx, jsValue) == 1)
-                {
-                    if (!type.IsArray && !_assignableFromArray.Contains(type))
-                    {
-                        return false;
-                    }
-                }
-                else if (JSApi.JS_IsFunction(ctx, jsValue) == 1)
+                if (JSApi.JS_IsFunction(ctx, jsValue) == 1)
                 {
                     //TODO: 完善处理 delegate 
                     return type == typeof(ScriptFunction) || type.BaseType == typeof(MulticastDelegate);

@@ -101,6 +101,14 @@ namespace QuickJS.Binding
             JSApi.JS_DefinePropertyValue(_ctx, bStatic ? _ctor : _proto, nameAtom, funcVal, JSPropFlags.DEFAULT);
         }
 
+        public void AddMethod(bool bStatic, string name, IDynamicMethod method)
+        {
+            var nameAtom = _register.GetAtom(name);
+            var db = _register.GetTypeDB();
+            var funcVal = db.NewDynamicMethod(nameAtom, method);
+            JSApi.JS_DefinePropertyValue(_ctx, bStatic ? _ctor : _proto, nameAtom, funcVal, JSPropFlags.DEFAULT);
+        }
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void AddField(bool bStatic, string name, JSGetterCFunction getter, JSSetterCFunction setter)
         {

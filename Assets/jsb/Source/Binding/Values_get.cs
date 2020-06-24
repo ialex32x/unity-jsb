@@ -1123,6 +1123,15 @@ namespace QuickJS.Binding
             return ret;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool js_get_enumvalue(JSContext ctx, JSValue val, Type type, out object o)
+        {
+            int v;
+            var ret = js_get_primitive(ctx, val, out v);
+            o = Enum.ToObject(type, v);
+            return ret;
+        }
+
         public static bool js_get_enumvalue_array<T>(JSContext ctx, JSValue val, out T[] o)
         where T : Enum
         {

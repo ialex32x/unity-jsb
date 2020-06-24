@@ -16,17 +16,29 @@ namespace QuickJS.Binding
     {
         // private MethodBase _methodBase;
 
-        public virtual bool CheckArgs(int argc, JSValue[] argv)
-        {
-            //TODO: check args if any overload func exists
-            return true;
-        }
+        public abstract bool CheckArgs(int argc, JSValue[] argv);
 
         public abstract JSValue Invoke(JSContext ctx, JSValue this_obj, int argc, JSValue[] argv);
     }
 
     public class DynamicMethod : DynamicMethodBase
     {
+        private DynamicType _type;
+        private MethodInfo _methodInfo;
+
+        public DynamicMethod(DynamicType type, MethodInfo methodInfo)
+        {
+            _type = type;
+            _methodInfo = methodInfo;
+        }
+        
+        public override bool CheckArgs(int argc, JSValue[] argv)
+        {
+            //TODO: check args if any overload func exists
+            // _methodInfo.GetParameters();
+            return true;
+        }
+
         public override JSValue Invoke(JSContext ctx, JSValue this_obj, int argc, JSValue[] argv)
         {
             //TODO: dynamic method impl
@@ -36,13 +48,19 @@ namespace QuickJS.Binding
 
     public class DynamicConstructor : DynamicMethodBase
     {
-        private int _type_id;
+        private DynamicType _type;
         private ConstructorInfo _ctor;
 
-        public DynamicConstructor(ConstructorInfo ctor, int type_id)
+        public DynamicConstructor(DynamicType type, ConstructorInfo ctor)
         {
-            _type_id = type_id;
+            _type = type;
             _ctor = ctor;
+        }
+
+        public override bool CheckArgs(int argc, JSValue[] argv)
+        {
+            //TODO: check args if any overload func exists
+            return true;
         }
 
         public override JSValue Invoke(JSContext ctx, JSValue this_obj, int argc, JSValue[] argv)
@@ -51,7 +69,7 @@ namespace QuickJS.Binding
             {
                 //TODO: dynamic constructor impl
                 var o = _ctor.Invoke(null);
-                var val = Values.NewBridgeClassObject(ctx, this_obj, o, _type_id);
+                var val = Values.NewBridgeClassObject(ctx, this_obj, o, _type.id);
                 return val;
             }
             catch (Exception exception)

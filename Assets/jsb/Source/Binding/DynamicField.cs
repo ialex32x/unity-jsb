@@ -15,10 +15,12 @@ namespace QuickJS.Binding
 
     public class DynamicField : IDynamicField
     {
+        private DynamicType _type;
         private FieldInfo _fieldInfo;
 
-        public DynamicField(FieldInfo fieldInfo)
+        public DynamicField(DynamicType type, FieldInfo fieldInfo)
         {
+            _type = type;
             _fieldInfo = fieldInfo;
         }
 
@@ -28,6 +30,10 @@ namespace QuickJS.Binding
             if (!_fieldInfo.IsStatic)
             {
                 Values.js_get_cached_object(ctx, this_obj, out self);
+                if (!_type.CheckThis(self))
+                {
+                    throw new ThisBoundException();
+                }
             }
             return Values.js_push_var(ctx, _fieldInfo.GetValue(self));
         }
@@ -38,6 +44,10 @@ namespace QuickJS.Binding
             if (!_fieldInfo.IsStatic)
             {
                 Values.js_get_cached_object(ctx, this_obj, out self);
+                if (!_type.CheckThis(self))
+                {
+                    throw new ThisBoundException();
+                }
             }
             object t_val = null;
             if (!Values.js_get_var(ctx, val, _fieldInfo.FieldType, out t_val))
@@ -51,10 +61,12 @@ namespace QuickJS.Binding
 
     public class DynamicProperty : IDynamicField
     {
+        private DynamicType _type;
         private PropertyInfo _propertyInfo;
 
-        public DynamicProperty(PropertyInfo propertyInfo)
+        public DynamicProperty(DynamicType type, PropertyInfo propertyInfo)
         {
+            _type = type;
             _propertyInfo = propertyInfo;
         }
 
@@ -68,6 +80,10 @@ namespace QuickJS.Binding
             if (!_propertyInfo.GetMethod.IsStatic)
             {
                 Values.js_get_cached_object(ctx, this_obj, out self);
+                if (!_type.CheckThis(self))
+                {
+                    throw new ThisBoundException();
+                }
             }
             return Values.js_push_var(ctx, _propertyInfo.GetValue(self));
         }
@@ -82,6 +98,10 @@ namespace QuickJS.Binding
             if (!_propertyInfo.SetMethod.IsStatic)
             {
                 Values.js_get_cached_object(ctx, this_obj, out self);
+                if (!_type.CheckThis(self))
+                {
+                    throw new ThisBoundException();
+                }
             }
             object t_val = null;
             if (!Values.js_get_var(ctx, val, _propertyInfo.PropertyType, out t_val))
