@@ -13,7 +13,7 @@
 * 支持在JS异步函数中等待 System.Threading.Tasks.Task 对象 (limited support)
 * 向 JS 导入 C# 运算符重载 +, -, *, /, ==, -(负)
 * 支持 Websocket (limited support)
-* 支持 JS 字节码 (QuickJS)
+* [未完成] 支持 JS 字节码 (QuickJS)
 * [未完成] 未导出的类型通过反射方式进行 C#/JS 交互
 * [未完成] 运行时替换 C# 代码 (hotfix, limited support)
 * [未完成] 运行时模块热替换 (debug only)
