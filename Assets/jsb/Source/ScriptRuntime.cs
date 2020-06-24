@@ -52,6 +52,7 @@ namespace QuickJS
             _rt = JSApi.JS_NewRuntime();
             JSApi.JS_SetModuleLoaderFunc(_rt, module_normalize, module_loader, IntPtr.Zero);
             _mainContext = CreateContext();
+            JSApi.JS_NewClass(_rt, JSApi.JSB_GetBridgeClassID(), "CSharpClass", JSApi.class_finalizer);
         }
 
         public GameObject GetContainer()
@@ -98,13 +99,14 @@ namespace QuickJS
             _fileSystem = fileSystem;
             _logger = logger;
 
+            _typeDB = new TypeDB(this, _mainContext);
             var register = new TypeRegister(this, _mainContext);
             register.RegisterType(typeof(ScriptBridge));
             // await Task.Run(() => runner.OnBind(this, register));
             runner.OnBind(this, register);
             TimerManager.Bind(register);
             ScriptContext.Bind(register);
-            _typeDB = register.Finish();
+            register.Finish();
             runner.OnComplete(this);
         }
 

@@ -54,8 +54,8 @@ namespace QuickJS.Binding
             var ctx = (JSContext)context;
 
             _context = context;
-            _db = new TypeDB(runtime, _context);
             _atoms = new AtomCache(_context);
+            _db = runtime.GetTypeDB();
 
             _globalObject = JSApi.JS_GetGlobalObject(ctx);
             _numberConstructor = JSApi.JS_GetProperty(ctx, _globalObject, JSApi.JS_ATOM_Number);
@@ -90,8 +90,6 @@ namespace QuickJS.Binding
                     }
                 }
             }
-
-            JSApi.JS_NewClass(runtime, JSApi.JSB_GetBridgeClassID(), "CSharpClass", JSApi.class_finalizer);
         }
 
         public TypeDB GetTypeDB()
