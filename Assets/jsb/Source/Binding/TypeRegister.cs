@@ -20,11 +20,6 @@ namespace QuickJS.Binding
         // 注册过程中产生的 atom, 完成后自动释放 
         private AtomCache _atoms;
 
-        private JSValue _globalObject;
-        private JSValue _operatorCreate;
-        private JSValue _numberConstructor;
-        private JSValue _stringConstructor;
-
         private List<Type> _pendingTypes = new List<Type>();
         private List<OperatorDecl> _operatorDecls = new List<OperatorDecl>();
         private Dictionary<Type, int> _operatorDeclIndex = new Dictionary<Type, int>();
@@ -56,40 +51,6 @@ namespace QuickJS.Binding
             _context = context;
             _atoms = new AtomCache(_context);
             _db = runtime.GetTypeDB();
-
-            _globalObject = JSApi.JS_GetGlobalObject(ctx);
-            _numberConstructor = JSApi.JS_GetProperty(ctx, _globalObject, JSApi.JS_ATOM_Number);
-            _stringConstructor = JSApi.JS_GetProperty(ctx, _globalObject, JSApi.JS_ATOM_String);
-            _operatorCreate = JSApi.JS_UNDEFINED;
-
-            var operators = JSApi.JS_GetProperty(ctx, _globalObject, JSApi.JS_ATOM_Operators);
-            if (!operators.IsNullish())
-            {
-                if (operators.IsException())
-                {
-                    ctx.print_exception();
-                }
-                else
-                {
-                    var create = JSApi.JS_GetProperty(ctx, operators, GetAtom("create"));
-                    JSApi.JS_FreeValue(ctx, operators);
-                    if (create.IsException())
-                    {
-                        ctx.print_exception();
-                    }
-                    else
-                    {
-                        if (JSApi.JS_IsFunction(ctx, create) == 1)
-                        {
-                            _operatorCreate = create;
-                        }
-                        else
-                        {
-                            JSApi.JS_FreeValue(ctx, create);
-                        }
-                    }
-                }
-            }
         }
 
         public TypeDB GetTypeDB()
@@ -165,12 +126,17 @@ namespace QuickJS.Binding
             // 提交运算符重载
             var ctx = (JSContext)_context;
             var count = _operatorDecls.Count;
+            var operatorCreate = _context.GetOperatorCreate();
 
-            for (var i = 0; i < count; i++)
+            if (!operatorCreate.IsUndefined())
             {
-                _operatorDecls[i].Register(this, ctx, _operatorCreate);
+                for (var i = 0; i < count; i++)
+                {
+                    _operatorDecls[i].Register(this, ctx, operatorCreate);
+                }
             }
 
+            JSApi.JS_FreeValue(ctx, operatorCreate);
             _operatorDeclIndex.Clear();
             _operatorDecls.Clear();
         }
@@ -192,12 +158,12 @@ namespace QuickJS.Binding
         {
             if (type == typeof(string) || type == typeof(char))
             {
-                return JSApi.JS_DupValue(_context, _stringConstructor);
+                return _context.GetStringConstructor();
             }
 
             if (type.IsValueType && (type.IsPrimitive || type.IsEnum))
             {
-                return JSApi.JS_DupValue(_context, _numberConstructor);
+                return _context.GetNumberConstructor();
             }
 
             var val = _db.FindPrototypeOf(type);
@@ -246,10 +212,6 @@ namespace QuickJS.Binding
         public TypeDB Finish()
         {
             SubmitOperators();
-            JSApi.JS_FreeValue(_context, _numberConstructor);
-            JSApi.JS_FreeValue(_context, _stringConstructor);
-            JSApi.JS_FreeValue(_context, _globalObject);
-            JSApi.JS_FreeValue(_context, _operatorCreate);
             _atoms.Clear();
             var ctx = (JSContext)_context;
             for (int i = 0, count = _pendingTypes.Count; i < count; i++)

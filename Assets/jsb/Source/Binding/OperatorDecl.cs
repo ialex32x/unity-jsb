@@ -49,76 +49,73 @@ namespace QuickJS.Binding
             _count++;
         }
 
-        public void Register(TypeRegister register, JSContext ctx, JSValue create)
+        ///<summary>
+        /// 实际定义运算符重载 (请保证 create 本身有效)
+        ///</summary>
+        public unsafe void Register(TypeRegister register, JSContext ctx, JSValue create)
         {
-            if (!create.IsUndefined())
+            var proto = register.FindPrototype(type);
+            var argv = new JSValue[_count];
+
+            argv[0] = JSApi.JS_NewObject(ctx);
+            for (int i = 0, len = self.Count; i < len; i++)
             {
-                unsafe
+                var def = self[i];
+                var funcVal = JSApi.JS_NewCFunction(ctx, def.func, def.op, def.length);
+                JSApi.JS_DefinePropertyValue(ctx, argv[0], register.GetAtom(def.op), funcVal, JSPropFlags.DEFAULT);
+                // Debug.LogFormat("{0} operator {1}", type, def.op);
+            }
+
+            for (int i = 0, len = left.Count; i < len; i++)
+            {
+                var cross = left[i];
+                var sideCtor = register.GetConstructor(cross.type);
+                var operator_ = JSApi.JS_NewObject(ctx);
+                var side = "left";
+                JSApi.JS_SetProperty(ctx, operator_, register.GetAtom(side), sideCtor);
+                for (int opIndex = 0, opCount = cross.operators.Count; opIndex < opCount; opIndex++)
                 {
-                    var proto = register.FindPrototype(type);
-                    var argv = new JSValue[_count];
-
-                    argv[0] = JSApi.JS_NewObject(ctx);
-                    for (int i = 0, len = self.Count; i < len; i++)
-                    {
-                        var def = self[i];
-                        var funcVal = JSApi.JS_NewCFunction(ctx, def.func, def.op, def.length);
-                        JSApi.JS_DefinePropertyValue(ctx, argv[0], register.GetAtom(def.op), funcVal, JSPropFlags.DEFAULT);
-                        // Debug.LogFormat("{0} operator {1}", type, def.op);
-                    }
-
-                    for (int i = 0, len = left.Count; i < len; i++)
-                    {
-                        var cross = left[i];
-                        var sideCtor = register.GetConstructor(cross.type);
-                        var operator_ = JSApi.JS_NewObject(ctx);
-                        var side = "left";
-                        JSApi.JS_SetProperty(ctx, operator_, register.GetAtom(side), sideCtor);
-                        for (int opIndex = 0, opCount = cross.operators.Count; opIndex < opCount; opIndex++)
-                        {
-                            var def = cross.operators[opIndex];
-                            var funcVal = JSApi.JS_NewCFunction(ctx, def.func, def.op, def.length);
-                            JSApi.JS_DefinePropertyValue(ctx, operator_, register.GetAtom(def.op), funcVal, JSPropFlags.DEFAULT);
-                            argv[i + 1] = operator_;
-                            // Debug.LogFormat("{0} {1} operator {2} {3} ({4})", type, side, def.op, cross.type, sideCtor);
-                        }
-                    }
-
-                    for (int i = 0, len = right.Count; i < len; i++)
-                    {
-                        var cross = right[i];
-                        var sideCtor = register.GetConstructor(cross.type);
-                        var operator_ = JSApi.JS_NewObject(ctx);
-                        var side = "right";
-                        JSApi.JS_SetProperty(ctx, operator_, register.GetAtom(side), sideCtor);
-                        for (int opIndex = 0, opCount = cross.operators.Count; opIndex < opCount; opIndex++)
-                        {
-                            var def = cross.operators[opIndex];
-                            var funcVal = JSApi.JS_NewCFunction(ctx, def.func, def.op, def.length);
-                            JSApi.JS_DefinePropertyValue(ctx, operator_, register.GetAtom(def.op), funcVal, JSPropFlags.DEFAULT);
-                            argv[i + 1 + left.Count] = operator_;
-                            // Debug.LogFormat("{0} {1} operator {2} {3} ({4})", type, side, def.op, cross.type, sideCtor);
-                        }
-                    }
-
-                    fixed (JSValue* ptr = argv)
-                    {
-                        var rval = JSApi.JS_Call(ctx, create, JSApi.JS_UNDEFINED, argv.Length, ptr);
-                        if (rval.IsException())
-                        {
-                            ctx.print_exception(LogLevel.Warn, string.Format("[{0} operators failed]", type));
-                        }
-                        else
-                        {
-                            JSApi.JS_DefinePropertyValue(ctx, proto, JSApi.JS_ATOM_Symbol_operatorSet, rval, JSPropFlags.DEFAULT);
-                        }
-                    }
-
-                    for (int i = 0, len = argv.Length; i < len; i++)
-                    {
-                        JSApi.JS_FreeValue(ctx, argv[i]);
-                    }
+                    var def = cross.operators[opIndex];
+                    var funcVal = JSApi.JS_NewCFunction(ctx, def.func, def.op, def.length);
+                    JSApi.JS_DefinePropertyValue(ctx, operator_, register.GetAtom(def.op), funcVal, JSPropFlags.DEFAULT);
+                    argv[i + 1] = operator_;
+                    // Debug.LogFormat("{0} {1} operator {2} {3} ({4})", type, side, def.op, cross.type, sideCtor);
                 }
+            }
+
+            for (int i = 0, len = right.Count; i < len; i++)
+            {
+                var cross = right[i];
+                var sideCtor = register.GetConstructor(cross.type);
+                var operator_ = JSApi.JS_NewObject(ctx);
+                var side = "right";
+                JSApi.JS_SetProperty(ctx, operator_, register.GetAtom(side), sideCtor);
+                for (int opIndex = 0, opCount = cross.operators.Count; opIndex < opCount; opIndex++)
+                {
+                    var def = cross.operators[opIndex];
+                    var funcVal = JSApi.JS_NewCFunction(ctx, def.func, def.op, def.length);
+                    JSApi.JS_DefinePropertyValue(ctx, operator_, register.GetAtom(def.op), funcVal, JSPropFlags.DEFAULT);
+                    argv[i + 1 + left.Count] = operator_;
+                    // Debug.LogFormat("{0} {1} operator {2} {3} ({4})", type, side, def.op, cross.type, sideCtor);
+                }
+            }
+
+            fixed (JSValue* ptr = argv)
+            {
+                var rval = JSApi.JS_Call(ctx, create, JSApi.JS_UNDEFINED, argv.Length, ptr);
+                if (rval.IsException())
+                {
+                    ctx.print_exception(LogLevel.Warn, string.Format("[{0} operators failed]", type));
+                }
+                else
+                {
+                    JSApi.JS_DefinePropertyValue(ctx, proto, JSApi.JS_ATOM_Symbol_operatorSet, rval, JSPropFlags.DEFAULT);
+                }
+            }
+
+            for (int i = 0, len = argv.Length; i < len; i++)
+            {
+                JSApi.JS_FreeValue(ctx, argv[i]);
             }
         }
     }
