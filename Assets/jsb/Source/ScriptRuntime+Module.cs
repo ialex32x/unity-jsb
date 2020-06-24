@@ -13,15 +13,6 @@ namespace QuickJS
 
     public partial class ScriptRuntime
     {
-        private static byte[] _header;
-        private static byte[] _footer;
-
-        static ScriptRuntime()
-        {
-            _header = Encoding.UTF8.GetBytes("(function(exports,require,module,__filename,__dirname){");
-            _footer = Encoding.UTF8.GetBytes("\n})");
-        }
-
         public static string EnsureExtension(string fileName)
         {
             return fileName != null && (fileName.EndsWith(".js") || fileName.EndsWith(".jsx") || fileName.EndsWith(".json")) ? fileName : fileName + ".js";
@@ -58,59 +49,6 @@ namespace QuickJS
             }
 
             throw new Exception(string.Format("module not found: {0}", module_id));
-        }
-
-        public static byte[] GetShebangNullTerminatedBytes(byte[] str)
-        {
-            var count = str.Length;
-
-            if (str[count - 1] == 0)
-            {
-                count--;
-            }
-
-            var header_size = _header.Length;
-            var footer_size = _footer.Length;
-            var bom_size = 0;
-            if (count >= 3)
-            {
-                // utf8 with bom
-                if (str[0] == 239 && str[1] == 187 && str[2] == 191)
-                {
-                    bom_size = 3;
-                }
-            }
-
-            var bytes = new byte[header_size + count + footer_size + 1 - bom_size];
-            Array.Copy(_header, 0, bytes, 0, header_size);
-            Array.Copy(str, bom_size, bytes, header_size, count - bom_size);
-
-            if (count >= 2)
-            {
-                // skip shebang line (replace #! => //)
-                if (str[0] == 35 && str[1] == 33)
-                {
-                    bytes[header_size] = 47;
-                    bytes[header_size + 1] = 47;
-                }
-                else
-                {
-                    if (bom_size > 0)
-                    {
-                        if (count > bom_size + 1)
-                        {
-                            if (str[bom_size] == 35 && str[bom_size + 1] == 33)
-                            {
-                                bytes[header_size] = 47;
-                                bytes[header_size + 1] = 47;
-                            }
-                        }
-                    }
-                }
-            }
-
-            Array.Copy(_footer, 0, bytes, header_size + count - bom_size, footer_size);
-            return bytes;
         }
 
         // require(id);
@@ -185,7 +123,7 @@ namespace QuickJS
                 }
                 else
                 {
-                    var input_bytes = GetShebangNullTerminatedBytes(source);
+                    var input_bytes = TextUtils.GetShebangNullTerminatedCommonJSBytes(source);
                     var module_id_atom = context.GetAtom(resolved_id);
                     var dirname_atom = context.GetAtom(dirname);
 
@@ -235,7 +173,7 @@ namespace QuickJS
         }
 
         [MonoPInvokeCallback(typeof(JSModuleNormalizeFunc))]
-        public static unsafe IntPtr module_normalize(JSContext ctx, string module_base_name, string module_name,
+        public static IntPtr module_normalize(JSContext ctx, string module_base_name, string module_name,
             IntPtr opaque)
         {
             try
@@ -263,19 +201,24 @@ namespace QuickJS
             if (fileSystem.Exists(module_name))
             {
                 var source = fileSystem.ReadAllBytes(module_name);
-                var input_bytes = Utils.TextUtils.GetNullTerminatedBytes(source);
-                var fn_bytes = Utils.TextUtils.GetNullTerminatedBytes(module_name);
+                var input_bytes = TextUtils.GetNullTerminatedBytes(source);
+                var fn_bytes = TextUtils.GetNullTerminatedBytes(module_name);
 
                 fixed (byte* input_ptr = input_bytes)
                 fixed (byte* fn_ptr = fn_bytes)
                 {
                     var input_len = (size_t)(input_bytes.Length - 1);
-                    var func_val = JSApi.JS_Eval(ctx, input_ptr, input_len, fn_ptr,
-                        JSEvalFlags.JS_EVAL_TYPE_MODULE | JSEvalFlags.JS_EVAL_FLAG_COMPILE_ONLY);
+                    var  func_val = JSApi.JS_Eval(ctx, input_ptr, input_len, fn_ptr,
+                            JSEvalFlags.JS_EVAL_TYPE_MODULE | JSEvalFlags.JS_EVAL_FLAG_COMPILE_ONLY);
+
                     if (JSApi.JS_IsException(func_val))
                     {
                         ctx.print_exception();
-                        JSApi.JS_ThrowReferenceError(ctx, "Module Error");
+                        JSApi.JS_ThrowReferenceError(ctx, "module error");
+                    }
+                    else if (func_val.IsNullish())
+                    {
+                        JSApi.JS_ThrowReferenceError(ctx, "module is null");
                     }
                     else
                     {

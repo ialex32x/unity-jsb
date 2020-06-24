@@ -50,10 +50,11 @@ namespace QuickJS.Binding
 
         public TypeRegister(ScriptRuntime runtime, ScriptContext context)
         {
-            _db = new TypeDB(runtime);
+            var ctx = (JSContext)context;
+
             _context = context;
+            _db = new TypeDB(runtime, _context);
             _atoms = new AtomCache(_context);
-            var ctx = (JSContext)_context;
 
             _globalObject = JSApi.JS_GetGlobalObject(ctx);
             _numberConstructor = JSApi.JS_GetProperty(ctx, _globalObject, JSApi.JS_ATOM_Number);
@@ -127,12 +128,12 @@ namespace QuickJS.Binding
 
         public NamespaceDecl CreateNamespace(string el1, string el2) // [parent]
         {
-            return new NamespaceDecl(this, _AutoProperty(_AutoProperty(el1), el1));
+            return new NamespaceDecl(this, _AutoProperty(_AutoProperty(el1), el2));
         }
 
         public NamespaceDecl CreateNamespace(string el1, string el2, string el3) // [parent]
         {
-            return new NamespaceDecl(this, _AutoProperty(_AutoProperty(_AutoProperty(el1), el1), el3));
+            return new NamespaceDecl(this, _AutoProperty(_AutoProperty(_AutoProperty(el1), el2), el3));
         }
 
         // return [parent, el]

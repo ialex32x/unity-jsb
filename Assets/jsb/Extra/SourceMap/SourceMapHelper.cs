@@ -82,47 +82,47 @@ namespace QuickJS.Extra
 
         private string js_source_position(JSContext ctx, string funcName, string fileName, int lineNumber)
         {
-            if (lineNumber != 0)
+            try
             {
-                try
+                var sourceMap = GetSourceMap(ctx, fileName);
+                if (sourceMap != null)
                 {
-                    var sourceMap = GetSourceMap(ctx, fileName);
-                    if (sourceMap != null)
+                    var pos = _shared;
+                    pos.ZeroBasedLineNumber = lineNumber - 1;
+                    pos.ZeroBasedColumnNumber = 0;
+                    var entry = sourceMap.GetMappingEntryForGeneratedSourcePosition(pos);
+                    if (entry != null)
                     {
-                        var pos = _shared;
-                        pos.ZeroBasedLineNumber = lineNumber;
-                        pos.ZeroBasedColumnNumber = 0;
-                        var entry = sourceMap.GetMappingEntryForGeneratedSourcePosition(pos);
-                        if (entry != null)
+                        var entryPos = entry.OriginalSourcePosition;
+                        var resolvedOriginal = Path.Combine(_sourceRoot, entry.OriginalFileName).Replace('\\', '/');
+                        if (string.IsNullOrEmpty(funcName))
                         {
-                            var entryPos = entry.OriginalSourcePosition;
-                            var resolvedOriginal = Path.Combine(_sourceRoot, entry.OriginalFileName).Replace('\\', '/');
-                            if (string.IsNullOrEmpty(funcName))
-                            {
-                                funcName = "anonymous";
-                            }
-                            return $"typescript:{funcName}() (at {resolvedOriginal}:{entryPos.ZeroBasedLineNumber + 1})";
+                            funcName = "anonymous";
                         }
+                        return $"typescript:{funcName}() (at {resolvedOriginal}:{entryPos.ZeroBasedLineNumber + 1})";
                     }
                 }
-                catch (Exception exception)
-                {
-                    Debug.LogError($"failed to parse source map [{fileName}]: {exception}");
-                }
-                if (string.IsNullOrEmpty(funcName))
-                {
-                    funcName = "[anonymous]";
-                }
-                return $"{funcName} ({fileName}:{lineNumber})";
             }
+            catch (Exception exception)
+            {
+                Debug.LogError($"failed to parse source map [{fileName}]: {exception}");
+            }
+
             if (string.IsNullOrEmpty(funcName))
             {
                 funcName = "[anonymous]";
             }
-            return $"{funcName} (<native code>)";
+
+            return $"{funcName} ({fileName}:{lineNumber})";
         }
 
-        public void Open(string workspace = null)
+        public void OpenSourceRoot(ScriptRuntime runtime, string sourceRoot)
+        {
+            _sourceRoot = sourceRoot;
+            runtime.OnSourceMap = js_source_position;
+        }
+
+        public void OpenWorkspace(ScriptRuntime runtime, string workspace)
         {
             var tsconfigPath = string.IsNullOrEmpty(workspace) ? "tsconfig.json" : Path.Combine(workspace, "tsconfig.json");
             if (File.Exists(tsconfigPath))
@@ -133,15 +133,12 @@ namespace QuickJS.Extra
 
                 if (string.IsNullOrEmpty(workspace) || Path.IsPathRooted(sourceRoot))
                 {
-                    _sourceRoot = sourceRoot;
+                    OpenSourceRoot(runtime, sourceRoot);
                 }
                 else
                 {
-                    _sourceRoot = Path.Combine(workspace, sourceRoot);
+                    OpenSourceRoot(runtime, Path.Combine(workspace, sourceRoot));
                 }
-                //TODO: quickjs stacktrace
-                // DuktapeAux.js_source_position = js_source_position;
-                // Debug.Log($"[SourceMapHelper] enabled {_sourceRoot}");
             }
             else
             {

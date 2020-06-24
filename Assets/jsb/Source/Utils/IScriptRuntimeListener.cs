@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using QuickJS.Binding;
+using System.Threading.Tasks;
 
 namespace QuickJS.Utils
 {

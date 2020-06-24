@@ -125,5 +125,15 @@ namespace QuickJS.Native
 
             return false;
         }
+
+        public static unsafe bool operator ==(JSContext a, JSContext b)
+        {
+            return a._ptr == b._ptr;
+        }
+
+        public static bool operator !=(JSContext a, JSContext b)
+        {
+            return !(a == b);
+        }
     }
 }

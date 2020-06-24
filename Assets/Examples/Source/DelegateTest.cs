@@ -6,6 +6,12 @@ namespace jsb
     [JSType]
     public class DelegateTest
     {
+        [JSType]
+        public class InnerTest
+        {
+            public const string hello = "hello";
+        }
+
         public Action onAction;
         public Action<string, float, int> onActionWithArgs;
         public Func<int, int> onFunc;

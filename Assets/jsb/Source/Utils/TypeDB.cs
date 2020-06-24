@@ -4,6 +4,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using AOT;
 using QuickJS.Native;
+using QuickJS.Binding;
 using System.Reflection;
 
 namespace QuickJS.Utils
@@ -13,19 +14,22 @@ namespace QuickJS.Utils
     public class TypeDB
     {
         private ScriptRuntime _runtime;
-        private Dictionary<Type, MethodInfo> _delegates = new Dictionary<Type, MethodInfo>(); // 委托对应的 duktape 绑定函数
+        private ScriptContext _context;
+        private Dictionary<Type, MethodInfo> _delegates = new Dictionary<Type, MethodInfo>(); // 委托对应的 js 绑定函数
         private Dictionary<Type, int> _typeIndex = new Dictionary<Type, int>();
         private List<Type> _types = new List<Type>(); // 可用 索引 反查 Type
         private Dictionary<Type, JSValue> _prototypes = new Dictionary<Type, JSValue>();
+        private List<IDynamicMethod> _dynamicMethods = new List<IDynamicMethod>();
 
         public int Count
         {
             get { return _types.Count; }
         }
 
-        public TypeDB(ScriptRuntime runtime)
+        public TypeDB(ScriptRuntime runtime, ScriptContext context)
         {
             _runtime = runtime;
+            _context = context;
         }
 
         public Type GetType(int index)
@@ -143,7 +147,7 @@ namespace QuickJS.Utils
 
         public TypeDB Finish()
         {
-            var ctx = _runtime.GetMainContext();
+            var ctx = (JSContext)_context;
             foreach (var kv in _prototypes)
             {
                 var type = kv.Key;
@@ -161,7 +165,7 @@ namespace QuickJS.Utils
 
         public void Destroy()
         {
-            var ctx = _runtime.GetMainContext();
+            var ctx = (JSContext)_context;
             foreach (var kv in _prototypes)
             {
                 var jsValue = kv.Value;
@@ -179,6 +183,31 @@ namespace QuickJS.Utils
             }
             var type = Assembly.GetExecutingAssembly().GetType(name);
             return type;
+        }
+        
+        [MonoPInvokeCallback(typeof(JSCFunctionMagic))]
+        public static JSValue _DynamicMethodInvoke(JSContext ctx, JSValue this_obj, int argc, JSValue[] argv, int magic)
+        {
+            var typeDB = ScriptEngine.GetTypeDB(ctx);
+            var method = typeDB.GetDynamicMethod(magic);
+            if (method != null)
+            {
+                return method.Invoke(ctx, this_obj, argc, argv);
+            }
+            return JSApi.JS_ThrowInternalError(ctx, "dynamic method not found");
+        }
+
+        public JSValue NewDynamicMethod(string name, IDynamicMethod method)
+        {
+            var magic = _dynamicMethods.Count;
+            var funValue = JSApi.JS_NewCFunctionMagic(_context, _DynamicMethodInvoke, name, 0, JSCFunctionEnum.JS_CFUNC_generic_magic, magic);
+            _dynamicMethods.Add(method);
+            return funValue;
+        }
+
+        private IDynamicMethod GetDynamicMethod(int index)
+        {
+            return index >= 0 && index < _dynamicMethods.Count ? _dynamicMethods[index] : null;
         }
     }
 }

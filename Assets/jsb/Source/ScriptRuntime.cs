@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using System.IO;
 using System.Text;
 using AOT;
@@ -19,8 +21,11 @@ namespace QuickJS
         public event Action<ScriptRuntime> OnDestroy;
         public event Action<ScriptRuntime> OnAfterDestroy;
         public event Action OnUpdate;
+        public Func<JSContext, string, string, int, string> OnSourceMap;
 
         private JSRuntime _rt;
+        private bool _dumpStacktrace;
+        private Regex _stRegex;
         private IScriptLogger _logger;
         private List<ScriptContext> _contexts = new List<ScriptContext>();
         private ScriptContext _mainContext;
@@ -92,85 +97,10 @@ namespace QuickJS
             _byteBufferAllocator = byteBufferAllocator;
             _fileSystem = fileSystem;
             _logger = logger;
-            var e = _InitializeStep(_mainContext, runner, step);
-            while (e.MoveNext()) ;
-        }
 
-        private IEnumerator _InitializeStep(ScriptContext context, IScriptRuntimeListener runner, int step)
-        {
-            var register = new TypeRegister(this, context);
-            var regArgs = new object[] { register };
-            var bindingTypes = new List<Type>();
-            var assemblies = AppDomain.CurrentDomain.GetAssemblies();
-            for (int assemblyIndex = 0, assemblyCount = assemblies.Length;
-                assemblyIndex < assemblyCount;
-                assemblyIndex++)
-            {
-                var assembly = assemblies[assemblyIndex];
-                try
-                {
-                    if (assembly.IsDynamic)
-                    {
-                        continue;
-                    }
-
-                    var exportedTypes = assembly.GetExportedTypes();
-                    for (int i = 0, size = exportedTypes.Length; i < size; i++)
-                    {
-                        var type = exportedTypes[i];
-#if UNITY_EDITOR
-                        if (type.IsDefined(typeof(JSAutoRunAttribute), false))
-                        {
-                            try
-                            {
-                                var run = type.GetMethod("Run", BindingFlags.Static | BindingFlags.Public);
-                                if (run != null)
-                                {
-                                    run.Invoke(null, null);
-                                }
-                            }
-                            catch (Exception exception)
-                            {
-                                _logger.Error(exception);
-                            }
-
-                            continue;
-                        }
-#endif
-                        var attributes = type.GetCustomAttributes(typeof(JSBindingAttribute), false);
-                        if (attributes.Length == 1)
-                        {
-                            var jsBinding = attributes[0] as JSBindingAttribute;
-                            if (jsBinding.Version == 0 || jsBinding.Version == ScriptEngine.VERSION)
-                            {
-                                bindingTypes.Add(type);
-                            }
-                        }
-                    }
-                }
-                catch (Exception e)
-                {
-                    _logger.Write(LogLevel.Error, "assembly: {0}, {1}", assembly, e);
-                }
-            }
-
-            var numRegInvoked = bindingTypes.Count;
-            for (var i = 0; i < numRegInvoked; ++i)
-            {
-                var type = bindingTypes[i];
-                var reg = type.GetMethod("Bind");
-                if (reg != null)
-                {
-                    reg.Invoke(null, regArgs);
-
-                    if (i % step == 0)
-                    {
-                        yield return null;
-                    }
-                }
-            }
-
+            var register = new TypeRegister(this, _mainContext);
             register.RegisterType(typeof(ScriptBridge));
+            // await Task.Run(() => runner.OnBind(this, register));
             runner.OnBind(this, register);
             TimerManager.Bind(register);
             ScriptContext.Bind(register);
@@ -229,6 +159,11 @@ namespace QuickJS
 
         public ScriptContext GetContext(JSContext ctx)
         {
+            if (_mainContext.IsContext(ctx))
+            {
+                return _mainContext;
+            }
+
             for (int i = 0, count = _contexts.Count; i < count; i++)
             {
                 var context = _contexts[i];
@@ -336,7 +271,7 @@ namespace QuickJS
             if (_fileResolver.ResolvePath(_fileSystem, fileName, out resolvedPath))
             {
                 var source = _fileSystem.ReadAllBytes(resolvedPath);
-                var input_bytes = GetShebangNullTerminatedBytes(source);
+                var input_bytes = TextUtils.GetShebangNullTerminatedCommonJSBytes(source);
                 _mainContext.EvalMain(input_bytes, resolvedPath);
             }
         }
@@ -395,6 +330,69 @@ namespace QuickJS
                     action.callback(this, action.value);
                 }
             }
+        }
+
+        private string js_source_position(JSContext ctx, string funcName, string fileName, int lineNumber)
+        {
+            return $"{funcName} ({fileName}:{lineNumber})";
+        }
+
+        public void EnableStacktrace()
+        {
+            _dumpStacktrace = true;
+        }
+
+        public void DisableStacktrace()
+        {
+            _dumpStacktrace = false;
+        }
+
+        public void AppendStacktrace(JSContext ctx, StringBuilder sb)
+        {
+            if (!_dumpStacktrace)
+            {
+                return;
+            }
+            var globalObject = JSApi.JS_GetGlobalObject(ctx);
+            var errorConstructor = JSApi.JS_GetProperty(ctx, globalObject, JSApi.JS_ATOM_Error);
+            var errorObject = JSApi.JS_CallConstructor(ctx, errorConstructor);
+            var stackValue = JSApi.JS_GetProperty(ctx, errorObject, JSApi.JS_ATOM_stack);
+            var stack = JSApi.GetString(ctx, stackValue);
+
+            if (!string.IsNullOrEmpty(stack))
+            {
+                var errlines = stack.Split('\n');
+                if (_stRegex == null)
+                {
+                    _stRegex = new Regex(@"^\s+at\s(.+)\s\((.+\.js):(\d+)\)(.*)$", RegexOptions.Compiled);
+                }
+                for (var i = 0; i < errlines.Length; i++)
+                {
+                    var line = errlines[i];
+                    var matches = _stRegex.Matches(line);
+                    if (matches.Count == 1)
+                    {
+                        var match = matches[0];
+                        if (match.Groups.Count >= 4)
+                        {
+                            var funcName = match.Groups[1].Value;
+                            var fileName = match.Groups[2].Value;
+                            var lineNumber = 0;
+                            int.TryParse(match.Groups[3].Value, out lineNumber);
+                            var extra = match.Groups.Count >= 5 ? match.Groups[4].Value : "";
+                            var sroucePosition = (OnSourceMap ?? js_source_position)(ctx, funcName, fileName, lineNumber);
+                            sb.AppendLine($"    at {sroucePosition}{extra}");
+                            continue;
+                        }
+                    }
+                    sb.AppendLine(line);
+                }
+            }
+
+            JSApi.JS_FreeValue(ctx, stackValue);
+            JSApi.JS_FreeValue(ctx, errorObject);
+            JSApi.JS_FreeValue(ctx, errorConstructor);
+            JSApi.JS_FreeValue(ctx, globalObject);
         }
 
         public void Destroy()

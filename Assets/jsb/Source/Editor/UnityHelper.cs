@@ -100,14 +100,43 @@ namespace QuickJS.Editor
             EditorWindow.GetWindow<PrefsEditor>().Show();
         }
 
-        [MenuItem("Assets/JS Bridge/Compile (bytecode)", true)]
-        public static bool CompileBytecodeValidate()
+        public static bool CheckAnyScriptExists()
         {
             var objects = Selection.objects;
             for (var i = 0; i < objects.Length; ++i)
             {
                 var obj = objects[i];
                 var assetPath = AssetDatabase.GetAssetPath(obj);
+                if (CheckAnyScripts(assetPath))
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        private static bool CheckAnyScripts(string assetPath)
+        {
+            if (Directory.Exists(assetPath))
+            {
+                foreach (var subDir in Directory.GetDirectories(assetPath))
+                {
+                    if (CheckAnyScripts(subDir))
+                    {
+                        return true;
+                    }
+                }
+
+                foreach (var subFile in Directory.GetFiles(assetPath))
+                {
+                    if (CheckAnyScripts(subFile))
+                    {
+                        return true;
+                    }
+                }
+            }
+            else
+            {
                 if (!string.IsNullOrEmpty(assetPath) && assetPath.EndsWith(".js"))
                 {
                     return true;
@@ -116,38 +145,82 @@ namespace QuickJS.Editor
             return false;
         }
 
+        [MenuItem("Assets/JS Bridge/Compile (bytecode)", true)]
+        public static bool CompileBytecodeValidate()
+        {
+            return CheckAnyScriptExists();
+        }
+
         [MenuItem("Assets/JS Bridge/Compile (bytecode)")]
         public static void CompileBytecode()
         {
-            using (var ctx = new ScriptCompiler())
+            CompileBytecode(false);
+            AssetDatabase.Refresh();
+        }
+
+        [MenuItem("Assets/JS Bridge/Compile as CommonJS Module (bytecode)", true)]
+        public static bool CompileBytecodeCommonJSValidate()
+        {
+            return CheckAnyScriptExists();
+        }
+
+        [MenuItem("Assets/JS Bridge/Compile as CommonJS Module (bytecode)")]
+        public static void CompileBytecodeCommonJS()
+        {
+            CompileBytecode(true);
+            AssetDatabase.Refresh();
+        }
+
+        private static void CompileBytecode(bool commonJSModule)
+        {
+            using (var compiler = new ScriptCompiler())
             {
                 var objects = Selection.objects;
                 for (var i = 0; i < objects.Length; ++i)
                 {
                     var obj = objects[i];
                     var assetPath = AssetDatabase.GetAssetPath(obj);
-                    if (!string.IsNullOrEmpty(assetPath) && assetPath.EndsWith(".js"))
+                    CompileBytecode(compiler, assetPath, commonJSModule);
+                }
+            }
+        }
+
+        private static void CompileBytecode(ScriptCompiler compiler, string assetPath, bool commonJSModule)
+        {
+            if (Directory.Exists(assetPath))
+            {
+                foreach (var subDir in Directory.GetDirectories(assetPath))
+                {
+                    CompileBytecode(compiler, subDir, commonJSModule);
+                }
+
+                foreach (var subFile in Directory.GetFiles(assetPath))
+                {
+                    CompileBytecode(compiler, subFile, commonJSModule);
+                }
+            }
+            else
+            {
+                if (!string.IsNullOrEmpty(assetPath) && assetPath.EndsWith(".js"))
+                {
+                    var outPath = assetPath + ".bytes";
+                    var bytes = File.ReadAllBytes(assetPath);
+                    var bytecode = compiler.Compile(assetPath, bytes, commonJSModule);
+                    if (bytecode != null)
                     {
-                        var outPath = assetPath + ".bytes";
-                        var bytes = File.ReadAllBytes(assetPath);
-                        var bytecode = ctx.Compile(assetPath, bytes);
-                        if (bytecode != null)
+                        File.WriteAllBytes(outPath, bytecode);
+                        Debug.LogFormat("compile {0}({1}) => {2}({3})", assetPath, bytes.Length, outPath, bytecode.Length);
+                    }
+                    else
+                    {
+                        Debug.LogErrorFormat("compilation failed: {0}", assetPath);
+                        if (File.Exists(outPath))
                         {
-                            File.WriteAllBytes(outPath, bytecode);
-                            Debug.LogFormat("compile {0}({1}) => {2}({3})", assetPath, bytes.Length, outPath, bytecode.Length);
-                        }
-                        else
-                        {
-                            Debug.LogErrorFormat("compilation failed: {0}", assetPath);
-                            if (File.Exists(outPath))
-                            {
-                                File.Delete(outPath);
-                            }
+                            File.Delete(outPath);
                         }
                     }
                 }
             }
-            AssetDatabase.Refresh();
         }
 
         #endregion

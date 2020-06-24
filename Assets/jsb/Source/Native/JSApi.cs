@@ -46,7 +46,7 @@ namespace QuickJS.Native
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
 #endif
     public delegate JSValue JSSetterCFunction(JSContext ctx, JSValueConst this_val, JSValueConst val);
-    
+
 #if UNITY_EDITOR_WIN || UNITY_STANDALONE_WIN
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
 #endif
@@ -92,6 +92,11 @@ namespace QuickJS.Native
         public const int JS_TAG_CATCH_OFFSET = 5;
         public const int JS_TAG_EXCEPTION = 6;
         public const int JS_TAG_FLOAT64 = 7;
+
+        // #define JS_WRITE_OBJ_BYTECODE (1 << 0) /* allow function/module */
+        public const int JS_WRITE_OBJ_BYTECODE = 1 << 0;
+        // #define JS_READ_OBJ_BYTECODE  (1 << 0) /* allow function/module */
+        public const int JS_READ_OBJ_BYTECODE = 1 << 0;
 
         public static JSValue[] EmptyValues = new JSValue[0];
 
@@ -149,7 +154,7 @@ namespace QuickJS.Native
         public static extern int JS_IsInstanceOf(JSContext ctx, JSValueConst val, JSValueConst obj);
 
         [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern unsafe JSValue JS_NewPromiseCapability(JSContext ctx, JSValue *resolving_funcs);
+        public static extern unsafe JSValue JS_NewPromiseCapability(JSContext ctx, JSValue* resolving_funcs);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static unsafe JSValue JS_NewPromiseCapability(JSContext ctx, JSValue[] resolving_funcs)
@@ -540,9 +545,10 @@ namespace QuickJS.Native
 
         // 不修改计数
         [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
-        /* private */ public static extern JSValueConst JS_GetActiveFunction(JSContext ctx);
+        /* private */
+        public static extern JSValueConst JS_GetActiveFunction(JSContext ctx);
 
-         [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
+        [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern unsafe JSValue JS_ParseJSON(JSContext ctx, byte* buf, size_t buf_len, byte* filename);
 
         [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
@@ -554,9 +560,9 @@ namespace QuickJS.Native
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static unsafe JSValue JS_CallConstructor(JSContext ctx, JSValueConst func_obj)
         {
-            return JS_CallConstructor(ctx, func_obj, 0, (JSValueConst*) 0);
+            return JS_CallConstructor(ctx, func_obj, 0, (JSValueConst*)0);
         }
-        
+
         [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern JSValue JS_Call(JSContext ctx, JSValueConst func_obj, JSValueConst this_obj,
             int argc, [MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 3)]
@@ -565,7 +571,7 @@ namespace QuickJS.Native
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static unsafe JSValue JS_Call(JSContext ctx, JSValueConst func_obj, JSValueConst this_obj)
         {
-            return JS_Call(ctx, func_obj, this_obj, 0, (JSValueConst*) 0);
+            return JS_Call(ctx, func_obj, this_obj, 0, (JSValueConst*)0);
         }
 
         [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
@@ -640,6 +646,15 @@ namespace QuickJS.Native
                     JSEvalFlags.JS_EVAL_TYPE_MODULE | JSEvalFlags.JS_EVAL_FLAG_STRICT);
             }
         }
+
+        [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern void js_free(JSContext ctx, IntPtr ptr);
+
+        [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern IntPtr JS_WriteObject(JSContext ctx, out size_t psize, JSValueConst obj, int flags);
+
+        [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern unsafe JSValue JS_ReadObject(JSContext ctx, byte* buf, size_t buf_len, int flags);
 
         [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern unsafe JSValue JS_Eval(JSContext ctx, byte* input, size_t input_len, byte* filename,
@@ -753,6 +768,11 @@ namespace QuickJS.Native
         public static extern JSAtom JSB_ATOM_String();
 
         public static readonly JSAtom JS_ATOM_String = JSB_ATOM_String();
+
+        [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern JSAtom JSB_ATOM_Error();
+
+        public static readonly JSAtom JS_ATOM_Error = JSB_ATOM_Error();
 
         [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern JSAtom JSB_ATOM_Symbol_operatorSet();

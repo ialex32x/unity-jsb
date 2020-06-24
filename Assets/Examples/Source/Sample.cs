@@ -1,11 +1,5 @@
-using System;
-using System.Collections;
-using System.IO;
-using System.Text;
-using AOT;
 using QuickJS;
 using QuickJS.Binding;
-using QuickJS.Native;
 using QuickJS.Utils;
 using QuickJS.IO;
 
@@ -15,6 +9,7 @@ namespace jsb
 
     public class Sample : MonoBehaviour, IScriptRuntimeListener
     {
+        public bool sourceMap;
         private ScriptRuntime _rt;
 
         void Awake()
@@ -23,6 +18,11 @@ namespace jsb
             var fileSystem = new DefaultFileSystem();
             _rt.AddSearchPath("Assets");
             _rt.AddSearchPath("node_modules");
+            _rt.EnableStacktrace();
+            if (sourceMap)
+            {
+                _rt.EnableSourceMap();
+            }
             _rt.Initialize(fileSystem, this, new UnityLogger(), new ByteBufferPooledAllocator());
         }
 
@@ -38,6 +38,7 @@ namespace jsb
 
         public void OnBind(ScriptRuntime runtime, TypeRegister register)
         {
+            _QuickJSBindings.Bind(register);
             WebSockets.WebSocket.Bind(register);
         }
 
