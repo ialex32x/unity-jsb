@@ -1,8 +1,10 @@
 @echo off
 
-SET ANDROID_NDK=E:/android-ndk-r15c
-SET BASE_PATH=%~dp0
-SET BUILD_PATH=%~dp0..\out\libwebsockets
+if not defined ANDROID_NDK (
+    set ANDROID_NDK=E:/android-ndk-r15c
+)
+set BASE_PATH=%~dp0
+set BUILD_PATH=%~dp0..\out\libwebsockets
 echo %BUILD_PATH%
 
 mkdir %BUILD_PATH% 2>nul
