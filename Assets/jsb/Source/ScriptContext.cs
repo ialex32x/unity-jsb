@@ -24,6 +24,11 @@ namespace QuickJS
         private CoroutineManager _coroutines;
         private bool _isValid;
 
+        private JSValue _globalObject;
+        private JSValue _operatorCreate;
+        private JSValue _numberConstructor;
+        private JSValue _stringConstructor;
+
         public ScriptContext(ScriptRuntime runtime)
         {
             _isValid = true;
@@ -32,6 +37,40 @@ namespace QuickJS
             JSApi.JS_AddIntrinsicOperators(_ctx);
             _atoms = new AtomCache(_ctx);
             _moduleCache = JSApi.JS_NewObject(_ctx);
+
+            _globalObject = JSApi.JS_GetGlobalObject(_ctx);
+            _numberConstructor = JSApi.JS_GetProperty(_ctx, _globalObject, JSApi.JS_ATOM_Number);
+            _stringConstructor = JSApi.JS_GetProperty(_ctx, _globalObject, JSApi.JS_ATOM_String);
+            _operatorCreate = JSApi.JS_UNDEFINED;
+
+            var operators = JSApi.JS_GetProperty(_ctx, _globalObject, JSApi.JS_ATOM_Operators);
+            if (!operators.IsNullish())
+            {
+                if (operators.IsException())
+                {
+                    _ctx.print_exception();
+                }
+                else
+                {
+                    var create = JSApi.JS_GetProperty(_ctx, operators, GetAtom("create"));
+                    JSApi.JS_FreeValue(_ctx, operators);
+                    if (create.IsException())
+                    {
+                        _ctx.print_exception();
+                    }
+                    else
+                    {
+                        if (JSApi.JS_IsFunction(_ctx, create) == 1)
+                        {
+                            _operatorCreate = create;
+                        }
+                        else
+                        {
+                            JSApi.JS_FreeValue(_ctx, create);
+                        }
+                    }
+                }
+            }
         }
 
         public bool IsValid()
@@ -93,6 +132,11 @@ namespace QuickJS
             return _runtime.GetLogger();
         }
 
+        public TypeDB GetTypeDB()
+        {
+            return _runtime.GetTypeDB();
+        }
+
         public ScriptRuntime GetRuntime()
         {
             return _runtime;
@@ -122,6 +166,12 @@ namespace QuickJS
                 _runtime.GetLogger().Error(e);
             }
             _atoms.Clear();
+
+            JSApi.JS_FreeValue(_ctx, _numberConstructor);
+            JSApi.JS_FreeValue(_ctx, _stringConstructor);
+            JSApi.JS_FreeValue(_ctx, _globalObject);
+            JSApi.JS_FreeValue(_ctx, _operatorCreate);
+
             JSApi.JS_FreeValue(_ctx, _moduleCache);
             JSApi.JS_FreeValue(_ctx, _require);
             JSApi.JS_FreeContext(_ctx);
@@ -145,10 +195,40 @@ namespace QuickJS
             _runtime.FreeValues(values);
         }
 
+        ///<summary>
+        /// 获取全局对象 (增加引用计数)
+        ///</summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public JSValue GetGlobalObject()
         {
-            return JSApi.JS_GetGlobalObject(_ctx);
+            return JSApi.JS_DupValue(_ctx, _globalObject);
+        }
+
+        ///<summary>
+        /// 获取 string.constructor (增加引用计数)
+        ///</summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public JSValue GetStringConstructor()
+        {
+            return JSApi.JS_DupValue(_ctx, _stringConstructor);
+        }
+
+        ///<summary>
+        /// 获取 number.constructor (增加引用计数)
+        ///</summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public JSValue GetNumberConstructor()
+        {
+            return JSApi.JS_DupValue(_ctx, _numberConstructor);
+        }
+
+        ///<summary>
+        /// 获取 operator.create (增加引用计数)
+        ///</summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public JSValue GetOperatorCreate()
+        {
+            return JSApi.JS_DupValue(_ctx, _operatorCreate);
         }
 
         #region Builtins
@@ -310,7 +390,7 @@ namespace QuickJS
         public void RegisterBuiltins()
         {
             var ctx = (JSContext)this;
-            var global_object = JSApi.JS_GetGlobalObject(ctx);
+            var global_object = this.GetGlobalObject();
             {
                 _require = JSApi.JSB_NewCFunction(ctx, ScriptRuntime.module_require, GetAtom("require"), 1, JSCFunctionEnum.JS_CFUNC_generic, 0);
                 JSApi.JS_SetProperty(ctx, _require, GetAtom("moduleId"), JSApi.JS_NewString(ctx, ""));

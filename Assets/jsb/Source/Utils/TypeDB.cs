@@ -20,6 +20,7 @@ namespace QuickJS.Utils
         private List<Type> _types = new List<Type>(); // 可用 索引 反查 Type
         private Dictionary<Type, JSValue> _prototypes = new Dictionary<Type, JSValue>();
         private List<IDynamicMethod> _dynamicMethods = new List<IDynamicMethod>();
+        private List<IDynamicField> _dynamicFields = new List<IDynamicField>();
 
         public int Count
         {
@@ -54,12 +55,21 @@ namespace QuickJS.Utils
             return null;
         }
 
+        // 注册新类型, 会增加 proto 的引用计数
         public int AddType(Type type, JSValue proto)
         {
+            JSValue old_proto;
+            if (_prototypes.TryGetValue(type, out old_proto))
+            {
+                JSApi.JS_FreeValue(_context, old_proto);
+                _prototypes[type] = JSApi.JS_DupValue(_context, proto);
+                return _typeIndex[type];
+            }
+
+            _prototypes[type] = JSApi.JS_DupValue(_context, proto);
             var index = _types.Count;
             _types.Add(type);
             _typeIndex[type] = index;
-            _prototypes.Add(type, proto);
             return index;
         }
 
@@ -145,22 +155,14 @@ namespace QuickJS.Utils
             return FindPrototypeOf(cType.BaseType, out pType);
         }
 
-        public TypeDB Finish()
+        public JSValue GetPropertyOf(Type type)
         {
-            var ctx = (JSContext)_context;
-            foreach (var kv in _prototypes)
+            JSValue proto;
+            if (_prototypes.TryGetValue(type, out proto))
             {
-                var type = kv.Key;
-                var baseType = type.BaseType;
-                var parent = FindPrototypeOf(baseType);
-                if (!JSApi.JS_IsUndefined(parent))
-                {
-                    var fn = kv.Value;
-                    JSApi.JS_SetPrototype(ctx, fn, parent);
-                }
+                return proto;
             }
-
-            return this;
+            return JSApi.JS_UNDEFINED;
         }
 
         public void Destroy()
@@ -184,30 +186,39 @@ namespace QuickJS.Utils
             var type = Assembly.GetExecutingAssembly().GetType(name);
             return type;
         }
-        
-        [MonoPInvokeCallback(typeof(JSCFunctionMagic))]
-        public static JSValue _DynamicMethodInvoke(JSContext ctx, JSValue this_obj, int argc, JSValue[] argv, int magic)
+
+        public JSValue NewDynamicMethod(JSAtom name, IDynamicMethod method)
         {
-            var typeDB = ScriptEngine.GetTypeDB(ctx);
-            var method = typeDB.GetDynamicMethod(magic);
-            if (method != null)
+            if (method == null)
             {
-                return method.Invoke(ctx, this_obj, argc, argv);
+                var funValue = JSApi.JSB_NewCFunctionMagic(_context, JSApi.class_private_ctor, name, 0, JSCFunctionEnum.JS_CFUNC_generic_magic, 0);
+                return funValue;
             }
-            return JSApi.JS_ThrowInternalError(ctx, "dynamic method not found");
+            else
+            {
+                var magic = _dynamicMethods.Count;
+                var funValue = JSApi.JSB_NewCFunctionMagic(_context, JSApi._DynamicMethodInvoke, name, 0, JSCFunctionEnum.JS_CFUNC_generic_magic, magic);
+                _dynamicMethods.Add(method);
+                return funValue;
+            }
         }
 
-        public JSValue NewDynamicMethod(string name, IDynamicMethod method)
+        public void NewDynamicFieldGetter(JSAtom name, IDynamicField field, out JSValue getter, out JSValue setter)
         {
-            var magic = _dynamicMethods.Count;
-            var funValue = JSApi.JS_NewCFunctionMagic(_context, _DynamicMethodInvoke, name, 0, JSCFunctionEnum.JS_CFUNC_generic_magic, magic);
-            _dynamicMethods.Add(method);
-            return funValue;
+            var magic = _dynamicFields.Count;
+            getter = JSApi.JSB_NewCFunction(_context, JSApi._DynamicFieldGetter, name, magic);
+            setter = JSApi.JSB_NewCFunction(_context, JSApi._DynamicFieldSetter, name, magic);
+            _dynamicFields.Add(field);
         }
 
-        private IDynamicMethod GetDynamicMethod(int index)
+        public IDynamicMethod GetDynamicMethod(int index)
         {
             return index >= 0 && index < _dynamicMethods.Count ? _dynamicMethods[index] : null;
+        }
+
+        public IDynamicField GetDynamicField(int index)
+        {
+            return index >= 0 && index < _dynamicFields.Count ? _dynamicFields[index] : null;
         }
     }
 }

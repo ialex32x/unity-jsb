@@ -29,7 +29,7 @@ namespace QuickJS.Editor
             using (new RegFuncCodeGen(cg))
             {
                 this.cg.cs.AppendLine("var type = typeof({0});", CodeGenerator.NameOfDelegates);
-                this.cg.cs.AppendLine("var types = register.GetTypeDB();");
+                this.cg.cs.AppendLine("var typeDB = register.GetTypeDB();");
                 this.cg.cs.AppendLine("var methods = type.GetMethods(System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.Public);");
                 this.cg.cs.AppendLine("var ns = register.CreateNamespace(\"QuickJS\");");
                 this.cg.cs.AppendLine("for (int i = 0, size = methods.Length; i < size; i++)");
@@ -48,7 +48,7 @@ namespace QuickJS.Editor
                         this.cg.cs.AddTabLevel();
                         {
                             this.cg.cs.AppendLine("var attribute = attributes[a] as JSDelegateAttribute;");
-                            this.cg.cs.AppendLine("types.AddDelegate(attribute.target, method);");
+                            this.cg.cs.AppendLine("typeDB.AddDelegate(attribute.target, method);");
                         }
                         this.cg.cs.DecTabLevel();
                         this.cg.cs.AppendLine("}");

@@ -50,7 +50,17 @@ namespace QuickJS.Native
 #if UNITY_EDITOR_WIN || UNITY_STANDALONE_WIN
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
 #endif
+    public delegate JSValue JSSetterCFunctionMagic(JSContext ctx, JSValueConst this_val, JSValueConst val, int magic);
+
+#if UNITY_EDITOR_WIN || UNITY_STANDALONE_WIN
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+#endif
     public delegate JSValue JSGetterCFunction(JSContext ctx, JSValueConst this_val);
+
+#if UNITY_EDITOR_WIN || UNITY_STANDALONE_WIN
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+#endif
+    public delegate JSValue JSGetterCFunctionMagic(JSContext ctx, JSValueConst this_val, int magic);
 
 #if UNITY_EDITOR_WIN || UNITY_STANDALONE_WIN
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
@@ -443,19 +453,31 @@ namespace QuickJS.Native
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static JSValue JSB_NewCFunction(JSContext ctx, JSGetterCFunction func, JSAtom atom, int length,
-            JSCFunctionEnum cproto, int magic)
+        public static JSValue JSB_NewCFunction(JSContext ctx, JSGetterCFunction func, JSAtom atom)
         {
             var fn = Marshal.GetFunctionPointerForDelegate(func);
-            return JSB_NewCFunction(ctx, fn, atom, length, cproto, magic);
+            return JSB_NewCFunction(ctx, fn, atom, 0, JSCFunctionEnum.JS_CFUNC_getter, 0);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static JSValue JSB_NewCFunction(JSContext ctx, JSSetterCFunction func, JSAtom atom, int length,
-            JSCFunctionEnum cproto, int magic)
+        public static JSValue JSB_NewCFunction(JSContext ctx, JSSetterCFunction func, JSAtom atom)
         {
             var fn = Marshal.GetFunctionPointerForDelegate(func);
-            return JSB_NewCFunction(ctx, fn, atom, length, cproto, magic);
+            return JSB_NewCFunction(ctx, fn, atom, 1, JSCFunctionEnum.JS_CFUNC_setter, 0);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static JSValue JSB_NewCFunction(JSContext ctx, JSGetterCFunctionMagic func, JSAtom atom, int magic)
+        {
+            var fn = Marshal.GetFunctionPointerForDelegate(func);
+            return JSB_NewCFunction(ctx, fn, atom, 0, JSCFunctionEnum.JS_CFUNC_getter_magic, magic);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static JSValue JSB_NewCFunction(JSContext ctx, JSSetterCFunctionMagic func, JSAtom atom, int magic)
+        {
+            var fn = Marshal.GetFunctionPointerForDelegate(func);
+            return JSB_NewCFunction(ctx, fn, atom, 1, JSCFunctionEnum.JS_CFUNC_setter_magic, magic);
         }
 
         // 通过 Atom 命名创建函数

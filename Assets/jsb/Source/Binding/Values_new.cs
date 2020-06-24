@@ -181,16 +181,26 @@ namespace QuickJS.Binding
             {
                 return JSApi.JS_UNDEFINED;
             }
-            int type_id;
+            // int type_id;
             var type = o.GetType();
-            var proto = FindPrototypeOf(ctx, type, out type_id);
+            var runtime = ScriptEngine.GetRuntime(ctx);
+            var db = runtime.GetTypeDB();
+            // var proto = db.FindPrototypeOf(type, out type_id); 
+            var proto = db.GetPropertyOf(type);
 
             if (proto.IsNullish())
             {
-                return JSApi.JS_ThrowInternalError(ctx, string.Format("no prototype found for {0}", type));
+                var register = new TypeRegister(runtime, runtime.GetContext(ctx));
+                DynamicType.Bind(register, type, false);
+                register.Finish();
+                proto = db.GetPropertyOf(type);
+                if (proto.IsNullish())
+                {
+                    return JSApi.JS_ThrowInternalError(ctx, string.Format("no prototype found for {0}", type));
+                }
             }
 
-            var cache = ScriptEngine.GetObjectCache(ctx);
+            var cache = runtime.GetObjectCache();
             var object_id = cache.AddObject(o);
             var val = JSApi.jsb_new_bridge_object(ctx, proto, object_id);
             if (val.IsException())

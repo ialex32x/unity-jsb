@@ -6,6 +6,11 @@ namespace jsb
     [JSType]
     public class DelegateTest
     {
+        public class NotExportedClass
+        {
+            public string value = "未导出类的访问测试";
+        }
+
         [JSType]
         public class InnerTest
         {
@@ -19,6 +24,11 @@ namespace jsb
         public void CallAction()
         {
             onAction?.Invoke();
+        }
+
+        public static NotExportedClass GetNotExportedClass()
+        {
+            return new NotExportedClass();
         }
 
         public void CallActionWithArgs(string a1, float a2, int a3)

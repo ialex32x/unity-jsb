@@ -30,13 +30,6 @@ namespace QuickJS.Binding
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static JSValue FindPrototypeOf(JSContext ctx, Type type, out int type_id)
-        {
-            var types = ScriptEngine.GetTypeDB(ctx);
-            return types.FindPrototypeOf(type, out type_id);
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static JSValue FindPrototypeOf(JSContext ctx, Type type)
         {
             int type_id;

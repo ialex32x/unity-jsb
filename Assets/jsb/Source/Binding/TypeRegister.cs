@@ -20,11 +20,7 @@ namespace QuickJS.Binding
         // 注册过程中产生的 atom, 完成后自动释放 
         private AtomCache _atoms;
 
-        private JSValue _globalObject;
-        private JSValue _operatorCreate;
-        private JSValue _numberConstructor;
-        private JSValue _stringConstructor;
-
+        private List<Type> _pendingTypes = new List<Type>();
         private List<OperatorDecl> _operatorDecls = new List<OperatorDecl>();
         private Dictionary<Type, int> _operatorDeclIndex = new Dictionary<Type, int>();
 
@@ -53,44 +49,8 @@ namespace QuickJS.Binding
             var ctx = (JSContext)context;
 
             _context = context;
-            _db = new TypeDB(runtime, _context);
             _atoms = new AtomCache(_context);
-
-            _globalObject = JSApi.JS_GetGlobalObject(ctx);
-            _numberConstructor = JSApi.JS_GetProperty(ctx, _globalObject, JSApi.JS_ATOM_Number);
-            _stringConstructor = JSApi.JS_GetProperty(ctx, _globalObject, JSApi.JS_ATOM_String);
-            _operatorCreate = JSApi.JS_UNDEFINED;
-
-            var operators = JSApi.JS_GetProperty(ctx, _globalObject, JSApi.JS_ATOM_Operators);
-            if (!operators.IsNullish())
-            {
-                if (operators.IsException())
-                {
-                    ctx.print_exception();
-                }
-                else
-                {
-                    var create = JSApi.JS_GetProperty(ctx, operators, GetAtom("create"));
-                    JSApi.JS_FreeValue(ctx, operators);
-                    if (create.IsException())
-                    {
-                        ctx.print_exception();
-                    }
-                    else
-                    {
-                        if (JSApi.JS_IsFunction(ctx, create) == 1)
-                        {
-                            _operatorCreate = create;
-                        }
-                        else
-                        {
-                            JSApi.JS_FreeValue(ctx, create);
-                        }
-                    }
-                }
-            }
-
-            JSApi.JS_NewClass(runtime, JSApi.JSB_GetBridgeClassID(), "CSharpClass", JSApi.class_finalizer);
+            _db = runtime.GetTypeDB();
         }
 
         public TypeDB GetTypeDB()
@@ -149,10 +109,67 @@ namespace QuickJS.Binding
             return new NamespaceDecl(this, ns);
         }
 
-        // return type id
+        public ClassDecl CreateClass(string typename, Type type, JSCFunctionMagic ctorFunc)
+        {
+            return CreateClass(JSApi.JS_UNDEFINED, typename, type, ctorFunc);
+        }
+
+        public ClassDecl CreateClass(JSValue nsValue, string typename, Type type, JSCFunctionMagic ctorFunc)
+        {
+            var nameAtom = GetAtom(typename);
+            JSContext ctx = _context;
+            var protoVal = JSApi.JS_NewObject(ctx);
+            var type_id = RegisterType(type, protoVal);
+            var ctorVal = JSApi.JSB_NewCFunctionMagic(ctx, ctorFunc, nameAtom, 0, JSCFunctionEnum.JS_CFUNC_constructor_magic, type_id);
+            var decl = new ClassDecl(this, ctorVal, protoVal, type);
+            JSApi.JS_SetConstructor(ctx, ctorVal, protoVal);
+            JSApi.JSB_SetBridgeType(ctx, ctorVal, type_id);
+            if (!nsValue.IsNullish())
+            {
+                JSApi.JS_DefinePropertyValue(ctx, nsValue, nameAtom, ctorVal, JSPropFlags.JS_PROP_ENUMERABLE | JSPropFlags.JS_PROP_CONFIGURABLE);
+            }
+            else
+            {
+                JSApi.JS_FreeValue(ctx, ctorVal);
+            }
+            // UnityEngine.Debug.LogFormat("define class {0}: {1}", type, protoVal);
+            JSApi.JS_FreeValue(ctx, protoVal);
+            return decl;
+        }
+
+        public ClassDecl CreateClass(string typename, Type type, IDynamicMethod dynamicMethod)
+        {
+            return CreateClass(JSApi.JS_UNDEFINED, typename, type, dynamicMethod);
+        }
+
+        public ClassDecl CreateClass(JSValue nsValue, string typename, Type type, IDynamicMethod dynamicMethod)
+        {
+            var nameAtom = GetAtom(typename);
+            JSContext ctx = _context;
+            var protoVal = JSApi.JS_NewObject(ctx);
+            var type_id = RegisterType(type, protoVal);
+            var ctorVal = _db.NewDynamicMethod(nameAtom, dynamicMethod);
+            var decl = new ClassDecl(this, ctorVal, protoVal, type);
+            JSApi.JS_SetConstructor(ctx, ctorVal, protoVal);
+            JSApi.JSB_SetBridgeType(ctx, ctorVal, type_id);
+            if (!nsValue.IsNullish())
+            {
+                JSApi.JS_DefinePropertyValue(ctx, nsValue, nameAtom, ctorVal, JSPropFlags.JS_PROP_ENUMERABLE | JSPropFlags.JS_PROP_CONFIGURABLE);
+            }
+            else
+            {
+                JSApi.JS_FreeValue(ctx, ctorVal);
+            }
+            // UnityEngine.Debug.LogFormat("define class {0}: {1}", type, protoVal);
+            JSApi.JS_FreeValue(ctx, protoVal);
+            return decl;
+        }
+
+        // return type id, 不可重复注册
         public int RegisterType(Type type, JSValue proto)
         {
-            return _db.AddType(type, JSApi.JS_DupValue(_context, proto));
+            _pendingTypes.Add(type);
+            return _db.AddType(type, proto);
         }
 
         public int RegisterType(Type type)
@@ -164,13 +181,18 @@ namespace QuickJS.Binding
         {
             // 提交运算符重载
             var ctx = (JSContext)_context;
-            var count = _operatorDecls.Count;
+            var operatorCreate = _context.GetOperatorCreate();
 
-            for (var i = 0; i < count; i++)
+            if (!operatorCreate.IsUndefined())
             {
-                _operatorDecls[i].Register(this, ctx, _operatorCreate);
+                var count = _operatorDecls.Count;
+                for (var i = 0; i < count; i++)
+                {
+                    _operatorDecls[i].Register(this, ctx, operatorCreate);
+                }
             }
 
+            JSApi.JS_FreeValue(ctx, operatorCreate);
             _operatorDeclIndex.Clear();
             _operatorDecls.Clear();
         }
@@ -192,12 +214,12 @@ namespace QuickJS.Binding
         {
             if (type == typeof(string) || type == typeof(char))
             {
-                return JSApi.JS_DupValue(_context, _stringConstructor);
+                return _context.GetStringConstructor();
             }
 
             if (type.IsValueType && (type.IsPrimitive || type.IsEnum))
             {
-                return JSApi.JS_DupValue(_context, _numberConstructor);
+                return _context.GetNumberConstructor();
             }
 
             var val = _db.FindPrototypeOf(type);
@@ -243,15 +265,26 @@ namespace QuickJS.Binding
             }
         }
 
-        public TypeDB Finish()
+        public void Finish()
         {
             SubmitOperators();
-            JSApi.JS_FreeValue(_context, _numberConstructor);
-            JSApi.JS_FreeValue(_context, _stringConstructor);
-            JSApi.JS_FreeValue(_context, _globalObject);
-            JSApi.JS_FreeValue(_context, _operatorCreate);
             _atoms.Clear();
-            return _db.Finish();
+            var ctx = (JSContext)_context;
+            for (int i = 0, count = _pendingTypes.Count; i < count; i++)
+            {
+                var type = _pendingTypes[i];
+                var proto = _db.GetPropertyOf(type);
+                if (!proto.IsNullish())
+                {
+                    var baseType = type.BaseType;
+                    var parentProto = _db.FindPrototypeOf(baseType);
+                    if (!parentProto.IsNullish())
+                    {
+                        JSApi.JS_SetPrototype(ctx, proto, parentProto);
+                    }
+                }
+            }
+            _pendingTypes.Clear();
         }
     }
 }
