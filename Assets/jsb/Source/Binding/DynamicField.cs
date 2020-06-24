@@ -40,7 +40,7 @@ namespace QuickJS.Binding
                 Values.js_get_cached_object(ctx, this_obj, out self);
             }
             object t_val = null;
-            if (!Values.js_get_var(ctx, val, out t_val))
+            if (!Values.js_get_var(ctx, val, _fieldInfo.FieldType, out t_val))
             {
                 return JSApi.JS_ThrowInternalError(ctx, "failed to cast val");
             }
@@ -84,7 +84,7 @@ namespace QuickJS.Binding
                 Values.js_get_cached_object(ctx, this_obj, out self);
             }
             object t_val = null;
-            if (!Values.js_get_var(ctx, val, out t_val))
+            if (!Values.js_get_var(ctx, val, _propertyInfo.PropertyType, out t_val))
             {
                 return JSApi.JS_ThrowInternalError(ctx, "failed to cast val");
             }

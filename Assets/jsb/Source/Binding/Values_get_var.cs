@@ -10,7 +10,8 @@ namespace QuickJS.Binding
 
     public partial class Values
     {
-        public static bool js_get_var(JSContext ctx, JSValue val, out object o)
+        //TODO: use type-indexed handler map
+        public static bool js_get_var(JSContext ctx, JSValue val, Type expectedType, out object o)
         {
             if (val.IsNullish())
             {
