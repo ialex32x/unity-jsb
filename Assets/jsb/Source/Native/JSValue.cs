@@ -29,6 +29,12 @@ namespace QuickJS.Native
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public bool IsModule()
+        {
+            return tag == JSApi.JS_TAG_MODULE;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool IsNullish()
         {
             return JSApi.JS_IsNull(this) || JSApi.JS_IsUndefined(this);
