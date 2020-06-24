@@ -54,12 +54,13 @@ namespace QuickJS.Utils
             return null;
         }
 
+        // 注册新类型, 会增加 proto 的引用计数
         public int AddType(Type type, JSValue proto)
         {
             var index = _types.Count;
             _types.Add(type);
             _typeIndex[type] = index;
-            _prototypes.Add(type, proto);
+            _prototypes.Add(type, JSApi.JS_DupValue(_context, proto));
             return index;
         }
 
@@ -145,22 +146,14 @@ namespace QuickJS.Utils
             return FindPrototypeOf(cType.BaseType, out pType);
         }
 
-        public TypeDB Finish()
+        public JSValue GetPropertyOf(Type type)
         {
-            var ctx = (JSContext)_context;
-            foreach (var kv in _prototypes)
+            JSValue proto;
+            if (_prototypes.TryGetValue(type, out proto))
             {
-                var type = kv.Key;
-                var baseType = type.BaseType;
-                var parent = FindPrototypeOf(baseType);
-                if (!JSApi.JS_IsUndefined(parent))
-                {
-                    var fn = kv.Value;
-                    JSApi.JS_SetPrototype(ctx, fn, parent);
-                }
+                return proto;
             }
-
-            return this;
+            return JSApi.JS_UNDEFINED;
         }
 
         public void Destroy()
@@ -184,11 +177,15 @@ namespace QuickJS.Utils
             var type = Assembly.GetExecutingAssembly().GetType(name);
             return type;
         }
-        
+
         [MonoPInvokeCallback(typeof(JSCFunctionMagic))]
         public static JSValue _DynamicMethodInvoke(JSContext ctx, JSValue this_obj, int argc, JSValue[] argv, int magic)
         {
             var typeDB = ScriptEngine.GetTypeDB(ctx);
+            if (typeDB == null)
+            {
+                return JSApi.JS_ThrowInternalError(ctx, "type db is null");
+            }
             var method = typeDB.GetDynamicMethod(magic);
             if (method != null)
             {

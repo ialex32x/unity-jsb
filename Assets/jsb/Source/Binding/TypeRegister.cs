@@ -25,6 +25,7 @@ namespace QuickJS.Binding
         private JSValue _numberConstructor;
         private JSValue _stringConstructor;
 
+        private List<Type> _pendingTypes = new List<Type>();
         private List<OperatorDecl> _operatorDecls = new List<OperatorDecl>();
         private Dictionary<Type, int> _operatorDeclIndex = new Dictionary<Type, int>();
 
@@ -152,7 +153,8 @@ namespace QuickJS.Binding
         // return type id
         public int RegisterType(Type type, JSValue proto)
         {
-            return _db.AddType(type, JSApi.JS_DupValue(_context, proto));
+            _pendingTypes.Add(type);
+            return _db.AddType(type, proto);
         }
 
         public int RegisterType(Type type)
@@ -251,7 +253,23 @@ namespace QuickJS.Binding
             JSApi.JS_FreeValue(_context, _globalObject);
             JSApi.JS_FreeValue(_context, _operatorCreate);
             _atoms.Clear();
-            return _db.Finish();
+            var ctx = (JSContext)_context;
+            for (int i = 0, count = _pendingTypes.Count; i < count; i++)
+            {
+                var type = _pendingTypes[i];
+                var proto = _db.GetPropertyOf(type);
+                if (!proto.IsNullish())
+                {
+                    var baseType = type.BaseType;
+                    var parentProto = _db.FindPrototypeOf(baseType);
+                    if (!parentProto.IsNullish())
+                    {
+                        JSApi.JS_SetPrototype(ctx, proto, parentProto);
+                    }
+                }
+            }
+            _pendingTypes.Clear();
+            return _db;
         }
     }
 }

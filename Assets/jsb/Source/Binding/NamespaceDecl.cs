@@ -48,13 +48,11 @@ namespace QuickJS.Binding
             JSContext ctx = _register.GetContext();
             var protoVal = JSApi.JS_NewObject(ctx);
             var type_id = _register.RegisterType(type, protoVal);
-            var ctorVal =
-                JSApi.JSB_NewCFunctionMagic(ctx, ctorFunc, nameAtom, 0, JSCFunctionEnum.JS_CFUNC_constructor_magic, type_id);
+            var ctorVal = JSApi.JSB_NewCFunctionMagic(ctx, ctorFunc, nameAtom, 0, JSCFunctionEnum.JS_CFUNC_constructor_magic, type_id);
             var decl = new ClassDecl(_register, ctorVal, protoVal, type);
             JSApi.JS_SetConstructor(ctx, ctorVal, protoVal);
             JSApi.JSB_SetBridgeType(ctx, ctorVal, type_id);
-            JSApi.JS_DefinePropertyValue(ctx, _nsValue, nameAtom, ctorVal,
-                JSPropFlags.JS_PROP_ENUMERABLE | JSPropFlags.JS_PROP_CONFIGURABLE);
+            JSApi.JS_DefinePropertyValue(ctx, _nsValue, nameAtom, ctorVal, JSPropFlags.JS_PROP_ENUMERABLE | JSPropFlags.JS_PROP_CONFIGURABLE);
             // UnityEngine.Debug.LogFormat("define class {0}: {1}", type, protoVal);
             JSApi.JS_FreeValue(ctx, protoVal);
             return decl;

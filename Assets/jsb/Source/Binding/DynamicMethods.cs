@@ -6,6 +6,7 @@ using System.Runtime.CompilerServices;
 
 namespace QuickJS.Binding
 {
+    // 存在重载的函数调用
     public class DynamicMethods : IDynamicMethod
     {
         private DynamicMethod[] _overloads;
