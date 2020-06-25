@@ -27,7 +27,7 @@ namespace QuickJS.Binding
             for (var i = 0; i < len; i++)
             {
                 var method = _overloads[i];
-                if (method.CheckArgs(argc, argv))
+                if (method.CheckArgs(ctx, argc, argv))
                 {
                     return method.Invoke(ctx, this_obj, argc, argv);
                 }

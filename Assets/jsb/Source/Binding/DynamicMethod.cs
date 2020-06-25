@@ -16,7 +16,7 @@ namespace QuickJS.Binding
     {
         // private MethodBase _methodBase;
 
-        public abstract bool CheckArgs(int argc, JSValue[] argv);
+        public abstract bool CheckArgs(JSContext ctx, int argc, JSValue[] argv);
 
         public abstract JSValue Invoke(JSContext ctx, JSValue this_obj, int argc, JSValue[] argv);
     }
@@ -32,11 +32,15 @@ namespace QuickJS.Binding
             _methodInfo = methodInfo;
         }
 
-        public override bool CheckArgs(int argc, JSValue[] argv)
+        public override bool CheckArgs(JSContext ctx, int argc, JSValue[] argv)
         {
-            //TODO: check args if any overload func exists
-            // _methodInfo.GetParameters();
-            return true;
+            var parameters = _methodInfo.GetParameters();
+            if (parameters.Length != argc) 
+            {
+                return false;
+            }
+            
+            return Values.js_match_parameters(ctx, argv, parameters);
         }
 
         public override JSValue Invoke(JSContext ctx, JSValue this_obj, int argc, JSValue[] argv)
@@ -61,7 +65,7 @@ namespace QuickJS.Binding
             _ctor = ctor;
         }
 
-        public override bool CheckArgs(int argc, JSValue[] argv)
+        public override bool CheckArgs(JSContext ctx, int argc, JSValue[] argv)
         {
             //TODO: check args if any overload func exists
             return true;
