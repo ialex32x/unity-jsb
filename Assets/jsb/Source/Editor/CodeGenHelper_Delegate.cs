@@ -26,6 +26,7 @@ namespace QuickJS.Editor
 
         public void Dispose()
         {
+            //TODO: 改为直接注册, 不使用 GetMethods
             using (new RegFuncCodeGen(cg))
             {
                 this.cg.cs.AppendLine("var type = typeof({0});", CodeGenerator.NameOfDelegates);
