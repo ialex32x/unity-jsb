@@ -56,7 +56,14 @@ namespace QuickJS.Binding
                 var dynamicMethod = default(IDynamicMethod);
                 if (count == 1)
                 {
-                    dynamicMethod = new DynamicMethod(this, methodInfos[0]);
+                    if (methodInfos[0].IsPublic)
+                    {
+                        dynamicMethod = new DynamicMethod(this, methodInfos[0]);
+                    }
+                    else
+                    {
+                        dynamicMethod = new DynamicPrivateMethod(this, new DynamicMethod(this, methodInfos[0]));
+                    }
                 }
                 else
                 {
@@ -64,7 +71,12 @@ namespace QuickJS.Binding
                     for (var i = 0; i < count; i++)
                     {
                         var methodInfo = methodInfos[i];
-                        var overload = new DynamicMethod(this, methodInfos[i]);
+                        DynamicMethodBase overload;
+                        overload = new DynamicMethod(this, methodInfos[i]);
+                        if (!methodInfo.IsPublic)
+                        {
+                            overload = new DynamicPrivateMethod(this, overload);
+                        }
                         overloads.Add(overload);
                     }
                     dynamicMethod = overloads;

@@ -26,6 +26,10 @@ namespace QuickJS.Binding
 
         public JSValue GetValue(JSContext ctx, JSValue this_obj)
         {
+            if (!_fieldInfo.IsPublic && !_type.privateAccess)
+            {
+                return JSApi.JS_ThrowInternalError(ctx, "field is inaccessible due to its protection level");
+            }
             object self = null;
             if (!_fieldInfo.IsStatic)
             {
@@ -40,6 +44,10 @@ namespace QuickJS.Binding
 
         public JSValue SetValue(JSContext ctx, JSValue this_obj, JSValue val)
         {
+            if (!_fieldInfo.IsPublic && !_type.privateAccess)
+            {
+                return JSApi.JS_ThrowInternalError(ctx, "field is inaccessible due to its protection level");
+            }
             object self = null;
             if (!_fieldInfo.IsStatic)
             {
@@ -76,6 +84,10 @@ namespace QuickJS.Binding
             {
                 return JSApi.JS_ThrowInternalError(ctx, "property getter is null");
             }
+            if (!_propertyInfo.GetMethod.IsPublic && !_type.privateAccess)
+            {
+                return JSApi.JS_ThrowInternalError(ctx, "property getter is inaccessible due to its protection level");
+            }
             object self = null;
             if (!_propertyInfo.GetMethod.IsStatic)
             {
@@ -93,6 +105,10 @@ namespace QuickJS.Binding
             if (_propertyInfo.SetMethod == null)
             {
                 return JSApi.JS_ThrowInternalError(ctx, "property setter is null");
+            }
+            if (!_propertyInfo.SetMethod.IsPublic && !_type.privateAccess)
+            {
+                return JSApi.JS_ThrowInternalError(ctx, "property setter is inaccessible due to its protection level");
             }
             object self = null;
             if (!_propertyInfo.SetMethod.IsStatic)
