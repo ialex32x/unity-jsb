@@ -21,32 +21,6 @@ namespace QuickJS.Binding
         public abstract JSValue Invoke(JSContext ctx, JSValue this_obj, int argc, JSValue[] argv);
     }
 
-    public class DynamicPrivateMethod : DynamicMethodBase
-    {
-        private DynamicType _type;
-        private DynamicMethodBase _target;
-
-        public DynamicPrivateMethod(DynamicType type, DynamicMethodBase method)
-        {
-            _type = type;
-            _target = method;
-        }
-
-        public override bool CheckArgs(int argc, JSValue[] argv)
-        {
-            return _target.CheckArgs(argc, argv);
-        }
-
-        public override JSValue Invoke(JSContext ctx, JSValue this_obj, int argc, JSValue[] argv)
-        {
-            if (!_type.privateAccess)
-            {
-                return JSApi.JS_ThrowInternalError(ctx, "method is inaccessible due to its protection level");
-            }
-            return _target.Invoke(ctx, this_obj, argc, argv);
-        }
-    }
-
     public class DynamicMethod : DynamicMethodBase
     {
         private DynamicType _type;
@@ -67,6 +41,10 @@ namespace QuickJS.Binding
 
         public override JSValue Invoke(JSContext ctx, JSValue this_obj, int argc, JSValue[] argv)
         {
+            if (!_methodInfo.IsPublic && !_type.privateAccess)
+            {
+                return JSApi.JS_ThrowInternalError(ctx, "method is inaccessible due to its protection level");
+            }
             //TODO: dynamic method impl
             return JSApi.JS_UNDEFINED;
         }
@@ -93,6 +71,10 @@ namespace QuickJS.Binding
         {
             try
             {
+                if (!_ctor.IsPublic && !_type.privateAccess)
+                {
+                    return JSApi.JS_ThrowInternalError(ctx, "constructor is inaccessible due to its protection level");
+                }
                 //TODO: dynamic constructor impl
                 var o = _ctor.Invoke(null);
                 var val = Values.NewBridgeClassObject(ctx, this_obj, o, _type.id);
