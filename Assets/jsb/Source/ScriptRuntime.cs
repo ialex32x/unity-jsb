@@ -95,6 +95,11 @@ namespace QuickJS
             {
                 throw new NullReferenceException(nameof(fileSystem));
             }
+            var bindAll = typeof(Values).GetMethod("BindAll");
+            if (bindAll == null) 
+            {
+                throw new Exception("Generate binding code before run");
+            }
             _byteBufferAllocator = byteBufferAllocator;
             _fileSystem = fileSystem;
             _logger = logger;
@@ -103,6 +108,7 @@ namespace QuickJS
             var register = new TypeRegister(this, _mainContext);
             register.RegisterType(typeof(ScriptBridge));
             // await Task.Run(() => runner.OnBind(this, register));
+            bindAll.Invoke(null, new object[] { register });
             runner.OnBind(this, register);
             TimerManager.Bind(register);
             ScriptContext.Bind(register);
