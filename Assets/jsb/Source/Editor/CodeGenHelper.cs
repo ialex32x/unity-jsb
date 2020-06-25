@@ -186,7 +186,7 @@ namespace QuickJS.Editor
             this.cg = cg;
             this.typeBindingInfo = typeBindingInfo;
             this.cg.cs.AppendLine("[{0}({1})]", typeof(JSBindingAttribute).Name, ScriptEngine.VERSION);
-            this.cg.cs.AppendLine("[UnityEngine.Scripting.Preserve]");
+            // this.cg.cs.AppendLine("[UnityEngine.Scripting.Preserve]");
             this.cg.cs.AppendLine("public class {0} : {1} {{", typeBindingInfo.name, typeof(Binding.Values).Name);
             this.cg.cs.AddTabLevel();
         }

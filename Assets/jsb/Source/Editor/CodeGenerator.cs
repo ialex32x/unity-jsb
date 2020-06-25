@@ -49,15 +49,18 @@ namespace QuickJS.Editor
                 {
                     using (new NamespaceCodeGen(this, this.bindingManager.prefs.ns))
                     {
-                        using (new PlainClassCodeGen(this, CodeGenerator.NameOfBindingList))
+                        using (new PreservedCodeGen(this))
                         {
-                            using (var method = new PlainMethodCodeGen(this, "public static void Bind(TypeRegister register)"))
+                            using (new PlainClassCodeGen(this, CodeGenerator.NameOfBindingList))
                             {
-                                foreach (var type in orderedTypes)
+                                using (var method = new PlainMethodCodeGen(this, "public static void Bind(TypeRegister register)"))
                                 {
-                                    method.AddStatement("{0}.Bind(register);", type.name);
+                                    foreach (var type in orderedTypes)
+                                    {
+                                        method.AddStatement("{0}.Bind(register);", type.name);
+                                    }
+                                    method.AddStatement("{0}.Bind(register);", CodeGenerator.NameOfDelegates);
                                 }
-                                method.AddStatement("{0}.Bind(register);", CodeGenerator.NameOfDelegates);
                             }
                         }
                     }
