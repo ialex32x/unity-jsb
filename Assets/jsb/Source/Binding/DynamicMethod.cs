@@ -49,6 +49,18 @@ namespace QuickJS.Binding
             {
                 return JSApi.JS_ThrowInternalError(ctx, "method is inaccessible due to its protection level");
             }
+            object self = null;
+            if (!_methodInfo.IsStatic)
+            {
+                Values.js_get_cached_object(ctx, this_obj, out self);
+                if (!_type.CheckThis(self))
+                {
+                    throw new ThisBoundException();
+                }
+            }
+            var nArgs = argc;
+            var args = new object[nArgs];
+            // _methodInfo.Invoke();
             //TODO: dynamic method impl
             return JSApi.JS_UNDEFINED;
         }
