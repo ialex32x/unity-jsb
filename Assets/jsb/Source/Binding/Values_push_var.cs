@@ -11,6 +11,7 @@ namespace QuickJS.Binding
     public partial class Values
     {
         // 自动判断类型
+        //TODO: use type-indexed handler map
         // [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static JSValue js_push_var(JSContext ctx, object o)
         {
