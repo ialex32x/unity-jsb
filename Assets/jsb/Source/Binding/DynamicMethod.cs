@@ -35,11 +35,11 @@ namespace QuickJS.Binding
         public override bool CheckArgs(JSContext ctx, int argc, JSValue[] argv)
         {
             var parameters = _methodInfo.GetParameters();
-            if (parameters.Length != argc) 
+            if (parameters.Length != argc)
             {
                 return false;
             }
-            
+
             return Values.js_match_parameters(ctx, argv, parameters);
         }
 
@@ -58,11 +58,26 @@ namespace QuickJS.Binding
                     throw new ThisBoundException();
                 }
             }
+            var parameters = _methodInfo.GetParameters();
             var nArgs = argc;
             var args = new object[nArgs];
-            // _methodInfo.Invoke();
-            //TODO: dynamic method impl
-            return JSApi.JS_UNDEFINED;
+            for (var i = 0; i < nArgs; i++)
+            {
+                if (!Values.js_get_var(ctx, argv[i], parameters[i].ParameterType, out args[i]))
+                {
+                    return JSApi.JS_ThrowInternalError(ctx, "failed to cast val");
+                }
+            }
+            if (_methodInfo.ReturnType != typeof(void))
+            {
+                var ret = _methodInfo.Invoke(self, args);
+                return Values.js_push_var(ctx, ret);
+            }
+            else
+            {
+                _methodInfo.Invoke(self, args);
+                return JSApi.JS_UNDEFINED;
+            }
         }
     }
 

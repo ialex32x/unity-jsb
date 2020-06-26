@@ -87,3 +87,4 @@ print("end of script");
 // 通过反射方式建立未导出类型的交互
 let unknown = jsb.DelegateTest.GetNotExportedClass();
 print(unknown.value);
+print(unknown.Add(12, 21));
