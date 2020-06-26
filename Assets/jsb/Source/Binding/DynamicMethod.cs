@@ -16,7 +16,7 @@ namespace QuickJS.Binding
     {
         // private MethodBase _methodBase;
 
-        public abstract bool CheckArgs(int argc, JSValue[] argv);
+        public abstract bool CheckArgs(JSContext ctx, int argc, JSValue[] argv);
 
         public abstract JSValue Invoke(JSContext ctx, JSValue this_obj, int argc, JSValue[] argv);
     }
@@ -32,11 +32,15 @@ namespace QuickJS.Binding
             _methodInfo = methodInfo;
         }
 
-        public override bool CheckArgs(int argc, JSValue[] argv)
+        public override bool CheckArgs(JSContext ctx, int argc, JSValue[] argv)
         {
-            //TODO: check args if any overload func exists
-            // _methodInfo.GetParameters();
-            return true;
+            var parameters = _methodInfo.GetParameters();
+            if (parameters.Length != argc)
+            {
+                return false;
+            }
+
+            return Values.js_match_parameters(ctx, argv, parameters);
         }
 
         public override JSValue Invoke(JSContext ctx, JSValue this_obj, int argc, JSValue[] argv)
@@ -45,8 +49,35 @@ namespace QuickJS.Binding
             {
                 return JSApi.JS_ThrowInternalError(ctx, "method is inaccessible due to its protection level");
             }
-            //TODO: dynamic method impl
-            return JSApi.JS_UNDEFINED;
+            object self = null;
+            if (!_methodInfo.IsStatic)
+            {
+                Values.js_get_cached_object(ctx, this_obj, out self);
+                if (!_type.CheckThis(self))
+                {
+                    throw new ThisBoundException();
+                }
+            }
+            var parameters = _methodInfo.GetParameters();
+            var nArgs = argc;
+            var args = new object[nArgs];
+            for (var i = 0; i < nArgs; i++)
+            {
+                if (!Values.js_get_var(ctx, argv[i], parameters[i].ParameterType, out args[i]))
+                {
+                    return JSApi.JS_ThrowInternalError(ctx, "failed to cast val");
+                }
+            }
+            if (_methodInfo.ReturnType != typeof(void))
+            {
+                var ret = _methodInfo.Invoke(self, args);
+                return Values.js_push_var(ctx, ret);
+            }
+            else
+            {
+                _methodInfo.Invoke(self, args);
+                return JSApi.JS_UNDEFINED;
+            }
         }
     }
 
@@ -61,7 +92,7 @@ namespace QuickJS.Binding
             _ctor = ctor;
         }
 
-        public override bool CheckArgs(int argc, JSValue[] argv)
+        public override bool CheckArgs(JSContext ctx, int argc, JSValue[] argv)
         {
             //TODO: check args if any overload func exists
             return true;

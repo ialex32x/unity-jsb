@@ -6,6 +6,7 @@ using System.IO;
 
 namespace QuickJS.Editor
 {
+    using QuickJS.Binding;
     using UnityEngine;
     using UnityEditor;
 
@@ -47,17 +48,23 @@ namespace QuickJS.Editor
             {
                 using (new TopLevelCodeGen(this, CodeGenerator.NameOfDelegates))
                 {
-                    using (new NamespaceCodeGen(this, this.bindingManager.prefs.ns))
+                    using (new NamespaceCodeGen(this, typeof(Values).Namespace))
                     {
-                        using (new PlainClassCodeGen(this, CodeGenerator.NameOfBindingList))
+                        using (new PreservedCodeGen(this))
                         {
-                            using (var method = new PlainMethodCodeGen(this, "public static void Bind(TypeRegister register)"))
+                            using (new PlainClassCodeGen(this, typeof(Values).Name))
                             {
-                                foreach (var type in orderedTypes)
+                                using (new PreservedCodeGen(this))
                                 {
-                                    method.AddStatement("{0}.Bind(register);", type.name);
+                                    using (var method = new PlainMethodCodeGen(this, "public static void BindAll(TypeRegister register)"))
+                                    {
+                                        foreach (var type in orderedTypes)
+                                        {
+                                            method.AddStatement("{0}.{1}.Bind(register);", this.bindingManager.prefs.ns, type.name);
+                                        }
+                                        method.AddStatement("{0}.{1}.Bind(register);", this.bindingManager.prefs.ns, CodeGenerator.NameOfDelegates);
+                                    }
                                 }
-                                method.AddStatement("{0}.Bind(register);", CodeGenerator.NameOfDelegates);
                             }
                         }
                     }

@@ -19,13 +19,14 @@ namespace QuickJS.Editor
             this.cg = cg;
             this.delegateBindingInfos = delegateBindingInfos;
             this.cg.cs.AppendLine("[{0}({1})]", typeof(JSBindingAttribute).Name, ScriptEngine.VERSION);
-            this.cg.cs.AppendLine("[UnityEngine.Scripting.Preserve]");
+            // this.cg.cs.AppendLine("[UnityEngine.Scripting.Preserve]");
             this.cg.cs.AppendLine("public class {0} : {1} {{", CodeGenerator.NameOfDelegates, typeof(Binding.Values).Name);
             this.cg.cs.AddTabLevel();
         }
 
         public void Dispose()
         {
+            //TODO: 改为直接注册, 不使用 GetMethods
             using (new RegFuncCodeGen(cg))
             {
                 this.cg.cs.AppendLine("var type = typeof({0});", CodeGenerator.NameOfDelegates);

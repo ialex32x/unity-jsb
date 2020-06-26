@@ -16,7 +16,7 @@ namespace QuickJS.Editor
         public PlainClassCodeGen(CodeGenerator cg, string name)
         {
             this.cg = cg;
-            this.cg.cs.AppendLine("public static class {0}", name);
+            this.cg.cs.AppendLine("public partial class {0}", name);
             this.cg.cs.AppendLine("{");
             this.cg.cs.AddTabLevel();
         }
