@@ -145,14 +145,14 @@ namespace QuickJS.Editor
     {
         protected CodeGenerator cg;
 
-        public RegFuncNamespaceCodeGen(CodeGenerator cg, TypeBindingInfo bindingInfo)
+        public RegFuncNamespaceCodeGen(CodeGenerator cg, TypeBindingInfo typeBindingInfo)
         {
             this.cg = cg;
             this.cg.cs.Append("var ns = register.CreateNamespace(");
             // Debug.LogErrorFormat("{0}: {1}", bindingInfo.type, bindingInfo.Namespace);
-            if (bindingInfo.jsNamespace != null)
+            if (!string.IsNullOrEmpty(typeBindingInfo.jsNamespace))
             {
-                var split_ns = bindingInfo.jsNamespace.Split('.');
+                var split_ns = typeBindingInfo.jsNamespace.Split('.');
                 var ns_count = split_ns.Length;
                 for (var i = 0; i < ns_count; i++)
                 {

@@ -263,6 +263,26 @@ namespace QuickJS.Editor
             return $"{this.bindingManager.GetScriptObjectPusher(type)}(ctx, {value})";
         }
 
+        public string AppendMethodReturnValuePusher(MethodBase method, Type returnType, string value)
+        {
+            var transform = bindingManager.GetTypeTransform(method.DeclaringType);
+            if (transform != null)
+            {
+                var mrp = transform.GetMethodReturnPusher(method);
+                if (mrp != null)
+                {
+                    return $"{mrp}(ctx, {value})";
+                }
+            }
+            if (returnType.IsEnum)
+            {
+                var eType = returnType.GetEnumUnderlyingType();
+                var eTypeName = this.bindingManager.GetCSTypeFullName(eType);
+                return $"{this.bindingManager.GetScriptObjectPusher(eType)}(ctx, ({eTypeName}){value})";
+            }
+            return $"{this.bindingManager.GetScriptObjectPusher(returnType)}(ctx, {value})";
+        }
+
         public string AppendGetThisCS(FieldBindingInfo bindingInfo)
         {
             return AppendGetThisCS(bindingInfo.isStatic, bindingInfo.fieldInfo.DeclaringType);

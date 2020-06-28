@@ -302,6 +302,65 @@ namespace QuickJS
         #endregion
 
         [MonoPInvokeCallback(typeof(JSCFunction))]
+        public static JSValue to_js_array(JSContext ctx, JSValue this_obj, int argc, JSValue[] argv)
+        {
+            if (argc < 1)
+            {
+                return JSApi.JS_ThrowInternalError(ctx, "array expected");
+            }
+            if (JSApi.JS_IsArray(ctx, argv[0]) == 1)
+            {
+                return JSApi.JS_DupValue(ctx, argv[0]);
+            }
+
+            Array o;
+            if (!Values.js_get_classvalue<Array>(ctx, argv[0], out o))
+            {
+                return JSApi.JS_ThrowInternalError(ctx, "array expected");
+            }
+            if (o == null)
+            {
+                return JSApi.JS_NULL;
+            }
+            var len = o.Length;
+            var rval = JSApi.JS_NewArray(ctx);
+            try
+            {
+                for (var i = 0; i < len; i++)
+                {
+                    var obj = o.GetValue(i);
+                    var elem = Values.js_push_var(ctx, obj);
+                    JSApi.JS_SetPropertyUint32(ctx, rval, (uint)i, elem);
+                }
+            }
+            catch (Exception exception)
+            {
+                JSApi.JS_FreeValue(ctx, rval);
+                return JSApi.ThrowException(ctx, exception);
+            }
+            return rval;
+        }
+
+        [MonoPInvokeCallback(typeof(JSCFunction))]
+        public static JSValue hotfix_replace_single(JSContext ctx, JSValue this_obj, int argc, JSValue[] argv)
+        {
+            if (argc < 3)
+            {
+                return JSApi.JS_ThrowInternalError(ctx, "type_name, func_name, func  expected");
+            }
+            if (!argv[0].IsString() || !argv[1].IsString() || JSApi.JS_IsFunction(ctx, argv[1]) != 1)
+            {
+                return JSApi.JS_ThrowInternalError(ctx, "type_name, func_name expected");
+            }
+
+            var type_name = JSApi.GetString(ctx, argv[0]);
+            var func_name = JSApi.GetString(ctx, argv[1]);
+            // var func_val = JSApi.JS
+            //TODO: assign field
+            return JSApi.JS_UNDEFINED;
+        }
+
+        [MonoPInvokeCallback(typeof(JSCFunction))]
         public static JSValue yield_func(JSContext ctx, JSValue this_obj, int argc, JSValue[] argv)
         {
             if (argc < 1)
@@ -327,9 +386,18 @@ namespace QuickJS
 
         public static void Bind(TypeRegister register)
         {
-            var ns = register.CreateNamespace("jsb");
-            ns.AddFunction("Yield", yield_func, 1);
-            ns.Close();
+            var ns_jsb = register.CreateNamespace("jsb");
+            ns_jsb.AddFunction("Yield", yield_func, 1);
+            ns_jsb.AddFunction("ToJSArray", to_js_array, 1);
+            {
+                var ns_jsb_hotfix = ns_jsb.CreateNamespace("hotfix");
+                ns_jsb_hotfix.AddFunction("replace_single", hotfix_replace_single, 2);
+                // ns_jsb_hotfix.AddFunction("replace", hotfix_replace, 2);
+                // ns_jsb_hotfix.AddFunction("before", hotfix_before);
+                // ns_jsb_hotfix.AddFunction("after", hotfix_after);
+                ns_jsb_hotfix.Close();
+            }
+            ns_jsb.Close();
         }
 
         public unsafe void EvalMain(byte[] input_bytes, string fileName)

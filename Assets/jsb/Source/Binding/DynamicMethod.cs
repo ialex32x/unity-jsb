@@ -94,27 +94,35 @@ namespace QuickJS.Binding
 
         public override bool CheckArgs(JSContext ctx, int argc, JSValue[] argv)
         {
-            //TODO: check args if any overload func exists
-            return true;
+            var parameters = _ctor.GetParameters();
+            if (parameters.Length != argc)
+            {
+                return false;
+            }
+
+            return Values.js_match_parameters(ctx, argv, parameters);
         }
 
         public override JSValue Invoke(JSContext ctx, JSValue this_obj, int argc, JSValue[] argv)
         {
-            try
+            if (!_ctor.IsPublic && !_type.privateAccess)
             {
-                if (!_ctor.IsPublic && !_type.privateAccess)
+                return JSApi.JS_ThrowInternalError(ctx, "constructor is inaccessible due to its protection level");
+            }
+
+            var parameters = _ctor.GetParameters();
+            var nArgs = argc;
+            var args = new object[nArgs];
+            for (var i = 0; i < nArgs; i++)
+            {
+                if (!Values.js_get_var(ctx, argv[i], parameters[i].ParameterType, out args[i]))
                 {
-                    return JSApi.JS_ThrowInternalError(ctx, "constructor is inaccessible due to its protection level");
+                    return JSApi.JS_ThrowInternalError(ctx, "failed to cast val");
                 }
-                //TODO: dynamic constructor impl
-                var o = _ctor.Invoke(null);
-                var val = Values.NewBridgeClassObject(ctx, this_obj, o, _type.id);
-                return val;
             }
-            catch (Exception exception)
-            {
-                return JSApi.ThrowException(ctx, exception);
-            }
+            var inst = _ctor.Invoke(args);
+            var val = Values.NewBridgeClassObject(ctx, this_obj, inst, _type.id);
+            return val;
         }
     }
 }

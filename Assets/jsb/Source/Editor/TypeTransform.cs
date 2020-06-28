@@ -26,6 +26,9 @@ namespace QuickJS.Editor
         // 强制不导出的方法
         private HashSet<MethodBase> _blockedMethods = new HashSet<MethodBase>();
 
+        // 方法返回值 push 方法覆盖
+        private Dictionary<MethodBase, string> _mehotdReturnPusher = new Dictionary<MethodBase, string>();
+
         // 针对特定方法的 ts 声明优化
         private Dictionary<MethodBase, string> _tsMethodDeclarations = new Dictionary<MethodBase, string>();
         private Dictionary<MethodBase, string> _tsMethodRenames = new Dictionary<MethodBase, string>();
@@ -109,6 +112,22 @@ namespace QuickJS.Editor
                 _blockedMethods.Add(method);
             }
             return this;
+        }
+
+        public TypeTransform SetMethodReturnPusher(string pusher, string name, params Type[] parameters)
+        {
+            var method = _type.GetMethod(name, parameters);
+            if (method != null)
+            {
+                _mehotdReturnPusher.Add(method, pusher);
+            }
+            return this;
+        }
+
+        public string GetMethodReturnPusher(MethodBase methodBase)
+        {
+            string pusher;
+            return _mehotdReturnPusher.TryGetValue(methodBase, out pusher) ? pusher : null;
         }
 
         // TS: 为指定类型的匹配方法添加声明映射 (仅用于优化代码提示体验)

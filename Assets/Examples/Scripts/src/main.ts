@@ -77,6 +77,10 @@ print("json:", require("../config/data.json").name);
 
 let camera = UnityEngine.GameObject.Find("/Main Camera").GetComponent(UnityEngine.Camera);
 
+let arr = camera.GetComponents(UnityEngine.Camera);
+print("array.length:", arr.length);
+print("array[0]:", arr[0] == camera);
+
 console.log(camera.name);
 
 import { run as run_websocket } from "./example_websocket";
