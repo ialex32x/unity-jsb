@@ -96,5 +96,11 @@ namespace QuickJS
 
             JSApi.JS_FreeValue(ctx, rVal);
         }
+
+        // reflect call
+        public object Invoke(object this_obj, object[] parameters)
+        {
+            throw new System.NotImplementedException();
+        }
     }
 }
