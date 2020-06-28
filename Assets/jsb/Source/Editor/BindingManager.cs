@@ -124,15 +124,15 @@ namespace QuickJS.Editor
                     "GetComponentInParent", typeof(Type))
                 // .AddTSMethodDeclaration("GetComponents<T extends UnityEngine.Component>(type: { new(): T }, results: any): void", 
                 //     "GetComponents", typeof(Type))
-                .AddTSMethodDeclaration("GetComponents<T extends UnityEngine.Component>(type: { new(): T }): T[]",
+                .AddTSMethodDeclaration("GetComponents<T extends UnityEngine.Component>(type: { new(): T }): System.Array",
                     "GetComponents", typeof(Type))
-                .AddTSMethodDeclaration("GetComponentsInChildren<T extends UnityEngine.Component>(type: { new(): T }, includeInactive: boolean): T[]",
+                .AddTSMethodDeclaration("GetComponentsInChildren<T extends UnityEngine.Component>(type: { new(): T }, includeInactive: boolean): System.Array",
                     "GetComponentsInChildren", typeof(Type), typeof(bool))
-                .AddTSMethodDeclaration("GetComponentsInChildren<T extends UnityEngine.Component>(type: { new(): T }): T[]",
+                .AddTSMethodDeclaration("GetComponentsInChildren<T extends UnityEngine.Component>(type: { new(): T }): System.Array",
                     "GetComponentsInChildren", typeof(Type))
-                .AddTSMethodDeclaration("GetComponentsInParent<T extends UnityEngine.Component>(type: { new(): T }, includeInactive: boolean): T[]",
+                .AddTSMethodDeclaration("GetComponentsInParent<T extends UnityEngine.Component>(type: { new(): T }, includeInactive: boolean): System.Array",
                     "GetComponentsInParent", typeof(Type), typeof(bool))
-                .AddTSMethodDeclaration("GetComponentsInParent<T extends UnityEngine.Component>(type: { new(): T }): T[]",
+                .AddTSMethodDeclaration("GetComponentsInParent<T extends UnityEngine.Component>(type: { new(): T }): System.Array",
                     "GetComponentsInParent", typeof(Type))
                 .WriteCSMethodBinding((bindPoint, cg, info) =>
                 {
@@ -339,15 +339,15 @@ namespace QuickJS.Editor
                     "GetComponentInParent", typeof(Type))
                 // .AddTSMethodDeclaration("GetComponents<T extends UnityEngine.Component>(type: { new(): T }, results: any): void", 
                 //     "GetComponents", typeof(Type))
-                .AddTSMethodDeclaration("GetComponents<T extends UnityEngine.Component>(type: { new(): T }): T[]",
+                .AddTSMethodDeclaration("GetComponents<T extends UnityEngine.Component>(type: { new(): T }): System.Array",
                     "GetComponents", typeof(Type))
-                .AddTSMethodDeclaration("GetComponentsInChildren<T extends UnityEngine.Component>(type: { new(): T }, includeInactive: boolean): T[]",
+                .AddTSMethodDeclaration("GetComponentsInChildren<T extends UnityEngine.Component>(type: { new(): T }, includeInactive: boolean): System.Array",
                     "GetComponentsInChildren", typeof(Type), typeof(bool))
-                .AddTSMethodDeclaration("GetComponentsInChildren<T extends UnityEngine.Component>(type: { new(): T }): T[]",
+                .AddTSMethodDeclaration("GetComponentsInChildren<T extends UnityEngine.Component>(type: { new(): T }): System.Array",
                     "GetComponentsInChildren", typeof(Type))
-                .AddTSMethodDeclaration("GetComponentsInParent<T extends UnityEngine.Component>(type: { new(): T }, includeInactive: boolean): T[]",
+                .AddTSMethodDeclaration("GetComponentsInParent<T extends UnityEngine.Component>(type: { new(): T }, includeInactive: boolean): System.Array",
                     "GetComponentsInParent", typeof(Type), typeof(bool))
-                .AddTSMethodDeclaration("GetComponentsInParent<T extends UnityEngine.Component>(type: { new(): T }): T[]",
+                .AddTSMethodDeclaration("GetComponentsInParent<T extends UnityEngine.Component>(type: { new(): T }): System.Array",
                     "GetComponentsInParent", typeof(Type))
             ;
 
@@ -799,8 +799,12 @@ namespace QuickJS.Editor
                 {
                     return "Buffer";
                 }
+                //TODO: 改成使用 JS Proxy 暴露 C# 数组?
                 var elementType = type.GetElementType();
-                return GetTSTypeFullName(elementType) + "[]";
+                var tsFullName = GetTSTypeFullName(elementType);
+                // return tsFullName + "[]";
+                return "System.Array";
+                // return "System.Array<" + tsFullName + ">";
             }
             var info = GetExportedType(type);
             if (info != null)
@@ -1464,6 +1468,9 @@ namespace QuickJS.Editor
         // 导出一些必要的基本类型 (预实现的辅助功能需要用到, DuktapeJS)
         private void ExportBuiltins()
         {
+            // TransformType(typeof(Array))
+            //     .Rename("System.Array<T>");
+
             AddExportedType(typeof(byte));
             AddExportedType(typeof(sbyte));
             AddExportedType(typeof(float));

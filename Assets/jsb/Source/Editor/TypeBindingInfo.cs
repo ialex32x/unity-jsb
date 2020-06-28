@@ -451,7 +451,7 @@ namespace QuickJS.Editor
                 }
             }
 
-            this.name = bindingManager.prefs.typeBindingPrefix + (this.jsNamespace + "_" + this.jsName).Replace('.', '_').Replace('+', '_');
+            this.name = bindingManager.prefs.typeBindingPrefix + (this.jsNamespace + "_" + this.jsName).Replace('.', '_').Replace('+', '_').Replace('<', '_').Replace('>', '_');
             this.constructors = new ConstructorBindingInfo(type);
         }
 

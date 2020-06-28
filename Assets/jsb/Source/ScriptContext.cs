@@ -302,6 +302,46 @@ namespace QuickJS
         #endregion
 
         [MonoPInvokeCallback(typeof(JSCFunction))]
+        public static JSValue to_js_array(JSContext ctx, JSValue this_obj, int argc, JSValue[] argv)
+        {
+            if (argc < 1)
+            {
+                return JSApi.JS_ThrowInternalError(ctx, "array expected");
+            }
+            if (JSApi.JS_IsArray(ctx, argv[0]) == 1)
+            {
+                return JSApi.JS_DupValue(ctx, argv[0]);
+            }
+
+            Array o;
+            if (!Values.js_get_classvalue<Array>(ctx, argv[0], out o))
+            {
+                return JSApi.JS_ThrowInternalError(ctx, "array expected");
+            }
+            if (o == null)
+            {
+                return JSApi.JS_NULL;
+            }
+            var len = o.Length;
+            var rval = JSApi.JS_NewArray(ctx);
+            try
+            {
+                for (var i = 0; i < len; i++)
+                {
+                    var obj = o.GetValue(i);
+                    var elem = Values.js_push_var(ctx, obj);
+                    JSApi.JS_SetPropertyUint32(ctx, rval, (uint)i, elem);
+                }
+            }
+            catch (Exception exception)
+            {
+                JSApi.JS_FreeValue(ctx, rval);
+                return JSApi.ThrowException(ctx, exception);
+            }
+            return rval;
+        }
+
+        [MonoPInvokeCallback(typeof(JSCFunction))]
         public static JSValue yield_func(JSContext ctx, JSValue this_obj, int argc, JSValue[] argv)
         {
             if (argc < 1)
@@ -329,6 +369,7 @@ namespace QuickJS
         {
             var ns = register.CreateNamespace("jsb");
             ns.AddFunction("Yield", yield_func, 1);
+            ns.AddFunction("ToJSArray", to_js_array, 1);
             ns.Close();
         }
 
