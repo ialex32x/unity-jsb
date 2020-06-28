@@ -124,15 +124,15 @@ namespace QuickJS.Editor
                     "GetComponentInParent", typeof(Type))
                 // .AddTSMethodDeclaration("GetComponents<T extends UnityEngine.Component>(type: { new(): T }, results: any): void", 
                 //     "GetComponents", typeof(Type))
-                .AddTSMethodDeclaration("GetComponents<T extends UnityEngine.Component>(type: { new(): T }): System.Array",
+                .AddTSMethodDeclaration("GetComponents<T extends UnityEngine.Component>(type: { new(): T }): System.Array<T>",
                     "GetComponents", typeof(Type))
-                .AddTSMethodDeclaration("GetComponentsInChildren<T extends UnityEngine.Component>(type: { new(): T }, includeInactive: boolean): System.Array",
+                .AddTSMethodDeclaration("GetComponentsInChildren<T extends UnityEngine.Component>(type: { new(): T }, includeInactive: boolean): System.Array<T>",
                     "GetComponentsInChildren", typeof(Type), typeof(bool))
-                .AddTSMethodDeclaration("GetComponentsInChildren<T extends UnityEngine.Component>(type: { new(): T }): System.Array",
+                .AddTSMethodDeclaration("GetComponentsInChildren<T extends UnityEngine.Component>(type: { new(): T }): System.Array<T>",
                     "GetComponentsInChildren", typeof(Type))
-                .AddTSMethodDeclaration("GetComponentsInParent<T extends UnityEngine.Component>(type: { new(): T }, includeInactive: boolean): System.Array",
+                .AddTSMethodDeclaration("GetComponentsInParent<T extends UnityEngine.Component>(type: { new(): T }, includeInactive: boolean): System.Array<T>",
                     "GetComponentsInParent", typeof(Type), typeof(bool))
-                .AddTSMethodDeclaration("GetComponentsInParent<T extends UnityEngine.Component>(type: { new(): T }): System.Array",
+                .AddTSMethodDeclaration("GetComponentsInParent<T extends UnityEngine.Component>(type: { new(): T }): System.Array<T>",
                     "GetComponentsInParent", typeof(Type))
                 .WriteCSMethodBinding((bindPoint, cg, info) =>
                 {
@@ -339,15 +339,15 @@ namespace QuickJS.Editor
                     "GetComponentInParent", typeof(Type))
                 // .AddTSMethodDeclaration("GetComponents<T extends UnityEngine.Component>(type: { new(): T }, results: any): void", 
                 //     "GetComponents", typeof(Type))
-                .AddTSMethodDeclaration("GetComponents<T extends UnityEngine.Component>(type: { new(): T }): System.Array",
+                .AddTSMethodDeclaration("GetComponents<T extends UnityEngine.Component>(type: { new(): T }): System.Array<T>",
                     "GetComponents", typeof(Type))
-                .AddTSMethodDeclaration("GetComponentsInChildren<T extends UnityEngine.Component>(type: { new(): T }, includeInactive: boolean): System.Array",
+                .AddTSMethodDeclaration("GetComponentsInChildren<T extends UnityEngine.Component>(type: { new(): T }, includeInactive: boolean): System.Array<T>",
                     "GetComponentsInChildren", typeof(Type), typeof(bool))
-                .AddTSMethodDeclaration("GetComponentsInChildren<T extends UnityEngine.Component>(type: { new(): T }): System.Array",
+                .AddTSMethodDeclaration("GetComponentsInChildren<T extends UnityEngine.Component>(type: { new(): T }): System.Array<T>",
                     "GetComponentsInChildren", typeof(Type))
-                .AddTSMethodDeclaration("GetComponentsInParent<T extends UnityEngine.Component>(type: { new(): T }, includeInactive: boolean): System.Array",
+                .AddTSMethodDeclaration("GetComponentsInParent<T extends UnityEngine.Component>(type: { new(): T }, includeInactive: boolean): System.Array<T>",
                     "GetComponentsInParent", typeof(Type), typeof(bool))
-                .AddTSMethodDeclaration("GetComponentsInParent<T extends UnityEngine.Component>(type: { new(): T }): System.Array",
+                .AddTSMethodDeclaration("GetComponentsInParent<T extends UnityEngine.Component>(type: { new(): T }): System.Array<T>",
                     "GetComponentsInParent", typeof(Type))
             ;
 
@@ -803,8 +803,8 @@ namespace QuickJS.Editor
                 var elementType = type.GetElementType();
                 var tsFullName = GetTSTypeFullName(elementType);
                 // return tsFullName + "[]";
-                return "System.Array";
-                // return "System.Array<" + tsFullName + ">";
+                // return "System.Array";
+                return "System.Array<" + tsFullName + ">";
             }
             var info = GetExportedType(type);
             if (info != null)
@@ -1468,8 +1468,34 @@ namespace QuickJS.Editor
         // 导出一些必要的基本类型 (预实现的辅助功能需要用到, DuktapeJS)
         private void ExportBuiltins()
         {
-            // TransformType(typeof(Array))
-            //     .Rename("System.Array<T>");
+            TransformType(typeof(Array))
+                .Rename("System.Array<T>")
+
+                .SetMethodBlocked("GetValue", typeof(long), typeof(long), typeof(long))
+                .SetMethodBlocked("GetValue", typeof(long), typeof(long))
+                .SetMethodBlocked("GetValue", typeof(long))
+                .SetMethodBlocked("GetValue", typeof(long[]))
+                .SetMethodBlocked("SetValue", typeof(object), typeof(long), typeof(long), typeof(long))
+                .SetMethodBlocked("SetValue", typeof(object), typeof(long), typeof(long))
+                .SetMethodBlocked("SetValue", typeof(object), typeof(long))
+                .SetMethodBlocked("SetValue", typeof(object), typeof(long[]))
+                .SetMethodBlocked("CopyTo", typeof(Array), typeof(long))
+                .SetMethodBlocked("Copy", typeof(Array), typeof(long), typeof(Array), typeof(long), typeof(long))
+                .SetMethodBlocked("Copy", typeof(Array), typeof(Array), typeof(long))
+                .SetMethodBlocked("CreateInstance", typeof(Type), typeof(long[]))
+
+                .AddTSMethodDeclaration("GetValue(index1: number, index2: number, index3: number): T", "GetValue", typeof(int), typeof(int), typeof(int))
+                .AddTSMethodDeclaration("GetValue(index1: number, index2: number): T", "GetValue", typeof(int), typeof(int))
+                .AddTSMethodDeclaration("GetValue(index: number): T", "GetValue", typeof(int))
+                .AddTSMethodDeclaration("GetValue(...index: number[]): T", "GetValue", typeof(int[]))
+
+                .AddTSMethodDeclaration("SetValue(value: T, index1: number, index2: number, index3: number): T", "SetValue", typeof(object), typeof(int), typeof(int), typeof(int))
+                .AddTSMethodDeclaration("SetValue(value: T, index1: number, index2: number): T", "SetValue", typeof(object), typeof(int), typeof(int))
+                .AddTSMethodDeclaration("SetValue(value: T, index: number): T", "SetValue", typeof(object), typeof(int))
+                .AddTSMethodDeclaration("SetValue(value: T, ...index: number[]): T", "SetValue", typeof(object), typeof(int[]))
+
+                // .AddTSMethodDeclaration("static CreateInstance<P>(elementType: P, length1: number, length2: number, length3: number): System.Array<P>", "CreateInstance", typeof(Type), typeof(int), typeof(int), typeof(int))
+            ;
 
             AddExportedType(typeof(byte));
             AddExportedType(typeof(sbyte));

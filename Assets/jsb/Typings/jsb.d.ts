@@ -34,8 +34,8 @@ declare namespace jsb {
     function Yield(task: Task<T>): Promise<T>;
 
     // function ToJSArray(o: any): Array;
-    // function ToJSArray<T>(o: System.Array<T>): Array<T>;
-    function ToJSArray<T>(o: any): Array<T>;
+    function ToJSArray<T>(o: System.Array<T>): Array<T>;
+    // function ToJSArray<T>(o: any): Array<T>;
 
     /**
      * 封装 C# event 调用约定

@@ -78,7 +78,7 @@ print("json:", require("../config/data.json").name);
 let camera = UnityEngine.GameObject.Find("/Main Camera").GetComponent(UnityEngine.Camera);
 
 let xx = camera.GetComponents(UnityEngine.Camera);
-let arr = jsb.ToJSArray<UnityEngine.Camera>(xx);
+let arr = jsb.ToJSArray(xx);
 print("Array.Length:", xx.Length);
 print("Array.GetValue:", xx.GetValue(0) == camera);
 print("Array.Length:", arr.length);
