@@ -485,7 +485,7 @@ namespace QuickJS.Editor
                 {
                     _WriteBackParametersByRef(isExtension, parametersByRef);
                 }
-                var pusher = cg.AppendValuePusher(returnType, "ret");
+                var pusher = cg.AppendMethodReturnValuePusher(method, returnType, "ret");
                 cg.cs.AppendLine("return {0};", pusher);
             }
         }

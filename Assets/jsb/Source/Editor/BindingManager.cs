@@ -104,201 +104,9 @@ namespace QuickJS.Editor
             {
             });
 
-            TransformType(typeof(GameObject))
-                // .AddRedirectMethod("AddComponent", "_AddComponent")
-                // .AddRedirectMethod("GetComponent", "_GetComponent")
-                // .AddRedirectMethod("GetComponentInChildren", "_GetComponentInChildren")
-                // .AddRedirectMethod("GetComponentInParent", "_GetComponentInParent")
-                // .AddRedirectMethod("GetComponents", "_GetComponents")
-                // .AddRedirectMethod("GetComponentsInChildren", "_GetComponentsInChildren")
-                // .AddRedirectMethod("GetComponentsInParent", "_GetComponentsInParent")
+            HackGetComponents(TransformType(typeof(GameObject)))
                 .AddTSMethodDeclaration("AddComponent<T extends UnityEngine.Component>(type: { new(): T }): T",
                     "AddComponent", typeof(Type))
-                .AddTSMethodDeclaration("GetComponent<T extends UnityEngine.Component>(type: { new(): T }): T",
-                    "GetComponent", typeof(Type))
-                .AddTSMethodDeclaration("GetComponentInChildren<T extends UnityEngine.Component>(type: { new(): T }, includeInactive: boolean): T",
-                    "GetComponentInChildren", typeof(Type), typeof(bool))
-                .AddTSMethodDeclaration("GetComponentInChildren<T extends UnityEngine.Component>(type: { new(): T }): T",
-                    "GetComponentInChildren", typeof(Type))
-                .AddTSMethodDeclaration("GetComponentInParent<T extends UnityEngine.Component>(type: { new(): T }): T",
-                    "GetComponentInParent", typeof(Type))
-                // .AddTSMethodDeclaration("GetComponents<T extends UnityEngine.Component>(type: { new(): T }, results: any): void", 
-                //     "GetComponents", typeof(Type))
-                .AddTSMethodDeclaration("GetComponents<T extends UnityEngine.Component>(type: { new(): T }): System.Array<T>",
-                    "GetComponents", typeof(Type))
-                .AddTSMethodDeclaration("GetComponentsInChildren<T extends UnityEngine.Component>(type: { new(): T }, includeInactive: boolean): System.Array<T>",
-                    "GetComponentsInChildren", typeof(Type), typeof(bool))
-                .AddTSMethodDeclaration("GetComponentsInChildren<T extends UnityEngine.Component>(type: { new(): T }): System.Array<T>",
-                    "GetComponentsInChildren", typeof(Type))
-                .AddTSMethodDeclaration("GetComponentsInParent<T extends UnityEngine.Component>(type: { new(): T }, includeInactive: boolean): System.Array<T>",
-                    "GetComponentsInParent", typeof(Type), typeof(bool))
-                .AddTSMethodDeclaration("GetComponentsInParent<T extends UnityEngine.Component>(type: { new(): T }): System.Array<T>",
-                    "GetComponentsInParent", typeof(Type))
-                .WriteCSMethodBinding((bindPoint, cg, info) =>
-                {
-                    if (bindPoint == BindingPoints.METHOD_BINDING_BEFORE_INVOKE)
-                    {
-                        cg.cs.AppendLine("var inject = _js_game_object_get_component(ctx, argv[0], self, arg0);");
-                        cg.cs.AppendLine("if (!inject.IsUndefined())");
-                        using (cg.cs.Block())
-                        {
-                            cg.cs.AppendLine("return inject;");
-                        }
-
-                        return true;
-                    }
-                    return false;
-                }, "GetComponent", typeof(Type))
-                .WriteCSMethodBinding((bindPoint, cg, info) =>
-                {
-                    if (bindPoint == BindingPoints.METHOD_BINDING_BEFORE_INVOKE)
-                    {
-                        cg.cs.AppendLine("var inject = _js_game_object_get_component_in_children(ctx, argv[0], self, arg0, false);");
-                        cg.cs.AppendLine("if (!inject.IsUndefined())");
-                        using (cg.cs.Block())
-                        {
-                            cg.cs.AppendLine("return inject;");
-                        }
-
-                        return true;
-                    }
-                    return false;
-                }, "GetComponentInChildren", typeof(Type))
-                .WriteCSMethodBinding((bindPoint, cg, info) =>
-                {
-                    if (bindPoint == BindingPoints.METHOD_BINDING_BEFORE_INVOKE)
-                    {
-                        cg.cs.AppendLine("var inject = _js_game_object_get_component_in_children(ctx, argv[0], self, arg0, arg1);");
-                        cg.cs.AppendLine("if (!inject.IsUndefined())");
-                        using (cg.cs.Block())
-                        {
-                            cg.cs.AppendLine("return inject;");
-                        }
-
-                        return true;
-                    }
-                    return false;
-                }, "GetComponentInChildren", typeof(Type), typeof(bool))
-                .WriteCSMethodBinding((bindPoint, cg, info) =>
-                {
-                    if (bindPoint == BindingPoints.METHOD_BINDING_BEFORE_INVOKE)
-                    {
-                        cg.cs.AppendLine("var inject = _js_game_object_get_component_in_parent(ctx, argv[0], self, arg0, false);");
-                        cg.cs.AppendLine("if (!inject.IsUndefined())");
-                        using (cg.cs.Block())
-                        {
-                            cg.cs.AppendLine("return inject;");
-                        }
-
-                        return true;
-                    }
-                    return false;
-                }, "GetComponentInParent", typeof(Type))
-                .WriteCSMethodBinding((bindPoint, cg, info) =>
-                {
-                    if (bindPoint == BindingPoints.METHOD_BINDING_BEFORE_INVOKE)
-                    {
-                        cg.cs.AppendLine("var inject = _js_game_object_get_component_in_parent(ctx, argv[0], self, arg0, arg1);");
-                        cg.cs.AppendLine("if (!inject.IsUndefined())");
-                        using (cg.cs.Block())
-                        {
-                            cg.cs.AppendLine("return inject;");
-                        }
-
-                        return true;
-                    }
-                    return false;
-                }, "GetComponentInParent", typeof(Type), typeof(bool))
-                .WriteCSMethodBinding((bindPoint, cg, info) =>
-                {
-                    if (bindPoint == BindingPoints.METHOD_BINDING_BEFORE_INVOKE)
-                    {
-                        cg.cs.AppendLine("var inject = _js_game_object_get_components_in_children(ctx, argv[0], self, arg0, false);");
-                        cg.cs.AppendLine("if (!inject.IsUndefined())");
-                        using (cg.cs.Block())
-                        {
-                            cg.cs.AppendLine("return inject;");
-                        }
-
-                        return true;
-                    }
-                    return false;
-                }, "GetComponentsInChildren", typeof(Type))
-                .WriteCSMethodBinding((bindPoint, cg, info) =>
-                {
-                    if (bindPoint == BindingPoints.METHOD_BINDING_BEFORE_INVOKE)
-                    {
-                        cg.cs.AppendLine("var inject = _js_game_object_get_components_in_children(ctx, argv[0], self, arg0, arg1);");
-                        cg.cs.AppendLine("if (!inject.IsUndefined())");
-                        using (cg.cs.Block())
-                        {
-                            cg.cs.AppendLine("return inject;");
-                        }
-
-                        return true;
-                    }
-                    return false;
-                }, "GetComponentsInChildren", typeof(Type), typeof(bool))
-                .WriteCSMethodBinding((bindPoint, cg, info) =>
-                {
-                    if (bindPoint == BindingPoints.METHOD_BINDING_BEFORE_INVOKE)
-                    {
-                        cg.cs.AppendLine("var inject = _js_game_object_get_components_in_parent(ctx, argv[0], self, arg0, false);");
-                        cg.cs.AppendLine("if (!inject.IsUndefined())");
-                        using (cg.cs.Block())
-                        {
-                            cg.cs.AppendLine("return inject;");
-                        }
-
-                        return true;
-                    }
-                    return false;
-                }, "GetComponentsInParent", typeof(Type))
-                .WriteCSMethodBinding((bindPoint, cg, info) =>
-                {
-                    if (bindPoint == BindingPoints.METHOD_BINDING_BEFORE_INVOKE)
-                    {
-                        cg.cs.AppendLine("var inject = _js_game_object_get_components_in_parent(ctx, argv[0], self, arg0, arg1);");
-                        cg.cs.AppendLine("if (!inject.IsUndefined())");
-                        using (cg.cs.Block())
-                        {
-                            cg.cs.AppendLine("return inject;");
-                        }
-
-                        return true;
-                    }
-                    return false;
-                }, "GetComponentsInParent", typeof(Type), typeof(bool))
-                .WriteCSMethodBinding((bindPoint, cg, info) =>
-                {
-                    if (bindPoint == BindingPoints.METHOD_BINDING_BEFORE_INVOKE)
-                    {
-                        cg.cs.AppendLine("var inject = _js_game_object_get_components(ctx, argv[0], self, arg0);");
-                        cg.cs.AppendLine("if (!inject.IsUndefined())");
-                        using (cg.cs.Block())
-                        {
-                            cg.cs.AppendLine("return inject;");
-                        }
-
-                        return true;
-                    }
-                    return false;
-                }, "GetComponents", typeof(Type))
-                .WriteCSMethodBinding((bindPoint, cg, info) =>
-                {
-                    if (bindPoint == BindingPoints.METHOD_BINDING_BEFORE_INVOKE)
-                    {
-                        cg.cs.AppendLine("var inject = _js_game_object_get_components(ctx, argv[0], self, arg0, arg1);");
-                        cg.cs.AppendLine("if (!inject.IsUndefined())");
-                        using (cg.cs.Block())
-                        {
-                            cg.cs.AppendLine("return inject;");
-                        }
-
-                        return true;
-                    }
-                    return false;
-                }, "GetComponents", typeof(Type), typeof(List<Component>))
                 .WriteCSMethodBinding((bindPoint, cg, info) =>
                 {
                     if (bindPoint == BindingPoints.METHOD_BINDING_BEFORE_INVOKE)
@@ -316,6 +124,27 @@ namespace QuickJS.Editor
                 }, "AddComponent", typeof(Type));
             ;
 
+            HackGetComponents(TransformType(typeof(Component)))
+                // .AddTSMethodDeclaration("GetComponent<T extends UnityEngine.Component>(type: { new(): T }): T",
+                //     "GetComponent", typeof(Type))
+                // .AddTSMethodDeclaration("GetComponentInChildren<T extends UnityEngine.Component>(type: { new(): T }, includeInactive: boolean): T",
+                //     "GetComponentInChildren", typeof(Type), typeof(bool))
+                // .AddTSMethodDeclaration("GetComponentInChildren<T extends UnityEngine.Component>(type: { new(): T }): T",
+                //     "GetComponentInChildren", typeof(Type))
+                // .AddTSMethodDeclaration("GetComponentInParent<T extends UnityEngine.Component>(type: { new(): T }): T",
+                //     "GetComponentInParent", typeof(Type))
+                // .AddTSMethodDeclaration("GetComponents<T extends UnityEngine.Component>(type: { new(): T }): System.Array<T>",
+                //     "GetComponents", typeof(Type))
+                // .AddTSMethodDeclaration("GetComponentsInChildren<T extends UnityEngine.Component>(type: { new(): T }, includeInactive: boolean): System.Array<T>",
+                //     "GetComponentsInChildren", typeof(Type), typeof(bool))
+                // .AddTSMethodDeclaration("GetComponentsInChildren<T extends UnityEngine.Component>(type: { new(): T }): System.Array<T>",
+                //     "GetComponentsInChildren", typeof(Type))
+                // .AddTSMethodDeclaration("GetComponentsInParent<T extends UnityEngine.Component>(type: { new(): T }, includeInactive: boolean): System.Array<T>",
+                //     "GetComponentsInParent", typeof(Type), typeof(bool))
+                // .AddTSMethodDeclaration("GetComponentsInParent<T extends UnityEngine.Component>(type: { new(): T }): System.Array<T>",
+                //     "GetComponentsInParent", typeof(Type))
+            ;
+
             TransformType(typeof(MonoBehaviour))
                 .WriteCSConstructorBinding((bindPoint, cg, info) =>
                 {
@@ -327,29 +156,6 @@ namespace QuickJS.Editor
 
                     return false;
                 });
-
-            TransformType(typeof(Component))
-                .AddTSMethodDeclaration("GetComponent<T extends UnityEngine.Component>(type: { new(): T }): T",
-                    "GetComponent", typeof(Type))
-                .AddTSMethodDeclaration("GetComponentInChildren<T extends UnityEngine.Component>(type: { new(): T }, includeInactive: boolean): T",
-                    "GetComponentInChildren", typeof(Type), typeof(bool))
-                .AddTSMethodDeclaration("GetComponentInChildren<T extends UnityEngine.Component>(type: { new(): T }): T",
-                    "GetComponentInChildren", typeof(Type))
-                .AddTSMethodDeclaration("GetComponentInParent<T extends UnityEngine.Component>(type: { new(): T }): T",
-                    "GetComponentInParent", typeof(Type))
-                // .AddTSMethodDeclaration("GetComponents<T extends UnityEngine.Component>(type: { new(): T }, results: any): void", 
-                //     "GetComponents", typeof(Type))
-                .AddTSMethodDeclaration("GetComponents<T extends UnityEngine.Component>(type: { new(): T }): System.Array<T>",
-                    "GetComponents", typeof(Type))
-                .AddTSMethodDeclaration("GetComponentsInChildren<T extends UnityEngine.Component>(type: { new(): T }, includeInactive: boolean): System.Array<T>",
-                    "GetComponentsInChildren", typeof(Type), typeof(bool))
-                .AddTSMethodDeclaration("GetComponentsInChildren<T extends UnityEngine.Component>(type: { new(): T }): System.Array<T>",
-                    "GetComponentsInChildren", typeof(Type))
-                .AddTSMethodDeclaration("GetComponentsInParent<T extends UnityEngine.Component>(type: { new(): T }, includeInactive: boolean): System.Array<T>",
-                    "GetComponentsInParent", typeof(Type), typeof(bool))
-                .AddTSMethodDeclaration("GetComponentsInParent<T extends UnityEngine.Component>(type: { new(): T }): System.Array<T>",
-                    "GetComponentsInParent", typeof(Type))
-            ;
 
             var buildTarget = EditorUserBuildSettings.activeBuildTarget;
             if (buildTarget != BuildTarget.iOS)
