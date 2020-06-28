@@ -342,6 +342,25 @@ namespace QuickJS
         }
 
         [MonoPInvokeCallback(typeof(JSCFunction))]
+        public static JSValue hotfix_replace_single(JSContext ctx, JSValue this_obj, int argc, JSValue[] argv)
+        {
+            if (argc < 3)
+            {
+                return JSApi.JS_ThrowInternalError(ctx, "type_name, func_name, func  expected");
+            }
+            if (!argv[0].IsString() || !argv[1].IsString() || JSApi.JS_IsFunction(ctx, argv[1]) != 1)
+            {
+                return JSApi.JS_ThrowInternalError(ctx, "type_name, func_name expected");
+            }
+
+            var type_name = JSApi.GetString(ctx, argv[0]);
+            var func_name = JSApi.GetString(ctx, argv[1]);
+            // var func_val = JSApi.JS
+            //TODO: assign field
+            return JSApi.JS_UNDEFINED;
+        }
+
+        [MonoPInvokeCallback(typeof(JSCFunction))]
         public static JSValue yield_func(JSContext ctx, JSValue this_obj, int argc, JSValue[] argv)
         {
             if (argc < 1)
@@ -367,10 +386,18 @@ namespace QuickJS
 
         public static void Bind(TypeRegister register)
         {
-            var ns = register.CreateNamespace("jsb");
-            ns.AddFunction("Yield", yield_func, 1);
-            ns.AddFunction("ToJSArray", to_js_array, 1);
-            ns.Close();
+            var ns_jsb = register.CreateNamespace("jsb");
+            ns_jsb.AddFunction("Yield", yield_func, 1);
+            ns_jsb.AddFunction("ToJSArray", to_js_array, 1);
+            {
+                var ns_jsb_hotfix = ns_jsb.CreateNamespace("hotfix");
+                ns_jsb_hotfix.AddFunction("replace_single", hotfix_replace_single, 2);
+                // ns_jsb_hotfix.AddFunction("replace", hotfix_replace, 2);
+                // ns_jsb_hotfix.AddFunction("before", hotfix_before);
+                // ns_jsb_hotfix.AddFunction("after", hotfix_after);
+                ns_jsb_hotfix.Close();
+            }
+            ns_jsb.Close();
         }
 
         public unsafe void EvalMain(byte[] input_bytes, string fileName)

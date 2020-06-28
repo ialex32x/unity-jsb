@@ -20,6 +20,49 @@ namespace QuickJS.Binding
             _nsValue = JSApi.JS_UNDEFINED;
         }
 
+        private JSValue _AutoProperty(string name)
+        {
+            var nameAtom = _register.GetAtom(name);
+            var ns = JSApi.JSB_NewPropertyObject(_register, _nsValue, nameAtom, JSPropFlags.JS_PROP_C_W_E);
+            return ns;
+        }
+
+        private JSValue _AutoProperty(JSValue thisObject, string name)
+        {
+            var nameAtom = _register.GetAtom(name);
+            var ns = JSApi.JSB_NewPropertyObject(_register, thisObject, nameAtom, JSPropFlags.JS_PROP_C_W_E);
+            JSApi.JS_FreeValue(_register, thisObject);
+            return ns;
+        }
+
+        public NamespaceDecl CreateNamespace(string el) // [parent]
+        {
+            return new NamespaceDecl(_register, _AutoProperty(el));
+        }
+
+        public NamespaceDecl CreateNamespace(string el1, string el2) // [parent]
+        {
+            return new NamespaceDecl(_register, _AutoProperty(_AutoProperty(el1), el2));
+        }
+
+        public NamespaceDecl CreateNamespace(string el1, string el2, string el3) // [parent]
+        {
+            return new NamespaceDecl(_register, _AutoProperty(_AutoProperty(_AutoProperty(el1), el2), el3));
+        }
+
+        // return [parent, el]
+        public NamespaceDecl CreateNamespace(params string[] els) // [parent]
+        {
+            var ns = JSApi.JS_DupValue(_register, _nsValue);
+            for (int i = 0, size = els.Length; i < size; i++)
+            {
+                var el = els[i];
+                ns = _AutoProperty(ns, el);
+            }
+
+            return new NamespaceDecl(_register, ns);
+        }
+
         public void Copy(string oldName, string newName)
         {
             var ctx = (JSContext) _register.GetContext();

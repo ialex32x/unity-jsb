@@ -144,8 +144,15 @@ namespace QuickJS.Binding
             for (int i = 0, count = fieldInfos.Length; i < count; i++)
             {
                 var fieldInfo = fieldInfos[i];
-                var dynamicField = new DynamicField(this, fieldInfo);
-                cls.AddField(fieldInfo.IsStatic, fieldInfo.Name, dynamicField);
+                if (fieldInfo.Name.StartsWith("_JSFIX_"))
+                {
+                    //TODO: collect hotfix slots
+                }
+                else
+                {
+                    var dynamicField = new DynamicField(this, fieldInfo);
+                    cls.AddField(fieldInfo.IsStatic, fieldInfo.Name, dynamicField);
+                }
             }
             #endregion
 

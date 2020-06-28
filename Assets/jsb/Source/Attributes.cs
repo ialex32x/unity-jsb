@@ -2,6 +2,13 @@ using System;
 
 namespace QuickJS
 {
+    [AttributeUsage(AttributeTargets.Class,
+                    AllowMultiple = false,
+                    Inherited = false)]
+    public class JSHotfixAttribute : Attribute
+    {
+    }
+
     // 指定类型生成绑定代码
     [AttributeUsage(AttributeTargets.Class
                   | AttributeTargets.Struct
