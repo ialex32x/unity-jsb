@@ -17,7 +17,7 @@ namespace QuickJS.Editor
         {
             this.cg.AppendJSDoc(this.typeBindingInfo.type);
             var transform = this.typeBindingInfo.transform;
-            var prefix = this.typeBindingInfo.jsNamespace != null ? "" : "declare ";
+            var prefix = string.IsNullOrEmpty(this.typeBindingInfo.jsNamespace) ? "declare " : "";
             var super = this.cg.bindingManager.GetTSSuperName(this.typeBindingInfo);
             var interfaces = this.cg.bindingManager.GetTSInterfacesName(this.typeBindingInfo);
             var extends = string.IsNullOrEmpty(super) ? "" : $" extends {super}";
