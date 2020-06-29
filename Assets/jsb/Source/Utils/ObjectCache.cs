@@ -13,6 +13,7 @@ namespace QuickJS.Utils
             public object target;
         }
 
+        private bool _disposing;
         private int _freeIndex = -1;
 
         // id => host object
@@ -39,14 +40,30 @@ namespace QuickJS.Utils
 
         public void Clear()
         {
+            _disposing = true;
             _freeIndex = 0;
             _map.Clear();
             _rmap.Clear();
+            var count = _delegateMap.Values.Count;
+            var delegates = new WeakReference[count];
+            _delegateMap.Values.CopyTo(delegates, 0);
             _delegateMap.Clear();
+            for (var i = 0; i < count; i++)
+            {
+                var d = delegates[i].Target as ScriptDelegate;
+                if (d != null)
+                {
+                    d.Dispose();
+                }
+            }
         }
 
         public void AddJSValue(object o, JSValue heapptr)
         {
+            if (_disposing)
+            {
+                return;
+            }
             if (o != null)
             {
                 _rmap.Add(o, heapptr);
@@ -65,11 +82,24 @@ namespace QuickJS.Utils
 
         public bool RemoveJSValue(object o)
         {
+            if (_disposing)
+            {
+                return false;
+            }
             return o != null && _rmap.Remove(o);
         }
 
         public void AddDelegate(JSValue jso, ScriptDelegate o)
         {
+            if (_disposing)
+            {
+                return;
+            }
+            ScriptDelegate old;
+            if (TryGetDelegate(jso, out old))
+            {
+                old.Dispose();
+            }
             _delegateMap[jso] = new WeakReference(o);
             // 不能直接保留 o -> jso 的映射 (会产生o的强引用)
             // Delegate 对 ScriptDelegate 存在强引用 (首参), ScriptDelegate 对 jsobject 存在强引用
@@ -90,6 +120,10 @@ namespace QuickJS.Utils
 
         public bool RemoveDelegate(JSValue jso)
         {
+            if (_disposing)
+            {
+                return false;
+            }
             WeakReference weakRef;
             var r = false;
             if (_delegateMap.TryGetValue(jso, out weakRef))
@@ -103,7 +137,7 @@ namespace QuickJS.Utils
 
         public int AddObject(object o)
         {
-            if (o != null)
+            if (!_disposing && o != null)
             {
                 if (_freeIndex < 0)
                 {

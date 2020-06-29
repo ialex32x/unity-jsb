@@ -92,3 +92,12 @@ print("end of script");
 let unknown = jsb.DelegateTest.GetNotExportedClass();
 print(unknown.value);
 print(unknown.Add(12, 21));
+
+
+jsb.DelegateTest.CallHotfixTest();
+
+jsb.hotfix.replace_single("HotfixTest", "Foo", function (x: number) {
+    return x * 3;
+});
+
+jsb.DelegateTest.CallHotfixTest();

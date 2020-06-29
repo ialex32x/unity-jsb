@@ -217,6 +217,7 @@ JSValueConst JS_GetActiveFunction(JSContext *ctx) { }
 * [X] 静态 Bind 过程
 * [X] compile into JS bytecode (QuickJS)
 * [X] Values_push_class.cs ```public static JSValue js_push_classvalue(JSContext ctx, IO.ByteBuffer o)```
+* [ ] !!! 重写 delegate 映射 提供专用的 JSValue ObjectType, 并通过 index 映射, 脱离 JSValue 本身 (避免不必要的引用管理)
 * [ ] event dispatcher
 * [ ] ref 传参时, 从 val.target 进行取值 (因为会需要回写target, 保持一致性)
 * [ ] mobile platform build: android

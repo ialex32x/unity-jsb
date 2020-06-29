@@ -5,31 +5,17 @@ using QuickJS;
 [JSHotfix]
 public class HotfixTest
 {
-    public static Func<int, int> _JSFIX_R_Foo = null;
-    public static Action<int> _JSFIX_B_Foo = null;
-    public static Action<int> _JSFIX_A_Foo = null;
+    public static Func<HotfixTest, int, int> _JSFIX_R_Foo = null;
+
+    public int value = 12;
 
     public int Foo(int x)
     {
         if (_JSFIX_R_Foo != null)
         {
-            return _JSFIX_R_Foo(x);
+            return _JSFIX_R_Foo(this, x);
         }
-        try
-        {
-            if (_JSFIX_B_Foo != null)
-            {
-                _JSFIX_B_Foo(x);
-            }
-            Debug.Log("Original Foo Method Impl");
-            return x;
-        }
-        finally
-        {
-            if (_JSFIX_A_Foo != null)
-            {
-                _JSFIX_A_Foo(x);
-            }
-        }
+        Debug.LogFormat("Original Foo Method Impl Return {0}", x);
+        return x;
     }
 }

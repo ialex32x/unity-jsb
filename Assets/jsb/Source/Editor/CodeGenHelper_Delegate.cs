@@ -20,7 +20,7 @@ namespace QuickJS.Editor
             this.delegateBindingInfos = delegateBindingInfos;
             this.cg.cs.AppendLine("[{0}({1})]", typeof(JSBindingAttribute).Name, ScriptEngine.VERSION);
             // this.cg.cs.AppendLine("[UnityEngine.Scripting.Preserve]");
-            this.cg.cs.AppendLine("public class {0} : {1} {{", CodeGenerator.NameOfDelegates, typeof(Binding.Values).Name);
+            this.cg.cs.AppendLine("public partial class {0} : {1} {{", CodeGenerator.NameOfDelegates, typeof(Binding.Values).Name);
             this.cg.cs.AddTabLevel();
         }
 

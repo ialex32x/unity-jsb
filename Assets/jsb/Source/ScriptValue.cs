@@ -49,6 +49,7 @@ namespace QuickJS
 
                 _context = null;
                 context.FreeValue(_jsValue);
+                _jsValue = JSApi.JS_UNDEFINED;
             }
         }
 
