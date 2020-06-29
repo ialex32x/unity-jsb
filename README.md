@@ -18,23 +18,14 @@
 * [未完成] 支持 JS 字节码 (QuickJS)
 * [未完成] 运行时模块热替换 (debug only)
 
-# TODO
-* [X] sourcemap 转换 JS 调用栈
-* [X] 针对嵌套类型的 Binding 过程调整
-* [X] 静态 Bind 过程
-* [X] compile into JS bytecode (QuickJS)
-* [X] Values_push_class.cs ```public static JSValue js_push_classvalue(JSContext ctx, IO.ByteBuffer o)```
-* [ ] event dispatcher
-* [ ] ref 传参时, 从 val.target 进行取值 (因为会需要回写target, 保持一致性)
-* [ ] mobile platform build: android
-* [ ] mobile platform build: ios
-
 # 特性示例
+> 推荐使用 typescript 编写脚本, 以提供强类型支持. 示例代码均使用 typescript. <br/>
+> 最终运行的都是 javascript.
 
 ## MonoBehaviour in Javascript
+> 支持 JS class 直接继承 MonoBehaviour <br/>
+> 所有响应函数支持 JS 异步函数 <br/>
 ```ts
-// 支持 js class 直接继承 MonoBehaviour 
-// 所有响应函数支持异步函数
 class MyClass extends UnityEngine.MonoBehaviour {
     protected _tick = 0;
 
@@ -81,13 +72,13 @@ comp.play();
 
 let comp_bySuperClass = gameObject.GetComponent(MyClass);
 comp_bySuperClass.test();
-
 ```
 
 ## 异步调用
+* 支持 await/async 
+* 支持JS异步函数直接等待 Unity 协程的等待对象直接结合使用 
+* 支持JS异步函数直接等待 C# Task (但JS环境本身并不支持多线程) 
 ```ts
-// 支持 await/async
-// 支持异步函数与Unity等待直接结合使用
 async function testAsyncFunc () {
     console.log("you can await any Unity YieldInstructions");
     await jsb.Yield(new UnityEngine.WaitForSeconds(1.2));
@@ -107,11 +98,15 @@ testAsyncFunc();
 ```
 
 ## 重载运算符
+
 ```ts
 {
     let vec1 = new UnityEngine.Vector3(1, 2, 3);
     let vec2 = new UnityEngine.Vector3(9, 8, 7);
-    let vec3 = vec1 + vec2;
+    // 此特性目前不是js标准, 带语法提示的编辑器通常会提示错误, 但并不影响执行
+    // 不希望看到错误提示的可以添加 hint, 比如 vscode 下添加如下标记即可
+    // @ts-ignore
+    let vec3 = vec1 + vec2; 
     let vec4 = vec1 + vec2;
     console.log(vec3);
     console.log(vec3 / 3);
@@ -163,6 +158,21 @@ ws.onmessage = function (msg) {
 };
 ```
 
+## 支持 Hotfix (未完成)
+```ts
+jsb.hotfix.replace("HotfixTest", {
+    "Add"() {
+        console.log("replaced in js");
+    }
+})
+```
+
+### 对导出的 Unity API 附加了自带文档说明
+![unity_ts_docs](jsb_build/res/unity_ts_docs.png)
+
+### 利用强类型提供代码提示
+![ts_code_complete](jsb_build/res/ts_code_complete.png)
+
 # compile for windows on linux
 
 ```sh
@@ -173,7 +183,10 @@ sudo apt-get install mingw-w64
 # x86_64-w64-mingw32
 ```
 
-## 对 QuickJS 的修改
+# Debugger
+> 暂不支持
+
+# 对 QuickJS 的修改
 ```c
 // quickjs.c
 
@@ -197,3 +210,14 @@ JSValueConst JS_GetActiveFunction(JSContext *ctx) { }
 * [libwebsockets](https://github.com/warmcat/libwebsockets)
 * [mbedtls](https://github.com/ARMmbed/mbedtls)
 * [zlib](https://zlib.net/)
+
+# TODO
+* [X] sourcemap 转换 JS 调用栈
+* [X] 针对嵌套类型的 Binding 过程调整
+* [X] 静态 Bind 过程
+* [X] compile into JS bytecode (QuickJS)
+* [X] Values_push_class.cs ```public static JSValue js_push_classvalue(JSContext ctx, IO.ByteBuffer o)```
+* [ ] event dispatcher
+* [ ] ref 传参时, 从 val.target 进行取值 (因为会需要回写target, 保持一致性)
+* [ ] mobile platform build: android
+* [ ] mobile platform build: ios
