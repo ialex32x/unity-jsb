@@ -7,7 +7,7 @@ public class HotfixTest
 {
     public static Func<HotfixTest, int, int> _JSFIX_R_Foo = null;
 
-    public int value = 12;
+    private int value = 12;
 
     public int Foo(int x)
     {

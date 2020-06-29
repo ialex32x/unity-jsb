@@ -69,6 +69,7 @@ print(unknown.value);
 print(unknown.Add(12, 21));
 jsb.DelegateTest.CallHotfixTest();
 jsb.hotfix.replace_single("HotfixTest", "Foo", function (x) {
+    print("replace by js func, this.value = ", this.value);
     return x * 3;
 });
 jsb.DelegateTest.CallHotfixTest();
