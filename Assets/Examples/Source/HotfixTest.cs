@@ -5,7 +5,7 @@ using QuickJS;
 [JSHotfix]
 public class HotfixTest
 {
-    public static Func<HotfixTest, int, int> _JSFIX_R_Foo = null;
+    public static jsb._QuickJSDelegates._HotfixDelegate0 _JSFIX_R_Foo = null;
 
     private int value = 12;
 

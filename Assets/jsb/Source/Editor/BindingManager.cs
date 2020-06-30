@@ -18,17 +18,20 @@ namespace QuickJS.Editor
         private List<string> _implicitAssemblies = new List<string>(); // 默认导出所有类型
         private List<string> _explicitAssemblies = new List<string>(); // 仅导出指定需要导出的类型
 
-        private HashSet<Type> blacklist;
-        private HashSet<Type> whitelist;
-        private List<string> typePrefixBlacklist;
-        private Dictionary<Type, TypeBindingInfo> exportedTypes = new Dictionary<Type, TypeBindingInfo>();
+        private HashSet<Type> _blacklist;
+        private HashSet<Type> _whitelist;
+        private List<string> _typePrefixBlacklist;
+        private Dictionary<Type, TypeBindingInfo> _exportedTypes = new Dictionary<Type, TypeBindingInfo>();
         private List<TypeBindingInfo> _collectedTypes = new List<TypeBindingInfo>(); // 已经完成导出的类型 
-        private Dictionary<Type, DelegateBindingInfo> exportedDelegates = new Dictionary<Type, DelegateBindingInfo>();
-        private Dictionary<Type, Type> redirectDelegates = new Dictionary<Type, Type>();
+        private Dictionary<Type, DelegateBindingInfo> _exportedDelegates = new Dictionary<Type, DelegateBindingInfo>();
+        private Dictionary<Type, Type> _redirectDelegates = new Dictionary<Type, Type>();
+
+        private HashSet<Type> _hotfixTypes = new HashSet<Type>();
+        private List<HotfixDelegateBindingInfo> _exportedHotfixDelegates = new List<HotfixDelegateBindingInfo>();
         // 类型修改
-        private Dictionary<Type, TypeTransform> typesTarnsform = new Dictionary<Type, TypeTransform>();
+        private Dictionary<Type, TypeTransform> _typesTarnsform = new Dictionary<Type, TypeTransform>();
         private Dictionary<string, List<string>> _outputFiles = new Dictionary<string, List<string>>();
-        private List<string> removedFiles = new List<string>();
+        private List<string> _removedFiles = new List<string>();
 
         private Dictionary<Type, List<string>> _tsTypeNameMap = new Dictionary<Type, List<string>>();
         private Dictionary<Type, string> _csTypeNameMap = new Dictionary<Type, string>();
@@ -94,13 +97,13 @@ namespace QuickJS.Editor
             this.dateTime = DateTime.Now;
             var tab = prefs.tab;
             var newline = prefs.newline;
-            typePrefixBlacklist = prefs.typePrefixBlacklist;
+            _typePrefixBlacklist = prefs.typePrefixBlacklist;
             log = new TextGenerator(newline, tab);
-            blacklist = new HashSet<Type>(new Type[]
+            _blacklist = new HashSet<Type>(new Type[]
             {
                 typeof(AOT.MonoPInvokeCallbackAttribute),
             });
-            whitelist = new HashSet<Type>(new Type[]
+            _whitelist = new HashSet<Type>(new Type[]
             {
             });
 
@@ -142,11 +145,11 @@ namespace QuickJS.Editor
             var buildTarget = EditorUserBuildSettings.activeBuildTarget;
             if (buildTarget != BuildTarget.iOS)
             {
-                typePrefixBlacklist.Add("UnityEngine.Apple");
+                _typePrefixBlacklist.Add("UnityEngine.Apple");
             }
             if (buildTarget != BuildTarget.Android)
             {
-                typePrefixBlacklist.Add("UnityEngine.Android");
+                _typePrefixBlacklist.Add("UnityEngine.Android");
             }
 
             // fix d.ts, some C# classes use explicit implemented interface method
@@ -307,7 +310,7 @@ namespace QuickJS.Editor
 
         public void SetTypeBlocked(Type type)
         {
-            blacklist.Add(type);
+            _blacklist.Add(type);
         }
 
         public bool GetTSMethodDeclaration(MethodBase method, out string code)
@@ -335,15 +338,15 @@ namespace QuickJS.Editor
         public TypeTransform GetTypeTransform(Type type)
         {
             TypeTransform transform;
-            return typesTarnsform.TryGetValue(type, out transform) ? transform : null;
+            return _typesTarnsform.TryGetValue(type, out transform) ? transform : null;
         }
 
         public TypeTransform TransformType(Type type)
         {
             TypeTransform transform;
-            if (!typesTarnsform.TryGetValue(type, out transform))
+            if (!_typesTarnsform.TryGetValue(type, out transform))
             {
-                typesTarnsform[type] = transform = new TypeTransform(type);
+                _typesTarnsform[type] = transform = new TypeTransform(type);
             }
             return transform;
         }
@@ -417,20 +420,28 @@ namespace QuickJS.Editor
             _csTypePusherMap[type] = name;
         }
 
+        public void AddHotfixType(Type type)
+        {
+            if (!_hotfixTypes.Contains(type))
+            {
+                _hotfixTypes.Add(type);
+            }
+        }
+
         // 增加导出类型 (需要在 Collect 阶段进行)
         //NOTE: editor mscorlib 与 runtime 存在差异, 需要手工 block 差异
         public TypeTransform AddExportedType(Type type, bool importBaseType = false)
         {
             if (type.IsGenericTypeDefinition)
             {
-                whitelist.Add(type);
+                _whitelist.Add(type);
                 return null;
             }
             var tt = TransformType(type);
-            if (!exportedTypes.ContainsKey(type))
+            if (!_exportedTypes.ContainsKey(type))
             {
                 var typeBindingInfo = new TypeBindingInfo(this, type);
-                exportedTypes.Add(type, typeBindingInfo);
+                _exportedTypes.Add(type, typeBindingInfo);
                 log.AppendLine($"AddExportedType: {type} Assembly: {type.Assembly}");
 
                 var baseType = type.BaseType;
@@ -459,18 +470,18 @@ namespace QuickJS.Editor
 
         public bool RemoveExportedType(Type type)
         {
-            return exportedTypes.Remove(type);
+            return _exportedTypes.Remove(type);
         }
 
         public DelegateBindingInfo GetDelegateBindingInfo(Type type)
         {
             Type target;
-            if (redirectDelegates.TryGetValue(type, out target))
+            if (_redirectDelegates.TryGetValue(type, out target))
             {
                 type = target;
             }
             DelegateBindingInfo delegateBindingInfo;
-            if (exportedDelegates.TryGetValue(type, out delegateBindingInfo))
+            if (_exportedDelegates.TryGetValue(type, out delegateBindingInfo))
             {
                 return delegateBindingInfo;
             }
@@ -501,38 +512,83 @@ namespace QuickJS.Editor
             return ContainsPointer(method) || IsGenericMethod(method);
         }
 
-        // 收集所有 delegate 类型
-        public void CollectDelegate(Type type)
+        public void CollectHotfix(Type type)
         {
-            if (type == null || type.BaseType != typeof(MulticastDelegate))
+            if (type == null || type.GetCustomAttribute(typeof(JSHotfixAttribute)) == null)
             {
                 return;
             }
-            if (!exportedDelegates.ContainsKey(type))
+            var methodInfos = type.GetMethods(Binding.DynamicType.DefaultFlags);
+            foreach (var methodInfo in methodInfos)
             {
-                var invoke = type.GetMethod("Invoke");
+                CollectHotfix(type, methodInfo);
+            }
+        }
+
+        private bool CollectHotfix(Type declaringType, MethodInfo methodInfo)
+        {
+            if (methodInfo.IsGenericMethodDefinition)
+            {
+                return false;
+            }
+
+            var parameters = methodInfo.GetParameters();
+            var returnType = methodInfo.ReturnType;
+
+            for (var i = 0; i < _exportedHotfixDelegates.Count; i++)
+            {
+                var regDelegateBinding = _exportedHotfixDelegates[i];
+                if (regDelegateBinding.Equals(declaringType, returnType, parameters))
+                {
+                    return true;
+                }
+            }
+
+            var newDelegateBinding = new HotfixDelegateBindingInfo(declaringType, returnType, parameters);
+            _exportedHotfixDelegates.Add(newDelegateBinding);
+            for (var i = 0; i < parameters.Length; i++)
+            {
+                CollectDelegate(parameters[i].ParameterType);
+            }
+            return true;
+        }
+
+        // 收集所有 delegate 类型
+        // delegateType: 委托本身的类型
+        // explicitThis: 委托的首个参数作为 显式 this 传递
+        public void CollectDelegate(Type delegateType)
+        {
+            if (delegateType == null || delegateType.BaseType != typeof(MulticastDelegate))
+            {
+                return;
+            }
+            if (!_exportedDelegates.ContainsKey(delegateType))
+            {
+                var invoke = delegateType.GetMethod("Invoke");
                 var returnType = invoke.ReturnType;
                 var parameters = invoke.GetParameters();
                 if (ContainsPointer(invoke))
                 {
-                    log.AppendLine("skip unsafe (pointer) delegate: [{0}] {1}", type, invoke);
+                    log.AppendLine("skip unsafe (pointer) delegate: [{0}] {1}", delegateType, invoke);
                     return;
                 }
                 // 是否存在等价 delegate
-                foreach (var kv in exportedDelegates)
+                foreach (var kv in _exportedDelegates)
                 {
-                    if (kv.Value.Equals(returnType, parameters))
+                    var regDelegateType = kv.Key;
+                    var regDelegateBinding = kv.Value;
+                    if (regDelegateBinding.Equals(returnType, parameters))
                     {
-                        log.AppendLine("skip delegate: {0} && {1}", kv.Value, type);
-                        kv.Value.types.Add(type);
-                        redirectDelegates[type] = kv.Key;
+                        log.AppendLine("skip delegate: {0} && {1}", regDelegateBinding, delegateType);
+                        regDelegateBinding.types.Add(delegateType);
+                        _redirectDelegates[delegateType] = regDelegateType;
                         return;
                     }
                 }
                 var delegateBindingInfo = new DelegateBindingInfo(returnType, parameters);
-                delegateBindingInfo.types.Add(type);
-                exportedDelegates.Add(type, delegateBindingInfo);
-                log.AppendLine("add delegate: {0}", type);
+                delegateBindingInfo.types.Add(delegateType);
+                _exportedDelegates.Add(delegateType, delegateBindingInfo);
+                log.AppendLine("add delegate: {0}", delegateType);
                 for (var i = 0; i < parameters.Length; i++)
                 {
                     CollectDelegate(parameters[i].ParameterType);
@@ -542,12 +598,12 @@ namespace QuickJS.Editor
 
         public bool IsExported(Type type)
         {
-            return exportedTypes.ContainsKey(type);
+            return _exportedTypes.ContainsKey(type);
         }
 
         public string GetTSRefWrap(string name)
         {
-            
+
             return $"jsb.Ref<{name}>";
         }
 
@@ -811,6 +867,16 @@ namespace QuickJS.Editor
             return str;
         }
 
+        public string GetCSArglistDecl(Type self, string selfName, ParameterInfo[] parameters)
+        {
+            var arglist = GetCSArglistDecl(parameters);
+            if (string.IsNullOrEmpty(arglist))
+            {
+                return GetCSTypeFullName(self);
+            }
+            return GetCSTypeFullName(self) + " " + selfName + ", " + arglist;
+        }
+
         // 生成参数对应的字符串形式参数列表 (csharp)
         public string GetCSArglistDecl(ParameterInfo[] parameters)
         {
@@ -917,13 +983,13 @@ namespace QuickJS.Editor
                 return null;
             }
             TypeBindingInfo typeBindingInfo;
-            return exportedTypes.TryGetValue(type, out typeBindingInfo) ? typeBindingInfo : null;
+            return _exportedTypes.TryGetValue(type, out typeBindingInfo) ? typeBindingInfo : null;
         }
 
         // 是否在黑名单中屏蔽, 或者已知无需导出的类型
         public bool IsExportingBlocked(Type type)
         {
-            if (blacklist.Contains(type))
+            if (_blacklist.Contains(type))
             {
                 return true;
             }
@@ -960,9 +1026,9 @@ namespace QuickJS.Editor
                 }
                 encloser = encloser.DeclaringType;
             }
-            for (int i = 0, size = typePrefixBlacklist.Count; i < size; i++)
+            for (int i = 0, size = _typePrefixBlacklist.Count; i < size; i++)
             {
-                if (type.FullName.StartsWith(typePrefixBlacklist[i]))
+                if (type.FullName.StartsWith(_typePrefixBlacklist[i]))
                 {
                     return true;
                 }
@@ -973,7 +1039,7 @@ namespace QuickJS.Editor
         // 是否显式要求导出
         public bool IsExportingExplicit(Type type)
         {
-            if (whitelist.Contains(type))
+            if (_whitelist.Contains(type))
             {
                 return true;
             }
@@ -1188,7 +1254,11 @@ namespace QuickJS.Editor
             log.AppendLine("collecting members");
             log.AddTabLevel();
             OnPreCollectTypes();
-            foreach (var typeBindingInfoKV in exportedTypes)
+            foreach (var type in _hotfixTypes)
+            {
+                CollectHotfix(type);
+            }
+            foreach (var typeBindingInfoKV in _exportedTypes)
             {
                 _CollectType(typeBindingInfoKV.Value.type);
 
@@ -1344,6 +1414,10 @@ namespace QuickJS.Editor
                     log.AppendLine("types {0}", types.Length);
                     foreach (var type in types)
                     {
+                        if (type.GetCustomAttribute(typeof(JSHotfixAttribute)) != null)
+                        {
+                            AddHotfixType(type);
+                        }
                         if (IsExportingBlocked(type))
                         {
                             log.AppendLine("blocked: {0}", type.FullName);
@@ -1373,7 +1447,7 @@ namespace QuickJS.Editor
             log.AddTabLevel();
             Cleanup(_outputFiles, file =>
             {
-                removedFiles.Add(file);
+                _removedFiles.Add(file);
                 log.AppendLine("remove unused file {0}", file);
             });
             OnCleanup();
@@ -1438,8 +1512,8 @@ namespace QuickJS.Editor
             }
             var cancel = false;
             var current = 0;
-            var total = exportedTypes.Count;
-            foreach (var typeKV in exportedTypes)
+            var total = _exportedTypes.Count;
+            foreach (var typeKV in _exportedTypes)
             {
                 var typeBindingInfo = typeKV.Value;
                 try
@@ -1474,11 +1548,11 @@ namespace QuickJS.Editor
             {
                 try
                 {
-                    var exportedDelegatesArray = new DelegateBindingInfo[this.exportedDelegates.Count];
-                    this.exportedDelegates.Values.CopyTo(exportedDelegatesArray, 0);
+                    var exportedDelegatesArray = new DelegateBindingInfo[this._exportedDelegates.Count];
+                    this._exportedDelegates.Values.CopyTo(exportedDelegatesArray, 0);
 
                     cg.Clear();
-                    cg.Generate(exportedDelegatesArray);
+                    cg.Generate(exportedDelegatesArray, _exportedHotfixDelegates);
                     cg.WriteTo(csOutDir, tsOutDir, CodeGenerator.NameOfDelegates, extraExt);
                 }
                 catch (Exception exception)
@@ -1524,9 +1598,9 @@ namespace QuickJS.Editor
             var now = DateTime.Now;
             var ts = now.Subtract(dateTime);
             Debug.LogFormat("generated {0} type(s), {1} delegate(s), {2} deletion(s) in {3:0.##} seconds.",
-                exportedTypes.Count,
-                exportedDelegates.Count,
-                removedFiles.Count,
+                _exportedTypes.Count,
+                _exportedDelegates.Count,
+                _removedFiles.Count,
                 ts.TotalSeconds);
         }
     }

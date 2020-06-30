@@ -8,6 +8,8 @@ namespace QuickJS.Binding
 {
     public class DynamicType
     {
+        public const BindingFlags DefaultFlags = BindingFlags.DeclaredOnly | BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic;
+
         private Type _type;
         private int _type_id;
         //TODO: 做成开关, 不可访问的情况下访问时抛异常
@@ -102,8 +104,7 @@ namespace QuickJS.Binding
             // UnityEngine.Debug.LogErrorFormat("dynamic bind {0}", _type);
             var db = register.GetTypeDB();
             var ctx = (JSContext)register.GetContext();
-            var flags = BindingFlags.DeclaredOnly | BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public;
-            var pflags = flags | BindingFlags.NonPublic;
+            var flags = DefaultFlags;
             _type_id = register.RegisterType(_type);
 
             #region BindConstructors(register, flags, type_id);
@@ -131,16 +132,16 @@ namespace QuickJS.Binding
 
             var cls = register.CreateClass(_type.Name, _type, dynamicConstructor);
 
-            #region BindMethods(register, pflags);
+            #region BindMethods(register, flags);
             var instMap = new Dictionary<string, List<MethodInfo>>();
             var staticMap = new Dictionary<string, List<MethodInfo>>();
-            CollectMethod(_type.GetMethods(pflags), instMap, staticMap);
+            CollectMethod(_type.GetMethods(flags), instMap, staticMap);
             AddMethods(cls, true, staticMap);
             AddMethods(cls, false, instMap);
             #endregion
 
-            #region BindFields(register, pflags);
-            var fieldInfos = _type.GetFields(pflags);
+            #region BindFields(register, flags);
+            var fieldInfos = _type.GetFields(flags);
             for (int i = 0, count = fieldInfos.Length; i < count; i++)
             {
                 var fieldInfo = fieldInfos[i];
@@ -156,8 +157,8 @@ namespace QuickJS.Binding
             }
             #endregion
 
-            #region BindProperties(register, pflags);
-            var propertyInfos = _type.GetProperties(pflags);
+            #region BindProperties(register, flags);
+            var propertyInfos = _type.GetProperties(flags);
             for (int i = 0, count = propertyInfos.Length; i < count; i++)
             {
                 var propertyInfo = propertyInfos[i];

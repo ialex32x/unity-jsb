@@ -13,6 +13,7 @@ namespace QuickJS.Editor
     public partial class CodeGenerator
     {
         public const string NameOfDelegates = "_QuickJSDelegates";
+        public const string NameOfHotfixDelegates = "_QuickJSHotfixDelegates";
         public const string NameOfBindingList = "_QuickJSBindings";
         public const string NamespaceOfScriptTypes = "QuickJS";
         public const string NamespaceOfInternalScriptTypes = "QuickJS.Internal";
@@ -73,7 +74,7 @@ namespace QuickJS.Editor
         }
 
         // 生成委托绑定
-        public void Generate(DelegateBindingInfo[] delegateBindingInfos)
+        public void Generate(DelegateBindingInfo[] delegateBindingInfos, List<HotfixDelegateBindingInfo> exportedHotfixDelegates)
         {
             using (new PlatformCodeGen(this))
             {
@@ -81,8 +82,16 @@ namespace QuickJS.Editor
                 {
                     using (new NamespaceCodeGen(this, this.bindingManager.prefs.ns))
                     {
-                        using (new DelegateWrapperCodeGen(this, delegateBindingInfos))
+                        using (new DelegateWrapperCodeGen(this))
                         {
+                            for (var i = 0; i < exportedHotfixDelegates.Count; i++)
+                            {
+                                var bindingInfo = exportedHotfixDelegates[i];
+                                using (new HotfixDelegateCodeGen(this, bindingInfo, i))
+                                {
+                                }
+                            }
+
                             SortedList<int, int> specs = new SortedList<int, int>();
                             for (var i = 0; i < delegateBindingInfos.Length; i++)
                             {
