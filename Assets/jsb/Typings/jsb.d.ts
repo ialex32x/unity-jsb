@@ -2,7 +2,7 @@
 
 declare function print(...args: any[]): void;
 
-declare function require(id: string): any;
+// declare function require(id: string): any;
 
 // /**
 //  * 执行指定脚本 （类似eval）
@@ -31,7 +31,9 @@ declare namespace jsb {
     interface Task<T> {
     }
     
-    function Yield(task: Task<T>): Promise<T>;
+    // @ts-ignore
+    // function Yield(instruction: UnityEngine.YieldInstruction): Promise<any>;
+    function Yield<T>(task: Task<T>): Promise<T>;
 
     // function ToJSArray(o: any): Array;
     function ToJSArray<T>(o: System.Array<T>): Array<T>;

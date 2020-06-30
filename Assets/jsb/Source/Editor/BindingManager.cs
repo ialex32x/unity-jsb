@@ -125,24 +125,6 @@ namespace QuickJS.Editor
             ;
 
             HackGetComponents(TransformType(typeof(Component)))
-                // .AddTSMethodDeclaration("GetComponent<T extends UnityEngine.Component>(type: { new(): T }): T",
-                //     "GetComponent", typeof(Type))
-                // .AddTSMethodDeclaration("GetComponentInChildren<T extends UnityEngine.Component>(type: { new(): T }, includeInactive: boolean): T",
-                //     "GetComponentInChildren", typeof(Type), typeof(bool))
-                // .AddTSMethodDeclaration("GetComponentInChildren<T extends UnityEngine.Component>(type: { new(): T }): T",
-                //     "GetComponentInChildren", typeof(Type))
-                // .AddTSMethodDeclaration("GetComponentInParent<T extends UnityEngine.Component>(type: { new(): T }): T",
-                //     "GetComponentInParent", typeof(Type))
-                // .AddTSMethodDeclaration("GetComponents<T extends UnityEngine.Component>(type: { new(): T }): System.Array<T>",
-                //     "GetComponents", typeof(Type))
-                // .AddTSMethodDeclaration("GetComponentsInChildren<T extends UnityEngine.Component>(type: { new(): T }, includeInactive: boolean): System.Array<T>",
-                //     "GetComponentsInChildren", typeof(Type), typeof(bool))
-                // .AddTSMethodDeclaration("GetComponentsInChildren<T extends UnityEngine.Component>(type: { new(): T }): System.Array<T>",
-                //     "GetComponentsInChildren", typeof(Type))
-                // .AddTSMethodDeclaration("GetComponentsInParent<T extends UnityEngine.Component>(type: { new(): T }, includeInactive: boolean): System.Array<T>",
-                //     "GetComponentsInParent", typeof(Type), typeof(bool))
-                // .AddTSMethodDeclaration("GetComponentsInParent<T extends UnityEngine.Component>(type: { new(): T }): System.Array<T>",
-                //     "GetComponentsInParent", typeof(Type))
             ;
 
             TransformType(typeof(MonoBehaviour))
@@ -565,7 +547,8 @@ namespace QuickJS.Editor
 
         public string GetTSRefWrap(string name)
         {
-            return $"{CodeGenerator.NamespaceOfScriptTypes}.Ref<{name}>";
+            
+            return $"jsb.Ref<{name}>";
         }
 
         public string GetTSTypeFullName(ParameterInfo parameter)
@@ -590,9 +573,9 @@ namespace QuickJS.Editor
             {
                 if (isOut)
                 {
-                    return $"{CodeGenerator.NamespaceOfScriptTypes}.Out<{GetTSTypeFullName(type.GetElementType())}>";
+                    return $"jsb.Out<{GetTSTypeFullName(type.GetElementType())}>";
                 }
-                return $"{CodeGenerator.NamespaceOfScriptTypes}.Ref<{GetTSTypeFullName(type.GetElementType())}>";
+                return $"jsb.Ref<{GetTSTypeFullName(type.GetElementType())}>";
             }
             List<string> names;
             if (_tsTypeNameMap.TryGetValue(type, out names))
@@ -1300,7 +1283,35 @@ namespace QuickJS.Editor
                 .AddTSMethodDeclaration("SetValue(value: T, index: number): T", "SetValue", typeof(object), typeof(int))
                 .AddTSMethodDeclaration("SetValue(value: T, ...index: number[]): T", "SetValue", typeof(object), typeof(int[]))
 
-                // .AddTSMethodDeclaration("static CreateInstance<P>(elementType: P, length1: number, length2: number, length3: number): System.Array<P>", "CreateInstance", typeof(Type), typeof(int), typeof(int), typeof(int))
+                .AddTSMethodDeclaration("static BinarySearch<T>(array: System.Array<T>, index: number, length: number, value: System.Object, comparer: any): number", "BinarySearch", typeof(Array), typeof(int), typeof(int), typeof(object), typeof(System.Collections.IComparer))
+                .AddTSMethodDeclaration("static BinarySearch<T>(array: System.Array<T>, index: number, length: number, value: System.Object): number", "BinarySearch", typeof(Array), typeof(int), typeof(int), typeof(object))
+                .AddTSMethodDeclaration("static BinarySearch<T>(array: System.Array<T>, value: System.Object, comparer: any): number", "BinarySearch", typeof(Array), typeof(object), typeof(System.Collections.IComparer))
+                .AddTSMethodDeclaration("static BinarySearch<T>(array: System.Array<T>, value: System.Object): number", "BinarySearch", typeof(Array), typeof(object))
+                .AddTSMethodDeclaration("static IndexOf<T>(array: System.Array<T>, value: System.Object, startIndex: number, count: number): number", "IndexOf", typeof(Array), typeof(object), typeof(int), typeof(int))
+                .AddTSMethodDeclaration("static IndexOf<T>(array: System.Array<T>, value: System.Object, startIndex: number): number", "IndexOf", typeof(Array), typeof(object), typeof(int))
+                .AddTSMethodDeclaration("static IndexOf<T>(array: System.Array<T>, value: System.Object): number", "IndexOf", typeof(Array), typeof(object))
+                .AddTSMethodDeclaration("static LastIndexOf<T>(array: System.Array<T>, value: System.Object, startIndex: number, count: number): number", "LastIndexOf", typeof(Array), typeof(object), typeof(int), typeof(int))
+                .AddTSMethodDeclaration("static LastIndexOf<T>(array: System.Array<T>, value: System.Object, startIndex: number): number", "LastIndexOf", typeof(Array), typeof(object), typeof(int))
+                .AddTSMethodDeclaration("static LastIndexOf<T>(array: System.Array<T>, value: System.Object): number", "LastIndexOf", typeof(Array), typeof(object))
+                .AddTSMethodDeclaration("static Reverse<T>(array: System.Array<T>, index: number, length: number): void", "Reverse", typeof(Array), typeof(int), typeof(int))
+                .AddTSMethodDeclaration("static Reverse<T>(array: System.Array<T>): void", "Reverse", typeof(Array))
+                .AddTSMethodDeclaration("static Sort<T>(keys: System.Array<T>, items: System.Array<T>, index: number, length: number, comparer: any): void", "Sort", typeof(Array), typeof(Array), typeof(int), typeof(int), typeof(System.Collections.IComparer))
+                .AddTSMethodDeclaration("static Sort<T>(array: System.Array<T>, index: number, length: number, comparer: any): void", "Sort", typeof(Array), typeof(int), typeof(int), typeof(System.Collections.IComparer))
+                .AddTSMethodDeclaration("static Sort<T>(keys: System.Array<T>, items: System.Array<T>, index: number, length: number): void", "Sort", typeof(Array), typeof(Array), typeof(int), typeof(int))
+                .AddTSMethodDeclaration("static Sort<T>(array: System.Array<T>, index: number, length: number): void", "Sort", typeof(Array), typeof(int), typeof(int))
+                .AddTSMethodDeclaration("static Sort<T>(keys: System.Array<T>, items: System.Array<T>, comparer: any): void", "Sort", typeof(Array), typeof(Array), typeof(System.Collections.IComparer))
+                .AddTSMethodDeclaration("static Sort<T>(array: System.Array<T>, comparer: any): void", "Sort", typeof(Array), typeof(System.Collections.IComparer))
+                .AddTSMethodDeclaration("static Sort<T>(keys: System.Array<T>, items: System.Array<T>): void", "Sort", typeof(Array), typeof(Array))
+                .AddTSMethodDeclaration("static Sort<T>(array: System.Array<T>): void", "Sort", typeof(Array))
+                .AddTSMethodDeclaration("static CreateInstance<T>(elementType: any, length1: number, length2: number, length3: number): System.Array<T>", "CreateInstance", typeof(Type), typeof(int), typeof(int), typeof(int))
+                .AddTSMethodDeclaration("static CreateInstance<T>(elementType: any, length1: number, length2: number): System.Array<T>", "CreateInstance", typeof(Type), typeof(int), typeof(int))
+                .AddTSMethodDeclaration("static CreateInstance<T>(elementType: any, lengths: System.Array<number>, lowerBounds: System.Array<number>): System.Array<T>", "CreateInstance", typeof(Type), typeof(int[]), typeof(int[]))
+                .AddTSMethodDeclaration("static CreateInstance<T>(elementType: any, length: number): System.Array<T>", "CreateInstance", typeof(Type), typeof(int))
+                .AddTSMethodDeclaration("static CreateInstance<T>(elementType: any, ...lengths: number[]): System.Array<T>", "CreateInstance", typeof(Type), typeof(int[]))
+                .AddTSMethodDeclaration("static Clear<T>(array: System.Array<T>, index: number, length: number): void", "Clear", typeof(Array), typeof(int), typeof(int))
+                .AddTSMethodDeclaration("static Copy<T>(sourceArray: System.Array<T>, sourceIndex: number, destinationArray: System.Array<T>, destinationIndex: number, length: number): void", "Copy", typeof(Array), typeof(int), typeof(Array), typeof(int), typeof(int))
+                .AddTSMethodDeclaration("static Copy<T>(sourceArray: System.Array<T>, destinationArray: System.Array<T>, length: number): void", "Copy", typeof(Array), typeof(Array), typeof(int))
+                .AddTSMethodDeclaration("static ConstrainedCopy<T>(sourceArray: System.Array<T>, sourceIndex: number, destinationArray: System.Array<T>, destinationIndex: number, length: number): void", "ConstrainedCopy", typeof(Array), typeof(int), typeof(Array), typeof(int), typeof(int))
             ;
 
             AddExportedType(typeof(byte));
