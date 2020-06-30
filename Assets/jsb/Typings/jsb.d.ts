@@ -1,8 +1,10 @@
 
-
+/**
+ * 打印日志
+ */
 declare function print(...args: any[]): void;
 
-declare function require(id: string): any;
+// declare function require(id: string): any;
 
 // /**
 //  * 执行指定脚本 （类似eval）
@@ -28,10 +30,35 @@ declare function require(id: string): any;
 
 declare namespace jsb {
 
+    /**
+     * 替换C#代码执行 (未完成此功能)
+     */
+    namespace hotfix {
+        /**
+         * 替换 C# 方法 (此方法为测试方法, 最终将移除)
+         */
+        function replace_single(type: string, func_name: string, func: Function): void
+
+        /**
+         * 在 C# 方法执行前插入执行 (未完成此功能)
+         */
+        function before(type: string, func_name: string, func: Function): void
+
+        /**
+         * 在 C# 方法执行后插入执行 (未完成此功能)
+         */
+        function after(type: string, func_name: string, func: Function): void
+    }
+
+    /**
+     * duck type
+     */
     interface Task<T> {
     }
     
-    function Yield(task: Task<T>): Promise<T>;
+    // @ts-ignore
+    // function Yield(instruction: UnityEngine.YieldInstruction): Promise<any>;
+    function Yield<T>(task: Task<T>): Promise<T>;
 
     // function ToJSArray(o: any): Array;
     function ToJSArray<T>(o: System.Array<T>): Array<T>;

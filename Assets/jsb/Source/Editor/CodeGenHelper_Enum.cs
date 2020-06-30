@@ -15,7 +15,7 @@ namespace QuickJS.Editor
         : base(cg, type)
         {
             this.cg.AppendJSDoc(type.type);
-            var prefix = !string.IsNullOrEmpty(typeBindingInfo.jsNamespace) ? "declare " : "";
+            var prefix = string.IsNullOrEmpty(typeBindingInfo.jsNamespace) ? "declare " : "";
             this.cg.tsDeclare.AppendLine("{0}enum {1} {{", prefix, typeBindingInfo.jsName);
             this.cg.tsDeclare.AddTabLevel();
         }

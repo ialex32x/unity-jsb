@@ -21,7 +21,7 @@
         "noImplicitAny": false,
         // use 'skipLibCheck' if compilation reports error TS2300 on Promise/Proxy type definition
         // or just ignore the errors (the typescript source will still be compiled into js)
-        "skipLibCheck": true,
+        // "skipLibCheck": true,
         // "strictNullChecks": true,
         "allowJs": true,
         "inlineSourceMap": false,

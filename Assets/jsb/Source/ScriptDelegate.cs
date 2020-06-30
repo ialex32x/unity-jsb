@@ -31,6 +31,21 @@ namespace QuickJS
             }
         }
 
+        public unsafe JSValue Invoke(JSContext ctx, JSValue this_obj)
+        {
+            JSValue rval = JSApi.JS_Call(ctx, _jsValue, this_obj, 0, (JSValue*) 0);
+            return rval;
+        }
+        
+        public unsafe JSValue Invoke(JSContext ctx, JSValue this_obj, int argc, JSValue[] argv)
+        {
+            fixed (JSValue* ptr = argv)
+            {
+                JSValue rval = JSApi.JS_Call(ctx, _jsValue, this_obj, argc, ptr);
+                return rval;
+            }
+        }
+
         protected override void Dispose(bool bManaged)
         {
             if (_context != null)
@@ -39,6 +54,7 @@ namespace QuickJS
 
                 _context = null;
                 context.GetRuntime().FreeDelegationValue(_jsValue);
+                _jsValue = JSApi.JS_UNDEFINED;
             }
         }
     }

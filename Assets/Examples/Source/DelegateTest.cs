@@ -45,5 +45,11 @@ namespace jsb
         {
             return onFunc == null ? a1 : onFunc.Invoke(a1);
         }
+
+        public static void CallHotfixTest()
+        {
+            var h = new HotfixTest();
+            UnityEngine.Debug.LogFormat("HotfixTest: {0}", h.Foo(12));
+        }
     }
 }

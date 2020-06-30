@@ -191,7 +191,7 @@ namespace QuickJS.Binding
             if (proto.IsNullish())
             {
                 var register = new TypeRegister(runtime, runtime.GetContext(ctx));
-                var dynamicType = new DynamicType(type, false);
+                var dynamicType = new DynamicType(type, true);
                 dynamicType.Bind(register);
                 register.Finish();
                 proto = db.GetPropertyOf(type);

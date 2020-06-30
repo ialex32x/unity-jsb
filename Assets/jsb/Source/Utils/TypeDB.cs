@@ -52,7 +52,11 @@ namespace QuickJS.Utils
                 fn.target = target;
                 return target;
             }
-            return null;
+            else
+            {
+                throw new ArgumentNullException("unknown delegate type: " + type);
+            }
+            // return null;
         }
 
         // 注册新类型, 会增加 proto 的引用计数
