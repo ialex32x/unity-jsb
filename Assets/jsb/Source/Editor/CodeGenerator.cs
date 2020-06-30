@@ -87,8 +87,11 @@ namespace QuickJS.Editor
                             for (var i = 0; i < exportedHotfixDelegates.Count; i++)
                             {
                                 var bindingInfo = exportedHotfixDelegates[i];
-                                using (new HotfixDelegateCodeGen(this, bindingInfo, i))
+                                using (new PreservedCodeGen(this))
                                 {
+                                    using (new HotfixDelegateCodeGen(this, bindingInfo, i))
+                                    {
+                                    }
                                 }
                             }
 
@@ -102,8 +105,11 @@ namespace QuickJS.Editor
                                     specs.Add(nargs, 0);
                                 }
                                 this.bindingManager.OnPreGenerateDelegate(bindingInfo);
-                                using (new DelegateCodeGen(this, bindingInfo, i))
+                                using (new PreservedCodeGen(this))
                                 {
+                                    using (new DelegateCodeGen(this, bindingInfo, i))
+                                    {
+                                    }
                                 }
                                 this.bindingManager.OnPostGenerateDelegate(bindingInfo);
                             }

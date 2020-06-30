@@ -207,6 +207,7 @@ namespace QuickJS.Editor
             var delegateSig = GetSignature(delegateBindingInfo, index, arglist, out sig);
 
             this.cg.cs.AppendLine(delegateSig);
+            this.cg.cs.AppendLine("[UnityEngine.Scripting.Preserve]");
             this.cg.cs.AppendLine("[{0}(typeof({1}))]",
                 this.cg.bindingManager.GetCSTypeFullName(typeof(JSDelegateAttribute)),
                 sig);
