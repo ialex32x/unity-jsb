@@ -97,19 +97,16 @@ print("Equals(unknown, camera):", System.Object.Equals(unknown, camera));
 print("ReferenceEquals(unknown, unknown):", System.Object.ReferenceEquals(unknown, unknown));
 print("ReferenceEquals(unknown, camera):", System.Object.ReferenceEquals(unknown, camera));
 
-jsb.DelegateTest.CallHotfixTest();
-
-jsb.hotfix.replace_single("HotfixTest", "Foo", function (x: number) {
-    print("1 replace by js func, this.value = ", this.value);
-    return x * 3;
-});
-
-jsb.hotfix.replace_single("HotfixTest2", "Foo", function (x: number) {
-    print("2 replace by js func, this.value = ", this.value);
-    return x * 6;
-});
-
-jsb.DelegateTest.CallHotfixTest();
+// jsb.DelegateTest.CallHotfixTest();
+// jsb.hotfix.replace_single("HotfixTest", "Foo", function (x: number) {
+//     print("1 replace by js func, this.value = ", this.value);
+//     return x * 3;
+// });
+// jsb.hotfix.replace_single("HotfixTest2", "Foo", function (x: number) {
+//     print("2 replace by js func, this.value = ", this.value);
+//     return x * 6;
+// });
+// jsb.DelegateTest.CallHotfixTest();
 
 var takeBuffer = NoNamespaceClass.MakeBytes();
 var testBuffer = new Uint8Array(takeBuffer);
