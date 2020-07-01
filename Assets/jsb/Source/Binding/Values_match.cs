@@ -79,7 +79,7 @@ namespace QuickJS.Binding
                 {
                     return true;
                 }
-                
+
                 return false;
             }
 
@@ -87,9 +87,24 @@ namespace QuickJS.Binding
             {
                 size_t psize;
                 var ptr = JSApi.JS_GetArrayBuffer(ctx, out psize, jsValue);
-                return ptr != IntPtr.Zero;
+                if (ptr != IntPtr.Zero)
+                {
+                    return true;
+                }
+
+                var asBuffer = JSApi.JS_GetProperty(ctx, jsValue, ScriptEngine.GetContext(ctx).GetAtom("buffer"));
+                if (asBuffer.IsObject())
+                {
+                    ptr = JSApi.JS_GetArrayBuffer(ctx, out psize, asBuffer);
+                    JSApi.JS_FreeValue(ctx, asBuffer);
+                    return ptr != IntPtr.Zero;
+                }
+                else
+                {
+                    JSApi.JS_FreeValue(ctx, asBuffer);
+                }
             }
-            
+
             return false;
         }
 

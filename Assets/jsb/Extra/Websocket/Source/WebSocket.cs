@@ -753,7 +753,7 @@ namespace WebSockets
                 {
                     size_t psize;
                     var pointer = JSApi.JS_GetArrayBuffer(ctx, out psize, argv[0]);
-                    if (pointer != IntPtr.Zero && psize > 0)
+                    if (pointer != IntPtr.Zero)
                     {
                         var buffer = ScriptEngine.AllocByteBuffer(ctx, psize + WSApi.LWS_PRE);
                         if (buffer != null)
@@ -771,6 +771,33 @@ namespace WebSockets
                     }
                     else
                     {
+                        var asBuffer = JSApi.JS_GetProperty(ctx, argv[0], ScriptEngine.GetContext(ctx).GetAtom("buffer"));
+                        if (asBuffer.IsObject())
+                        {
+                            pointer = JSApi.JS_GetArrayBuffer(ctx, out psize, asBuffer);
+                            JSApi.JS_FreeValue(ctx, asBuffer);
+                            if (pointer != IntPtr.Zero)
+                            {
+                                var buffer = ScriptEngine.AllocByteBuffer(ctx, psize + WSApi.LWS_PRE);
+                                if (buffer != null)
+                                {
+                                    buffer.WriteBytes(WSApi.LWS_PRE);
+                                    buffer.WriteBytes(pointer, psize);
+                                    self._pending.Enqueue(new Packet(false, buffer));
+                                    self._bufferedAmount += psize;
+                                    WSApi.lws_callback_on_writable(self._wsi);
+                                    return JSApi.JS_UNDEFINED;
+                                }
+                                else
+                                {
+                                    return JSApi.JS_ThrowInternalError(ctx, "buf alloc failed");
+                                }
+                            }
+                        }
+                        else
+                        {
+                            JSApi.JS_FreeValue(ctx, asBuffer);
+                        }
                         return JSApi.JS_ThrowInternalError(ctx, "unknown buf type");
                     }
                 }

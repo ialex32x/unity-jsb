@@ -68,5 +68,10 @@ namespace QuickJS.Native
         {
             return new UIntPtr(value._value);
         }
+
+        public override string ToString()
+        {
+            return ((ulong)this).ToString();
+        }
     }
 }
