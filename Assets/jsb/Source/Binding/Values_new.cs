@@ -155,7 +155,7 @@ namespace QuickJS.Binding
             return val;
         }
 
-        //NOTE: 代替 bind_native, 用于对 c# 对象产生 js 包装对象
+        //NOTE: 用于对 c# 对象产生 js 包装对象
         // 分两种情况, 这里是第1种, 在构造中使用
         public static JSValue NewBridgeClassObject(JSContext ctx, JSValue new_target, object o, int type_id)
         {
@@ -166,14 +166,11 @@ namespace QuickJS.Binding
             {
                 cache.RemoveObject(object_id);
             }
-            else
-            {
-                // JSApi.JSB_SetBridgeType(ctx, val, type_id);
-            }
+            
             return val;
         }
 
-        //NOTE: 代替 bind_native, 用于对 c# 对象产生 js 包装对象
+        //NOTE: 用于对 c# 对象产生 js 包装对象
         // 分两种情况, 这里是第2种, 用于一般情况
         public static JSValue NewBridgeClassObject(JSContext ctx, object o)
         {
@@ -181,11 +178,10 @@ namespace QuickJS.Binding
             {
                 return JSApi.JS_UNDEFINED;
             }
-            // int type_id;
+            
             var type = o.GetType();
             var runtime = ScriptEngine.GetRuntime(ctx);
             var db = runtime.GetTypeDB();
-            // var proto = db.FindPrototypeOf(type, out type_id); 
             var proto = db.GetPropertyOf(type);
 
             if (proto.IsNullish())
@@ -208,10 +204,7 @@ namespace QuickJS.Binding
             {
                 cache.RemoveObject(object_id);
             }
-            else
-            {
-                // JSApi.JSB_SetBridgeType(ctx, val, type_id);
-            }
+
             return val;
         }
     }

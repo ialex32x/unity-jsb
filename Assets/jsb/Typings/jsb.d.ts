@@ -57,7 +57,7 @@ declare namespace jsb {
     }
     
     // @ts-ignore
-    // function Yield(instruction: UnityEngine.YieldInstruction): Promise<any>;
+    // function yield(instruction: UnityEngine.YieldInstruction): Promise<any>;
     function Yield<T>(task: Task<T>): Promise<T>;
 
     // function ToJSArray(o: any): Array;

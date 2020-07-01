@@ -157,8 +157,13 @@ namespace QuickJS.Editor
             SetTypeBlocked(typeof(UnityEngine.ISerializationCallbackReceiver));
 
             TransformType(typeof(object))
-                .RenameTSMethod("$Equals", "Equals", typeof(object))
-                .RenameTSMethod("$Equals", "Equals", typeof(object), typeof(object))
+                // .RenameTSMethod("$Equals", "Equals", typeof(object))
+                // .RenameTSMethod("$Equals", "Equals", typeof(object), typeof(object))
+            ;
+
+            TransformType(typeof(string))
+                .AddTSMethodDeclaration("static Equals(a: string | System.Object, b: string | System.Object, comparisonType: any): boolean", "Equals", typeof(string), typeof(string), typeof(StringComparison))
+                .AddTSMethodDeclaration("static Equals(a: string | System.Object, b: string | System.Object): boolean", "Equals", typeof(string), typeof(string))
             ;
 
             TransformType(typeof(Vector3))
