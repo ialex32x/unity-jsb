@@ -28,7 +28,7 @@ namespace QuickJS.Binding
         {
             if (!_fieldInfo.IsPublic && !_type.privateAccess)
             {
-                throw new InaccessableMemberException(_fieldInfo.Name);
+                throw new InaccessibleMemberException(_fieldInfo.Name);
             }
             object self = null;
             if (!_fieldInfo.IsStatic)
@@ -46,7 +46,7 @@ namespace QuickJS.Binding
         {
             if (!_fieldInfo.IsPublic && !_type.privateAccess)
             {
-                throw new InaccessableMemberException(_fieldInfo.Name);
+                throw new InaccessibleMemberException(_fieldInfo.Name);
             }
             object self = null;
             if (!_fieldInfo.IsStatic)
@@ -86,7 +86,7 @@ namespace QuickJS.Binding
             }
             if (!_propertyInfo.GetMethod.IsPublic && !_type.privateAccess)
             {
-                throw new InaccessableMemberException(_propertyInfo.Name);
+                throw new InaccessibleMemberException(_propertyInfo.Name);
             }
             object self = null;
             if (!_propertyInfo.GetMethod.IsStatic)
@@ -108,7 +108,7 @@ namespace QuickJS.Binding
             }
             if (!_propertyInfo.SetMethod.IsPublic && !_type.privateAccess)
             {
-                throw new InaccessableMemberException(_propertyInfo.Name);
+                throw new InaccessibleMemberException(_propertyInfo.Name);
             }
             object self = null;
             if (!_propertyInfo.SetMethod.IsStatic)
