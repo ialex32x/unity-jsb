@@ -236,6 +236,22 @@ namespace QuickJS.Utils
             }
         }
 
+        public JSValue NewDynamicConstructor(JSAtom name, IDynamicMethod method)
+        {
+            if (method == null)
+            {
+                var funValue = JSApi.JSB_NewCFunctionMagic(_context, JSApi.class_private_ctor, name, 0, JSCFunctionEnum.JS_CFUNC_constructor_magic, 0);
+                return funValue;
+            }
+            else
+            {
+                var magic = _dynamicMethods.Count;
+                var funValue = JSApi.JSB_NewCFunctionMagic(_context, JSApi._DynamicMethodInvoke, name, 0, JSCFunctionEnum.JS_CFUNC_constructor_magic, magic);
+                _dynamicMethods.Add(method);
+                return funValue;
+            }
+        }
+
         public void NewDynamicFieldGetter(JSAtom name, IDynamicField field, out JSValue getter, out JSValue setter)
         {
             var magic = _dynamicFields.Count;

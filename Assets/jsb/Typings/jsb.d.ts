@@ -64,6 +64,8 @@ declare namespace jsb {
     function ToJSArray<T>(o: System.Array<T>): Array<T>;
     // function ToJSArray<T>(o: any): Array<T>;
 
+    function Import(type: string, privateAccess?: boolean): FunctionConstructor;
+
     /**
      * 封装 C# event 调用约定
      */

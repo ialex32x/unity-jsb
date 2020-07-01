@@ -38,3 +38,19 @@ public class HotfixTest2
         return x;
     }
 }
+
+public class NotExportedClass
+{
+    private int _value;
+
+    public int value
+    {
+        get { return _value; }
+        set { _value = value; }
+    }
+    
+    public void Foo()
+    {
+        Debug.Log("NotExportedClass.Foo");
+    }
+}
