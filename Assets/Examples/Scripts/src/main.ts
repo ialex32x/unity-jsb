@@ -114,3 +114,8 @@ var backBuffer = new Uint8Array(NoNamespaceClass.TestBytes(testBuffer));
 
 backBuffer.forEach(val => print(val));
 
+let NotExportedClass = jsb.Import("NotExportedClass");
+let hidden_inst : any = new NotExportedClass();
+hidden_inst.Foo();
+hidden_inst.value = 123;
+print(hidden_inst.value);

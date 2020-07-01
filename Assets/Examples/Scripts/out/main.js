@@ -85,4 +85,9 @@ var takeBuffer = NoNamespaceClass.MakeBytes();
 var testBuffer = new Uint8Array(takeBuffer);
 var backBuffer = new Uint8Array(NoNamespaceClass.TestBytes(testBuffer));
 backBuffer.forEach(val => print(val));
+let NotExportedClass = jsb.Import("NotExportedClass");
+let hidden_inst = new NotExportedClass();
+hidden_inst.Foo();
+hidden_inst.value = 123;
+print(hidden_inst.value);
 //# sourceMappingURL=main.js.map

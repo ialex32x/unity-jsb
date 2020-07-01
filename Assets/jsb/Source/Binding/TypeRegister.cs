@@ -158,7 +158,7 @@ namespace QuickJS.Binding
             JSContext ctx = _context;
             var protoVal = JSApi.JS_NewObject(ctx);
             var type_id = RegisterType(type, protoVal);
-            var ctorVal = _db.NewDynamicMethod(nameAtom, dynamicMethod);
+            var ctorVal = _db.NewDynamicConstructor(nameAtom, dynamicMethod);
             var decl = new ClassDecl(this, ctorVal, protoVal, type);
             JSApi.JS_SetConstructor(ctx, ctorVal, protoVal);
             JSApi.JSB_SetBridgeType(ctx, ctorVal, type_id);

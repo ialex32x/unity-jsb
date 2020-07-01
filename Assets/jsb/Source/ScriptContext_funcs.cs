@@ -128,13 +128,67 @@ namespace QuickJS
             return JSApi.JS_ThrowInternalError(ctx, "type YieldInstruction or Task expected");
         }
 
+        [MonoPInvokeCallback(typeof(JSCFunction))]
+        public static JSValue js_import_type(JSContext ctx, JSValue this_obj, int argc, JSValue[] argv)
+        {
+            if (argc < 1 || !argv[0].IsString())
+            {
+                return JSApi.JS_ThrowInternalError(ctx, "type_name expected");
+            }
+
+            var type_name = JSApi.GetString(ctx, argv[0]);
+            var type = Assembly.GetExecutingAssembly().GetType(type_name);
+            if (type == null)
+            {
+                return JSApi.JS_UNDEFINED;
+            }
+
+            var privateAccess = false;
+            if (argc > 1 && argv[1].IsBoolean())
+            {
+                if (JSApi.JS_ToBool(ctx, argv[1]) == 1)
+                {
+                    privateAccess = true;
+                }
+            }
+
+            var runtime = ScriptEngine.GetRuntime(ctx);
+            var db = runtime.GetTypeDB();
+            var proto = db.GetPrototypeOf(type);
+
+            if (privateAccess)
+            {
+                var dynamicType = db.GetDynamicType(type);
+
+                if (proto.IsNullish())
+                {
+                    proto = db.GetPrototypeOf(type);
+                }
+
+                if (dynamicType != null)
+                {
+                    dynamicType.OpenPrivateAccess();
+                }
+            }
+            else
+            {
+                if (proto.IsNullish())
+                {
+                    db.GetDynamicType(type);
+                    proto = db.GetPrototypeOf(type);
+                }
+            }
+
+            return JSApi.JS_GetProperty(ctx, proto, JSApi.JS_ATOM_constructor);
+        }
+
         //TODO: 临时代码
         [MonoPInvokeCallback(typeof(JSCFunction))]
         public static JSValue hotfix_replace_single(JSContext ctx, JSValue this_obj, int argc, JSValue[] argv)
         {
             if (argc < 3)
             {
-                return JSApi.JS_ThrowInternalError(ctx, "type_name, func_name, func  expected");
+                return JSApi.JS_ThrowInternalError(ctx, "type_name, func_name, func expected");
             }
             if (!argv[0].IsString() || !argv[1].IsString() || JSApi.JS_IsFunction(ctx, argv[2]) != 1)
             {

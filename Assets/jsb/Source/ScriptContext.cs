@@ -259,6 +259,7 @@ namespace QuickJS
             var ns_jsb = register.CreateNamespace("jsb");
             ns_jsb.AddFunction("Yield", yield_func, 1);
             ns_jsb.AddFunction("ToJSArray", to_js_array, 1);
+            ns_jsb.AddFunction("Import", js_import_type, 2);
             {
                 var ns_jsb_hotfix = ns_jsb.CreateNamespace("hotfix");
                 ns_jsb_hotfix.AddFunction("replace_single", hotfix_replace_single, 2);
