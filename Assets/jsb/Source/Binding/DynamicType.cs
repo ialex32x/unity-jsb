@@ -8,7 +8,8 @@ namespace QuickJS.Binding
 {
     public class DynamicType
     {
-        public const BindingFlags DefaultFlags = BindingFlags.DeclaredOnly | BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic;
+        public const BindingFlags PublicFlags = BindingFlags.DeclaredOnly | BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public;
+        public const BindingFlags DefaultFlags = PublicFlags | BindingFlags.NonPublic;
 
         private Type _type;
         private int _type_id;

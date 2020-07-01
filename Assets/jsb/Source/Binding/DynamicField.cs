@@ -28,7 +28,7 @@ namespace QuickJS.Binding
         {
             if (!_fieldInfo.IsPublic && !_type.privateAccess)
             {
-                return JSApi.JS_ThrowInternalError(ctx, "field is inaccessible due to its protection level");
+                throw new InaccessableMemberException(_fieldInfo.Name);
             }
             object self = null;
             if (!_fieldInfo.IsStatic)
@@ -46,7 +46,7 @@ namespace QuickJS.Binding
         {
             if (!_fieldInfo.IsPublic && !_type.privateAccess)
             {
-                return JSApi.JS_ThrowInternalError(ctx, "field is inaccessible due to its protection level");
+                throw new InaccessableMemberException(_fieldInfo.Name);
             }
             object self = null;
             if (!_fieldInfo.IsStatic)
@@ -60,7 +60,7 @@ namespace QuickJS.Binding
             object t_val = null;
             if (!Values.js_get_var(ctx, val, _fieldInfo.FieldType, out t_val))
             {
-                return JSApi.JS_ThrowInternalError(ctx, "failed to cast val");
+                throw new InvalidCastException();
             }
             _fieldInfo.SetValue(self, t_val);
             return JSApi.JS_UNDEFINED;
@@ -82,11 +82,11 @@ namespace QuickJS.Binding
         {
             if (_propertyInfo.GetMethod == null)
             {
-                return JSApi.JS_ThrowInternalError(ctx, "property getter is null");
+                throw new NullReferenceException("property getter is null");
             }
             if (!_propertyInfo.GetMethod.IsPublic && !_type.privateAccess)
             {
-                return JSApi.JS_ThrowInternalError(ctx, "property getter is inaccessible due to its protection level");
+                throw new InaccessableMemberException(_propertyInfo.Name);
             }
             object self = null;
             if (!_propertyInfo.GetMethod.IsStatic)
@@ -104,11 +104,11 @@ namespace QuickJS.Binding
         {
             if (_propertyInfo.SetMethod == null)
             {
-                return JSApi.JS_ThrowInternalError(ctx, "property setter is null");
+                throw new NullReferenceException("property setter is null");
             }
             if (!_propertyInfo.SetMethod.IsPublic && !_type.privateAccess)
             {
-                return JSApi.JS_ThrowInternalError(ctx, "property setter is inaccessible due to its protection level");
+                throw new InaccessableMemberException(_propertyInfo.Name);
             }
             object self = null;
             if (!_propertyInfo.SetMethod.IsStatic)
@@ -122,7 +122,7 @@ namespace QuickJS.Binding
             object t_val = null;
             if (!Values.js_get_var(ctx, val, _propertyInfo.PropertyType, out t_val))
             {
-                return JSApi.JS_ThrowInternalError(ctx, "failed to cast val");
+                throw new InvalidCastException();
             }
             _propertyInfo.SetValue(self, t_val);
             return JSApi.JS_UNDEFINED;
