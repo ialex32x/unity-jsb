@@ -188,7 +188,7 @@ namespace QuickJS.IO
             {
                 size = readableBytes;
             }
-            
+
             if (size > 0)
             {
                 System.Runtime.InteropServices.Marshal.Copy(_data, _readPosition, pointer, size);
@@ -345,16 +345,22 @@ namespace QuickJS.IO
 
         public void WriteBytes(System.IO.MemoryStream memoryStream, int size)
         {
-            EnsureCapacity(_writePosition + size);
-            memoryStream.Read(_data, _writePosition, size);
-            _writePosition += size;
+            if (size > 0)
+            {
+                EnsureCapacity(_writePosition + size);
+                memoryStream.Read(_data, _writePosition, size);
+                _writePosition += size;
+            }
         }
 
         public void WriteBytes(IntPtr pointer, int size)
         {
-            EnsureCapacity(_writePosition + size);
-            System.Runtime.InteropServices.Marshal.Copy(pointer, _data, _writePosition, size);
-            _writePosition += size;
+            if (size > 0)
+            {
+                EnsureCapacity(_writePosition + size);
+                System.Runtime.InteropServices.Marshal.Copy(pointer, _data, _writePosition, size);
+                _writePosition += size;
+            }
         }
 
         // 将 other 中所有可读取的字节写入当前 buffer 中

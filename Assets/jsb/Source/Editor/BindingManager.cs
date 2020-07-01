@@ -250,7 +250,7 @@ namespace QuickJS.Editor
             AddTSTypeNameMap(typeof(Vector4), "UnityEngine.Vector4");
             AddTSTypeNameMap(typeof(Quaternion), "UnityEngine.Quaternion");
             AddTSTypeNameMap(typeof(ScriptValueArray), "any[]");
-            AddTSTypeNameMap(typeof(QuickJS.IO.ByteBuffer), "jsb.ByteBuffer", "Buffer");
+            AddTSTypeNameMap(typeof(QuickJS.IO.ByteBuffer), "jsb.ByteBuffer", CodeGenerator.NameOfBuffer);
 
             TransformType(typeof(QuickJS.IO.ByteBuffer))
                 .Rename("jsb.ByteBuffer")
@@ -642,7 +642,7 @@ namespace QuickJS.Editor
             {
                 if (type.GetElementType() == typeof(byte))
                 {
-                    return "Buffer";
+                    return CodeGenerator.NameOfBuffer;
                 }
                 //TODO: 改成使用 JS Proxy 暴露 C# 数组?
                 var elementType = type.GetElementType();

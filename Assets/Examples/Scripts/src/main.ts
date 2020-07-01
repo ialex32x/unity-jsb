@@ -102,3 +102,10 @@ jsb.hotfix.replace_single("HotfixTest", "Foo", function (x: number) {
 });
 
 jsb.DelegateTest.CallHotfixTest();
+
+var takeBuffer = NoNamespaceClass.MakeBytes();
+var testBuffer = new Uint8Array(takeBuffer);
+var backBuffer = new Uint8Array(NoNamespaceClass.TestBytes(testBuffer));
+
+backBuffer.forEach(val => print(val));
+

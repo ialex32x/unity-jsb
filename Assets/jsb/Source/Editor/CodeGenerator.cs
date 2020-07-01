@@ -17,6 +17,7 @@ namespace QuickJS.Editor
         public const string NameOfBindingList = "_QuickJSBindings";
         public const string NamespaceOfScriptTypes = "QuickJS";
         public const string NamespaceOfInternalScriptTypes = "QuickJS.Internal";
+        public const string NameOfBuffer = "ArrayBuffer";
 
         public BindingManager bindingManager;
         public TextGenerator cs;

@@ -203,6 +203,37 @@ namespace QuickJS.Binding
                 }
                 return true;
             }
+
+            // check ArrayBuffer 
+            size_t psize;
+            var pbuf = JSApi.JS_GetArrayBuffer(ctx, out psize, val);
+
+            if (pbuf != IntPtr.Zero)
+            {
+                o = new byte[psize];
+                Marshal.Copy(pbuf, o, 0, psize);
+                return true;
+            }
+
+            // check TypedArray
+            var asBuffer = JSApi.JS_GetProperty(ctx, val, ScriptEngine.GetContext(ctx).GetAtom("buffer"));
+            if (asBuffer.IsObject())
+            {
+                pbuf = JSApi.JS_GetArrayBuffer(ctx, out psize, asBuffer);
+                JSApi.JS_FreeValue(ctx, asBuffer);
+
+                if (pbuf != IntPtr.Zero)
+                {
+                    o = new byte[psize];
+                    Marshal.Copy(pbuf, o, 0, psize);
+                    return true;
+                }
+            }
+            else
+            {
+                JSApi.JS_FreeValue(ctx, asBuffer);
+            }
+
             if (isArray == -1)
             {
                 o = null;
@@ -976,8 +1007,27 @@ namespace QuickJS.Binding
                 if (allocator != null)
                 {
                     var length = (int)psize;
-                    if (length > 0)
+
+                    o = allocator.Alloc(length);
+                    allocator.AutoRelease(o);
+                    o.WriteBytes(pointer, length);
+                    return true;
+                }
+            }
+
+            var asBuffer = JSApi.JS_GetProperty(ctx, val, ScriptEngine.GetContext(ctx).GetAtom("buffer"));
+            if (asBuffer.IsObject())
+            {
+                pointer = JSApi.JS_GetArrayBuffer(ctx, out psize, asBuffer);
+                JSApi.JS_FreeValue(ctx, asBuffer);
+
+                if (pointer != IntPtr.Zero)
+                {
+                    var allocator = ScriptEngine.GetRuntime(ctx).GetByteBufferAllocator();
+                    if (allocator != null)
                     {
+                        var length = (int)psize;
+
                         o = allocator.Alloc(length);
                         allocator.AutoRelease(o);
                         o.WriteBytes(pointer, length);
@@ -985,6 +1035,11 @@ namespace QuickJS.Binding
                     }
                 }
             }
+            else
+            {
+                JSApi.JS_FreeValue(ctx, asBuffer);
+            }
+            
             o = null;
             return false;
         }
@@ -1070,7 +1125,7 @@ namespace QuickJS.Binding
             o = null;
             return false;
         }
-        
+
         public static bool js_get_classvalue_array<T>(JSContext ctx, JSValue val, out T[] o)
         where T : class
         {
