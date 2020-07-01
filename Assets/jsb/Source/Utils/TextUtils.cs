@@ -16,7 +16,9 @@ namespace QuickJS.Utils
             _footer = Encoding.UTF8.GetBytes("\n})");
         }
 
-        // 剔除行注释
+        /// <summary>
+        /// 剔除行注释
+        /// </summary>
         public static string NormalizeJson(string json)
         {
             if (json == null)
@@ -66,14 +68,15 @@ namespace QuickJS.Utils
                 return null;
             }
 
-            if (str.EndsWith("\0"))
+            var len = str.Length;
+            if (len > 0 && str[len - 1] == 0)
             {
                 return Encoding.UTF8.GetBytes(str);
             }
 
             var count = Encoding.UTF8.GetByteCount(str);
             var bytes = new byte[count + 1];
-            Encoding.UTF8.GetBytes(str, 0, str.Length, bytes, 0);
+            Encoding.UTF8.GetBytes(str, 0, len, bytes, 0);
 
             return bytes;
         }
