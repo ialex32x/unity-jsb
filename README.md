@@ -222,3 +222,9 @@ JSValueConst JS_GetActiveFunction(JSContext *ctx) { }
 * [ ] ref 传参时, 从 val.target 进行取值 (因为会需要回写target, 保持一致性)
 * [ ] mobile platform build: android
 * [ ] mobile platform build: ios
+* [ ] 静态绑定和反射绑定对重载的处理顺序可能不同
+* [ ] 静态绑定和反射绑定对参数类型的判断可能不同
+* [ ] 静态绑定的类型也可以进行 hotfix
+* [ ] 静态绑定也提供 Private Access
+* [ ] 可以安全的保留 ScriptValue 对象引用
+
