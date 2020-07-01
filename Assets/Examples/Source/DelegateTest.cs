@@ -48,8 +48,11 @@ namespace jsb
 
         public static void CallHotfixTest()
         {
-            var h = new HotfixTest();
-            UnityEngine.Debug.LogFormat("HotfixTest: {0}", h.Foo(12));
+            var h1 = new HotfixTest();
+            UnityEngine.Debug.LogFormat("HotfixTest1: {0}", h1.Foo(12));
+
+            var h2 = new HotfixTest2();
+            UnityEngine.Debug.LogFormat("HotfixTest2: {0}", h2.Foo(12));
         }
     }
 }

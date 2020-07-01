@@ -15,30 +15,30 @@ namespace QuickJS.Binding
 
         private Type _type;
         private int _type_id;
-        //TODO: 做成开关, 不可访问的情况下访问时抛异常
         private bool _privateAccess;
 
         public int id { get { return _type_id; } }
+
+        public Type type { get { return _type; } }
 
         public bool privateAccess
         {
             get { return _privateAccess; }
         }
 
-        //TODO: 缓存已经反射的成员, 以支持多次进行不同程度的反射
-        // private IDynamicMethod _constructor;
-        // private Dictionary<string, IDynamicMethod> _methods = new Dictionary<string, IDynamicMethod>();
-
-        public DynamicType(Type type, bool privateAccess)
+        public DynamicType(Type type)
         {
             _type = type;
             _type_id = -1;
-            _privateAccess = privateAccess;
+            _privateAccess = false;
         }
 
         public void OpenPrivateAccess()
         {
-            _privateAccess = true;
+            if (!_privateAccess)
+            {
+                _privateAccess = true;
+            }
         }
 
         public bool CheckThis(object self)
@@ -104,36 +104,45 @@ namespace QuickJS.Binding
 
         public void Bind(TypeRegister register)
         {
-            // UnityEngine.Debug.LogErrorFormat("dynamic bind {0}", _type);
+            ClassDecl cls;
             var db = register.GetTypeDB();
             var ctx = (JSContext)register.GetContext();
             var flags = DefaultFlags;
-            _type_id = register.RegisterType(_type);
+            var proto = db.GetPrototypeOf(_type, out _type_id);
 
-            #region BindConstructors(register, flags, type_id);
-            var constructors = _type.GetConstructors(flags);
-            var dynamicConstructor = default(IDynamicMethod);
-            if (constructors.Length > 0)
+            if (proto.IsNullish())
             {
-                var count = constructors.Length;
-                if (count == 1)
-                {
-                    dynamicConstructor = new DynamicConstructor(this, constructors[0]);
-                }
-                else
-                {
-                    var overloads = new DynamicMethods(count);
-                    for (var i = 0; i < count; i++)
-                    {
-                        var overload = new DynamicConstructor(this, constructors[i]);
-                        overloads.Add(overload);
-                    }
-                    dynamicConstructor = overloads;
-                }
-            }
-            #endregion 
+                _type_id = register.RegisterType(_type);
 
-            var cls = register.CreateClass(_type.Name, _type, dynamicConstructor);
+                #region BindConstructors(register, flags, type_id);
+                var constructors = _type.GetConstructors(flags);
+                var dynamicConstructor = default(IDynamicMethod);
+                if (constructors.Length > 0)
+                {
+                    var count = constructors.Length;
+                    if (count == 1)
+                    {
+                        dynamicConstructor = new DynamicConstructor(this, constructors[0]);
+                    }
+                    else
+                    {
+                        var overloads = new DynamicMethods(count);
+                        for (var i = 0; i < count; i++)
+                        {
+                            var overload = new DynamicConstructor(this, constructors[i]);
+                            overloads.Add(overload);
+                        }
+                        dynamicConstructor = overloads;
+                    }
+                }
+                #endregion
+
+                cls = register.CreateClass(_type.Name, _type, dynamicConstructor);
+            }
+            else
+            {
+                cls = register.CreateClass(_type, proto);
+            }
 
             #region BindMethods(register, flags);
             var instMap = new Dictionary<string, List<MethodInfo>>();

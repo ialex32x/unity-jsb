@@ -92,13 +92,21 @@ print("end of script");
 let unknown = jsb.DelegateTest.GetNotExportedClass();
 print(unknown.value);
 print(unknown.Add(12, 21));
-
+print("Equals(unknown, unknown):", System.Object.Equals(unknown, unknown));
+print("Equals(unknown, camera):", System.Object.Equals(unknown, camera));
+print("ReferenceEquals(unknown, unknown):", System.Object.ReferenceEquals(unknown, unknown));
+print("ReferenceEquals(unknown, camera):", System.Object.ReferenceEquals(unknown, camera));
 
 jsb.DelegateTest.CallHotfixTest();
 
 jsb.hotfix.replace_single("HotfixTest", "Foo", function (x: number) {
-    print("replace by js func, this.value = ", this.value);
+    print("1 replace by js func, this.value = ", this.value);
     return x * 3;
+});
+
+jsb.hotfix.replace_single("HotfixTest2", "Foo", function (x: number) {
+    print("2 replace by js func, this.value = ", this.value);
+    return x * 6;
 });
 
 jsb.DelegateTest.CallHotfixTest();

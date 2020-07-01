@@ -138,7 +138,29 @@ namespace QuickJS.Binding
                 return js_push_delegate(ctx, (Delegate)o);
             }
 
-            return js_push_object(ctx, (object)o);
+            return js_push_object(ctx, o);
+        }
+
+        // 用于热更 C# 代码中传入的 this
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static JSValue js_push_classvalue_hotfix(JSContext ctx, object this_obj)
+        {
+            if (this_obj == null)
+            {
+                return JSApi.JS_NULL;
+            }
+
+            var type = this_obj.GetType();
+            var runtime = ScriptEngine.GetRuntime(ctx);
+            var db = runtime.GetTypeDB();
+            var dynamicType = db.GetDynamicType(type);
+
+            if (dynamicType != null)
+            {
+                dynamicType.OpenPrivateAccess();
+            }
+
+            return js_push_object(ctx, this_obj);
         }
 
         // push 一个对象实例 
