@@ -73,8 +73,12 @@ print("ReferenceEquals(unknown, unknown):", System.Object.ReferenceEquals(unknow
 print("ReferenceEquals(unknown, camera):", System.Object.ReferenceEquals(unknown, camera));
 jsb.DelegateTest.CallHotfixTest();
 jsb.hotfix.replace_single("HotfixTest", "Foo", function (x) {
-    print("replace by js func, this.value = ", this.value);
+    print("1 replace by js func, this.value = ", this.value);
     return x * 3;
+});
+jsb.hotfix.replace_single("HotfixTest2", "Foo", function (x) {
+    print("2 replace by js func, this.value = ", this.value);
+    return x * 6;
 });
 jsb.DelegateTest.CallHotfixTest();
 var takeBuffer = NoNamespaceClass.MakeBytes();

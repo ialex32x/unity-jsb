@@ -17,6 +17,7 @@ namespace QuickJS.Utils
         private ScriptContext _context;
         private Dictionary<Type, MethodInfo> _delegates = new Dictionary<Type, MethodInfo>(); // 委托对应的 js 绑定函数
         private Dictionary<Type, int> _typeIndex = new Dictionary<Type, int>();
+        private Dictionary<Type, DynamicType> _dynamicTypes = new Dictionary<Type, DynamicType>();
         private List<Type> _types = new List<Type>(); // 可用 索引 反查 Type
         private Dictionary<Type, JSValue> _prototypes = new Dictionary<Type, JSValue>();
         private List<IDynamicMethod> _dynamicMethods = new List<IDynamicMethod>();
@@ -31,6 +32,22 @@ namespace QuickJS.Utils
         {
             _runtime = runtime;
             _context = context;
+        }
+
+        public DynamicType GetDynamicType(Type type)
+        {
+            DynamicType dynamicType;
+            if (_dynamicTypes.TryGetValue(type, out dynamicType))
+            {
+                return dynamicType;
+            }
+
+            var register = new TypeRegister(_runtime, _context);
+            dynamicType = new DynamicType(type);
+            dynamicType.Bind(register);
+            register.Finish();
+            _dynamicTypes[type] = dynamicType;
+            return dynamicType;
         }
 
         public Type GetType(int index)
@@ -77,7 +94,7 @@ namespace QuickJS.Utils
             return index;
         }
 
-        public int IndexOf(Type type)
+        public int GetTypeID(Type type)
         {
             int index;
             if (_typeIndex.TryGetValue(type, out index))
@@ -107,7 +124,7 @@ namespace QuickJS.Utils
             JSValue proto;
             if (_prototypes.TryGetValue(cType, out proto))
             {
-                type_id = IndexOf(cType);
+                type_id = GetTypeID(cType);
                 return proto;
             }
 
@@ -159,13 +176,25 @@ namespace QuickJS.Utils
             return FindPrototypeOf(cType.BaseType, out pType);
         }
 
-        public JSValue GetPropertyOf(Type type)
+        public JSValue GetPrototypeOf(Type type)
         {
             JSValue proto;
             if (_prototypes.TryGetValue(type, out proto))
             {
                 return proto;
             }
+            return JSApi.JS_UNDEFINED;
+        }
+
+        public JSValue GetPrototypeOf(Type type, out int type_id)
+        {
+            JSValue proto;
+            if (_prototypes.TryGetValue(type, out proto))
+            {
+                type_id = GetTypeID(type);
+                return proto;
+            }
+            type_id = -1;
             return JSApi.JS_UNDEFINED;
         }
 

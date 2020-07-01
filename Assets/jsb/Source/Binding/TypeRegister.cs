@@ -109,6 +109,16 @@ namespace QuickJS.Binding
             return new NamespaceDecl(this, ns);
         }
 
+        // 覆盖现有定义
+        public ClassDecl CreateClass(Type type, JSValue protoVal)
+        {
+            JSContext ctx = _context;
+            var ctorVal = JSApi.JS_GetProperty(_context, protoVal, JSApi.JS_ATOM_constructor);
+            var decl = new ClassDecl(this, ctorVal, protoVal, type);
+            JSApi.JS_FreeValue(ctx, ctorVal);
+            return decl;
+        }
+
         public ClassDecl CreateClass(string typename, Type type, JSCFunctionMagic ctorFunc)
         {
             return CreateClass(JSApi.JS_UNDEFINED, typename, type, ctorFunc);
@@ -273,7 +283,7 @@ namespace QuickJS.Binding
             for (int i = 0, count = _pendingTypes.Count; i < count; i++)
             {
                 var type = _pendingTypes[i];
-                var proto = _db.GetPropertyOf(type);
+                var proto = _db.GetPrototypeOf(type);
                 if (!proto.IsNullish())
                 {
                     var baseType = type.BaseType;

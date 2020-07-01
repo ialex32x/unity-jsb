@@ -150,7 +150,16 @@ namespace QuickJS.Binding
                 return JSApi.JS_NULL;
             }
 
-            //TODO: 改, 使用独立的 js value cache, 专用于 DynamicType
+            var type = this_obj.GetType();
+            var runtime = ScriptEngine.GetRuntime(ctx);
+            var db = runtime.GetTypeDB();
+            var dynamicType = db.GetDynamicType(type);
+
+            if (dynamicType != null)
+            {
+                dynamicType.OpenPrivateAccess();
+            }
+
             return js_push_object(ctx, this_obj);
         }
 

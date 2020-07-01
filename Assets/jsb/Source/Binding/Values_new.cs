@@ -182,15 +182,12 @@ namespace QuickJS.Binding
             var type = o.GetType();
             var runtime = ScriptEngine.GetRuntime(ctx);
             var db = runtime.GetTypeDB();
-            var proto = db.GetPropertyOf(type);
+            var proto = db.GetPrototypeOf(type);
 
             if (proto.IsNullish())
             {
-                var register = new TypeRegister(runtime, runtime.GetContext(ctx));
-                var dynamicType = new DynamicType(type, true);
-                dynamicType.Bind(register);
-                register.Finish();
-                proto = db.GetPropertyOf(type);
+                db.GetDynamicType(type);
+                proto = db.GetPrototypeOf(type);
                 if (proto.IsNullish())
                 {
                     return JSApi.JS_ThrowInternalError(ctx, string.Format("no prototype found for {0}", type));
