@@ -199,7 +199,7 @@ namespace QuickJS
             var field = type.GetField("_JSFIX_R_" + field_name);
             if (field == null)
             {
-                return JSApi.JS_UNDEFINED;
+                return JSApi.JS_ThrowInternalError(ctx, "invalid hotfix point");
             }
             Delegate d;
             if (Values.js_get_delegate(ctx, argv[2], field.FieldType, out d))
