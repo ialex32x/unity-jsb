@@ -796,6 +796,17 @@ namespace QuickJS.Editor
                 {
                     return "js_push_enumvalue";
                 }
+                if (type.IsGenericType)
+                {
+                    if (type.GetGenericTypeDefinition() == typeof(Nullable<>))
+                    {
+                        var gArgs = type.GetGenericArguments();
+                        if (gArgs[0].IsValueType && gArgs[0].IsPrimitive)
+                        {
+                            return "js_push_primitive";
+                        }
+                    }
+                }
                 return "js_push_structvalue";
             }
             if (type == typeof(string))

@@ -1,5 +1,6 @@
 using System;
 using System.Reflection;
+using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
@@ -115,14 +116,7 @@ namespace QuickJS
             if (Values.js_get_cached_object(ctx, argv[0], out awaitObject))
             {
                 var context = ScriptEngine.GetContext(ctx);
-                var task = awaitObject as System.Threading.Tasks.Task;
-                if (task != null)
-                {
-                    return context.Yield(task);
-                }
-
-                var yieldInstruction = awaitObject as YieldInstruction;
-                return context.Yield(yieldInstruction);
+                return context.Yield(awaitObject);
             }
 
             return JSApi.JS_ThrowInternalError(ctx, "type YieldInstruction or Task expected");
