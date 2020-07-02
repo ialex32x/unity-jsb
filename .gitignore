@@ -66,4 +66,6 @@
 /jsb_build/quickjs/quickjs*/test_fib.c
 /jsb_build/quickjs/quickjs*/examples/test_fib
 
+/jsb_build/hotfix/obj
+
 /node_modules

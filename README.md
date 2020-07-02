@@ -183,6 +183,9 @@ sudo apt-get install mingw-w64
 # x86_64-w64-mingw32
 ```
 
+# 多线程
+> 暂不支持多线程访问
+
 # Debugger
 > 暂不支持
 
@@ -220,12 +223,16 @@ JSValueConst JS_GetActiveFunction(JSContext *ctx) { }
 * [ ] !!! 重写 delegate 映射 提供专用的 JSValue ObjectType, 并通过 index 映射, 脱离 JSValue 本身 (避免不必要的引用管理)
 * [ ] event dispatcher
 * [ ] ref 传参时, 从 val.target 进行取值 (因为会需要回写target, 保持一致性)
-* [ ] mobile platform build: android
+* [X] mobile platform build: android
 * [ ] mobile platform build: ios
 * [ ] 静态绑定和反射绑定对重载的处理顺序可能不同
 * [ ] 静态绑定和反射绑定对参数类型的判断可能不同
-* [ ] 静态绑定的类型也可以进行 hotfix
-* [ ] 静态绑定也提供 Private Access
+* [X] 静态绑定的类型也可以进行 hotfix
+* [ ] hotfix il 注入
+* [X] 静态绑定也提供 Private Access (不直接支持, 运行时使用反射绑定替代静态绑定来支持此特性)
 * [ ] 可以安全的保留 ScriptValue 对象引用
 * [ ] 整理 Examples
+
+# 待定
+* [ ] Worker API
 

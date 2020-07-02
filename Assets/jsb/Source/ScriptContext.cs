@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
@@ -78,7 +79,7 @@ namespace QuickJS
             return _isValid;
         }
 
-        public JSValue Yield(YieldInstruction yieldInstruction)
+        public JSValue Yield(object awaitObject)
         {
             if (_isValid)
             {
@@ -94,32 +95,10 @@ namespace QuickJS
 
             if (_coroutines != null)
             {
-                return _coroutines.Yield(this, yieldInstruction);
+                return _coroutines.Yield(this, awaitObject);
             }
 
-            return JSApi.JS_UNDEFINED;
-        }
-
-        public JSValue Yield(System.Threading.Tasks.Task task)
-        {
-            if (_isValid)
-            {
-                if (_coroutines == null)
-                {
-                    var go = _runtime.GetContainer();
-                    if (go != null)
-                    {
-                        _coroutines = go.AddComponent<CoroutineManager>();
-                    }
-                }
-            }
-
-            if (_coroutines != null)
-            {
-                return _coroutines.Yield(this, task);
-            }
-
-            return JSApi.JS_UNDEFINED;
+            return JSApi.JS_ThrowInternalError(_ctx, "no async manager");
         }
 
         public TimerManager GetTimerManager()

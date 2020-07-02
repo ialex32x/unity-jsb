@@ -15,6 +15,11 @@ namespace QuickJS.Hotfix
         public static Action<ILAccessSample> _proxy_Call5_after = null;
         private static string __xxxx = "xxxx;";
 
+        public static void Foo()
+        {
+            System.Console.WriteLine("Foo");
+        }
+
         public void Call(int a, string b)
         {
             if (_proxy_Call != null)
