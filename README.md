@@ -13,8 +13,8 @@
 * 支持在JS异步函数中等待 System.Threading.Tasks.Task 对象 (limited support)
 * 向 JS 导入 C# 运算符重载 +, -, *, /, ==, -(负)
 * 支持 Websocket (limited support)
-* [未完成] 未导出的类型通过反射方式进行 C#/JS 交互
-* [未完成] 运行时替换 C# 代码 (hotfix, limited support)
+* [初步] 未导出的类型通过反射方式进行 C#/JS 交互
+* [初步] 运行时替换 C# 代码 (hotfix, limited support)
 * [未完成] 支持 JS 字节码 (QuickJS)
 * [未完成] 运行时模块热替换 (debug only)
 
@@ -158,13 +158,19 @@ ws.onmessage = function (msg) {
 };
 ```
 
-## 支持 Hotfix (未完成)
+## 支持 Hotfix (初步功能)
 ```ts
-jsb.hotfix.replace("HotfixTest", {
-    "Add"() {
-        console.log("replaced in js");
-    }
+
+jsb.hotfix.replace_single("HotfixTest", "Foo", function (x: number) {
+    // 如果注入的方法是实例方法, this 将被绑定为 C# 对象实例 (可以访问私有成员)
+    console.log("replaced in js", this.value); 
+    return x;
 })
+
+//NOTE: 如果 HotfixTest 已经是静态绑定过的类型, 注入会导致此类型被替换为反射方式进行 C#/JS 交互, 并且可以访问私有成员
+// 目前只能注入简单的成员方法
+// 需要先执行 /JS Bridge/Generate Binding 生成对应委托的静态绑定, 再执行 /JS Bridge/Hotfix 修改 dll 后才能在 JS 中进行注入
+
 ```
 
 ### 对导出的 Unity API 附加了自带文档说明
@@ -228,11 +234,12 @@ JSValueConst JS_GetActiveFunction(JSContext *ctx) { }
 * [ ] 静态绑定和反射绑定对重载的处理顺序可能不同
 * [ ] 静态绑定和反射绑定对参数类型的判断可能不同
 * [X] 静态绑定的类型也可以进行 hotfix
-* [ ] hotfix il 注入
+* [X] hotfix il 注入 (初步功能, 只处理了 Method)
+* [ ] hotfix il 注入 (Property)
+* [ ] hotfix 可以注入 before/after 代码而不仅仅替换
 * [X] 静态绑定也提供 Private Access (不直接支持, 运行时使用反射绑定替代静态绑定来支持此特性)
 * [ ] 可以安全的保留 ScriptValue 对象引用
 * [ ] 整理 Examples
 
 # 待定
 * [ ] Worker API
-
