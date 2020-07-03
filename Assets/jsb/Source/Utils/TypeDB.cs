@@ -70,20 +70,14 @@ namespace QuickJS.Utils
             _delegates[type] = method;
         }
 
-        public Delegate CreateDelegate(Type type, ScriptDelegate fn)
+        public MethodInfo GetDelegateFunc(Type delegateType)
         {
             MethodInfo method;
-            if (_delegates.TryGetValue(type, out method))
+            if (_delegates.TryGetValue(delegateType, out method))
             {
-                var target = Delegate.CreateDelegate(type, fn, method, true);
-                fn.target = target;
-                return target;
+                return method;
             }
-            else
-            {
-                throw new ArgumentNullException("unknown delegate type: " + type);
-            }
-            // return null;
+            return null;
         }
 
         // 注册新类型, 会增加 proto 的引用计数
