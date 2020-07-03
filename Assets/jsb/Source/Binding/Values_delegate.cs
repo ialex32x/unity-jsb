@@ -37,7 +37,7 @@ namespace QuickJS.Binding
             js_get_classvalue<T[]>(ctx, val, out o);
             return true;
         }
-        
+
         public static bool js_get_delegate<T>(JSContext ctx, JSValue val, out T o)
         where T : class
         {
@@ -56,39 +56,54 @@ namespace QuickJS.Binding
                 o = null;
                 return true;
             }
-            
+
             if (JSApi.JS_IsObject(val) || JSApi.JS_IsFunction(ctx, val) == 1)
             {
                 ScriptDelegate fn;
                 var cache = ScriptEngine.GetObjectCache(ctx);
-                
+
                 if (cache.TryGetDelegate(val, out fn))
                 {
                     // Debug.LogWarningFormat("cache hit {0}", heapptr);
                     o = fn.Match(delegateType);
-                    return true;
+                    if (o == null)
+                    {
+                        var types = ScriptEngine.GetTypeDB(ctx);
+                        var func = types.GetDelegateFunc(delegateType);
+                        o = Delegate.CreateDelegate(delegateType, fn, func, false);
+                        if (o != null)
+                        {
+                            fn.Add(o);
+                        }
+                    }
+                    return o != null;
                 }
-
-                // 默认赋值操作
-                var types = ScriptEngine.GetTypeDB(ctx);
-                var func = types.GetDelegateFunc(delegateType);
-
-                if (func == null)
+                else
                 {
-                    o = null;
-                    return false;
-                }
+                    // 默认赋值操作
+                    var types = ScriptEngine.GetTypeDB(ctx);
+                    var func = types.GetDelegateFunc(delegateType);
 
-                fn = new ScriptDelegate(ScriptEngine.GetContext(ctx), val);
-                o = Delegate.CreateDelegate(delegateType, fn, func, true);
-                fn.Add(o);
-        
-                // ScriptDelegate 拥有 js 对象的强引用, 此 js 对象无法释放 cache 中的 object, 所以这里用弱引用注册
-                // 会出现的问题是, 如果 c# 没有对 ScriptDelegate 的强引用, 那么反复 get_delegate 会重复创建 ScriptDelegate
-                // Debug.LogWarningFormat("cache create : {0}", heapptr);
-                cache.AddDelegate(val, fn);
-                return true;
-            } 
+                    if (func == null)
+                    {
+                        o = null;
+                        return false;
+                    }
+
+                    fn = new ScriptDelegate(ScriptEngine.GetContext(ctx), val);
+                    o = Delegate.CreateDelegate(delegateType, fn, func, false);
+                    if (o != null)
+                    {
+                        fn.Add(o);
+                    }
+
+                    // ScriptDelegate 拥有 js 对象的强引用, 此 js 对象无法释放 cache 中的 object, 所以这里用弱引用注册
+                    // 会出现的问题是, 如果 c# 没有对 ScriptDelegate 的强引用, 那么反复 get_delegate 会重复创建 ScriptDelegate
+                    // Debug.LogWarningFormat("cache create : {0}", heapptr);
+                    cache.AddDelegate(val, fn);
+                    return o != null;
+                }
+            }
             // else if (DuktapeDLL.duk_is_object(ctx, idx))
             // {
             //     return js_get_classvalue<T>(ctx, idx, out o);
