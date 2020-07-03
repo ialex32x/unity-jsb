@@ -669,7 +669,7 @@ namespace QuickJS.Editor
             var fields = type.GetFields(bindingFlags);
             foreach (var field in fields)
             {
-                if (field.IsSpecialName)
+                if (field.IsSpecialName || field.Name.StartsWith("_JSFIX_"))
                 {
                     bindingManager.Info("skip special field: {0}", field.Name);
                     continue;

@@ -34,6 +34,16 @@ namespace QuickJS.Utils
             _context = context;
         }
 
+        public DynamicType GetDynamicType(Type type, bool privateAccess)
+        {
+            var dynamicType = GetDynamicType(type);
+            if (dynamicType != null)
+            {
+                dynamicType.OpenPrivateAccess();
+            }
+            return dynamicType;
+        }
+
         public DynamicType GetDynamicType(Type type)
         {
             DynamicType dynamicType;

@@ -78,12 +78,15 @@ try {
     print(HotfixTest.static_value);
 }
 catch (err) {
-    console.warn(err);
+    console.warn("默认拒绝访问私有成员", err);
 }
 try {
+    jsb.hotfix.replace_single("HotfixTest", ".ctor", function () {
+        print("[HOTFIX][JS] 构造函数");
+    });
     jsb.hotfix.replace_single("HotfixTest", "Foo", function (x) {
         print("[HOTFIX][JS] HotfixTest.Foo [private] this.value = ", this.value);
-        return x * 3;
+        return typeof x === "number" ? x + 3 : x + "~~~";
     });
     jsb.hotfix.replace_single("HotfixTest", "SimpleStaticCall", function () {
         this.AnotherStaticCall();
@@ -94,7 +97,8 @@ catch (err) {
     console.warn("替换失败, 是否执行过dll注入?");
 }
 let hotfix = new HotfixTest();
-print("hotfix.Foo(1) = ", hotfix.Foo(1));
+print("[HOTFIX][JS] hotfix.Foo(1) 返回值:", hotfix.Foo(1));
+print("[HOTFIX][JS] hotfix.Foo(1) 返回值:", hotfix.Foo("good day"));
 HotfixTest.SimpleStaticCall();
 // var takeBuffer = NoNamespaceClass.MakeBytes();
 // var testBuffer = new Uint8Array(takeBuffer);

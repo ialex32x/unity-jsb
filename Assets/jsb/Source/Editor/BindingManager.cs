@@ -526,13 +526,19 @@ namespace QuickJS.Editor
             var methodInfos = type.GetMethods(Binding.DynamicType.DefaultFlags);
             foreach (var methodInfo in methodInfos)
             {
-                CollectHotfix(type, methodInfo);
+                CollectHotfix(type, methodInfo, methodInfo.ReturnType);
+            }
+
+            var constructorInfos = type.GetConstructors(Binding.DynamicType.DefaultFlags);
+            foreach (var constructorInfo in constructorInfos)
+            {
+                CollectHotfix(type, constructorInfo, typeof(void));
             }
         }
 
-        private bool CollectHotfix(Type declaringType, MethodInfo methodInfo)
+        private bool CollectHotfix(Type declaringType, MethodBase methodBase, Type returnType)
         {
-            if (methodInfo.IsGenericMethodDefinition)
+            if (methodBase.IsGenericMethodDefinition)
             {
                 return false;
             }
@@ -542,13 +548,17 @@ namespace QuickJS.Editor
                 return false;
             }
 
-            var parameters = methodInfo.GetParameters();
-            var returnType = methodInfo.ReturnType;
+            if (methodBase.Name == ".cctor")
+            {
+                return false;
+            }
+
+            var parameters = methodBase.GetParameters();
 
             for (var i = 0; i < parameters.Length; i++)
             {
                 var parameter = parameters[i];
-                
+
                 // 暂不支持
                 if (parameter.IsOut || parameter.ParameterType.IsPointer || parameter.IsDefined(typeof(ParamArrayAttribute)))
                 {
@@ -565,7 +575,7 @@ namespace QuickJS.Editor
                 }
             }
 
-            var newDelegateBinding = new HotfixDelegateBindingInfo(declaringType, methodInfo.IsStatic, returnType, parameters);
+            var newDelegateBinding = new HotfixDelegateBindingInfo(declaringType, methodBase.IsStatic, returnType, parameters);
             _exportedHotfixDelegates.Add(newDelegateBinding);
             for (var i = 0; i < parameters.Length; i++)
             {

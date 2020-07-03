@@ -8,9 +8,20 @@ public class HotfixTest
     private int value = 12;
     private static string static_value = "<私有静态变量>";
 
+    public HotfixTest()
+    {
+        Debug.LogFormat("[HOTFIX][C#] 构造函数");
+    }
+
     public int Foo(int x)
     {
-        Debug.LogFormat("[HOTFIX][C#] HotfixTest.Foo() Return {0}", x);
+        Debug.LogFormat("[HOTFIX][C#] HotfixTest.Foo({0})", x);
+        return x;
+    }
+
+    public string Foo(string x)
+    {
+        Debug.LogFormat("[HOTFIX][C#] HotfixTest.Foo({0})", x);
         return x;
     }
 
