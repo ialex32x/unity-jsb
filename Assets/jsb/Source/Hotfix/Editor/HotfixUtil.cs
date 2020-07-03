@@ -113,12 +113,15 @@ namespace QuickJS.Hotfix
         // 从 Delegate 定义池中找一个匹配的
         public static TypeDefinition GetDelegate(MethodDefinition m, List<TypeDefinition> list)
         {
-            for (var i = 0; i < list.Count; i++)
+            if (m.Name != ".cctor")
             {
-                var item = list[i];
-                if (IsDelegateMatched(m, item))
+                for (var i = 0; i < list.Count; i++)
                 {
-                    return item;
+                    var item = list[i];
+                    if (IsDelegateMatched(m, item))
+                    {
+                        return item;
+                    }
                 }
             }
 
@@ -129,6 +132,7 @@ namespace QuickJS.Hotfix
         {
             var sb = "";
             sb += $"{method.ReturnType} ";
+            sb += $"{method.DeclaringType.FullName}.";
             sb += $"{method.Name}(";
             for (var i = 0; i < method.Parameters.Count; i++)
             {
@@ -145,6 +149,21 @@ namespace QuickJS.Hotfix
         }
 
         private static OpCode[] ldarg_i_table = new OpCode[] { OpCodes.Ldarg_0, OpCodes.Ldarg_1, OpCodes.Ldarg_2, OpCodes.Ldarg_3 };
+
+        private static Instruction FindPatchPoint(MethodBody body)
+        {
+            var instructions = body.Instructions;
+            for (var i = 0; i < instructions.Count; i++)
+            {
+                var instruction = instructions[i];
+                if (instruction.OpCode == OpCodes.Nop)
+                {
+                    return instruction;
+                }
+            }
+
+            return null;
+        }
 
         public static void Run()
         {
@@ -171,59 +190,69 @@ namespace QuickJS.Hotfix
                 foreach (var method in type.Methods)
                 {
                     var delegateType = GetDelegate(method, delegateTypes);
-                    if (delegateType != null)
+                    if (delegateType == null)
                     {
-                        sb += GetMethodString(method) + " => " + delegateType.FullName;
-                        var newLocal = new VariableDefinition(delegateType);
-                        var newField = new FieldDefinition("_JSFIX_R_" + method.Name, FieldAttributes.Public | FieldAttributes.Static, delegateType);
-
-                        var point = method.Body.Instructions[0];
-                        var proc = method.Body.GetILProcessor();
-
-                        type.Fields.Add(newField);
-                        method.Body.Variables.Add(newLocal);
-
-                        proc.InsertBefore(point, proc.Create(OpCodes.Ldsfld, newField));
-                        proc.InsertBefore(point, proc.Create(OpCodes.Ldnull));
-                        proc.InsertBefore(point, proc.Create(OpCodes.Cgt_Un));
-                        proc.InsertBefore(point, proc.Create(OpCodes.Stloc, newLocal));
-                        proc.InsertBefore(point, proc.Create(OpCodes.Ldloc, newLocal));
-                        proc.InsertBefore(point, proc.Create(OpCodes.Brfalse_S, point)); // jump to original instructions
-                        proc.InsertBefore(point, proc.Create(OpCodes.Ldsfld, newField));
-
-                        var argCount = method.Parameters.Count;
-
-                        if (method.IsStatic)
-                        {
-                            var refGetTypeFromHandle = a.MainModule.ImportReference(typeof(Type).GetMethod("GetTypeFromHandle"));
-                            proc.InsertBefore(point, proc.Create(OpCodes.Ldtoken, type));
-                            proc.InsertBefore(point, proc.Create(OpCodes.Call, refGetTypeFromHandle));
-                        }
-                        else 
-                        {
-                            argCount++;
-                        }
-
-                        for (var argIndex = 0; argIndex < argCount; argIndex++)
-                        {
-                            var ldarg_i = argIndex;
-                            if (ldarg_i < ldarg_i_table.Length)
-                            {
-                                proc.InsertBefore(point, proc.Create(ldarg_i_table[ldarg_i]));
-                            }
-                            else if (ldarg_i <= byte.MaxValue)
-                            {
-                                proc.InsertBefore(point, proc.Create(OpCodes.Ldarg_S, (byte)ldarg_i));
-                            }
-                            else
-                            {
-                                proc.InsertBefore(point, proc.Create(OpCodes.Ldarg, ldarg_i));
-                            }
-                        }
-                        var invoke = delegateType.Methods.First(dm => dm.Name == "Invoke");
-                        proc.InsertBefore(point, proc.Create(OpCodes.Callvirt, invoke));
-                        proc.InsertBefore(point, proc.Create(OpCodes.Ret));
+                        continue;
                     }
+                    var signatureLit = GetMethodString(method);
+                    var newLocal = new VariableDefinition(delegateType);
+                    var hotfixFieldName = method.IsConstructor ? "_JSFIX_RC_" + method.Name.Replace(".", "") : "_JSFIX_R_" + method.Name;
+                    var newField = new FieldDefinition(hotfixFieldName, FieldAttributes.Public | FieldAttributes.Static, delegateType);
+
+                    var point = FindPatchPoint(method.Body);
+                    if (point == null)
+                    {
+                        Debug.LogWarningFormat("no patch point in {0}", signatureLit);
+                        continue;
+                    }
+                    var proc = method.Body.GetILProcessor();
+
+                    type.Fields.Add(newField);
+                    method.Body.Variables.Add(newLocal);
+
+                    proc.InsertBefore(point, proc.Create(OpCodes.Nop)); // more friendly for patch
+                    proc.InsertBefore(point, proc.Create(OpCodes.Ldsfld, newField));
+                    proc.InsertBefore(point, proc.Create(OpCodes.Ldnull));
+                    proc.InsertBefore(point, proc.Create(OpCodes.Cgt_Un));
+                    proc.InsertBefore(point, proc.Create(OpCodes.Stloc, newLocal));
+                    proc.InsertBefore(point, proc.Create(OpCodes.Ldloc, newLocal));
+                    proc.InsertBefore(point, proc.Create(OpCodes.Brfalse_S, point)); // jump to original instructions
+                    proc.InsertBefore(point, proc.Create(OpCodes.Ldsfld, newField));
+
+                    var argCount = method.Parameters.Count;
+
+                    if (method.IsStatic)
+                    {
+                        var refGetTypeFromHandle = a.MainModule.ImportReference(typeof(Type).GetMethod("GetTypeFromHandle"));
+                        proc.InsertBefore(point, proc.Create(OpCodes.Ldtoken, type));
+                        proc.InsertBefore(point, proc.Create(OpCodes.Call, refGetTypeFromHandle));
+                    }
+                    else
+                    {
+                        argCount++;
+                    }
+
+                    for (var argIndex = 0; argIndex < argCount; argIndex++)
+                    {
+                        var ldarg_i = argIndex;
+                        if (ldarg_i < ldarg_i_table.Length)
+                        {
+                            proc.InsertBefore(point, proc.Create(ldarg_i_table[ldarg_i]));
+                        }
+                        else if (ldarg_i <= byte.MaxValue)
+                        {
+                            proc.InsertBefore(point, proc.Create(OpCodes.Ldarg_S, (byte)ldarg_i));
+                        }
+                        else
+                        {
+                            proc.InsertBefore(point, proc.Create(OpCodes.Ldarg, ldarg_i));
+                        }
+                    }
+                    var invoke = delegateType.Methods.First(dm => dm.Name == "Invoke");
+                    proc.InsertBefore(point, proc.Create(OpCodes.Callvirt, invoke));
+                    proc.InsertBefore(point, proc.Create(OpCodes.Ret));
+                    sb += hotfixFieldName + " > " + signatureLit;
+                    sb += "\n";
                 }
                 Debug.LogFormat("{0}", sb);
             }

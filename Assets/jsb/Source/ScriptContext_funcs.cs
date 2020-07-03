@@ -196,7 +196,7 @@ namespace QuickJS
             {
                 return JSApi.JS_UNDEFINED;
             }
-            var field = type.GetField("_JSFIX_R_" + field_name);
+            var field = field_name != ".ctor" ? type.GetField("_JSFIX_R_" + field_name) : type.GetField("_JSFIX_RC_ctor");
             if (field == null)
             {
                 return JSApi.JS_ThrowInternalError(ctx, "invalid hotfix point");
