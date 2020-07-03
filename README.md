@@ -237,6 +237,7 @@ JSValueConst JS_GetActiveFunction(JSContext *ctx) { }
 * [ ] 静态绑定和反射绑定对参数类型的判断可能不同
 * [X] 静态绑定的类型也可以进行 hotfix
 * [X] hotfix 注入 (il, 初步功能, 只处理了有限支持的 Method)
+* [X] hotfix 注入构造函数
 * [ ] hotfix 注入 Property
 * [ ] hotfix 注入 Field (JS层面等价于 Property 因此应该可以进行JS替换)
 * [ ] hotfix 可以注入 before/after 代码而不仅仅替换

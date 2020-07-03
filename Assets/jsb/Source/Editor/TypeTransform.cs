@@ -18,6 +18,7 @@ namespace QuickJS.Editor
     public class TypeTransform
     {
         private Type _type;
+        private JSHotfixAttribute _hotfix;
         private string _typeNaming;
 
         // 按名字屏蔽导出
@@ -42,6 +43,16 @@ namespace QuickJS.Editor
         public TypeTransform(Type type)
         {
             _type = type;
+        }
+
+        public JSHotfixAttribute GetHotfix()
+        {
+            return _hotfix;
+        }
+
+        public void SetHotfix(JSHotfixAttribute attr)
+        {
+            _hotfix = attr;
         }
 
         public void ForEachAdditionalTSMethodDeclaration(Action<string> fn)

@@ -242,6 +242,7 @@ namespace QuickJS
             {
                 var ns_jsb_hotfix = ns_jsb.CreateNamespace("hotfix");
                 ns_jsb_hotfix.AddFunction("replace_single", hotfix_replace_single, 2);
+                ns_jsb_hotfix.AddFunction("before_single", hotfix_before_single, 2);
                 // ns_jsb_hotfix.AddFunction("replace", hotfix_replace, 2);
                 // ns_jsb_hotfix.AddFunction("before", hotfix_before);
                 // ns_jsb_hotfix.AddFunction("after", hotfix_after);

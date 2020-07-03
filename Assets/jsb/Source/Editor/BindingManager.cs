@@ -523,10 +523,18 @@ namespace QuickJS.Editor
             {
                 return;
             }
+            var transform = GetTypeTransform(type);
             var methodInfos = type.GetMethods(Binding.DynamicType.DefaultFlags);
+            var hotfix = transform?.GetHotfix();
+            var hotfixBefore = hotfix != null && (hotfix.flags & JSHotfixFlags.Before) != 0;
+            var hotfixAfter = hotfix != null && (hotfix.flags & JSHotfixFlags.After) != 0;
             foreach (var methodInfo in methodInfos)
             {
                 CollectHotfix(type, methodInfo, methodInfo.ReturnType);
+                if (hotfixBefore | hotfixAfter)
+                {
+                    CollectHotfix(type, methodInfo, typeof(void));
+                }
             }
 
             var constructorInfos = type.GetConstructors(Binding.DynamicType.DefaultFlags);
@@ -569,7 +577,7 @@ namespace QuickJS.Editor
             for (var i = 0; i < _exportedHotfixDelegates.Count; i++)
             {
                 var regDelegateBinding = _exportedHotfixDelegates[i];
-                if (regDelegateBinding.Equals(declaringType, returnType, parameters))
+                if (regDelegateBinding.Equals(declaringType, methodBase.IsStatic, returnType, parameters))
                 {
                     return true;
                 }
@@ -1446,8 +1454,10 @@ namespace QuickJS.Editor
                     log.AppendLine("types {0}", types.Length);
                     foreach (var type in types)
                     {
-                        if (type.GetCustomAttribute(typeof(JSHotfixAttribute)) != null)
+                        var hotfixTag = type.GetCustomAttribute(typeof(JSHotfixAttribute)) as JSHotfixAttribute;
+                        if (hotfixTag != null)
                         {
+                            TransformType(type).SetHotfix(hotfixTag);
                             AddHotfixType(type);
                         }
                         if (IsExportingBlocked(type))
