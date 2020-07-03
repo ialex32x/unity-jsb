@@ -25,8 +25,6 @@ namespace QuickJS.Utils
         // weak reference table for delegates (dangerous, no ref count)
         private Dictionary<JSValue, WeakReference> _delegateMap = new Dictionary<JSValue, WeakReference>();
 
-        private List<WeakReference> _hotfixDelegates = new List<WeakReference>();
-
         public int GetManagedObjectCount()
         {
             return _map.Count;
@@ -42,28 +40,12 @@ namespace QuickJS.Utils
             return _delegateMap.Count;
         }
 
-        public void CleanupHotfix()
-        {
-            for (int i = 0, count = _hotfixDelegates.Count; i < count; i++)
-            {
-                var whd = _hotfixDelegates[i];
-                var hd = whd.Target as ScriptDelegate;
-                if (hd != null)
-                {
-                    hd.Dispose();
-                }
-            }
-
-            _hotfixDelegates.Clear();
-        }
-
         public void Clear()
         {
             _disposing = true;
             _freeIndex = 0;
             _map.Clear();
             _rmap.Clear();
-            CleanupHotfix();
 
             var mapSize = _delegateMap.Values.Count;
             var delegates = new WeakReference[mapSize];
@@ -108,11 +90,6 @@ namespace QuickJS.Utils
                 return false;
             }
             return o != null && _rmap.Remove(o);
-        }
-
-        public void AddHotfixDelegate(ScriptDelegate o)
-        {
-            _hotfixDelegates.Add(new WeakReference(o));
         }
 
         public void AddDelegate(JSValue jso, ScriptDelegate o)

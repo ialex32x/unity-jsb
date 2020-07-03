@@ -215,7 +215,7 @@ namespace QuickJS
                     break;
                 }
                 Delegate d;
-                if (Values.js_new_delegate(ctx, argv[2], field.FieldType, out d))
+                if (Values.js_get_delegate(ctx, argv[2], field.FieldType, out d))
                 {
                     field.SetValue(null, d);
                 }
@@ -265,7 +265,7 @@ namespace QuickJS
                     break;
                 }
                 Delegate d;
-                if (Values.js_new_delegate(ctx, argv[2], field.FieldType, out d))
+                if (Values.js_get_delegate(ctx, argv[2], field.FieldType, out d))
                 {
                     field.SetValue(null, d);
                 }
