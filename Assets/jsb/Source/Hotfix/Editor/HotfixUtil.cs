@@ -62,7 +62,7 @@ namespace QuickJS.Hotfix
         }
 
         // 方法定义是否与 hotfix 委托定义匹配
-        public static bool IsDelegateMatched(MethodDefinition m, TypeDefinition d)
+        public static bool IsDelegateMatched(MethodDefinition m, TypeReference returnType, TypeDefinition d)
         {
             var invoke = d.Methods.First(dm => dm.Name == "Invoke");
             var argc = invoke.Parameters.Count;
@@ -71,7 +71,7 @@ namespace QuickJS.Hotfix
                 return false;
             }
 
-            if (invoke.ReturnType != m.ReturnType)
+            if (invoke.ReturnType != returnType)
             {
                 return false;
             }
@@ -111,14 +111,14 @@ namespace QuickJS.Hotfix
         }
 
         // 从 Delegate 定义池中找一个匹配的
-        public static TypeDefinition GetDelegate(MethodDefinition m, List<TypeDefinition> list)
+        public static TypeDefinition GetDelegate(MethodDefinition m, TypeReference returnType, List<TypeDefinition> list)
         {
             if (m.Name != ".cctor")
             {
                 for (var i = 0; i < list.Count; i++)
                 {
                     var item = list[i];
-                    if (IsDelegateMatched(m, item))
+                    if (IsDelegateMatched(m, returnType, item))
                     {
                         return item;
                     }
@@ -165,8 +165,24 @@ namespace QuickJS.Hotfix
             return null;
         }
 
-        private static string GetHotfixFieldName(string plainName, HashSet<string> set)
+        private static string GetHotfixFieldName_r(MethodDefinition method, HashSet<string> set)
         {
+            var plainName = method.IsConstructor ? "_JSFIX_RC_" + method.Name.Replace(".", "") : "_JSFIX_R_" + method.Name;
+            var index = 0;
+            var serialName = plainName + "_" + index;
+
+            while (set.Contains(serialName))
+            {
+                serialName = plainName + "_" + ++index;
+            }
+
+            set.Add(serialName);
+            return serialName;
+        }
+
+        private static string GetHotfixFieldName_b(MethodDefinition method, HashSet<string> set)
+        {
+            var plainName = method.IsConstructor ? "_JSFIX_BC_" + method.Name.Replace(".", "") : "_JSFIX_B_" + method.Name;
             var index = 0;
             var serialName = plainName + "_" + index;
 
@@ -194,6 +210,7 @@ namespace QuickJS.Hotfix
             a.MainModule.Types.Add(new TypeDefinition("QuickJS", TypeNameForInjectFlag, Mono.Cecil.TypeAttributes.Class, a.MainModule.TypeSystem.Object));
             foreach (var type in a.MainModule.Types)
             {
+                //TODO: 改为通过列表而不是 Attribute 判断
                 if (!IsHotfixTarget(type))
                 {
                     continue;
@@ -203,23 +220,14 @@ namespace QuickJS.Hotfix
                 var hotfixRegs = new HashSet<string>();
                 foreach (var method in type.Methods)
                 {
-                    var delegateType = GetDelegate(method, delegateTypes);
-                    if (delegateType == null)
+                    var delegateType_r = GetDelegate(method, method.ReturnType, delegateTypes);
+                    var delegateType_b = GetDelegate(method, a.MainModule.TypeSystem.Void, delegateTypes);
+                    if (delegateType_r == null)
                     {
                         continue;
                     }
-                    var plainFieldName = method.IsConstructor ? "_JSFIX_RC_" + method.Name.Replace(".", "") : "_JSFIX_R_" + method.Name;
-                    var hotfixFieldName = GetHotfixFieldName(plainFieldName, hotfixRegs);
-
-                    if (hotfixRegs.Contains(hotfixFieldName))
-                    {
-                        continue;
-                    }
-                    hotfixRegs.Add(hotfixFieldName);
-
+                    var hotfixFieldName_r = GetHotfixFieldName_r(method, hotfixRegs);
                     var signatureLit = GetMethodString(method);
-                    var newLocal = new VariableDefinition(delegateType);
-                    var newField = new FieldDefinition(hotfixFieldName, FieldAttributes.Public | FieldAttributes.Static, delegateType);
 
                     var point = FindPatchPoint(method.Body);
                     if (point == null)
@@ -227,53 +235,99 @@ namespace QuickJS.Hotfix
                         Debug.LogWarningFormat("no patch point in {0}", signatureLit);
                         continue;
                     }
+
+                    var argCount = method.IsStatic ? method.Parameters.Count : method.Parameters.Count + 1;
                     var proc = method.Body.GetILProcessor();
+                    var boolVar = new VariableDefinition(a.MainModule.TypeSystem.Boolean);
+                    method.Body.Variables.Add(boolVar);
 
-                    type.Fields.Add(newField);
-                    method.Body.Variables.Add(newLocal);
-
-                    proc.InsertBefore(point, proc.Create(OpCodes.Nop)); // more friendly for patch
-                    proc.InsertBefore(point, proc.Create(OpCodes.Ldsfld, newField));
-                    proc.InsertBefore(point, proc.Create(OpCodes.Ldnull));
-                    proc.InsertBefore(point, proc.Create(OpCodes.Cgt_Un));
-                    proc.InsertBefore(point, proc.Create(OpCodes.Stloc, newLocal));
-                    proc.InsertBefore(point, proc.Create(OpCodes.Ldloc, newLocal));
-                    proc.InsertBefore(point, proc.Create(OpCodes.Brfalse_S, point)); // jump to original instructions
-                    proc.InsertBefore(point, proc.Create(OpCodes.Ldsfld, newField));
-
-                    var argCount = method.Parameters.Count;
-
-                    if (method.IsStatic)
+                    if (delegateType_b != null)
                     {
-                        var refGetTypeFromHandle = a.MainModule.ImportReference(typeof(Type).GetMethod("GetTypeFromHandle"));
-                        proc.InsertBefore(point, proc.Create(OpCodes.Ldtoken, type));
-                        proc.InsertBefore(point, proc.Create(OpCodes.Call, refGetTypeFromHandle));
-                    }
-                    else
-                    {
-                        argCount++;
+                        var hotfixFieldName_b = GetHotfixFieldName_b(method, hotfixRegs);
+                        var delegateField_b = new FieldDefinition(hotfixFieldName_b, FieldAttributes.Public | FieldAttributes.Static, delegateType_b);
+                        var localPoint = point;
+
+                        type.Fields.Add(delegateField_b);
+                        proc.InsertBefore(localPoint, point = proc.Create(OpCodes.Nop)); // more friendly for patch
+                        proc.InsertBefore(localPoint, proc.Create(OpCodes.Ldsfld, delegateField_b));
+                        proc.InsertBefore(localPoint, proc.Create(OpCodes.Ldnull));
+                        proc.InsertBefore(localPoint, proc.Create(OpCodes.Cgt_Un));
+                        proc.InsertBefore(localPoint, proc.Create(OpCodes.Stloc, boolVar));
+                        proc.InsertBefore(localPoint, proc.Create(OpCodes.Ldloc, boolVar));
+                        proc.InsertBefore(localPoint, proc.Create(OpCodes.Brfalse_S, localPoint)); // jump to original instructions
+                        proc.InsertBefore(localPoint, proc.Create(OpCodes.Ldsfld, delegateField_b));
+
+                        if (method.IsStatic)
+                        {
+                            var refGetTypeFromHandle = a.MainModule.ImportReference(typeof(Type).GetMethod("GetTypeFromHandle"));
+                            proc.InsertBefore(localPoint, proc.Create(OpCodes.Ldtoken, type));
+                            proc.InsertBefore(localPoint, proc.Create(OpCodes.Call, refGetTypeFromHandle));
+                        }
+
+                        for (var argIndex = 0; argIndex < argCount; argIndex++)
+                        {
+                            var ldarg_i = argIndex;
+                            if (ldarg_i < ldarg_i_table.Length)
+                            {
+                                proc.InsertBefore(localPoint, proc.Create(ldarg_i_table[ldarg_i]));
+                            }
+                            else if (ldarg_i <= byte.MaxValue)
+                            {
+                                proc.InsertBefore(localPoint, proc.Create(OpCodes.Ldarg_S, (byte)ldarg_i));
+                            }
+                            else
+                            {
+                                proc.InsertBefore(localPoint, proc.Create(OpCodes.Ldarg, ldarg_i));
+                            }
+                        }
+                        var invoke_b = delegateType_b.Methods.First(dm => dm.Name == "Invoke");
+                        proc.InsertBefore(localPoint, proc.Create(OpCodes.Callvirt, invoke_b));
                     }
 
-                    for (var argIndex = 0; argIndex < argCount; argIndex++)
+                    if (delegateType_r != null)
                     {
-                        var ldarg_i = argIndex;
-                        if (ldarg_i < ldarg_i_table.Length)
+                        var delegateField_r = new FieldDefinition(hotfixFieldName_r, FieldAttributes.Public | FieldAttributes.Static, delegateType_r);
+                        var localPoint = point;
+                        
+                        type.Fields.Add(delegateField_r);
+                        proc.InsertBefore(localPoint, point = proc.Create(OpCodes.Nop)); // more friendly for patch
+                        proc.InsertBefore(localPoint, proc.Create(OpCodes.Ldsfld, delegateField_r));
+                        proc.InsertBefore(localPoint, proc.Create(OpCodes.Ldnull));
+                        proc.InsertBefore(localPoint, proc.Create(OpCodes.Cgt_Un));
+                        proc.InsertBefore(localPoint, proc.Create(OpCodes.Stloc, boolVar));
+                        proc.InsertBefore(localPoint, proc.Create(OpCodes.Ldloc, boolVar));
+                        proc.InsertBefore(localPoint, proc.Create(OpCodes.Brfalse_S, localPoint)); // jump to original instructions
+                        proc.InsertBefore(localPoint, proc.Create(OpCodes.Ldsfld, delegateField_r));
+
+                        if (method.IsStatic)
                         {
-                            proc.InsertBefore(point, proc.Create(ldarg_i_table[ldarg_i]));
+                            var refGetTypeFromHandle = a.MainModule.ImportReference(typeof(Type).GetMethod("GetTypeFromHandle"));
+                            proc.InsertBefore(localPoint, proc.Create(OpCodes.Ldtoken, type));
+                            proc.InsertBefore(localPoint, proc.Create(OpCodes.Call, refGetTypeFromHandle));
                         }
-                        else if (ldarg_i <= byte.MaxValue)
+
+                        for (var argIndex = 0; argIndex < argCount; argIndex++)
                         {
-                            proc.InsertBefore(point, proc.Create(OpCodes.Ldarg_S, (byte)ldarg_i));
+                            var ldarg_i = argIndex;
+                            if (ldarg_i < ldarg_i_table.Length)
+                            {
+                                proc.InsertBefore(localPoint, proc.Create(ldarg_i_table[ldarg_i]));
+                            }
+                            else if (ldarg_i <= byte.MaxValue)
+                            {
+                                proc.InsertBefore(localPoint, proc.Create(OpCodes.Ldarg_S, (byte)ldarg_i));
+                            }
+                            else
+                            {
+                                proc.InsertBefore(localPoint, proc.Create(OpCodes.Ldarg, ldarg_i));
+                            }
                         }
-                        else
-                        {
-                            proc.InsertBefore(point, proc.Create(OpCodes.Ldarg, ldarg_i));
-                        }
+                        var invoke_r = delegateType_r.Methods.First(dm => dm.Name == "Invoke");
+                        proc.InsertBefore(localPoint, proc.Create(OpCodes.Callvirt, invoke_r));
+                        proc.InsertBefore(localPoint, proc.Create(OpCodes.Ret));
                     }
-                    var invoke = delegateType.Methods.First(dm => dm.Name == "Invoke");
-                    proc.InsertBefore(point, proc.Create(OpCodes.Callvirt, invoke));
-                    proc.InsertBefore(point, proc.Create(OpCodes.Ret));
-                    sb += hotfixFieldName + " > " + signatureLit;
+
+                    sb += hotfixFieldName_r + " > " + signatureLit;
                     sb += "\n";
                 }
                 Debug.LogFormat("{0}", sb);

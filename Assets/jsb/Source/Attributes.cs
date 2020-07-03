@@ -2,11 +2,31 @@ using System;
 
 namespace QuickJS
 {
+    [Flags]
+    public enum JSHotfixFlags
+    {
+        Default = 0, // 替换
+        Before = 1,  // 前置执行
+        After = 2,   // 后置执行
+
+        Full = Before | After,
+    }
+
     [AttributeUsage(AttributeTargets.Class,
                     AllowMultiple = false,
                     Inherited = false)]
     public class JSHotfixAttribute : Attribute
     {
+        public JSHotfixFlags flags { get; set; }
+
+        public JSHotfixAttribute()
+        {
+        }
+
+        public JSHotfixAttribute(JSHotfixFlags flags)
+        {
+            this.flags = flags;
+        }
     }
 
     // 指定类型生成绑定代码

@@ -88,6 +88,9 @@ try {
         print("[HOTFIX][JS] HotfixTest.Foo [private] this.value = ", this.value);
         return typeof x === "number" ? x + 3 : x + "~~~";
     });
+    jsb.hotfix.before_single("HotfixTest", "AnotherStaticCall", function () {
+        print("[HOTFIX][JS] HotfixTest.AnotherStaticCall 在 C# 执行前插入 JS 代码");
+    });
     jsb.hotfix.replace_single("HotfixTest", "SimpleStaticCall", function () {
         this.AnotherStaticCall();
         print("[HOTFIX][JS] HotfixTest.SimpleStaticCall [private] this.static_value = ", this.static_value);

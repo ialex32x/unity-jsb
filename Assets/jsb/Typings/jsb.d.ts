@@ -38,6 +38,10 @@ declare namespace jsb {
          * 替换 C# 方法 (此方法为测试方法, 最终将移除)
          */
         function replace_single(type: string, func_name: string, func: Function): void
+        /**
+         * 在 C# 方法前插入执行 (此方法为测试方法, 最终将移除)
+         */
+        function before_single(type: string, func_name: string, func: Function): void
 
         /**
          * 在 C# 方法执行前插入执行 (未完成此功能)

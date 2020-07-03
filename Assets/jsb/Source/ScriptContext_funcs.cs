@@ -225,5 +225,55 @@ namespace QuickJS
             db.GetDynamicType(type, true);
             return JSApi.JS_UNDEFINED;
         }
+
+        //TODO: 临时代码
+        [MonoPInvokeCallback(typeof(JSCFunction))]
+        public static JSValue hotfix_before_single(JSContext ctx, JSValue this_obj, int argc, JSValue[] argv)
+        {
+            if (argc < 3)
+            {
+                return JSApi.JS_ThrowInternalError(ctx, "type_name, func_name, func expected");
+            }
+            if (!argv[0].IsString() || !argv[1].IsString() || JSApi.JS_IsFunction(ctx, argv[2]) != 1)
+            {
+                return JSApi.JS_ThrowInternalError(ctx, "type_name, func_name expected");
+            }
+
+            var type_name = JSApi.GetString(ctx, argv[0]);
+            var field_name = JSApi.GetString(ctx, argv[1]);
+            var type = Assembly.GetExecutingAssembly().GetType(type_name);
+            if (type == null)
+            {
+                return JSApi.JS_ThrowInternalError(ctx, "no such type");
+            }
+
+            var runtime = ScriptEngine.GetRuntime(ctx);
+            var db = runtime.GetTypeDB();
+            var hotfixBaseName = field_name != ".ctor" ? "_JSFIX_B_" + field_name + "_" : "_JSFIX_BC_ctor_";
+            var hotfixSlot = 0;
+
+            do
+            {
+                var hotfixName = hotfixBaseName + hotfixSlot;
+                var field = type.GetField(hotfixName);
+                if (field == null)
+                {
+                    if (hotfixSlot == 0)
+                    {
+                        return JSApi.JS_ThrowInternalError(ctx, "invalid hotfix point");
+                    }
+                    break;
+                }
+                Delegate d;
+                if (Values.js_new_delegate(ctx, argv[2], field.FieldType, out d))
+                {
+                    field.SetValue(null, d);
+                }
+                ++hotfixSlot;
+            } while (true);
+
+            db.GetDynamicType(type, true);
+            return JSApi.JS_UNDEFINED;
+        }
     }
 }

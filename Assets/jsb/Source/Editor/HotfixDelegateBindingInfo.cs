@@ -24,7 +24,7 @@ namespace QuickJS.Editor
             this.parameters = parameters;
         }
 
-        public bool Equals(Type thisType, Type returnType, ParameterInfo[] parameters)
+        public bool Equals(Type thisType, bool isStatic, Type returnType, ParameterInfo[] parameters)
         {
             if (thisType != this.thisType)
             {

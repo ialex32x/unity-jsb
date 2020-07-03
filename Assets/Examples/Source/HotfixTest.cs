@@ -2,7 +2,7 @@ using System;
 using UnityEngine;
 using QuickJS;
 
-[JSHotfix]
+[JSHotfix(JSHotfixFlags.Full)]
 public class HotfixTest
 {
     private int value = 12;
