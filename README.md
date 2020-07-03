@@ -1,14 +1,11 @@
 # unity-jsb
 
 使用 [QuickJS](https://bellard.org/quickjs/) 为 Unity3D 项目提供 Javascript 运行时支持.  <br/>
-通过生成静态绑定代码的方式提供性能良好的 C#/JS 互操作支持.
+通过生成静态绑定代码的方式提供性能良好的 C#/JS 互操作支持. 支持移动平台.
 
 > QuickJS is a small and embeddable Javascript engine. It supports the ES2020 specification including modules, asynchronous generators, proxies and BigInt. 
 
 # 特性支持
-* console.* 基本的兼容性 
-* commonjs 模块 基本的兼容性 
-* 支持 timer (setTimeout/setInterval)
 * 支持在JS异步函数中等待 Unity YieldInstruction 对象
 * 支持在JS异步函数中等待 System.Threading.Tasks.Task 对象 (limited support)
 * 向 JS 导入 C# 运算符重载 +, -, *, /, ==, -(负)
@@ -165,9 +162,13 @@ jsb.hotfix.replace_single("HotfixTest", "Foo", function (x: number) {
     // 注入后, 可以访问类的私有成员
     // 如果注入的方法是实例方法, this 将被绑定为 C# 对象实例 
     // 如果注入的方法是静态方法, this 将被绑定为 C# 类型 (对应的 JS Constructor)
-    console.log("replaced in js", this.value); 
+    console.log("replace C# method body by js function", this.value); 
     return x;
-})
+});
+
+jsb.hotfix.before_single("HotfixTest", "AnotherCall", function () {
+    print("在 C# 代码之前插入执行");
+});
 
 //NOTE: 如果 HotfixTest 已经是静态绑定过的类型, 注入会导致此类型被替换为反射方式进行 C#/JS 交互, 并且可以访问私有成员
 // 目前只能注入简单的成员方法
@@ -197,6 +198,12 @@ sudo apt-get install mingw-w64
 # Debugger
 > 暂不支持
 
+# 性能
+> 待测试
+
+# 状态
+> 完成度 ~70%
+
 # 对 QuickJS 的修改
 ```c
 // quickjs.c
@@ -223,6 +230,9 @@ JSValueConst JS_GetActiveFunction(JSContext *ctx) { }
 * [zlib](https://zlib.net/)
 
 # TODO
+* [X] console.* 基本的兼容性 
+* [X] commonjs 模块 基本的兼容性 
+* [X] 支持 timer (setTimeout/setInterval)
 * [X] sourcemap 转换 JS 调用栈
 * [X] 针对嵌套类型的 Binding 过程调整
 * [X] 静态 Bind 过程
