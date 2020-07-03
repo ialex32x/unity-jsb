@@ -236,12 +236,17 @@ JSValueConst JS_GetActiveFunction(JSContext *ctx) { }
 * [ ] 静态绑定和反射绑定对重载的处理顺序可能不同
 * [ ] 静态绑定和反射绑定对参数类型的判断可能不同
 * [X] 静态绑定的类型也可以进行 hotfix
-* [X] hotfix il 注入 (初步功能, 只处理了 Method)
-* [ ] hotfix il 注入 (Property)
+* [X] hotfix 注入 (il, 初步功能, 只处理了有限支持的 Method)
+* [ ] hotfix 注入 Property
+* [ ] hotfix 注入 Field (JS层面等价于 Property 因此应该可以进行JS替换)
 * [ ] hotfix 可以注入 before/after 代码而不仅仅替换
 * [X] 静态绑定也提供 Private Access (不直接支持, 运行时使用反射绑定替代静态绑定来支持此特性)
 * [ ] 可以安全的保留 ScriptValue 对象引用
 * [ ] 整理 Examples
+* [ ] 完善 Ref/Out 参数的处理, 改为额外的一个 JS Object 参数, 进行批量的输出赋值
 
 # 待定
 * [ ] Worker API
+* [ ] WebAssembly build
+
+
