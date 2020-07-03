@@ -61,6 +61,7 @@ namespace QuickJS.Hotfix
             return p1.ParameterType == p2.ParameterType && p1.IsOut == p2.IsOut;
         }
 
+        // 方法定义是否与 hotfix 委托定义匹配
         public static bool IsDelegateMatched(MethodDefinition m, TypeDefinition d)
         {
             var invoke = d.Methods.First(dm => dm.Name == "Invoke");
@@ -75,9 +76,24 @@ namespace QuickJS.Hotfix
                 return false;
             }
 
-            if (invoke.Parameters[0].IsOut || invoke.Parameters[0].ParameterType != m.DeclaringType)
+            if (invoke.Parameters[0].IsOut)
             {
                 return false;
+            }
+
+            if (m.IsStatic)
+            {
+                if (invoke.Parameters[0].ParameterType.FullName != "System.Type")
+                {
+                    return false;
+                }
+            }
+            else
+            {
+                if (invoke.Parameters[0].ParameterType.FullName != "System.Object")
+                {
+                    return false;
+                }
             }
 
             for (var i = 1; i < argc; i++)
@@ -94,6 +110,7 @@ namespace QuickJS.Hotfix
             return true;
         }
 
+        // 从 Delegate 定义池中找一个匹配的
         public static TypeDefinition GetDelegate(MethodDefinition m, List<TypeDefinition> list)
         {
             for (var i = 0; i < list.Count; i++)
@@ -127,7 +144,7 @@ namespace QuickJS.Hotfix
             return sb;
         }
 
-        private static OpCode[] ldarg_i = new OpCode[] { OpCodes.Ldarg_0, OpCodes.Ldarg_1, OpCodes.Ldarg_2, OpCodes.Ldarg_3 };
+        private static OpCode[] ldarg_i_table = new OpCode[] { OpCodes.Ldarg_0, OpCodes.Ldarg_1, OpCodes.Ldarg_2, OpCodes.Ldarg_3 };
 
         public static void Run()
         {
@@ -175,24 +192,32 @@ namespace QuickJS.Hotfix
                         proc.InsertBefore(point, proc.Create(OpCodes.Ldsfld, newField));
 
                         var argCount = method.Parameters.Count;
-                        if (!method.IsStatic)
+
+                        if (method.IsStatic)
+                        {
+                            var refGetTypeFromHandle = a.MainModule.ImportReference(typeof(Type).GetMethod("GetTypeFromHandle"));
+                            proc.InsertBefore(point, proc.Create(OpCodes.Ldtoken, type));
+                            proc.InsertBefore(point, proc.Create(OpCodes.Call, refGetTypeFromHandle));
+                        }
+                        else 
                         {
                             argCount++;
                         }
 
                         for (var argIndex = 0; argIndex < argCount; argIndex++)
                         {
-                            if (argIndex < ldarg_i.Length)
+                            var ldarg_i = argIndex;
+                            if (ldarg_i < ldarg_i_table.Length)
                             {
-                                proc.InsertBefore(point, proc.Create(ldarg_i[argIndex]));
+                                proc.InsertBefore(point, proc.Create(ldarg_i_table[ldarg_i]));
                             }
-                            else if (argIndex <= byte.MaxValue)
+                            else if (ldarg_i <= byte.MaxValue)
                             {
-                                proc.InsertBefore(point, proc.Create(OpCodes.Ldarg_S, (byte)argIndex));
+                                proc.InsertBefore(point, proc.Create(OpCodes.Ldarg_S, (byte)ldarg_i));
                             }
                             else
                             {
-                                proc.InsertBefore(point, proc.Create(OpCodes.Ldarg, argIndex));
+                                proc.InsertBefore(point, proc.Create(OpCodes.Ldarg, ldarg_i));
                             }
                         }
                         var invoke = delegateType.Methods.First(dm => dm.Name == "Invoke");

@@ -54,7 +54,7 @@ namespace QuickJS.Binding
         ///</summary>
         public unsafe void Register(TypeRegister register, JSContext ctx, JSValue create)
         {
-            var proto = register.FindPrototype(type);
+            var proto = register.FindChainedPrototypeOf(type);
             var argv = new JSValue[_count];
 
             argv[0] = JSApi.JS_NewObject(ctx);

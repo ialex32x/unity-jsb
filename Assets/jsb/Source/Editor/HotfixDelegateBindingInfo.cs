@@ -12,11 +12,13 @@ namespace QuickJS.Editor
     public class HotfixDelegateBindingInfo
     {
         public Type returnType;
+        public bool isStatic; // 委托针对的是静态函数
         public Type thisType;
         public ParameterInfo[] parameters;
 
-        public HotfixDelegateBindingInfo(Type thisType, Type returnType, ParameterInfo[] parameters)
+        public HotfixDelegateBindingInfo(Type thisType, bool isStatic, Type returnType, ParameterInfo[] parameters)
         {
+            this.isStatic = isStatic;
             this.thisType = thisType;
             this.returnType = returnType;
             this.parameters = parameters;
@@ -25,6 +27,11 @@ namespace QuickJS.Editor
         public bool Equals(Type thisType, Type returnType, ParameterInfo[] parameters)
         {
             if (thisType != this.thisType)
+            {
+                return false;
+            }
+
+            if (isStatic != this.isStatic)
             {
                 return false;
             }

@@ -162,7 +162,9 @@ ws.onmessage = function (msg) {
 ```ts
 
 jsb.hotfix.replace_single("HotfixTest", "Foo", function (x: number) {
-    // 如果注入的方法是实例方法, this 将被绑定为 C# 对象实例 (可以访问私有成员)
+    // 注入后, 可以访问类的私有成员
+    // 如果注入的方法是实例方法, this 将被绑定为 C# 对象实例 
+    // 如果注入的方法是静态方法, this 将被绑定为 C# 类型 (对应的 JS Constructor)
     console.log("replaced in js", this.value); 
     return x;
 })

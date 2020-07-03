@@ -107,9 +107,9 @@ namespace QuickJS.Native
 
             switch (tag)
             {
-                case JSApi.JS_TAG_SYMBOL: return string.Format("Symbol:{0}", u.ptr); 
-                case JSApi.JS_TAG_STRING: return string.Format("String:{0}", u.ptr); 
-                default: return string.Format("Ref:{0}", u.ptr);
+                case JSApi.JS_TAG_SYMBOL: return string.Format("Symbol:{0:X}", (ulong) u.ptr); 
+                case JSApi.JS_TAG_STRING: return string.Format("String:{0:X}", (ulong) u.ptr); 
+                default: return string.Format("Ref:{0:X}", (ulong) u.ptr);
             }
         }
 
