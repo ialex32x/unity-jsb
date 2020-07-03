@@ -204,6 +204,14 @@ namespace QuickJS
             Delegate d;
             if (Values.js_get_delegate(ctx, argv[2], field.FieldType, out d))
             {
+                var runtime = ScriptEngine.GetRuntime(ctx);
+                var db = runtime.GetTypeDB();
+                var dynamicType = db.GetDynamicType(type);
+
+                if (dynamicType != null)
+                {
+                    dynamicType.OpenPrivateAccess();
+                }
                 field.SetValue(null, d);
                 // Debug.LogFormat("set hook {0} {1}", field.FieldType, d != null);
             }

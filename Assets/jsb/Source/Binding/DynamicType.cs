@@ -108,7 +108,7 @@ namespace QuickJS.Binding
             var db = register.GetTypeDB();
             var ctx = (JSContext)register.GetContext();
             var flags = DefaultFlags;
-            var proto = db.GetPrototypeOf(_type, out _type_id);
+            var proto = db.FindPrototypeOf(_type, out _type_id);
 
             if (proto.IsNullish())
             {

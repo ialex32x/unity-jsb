@@ -22,7 +22,7 @@ namespace QuickJS.Binding
         {
             int type_id;
             var types = ScriptEngine.GetTypeDB(ctx);
-            return types.FindPrototypeOf(type, out type_id);
+            return types.FindChainedPrototypeOf(type, out type_id);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

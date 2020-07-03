@@ -157,8 +157,8 @@ namespace QuickJS.Editor
             SetTypeBlocked(typeof(UnityEngine.ISerializationCallbackReceiver));
 
             TransformType(typeof(object))
-                // .RenameTSMethod("$Equals", "Equals", typeof(object))
-                // .RenameTSMethod("$Equals", "Equals", typeof(object), typeof(object))
+            // .RenameTSMethod("$Equals", "Equals", typeof(object))
+            // .RenameTSMethod("$Equals", "Equals", typeof(object), typeof(object))
             ;
 
             TransformType(typeof(string))
@@ -519,7 +519,7 @@ namespace QuickJS.Editor
 
         public void CollectHotfix(Type type)
         {
-            if (type == null || type.GetCustomAttribute(typeof(JSHotfixAttribute)) == null)
+            if (type == null)
             {
                 return;
             }
@@ -537,8 +537,24 @@ namespace QuickJS.Editor
                 return false;
             }
 
+            if (declaringType.IsValueType)
+            {
+                return false;
+            }
+
             var parameters = methodInfo.GetParameters();
             var returnType = methodInfo.ReturnType;
+
+            for (var i = 0; i < parameters.Length; i++)
+            {
+                var parameter = parameters[i];
+                
+                // 暂不支持
+                if (parameter.IsOut || parameter.ParameterType.IsPointer || parameter.IsDefined(typeof(ParamArrayAttribute)))
+                {
+                    return false;
+                }
+            }
 
             for (var i = 0; i < _exportedHotfixDelegates.Count; i++)
             {
@@ -549,7 +565,7 @@ namespace QuickJS.Editor
                 }
             }
 
-            var newDelegateBinding = new HotfixDelegateBindingInfo(declaringType, returnType, parameters);
+            var newDelegateBinding = new HotfixDelegateBindingInfo(declaringType, methodInfo.IsStatic, returnType, parameters);
             _exportedHotfixDelegates.Add(newDelegateBinding);
             for (var i = 0; i < parameters.Length; i++)
             {
@@ -881,16 +897,6 @@ namespace QuickJS.Editor
                 str = str.Substring(0, str.Length - 2);
             }
             return str;
-        }
-
-        public string GetCSArglistDecl(Type self, string selfName, ParameterInfo[] parameters)
-        {
-            var arglist = GetCSArglistDecl(parameters);
-            if (string.IsNullOrEmpty(arglist))
-            {
-                return GetCSTypeFullName(self);
-            }
-            return GetCSTypeFullName(self) + " " + selfName + ", " + arglist;
         }
 
         // 生成参数对应的字符串形式参数列表 (csharp)

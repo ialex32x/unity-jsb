@@ -158,7 +158,7 @@ namespace QuickJS.Binding
             JSContext ctx = _context;
             var protoVal = JSApi.JS_NewObject(ctx);
             var type_id = RegisterType(type, protoVal);
-            var ctorVal = _db.NewDynamicConstructor(nameAtom, dynamicMethod);
+            var ctorVal = _db.NewDynamicConstructor(nameAtom, dynamicMethod); 
             var decl = new ClassDecl(this, ctorVal, protoVal, type);
             JSApi.JS_SetConstructor(ctx, ctorVal, protoVal);
             JSApi.JSB_SetBridgeType(ctx, ctorVal, type_id);
@@ -220,6 +220,7 @@ namespace QuickJS.Binding
             return decl;
         }
 
+        // 返回值已经过 DupValue
         public JSValue GetConstructor(Type type)
         {
             if (type == typeof(string) || type == typeof(char))
@@ -232,13 +233,13 @@ namespace QuickJS.Binding
                 return _context.GetNumberConstructor();
             }
 
-            var val = _db.FindPrototypeOf(type);
+            var val = _db.FindChainedPrototypeOf(type);
             return JSApi.JS_GetProperty(_context, val, JSApi.JS_ATOM_constructor);
         }
 
-        public JSValue FindPrototype(Type type)
+        public JSValue FindChainedPrototypeOf(Type type)
         {
-            var val = _db.FindPrototypeOf(type);
+            var val = _db.FindChainedPrototypeOf(type);
             return val;
         }
 
@@ -287,7 +288,7 @@ namespace QuickJS.Binding
                 if (!proto.IsNullish())
                 {
                     var baseType = type.BaseType;
-                    var parentProto = _db.FindPrototypeOf(baseType);
+                    var parentProto = _db.FindChainedPrototypeOf(baseType);
                     if (!parentProto.IsNullish())
                     {
                         JSApi.JS_SetPrototype(ctx, proto, parentProto);

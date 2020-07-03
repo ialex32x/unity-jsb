@@ -193,16 +193,26 @@ namespace QuickJS.Editor
             return str;
         }
 
+        public string GetCSArglistDecl(Type self, bool isStatic, string selfName, ParameterInfo[] parameters)
+        {
+            var arglist = this.cg.bindingManager.GetCSArglistDecl(parameters);
+            var firstArgType = isStatic ? "Type" : "object";
+            var firstArg = firstArgType + " " + selfName;
+
+            return string.IsNullOrEmpty(arglist) ? firstArg : firstArg + ", " + arglist;
+        }
+
         public HotfixDelegateCodeGen(CodeGenerator cg, HotfixDelegateBindingInfo delegateBindingInfo, int index)
         {
             this.cg = cg;
             var self_name = "_hotfix_this";
+            var js_push = delegateBindingInfo.isStatic ? "js_push_type" : "js_push_classvalue_hotfix";
             var nargs = delegateBindingInfo.parameters.Length;
             var retName = this.cg.bindingManager.GetUniqueName(delegateBindingInfo.parameters, "ret");
             var firstArgument = typeof(ScriptDelegate) + " fn";
             var returnTypeName = this.cg.bindingManager.GetCSTypeFullName(delegateBindingInfo.returnType);
             var delegateName = CodeGenerator.NameOfHotfixDelegates + index;
-            var arglist = this.cg.bindingManager.GetCSArglistDecl(delegateBindingInfo.thisType, self_name, delegateBindingInfo.parameters);
+            var arglist = GetCSArglistDecl(delegateBindingInfo.thisType, delegateBindingInfo.isStatic, self_name, delegateBindingInfo.parameters);
             string sig;
             var delegateSig = GetSignature(delegateBindingInfo, index, arglist, out sig);
 

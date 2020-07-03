@@ -107,7 +107,7 @@ namespace QuickJS.Utils
 
         // 将 type 的 prototype 压栈 （未导出则向父类追溯）
         // without reference-count added
-        public JSValue FindPrototypeOf(Type cType, out int type_id)
+        public JSValue FindChainedPrototypeOf(Type cType, out int type_id)
         {
             if (cType == null)
             {
@@ -128,10 +128,10 @@ namespace QuickJS.Utils
                 return proto;
             }
 
-            return FindPrototypeOf(cType.BaseType, out type_id);
+            return FindChainedPrototypeOf(cType.BaseType, out type_id);
         }
 
-        public JSValue FindPrototypeOf(Type cType)
+        public JSValue FindChainedPrototypeOf(Type cType)
         {
             if (cType == null)
             {
@@ -149,10 +149,10 @@ namespace QuickJS.Utils
                 return proto;
             }
 
-            return FindPrototypeOf(cType.BaseType);
+            return FindChainedPrototypeOf(cType.BaseType);
         }
 
-        public JSValue FindPrototypeOf(Type cType, out Type pType)
+        public JSValue FindChainedPrototypeOf(Type cType, out Type pType)
         {
             if (cType == null)
             {
@@ -173,7 +173,7 @@ namespace QuickJS.Utils
                 return proto;
             }
 
-            return FindPrototypeOf(cType.BaseType, out pType);
+            return FindChainedPrototypeOf(cType.BaseType, out pType);
         }
 
         public JSValue GetPrototypeOf(Type type)
@@ -186,7 +186,7 @@ namespace QuickJS.Utils
             return JSApi.JS_UNDEFINED;
         }
 
-        public JSValue GetPrototypeOf(Type type, out int type_id)
+        public JSValue FindPrototypeOf(Type type, out int type_id)
         {
             JSValue proto;
             if (_prototypes.TryGetValue(type, out proto))
@@ -196,6 +196,12 @@ namespace QuickJS.Utils
             }
             type_id = -1;
             return JSApi.JS_UNDEFINED;
+        }
+
+        public JSValue GetConstructorOf(Type type)
+        {
+            var proto = GetPrototypeOf(type);
+            return JSApi.JS_GetProperty(_context, proto, JSApi.JS_ATOM_constructor);
         }
 
         public void Destroy()
@@ -252,7 +258,7 @@ namespace QuickJS.Utils
             }
         }
 
-        public void NewDynamicFieldGetter(JSAtom name, IDynamicField field, out JSValue getter, out JSValue setter)
+        public void NewDynamicFieldAccess(JSAtom name, IDynamicField field, out JSValue getter, out JSValue setter)
         {
             var magic = _dynamicFields.Count;
             getter = JSApi.JSB_NewCFunction(_context, JSApi._DynamicFieldGetter, name, magic);

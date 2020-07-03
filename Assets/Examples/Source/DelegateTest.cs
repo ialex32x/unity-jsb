@@ -9,6 +9,7 @@ namespace jsb
         public class NotExportedClass
         {
             public string value = "未导出类的访问测试";
+            public static string value2 = "未导出类的访问测试2";
 
             public int Add(int a, int b)
             {

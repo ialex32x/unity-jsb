@@ -120,6 +120,35 @@ namespace QuickJS.Binding
 
         // variant push
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static JSValue js_push_classvalue(JSContext ctx, Type type)
+        {
+            if (type == null)
+            {
+                return JSApi.JS_NULL;
+            }
+
+            var runtime = ScriptEngine.GetRuntime(ctx);
+            var db = runtime.GetTypeDB();
+
+            return db.GetConstructorOf(type);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static JSValue js_push_classvalue_hotfix(JSContext ctx, Type type)
+        {
+            if (type == null)
+            {
+                return JSApi.JS_NULL;
+            }
+
+            var runtime = ScriptEngine.GetRuntime(ctx);
+            var db = runtime.GetTypeDB();
+
+            return db.GetConstructorOf(type);
+        }
+
+        // variant push
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static JSValue js_push_classvalue(JSContext ctx, object o)
         {
             if (o == null)
@@ -148,16 +177,6 @@ namespace QuickJS.Binding
             if (this_obj == null)
             {
                 return JSApi.JS_NULL;
-            }
-
-            var type = this_obj.GetType();
-            var runtime = ScriptEngine.GetRuntime(ctx);
-            var db = runtime.GetTypeDB();
-            var dynamicType = db.GetDynamicType(type);
-
-            if (dynamicType != null)
-            {
-                dynamicType.OpenPrivateAccess();
             }
 
             return js_push_object(ctx, this_obj);

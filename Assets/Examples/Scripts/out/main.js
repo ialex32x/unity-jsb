@@ -66,33 +66,38 @@ print("end of script");
 // 通过反射方式建立未导出类型的交互
 let unknown = jsb.DelegateTest.GetNotExportedClass();
 print(unknown.value);
+print(unknown.GetType().value2);
 print(unknown.Add(12, 21));
 print("Equals(unknown, unknown):", System.Object.Equals(unknown, unknown));
 print("Equals(unknown, camera):", System.Object.Equals(unknown, camera));
 print("ReferenceEquals(unknown, unknown):", System.Object.ReferenceEquals(unknown, unknown));
 print("ReferenceEquals(unknown, camera):", System.Object.ReferenceEquals(unknown, camera));
-jsb.DelegateTest.CallHotfixTest();
+let HotfixTest = jsb.Import("HotfixTest");
+try {
+    // 反射导入的类型默认收到访问保护 (hotfix 后保护会被迫移除)
+    print(HotfixTest.static_value);
+}
+catch (err) {
+    console.warn(err);
+}
 try {
     jsb.hotfix.replace_single("HotfixTest", "Foo", function (x) {
-        print("1 replace by js func, this.value = ", this.value);
+        print("[HOTFIX][JS] HotfixTest.Foo [private] this.value = ", this.value);
         return x * 3;
     });
-    jsb.hotfix.replace_single("HotfixTest2", "Foo", function (x) {
-        print("2 replace by js func, this.value = ", this.value);
-        return x * 6;
+    jsb.hotfix.replace_single("HotfixTest", "SimpleStaticCall", function () {
+        this.AnotherStaticCall();
+        print("[HOTFIX][JS] HotfixTest.SimpleStaticCall [private] this.static_value = ", this.static_value);
     });
 }
 catch (err) {
-    console.error("替换失败, 是否执行过dll注入?");
+    console.warn("替换失败, 是否执行过dll注入?");
 }
-jsb.DelegateTest.CallHotfixTest();
-var takeBuffer = NoNamespaceClass.MakeBytes();
-var testBuffer = new Uint8Array(takeBuffer);
-var backBuffer = new Uint8Array(NoNamespaceClass.TestBytes(testBuffer));
-backBuffer.forEach(val => print(val));
-let NotExportedClass = jsb.Import("NotExportedClass");
-let hidden_inst = new NotExportedClass();
-hidden_inst.Foo();
-hidden_inst.value = 123;
-print(hidden_inst.value);
+let hotfix = new HotfixTest();
+print("hotfix.Foo(1) = ", hotfix.Foo(1));
+HotfixTest.SimpleStaticCall();
+// var takeBuffer = NoNamespaceClass.MakeBytes();
+// var testBuffer = new Uint8Array(takeBuffer);
+// var backBuffer = new Uint8Array(NoNamespaceClass.TestBytes(testBuffer));
+// backBuffer.forEach(val => print(val));
 //# sourceMappingURL=main.js.map

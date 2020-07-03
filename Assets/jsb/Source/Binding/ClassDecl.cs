@@ -140,8 +140,8 @@ namespace QuickJS.Binding
                 setterVal = JSApi.JSB_NewCFunction(ctx, setter, nameAtom);
             }
 
-            var rs = JSApi.JS_DefineProperty(ctx, bStatic ? _ctor : _proto, nameAtom, JSApi.JS_UNDEFINED, getterVal, setterVal,
-                flags);
+            var rs = JSApi.JS_DefineProperty(ctx, bStatic ? _ctor : _proto, nameAtom, JSApi.JS_UNDEFINED, getterVal, setterVal, flags);
+
             if (rs != 1)
             {
                 var logger = _register.GetLogger();
@@ -161,7 +161,7 @@ namespace QuickJS.Binding
             var flags = JSPropFlags.JS_PROP_CONFIGURABLE | JSPropFlags.JS_PROP_ENUMERABLE | JSPropFlags.JS_PROP_HAS_GET | JSPropFlags.JS_PROP_HAS_SET | JSPropFlags.JS_PROP_WRITABLE;
             var db = _register.GetTypeDB();
 
-            db.NewDynamicFieldGetter(nameAtom, field, out getterVal, out setterVal);
+            db.NewDynamicFieldAccess(nameAtom, field, out getterVal, out setterVal);
 
             var rs = JSApi.JS_DefineProperty(ctx, bStatic ? _ctor : _proto, nameAtom, JSApi.JS_UNDEFINED, getterVal, setterVal, flags);
             if (rs != 1)
