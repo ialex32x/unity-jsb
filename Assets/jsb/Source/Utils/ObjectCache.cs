@@ -18,10 +18,14 @@ namespace QuickJS.Utils
 
         // id => host object
         private List<ObjectRef> _map = new List<ObjectRef>();
+
         // host object => jsvalue heapptr (dangerous, no ref count)
         private Dictionary<object, JSValue> _rmap = new Dictionary<object, JSValue>(EqualityComparer.Default);
+
         // weak reference table for delegates (dangerous, no ref count)
         private Dictionary<JSValue, WeakReference> _delegateMap = new Dictionary<JSValue, WeakReference>();
+
+        private List<WeakReference> _hotfixDelegates = new List<WeakReference>();
 
         public int GetManagedObjectCount()
         {
@@ -38,17 +42,34 @@ namespace QuickJS.Utils
             return _delegateMap.Count;
         }
 
+        public void CleanupHotfix()
+        {
+            for (int i = 0, count = _hotfixDelegates.Count; i < count; i++)
+            {
+                var whd = _hotfixDelegates[i];
+                var hd = whd.Target as ScriptDelegate;
+                if (hd != null)
+                {
+                    hd.Dispose();
+                }
+            }
+
+            _hotfixDelegates.Clear();
+        }
+
         public void Clear()
         {
             _disposing = true;
             _freeIndex = 0;
             _map.Clear();
             _rmap.Clear();
-            var count = _delegateMap.Values.Count;
-            var delegates = new WeakReference[count];
+            CleanupHotfix();
+
+            var mapSize = _delegateMap.Values.Count;
+            var delegates = new WeakReference[mapSize];
             _delegateMap.Values.CopyTo(delegates, 0);
             _delegateMap.Clear();
-            for (var i = 0; i < count; i++)
+            for (var i = 0; i < mapSize; i++)
             {
                 var d = delegates[i].Target as ScriptDelegate;
                 if (d != null)
@@ -87,6 +108,11 @@ namespace QuickJS.Utils
                 return false;
             }
             return o != null && _rmap.Remove(o);
+        }
+
+        public void AddHotfixDelegate(ScriptDelegate o)
+        {
+            _hotfixDelegates.Add(new WeakReference(o));
         }
 
         public void AddDelegate(JSValue jso, ScriptDelegate o)

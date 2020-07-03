@@ -165,6 +165,19 @@ namespace QuickJS.Hotfix
             return null;
         }
 
+        private static string GetHotfixFieldName(string plainName, HashSet<string> set)
+        {
+            var index = 0;
+            var serialName = plainName + "_" + index;
+
+            while (set.Contains(serialName))
+            {
+                serialName = plainName + "_" + ++index;
+            }
+
+            return serialName;
+        }
+
         public static void Run()
         {
             var test = typeof(HotfixTest);
@@ -187,6 +200,7 @@ namespace QuickJS.Hotfix
                 }
 
                 var sb = $"{type.FullName}\n";
+                var hotfixRegs = new HashSet<string>();
                 foreach (var method in type.Methods)
                 {
                     var delegateType = GetDelegate(method, delegateTypes);
@@ -194,9 +208,17 @@ namespace QuickJS.Hotfix
                     {
                         continue;
                     }
+                    var plainFieldName = method.IsConstructor ? "_JSFIX_RC_" + method.Name.Replace(".", "") : "_JSFIX_R_" + method.Name;
+                    var hotfixFieldName = GetHotfixFieldName(plainFieldName, hotfixRegs);
+
+                    if (hotfixRegs.Contains(hotfixFieldName))
+                    {
+                        continue;
+                    }
+                    hotfixRegs.Add(hotfixFieldName);
+
                     var signatureLit = GetMethodString(method);
                     var newLocal = new VariableDefinition(delegateType);
-                    var hotfixFieldName = method.IsConstructor ? "_JSFIX_RC_" + method.Name.Replace(".", "") : "_JSFIX_R_" + method.Name;
                     var newField = new FieldDefinition(hotfixFieldName, FieldAttributes.Public | FieldAttributes.Static, delegateType);
 
                     var point = FindPatchPoint(method.Body);

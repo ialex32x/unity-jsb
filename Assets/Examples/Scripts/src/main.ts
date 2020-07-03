@@ -111,9 +111,9 @@ try {
     jsb.hotfix.replace_single("HotfixTest", ".ctor", function () {
         print("[HOTFIX][JS] 构造函数");
     });
-    jsb.hotfix.replace_single("HotfixTest", "Foo", function (x: number) {
+    jsb.hotfix.replace_single("HotfixTest", "Foo", function (x: number | string) {
         print("[HOTFIX][JS] HotfixTest.Foo [private] this.value = ", this.value);
-        return x * 3;
+        return typeof x === "number" ? x + 3 : x + "~~~";
     });
     jsb.hotfix.replace_single("HotfixTest", "SimpleStaticCall", function () {
         this.AnotherStaticCall();
@@ -126,6 +126,7 @@ try {
 let hotfix: any = new HotfixTest();
 
 print("[HOTFIX][JS] hotfix.Foo(1) 返回值:", hotfix.Foo(1));
+print("[HOTFIX][JS] hotfix.Foo(1) 返回值:", hotfix.Foo("good day"));
 HotfixTest.SimpleStaticCall();
 
 // var takeBuffer = NoNamespaceClass.MakeBytes();

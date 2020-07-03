@@ -15,7 +15,13 @@ public class HotfixTest
 
     public int Foo(int x)
     {
-        Debug.LogFormat("[HOTFIX][C#] HotfixTest.Foo() Return {0}", x);
+        Debug.LogFormat("[HOTFIX][C#] HotfixTest.Foo({0})", x);
+        return x;
+    }
+
+    public string Foo(string x)
+    {
+        Debug.LogFormat("[HOTFIX][C#] HotfixTest.Foo({0})", x);
         return x;
     }
 

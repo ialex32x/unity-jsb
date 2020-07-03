@@ -194,27 +194,35 @@ namespace QuickJS
             var type = Assembly.GetExecutingAssembly().GetType(type_name);
             if (type == null)
             {
-                return JSApi.JS_UNDEFINED;
+                return JSApi.JS_ThrowInternalError(ctx, "no such type");
             }
-            var field = field_name != ".ctor" ? type.GetField("_JSFIX_R_" + field_name) : type.GetField("_JSFIX_RC_ctor");
-            if (field == null)
-            {
-                return JSApi.JS_ThrowInternalError(ctx, "invalid hotfix point");
-            }
-            Delegate d;
-            if (Values.js_get_delegate(ctx, argv[2], field.FieldType, out d))
-            {
-                var runtime = ScriptEngine.GetRuntime(ctx);
-                var db = runtime.GetTypeDB();
-                var dynamicType = db.GetDynamicType(type);
 
-                if (dynamicType != null)
+            var runtime = ScriptEngine.GetRuntime(ctx);
+            var db = runtime.GetTypeDB();
+            var hotfixBaseName = field_name != ".ctor" ? "_JSFIX_R_" + field_name + "_" : "_JSFIX_RC_ctor_";
+            var hotfixSlot = 0;
+
+            do
+            {
+                var hotfixName = hotfixBaseName + hotfixSlot;
+                var field = type.GetField(hotfixName);
+                if (field == null)
                 {
-                    dynamicType.OpenPrivateAccess();
+                    if (hotfixSlot == 0)
+                    {
+                        return JSApi.JS_ThrowInternalError(ctx, "invalid hotfix point");
+                    }
+                    break;
                 }
-                field.SetValue(null, d);
-                // Debug.LogFormat("set hook {0} {1}", field.FieldType, d != null);
-            }
+                Delegate d;
+                if (Values.js_new_delegate(ctx, argv[2], field.FieldType, out d))
+                {
+                    field.SetValue(null, d);
+                }
+                ++hotfixSlot;
+            } while (true);
+
+            db.GetDynamicType(type, true);
             return JSApi.JS_UNDEFINED;
         }
     }
