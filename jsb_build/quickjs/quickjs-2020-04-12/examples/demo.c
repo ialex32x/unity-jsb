@@ -15,6 +15,32 @@
 //     JS_ATOM_END,
 // };
 
+JS_BOOL JSB_SetBridgeType(JSContext *ctx, JSValue obj, int32_t type)
+{
+    if (JS_VALUE_GET_TAG(obj) == JS_TAG_OBJECT)
+    {
+        JS_SetPropertyStr(ctx, obj, JS_HIDDEN_PROP("type"), JS_NewInt32(ctx, type));
+        return TRUE;
+    }
+    return FALSE;
+}
+
+int32_t JSB_GetBridgeType(JSContext *ctx, JSValue obj)
+{
+    if (JS_VALUE_GET_TAG(obj) == JS_TAG_OBJECT)
+    {
+        JSValue val = JS_GetPropertyStr(ctx, obj, JS_HIDDEN_PROP("type"));
+        int32_t pres;
+        if (JS_ToInt32(ctx, &pres, val) == 0)
+        {
+            JS_FreeValue(ctx, val);
+            return pres;
+        }
+        JS_FreeValue(ctx, val);
+    }
+    return -1;
+}
+
 static int running = 1;
 static JSClassID unity_object_class_id;
 

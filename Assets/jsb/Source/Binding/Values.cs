@@ -11,6 +11,8 @@ namespace QuickJS.Binding
 
     public partial class Values
     {
+        public const string KeyForCSharpTypeID = "__csharp_type_id__";
+        
         private static float[] _matrix_floats_buffer = new float[16];
 
         static Values()

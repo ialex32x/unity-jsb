@@ -22,10 +22,11 @@ namespace QuickJS.Binding
             }
             else
             {
-                var type_id = JSApi.JSB_GetBridgeType(ctx, jsValue);
+                var context = ScriptEngine.GetContext(ctx);
+                var type_id = JSApi.JSB_GetBridgeType(ctx, jsValue, context.GetAtom(Values.KeyForCSharpTypeID));
                 if (type_id >= 0)
                 {
-                    var types = ScriptEngine.GetTypeDB(ctx);
+                    var types = context.GetTypeDB();
                     o = types.GetType(type_id);
                     // Debug.Log($"get type from exported registry {o}:{typeid}");
                     return o != null;
@@ -37,14 +38,14 @@ namespace QuickJS.Binding
                     {
                         case BridgeObjectType.TypeRef:
                         {
-                            var types = ScriptEngine.GetTypeDB(ctx);
+                            var types = context.GetTypeDB();
                             o = types.GetType(header.value);
                             // Debug.Log($"get type from exported registry {o}:{typeid}");
                             return o != null;
                         }
                         case BridgeObjectType.ObjectRef:
                         {
-                            var cache = ScriptEngine.GetObjectCache(ctx);
+                            var cache = context.GetObjectCache();
                             object obj;
                             cache.TryGetObject(header.value, out obj);
                             o = obj.GetType();

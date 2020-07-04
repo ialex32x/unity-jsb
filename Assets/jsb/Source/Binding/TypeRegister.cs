@@ -133,7 +133,7 @@ namespace QuickJS.Binding
             var ctorVal = JSApi.JSB_NewCFunctionMagic(ctx, ctorFunc, nameAtom, 0, JSCFunctionEnum.JS_CFUNC_constructor_magic, type_id);
             var decl = new ClassDecl(this, ctorVal, protoVal, type);
             JSApi.JS_SetConstructor(ctx, ctorVal, protoVal);
-            JSApi.JSB_SetBridgeType(ctx, ctorVal, type_id);
+            JSApi.JSB_SetBridgeType(ctx, ctorVal, GetAtom(Values.KeyForCSharpTypeID), type_id);
             if (!nsValue.IsNullish())
             {
                 JSApi.JS_DefinePropertyValue(ctx, nsValue, nameAtom, ctorVal, JSPropFlags.JS_PROP_ENUMERABLE | JSPropFlags.JS_PROP_CONFIGURABLE);
@@ -161,7 +161,7 @@ namespace QuickJS.Binding
             var ctorVal = _db.NewDynamicConstructor(nameAtom, dynamicMethod); 
             var decl = new ClassDecl(this, ctorVal, protoVal, type);
             JSApi.JS_SetConstructor(ctx, ctorVal, protoVal);
-            JSApi.JSB_SetBridgeType(ctx, ctorVal, type_id);
+            JSApi.JSB_SetBridgeType(ctx, ctorVal, GetAtom(Values.KeyForCSharpTypeID), type_id);
             if (!nsValue.IsNullish())
             {
                 JSApi.JS_DefinePropertyValue(ctx, nsValue, nameAtom, ctorVal, JSPropFlags.JS_PROP_ENUMERABLE | JSPropFlags.JS_PROP_CONFIGURABLE);
