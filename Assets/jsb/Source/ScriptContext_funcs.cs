@@ -48,7 +48,7 @@ namespace QuickJS
                     return JSApi.JS_EXCEPTION;
                 }
 
-                var str = JSApi.GetString(pstr, len);
+                var str = JSApi.GetString(ctx, pstr, len);
                 if (str != null)
                 {
                     sb.Append(str);

@@ -39,7 +39,7 @@ namespace QuickJS
         private ObjectCache _objectCache = new ObjectCache();
         private TypeDB _typeDB;
         private TimerManager _timerManager;
-        private IO.ByteBufferAllocator _byteBufferAllocator;
+        private IO.IByteBufferAllocator _byteBufferAllocator;
         private GameObject _container;
         private bool _isValid; // destroy 调用后立即 = false
 
@@ -81,7 +81,7 @@ namespace QuickJS
             _fileResolver.AddSearchPath(path);
         }
 
-        public void Initialize(IFileSystem fileSystem, IScriptRuntimeListener runner, IScriptLogger logger, IO.ByteBufferAllocator byteBufferAllocator, int step = 30)
+        public void Initialize(IFileSystem fileSystem, IScriptRuntimeListener runner, IScriptLogger logger, IO.IByteBufferAllocator byteBufferAllocator, int step = 30)
         {
             if (logger == null)
             {
@@ -116,7 +116,7 @@ namespace QuickJS
             runner.OnComplete(this);
         }
 
-        public IO.ByteBufferAllocator GetByteBufferAllocator()
+        public IO.IByteBufferAllocator GetByteBufferAllocator()
         {
             return _byteBufferAllocator;
         }

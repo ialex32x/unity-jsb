@@ -13,115 +13,96 @@ namespace QuickJS.Binding
     {
         public static JSValue NewBridgeClassObject(JSContext ctx, JSValue new_target, LayerMask o, int type_id)
         {
-            var cache = ScriptEngine.GetObjectCache(ctx);
             var val = JSApi.JSB_NewBridgeClassValue(ctx, new_target, sizeof(int) * 1);
             if (!JSApi.JS_IsException(val))
             {
                 JSApi.jsb_set_int_1(val, o.value);
-                // JSApi.JSB_SetBridgeType(ctx, val, type_id);
             }
             return val;
         }
 
         public static JSValue NewBridgeClassObject(JSContext ctx, JSValue new_target, Color o, int type_id)
         {
-            var cache = ScriptEngine.GetObjectCache(ctx);
             var val = JSApi.JSB_NewBridgeClassValue(ctx, new_target, sizeof(float) * 4);
             if (!JSApi.JS_IsException(val))
             {
                 JSApi.jsb_set_float_4(val, o.r, o.g, o.b, o.a);
-                // JSApi.JSB_SetBridgeType(ctx, val, type_id);
             }
             return val;
         }
 
         public static JSValue NewBridgeClassObject(JSContext ctx, JSValue new_target, Color32 o, int type_id)
         {
-            var cache = ScriptEngine.GetObjectCache(ctx);
             var val = JSApi.JSB_NewBridgeClassValue(ctx, new_target, sizeof(int) * 4);
             if (!JSApi.JS_IsException(val))
             {
                 JSApi.jsb_set_int_4(val, o.r, o.g, o.b, o.a);
-                // JSApi.JSB_SetBridgeType(ctx, val, type_id);
             }
             return val;
         }
 
         public static JSValue NewBridgeClassObject(JSContext ctx, JSValue new_target, Vector2 o, int type_id)
         {
-            var cache = ScriptEngine.GetObjectCache(ctx);
             var val = JSApi.JSB_NewBridgeClassValue(ctx, new_target, sizeof(float) * 2);
             if (!JSApi.JS_IsException(val))
             {
                 JSApi.jsb_set_float_2(val, o.x, o.y);
-                // JSApi.JSB_SetBridgeType(ctx, val, type_id);
             }
             return val;
         }
 
         public static JSValue NewBridgeClassObject(JSContext ctx, JSValue new_target, Vector2Int o, int type_id)
         {
-            var cache = ScriptEngine.GetObjectCache(ctx);
             var val = JSApi.JSB_NewBridgeClassValue(ctx, new_target, sizeof(int) * 2);
             if (!JSApi.JS_IsException(val))
             {
                 JSApi.jsb_set_int_2(val, o.x, o.y);
-                // JSApi.JSB_SetBridgeType(ctx, val, type_id);
             }
             return val;
         }
 
         public static JSValue NewBridgeClassObject(JSContext ctx, JSValue new_target, Vector3 o, int type_id)
         {
-            var cache = ScriptEngine.GetObjectCache(ctx);
             var val = JSApi.JSB_NewBridgeClassValue(ctx, new_target, sizeof(float) * 3);
             if (!JSApi.JS_IsException(val))
             {
                 JSApi.jsb_set_float_3(val, o.x, o.y, o.z);
-                // JSApi.JSB_SetBridgeType(ctx, val, type_id);
             }
             return val;
         }
 
         public static JSValue NewBridgeClassObject(JSContext ctx, JSValue new_target, Vector3Int o, int type_id)
         {
-            var cache = ScriptEngine.GetObjectCache(ctx);
             var val = JSApi.JSB_NewBridgeClassValue(ctx, new_target, sizeof(int) * 3);
             if (!JSApi.JS_IsException(val))
             {
                 JSApi.jsb_set_int_3(val, o.x, o.y, o.z);
-                // JSApi.JSB_SetBridgeType(ctx, val, type_id);
             }
             return val;
         }
 
         public static JSValue NewBridgeClassObject(JSContext ctx, JSValue new_target, Vector4 o, int type_id)
         {
-            var cache = ScriptEngine.GetObjectCache(ctx);
             var val = JSApi.JSB_NewBridgeClassValue(ctx, new_target, sizeof(float) * 4);
             if (!JSApi.JS_IsException(val))
             {
                 JSApi.jsb_set_float_4(val, o.x, o.y, o.z, o.w);
-                // JSApi.JSB_SetBridgeType(ctx, val, type_id);
             }
             return val;
         }
 
         public static JSValue NewBridgeClassObject(JSContext ctx, JSValue new_target, Quaternion o, int type_id)
         {
-            var cache = ScriptEngine.GetObjectCache(ctx);
             var val = JSApi.JSB_NewBridgeClassValue(ctx, new_target, sizeof(float) * 4);
             if (!JSApi.JS_IsException(val))
             {
                 JSApi.jsb_set_float_4(val, o.x, o.y, o.z, o.w);
-                // JSApi.JSB_SetBridgeType(ctx, val, type_id);
             }
             return val;
         }
 
         public static unsafe JSValue NewBridgeClassObject(JSContext ctx, JSValue new_target, Matrix4x4 o, int type_id)
         {
-            var cache = ScriptEngine.GetObjectCache(ctx);
             var val = JSApi.JSB_NewBridgeClassValue(ctx, new_target, sizeof(float) * 4 * 4);
             if (!JSApi.JS_IsException(val))
             {
