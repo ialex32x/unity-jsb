@@ -7,7 +7,6 @@ namespace QuickJS.IO
     {
         private int _maxCapacity;
         private List<ByteBuffer> __freelist;
-        private List<ByteBuffer> _autoreleases = new List<ByteBuffer>();
 
         public ByteBufferPooledAllocator()
         : this(24, 512, int.MaxValue)
@@ -22,25 +21,6 @@ namespace QuickJS.IO
             while (prealloc-- > 0)
             {
                 __freelist.Add(new ByteBuffer(initialCapacity, maxCapacity, this));
-            }
-        }
-
-        public void AutoRelease(ByteBuffer b)
-        {
-            _autoreleases.Add(b);
-        }
-
-        public void Drain()
-        {
-            var size = _autoreleases.Count;
-            if (size > 0)
-            {
-                for (var i = 0; i < size; ++i)
-                {
-                    var b = _autoreleases[i];
-                    b.Release();
-                }
-                _autoreleases.Clear();
             }
         }
 

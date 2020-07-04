@@ -40,6 +40,7 @@ namespace QuickJS
         private TypeDB _typeDB;
         private TimerManager _timerManager;
         private IO.IByteBufferAllocator _byteBufferAllocator;
+        private Utils.AutoReleasePool _autorelease;
         private GameObject _container;
         private bool _isValid; // destroy 调用后立即 = false
 
@@ -96,11 +97,12 @@ namespace QuickJS
                 throw new NullReferenceException(nameof(fileSystem));
             }
             var bindAll = typeof(Values).GetMethod("BindAll");
-            if (bindAll == null) 
+            if (bindAll == null)
             {
                 throw new Exception("Generate binding code before run");
             }
             _byteBufferAllocator = byteBufferAllocator;
+            _autorelease = new Utils.AutoReleasePool();
             _fileSystem = fileSystem;
             _logger = logger;
 
@@ -114,6 +116,11 @@ namespace QuickJS
             ScriptContext.Bind(register);
             register.Finish();
             runner.OnComplete(this);
+        }
+
+        public void AutoRelease(Utils.IReferenceObject referenceObject)
+        {
+            _autorelease.AutoRelease(referenceObject);
         }
 
         public IO.IByteBufferAllocator GetByteBufferAllocator()
@@ -299,9 +306,9 @@ namespace QuickJS
             var ms = (int)(deltaTime * 1000f);
             _timerManager.Update(ms);
 
-            if (_byteBufferAllocator != null)
+            if (_autorelease != null)
             {
-                _byteBufferAllocator.Drain();
+                _autorelease.Drain();
             }
         }
 

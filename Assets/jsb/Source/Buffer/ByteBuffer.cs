@@ -7,7 +7,7 @@ namespace QuickJS.IO
 
     // 容量会自动扩展 (翻倍)
     // 所有操作都不是线程安全的
-    public class ByteBuffer
+    public class ByteBuffer : Utils.IReferenceObject
     {
         private IByteBufferAllocator _allocator;
 
@@ -80,7 +80,7 @@ namespace QuickJS.IO
             _allocator = allocator;
         }
 
-        public ByteBuffer Release()
+        public void Release()
         {
             --_refCount;
             if (_refCount == 0)
@@ -92,9 +92,7 @@ namespace QuickJS.IO
                     // Debug.LogFormat("<< ByteBuffer released {0}", GetHashCode());
                     _allocator.Recycle(this);
                 }
-                return null;
             }
-            return this;
         }
 
         public ByteBuffer Retain()
