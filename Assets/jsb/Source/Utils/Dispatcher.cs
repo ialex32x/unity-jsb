@@ -8,6 +8,7 @@ using QuickJS.Native;
 
 namespace QuickJS.Utils
 {
+    //TODO: 未完成, 待定
     public class Dispatcher
     {
         protected class Handler

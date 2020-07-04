@@ -683,7 +683,6 @@ namespace QuickJS.Editor
                 {
                     return CodeGenerator.NameOfBuffer;
                 }
-                //TODO: 改成使用 JS Proxy 暴露 C# 数组?
                 var elementType = type.GetElementType();
                 var tsFullName = GetTSTypeFullName(elementType);
                 // return tsFullName + "[]";
