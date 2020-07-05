@@ -1,16 +1,16 @@
-﻿
+﻿using System.Collections.Generic;
+
 namespace QuickJS.IO
 {
-    public class ByteBufferUnpooledAllocator : ByteBufferAllocator
+    public class ByteBufferUnpooledAllocator : IByteBufferAllocator
     {
-        // 返回一个由对象池分配的 ByteBuffer 对象, 大小至少为 size
-        // Alloc、Release 调用为线程安全的，其余操作需要调用者自己保证线程安全性
-        public override ByteBuffer Alloc(int size)
+        // 返回一个 ByteBuffer 对象, 大小至少为 size
+        public ByteBuffer Alloc(int size)
         {
-            return new ByteBuffer(size, ByteBufferAllocator.DEFAULT_MAX_CAPACITY, null);
+            return new ByteBuffer(size, int.MaxValue, null);
         }
 
-        public override void Recycle(ByteBuffer byteBuffer)
+        public void Recycle(ByteBuffer byteBuffer)
         {
         }
     }

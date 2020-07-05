@@ -130,13 +130,13 @@ namespace QuickJS.Native
                 return null;
             }
 
-            var str = JSApi.GetString(pstr, len);
+            var str = JSApi.GetString(ctx, pstr, len);
             JSApi.JS_FreeCString(ctx, pstr);
             return str;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static string GetString(IntPtr ptr, int len)
+        public static string GetString(JSContext ctx, IntPtr ptr, int len)
         {
             var str = Marshal.PtrToStringAnsi(ptr, len);
             if (str == null)

@@ -2,6 +2,8 @@ using System;
 using UnityEngine;
 using QuickJS;
 
+#pragma warning disable CS0414
+
 [JSHotfix(JSHotfixFlags.Full)]
 public class HotfixTest
 {
@@ -70,3 +72,5 @@ public class NotExportedClass
         Debug.Log("NotExportedClass.Foo");
     }
 }
+
+#pragma warning restore CS0414

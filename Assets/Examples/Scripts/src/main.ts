@@ -75,6 +75,8 @@ print("json:", require("../config/data.json").name);
 // print("require (node_modules): ", require("blink1").test);
 // print("require (node_modules): ", require("blink3").test);
 
+require("./example_monobehaviour").run();
+
 let camera = UnityEngine.GameObject.Find("/Main Camera").GetComponent(UnityEngine.Camera);
 
 let arr = camera.GetComponents(UnityEngine.Camera);

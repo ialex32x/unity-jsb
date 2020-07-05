@@ -638,8 +638,7 @@ namespace WebSockets
                     }
                 }
                 var url = JSApi.GetString(ctx, argv[0]);
-                var buffer = ScriptEngine.AllocByteBuffer(ctx);
-
+                var buffer = ScriptEngine.AllocByteBuffer(ctx, 2048);
                 var o = new WebSocket(buffer, url, protocols);
                 var val = NewBridgeClassObject(ctx, new_target, o, magic);
                 o._Transfer(ctx, val);

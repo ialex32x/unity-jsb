@@ -47,7 +47,6 @@ namespace QuickJS.Binding
             return ret;
         }
 
-        //TODO: !!! 重写 delegate 映射 提供专用的 JSValue ObjectType, 并通过 index 映射, 脱离 JSValue 本身 (避免不必要的引用管理)
         public static bool js_get_delegate(JSContext ctx, JSValue val, Type delegateType, out Delegate o)
         {
             //TODO: 20200320 !!! 如果 o 不是 jsobject, 且是 Delegate 但不是 ScriptDelegate, 则 ... 处理

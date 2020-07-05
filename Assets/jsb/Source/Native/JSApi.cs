@@ -634,7 +634,7 @@ namespace QuickJS.Native
         public static extern int JS_ToBool(JSContext ctx, JSValueConst val);
 
         /// <summary>
-        /// 返回 <0 表示失败
+        /// 返回 &lt; 0 表示失败, 0 表示成功
         /// </summary>
         [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern int JS_ToInt32(JSContext ctx, out int pres, JSValue val);

@@ -1003,13 +1003,14 @@ namespace QuickJS.Binding
             var pointer = JSApi.JS_GetArrayBuffer(ctx, out psize, val);
             if (pointer != IntPtr.Zero)
             {
-                var allocator = ScriptEngine.GetRuntime(ctx).GetByteBufferAllocator();
+                var runtime = ScriptEngine.GetRuntime(ctx);
+                var allocator = runtime.GetByteBufferAllocator();
                 if (allocator != null)
                 {
                     var length = (int)psize;
 
                     o = allocator.Alloc(length);
-                    allocator.AutoRelease(o);
+                    runtime.AutoRelease(o);
                     o.WriteBytes(pointer, length);
                     return true;
                 }
@@ -1023,13 +1024,14 @@ namespace QuickJS.Binding
 
                 if (pointer != IntPtr.Zero)
                 {
-                    var allocator = ScriptEngine.GetRuntime(ctx).GetByteBufferAllocator();
+                    var runtime = ScriptEngine.GetRuntime(ctx);
+                    var allocator = runtime.GetByteBufferAllocator();
                     if (allocator != null)
                     {
                         var length = (int)psize;
 
                         o = allocator.Alloc(length);
-                        allocator.AutoRelease(o);
+                        runtime.AutoRelease(o);
                         o.WriteBytes(pointer, length);
                         return true;
                     }
@@ -1039,7 +1041,7 @@ namespace QuickJS.Binding
             {
                 JSApi.JS_FreeValue(ctx, asBuffer);
             }
-            
+
             o = null;
             return false;
         }

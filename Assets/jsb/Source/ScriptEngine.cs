@@ -44,14 +44,9 @@ namespace QuickJS
             return GetRuntime(ctx)?.GetTypeDB();
         }
 
-        public static IO.ByteBufferAllocator GetByteBufferAllocator(JSContext ctx)
+        public static IO.IByteBufferAllocator GetByteBufferAllocator(JSContext ctx)
         {
             return GetRuntime(ctx)?.GetByteBufferAllocator();
-        }
-
-        public static IO.ByteBuffer AllocByteBuffer(JSContext ctx)
-        {
-            return GetByteBufferAllocator(ctx)?.Alloc();
         }
 
         public static IO.ByteBuffer AllocByteBuffer(JSContext ctx, int size)

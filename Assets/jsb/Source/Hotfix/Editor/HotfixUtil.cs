@@ -200,6 +200,7 @@ namespace QuickJS.Hotfix
             var assemblyFilePath = test.Assembly.Location;
             var a = AssemblyDefinition.ReadAssembly(assemblyFilePath);
             var delegateTypes = new List<TypeDefinition>();
+            var modified = false;
 
             if (!Collect(a, delegateTypes))
             {
@@ -207,7 +208,6 @@ namespace QuickJS.Hotfix
                 return;
             }
 
-            a.MainModule.Types.Add(new TypeDefinition("QuickJS", TypeNameForInjectFlag, Mono.Cecil.TypeAttributes.Class, a.MainModule.TypeSystem.Object));
             foreach (var type in a.MainModule.Types)
             {
                 //TODO: 改为通过列表而不是 Attribute 判断
@@ -236,6 +236,7 @@ namespace QuickJS.Hotfix
                         continue;
                     }
 
+                    modified = true;
                     var argCount = method.IsStatic ? method.Parameters.Count : method.Parameters.Count + 1;
                     var proc = method.Body.GetILProcessor();
                     var boolVar = new VariableDefinition(a.MainModule.TypeSystem.Boolean);
@@ -288,7 +289,7 @@ namespace QuickJS.Hotfix
                     {
                         var delegateField_r = new FieldDefinition(hotfixFieldName_r, FieldAttributes.Public | FieldAttributes.Static, delegateType_r);
                         var localPoint = point;
-                        
+
                         type.Fields.Add(delegateField_r);
                         proc.InsertBefore(localPoint, point = proc.Create(OpCodes.Nop)); // more friendly for patch
                         proc.InsertBefore(localPoint, proc.Create(OpCodes.Ldsfld, delegateField_r));
@@ -333,9 +334,17 @@ namespace QuickJS.Hotfix
                 Debug.LogFormat("{0}", sb);
             }
 
-            a.Write(assemblyFilePath);
-            // a.Write("temp.dll");
-            Debug.LogFormat("write: {0}", assemblyFilePath);
+            if (modified)
+            {
+                a.MainModule.Types.Add(new TypeDefinition("QuickJS", TypeNameForInjectFlag, Mono.Cecil.TypeAttributes.Class, a.MainModule.TypeSystem.Object));
+                a.Write(assemblyFilePath);
+                // a.Write("temp.dll");
+                Debug.LogFormat("write: {0}", assemblyFilePath);
+            }
+            else
+            {
+                Debug.LogWarningFormat("no change");
+            }
         }
     }
 }

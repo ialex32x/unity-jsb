@@ -116,6 +116,11 @@ namespace QuickJS
             return _runtime.GetTypeDB();
         }
 
+        public ObjectCache GetObjectCache()
+        {
+            return _runtime.GetObjectCache();
+        }
+
         public ScriptRuntime GetRuntime()
         {
             return _runtime;

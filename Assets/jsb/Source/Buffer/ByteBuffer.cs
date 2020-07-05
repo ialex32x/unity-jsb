@@ -7,9 +7,9 @@ namespace QuickJS.IO
 
     // 容量会自动扩展 (翻倍)
     // 所有操作都不是线程安全的
-    public class ByteBuffer
+    public class ByteBuffer : Utils.IReferenceObject
     {
-        private ByteBufferAllocator _allocator;
+        private IByteBufferAllocator _allocator;
 
         private int _refCount = 0;
         private byte[] _data;
@@ -17,8 +17,6 @@ namespace QuickJS.IO
         private int _writePosition;  // 写入操作当前位置
         private int _readPosition;  // 当前观察位置 （网络数据写入时会用到）
         private int _maxCapacity;
-
-        private string _stacktrace = null;
 
         // 内部数据
         public byte[] data { get { return _data; } }
@@ -73,7 +71,7 @@ namespace QuickJS.IO
             return string.Format("<ByteBuffer offset: {0} remain: {1} #{2}>", readerIndex, readableBytes, _data.Length);
         }
 
-        public ByteBuffer(int initialCapacity, int maxCapacity, ByteBufferAllocator allocator)
+        public ByteBuffer(int initialCapacity, int maxCapacity, IByteBufferAllocator allocator)
         {
             _data = new byte[initialCapacity];
             _maxCapacity = maxCapacity > initialCapacity ? maxCapacity : initialCapacity;
@@ -82,50 +80,41 @@ namespace QuickJS.IO
             _allocator = allocator;
         }
 
-        // ~ByteBuffer()
-        // {
-        //     if (_refCount != 0)
-        //     {
-        //         Debug.LogErrorFormat("ByteBuffer leaked {0} {1}\n{2}", GetHashCode(), _refCount, _stacktrace ?? "");
-        //     }
-        // }
-
-        public ByteBuffer Release()
+        public void Release()
         {
             --_refCount;
             if (_refCount == 0)
             {
                 _writePosition = 0;
                 _readPosition = 0;
-                _stacktrace = null;
                 if (_allocator != null)
                 {
                     // Debug.LogFormat("<< ByteBuffer released {0}", GetHashCode());
                     _allocator.Recycle(this);
                 }
-                return null;
             }
-            return this;
         }
 
         public ByteBuffer Retain()
         {
-            if (_refCount == 0)
-            {
-                if (_allocator != null && _allocator.traceMemoryLeak)
-                {
-                    var stackTrace = new System.Diagnostics.StackTrace(true);
-                    string debugInfo = "";
-                    for (var i = 0; i < stackTrace.FrameCount; i++)
-                    {
-                        var stackFrame = stackTrace.GetFrame(i);
-                        debugInfo += string.Format("[{0}] Method: {1}\n", i, stackFrame.GetMethod());
-                        debugInfo += string.Format("[{0}] Line Number: {1}\n", i, stackFrame.GetFileLineNumber());
-                    }
-                    _stacktrace = debugInfo;
-                }
-                // Debug.LogFormat(">> ByteBuffer allocated {0}", GetHashCode());
-            }
+            //         #if DEBUG
+            // if (_refCount == 0)
+            // {
+            //     if (_allocator != null)
+            //     {
+            //         var stackTrace = new System.Diagnostics.StackTrace(true);
+            //         string debugInfo = "";
+            //         for (var i = 0; i < stackTrace.FrameCount; i++)
+            //         {
+            //             var stackFrame = stackTrace.GetFrame(i);
+            //             debugInfo += string.Format("[{0}] Method: {1}\n", i, stackFrame.GetMethod());
+            //             debugInfo += string.Format("[{0}] Line Number: {1}\n", i, stackFrame.GetFileLineNumber());
+            //         }
+            //         _stacktrace = debugInfo;
+            //     }
+            //     // Debug.LogFormat(">> ByteBuffer allocated {0}", GetHashCode());
+            // }
+            //         #endif
             ++_refCount;
             return this;
         }
