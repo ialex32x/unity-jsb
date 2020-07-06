@@ -108,6 +108,7 @@ HotfixTest.SimpleStaticCall();
 // var testBuffer = new Uint8Array(takeBuffer);
 // var backBuffer = new Uint8Array(NoNamespaceClass.TestBytes(testBuffer));
 // backBuffer.forEach(val => print(val));
+// out 
 const { return_, result } = System.Int32.TryParse("123");
 if (return_) {
     print("parse:", result);
@@ -115,4 +116,6 @@ if (return_) {
 else {
     print("fail to parse");
 }
+const { x, z } = NoNamespaceClass.TestOut(233);
+print("out:", x, z);
 //# sourceMappingURL=main.js.map
