@@ -25,6 +25,20 @@ namespace QuickJS
             JSApi.JS_DupValue(context, jsValue);
         }
 
+        public static ScriptValue CreateObject(JSContext ctx)
+        {
+            var context = ScriptEngine.GetContext(ctx);
+            var val = JSApi.JS_NewObject(ctx);
+            var sv = new ScriptValue(context, val);
+            JSApi.JS_FreeValue(ctx, val);
+            return sv;
+        }
+
+        public void SetProperty(string key, JSValue value)
+        {
+            JSApi.JS_SetProperty(_context, _jsValue, _context.GetAtom(key), value);
+        }
+
         public static implicit operator JSValue(ScriptValue value)
         {
             return value._jsValue;

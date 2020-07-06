@@ -92,29 +92,21 @@ namespace QuickJS.Editor
 
         // parametersByRef: 可修改参数将被加入此列表
         // hasParams: 是否包含变参 (最后一个参数将按数组处理)
-        public List<string> AppendGetParameters(bool hasParams, string nargs, ParameterInfo[] parameters, List<ParameterInfo> parametersByRef)
+        public List<string> AppendGetParameters(bool hasParams, string nargs, ParameterInfo[] parameters)
         {
             var arglist = new List<string>();
-            var argBase = 0;
-            for (var i = argBase; i < parameters.Length; i++)
+            var assignIndex = 0;
+            for (var i = 0; i < parameters.Length; i++)
             {
                 var argitem = "";
                 var parameter = parameters[i];
                 if (parameter.IsOut && parameter.ParameterType.IsByRef)
                 {
                     argitem += "out ";
-                    if (parametersByRef != null)
-                    {
-                        parametersByRef.Add(parameter);
-                    }
                 }
                 else if (parameter.ParameterType.IsByRef)
                 {
                     argitem += "ref ";
-                    if (parametersByRef != null)
-                    {
-                        parametersByRef.Add(parameter);
-                    }
                 }
                 argitem += "arg" + i;
                 arglist.Add(argitem);
@@ -147,13 +139,17 @@ namespace QuickJS.Editor
                 }
                 else
                 {
-                    WriteParameterGetter(parameter, i, $"arg{i}");
+                    if (WriteParameterGetter(parameter, assignIndex, $"arg{i}"))
+                    {
+                        assignIndex++;
+                    }
                 }
             }
             return arglist;
         }
 
-        protected void WriteParameterGetter(ParameterInfo parameter, int index, string argname)
+        // 对参数进行取值, 如果此参数无需取值, 则返回 false
+        protected bool WriteParameterGetter(ParameterInfo parameter, int index, string argname)
         {
             var ptype = parameter.ParameterType;
             var argType = this.cg.bindingManager.GetCSTypeFullName(ptype);
@@ -167,7 +163,10 @@ namespace QuickJS.Editor
                 {
                     this.cg.cs.AppendLine("throw new ParameterException(typeof({0}), {1});", argType, index);
                 }
+                return true;
             }
+
+            return false;
         }
 
         // 输出所有变体绑定
@@ -228,15 +227,67 @@ namespace QuickJS.Editor
         protected virtual void WriteTSReturn(T method, List<ParameterInfo> returnParameters)
         {
             var returnType = GetReturnType(method);
-            if (returnType != null)
+            var count = returnParameters.Count;
+            if (returnType != null && returnType != typeof(void))
             {
-                var returnTypeTS = this.cg.bindingManager.GetTSTypeFullName(returnType);
-                this.cg.tsDeclare.AppendL($": {returnTypeTS}");
-                this.cg.tsDeclare.AppendLine();
+                if (count != 0)
+                {
+                    this.cg.tsDeclare.AppendL(": { ");
+
+                    var returnTypeTS = this.cg.bindingManager.GetTSTypeFullName(returnType);
+                    var returnVarName = BindingManager.GetTSVariable("return");
+                    this.cg.tsDeclare.AppendL($"\"{returnVarName}\": {returnTypeTS}");
+
+                    for (var i = 0; i < count; i++)
+                    {
+                        var rp = returnParameters[i];
+                        var name = BindingManager.GetTSVariable(rp.Name);
+                        var ts = this.cg.bindingManager.GetTSTypeFullName(rp.ParameterType);
+                        if (i != count - 1)
+                        {
+                            this.cg.tsDeclare.AppendL($", \"{name}\": {ts}");
+                        }
+                        else
+                        {
+                            this.cg.tsDeclare.AppendL($", \"{name}\": {ts}");
+                        }
+                    }
+                    this.cg.tsDeclare.AppendL(" }");
+                    this.cg.tsDeclare.AppendLine();
+                }
+                else
+                {
+                    var returnTypeTS = this.cg.bindingManager.GetTSTypeFullName(returnType);
+                    this.cg.tsDeclare.AppendL($": {returnTypeTS}");
+                    this.cg.tsDeclare.AppendLine();
+                }
             }
             else
             {
-                this.cg.tsDeclare.AppendLine();
+                if (count != 0)
+                {
+                    this.cg.tsDeclare.AppendL(": { ");
+                    for (var i = 0; i < count; i++)
+                    {
+                        var rp = returnParameters[i];
+                        var name = rp.Name;
+                        var ts = this.cg.bindingManager.GetTSTypeFullName(rp.ParameterType);
+                        if (i != count - 1)
+                        {
+                            this.cg.tsDeclare.AppendL($"\"{name}\": {ts}, ");
+                        }
+                        else
+                        {
+                            this.cg.tsDeclare.AppendL($"\"{name}\": {ts}");
+                        }
+                    }
+                    this.cg.tsDeclare.AppendL(" }");
+                    this.cg.tsDeclare.AppendLine();
+                }
+                else
+                {
+                    this.cg.tsDeclare.AppendLine();
+                }
             }
         }
 
@@ -359,21 +410,33 @@ namespace QuickJS.Editor
                 {
                     ArrayUtility.RemoveAt(ref parameters, 0);
                 }
-                for (var i = 0; i < parameters.Length; i++)
+
+                // 剔除 out 参数
+                for (int i = 0, len = parameters.Length; i < len;)
+                {
+                    var parameter = parameters[i];
+                    if (parameter.IsOut)
+                    {
+                        ArrayUtility.RemoveAt(ref parameters, i);
+                        len--;
+                        refParameters.Add(parameter);
+                    }
+                    else
+                    {
+                        if (parameter.ParameterType.IsByRef)
+                        {
+                            refParameters.Add(parameter);
+                        }
+                        i++;
+                    }
+                }
+
+                for (int i = 0, len = parameters.Length; i < len; i++)
                 {
                     var parameter = parameters[i];
                     var parameter_prefix = "";
                     var parameterType = parameter.ParameterType;
-                    if (parameter.IsOut && parameterType.IsByRef)
-                    {
-                        // parameter_prefix = "/*out*/ ";
-                        refParameters.Add(parameter);
-                    }
-                    else if (parameterType.IsByRef)
-                    {
-                        // parameter_prefix = "/*ref*/ ";
-                        refParameters.Add(parameter);
-                    }
+
                     if (parameter.IsDefined(typeof(ParamArrayAttribute), false) && i == parameters.Length - 1)
                     {
                         var elementType = parameterType.GetElementType();
@@ -402,7 +465,7 @@ namespace QuickJS.Editor
         protected abstract Type GetReturnType(T method);
 
         // 获取方法调用
-        protected abstract string GetInvokeBinding(string caller, T method, bool hasParams, bool isExtension, string nargs, ParameterInfo[] parameters, List<ParameterInfo> parametersByRef);
+        protected abstract string GetInvokeBinding(string caller, T method, bool hasParams, bool isExtension, string nargs, ParameterInfo[] parameters);
 
         protected virtual void BeginInvokeBinding() { }
 
@@ -414,6 +477,23 @@ namespace QuickJS.Editor
             cg.cs.AppendLine("return JSApi.JS_UNDEFINED;");
         }
 
+        protected void SplitParamters(ParameterInfo[] parameters, int index, List<ParameterInfo> in_params, List<ParameterInfo> out_params)
+        {
+            for (int i = index, len = parameters.Length; i < len; i++)
+            {
+                var p = parameters[i];
+
+                if (p.IsOut)
+                {
+                    out_params.Add(p);
+                }
+                else
+                {
+                    in_params.Add(p);
+                }
+            }
+        }
+
         // 写入绑定代码
         protected void WriteCSMethodBinding(MethodBaseBindingInfo<T> bindingInfo, T method, string argc, bool isVararg)
         {
@@ -423,15 +503,14 @@ namespace QuickJS.Editor
             {
                 return;
             }
-            
-            var parameters = method.GetParameters();
+
             var isExtension = method.IsDefined(typeof(System.Runtime.CompilerServices.ExtensionAttribute));
             var isRaw = method.IsDefined(typeof(JSCFunctionAttribute));
-            if (isExtension)
-            {
-                ArrayUtility.RemoveAt(ref parameters, 0);
-            }
-            var parametersByRef = new List<ParameterInfo>();
+            var parameters = method.GetParameters();
+            var in_params = new List<ParameterInfo>();
+            var out_params = new List<ParameterInfo>();
+
+            SplitParamters(parameters, isExtension ? 1 : 0, in_params, out_params);
             var caller = this.cg.AppendGetThisCS(method);
             var returnType = GetReturnType(method);
 
@@ -441,9 +520,9 @@ namespace QuickJS.Editor
                 {
                     if (!isExtension)
                     {
-                        if (returnType == typeof(int) && parameters.Length == 1)
+                        if (returnType == typeof(int) && in_params.Count == 1)
                         {
-                            var p = parameters[0];
+                            var p = in_params[0];
                             if (p.ParameterType == typeof(IntPtr) && !p.IsOut)
                             {
                                 cg.cs.AppendLine($"return {caller}.{method.Name}(ctx);");
@@ -461,12 +540,10 @@ namespace QuickJS.Editor
             {
                 // 方法本身没有返回值
                 this.BeginInvokeBinding();
-                cg.cs.AppendLine($"{this.GetInvokeBinding(caller, method, isVararg, isExtension, argc, parameters, parametersByRef)};");
+                cg.cs.AppendLine($"{this.GetInvokeBinding(caller, method, isVararg, isExtension, argc, parameters)};");
                 this.EndInvokeBinding();
-                if (parametersByRef.Count > 0)
-                {
-                    _WriteBackParametersByRef(isExtension, parametersByRef);
-                }
+                var backVars = out_params.Count > 0 ? _WriteBackParametersByRef(isExtension, out_params, null) : null;
+
                 if (!method.IsStatic && method.DeclaringType.IsValueType) // struct 非静态方法 检查 Mutable 属性
                 {
                     if (!string.IsNullOrEmpty(caller))
@@ -474,46 +551,72 @@ namespace QuickJS.Editor
                         cg.cs.AppendLine($"js_rebind_this(ctx, this_obj, {caller});");
                     }
                 }
-                this.InvokeVoidReturn();
+
+                if (string.IsNullOrEmpty(backVars))
+                {
+                    this.InvokeVoidReturn();
+                }
+                else
+                {
+                    cg.cs.AppendLine("return {0};", backVars);
+                }
             }
             else
             {
+                var retVar = "ret"; // cs return value var name
+                var retJsVar = "ret_js";
                 this.BeginInvokeBinding();
-                cg.cs.AppendLine($"var ret = {this.GetInvokeBinding(caller, method, isVararg, isExtension, argc, parameters, parametersByRef)};");
+                cg.cs.AppendLine($"var {retVar} = {this.GetInvokeBinding(caller, method, isVararg, isExtension, argc, parameters)};");
                 this.EndInvokeBinding();
-                if (parametersByRef.Count > 0)
+
+                var retPusher = cg.AppendMethodReturnValuePusher(method, returnType, retVar);
+                cg.cs.AppendLine("var {0} = {1};", retJsVar, retPusher);
+                cg.cs.AppendLine("if (JSApi.JS_IsException({0}))", retJsVar);
+                using (cg.cs.Block())
                 {
-                    _WriteBackParametersByRef(isExtension, parametersByRef);
+                    cg.cs.AppendLine("return {0};", retJsVar);
                 }
-                var pusher = cg.AppendMethodReturnValuePusher(method, returnType, "ret");
-                cg.cs.AppendLine("return {0};", pusher);
+                var backVars = out_params.Count > 0 ? _WriteBackParametersByRef(isExtension, out_params, retJsVar) : retJsVar;
+                cg.cs.AppendLine("return {0};", backVars);
             }
         }
 
         // 回填 ref/out 参数
         // 扩展方法参数索引需要偏移
-        protected void _WriteBackParametersByRef(bool isExtension, List<ParameterInfo> parametersByRef)
+        protected string _WriteBackParametersByRef(bool isExtension, List<ParameterInfo> parametersByRef, string retJsVar)
         {
+            var retVar = "mult_ret";
+            cg.cs.AppendLine("var context = ScriptEngine.GetContext(ctx);");
+            cg.cs.AppendLine("var {0} = JSApi.JS_NewObject(ctx);", retVar);
+
+            if (!string.IsNullOrEmpty(retJsVar))
+            {
+                var retJsVarName = BindingManager.GetTSVariable("return");
+                cg.cs.AppendLine("JSApi.JS_SetProperty(ctx, {0}, context.GetAtom(\"{1}\"), {2});", retVar, retJsVarName, retJsVar);
+            }
+
             for (var i = 0; i < parametersByRef.Count; i++)
             {
                 var parameter = parametersByRef[i];
+                var pname = BindingManager.GetTSVariable(parameter.Name);
                 var position = isExtension ? parameter.Position - 1 : parameter.Position;
                 var argname = $"arg{position}";
                 var pusher = cg.AppendValuePusher(parameter.ParameterType, argname);
-                cg.cs.AppendLine("var out{0} = {1};", position, pusher);
-                cg.cs.AppendLine("if (JSApi.JS_IsException(out{0}))", position);
-                cg.cs.AppendLine("{");
-                cg.cs.AddTabLevel();
-                // for (var j = 0; j < i; j++)
-                // {
-                //     cg.cs.AppendLine("JSApi.JS_FreeValue(ctx, out{0});", j);
-                // }
-                cg.cs.AppendLine("return out{0};", position);
-                cg.cs.DecTabLevel();
-                cg.cs.AppendLine("}");
-                cg.cs.AppendLine("JSApi.JS_SetPropertyStr(ctx, argv[{0}], \"target\", out{1});", position, position);
 
+                cg.cs.AppendLine("var out{0} = {1};", i, pusher);
+                cg.cs.AppendLine("if (JSApi.JS_IsException(out{0}))", i);
+                using (cg.cs.Block())
+                {
+                    for (var j = 0; j < i; j++)
+                    {
+                        cg.cs.AppendLine("JSApi.JS_FreeValue(ctx, out{0});", j);
+                    }
+                    cg.cs.AppendLine("JSApi.JS_FreeValue(ctx, {0});", retVar);
+                    cg.cs.AppendLine("return out{0};", i);
+                }
+                cg.cs.AppendLine("JSApi.JS_SetProperty(ctx, {0}, context.GetAtom(\"{1}\"), out{2});", retVar, pname, i);
             }
+            return retVar;
         }
     }
 
@@ -537,9 +640,9 @@ namespace QuickJS.Editor
             this.cg.tsDeclare.AppendLine($"{this.bindingInfo.regName}()");
         }
 
-        protected override string GetInvokeBinding(string caller, ConstructorInfo method, bool hasParams, bool isExtension, string nargs, ParameterInfo[] parameters, List<ParameterInfo> parametersByRef)
+        protected override string GetInvokeBinding(string caller, ConstructorInfo method, bool hasParams, bool isExtension, string nargs, ParameterInfo[] parameters)
         {
-            var arglist = Concat(AppendGetParameters(hasParams, nargs, parameters, parametersByRef));
+            var arglist = Concat(AppendGetParameters(hasParams, nargs, parameters));
             var decalringTypeName = this.cg.bindingManager.GetCSTypeFullName(this.bindingInfo.decalringType);
             // 方法本身有返回值
             var transform = cg.bindingManager.GetTypeTransform(method.DeclaringType);
@@ -611,7 +714,7 @@ namespace QuickJS.Editor
             return method.ReturnType;
         }
 
-        protected override string GetInvokeBinding(string caller, MethodInfo method, bool hasParams, bool isExtension, string nargs, ParameterInfo[] parameters, List<ParameterInfo> parametersByRef)
+        protected override string GetInvokeBinding(string caller, MethodInfo method, bool hasParams, bool isExtension, string nargs, ParameterInfo[] parameters)
         {
             if (bindingInfo.isIndexer)
             {
@@ -619,10 +722,14 @@ namespace QuickJS.Editor
                 {
                     var last = parameters.Length - 1;
                     var arglist_t = "";
+                    var assignIndex = 0;
                     for (var i = 0; i < last; i++)
                     {
                         var argname = $"arg{i}";
-                        this.WriteParameterGetter(parameters[i], i, argname);
+                        if (this.WriteParameterGetter(parameters[i], assignIndex, argname))
+                        {
+                            assignIndex++;
+                        }
                         arglist_t += argname;
                         if (i != last - 1)
                         {
@@ -630,17 +737,21 @@ namespace QuickJS.Editor
                         }
                     }
                     var argname_last = $"arg{last}";
-                    this.WriteParameterGetter(parameters[last], last, argname_last);
+                    this.WriteParameterGetter(parameters[last], assignIndex, argname_last);
                     return $"{caller}[{arglist_t}] = {argname_last}"; // setter
                 }
                 else
                 {
                     var last = parameters.Length;
                     var arglist_t = "";
+                    var assignIndex = 0;
                     for (var i = 0; i < last; i++)
                     {
                         var argname = $"arg{i}";
-                        this.WriteParameterGetter(parameters[i], i, argname);
+                        if (this.WriteParameterGetter(parameters[i], assignIndex, argname))
+                        {
+                            assignIndex++;
+                        }
                         arglist_t += argname;
                         if (i != last - 1)
                         {
@@ -650,11 +761,13 @@ namespace QuickJS.Editor
                     return $"{caller}[{arglist_t}]"; // getter
                 }
             }
-            var arglist = Concat(AppendGetParameters(hasParams, nargs, parameters, parametersByRef));
+            var arglist = Concat(AppendGetParameters(hasParams, nargs, parameters));
             var transform = cg.bindingManager.GetTypeTransform(method.DeclaringType);
+           
             if (transform == null || !transform.OnBinding(BindingPoints.METHOD_BINDING_BEFORE_INVOKE, method, cg))
             {
             }
+
             if (isExtension)
             {
                 var methodDeclType = this.cg.bindingManager.GetCSTypeFullName(method.DeclaringType);
@@ -662,10 +775,10 @@ namespace QuickJS.Editor
                 {
                     arglist = ", " + arglist;
                 }
-                
+
                 return $"{methodDeclType}.{method.Name}({caller}{arglist})";
             }
-            
+
             return $"{caller}.{method.Name}({arglist})";
         }
 
@@ -687,7 +800,7 @@ namespace QuickJS.Editor
             return method.ReturnType;
         }
 
-        protected override string GetInvokeBinding(string caller, MethodInfo method, bool hasParams, bool isExtension, string nargs, ParameterInfo[] parameters, List<ParameterInfo> parametersByRef)
+        protected override string GetInvokeBinding(string caller, MethodInfo method, bool hasParams, bool isExtension, string nargs, ParameterInfo[] parameters)
         {
             return null;
         }

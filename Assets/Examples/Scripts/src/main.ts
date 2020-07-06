@@ -139,3 +139,9 @@ HotfixTest.SimpleStaticCall();
 // var backBuffer = new Uint8Array(NoNamespaceClass.TestBytes(testBuffer));
 
 // backBuffer.forEach(val => print(val));
+const { return_, result } = System.Int32.TryParse("123");
+if (return_) {
+    print("parse:", result);
+} else {
+    print("fail to parse");
+}
