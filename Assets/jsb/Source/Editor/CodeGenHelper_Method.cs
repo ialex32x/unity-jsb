@@ -483,7 +483,7 @@ namespace QuickJS.Editor
             {
                 var p = parameters[i];
 
-                if (p.IsOut)
+                if (p.IsOut || p.ParameterType.IsByRef)
                 {
                     out_params.Add(p);
                 }

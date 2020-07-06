@@ -21,4 +21,11 @@ public class NoNamespaceClass
         x = y;
         z = y;
     }
+
+    public static void TestRefOut(ref int g, out int x, int y, out int z)
+    {
+        x = y * g;
+        z = y + g;
+        g = x + z;
+    }
 }

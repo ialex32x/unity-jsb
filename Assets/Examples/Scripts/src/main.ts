@@ -140,13 +140,12 @@ HotfixTest.SimpleStaticCall();
 
 // backBuffer.forEach(val => print(val));
 
-// out 
-const { return_, result } = System.Int32.TryParse("123");
-if (return_) {
-    print("parse:", result);
-} else {
-    print("fail to parse");
+{
+    const { x, z } = NoNamespaceClass.TestOut(233);
+    print("out:", x, z);
 }
 
-const { x, z } = NoNamespaceClass.TestOut(233);
-print("out:", x, z);
+{
+    const { g, x, z } = NoNamespaceClass.TestRefOut(2, 666);
+    print("ref/out:", g, x, z);
+}
