@@ -16,8 +16,8 @@
 * [未完成] 运行时模块热替换 (debug only)
 
 # 特性示例
-> 推荐使用 typescript 编写脚本, 以提供强类型支持. 示例代码均使用 typescript. <br/>
-> 最终运行的都是 javascript.
+> 推荐使用 typescript 编写脚本, unity-jsb 对导出的 C# 类型自动生成了对应的 d.ts 声明, 以提供强类型辅助. 示例代码均使用 typescript. <br/>
+> 也可以根据喜好选择 coffeescript/clojurescript 等任何可以编译成 javascript 的语言. 最终运行的都是 javascript.
 
 ## MonoBehaviour in Javascript
 > 支持 JS class 直接继承 MonoBehaviour <br/>
@@ -240,7 +240,6 @@ JSValueConst JS_GetActiveFunction(JSContext *ctx) { }
 * [X] compile into JS bytecode (QuickJS)
 * [X] Values_push_class.cs ```public static JSValue js_push_classvalue(JSContext ctx, IO.ByteBuffer o)```
 * [ ] jsb.Yield C# side wrapper as JSPromise.Resolve()
-* [ ] !!! 重写 delegate 映射 提供专用的 JSValue ObjectType, 并通过 index 映射, 脱离 JSValue 本身 (避免不必要的引用管理)
 * [ ] event dispatcher
 * [ ] ref 传参时, 从 val.target 进行取值 (因为会需要回写target, 保持一致性)
 * [ ] 完善 Ref/Out 参数的处理, 改为额外的一个 JS Object 参数, 进行批量的输出赋值
