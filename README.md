@@ -233,7 +233,7 @@ JSValueConst JS_GetActiveFunction(JSContext *ctx) { }
 * [X] console.* 基本的兼容性 
 * [X] commonjs 模块 基本的兼容性 
 * [X] 支持 timer (setTimeout/setInterval)
-* [ ] setImmediate
+* [X] setImmediate
 * [X] sourcemap 转换 JS 调用栈
 * [X] 针对嵌套类型的 Binding 过程调整
 * [X] 静态 Bind 过程
@@ -241,8 +241,7 @@ JSValueConst JS_GetActiveFunction(JSContext *ctx) { }
 * [X] Values_push_class.cs ```public static JSValue js_push_classvalue(JSContext ctx, IO.ByteBuffer o)```
 * [ ] jsb.Yield C# side wrapper as JSPromise.Resolve()
 * [ ] event dispatcher
-* [ ] ref 传参时, 从 val.target 进行取值 (因为会需要回写target, 保持一致性)
-* [ ] 完善 Ref/Out 参数的处理, 改为额外的一个 JS Object 参数, 进行批量的输出赋值
+* [X] 完善 Ref/Out 参数的处理 (改为多返回值模拟方式)
 * [X] mobile platform build: android
 * [ ] mobile platform build: ios
 * [ ] 静态绑定和反射绑定对重载的处理顺序可能不同
@@ -256,7 +255,7 @@ JSValueConst JS_GetActiveFunction(JSContext *ctx) { }
 * [X] 静态绑定也提供 Private Access (不直接支持, 运行时使用反射绑定替代静态绑定来支持此特性)
 * [ ] 可以安全的保留 ScriptValue 对象引用
 * [ ] 整理 Examples
-* [ ] wiki doc
+* [X] wiki doc 创建
 
 # 待定
 * [ ] Worker API

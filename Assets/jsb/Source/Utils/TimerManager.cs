@@ -79,6 +79,34 @@ namespace QuickJS.Utils
         }
         
         [MonoPInvokeCallback(typeof(JSCFunction))]
+        public static JSValue js_set_immediate(JSContext ctx, JSValue this_obj, int argc, JSValue[] argv)
+        {
+            if (argc >= 1)
+            {
+                var fnValue = argv[0];
+                var fnArgs = JSApi.EmptyValues;
+                if (JSApi.JS_IsFunction(ctx, fnValue) == 0)
+                {
+                    return JSApi.JS_ThrowTypeError(ctx, nameof(js_set_interval) + ": func");
+                }
+                if (argc >= 2)
+                {
+                    fnArgs = new JSValue[argc - 1];
+                    for (var i = 1; i < argc; i++)
+                    {
+                        fnArgs[i - 1] = argv[i];
+                    }
+                }
+
+                var context = ScriptEngine.GetContext(ctx);
+                var func = new ScriptFunction(context, fnValue, this_obj, fnArgs);
+                var timer = context.GetTimerManager().CreateTimer(func, 0, false);
+                return JSApi.JS_NewUint32(ctx, timer);
+            }
+            return JSApi.JS_UNDEFINED;
+        }
+
+        [MonoPInvokeCallback(typeof(JSCFunction))]
         public static JSValue js_set_interval(JSContext ctx, JSValue this_obj, int argc, JSValue[] argv)
         {
             if (argc >= 1)
@@ -156,6 +184,7 @@ namespace QuickJS.Utils
         {
             var ns = register.CreateNamespace();
             
+            ns.AddFunction("setImmediate", js_set_immediate, 2);
             ns.AddFunction("setInterval", js_set_interval, 3);
             ns.AddFunction("setTimeout", js_set_timeout, 3);
             ns.AddFunction("clearInterval", js_clear_timer, 1);
