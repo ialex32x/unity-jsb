@@ -116,4 +116,11 @@ HotfixTest.SimpleStaticCall();
     const { g, x, z } = NoNamespaceClass.TestRefOut(2, 666);
     print("ref/out:", g, x, z);
 }
+async function test_custom_promise() {
+    let go = new UnityEngine.GameObject("custome.promise.test");
+    var sb = go.AddComponent(SampleBehaviour);
+    await sb.Wait();
+    print("after wait");
+}
+test_custom_promise();
 //# sourceMappingURL=main.js.map
