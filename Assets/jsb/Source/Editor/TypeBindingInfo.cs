@@ -822,7 +822,13 @@ namespace QuickJS.Editor
 
                     if (BindingManager.ContainsPointer(constructor))
                     {
-                        bindingManager.Info("skip pointer constructor: {0}", constructor);
+                        bindingManager.Info("skip pointer-param constructor: {0}", constructor);
+                        continue;
+                    }
+
+                    if (BindingManager.ContainsByRefParameters(constructor))
+                    {
+                        bindingManager.Info("skip byref-param constructor: {0}", constructor);
                         continue;
                     }
 
