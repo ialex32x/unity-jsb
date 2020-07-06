@@ -77,10 +77,25 @@ namespace QuickJS.Editor
             return parameters.Length > 0 && parameters[parameters.Length - 1].IsDefined(typeof(ParamArrayAttribute), false);
         }
 
+        public static int GetTSParameterCount(ParameterInfo[] parameters)
+        {
+            var len = parameters.Length;
+            var argc = len;
+            for (var i = 0; i < len; i++)
+            {
+                var p = parameters[i];
+                if (p.IsOut)
+                {
+                    argc--;
+                }
+            }
+            return argc;
+        }
+
         public void Add(T method, bool isExtension)
         {
             var parameters = method.GetParameters();
-            var nargs = parameters.Length;
+            var nargs = GetTSParameterCount(parameters);
             var isVararg = IsVarargMethod(parameters);
             MethodBaseVariant<T> variants;
             if (isVararg)
@@ -822,7 +837,13 @@ namespace QuickJS.Editor
 
                     if (BindingManager.ContainsPointer(constructor))
                     {
-                        bindingManager.Info("skip pointer constructor: {0}", constructor);
+                        bindingManager.Info("skip pointer-param constructor: {0}", constructor);
+                        continue;
+                    }
+
+                    if (BindingManager.ContainsByRefParameters(constructor))
+                    {
+                        bindingManager.Info("skip byref-param constructor: {0}", constructor);
                         continue;
                     }
 

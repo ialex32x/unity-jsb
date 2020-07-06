@@ -108,4 +108,12 @@ HotfixTest.SimpleStaticCall();
 // var testBuffer = new Uint8Array(takeBuffer);
 // var backBuffer = new Uint8Array(NoNamespaceClass.TestBytes(testBuffer));
 // backBuffer.forEach(val => print(val));
+{
+    const { x, z } = NoNamespaceClass.TestOut(233);
+    print("out:", x, z);
+}
+{
+    const { g, x, z } = NoNamespaceClass.TestRefOut(2, 666);
+    print("ref/out:", g, x, z);
+}
 //# sourceMappingURL=main.js.map

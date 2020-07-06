@@ -425,7 +425,9 @@ namespace QuickJS
             _timerManager.Destroy();
             _objectCache.Clear();
             _typeDB.Destroy();
+            
             GC.Collect();
+            GC.WaitForPendingFinalizers();
             CollectPendingGarbage();
 
             for (int i = 0, count = _contexts.Count; i < count; i++)

@@ -16,8 +16,8 @@
 * [未完成] 运行时模块热替换 (debug only)
 
 # 特性示例
-> 推荐使用 typescript 编写脚本, 以提供强类型支持. 示例代码均使用 typescript. <br/>
-> 最终运行的都是 javascript.
+> 推荐使用 typescript 编写脚本, unity-jsb 对导出的 C# 类型自动生成了对应的 d.ts 声明, 以提供强类型辅助. 示例代码均使用 typescript. <br/>
+> 也可以根据喜好选择 coffeescript/clojurescript 等任何可以编译成 javascript 的语言. 最终运行的都是 javascript.
 
 ## MonoBehaviour in Javascript
 > 支持 JS class 直接继承 MonoBehaviour <br/>
@@ -233,28 +233,30 @@ JSValueConst JS_GetActiveFunction(JSContext *ctx) { }
 * [X] console.* 基本的兼容性 
 * [X] commonjs 模块 基本的兼容性 
 * [X] 支持 timer (setTimeout/setInterval)
+* [ ] setImmediate
 * [X] sourcemap 转换 JS 调用栈
 * [X] 针对嵌套类型的 Binding 过程调整
 * [X] 静态 Bind 过程
 * [X] compile into JS bytecode (QuickJS)
 * [X] Values_push_class.cs ```public static JSValue js_push_classvalue(JSContext ctx, IO.ByteBuffer o)```
-* [ ] !!! 重写 delegate 映射 提供专用的 JSValue ObjectType, 并通过 index 映射, 脱离 JSValue 本身 (避免不必要的引用管理)
+* [ ] jsb.Yield C# side wrapper as JSPromise.Resolve()
 * [ ] event dispatcher
 * [ ] ref 传参时, 从 val.target 进行取值 (因为会需要回写target, 保持一致性)
+* [ ] 完善 Ref/Out 参数的处理, 改为额外的一个 JS Object 参数, 进行批量的输出赋值
 * [X] mobile platform build: android
 * [ ] mobile platform build: ios
 * [ ] 静态绑定和反射绑定对重载的处理顺序可能不同
 * [ ] 静态绑定和反射绑定对参数类型的判断可能不同
 * [X] 静态绑定的类型也可以进行 hotfix
-* [X] hotfix 注入 (il, 初步功能, 只处理了有限支持的 Method)
+* [X] hotfix replace (注入il, 初步功能, 只处理了有限支持的 Method)
 * [X] hotfix 注入构造函数
 * [ ] hotfix 注入 Property
-* [ ] hotfix 注入 Field (JS层面等价于 Property 因此应该可以进行JS替换)
-* [ ] hotfix 可以注入 before/after 代码而不仅仅替换
+* [X] hotfix before
+* [ ] hotfix after
 * [X] 静态绑定也提供 Private Access (不直接支持, 运行时使用反射绑定替代静态绑定来支持此特性)
 * [ ] 可以安全的保留 ScriptValue 对象引用
 * [ ] 整理 Examples
-* [ ] 完善 Ref/Out 参数的处理, 改为额外的一个 JS Object 参数, 进行批量的输出赋值
+* [ ] wiki doc
 
 # 待定
 * [ ] Worker API
