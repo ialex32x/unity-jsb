@@ -141,8 +141,12 @@ namespace QuickJS.Native
             var str = Marshal.PtrToStringAnsi(ptr, len);
             if (str == null)
             {
-                var pointer = (byte*)(void*)ptr;
-                return Encoding.UTF8.GetString(pointer, len);
+                // var pointer = (byte*)(void*)ptr;
+                // return Encoding.UTF8.GetString(pointer, len);
+                
+                var buffer = new byte[len];
+                Marshal.Copy(ptr, buffer, 0, len);
+                return Encoding.UTF8.GetString(buffer);
             }
 
             return str;
