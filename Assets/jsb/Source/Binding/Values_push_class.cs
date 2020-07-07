@@ -118,6 +118,16 @@ namespace QuickJS.Binding
             return js_push_object(ctx, (object)o);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static JSValue js_push_classvalue(JSContext ctx, ScriptPromise promise)
+        {
+            if (promise == null)
+            {
+                return JSApi.JS_NULL;
+            }
+            return JSApi.JS_DupValue(ctx, promise);
+        }
+
         // variant push
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static JSValue js_push_classvalue(JSContext ctx, Type type)

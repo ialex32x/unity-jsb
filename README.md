@@ -182,16 +182,6 @@ jsb.hotfix.before_single("HotfixTest", "AnotherCall", function () {
 ### 利用强类型提供代码提示
 ![ts_code_complete](jsb_build/res/ts_code_complete.png)
 
-# compile for windows on linux
-
-```sh
-sudo apt-get update
-sudo apt-get install mingw-w64
-
-# i686-w64-mingw32
-# x86_64-w64-mingw32
-```
-
 # 多线程
 > 暂不支持多线程访问
 
@@ -204,21 +194,8 @@ sudo apt-get install mingw-w64
 # 状态
 > 完成度 ~70%
 
-# 对 QuickJS 的修改
-```c
-// quickjs.c
-
-// 1: 
-// 在不存在log2的情况下提供替代的 log2 
-#if defined(JSB_DEF_LOG2)
-static double log2(double v) { return log(v) / log(2.0); }
-#endif
-
-// 2:
-// make JS_GetActiveFunction extern
-JSValueConst JS_GetActiveFunction(JSContext *ctx) { }
-
-```
+# 文档 
+[wiki](https://github.com/ialex32x/unity-jsb/wiki)
 
 # Referenced libraries
 
@@ -228,38 +205,3 @@ JSValueConst JS_GetActiveFunction(JSContext *ctx) { }
 * [libwebsockets](https://github.com/warmcat/libwebsockets)
 * [mbedtls](https://github.com/ARMmbed/mbedtls)
 * [zlib](https://zlib.net/)
-
-# TODO
-* [X] console.* 基本的兼容性 
-* [X] commonjs 模块 基本的兼容性 
-* [X] 支持 timer (setTimeout/setInterval)
-* [ ] setImmediate
-* [X] sourcemap 转换 JS 调用栈
-* [X] 针对嵌套类型的 Binding 过程调整
-* [X] 静态 Bind 过程
-* [X] compile into JS bytecode (QuickJS)
-* [X] Values_push_class.cs ```public static JSValue js_push_classvalue(JSContext ctx, IO.ByteBuffer o)```
-* [ ] jsb.Yield C# side wrapper as JSPromise.Resolve()
-* [ ] event dispatcher
-* [ ] ref 传参时, 从 val.target 进行取值 (因为会需要回写target, 保持一致性)
-* [ ] 完善 Ref/Out 参数的处理, 改为额外的一个 JS Object 参数, 进行批量的输出赋值
-* [X] mobile platform build: android
-* [ ] mobile platform build: ios
-* [ ] 静态绑定和反射绑定对重载的处理顺序可能不同
-* [ ] 静态绑定和反射绑定对参数类型的判断可能不同
-* [X] 静态绑定的类型也可以进行 hotfix
-* [X] hotfix replace (注入il, 初步功能, 只处理了有限支持的 Method)
-* [X] hotfix 注入构造函数
-* [ ] hotfix 注入 Property
-* [X] hotfix before
-* [ ] hotfix after
-* [X] 静态绑定也提供 Private Access (不直接支持, 运行时使用反射绑定替代静态绑定来支持此特性)
-* [ ] 可以安全的保留 ScriptValue 对象引用
-* [ ] 整理 Examples
-* [ ] wiki doc
-
-# 待定
-* [ ] Worker API
-* [ ] WebAssembly build
-
-
