@@ -441,7 +441,7 @@ namespace WebSockets
             return 0;
         }
 
-        private void CallScript(string eventName, JSValue eventArg)
+        private unsafe void CallScript(string eventName, JSValue eventArg)
         {
             if (eventArg.IsException())
             {
@@ -461,8 +461,9 @@ namespace WebSockets
                     JSApi.JS_FreeValue(_jsContext, eventFunc);
                     return;
                 }
-
-                var rval = JSApi.JS_Call(_jsContext, eventFunc, _jsThis, 1, new JSValue[] { eventArg });
+                var args = stackalloc JSValue[1];
+                args[0] = eventArg;
+                var rval = JSApi.JS_Call(_jsContext, eventFunc, _jsThis, 1, args);
                 if (rval.IsException())
                 {
                     _jsContext.print_exception();
