@@ -91,13 +91,13 @@ namespace QuickJS.Editor
             {
                 arglist = ", " + arglist;
             }
-            this.cg.cs.AppendLine($"public static {returnTypeName} {delegateName}({firstArgument}{arglist}) {{");
+            this.cg.cs.AppendLine($"public static unsafe {returnTypeName} {delegateName}({firstArgument}{arglist}) {{");
             this.cg.cs.AddTabLevel();
             this.cg.cs.AppendLine("var ctx = fn.ctx;");
 
             if (nargs > 0)
             {
-                this.cg.cs.AppendLine("var argv = new JSValue[{0}];", nargs);
+                this.cg.cs.AppendLine("var argv = stackalloc JSValue[{0}];", nargs);
                 for (var i = 0; i < nargs; i++)
                 {
                     var parameter = delegateBindingInfo.parameters[i];
@@ -226,13 +226,13 @@ namespace QuickJS.Editor
             {
                 arglist = ", " + arglist;
             }
-            this.cg.cs.AppendLine($"public static {returnTypeName} {delegateName}({firstArgument}{arglist}) {{");
+            this.cg.cs.AppendLine($"public static unsafe {returnTypeName} {delegateName}({firstArgument}{arglist}) {{");
             this.cg.cs.AddTabLevel();
             this.cg.cs.AppendLine("var ctx = fn.ctx;");
 
             if (nargs > 0)
             {
-                this.cg.cs.AppendLine("var argv = new JSValue[{0}];", nargs);
+                this.cg.cs.AppendLine("var argv = stackalloc JSValue[{0}];", nargs);
                 for (var i = 0; i < nargs; i++)
                 {
                     var parameter = delegateBindingInfo.parameters[i];
