@@ -44,7 +44,7 @@ namespace QuickJS.Native
         public static JSValue _DynamicMethodInvoke(JSContext ctx, JSValue this_obj, int argc, JSValue[] argv, int magic)
         {
             var typeDB = ScriptEngine.GetTypeDB(ctx);
-            
+
             if (typeDB == null)
             {
                 return JSApi.JS_ThrowInternalError(ctx, "type db is null");
@@ -71,7 +71,7 @@ namespace QuickJS.Native
         public static JSValue _DynamicFieldGetter(JSContext ctx, JSValue this_obj, int magic)
         {
             var typeDB = ScriptEngine.GetTypeDB(ctx);
-            
+
             if (typeDB == null)
             {
                 return JSApi.JS_ThrowInternalError(ctx, "type db is null");
@@ -98,7 +98,7 @@ namespace QuickJS.Native
         public static JSValue _DynamicFieldSetter(JSContext ctx, JSValue this_obj, JSValue val, int magic)
         {
             var typeDB = ScriptEngine.GetTypeDB(ctx);
-            
+
             if (typeDB == null)
             {
                 return JSApi.JS_ThrowInternalError(ctx, "type db is null");
@@ -136,14 +136,13 @@ namespace QuickJS.Native
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static string GetString(JSContext ctx, IntPtr ptr, int len)
+        public static unsafe string GetString(JSContext ctx, IntPtr ptr, int len)
         {
             var str = Marshal.PtrToStringAnsi(ptr, len);
             if (str == null)
             {
-                var buffer = new byte[len];
-                Marshal.Copy(ptr, buffer, 0, len);
-                return Encoding.UTF8.GetString(buffer);
+                var pointer = (byte*)(void*)ptr;
+                return Encoding.UTF8.GetString(pointer, len);
             }
 
             return str;
