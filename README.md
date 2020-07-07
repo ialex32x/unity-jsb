@@ -256,6 +256,7 @@ JSValueConst JS_GetActiveFunction(JSContext *ctx) { }
 * [ ] 可以安全的保留 ScriptValue 对象引用
 * [ ] 整理 Examples
 * [X] wiki doc 创建
+* [ ] ATOM_GET_STR_BUF_SIZE
 
 # 待定
 * [ ] Worker API
