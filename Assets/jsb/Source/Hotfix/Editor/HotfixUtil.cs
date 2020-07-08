@@ -153,16 +153,7 @@ namespace QuickJS.Hotfix
         private static Instruction FindPatchPoint(MethodBody body)
         {
             var instructions = body.Instructions;
-            for (var i = 0; i < instructions.Count; i++)
-            {
-                var instruction = instructions[i];
-                if (instruction.OpCode == OpCodes.Nop)
-                {
-                    return instruction;
-                }
-            }
-
-            return null;
+            return instructions.Count > 0 ? instructions[0] : null;
         }
 
         private static string GetHotfixFieldName_r(MethodDefinition method, HashSet<string> set)
@@ -249,8 +240,7 @@ namespace QuickJS.Hotfix
                         var localPoint = point;
 
                         type.Fields.Add(delegateField_b);
-                        proc.InsertBefore(localPoint, point = proc.Create(OpCodes.Nop)); // more friendly for patch
-                        proc.InsertBefore(localPoint, proc.Create(OpCodes.Ldsfld, delegateField_b));
+                        proc.InsertBefore(localPoint, point = proc.Create(OpCodes.Ldsfld, delegateField_b));
                         proc.InsertBefore(localPoint, proc.Create(OpCodes.Ldnull));
                         proc.InsertBefore(localPoint, proc.Create(OpCodes.Cgt_Un));
                         proc.InsertBefore(localPoint, proc.Create(OpCodes.Stloc, boolVar));
@@ -291,8 +281,7 @@ namespace QuickJS.Hotfix
                         var localPoint = point;
 
                         type.Fields.Add(delegateField_r);
-                        proc.InsertBefore(localPoint, point = proc.Create(OpCodes.Nop)); // more friendly for patch
-                        proc.InsertBefore(localPoint, proc.Create(OpCodes.Ldsfld, delegateField_r));
+                        proc.InsertBefore(localPoint, point = proc.Create(OpCodes.Ldsfld, delegateField_r));
                         proc.InsertBefore(localPoint, proc.Create(OpCodes.Ldnull));
                         proc.InsertBefore(localPoint, proc.Create(OpCodes.Cgt_Un));
                         proc.InsertBefore(localPoint, proc.Create(OpCodes.Stloc, boolVar));
