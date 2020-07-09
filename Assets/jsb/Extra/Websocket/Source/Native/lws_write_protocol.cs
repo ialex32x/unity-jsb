@@ -1,3 +1,4 @@
+#if !UNITY_WEBGL || UNITY_WEBGL
 namespace WebSockets
 {
     /*
@@ -56,3 +57,4 @@ namespace WebSockets
          * decode the content if used */
     };
 }
+#endif

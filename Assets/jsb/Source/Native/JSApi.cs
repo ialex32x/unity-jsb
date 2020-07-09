@@ -79,7 +79,7 @@ namespace QuickJS.Native
 
     public partial class JSApi
     {
-#if UNITY_IPHONE && !UNITY_EDITOR
+#if (UNITY_IPHONE || UNITY_WEBGL) && !UNITY_EDITOR
 	    const string JSBDLL = "__Internal";
 #else
         const string JSBDLL = "libquickjs";
