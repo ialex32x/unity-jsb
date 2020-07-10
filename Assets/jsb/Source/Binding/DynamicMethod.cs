@@ -16,6 +16,8 @@ namespace QuickJS.Binding
     {
         // private MethodBase _methodBase;
 
+        public abstract ParameterInfo[] GetParameters();
+
         public abstract bool CheckArgs(JSContext ctx, int argc, JSValue[] argv);
 
         public abstract JSValue Invoke(JSContext ctx, JSValue this_obj, int argc, JSValue[] argv);
@@ -30,6 +32,11 @@ namespace QuickJS.Binding
         {
             _type = type;
             _methodInfo = methodInfo;
+        }
+
+        public override ParameterInfo[] GetParameters()
+        {
+            return _methodInfo.GetParameters();
         }
 
         public override bool CheckArgs(JSContext ctx, int argc, JSValue[] argv)
@@ -90,6 +97,11 @@ namespace QuickJS.Binding
         {
             _type = type;
             _ctor = ctor;
+        }
+
+        public override ParameterInfo[] GetParameters()
+        {
+            return _ctor.GetParameters();
         }
 
         public override bool CheckArgs(JSContext ctx, int argc, JSValue[] argv)
