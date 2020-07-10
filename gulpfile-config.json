@@ -1,0 +1,6 @@
+{
+    "source": "./Assets/Examples/Scripts/out/*.js",
+    "config": "./Assets/Examples/Scripts/config/*.json",
+    "output": "./Assets/Examples/Scripts/dist/", 
+    "resources": "./Assets/Examples/Resources/"
+}
