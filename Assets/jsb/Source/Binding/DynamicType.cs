@@ -51,7 +51,7 @@ namespace QuickJS.Binding
             return type == _type || type.IsSubclassOf(_type);
         }
 
-        private void AddMethods(ClassDecl cls, bool bStatic, Dictionary<string, List<MethodInfo>> map)
+        private void AddMethods(ref ClassDecl cls, bool bStatic, Dictionary<string, List<MethodInfo>> map)
         {
             foreach (var kv in map)
             {
@@ -79,7 +79,7 @@ namespace QuickJS.Binding
             }
         }
 
-        private void CollectMethod(MethodInfo[] methodInfos, Dictionary<string, List<MethodInfo>> instMap, Dictionary<string, List<MethodInfo>> staticMap)
+        private void CollectMethod(ref ClassDecl cls, MethodInfo[] methodInfos, Dictionary<string, List<MethodInfo>> instMap, Dictionary<string, List<MethodInfo>> staticMap)
         {
             for (int i = 0, count = methodInfos.Length; i < count; i++)
             {
@@ -88,7 +88,25 @@ namespace QuickJS.Binding
 
                 if (methodInfo.IsSpecialName)
                 {
-                    //TODO: 进一步细化, 进行部分支持
+                    //TODO: 反射方式的运算符重载注册
+                    if (name.StartsWith("op_"))
+                    {
+                        switch (name)
+                        {
+                            case "op_Addition":
+                            case "op_Subtraction":
+                            case "op_Equality":
+                            case "op_Multiply":
+                            case "op_Division":
+                            case "op_UnaryNegation":
+                                //TODO: add operators
+                                // var op = new DynamicMethod(this, methodInfo);
+                                // cls.AddSelfOperator()
+                                // cls.AddLeftOperator()
+                                // cls.AddRightOperator()
+                                break;
+                        }
+                    }
                     continue;
                 }
 
@@ -147,9 +165,9 @@ namespace QuickJS.Binding
             #region BindMethods(register, flags);
             var instMap = new Dictionary<string, List<MethodInfo>>();
             var staticMap = new Dictionary<string, List<MethodInfo>>();
-            CollectMethod(_type.GetMethods(flags), instMap, staticMap);
-            AddMethods(cls, true, staticMap);
-            AddMethods(cls, false, instMap);
+            CollectMethod(ref cls, _type.GetMethods(flags), instMap, staticMap);
+            AddMethods(ref cls, true, staticMap);
+            AddMethods(ref cls, false, instMap);
             #endregion
 
             #region BindFields(register, flags);
@@ -157,11 +175,7 @@ namespace QuickJS.Binding
             for (int i = 0, count = fieldInfos.Length; i < count; i++)
             {
                 var fieldInfo = fieldInfos[i];
-                if (fieldInfo.Name.StartsWith("_JSFIX_"))
-                {
-                    //TODO: collect hotfix slots
-                }
-                else
+                if (!fieldInfo.Name.StartsWith("_JSFIX_")) // skip hotfix slots
                 {
                     var dynamicField = new DynamicField(this, fieldInfo);
                     cls.AddField(fieldInfo.IsStatic, fieldInfo.Name, dynamicField);
