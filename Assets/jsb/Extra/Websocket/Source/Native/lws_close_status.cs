@@ -1,4 +1,5 @@
-﻿namespace WebSockets
+﻿#if !UNITY_WEBGL || UNITY_WEBGL
+namespace WebSockets
 {
     /*
      * NOTE: These public enums are part of the abi.  If you want to add one,
@@ -88,3 +89,4 @@
         LWS_CLOSE_STATUS_NOSTATUS_CONTEXT_DESTROY = 9999,
     }
 }
+#endif

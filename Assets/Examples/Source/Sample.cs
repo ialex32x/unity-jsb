@@ -9,15 +9,28 @@ namespace jsb
 
     public class Sample : MonoBehaviour, IScriptRuntimeListener
     {
+        public bool useResources;
         public bool sourceMap;
         private ScriptRuntime _rt;
 
         void Awake()
         {
+            IFileSystem fileSystem;
+
             _rt = ScriptEngine.CreateRuntime();
-            var fileSystem = new DefaultFileSystem();
-            _rt.AddSearchPath("Assets");
             _rt.AddSearchPath("node_modules");
+
+            if (useResources)
+            {
+                fileSystem = new ResourcesFileSystem();
+                _rt.AddSearchPath("dist");
+            }
+            else
+            {
+                fileSystem = new DefaultFileSystem();
+                _rt.AddSearchPath("Assets/Examples/Scripts/out");
+            }
+
             _rt.EnableStacktrace();
             if (sourceMap)
             {
@@ -43,7 +56,7 @@ namespace jsb
 
         public void OnComplete(ScriptRuntime runtime)
         {
-            _rt.EvalMain("Assets/Examples/Scripts/out/main.js");
+            _rt.EvalMain("main.js");
         }
     }
 }

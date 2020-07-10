@@ -1,3 +1,4 @@
+#if !UNITY_WEBGL || UNITY_WEBGL
 namespace WebSockets
 {
     public enum ulws_ssl_type
@@ -7,3 +8,4 @@ namespace WebSockets
         ULWS_USE_SSL_ALLOW_SELFSIGNED = 2,
     }
 }
+#endif

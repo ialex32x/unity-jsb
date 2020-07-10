@@ -307,3 +307,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 08b53751862e51a46a4cfe8e661faac4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  useResources: 0
+  sourceMap: 0

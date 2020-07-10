@@ -4,11 +4,11 @@ const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 
 module.exports = {
     entry: {
-        index: './src/js/index.js'
+        index: './Scripts/out/main.js'
     },
     output: {
-        filename: '[name].js',
-        path: path.resolve(__dirname, '../out')
+        filename: 'main.js',
+        path: path.resolve(__dirname, './Assets/Examples/Scripts/')
     },
     mode: "development", 
     plugins: [

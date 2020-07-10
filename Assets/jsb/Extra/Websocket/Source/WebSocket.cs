@@ -1,3 +1,4 @@
+#if !UNITY_WEBGL || UNITY_WEBGL
 using System;
 using System.Collections.Generic;
 using System.Net;
@@ -823,3 +824,4 @@ namespace WebSockets
         }
     }
 }
+#endif

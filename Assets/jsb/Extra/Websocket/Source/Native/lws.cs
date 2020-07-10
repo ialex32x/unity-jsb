@@ -1,3 +1,4 @@
+#if !UNITY_WEBGL || UNITY_WEBGL
 using System;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
@@ -53,3 +54,4 @@ namespace WebSockets
         }
     }
 }
+#endif
