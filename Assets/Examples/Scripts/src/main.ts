@@ -1,6 +1,6 @@
 print("first line");
 // import { fib } from "./fib_module.js";
-import { fib } from "./fib.js";
+import { fib } from "./fib";
 
 
 
@@ -179,6 +179,6 @@ test_custom_promise();
 
 // Optional Chaining
 let a: any = 1;
-print("Optional Chaining", a?.b?.c);
+print("Optional Chaining", a?.b?.c === undefined);
 // Nullish coalescing Operator
-print("Nullish coalescing Operator:", a ?? "ok");
+print("Nullish coalescing Operator:", a?.b ?? "ok");

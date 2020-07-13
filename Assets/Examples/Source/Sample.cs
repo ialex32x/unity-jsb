@@ -29,6 +29,7 @@ namespace jsb
             {
                 fileSystem = new DefaultFileSystem();
                 _rt.AddSearchPath("Assets/Examples/Scripts/out");
+                // _rt.AddSearchPath("Assets/Examples/Scripts/dist");
             }
 
             _rt.EnableStacktrace();
