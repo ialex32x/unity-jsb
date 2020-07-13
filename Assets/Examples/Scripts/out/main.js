@@ -29,10 +29,12 @@ async function destroy() {
 }
 destroy();
 let actions = new jsb.DelegateTest();
+print("测试: 委托");
 actions.onAction = function () {
     console.log("js action");
 };
 actions.CallAction();
+print("测试: 带参数的委托");
 actions.onActionWithArgs = (a, b, c) => {
     console.log(a, b, c);
 };
@@ -40,6 +42,20 @@ actions.CallActionWithArgs("string", 123, 456);
 actions.onFunc = v => v * 2;
 console.log(actions.CallFunc(111));
 actions.onFunc = undefined;
+print("测试: 事件");
+actions.onEvent.on(v => print("测试事件1:", v));
+function instanceEventHandler(v) { print("测试事件2:", v); }
+actions.onEvent.on(instanceEventHandler);
+actions.DipatchEvent(123);
+actions.onEvent.off(instanceEventHandler);
+actions.DipatchEvent(123);
+print("测试: 静态事件");
+jsb.DelegateTest.onStaticEvent.on(v => print("测试静态事件1:", v));
+function staticEventHandler(v) { print("测试静态事件2:", v); }
+jsb.DelegateTest.onStaticEvent.on(staticEventHandler);
+jsb.DelegateTest.DipatchStaticEvent(123);
+jsb.DelegateTest.onStaticEvent.off(staticEventHandler);
+jsb.DelegateTest.DipatchStaticEvent(123);
 let v1 = new UnityEngine.Vector3(0, 0, 0);
 let start = Date.now();
 for (let i = 1; i < 200000; i++) {

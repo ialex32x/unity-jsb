@@ -280,7 +280,7 @@ namespace QuickJS.Editor
                 {
                     using (new PInvokeGuardCodeGen(cg))
                     {
-                        using (new BindingFuncDeclareCodeGen(cg, eventBindingInfo.proxyName))
+                        using (new BindingGetterFuncDeclareCodeGen(cg, eventBindingInfo.proxyName))
                         {
                             using (new TryCatchGuradCodeGen(cg))
                             {
@@ -466,13 +466,14 @@ namespace QuickJS.Editor
                         if (bStatic)
                         {
                             tsFieldPrefix += "static ";
-                            cg.cs.AppendLine($"cls.AddEvent(true, \"{tsFieldVar}\", {eventBindingInfo.adderName}, {eventBindingInfo.removerName});");
+                            cg.cs.AppendLine($"cls.AddStaticEvent(\"{tsFieldVar}\", {eventBindingInfo.adderName}, {eventBindingInfo.removerName});");
                         }
                         else
                         {
                             cg.cs.AppendLine($"cls.AddProperty(false, \"{tsFieldVar}\", {eventBindingInfo.proxyName}, null);");
                         }
-                        cg.tsDeclare.AppendLine($"{tsFieldPrefix}{tsFieldVar}: {CodeGenerator.NamespaceOfScriptTypes}.event<{tsFieldType}>");
+                        tsFieldPrefix += "readonly ";
+                        cg.tsDeclare.AppendLine($"{tsFieldPrefix}{tsFieldVar}: jsb.event<{tsFieldType}>");
                     }
                     cg.cs.AppendLine("cls.Close();");
                 }

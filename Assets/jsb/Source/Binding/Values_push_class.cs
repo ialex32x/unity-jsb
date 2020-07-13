@@ -104,20 +104,6 @@ namespace QuickJS.Binding
             }
         }
 
-        // 尝试还原 js function/dispatcher
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static JSValue js_push_delegate(JSContext ctx, Delegate o)
-        {
-            var dDelegate = o.Target as ScriptDelegate;
-            if (dDelegate != null)
-            {
-                return JSApi.JS_DupValue(ctx, dDelegate);
-            }
-
-            // fallback
-            return js_push_object(ctx, (object)o);
-        }
-
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static JSValue js_push_classvalue(JSContext ctx, ScriptPromise promise)
         {

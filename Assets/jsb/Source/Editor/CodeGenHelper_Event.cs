@@ -32,7 +32,7 @@ namespace QuickJS.Editor
                 // 非静态结构体属性修改, 尝试替换实例
                 this.cg.cs.AppendLine($"js_rebind_this(ctx, this_obj, {caller});");
             }
-            this.cg.cs.AppendLine("return 0;");
+            this.cg.cs.AppendLine("return JSApi.JS_UNDEFINED;");
         }
 
         public virtual void Dispose()
@@ -63,7 +63,7 @@ namespace QuickJS.Editor
                 // 非静态结构体属性修改, 尝试替换实例
                 this.cg.cs.AppendLine($"js_rebind_this(ctx, this_obj, {caller});");
             }
-            this.cg.cs.AppendLine("return 0;");
+            this.cg.cs.AppendLine("return JSApi.JS_UNDEFINED;");
         }
 
         public virtual void Dispose()
@@ -84,10 +84,8 @@ namespace QuickJS.Editor
             var eventInfo = this.eventBindingInfo.eventInfo;
             var declaringType = eventInfo.DeclaringType;
             var tsFieldVar = BindingManager.GetTSVariable(eventBindingInfo.regName);
-            // this.cg.cs.AppendLine("DuktapeDLL.duk_push_this(ctx);");
-            this.cg.cs.AppendLine($"duk_add_event_instanced(ctx, \"{tsFieldVar}\", {this.eventBindingInfo.adderName}, {this.eventBindingInfo.removerName}, -1);");
-            this.cg.cs.AppendLine("DuktapeDLL.duk_remove(ctx, -2);");
-            this.cg.cs.AppendLine("return 1;");
+            var caller = this.cg.AppendGetThisCS(eventBindingInfo);
+            this.cg.cs.AppendLine("return js_new_event(ctx, {0}, {1}, {2});", caller, this.eventBindingInfo.adderName, this.eventBindingInfo.removerName);
         }
 
         public virtual void Dispose()
