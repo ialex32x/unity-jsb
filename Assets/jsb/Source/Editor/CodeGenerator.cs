@@ -331,7 +331,7 @@ namespace QuickJS.Editor
             {
                 return null;
             }
-            if (method.IsDefined(typeof(System.Runtime.CompilerServices.ExtensionAttribute)))
+            if (BindingManager.IsExtensionMethod(method))
             {
                 var parameters = method.GetParameters();
                 return AppendGetThisCS(false, parameters[0].ParameterType);

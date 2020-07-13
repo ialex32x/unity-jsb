@@ -157,3 +157,9 @@ async function test_custom_promise () {
     print("after wait");
 }
 test_custom_promise();
+
+// Optional Chaining
+let a: any = 1;
+print("Optional Chaining", a?.b?.c);
+// Nullish coalescing Operator
+print("Nullish coalescing Operator:", a ?? "ok");

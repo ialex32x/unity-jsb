@@ -15,6 +15,7 @@ namespace QuickJS.Editor
         public TextGenerator log;
         public Prefs prefs;
 
+        private HashSet<string> _blockedAssemblies = new HashSet<string>();  // 禁止导出的 assembly
         private List<string> _implicitAssemblies = new List<string>(); // 默认导出所有类型
         private List<string> _explicitAssemblies = new List<string>(); // 仅导出指定需要导出的类型
 
@@ -45,7 +46,7 @@ namespace QuickJS.Editor
         static BindingManager()
         {
             AddTSKeywords(
-                "return", 
+                "return",
                 "function",
                 "interface",
                 "class",
@@ -98,7 +99,7 @@ namespace QuickJS.Editor
             this.dateTime = DateTime.Now;
             var tab = prefs.tab;
             var newline = prefs.newline;
-            _typePrefixBlacklist = prefs.typePrefixBlacklist;
+            _typePrefixBlacklist = new List<string>(prefs.typePrefixBlacklist);
             log = new TextGenerator(newline, tab);
             _blacklist = new HashSet<Type>(new Type[]
             {
@@ -107,6 +108,9 @@ namespace QuickJS.Editor
             _whitelist = new HashSet<Type>(new Type[]
             {
             });
+
+            SetAssemblyBlocked("ExCSS.Unity");
+            AddTypePrefixBlacklist("System.SpanExtensions");
 
             HackGetComponents(TransformType(typeof(GameObject)))
                 .AddTSMethodDeclaration("AddComponent<T extends UnityEngine.Component>(type: { new(): T }): T",
@@ -492,6 +496,11 @@ namespace QuickJS.Editor
                 return delegateBindingInfo;
             }
             return null;
+        }
+
+        public static bool IsExtensionMethod(MethodBase method)
+        {
+            return method.IsDefined(typeof(System.Runtime.CompilerServices.ExtensionAttribute), false);
         }
 
         // 是否包含指针参数
@@ -1295,7 +1304,7 @@ namespace QuickJS.Editor
             for (var i = 0; i < assemblies.Length; i++)
             {
                 var assembly = assemblies[i];
-                if (!assembly.IsDynamic)
+                if (!assembly.IsDynamic && !IsAssemblyBlocked(assembly))
                 {
                     AddAssemblies(false, assembly.FullName);
                 }
@@ -1344,6 +1353,36 @@ namespace QuickJS.Editor
             log.AddTabLevel();
             typeBindingInfo.Collect();
             log.DecTabLevel();
+        }
+
+        public void AddTypePrefixBlacklist(string prefix)
+        {
+            if (!_typePrefixBlacklist.Contains(prefix))
+            {
+                _typePrefixBlacklist.Add(prefix);
+            }
+        }
+
+        public void SetAssemblyBlocked(string name)
+        {
+            _blockedAssemblies.Add(name);
+        }
+
+        public bool IsAssemblyBlocked(Assembly assembly)
+        {
+            var fileInfo = new FileInfo(assembly.Location);
+            if (fileInfo.DirectoryName.EndsWith("/Editor/Data/Managed"))
+            {
+                return true;
+            }
+            if (fileInfo.Name.StartsWith("UnityEditor"))
+            {
+                return true;
+            }
+
+            var comma = assembly.FullName.IndexOf(',');
+            var name = comma >= 0 ? assembly.FullName.Substring(0, comma) : assembly.FullName;
+            return _blockedAssemblies.Contains(name);
         }
 
         public void AddAssemblies(bool implicitExport, params string[] assemblyNames)
@@ -1488,6 +1527,8 @@ namespace QuickJS.Editor
                             this.AddExportedType(type);
                             continue;
                         }
+
+                        TryExportTypeMembers(type);
                         log.AppendLine("skip: {0}", type.FullName);
                     }
                 }
@@ -1496,6 +1537,23 @@ namespace QuickJS.Editor
                     log.AppendLine(exception.ToString());
                 }
                 log.DecTabLevel();
+            }
+        }
+
+        // 此类本身不导出, 但可能包含扩展方法等
+        private void TryExportTypeMembers(Type type)
+        {
+            var methods = type.GetMethods(QuickJS.Binding.DynamicType.PublicFlags);
+            var methodCount = methods.Length;
+            for (var methodIndex = 0; methodIndex < methodCount; methodIndex++)
+            {
+                var method = methods[methodIndex];
+                if (IsExtensionMethod(method))
+                {
+                    var parameters = method.GetParameters();
+                    var declType = parameters[0].ParameterType;
+                    TransformType(declType).AddExtensionMethod(method);
+                }
             }
         }
 
