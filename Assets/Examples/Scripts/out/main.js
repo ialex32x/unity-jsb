@@ -1,4 +1,5 @@
 "use strict";
+var _a, _b;
 Object.defineProperty(exports, "__esModule", { value: true });
 print("first line");
 // import { fib } from "./fib_module.js";
@@ -123,4 +124,9 @@ async function test_custom_promise() {
     print("after wait");
 }
 test_custom_promise();
+// Optional Chaining
+let a = 1;
+print("Optional Chaining", (_b = (_a = a) === null || _a === void 0 ? void 0 : _a.b) === null || _b === void 0 ? void 0 : _b.c);
+// Nullish coalescing Operator
+print("Nullish coalescing Operator:", (a !== null && a !== void 0 ? a : "ok"));
 //# sourceMappingURL=main.js.map
