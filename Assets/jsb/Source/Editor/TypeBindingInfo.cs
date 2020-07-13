@@ -552,7 +552,7 @@ namespace QuickJS.Editor
                 }
             }
 
-            var isExtension = methodInfo.IsDefined(typeof(System.Runtime.CompilerServices.ExtensionAttribute));
+            var isExtension = BindingManager.IsExtensionMethod(methodInfo);
             var isStatic = methodInfo.IsStatic && !isExtension;
             if (IsSupportedOperators(methodInfo))
             {
@@ -670,11 +670,6 @@ namespace QuickJS.Editor
             constructors.Add(constructorInfo, false);
             CollectDelegate(constructorInfo);
             this.bindingManager.Info("[AddConstructor] {0}.{1}", type, constructorInfo);
-        }
-
-        public bool IsExtensionMethod(MethodInfo methodInfo)
-        {
-            return methodInfo.IsDefined(typeof(ExtensionAttribute), false);
         }
 
         // 收集所有 字段,属性,方法
@@ -851,7 +846,12 @@ namespace QuickJS.Editor
                 }
             }
 
-            var methods = type.GetMethods(bindingFlags);
+            CollectMethods(type.GetMethods(bindingFlags));
+            CollectMethods(bindingManager.GetTypeTransform(type).extensionMethods);
+        }
+
+        private void CollectMethods(IEnumerable<MethodInfo> methods)
+        {
             foreach (var method in methods)
             {
                 if (BindingManager.IsGenericMethod(method))
@@ -893,12 +893,7 @@ namespace QuickJS.Editor
                     continue;
                 }
 
-                // if (IsPropertyMethod(method))
-                // {
-                //     continue;
-                // }
-
-                if (IsExtensionMethod(method))
+                if (BindingManager.IsExtensionMethod(method))
                 {
                     var targetType = method.GetParameters()[0].ParameterType;
                     var targetInfo = bindingManager.GetExportedType(targetType);
@@ -907,8 +902,6 @@ namespace QuickJS.Editor
                         targetInfo.AddMethod(method);
                         continue;
                     }
-
-                    // else fallthrough (as normal static method)
                 }
 
                 AddMethod(method);

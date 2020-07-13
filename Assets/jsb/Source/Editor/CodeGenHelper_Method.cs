@@ -49,7 +49,7 @@ namespace QuickJS.Editor
         {
             var snippet = "";
             var parameters = method.GetParameters();
-            var isExtension = method.IsDefined(typeof(System.Runtime.CompilerServices.ExtensionAttribute));
+            var isExtension = BindingManager.IsExtensionMethod(method);
             var i = isExtension ? 1 : 0;
             var length = parameters.Length;
             for (; i < length; i++)
@@ -367,7 +367,7 @@ namespace QuickJS.Editor
 
         protected List<ParameterInfo> WriteTSDeclaration(T method, MethodBaseBindingInfo<T> bindingInfo)
         {
-            var isExtension = method.IsDefined(typeof(System.Runtime.CompilerServices.ExtensionAttribute));
+            var isExtension = BindingManager.IsExtensionMethod(method);
             var refParameters = new List<ParameterInfo>();
             string tsMethodDeclaration;
             this.cg.AppendJSDoc(method);
@@ -504,7 +504,7 @@ namespace QuickJS.Editor
                 return;
             }
 
-            var isExtension = method.IsDefined(typeof(System.Runtime.CompilerServices.ExtensionAttribute));
+            var isExtension = BindingManager.IsExtensionMethod(method);
             var isRaw = method.IsDefined(typeof(JSCFunctionAttribute));
             var parameters = method.GetParameters();
             var in_params = new List<ParameterInfo>();
@@ -761,7 +761,9 @@ namespace QuickJS.Editor
                     return $"{caller}[{arglist_t}]"; // getter
                 }
             }
-            var arglist = Concat(AppendGetParameters(hasParams, nargs, parameters));
+
+            var paramsToGet = isExtension ? parameters.Skip(1).ToArray() : parameters;
+            var arglist = Concat(AppendGetParameters(hasParams, nargs, paramsToGet));
             var transform = cg.bindingManager.GetTypeTransform(method.DeclaringType);
            
             if (transform == null || !transform.OnBinding(BindingPoints.METHOD_BINDING_BEFORE_INVOKE, method, cg))

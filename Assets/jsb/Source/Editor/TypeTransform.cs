@@ -21,6 +21,9 @@ namespace QuickJS.Editor
         private JSHotfixAttribute _hotfix;
         private string _typeNaming;
 
+        // 扩展方法
+        public readonly List<MethodInfo> extensionMethods = new List<MethodInfo>();
+
         // 按名字屏蔽导出
         private HashSet<string> _memberBlacklist = new HashSet<string>();
 
@@ -43,6 +46,14 @@ namespace QuickJS.Editor
         public TypeTransform(Type type)
         {
             _type = type;
+        }
+
+        public void AddExtensionMethod(MethodInfo method)
+        {
+            if (!extensionMethods.Contains(method))
+            {
+                extensionMethods.Add(method);
+            }
         }
 
         public JSHotfixAttribute GetHotfix()
