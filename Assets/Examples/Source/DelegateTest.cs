@@ -27,6 +27,13 @@ namespace jsb
         public Action<string, float, int> onActionWithArgs;
         public Func<int, int> onFunc;
 
+        public event Action<int> onEvent;
+
+        public void DipatchEvent(int v)
+        {
+            onEvent?.Invoke(v);
+        }
+
         public void CallAction()
         {
             onAction?.Invoke();

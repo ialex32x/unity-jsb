@@ -453,6 +453,14 @@ namespace QuickJS.Native
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static JSValue JSB_NewCFunction(JSContext ctx, JSCFunctionMagic func, JSAtom atom, int length,
+            JSCFunctionEnum cproto, int magic)
+        {
+            var fn = Marshal.GetFunctionPointerForDelegate(func);
+            return JSB_NewCFunction(ctx, fn, atom, length, cproto, magic);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static JSValue JSB_NewCFunction(JSContext ctx, JSGetterCFunction func, JSAtom atom)
         {
             var fn = Marshal.GetFunctionPointerForDelegate(func);

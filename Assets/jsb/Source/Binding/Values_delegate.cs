@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using AOT;
 using QuickJS.Native;
 
@@ -10,6 +11,32 @@ namespace QuickJS.Binding
     // 处理委托的绑定
     public partial class Values
     {
+        public static JSValue js_new_event(JSContext ctx, object this_obj, JSCFunction adder, JSCFunction remover)
+        {
+            var context = ScriptEngine.GetContext(ctx);
+            var ret = NewBridgeClassObject(ctx, this_obj);
+            var adderFunc = JSApi.JSB_NewCFunction(ctx, adder, context.GetAtom("on"), 1, JSCFunctionEnum.JS_CFUNC_generic, 0);
+            JSApi.JS_SetProperty(ctx, ret, context.GetAtom("on"), adderFunc);
+            var removerFunc = JSApi.JSB_NewCFunction(ctx, remover, context.GetAtom("off"), 1, JSCFunctionEnum.JS_CFUNC_generic, 0);
+            JSApi.JS_SetProperty(ctx, ret, context.GetAtom("off"), removerFunc);
+            return ret;
+            // return JSApi.JS_ThrowInternalError(ctx, "invalid this_obj, unbound?");
+        }
+
+        // 尝试还原 js function/dispatcher
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static JSValue js_push_delegate(JSContext ctx, Delegate o)
+        {
+            var dDelegate = o.Target as ScriptDelegate;
+            if (dDelegate != null)
+            {
+                return JSApi.JS_DupValue(ctx, dDelegate);
+            }
+
+            // fallback
+            return js_push_object(ctx, (object)o);
+        }
+
         public static bool js_get_delegate_array<T>(JSContext ctx, JSValue val, out T[] o)
         where T : class
         {
