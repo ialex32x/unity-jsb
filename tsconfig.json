@@ -3,7 +3,7 @@
         "newLine": "CRLF",
         // "module": "ESNext",
         "module": "commonjs",
-        "target": "es2020",
+        "target": "ES2018",
         "sourceRoot": "",
         "outDir": "Assets/Examples/Scripts/out",
         // "outFile": "Assets/Examples/Scripts/out/code.js",
