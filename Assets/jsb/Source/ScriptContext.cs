@@ -241,6 +241,7 @@ namespace QuickJS
         public static void Bind(TypeRegister register)
         {
             var ns_jsb = register.CreateNamespace("jsb");
+            ns_jsb.AddFunction("AddSearchPath", _AddSearchPath, 1);
             ns_jsb.AddFunction("Yield", yield_func, 1);
             ns_jsb.AddFunction("ToJSArray", to_js_array, 1);
             ns_jsb.AddFunction("Import", js_import_type, 2);

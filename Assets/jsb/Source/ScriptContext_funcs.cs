@@ -66,6 +66,23 @@ namespace QuickJS
         #endregion
 
         [MonoPInvokeCallback(typeof(JSCFunction))]
+        public static JSValue _AddSearchPath(JSContext ctx, JSValue this_obj, int argc, JSValue[] argv)
+        {
+            var runtime = ScriptEngine.GetRuntime(ctx);
+            if (argc < 1 || !argv[0].IsString())
+            {
+                return JSApi.JS_ThrowInternalError(ctx, "path expected");
+            }
+            var path = JSApi.GetString(ctx, argv[0]);
+            if (!string.IsNullOrEmpty(path))
+            {
+                return JSApi.JS_ThrowInternalError(ctx, "invalid path");
+            }
+            runtime.AddSearchPath(path);
+            return JSApi.JS_UNDEFINED;
+        }
+
+        [MonoPInvokeCallback(typeof(JSCFunction))]
         public static JSValue to_js_array(JSContext ctx, JSValue this_obj, int argc, JSValue[] argv)
         {
             if (argc < 1)
