@@ -187,8 +187,8 @@ namespace QuickJS.Hotfix
 
         public static void Run()
         {
-            var test = typeof(HotfixTest);
-            var assemblyFilePath = test.Assembly.Location;
+            var testAssembly = System.Reflection.Assembly.Load("Assembly-CSharp");
+            var assemblyFilePath = testAssembly.Location;
             var a = AssemblyDefinition.ReadAssembly(assemblyFilePath);
             var delegateTypes = new List<TypeDefinition>();
             var modified = false;
