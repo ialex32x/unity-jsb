@@ -1380,6 +1380,15 @@ namespace QuickJS.Editor
                 return true;
             }
 
+            var refs = assembly.GetReferencedAssemblies();
+            for (int i = 0, count = refs.Length; i < count; i++)
+            {
+                var @ref = refs[i];
+                if (@ref.Name == "UnityEditor")
+                {
+                    return true;
+                }
+            }
             var comma = assembly.FullName.IndexOf(',');
             var name = comma >= 0 ? assembly.FullName.Substring(0, comma) : assembly.FullName;
             return _blockedAssemblies.Contains(name);
