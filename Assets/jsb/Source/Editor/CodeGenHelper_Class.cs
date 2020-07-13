@@ -462,16 +462,17 @@ namespace QuickJS.Editor
                         //NOTE: 静态事件在绑定过程直接定义， 非静态事件推迟到构造时直接赋值创建
                         var tsFieldVar = BindingManager.GetTSVariable(eventBindingInfo.regName);
                         var tsFieldType = this.cg.bindingManager.GetTSTypeFullName(eventBindingInfo.eventInfo.EventHandlerType);
-                        var tsFieldPrefix = "readonly ";
+                        var tsFieldPrefix = "";
                         if (bStatic)
                         {
                             tsFieldPrefix += "static ";
-                            cg.cs.AppendLine($"cls.AddEvent(true, \"{tsFieldVar}\", {eventBindingInfo.adderName}, {eventBindingInfo.removerName});");
+                            cg.cs.AppendLine($"cls.AddStaticEvent(\"{tsFieldVar}\", {eventBindingInfo.adderName}, {eventBindingInfo.removerName});");
                         }
                         else
                         {
                             cg.cs.AppendLine($"cls.AddProperty(false, \"{tsFieldVar}\", {eventBindingInfo.proxyName}, null);");
                         }
+                        tsFieldPrefix += "readonly ";
                         cg.tsDeclare.AppendLine($"{tsFieldPrefix}{tsFieldVar}: jsb.event<{tsFieldType}>");
                     }
                     cg.cs.AppendLine("cls.Close();");

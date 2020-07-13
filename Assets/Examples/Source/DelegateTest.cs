@@ -28,10 +28,16 @@ namespace jsb
         public Func<int, int> onFunc;
 
         public event Action<int> onEvent;
+        public static event Action<int> onStaticEvent;
 
         public void DipatchEvent(int v)
         {
             onEvent?.Invoke(v);
+        }
+
+        public static void DipatchStaticEvent(int v)
+        {
+            onStaticEvent?.Invoke(v);
         }
 
         public void CallAction()

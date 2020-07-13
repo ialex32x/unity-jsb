@@ -59,11 +59,19 @@ actions.onFunc = undefined;
 
 print("测试: 事件");
 actions.onEvent.on(v => print("测试事件1:", v));
-function eventHandler(v: number) { print("测试事件2:", v)}
-actions.onEvent.on(eventHandler);
+function instanceEventHandler(v: number) { print("测试事件2:", v)}
+actions.onEvent.on(instanceEventHandler);
 actions.DipatchEvent(123);
-actions.onEvent.off(eventHandler);
+actions.onEvent.off(instanceEventHandler);
 actions.DipatchEvent(123);
+
+print("测试: 静态事件");
+jsb.DelegateTest.onStaticEvent.on(v => print("测试静态事件1:", v));
+function staticEventHandler(v: number) { print("测试静态事件2:", v)}
+jsb.DelegateTest.onStaticEvent.on(staticEventHandler);
+jsb.DelegateTest.DipatchStaticEvent(123);
+jsb.DelegateTest.onStaticEvent.off(staticEventHandler);
+jsb.DelegateTest.DipatchStaticEvent(123);
 
 let v1 = new UnityEngine.Vector3(0, 0, 0)
 let start = Date.now();
