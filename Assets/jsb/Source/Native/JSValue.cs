@@ -41,6 +41,12 @@ namespace QuickJS.Native
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public bool IsNull()
+        {
+            return JSApi.JS_IsNull(this);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool IsUndefined()
         {
             return JSApi.JS_IsUndefined(this);
