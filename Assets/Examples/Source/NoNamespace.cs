@@ -38,4 +38,10 @@ public class NoNamespaceClass
     {
         return xy != null ? null : (float?)((UnityEngine.Vector2)xy).magnitude;
     }
+
+    public static float? TestNullable(UnityEngine.Vector2? xy, ref float? g)
+    {
+        g = UnityEngine.Random.value;
+        return xy != null ? null : (float?)((UnityEngine.Vector2)xy).magnitude;
+    }
 }

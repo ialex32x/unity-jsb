@@ -234,7 +234,7 @@ namespace QuickJS.Editor
                 {
                     this.cg.tsDeclare.AppendL(": { ");
 
-                    var returnTypeTS = this.cg.bindingManager.GetTSTypeFullName(returnType);
+                    var returnTypeTS = this.cg.bindingManager.GetTSReturnTypeFullName(returnType);
                     var returnVarName = BindingManager.GetTSVariable("return");
                     this.cg.tsDeclare.AppendL($"\"{returnVarName}\": {returnTypeTS}");
 
@@ -257,7 +257,7 @@ namespace QuickJS.Editor
                 }
                 else
                 {
-                    var returnTypeTS = this.cg.bindingManager.GetTSTypeFullName(returnType);
+                    var returnTypeTS = this.cg.bindingManager.GetTSReturnTypeFullName(returnType);
                     this.cg.tsDeclare.AppendL($": {returnTypeTS}");
                     this.cg.tsDeclare.AppendLine();
                 }
@@ -446,7 +446,7 @@ namespace QuickJS.Editor
                     }
                     else
                     {
-                        var parameterTS = this.cg.bindingManager.GetTSTypeFullName(parameterType, parameter.IsOut);
+                        var parameterTS = this.cg.bindingManager.GetTSTypeFullName(parameter);
                         var parameterVarName = BindingManager.GetTSVariable(parameter);
                         this.cg.tsDeclare.AppendL($"{parameter_prefix}{parameterVarName}: {parameterTS}");
                     }

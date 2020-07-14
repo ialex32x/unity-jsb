@@ -675,16 +675,21 @@ namespace QuickJS.Editor
         public string GetTSTypeFullName(ParameterInfo parameter)
         {
             var parameterType = parameter.ParameterType;
-            return GetTSTypeFullName(parameterType, parameter.IsOut);
+            return GetTSTypeFullName(parameterType, parameter.IsOut, false);
         }
 
         // 获取 type 在 typescript 中对应类型名
         public string GetTSTypeFullName(Type type)
         {
-            return GetTSTypeFullName(type, false);
+            return GetTSTypeFullName(type, false, false);
         }
 
-        public string GetTSTypeFullName(Type type, bool isOut)
+        public string GetTSReturnTypeFullName(Type type)
+        {
+            return GetTSTypeFullName(type, false, true);
+        }
+
+        public string GetTSTypeFullName(Type type, bool isOut, bool isReturn)
         {
             if (type == null || type == typeof(void))
             {
@@ -738,7 +743,8 @@ namespace QuickJS.Editor
                 if (type.GetGenericTypeDefinition() == typeof(Nullable<>))
                 {
                     var gArgs = type.GetGenericArguments();
-                    return GetTSTypeFullName(gArgs[0]);
+                    var gArgsTS = GetTSTypeFullName(gArgs[0]);
+                    return $"jsb.Nullable<{gArgsTS}>";
                 }
             }
             return "any";
@@ -907,14 +913,6 @@ namespace QuickJS.Editor
         public static string GetTSVariable(ParameterInfo parameterInfo)
         {
             var name = parameterInfo.Name;
-            var type = parameterInfo.ParameterType;
-            if (type.IsGenericType)
-            {
-                if (type.GetGenericTypeDefinition() == typeof(Nullable<>))
-                {
-                    return GetTSVariable(name) + "?";
-                }
-            }
             return GetTSVariable(name);
         }
 
