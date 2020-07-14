@@ -1,9 +1,10 @@
 # unity-jsb
 
-使用 [QuickJS](https://bellard.org/quickjs/) 为 Unity3D 项目提供 Javascript 运行时支持.  <br/>
-通过生成静态绑定代码的方式提供性能良好的 C#/JS 互操作支持. 支持移动平台.
+使用 [QuickJS](https://bellard.org/quickjs/) 为 Unity3D 项目提供 Javascript 运行时支持.<br/>
+通过生成静态绑定代码的方式提供性能良好的 C#/JS 互操作支持. 支持移动平台. <br/>
 
 > QuickJS is a small and embeddable Javascript engine. It supports the ES2020 specification including modules, asynchronous generators, proxies and BigInt. 
+
 
 # 特性支持
 * 支持在JS异步函数中等待 Unity YieldInstruction 对象
@@ -13,7 +14,8 @@
 * [初步] 未导出的类型通过反射方式进行 C#/JS 交互
 * [初步] 运行时替换 C# 代码 (hotfix, limited support)
 * [未完成] 支持 JS 字节码 (QuickJS)
-* [未完成] 运行时模块热替换 (debug only)
+* [未完成] Webpack HMR 运行时模块热替换 (limited support, for development only)
+* [未完成] 支持 XMLHttpRequest (limited support)
 
 # 特性示例
 > 推荐使用 typescript 编写脚本, unity-jsb 对导出的 C# 类型自动生成了对应的 d.ts 声明, 以提供强类型辅助. 示例代码均使用 typescript. <br/>

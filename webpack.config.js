@@ -2,6 +2,7 @@
 const path = require('path');
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
+const webpack = require('webpack');
 
 module.exports = {
     entry: {
@@ -23,6 +24,12 @@ module.exports = {
     resolve: {
         extensions: ['.tsx', '.ts', '.js']
     },
+    devtool: 'inline-source-map',
+    devServer: {
+        contentBase: './Assets/Examples/Scripts/dist', 
+        port: 8182, 
+        hot: true
+    },
     mode: 'development', 
     plugins: [
         new CleanWebpackPlugin(), 
@@ -40,6 +47,7 @@ module.exports = {
                 return targetPath + ".txt";
             }, 
             toType: "dir"
-        }]})
+        }]}), 
+        new webpack.HotModuleReplacementPlugin()
     ]
 }
