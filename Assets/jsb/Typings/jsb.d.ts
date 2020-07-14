@@ -25,6 +25,8 @@ declare function print(...args: any[]): void;
 
 declare namespace jsb {
 
+    type Nullable<T> = T | null;
+
     /**
      * 将指定路径添加到 duktape 加载脚本的搜索目录列表
      */

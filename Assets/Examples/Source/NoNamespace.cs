@@ -28,4 +28,14 @@ public class NoNamespaceClass
         z = y + g;
         g = x + z;
     }
+
+    public static int? TestNullable(int? x, int? y)
+    {
+        return (x ?? 0) + (y ?? 0);
+    }
+
+    public static float? TestNullable(UnityEngine.Vector2? xy)
+    {
+        return xy != null ? null : (float?)((UnityEngine.Vector2)xy).magnitude;
+    }
 }

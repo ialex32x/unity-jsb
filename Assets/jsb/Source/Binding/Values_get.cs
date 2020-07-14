@@ -21,6 +21,20 @@ namespace QuickJS.Binding
             return ret;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool js_get_primitive(JSContext ctx, JSValue val, out IntPtr? o)
+        {
+            if (val.IsNullish())
+            {
+                o = null;
+                return true;
+            }
+            object o_t;
+            var ret = js_get_object(ctx, val, out o_t);
+            o = (IntPtr)o_t;
+            return ret;
+        }
+
         public static bool js_get_primitive_array(JSContext ctx, JSValue val, out IntPtr[] o)
         {
             var isArray = JSApi.JS_IsArray(ctx, val);
@@ -65,6 +79,19 @@ namespace QuickJS.Binding
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool js_get_primitive(JSContext ctx, JSValue val, out bool o)
         {
+            var r = JSApi.JS_ToBool(ctx, val);
+            o = r != 0;
+            return r >= 0;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool js_get_primitive(JSContext ctx, JSValue val, out bool? o)
+        {
+            if (val.IsNullish())
+            {
+                o = null;
+                return true;
+            }
             var r = JSApi.JS_ToBool(ctx, val);
             o = r != 0;
             return r >= 0;
@@ -120,6 +147,20 @@ namespace QuickJS.Binding
             return true;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool js_get_primitive(JSContext ctx, JSValue val, out sbyte? o)
+        {
+            if (val.IsNullish())
+            {
+                o = null;
+                return true;
+            }
+            int pres;
+            JSApi.JS_ToInt32(ctx, out pres, val);
+            o = (sbyte)pres; // no check
+            return true;
+        }
+
         public static bool js_get_primitive_array(JSContext ctx, JSValue val, out sbyte[] o)
         {
             var isArray = JSApi.JS_IsArray(ctx, val);
@@ -164,6 +205,20 @@ namespace QuickJS.Binding
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool js_get_primitive(JSContext ctx, JSValue val, out byte o)
         {
+            int pres;
+            JSApi.JS_ToInt32(ctx, out pres, val);
+            o = (byte)pres; // no check
+            return true;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool js_get_primitive(JSContext ctx, JSValue val, out byte? o)
+        {
+            if (val.IsNullish())
+            {
+                o = null;
+                return true;
+            }
             int pres;
             JSApi.JS_ToInt32(ctx, out pres, val);
             o = (byte)pres; // no check
@@ -245,6 +300,20 @@ namespace QuickJS.Binding
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool js_get_primitive(JSContext ctx, JSValue val, out char o)
         {
+            int pres;
+            JSApi.JS_ToInt32(ctx, out pres, val);
+            o = (char)pres; // no check
+            return true;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool js_get_primitive(JSContext ctx, JSValue val, out char? o)
+        {
+            if (val.IsNullish())
+            {
+                o = null;
+                return true;
+            }
             int pres;
             JSApi.JS_ToInt32(ctx, out pres, val);
             o = (char)pres; // no check
@@ -349,6 +418,20 @@ namespace QuickJS.Binding
             return true;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool js_get_primitive(JSContext ctx, JSValue val, out short? o)
+        {
+            if (val.IsNullish())
+            {
+                o = null;
+                return true;
+            }
+            int pres;
+            JSApi.JS_ToInt32(ctx, out pres, val);
+            o = (short)pres; // no check
+            return true;
+        }
+
         public static bool js_get_primitive_array(JSContext ctx, JSValue val, out short[] o)
         {
             var isArray = JSApi.JS_IsArray(ctx, val);
@@ -393,6 +476,20 @@ namespace QuickJS.Binding
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool js_get_primitive(JSContext ctx, JSValue val, out ushort o)
         {
+            int pres;
+            JSApi.JS_ToInt32(ctx, out pres, val);
+            o = (ushort)pres; // no check
+            return true;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool js_get_primitive(JSContext ctx, JSValue val, out ushort? o)
+        {
+            if (val.IsNullish())
+            {
+                o = null;
+                return true;
+            }
             int pres;
             JSApi.JS_ToInt32(ctx, out pres, val);
             o = (ushort)pres; // no check
@@ -449,6 +546,20 @@ namespace QuickJS.Binding
             return true;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool js_get_primitive(JSContext ctx, JSValue val, out int? o)
+        {
+            if (val.IsNullish())
+            {
+                o = null;
+                return true;
+            }
+            int pres;
+            JSApi.JS_ToInt32(ctx, out pres, val);
+            o = pres; // no check
+            return true;
+        }
+
         public static bool js_get_primitive_array(JSContext ctx, JSValue val, out int[] o)
         {
             var isArray = JSApi.JS_IsArray(ctx, val);
@@ -493,6 +604,20 @@ namespace QuickJS.Binding
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool js_get_primitive(JSContext ctx, JSValue val, out uint o)
         {
+            uint pres;
+            JSApi.JSB_ToUint32(ctx, out pres, val);
+            o = pres; // no check
+            return true;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool js_get_primitive(JSContext ctx, JSValue val, out uint? o)
+        {
+            if (val.IsNullish())
+            {
+                o = null;
+                return true;
+            }
             uint pres;
             JSApi.JSB_ToUint32(ctx, out pres, val);
             o = pres; // no check
@@ -549,6 +674,20 @@ namespace QuickJS.Binding
             return true;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool js_get_primitive(JSContext ctx, JSValue val, out long? o)
+        {
+            if (val.IsNullish())
+            {
+                o = null;
+                return true;
+            }
+            long pres;
+            JSApi.JS_ToInt64(ctx, out pres, val);
+            o = pres; // no check
+            return true;
+        }
+
         public static bool js_get_primitive_array(JSContext ctx, JSValue val, out long[] o)
         {
             var isArray = JSApi.JS_IsArray(ctx, val);
@@ -593,6 +732,20 @@ namespace QuickJS.Binding
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool js_get_primitive(JSContext ctx, JSValue val, out ulong o)
         {
+            ulong pres;
+            JSApi.JS_ToIndex(ctx, out pres, val);
+            o = pres; // no check
+            return true;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool js_get_primitive(JSContext ctx, JSValue val, out ulong? o)
+        {
+            if (val.IsNullish())
+            {
+                o = null;
+                return true;
+            }
             ulong pres;
             JSApi.JS_ToIndex(ctx, out pres, val);
             o = pres; // no check
@@ -649,6 +802,20 @@ namespace QuickJS.Binding
             return true;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool js_get_primitive(JSContext ctx, JSValue val, out float? o)
+        {
+            if (val.IsNullish())
+            {
+                o = null;
+                return true;
+            }
+            double pres;
+            JSApi.JS_ToFloat64(ctx, out pres, val);
+            o = (float)pres; // no check
+            return true;
+        }
+
         public static bool js_get_primitive_array(JSContext ctx, JSValue val, out float[] o)
         {
             var isArray = JSApi.JS_IsArray(ctx, val);
@@ -693,6 +860,20 @@ namespace QuickJS.Binding
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool js_get_primitive(JSContext ctx, JSValue val, out double o)
         {
+            double pres;
+            JSApi.JS_ToFloat64(ctx, out pres, val);
+            o = pres; // no check
+            return true;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool js_get_primitive(JSContext ctx, JSValue val, out double? o)
+        {
+            if (val.IsNullish())
+            {
+                o = null;
+                return true;
+            }
             double pres;
             JSApi.JS_ToFloat64(ctx, out pres, val);
             o = pres; // no check
@@ -750,8 +931,36 @@ namespace QuickJS.Binding
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool js_get_structvalue(JSContext ctx, JSValue val, out LayerMask? o)
+        {
+            if (val.IsNullish())
+            {
+                o = null;
+                return true;
+            }
+            int pres;
+            JSApi.JS_ToInt32(ctx, out pres, val);
+            o = (LayerMask)pres; // no check
+            return true;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool js_get_structvalue(JSContext ctx, JSValue val, out Color o)
         {
+            float r, g, b, a;
+            var ret = JSApi.jsb_get_float_4(val, out r, out g, out b, out a);
+            o = new Color(r, g, b, a);
+            return ret != 0;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool js_get_structvalue(JSContext ctx, JSValue val, out Color? o)
+        {
+            if (val.IsNullish())
+            {
+                o = null;
+                return true;
+            }
             float r, g, b, a;
             var ret = JSApi.jsb_get_float_4(val, out r, out g, out b, out a);
             o = new Color(r, g, b, a);
@@ -768,8 +977,36 @@ namespace QuickJS.Binding
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool js_get_structvalue(JSContext ctx, JSValue val, out Color32? o)
+        {
+            if (val.IsNullish())
+            {
+                o = null;
+                return true;
+            }
+            int r, g, b, a;
+            var ret = JSApi.jsb_get_int_4(val, out r, out g, out b, out a);
+            o = new Color32((byte)r, (byte)g, (byte)b, (byte)a);
+            return ret != 0;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool js_get_structvalue(JSContext ctx, JSValue val, out Vector2 o)
         {
+            float x, y;
+            var ret = JSApi.jsb_get_float_2(val, out x, out y);
+            o = new Vector2(x, y);
+            return ret != 0;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool js_get_structvalue(JSContext ctx, JSValue val, out Vector2? o)
+        {
+            if (val.IsNullish())
+            {
+                o = null;
+                return true;
+            }
             float x, y;
             var ret = JSApi.jsb_get_float_2(val, out x, out y);
             o = new Vector2(x, y);
@@ -786,8 +1023,36 @@ namespace QuickJS.Binding
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool js_get_structvalue(JSContext ctx, JSValue val, out Vector2Int? o)
+        {
+            if (val.IsNullish())
+            {
+                o = null;
+                return true;
+            }
+            int x, y;
+            var ret = JSApi.jsb_get_int_2(val, out x, out y);
+            o = new Vector2Int(x, y);
+            return ret != 0;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool js_get_structvalue(JSContext ctx, JSValue val, out Vector3 o)
         {
+            float x, y, z;
+            var ret = JSApi.jsb_get_float_3(val, out x, out y, out z);
+            o = new Vector3(x, y, z);
+            return ret != 0;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool js_get_structvalue(JSContext ctx, JSValue val, out Vector3? o)
+        {
+            if (val.IsNullish())
+            {
+                o = null;
+                return true;
+            }
             float x, y, z;
             var ret = JSApi.jsb_get_float_3(val, out x, out y, out z);
             o = new Vector3(x, y, z);
@@ -804,8 +1069,36 @@ namespace QuickJS.Binding
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool js_get_structvalue(JSContext ctx, JSValue val, out Vector3Int? o)
+        {
+            if (val.IsNullish())
+            {
+                o = null;
+                return true;
+            }
+            int x, y, z;
+            var ret = JSApi.jsb_get_int_3(val, out x, out y, out z);
+            o = new Vector3Int(x, y, z);
+            return ret != 0;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool js_get_structvalue(JSContext ctx, JSValue val, out Vector4 o)
         {
+            float x, y, z, w;
+            var ret = JSApi.jsb_get_float_4(val, out x, out y, out z, out w);
+            o = new Vector4(x, y, z, w);
+            return ret != 0;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool js_get_structvalue(JSContext ctx, JSValue val, out Vector4? o)
+        {
+            if (val.IsNullish())
+            {
+                o = null;
+                return true;
+            }
             float x, y, z, w;
             var ret = JSApi.jsb_get_float_4(val, out x, out y, out z, out w);
             o = new Vector4(x, y, z, w);
@@ -821,8 +1114,42 @@ namespace QuickJS.Binding
             return ret != 0;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool js_get_structvalue(JSContext ctx, JSValue val, out Quaternion? o)
+        {
+            if (val.IsNullish())
+            {
+                o = null;
+                return true;
+            }
+            float x, y, z, w;
+            var ret = JSApi.jsb_get_float_4(val, out x, out y, out z, out w);
+            o = new Quaternion(x, y, z, w);
+            return ret != 0;
+        }
+
         public static unsafe bool js_get_structvalue(JSContext ctx, JSValue val, out Matrix4x4 o)
         {
+            int ret;
+            fixed (float* ptr = _matrix_floats_buffer)
+            {
+                ret = JSApi.jsb_get_floats(val, 16, ptr);
+            }
+            var c0 = new Vector4(_matrix_floats_buffer[0], _matrix_floats_buffer[1], _matrix_floats_buffer[2], _matrix_floats_buffer[3]);
+            var c1 = new Vector4(_matrix_floats_buffer[4], _matrix_floats_buffer[5], _matrix_floats_buffer[6], _matrix_floats_buffer[7]);
+            var c2 = new Vector4(_matrix_floats_buffer[8], _matrix_floats_buffer[8], _matrix_floats_buffer[10], _matrix_floats_buffer[11]);
+            var c3 = new Vector4(_matrix_floats_buffer[12], _matrix_floats_buffer[13], _matrix_floats_buffer[14], _matrix_floats_buffer[15]);
+            o = new Matrix4x4(c0, c1, c2, c3);
+            return ret != 0;
+        }
+
+        public static unsafe bool js_get_structvalue(JSContext ctx, JSValue val, out Matrix4x4? o)
+        {
+            if (val.IsNullish())
+            {
+                o = null;
+                return true;
+            }
             int ret;
             fixed (float* ptr = _matrix_floats_buffer)
             {
@@ -851,6 +1178,11 @@ namespace QuickJS.Binding
         public static bool js_get_structvalue<T>(JSContext ctx, JSValue val, out T? o)
         where T : struct
         {
+            if (val.IsNullish())
+            {
+                o = null;
+                return true;
+            }
             object o_t;
             var ret = js_get_object(ctx, val, out o_t);
             o = (T)o_t;

@@ -733,6 +733,14 @@ namespace QuickJS.Editor
                     return $"{CodeGenerator.NamespaceOfInternalScriptTypes}.Delegate{nargs}<{ret}{t_arglist}> | (({v_arglist}) => {ret})";
                 }
             }
+            if (type.IsGenericType)
+            {
+                if (type.GetGenericTypeDefinition() == typeof(Nullable<>))
+                {
+                    var gArgs = type.GetGenericArguments();
+                    return GetTSTypeFullName(gArgs[0]);
+                }
+            }
             return "any";
         }
 
@@ -769,7 +777,7 @@ namespace QuickJS.Editor
                 // }
                 if (withVarName)
                 {
-                    arglist += GetTSVariable(parameter.Name) + ": ";
+                    arglist += GetTSVariable(parameter) + ": ";
                 }
                 arglist += typename;
                 // arglist += " ";
@@ -813,6 +821,17 @@ namespace QuickJS.Editor
                 if (type.IsEnum)
                 {
                     return "js_get_enumvalue";
+                }
+                if (type.IsGenericType)
+                {
+                    if (type.GetGenericTypeDefinition() == typeof(Nullable<>))
+                    {
+                        var gArgs = type.GetGenericArguments();
+                        if (gArgs[0].IsValueType && gArgs[0].IsPrimitive)
+                        {
+                            return "js_get_primitive";
+                        }
+                    }
                 }
                 return "js_get_structvalue";
             }
@@ -883,6 +902,20 @@ namespace QuickJS.Editor
                 return name + "_";
             }
             return name;
+        }
+
+        public static string GetTSVariable(ParameterInfo parameterInfo)
+        {
+            var name = parameterInfo.Name;
+            var type = parameterInfo.ParameterType;
+            if (type.IsGenericType)
+            {
+                if (type.GetGenericTypeDefinition() == typeof(Nullable<>))
+                {
+                    return GetTSVariable(name) + "?";
+                }
+            }
+            return GetTSVariable(name);
         }
 
         // 保证生成一个以 prefix 为前缀, 与参数列表中所有参数名不同的名字

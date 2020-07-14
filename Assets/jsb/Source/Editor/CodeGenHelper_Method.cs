@@ -441,13 +441,13 @@ namespace QuickJS.Editor
                     {
                         var elementType = parameterType.GetElementType();
                         var elementTS = this.cg.bindingManager.GetTSTypeFullName(elementType);
-                        var parameterVarName = BindingManager.GetTSVariable(parameter.Name);
+                        var parameterVarName = BindingManager.GetTSVariable(parameter);
                         this.cg.tsDeclare.AppendL($"{parameter_prefix}...{parameterVarName}: {elementTS}[]");
                     }
                     else
                     {
                         var parameterTS = this.cg.bindingManager.GetTSTypeFullName(parameterType, parameter.IsOut);
-                        var parameterVarName = BindingManager.GetTSVariable(parameter.Name);
+                        var parameterVarName = BindingManager.GetTSVariable(parameter);
                         this.cg.tsDeclare.AppendL($"{parameter_prefix}{parameterVarName}: {parameterTS}");
                     }
                     if (i != parameters.Length - 1)
@@ -598,7 +598,7 @@ namespace QuickJS.Editor
             for (var i = 0; i < parametersByRef.Count; i++)
             {
                 var parameter = parametersByRef[i];
-                var pname = BindingManager.GetTSVariable(parameter.Name);
+                var pname = BindingManager.GetTSVariable(parameter);
                 var position = isExtension ? parameter.Position - 1 : parameter.Position;
                 var argname = $"arg{position}";
                 var pusher = cg.AppendValuePusher(parameter.ParameterType, argname);
