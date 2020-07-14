@@ -34,6 +34,7 @@ namespace jsb
             }
             else if (fileLoader == FileLoader.HMR)
             {
+                Debug.LogWarningFormat("功能未完成");
                 fileSystem = new HttpFileSystem(baseUrl);
             }
             else
