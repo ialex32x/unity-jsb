@@ -79,7 +79,7 @@ namespace QuickJS
             return _isValid;
         }
 
-        private CoroutineManager GetCoroutineManager()
+        public CoroutineManager GetCoroutineManager()
         {
             if (_isValid)
             {
@@ -245,19 +245,6 @@ namespace QuickJS
 
         public static void Bind(TypeRegister register)
         {
-            var context = register.GetContext();
-            JSContext ctx = context;
-            var globalObject = context.GetGlobalObject();
-            JSApi.JS_SetProperty(ctx, globalObject, register.GetAtom("window"), JSApi.JS_DupValue(ctx, globalObject));
-            JSApi.JS_FreeValue(ctx, globalObject);
-
-            var ns_document = register.CreateNamespace("document");
-            ns_document.AddFunction("createElement", js_document_createElement, 1);
-            var ns_document_head = ns_document.CreateNamespace("head");
-            ns_document_head.AddFunction("appendChild", js_element_appendChild, 1);
-            ns_document_head.Close();
-            ns_document.Close();
-
             var ns_jsb = register.CreateNamespace("jsb");
             ns_jsb.AddFunction("AddSearchPath", _AddSearchPath, 1);
             ns_jsb.AddFunction("Yield", yield_func, 1);

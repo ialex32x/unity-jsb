@@ -3,7 +3,7 @@ using System;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
-namespace WebSockets
+namespace QuickJS.Extra.WebSockets
 {
     /*
      * NOTE: These public enums are part of the abi.  If you want to add one,

@@ -292,43 +292,5 @@ namespace QuickJS
             db.GetDynamicType(type, true);
             return JSApi.JS_UNDEFINED;
         }
-
-        [MonoPInvokeCallback(typeof(JSCFunction))]
-        public static JSValue js_document_createElement(JSContext ctx, JSValue this_obj, int argc, JSValue[] argv)
-        {
-            return JSApi.JS_NewObject(ctx);
-        }
-
-        [MonoPInvokeCallback(typeof(JSCFunction))]
-        public static JSValue js_element_appendChild(JSContext ctx, JSValue this_obj, int argc, JSValue[] argv)
-        {
-            try
-            {
-                if (argc < 1)
-                {
-                    return JSApi.JS_ThrowInternalError(ctx, "element expected");
-                }
-                if (!argv[0].IsObject())
-                {
-                    return JSApi.JS_ThrowInternalError(ctx, "element expected");
-                }
-
-                var context = ScriptEngine.GetContext(ctx);
-                var srcProp = JSApi.JS_GetProperty(ctx, argv[0], context.GetAtom("src"));
-                var srcValue = JSApi.GetString(ctx, srcProp);
-                JSApi.JS_FreeValue(ctx, srcProp);
-                var co = context.GetCoroutineManager();
-                if (co != null)
-                {
-                    co.Load(context, srcValue);
-                }
-                return JSApi.JS_UNDEFINED;
-            }
-            catch (Exception exception)
-            {
-                return JSApi.ThrowException(ctx, exception);
-            }
-        }
-
     }
 }

@@ -3,7 +3,7 @@ using System;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
-namespace WebSockets
+namespace QuickJS.Extra.WebSockets
 {
     using size_t = QuickJS.Native.size_t;
 
