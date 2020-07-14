@@ -292,5 +292,18 @@ namespace QuickJS
             db.GetDynamicType(type, true);
             return JSApi.JS_UNDEFINED;
         }
+        
+        [MonoPInvokeCallback(typeof(JSCFunction))]
+        public static JSValue js_document_createElement(JSContext ctx, JSValue this_obj, int argc, JSValue[] argv)
+        {
+            return JSApi.JS_ThrowInternalError(ctx, "not implemented");
+        }
+        
+        [MonoPInvokeCallback(typeof(JSCFunction))]
+        public static JSValue js_element_appendChild(JSContext ctx, JSValue this_obj, int argc, JSValue[] argv)
+        {
+            return JSApi.JS_ThrowInternalError(ctx, "not implemented");
+        }
+        
     }
 }
