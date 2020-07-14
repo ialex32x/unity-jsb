@@ -1,5 +1,5 @@
 ﻿#if !UNITY_WEBGL || UNITY_WEBGL
-namespace WebSockets
+namespace QuickJS.Extra.WebSockets
 {
     /*
      * NOTE: These public enums are part of the abi.  If you want to add one,

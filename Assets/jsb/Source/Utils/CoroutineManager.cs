@@ -1,7 +1,9 @@
 ﻿using System;
+using System.IO;
 using System.Collections;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using System.Net;
 using QuickJS.Native;
 using UnityEngine;
 
@@ -9,6 +11,21 @@ namespace QuickJS.Utils
 {
     public class CoroutineManager : MonoBehaviour
     {
+        //TODO: 临时代码
+        public async void Load(ScriptContext context, string src)
+        {
+            var request = WebRequest.CreateHttp(src);
+            request.Method = "GET";
+            var rsp = await request.GetResponseAsync() as HttpWebResponse;
+            var reader = new StreamReader(rsp.GetResponseStream());
+            var reseponseText = await reader.ReadToEndAsync();
+            if (!context.IsValid())
+            {
+                return;
+            }
+            context.EvalSource(reseponseText, src);
+        }
+
         // return promise
         public JSValue Yield(ScriptContext context, object awaitObject)
         {

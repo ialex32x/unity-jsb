@@ -1,5 +1,5 @@
 #if !UNITY_WEBGL || UNITY_WEBGL
-namespace WebSockets
+namespace QuickJS.Extra.WebSockets
 {
     public enum ulws_ssl_type
     {

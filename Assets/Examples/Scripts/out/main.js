@@ -1,14 +1,14 @@
 "use strict";
-var _a, _b;
+var _a, _b, _c, _d;
 Object.defineProperty(exports, "__esModule", { value: true });
 print("first line");
 // import { fib } from "./fib_module.js";
-const fib_js_1 = require("./fib.js");
+const fib_1 = require("./fib");
 // print(new jsb.Goo());
 print("line 10");
 print(jsb.DelegateTest);
 print(jsb.DelegateTest.InnerTest.hello);
-print("fib:", fib_js_1.fib(12));
+print("fib:", fib_1.fib(12));
 let u = new UnityEngine.Vector3(1, 2, 3);
 console.log(u.x);
 u.Normalize();
@@ -142,7 +142,23 @@ async function test_custom_promise() {
 test_custom_promise();
 // Optional Chaining
 let a = 1;
-print("Optional Chaining", (_b = (_a = a) === null || _a === void 0 ? void 0 : _a.b) === null || _b === void 0 ? void 0 : _b.c);
+print("Optional Chaining", ((_b = (_a = a) === null || _a === void 0 ? void 0 : _a.b) === null || _b === void 0 ? void 0 : _b.c) === undefined);
 // Nullish coalescing Operator
-print("Nullish coalescing Operator:", (a !== null && a !== void 0 ? a : "ok"));
+print("Nullish coalescing Operator:", (_d = (_c = a) === null || _c === void 0 ? void 0 : _c.b, (_d !== null && _d !== void 0 ? _d : "ok")));
+const protobuf = require("protobufjs");
+print("protobufjs:", protobuf);
+// let xhr = new XMLHttpRequest();
+// xhr.open("GET", "http://127.0.0.1:8080/windows/checksum.txt");
+// xhr.timeout = 1000;
+// xhr.onreadystatechange = function () {
+//     console.log("readyState:", xhr.readyState);
+//     if (xhr.readyState !== 4) {
+//         return;
+//     }
+//     console.log("status:", xhr.status);
+//     if (xhr.status == 200) {
+//         console.log("responseText:", xhr.responseText);
+//     }
+// }
+// xhr.send();
 //# sourceMappingURL=main.js.map

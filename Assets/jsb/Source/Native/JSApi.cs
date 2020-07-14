@@ -315,6 +315,14 @@ namespace QuickJS.Native
 
         public static unsafe JSValue JS_NewString(JSContext ctx, string str)
         {
+            if (str == null)
+            {
+                return JS_NULL;
+            }
+            if (str.Length == 0)
+            {
+                return JSB_NewEmptyString(ctx);
+            }
             var bytes = Utils.TextUtils.GetNullTerminatedBytes(str);
 
             fixed (byte* ptr = bytes)

@@ -79,7 +79,7 @@ namespace QuickJS
             return _isValid;
         }
 
-        public JSValue Yield(object awaitObject)
+        public CoroutineManager GetCoroutineManager()
         {
             if (_isValid)
             {
@@ -92,7 +92,12 @@ namespace QuickJS
                     }
                 }
             }
+            return _coroutines;
+        }
 
+        public JSValue Yield(object awaitObject)
+        {
+            GetCoroutineManager();
             if (_coroutines != null)
             {
                 return _coroutines.Yield(this, awaitObject);

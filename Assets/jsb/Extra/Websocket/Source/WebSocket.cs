@@ -6,12 +6,13 @@ using System.Net.Sockets;
 using AOT;
 using System.Text;
 
-namespace WebSockets
+namespace QuickJS.Extra
 {
     using QuickJS;
     using QuickJS.IO;
     using QuickJS.Native;
     using QuickJS.Binding;
+    using QuickJS.Extra.WebSockets;
 
     /*
     constructor:
@@ -43,6 +44,7 @@ namespace WebSockets
         close
         x addEventListener('message', func)
     */
+    //TODO: 用 dotnet WebSocket 代替 lws
     public class WebSocket : Values, IScriptFinalize
     {
         private enum ReadyState
