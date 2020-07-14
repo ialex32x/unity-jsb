@@ -9,7 +9,14 @@ namespace jsb
 
     public class Sample : MonoBehaviour, IScriptRuntimeListener
     {
-        public bool useResources;
+        public enum FileLoader
+        {
+            Default,
+            Resources,
+            HMR,
+        }
+        public FileLoader fileLoader;
+        public string baseUrl = "http://127.0.0.1:8182";
         public bool sourceMap;
         private ScriptRuntime _rt;
 
@@ -20,10 +27,14 @@ namespace jsb
             _rt = ScriptEngine.CreateRuntime();
             _rt.AddSearchPath("node_modules");
 
-            if (useResources)
+            if (fileLoader == FileLoader.Resources)
             {
                 fileSystem = new ResourcesFileSystem();
                 _rt.AddSearchPath("dist");
+            }
+            else if (fileLoader == FileLoader.HMR)
+            {
+                fileSystem = new HttpFileSystem(baseUrl);
             }
             else
             {

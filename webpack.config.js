@@ -33,21 +33,21 @@ module.exports = {
     mode: 'development', 
     plugins: [
         new CleanWebpackPlugin(), 
-        new CopyWebpackPlugin({patterns: [{
-            from: path.resolve(__dirname, './Assets/Examples/Scripts/dist'), 
-            to: path.resolve(__dirname, './Assets/Examples/Resources/dist'), 
-            transformPath: (targetPath, absolutePath) => {
-                return targetPath + ".txt";
-            }, 
-            toType: "dir"
-        }, {
-            from: path.resolve(__dirname, './Assets/Examples/Scripts/config'), 
-            to: path.resolve(__dirname, './Assets/Examples/Resources/config'), 
-            transformPath: (targetPath, absolutePath) => {
-                return targetPath + ".txt";
-            }, 
-            toType: "dir"
-        }]}), 
+        // new CopyWebpackPlugin({patterns: [{
+        //     from: path.resolve(__dirname, './Assets/Examples/Scripts/dist'), 
+        //     to: path.resolve(__dirname, './Assets/Examples/Resources/dist'), 
+        //     transformPath: (targetPath, absolutePath) => {
+        //         return targetPath + ".txt";
+        //     }, 
+        //     toType: "dir"
+        // }, {
+        //     from: path.resolve(__dirname, './Assets/Examples/Scripts/config'), 
+        //     to: path.resolve(__dirname, './Assets/Examples/Resources/config'), 
+        //     transformPath: (targetPath, absolutePath) => {
+        //         return targetPath + ".txt";
+        //     }, 
+        //     toType: "dir"
+        // }]}), 
         new webpack.HotModuleReplacementPlugin()
     ]
 }

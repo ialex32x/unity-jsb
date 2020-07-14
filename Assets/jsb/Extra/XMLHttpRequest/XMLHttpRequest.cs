@@ -132,7 +132,7 @@ namespace QuickJS.Extra
             {
                 return;
             }
-            StreamReader reader = new StreamReader(rsp.GetResponseStream());
+            var reader = new StreamReader(rsp.GetResponseStream());
             _reseponseText = await reader.ReadToEndAsync();
             if (_state != ReadyState.LOADING)
             {
