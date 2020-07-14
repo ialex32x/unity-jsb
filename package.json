@@ -1,9 +1,11 @@
 {
     "dependencies": {
-        "@types/node": "^10.12.21"
+        "protobufjs": "^6.10.0"
     },
     "devDependencies": {
         "@babel/plugin-proposal-optional-chaining": "^7.10.4",
+        "@types/node": "^10.17.27",
+        "@types/protobufjs": "^6.0.0",
         "awesome-typescript-loader": "^5.2.1",
         "babel-core": "^6.26.3",
         "babel-preset-env": "^1.7.0",

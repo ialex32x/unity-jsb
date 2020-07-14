@@ -182,3 +182,6 @@ let a: any = 1;
 print("Optional Chaining", a?.b?.c === undefined);
 // Nullish coalescing Operator
 print("Nullish coalescing Operator:", a?.b ?? "ok");
+
+const protobuf = require("protobufjs");
+print("protobufjs:", protobuf);
