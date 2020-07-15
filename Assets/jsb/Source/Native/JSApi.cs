@@ -633,9 +633,10 @@ namespace QuickJS.Native
         [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern int JS_SetPrototype(JSContext ctx, JSValueConst obj, JSValueConst proto_val);
 
-        // 返回值不需要 FreeValue
-        [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern JSValueConst JS_GetPrototype(JSContext ctx, JSValueConst val);
+        // 2020-04-12: 返回值不需要 FreeValue
+        // 2020-07-05: 返回值需要 FreeValue
+        // [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
+        // public static extern JSValueConst JS_GetPrototype(JSContext ctx, JSValueConst val);
 
         [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern void JS_RunGC(JSRuntime rt);

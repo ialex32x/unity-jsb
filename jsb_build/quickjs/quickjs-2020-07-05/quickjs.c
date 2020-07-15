@@ -976,6 +976,11 @@ enum OPCodeEnum {
     OP_TEMP_END,
 };
 
+// remove this if log2 exists
+#if defined(JSB_DEF_LOG2)
+static double log2(double v) { return log(v) / log(2.0); }
+#endif
+
 static int JS_InitAtoms(JSRuntime *rt);
 static JSAtom __JS_NewAtomInit(JSRuntime *rt, const char *str, int len,
                                int atom_type);
@@ -15496,7 +15501,7 @@ static __exception int JS_CopyDataProperties(JSContext *ctx,
 }
 
 /* only valid inside C functions */
-static JSValueConst JS_GetActiveFunction(JSContext *ctx)
+JSValueConst JS_GetActiveFunction(JSContext *ctx)
 {
     return ctx->rt->current_stack_frame->cur_func;
 }
