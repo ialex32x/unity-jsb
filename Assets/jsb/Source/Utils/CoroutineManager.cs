@@ -23,7 +23,7 @@ namespace QuickJS.Utils
             {
                 return;
             }
-            context.EvalSource(reseponseText, src);
+            context.EvalSourceFree(reseponseText, src);
         }
 
         // return promise

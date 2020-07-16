@@ -66,18 +66,45 @@ namespace QuickJS
         #endregion
 
         [MonoPInvokeCallback(typeof(JSCFunction))]
-        public static JSValue _AddSearchPath(JSContext ctx, JSValue this_obj, int argc, JSValue[] argv)
+        public static JSValue _DoFile(JSContext ctx, JSValue this_obj, int argc, JSValue[] argv)
         {
-            var runtime = ScriptEngine.GetRuntime(ctx);
             if (argc < 1 || !argv[0].IsString())
             {
                 return JSApi.JS_ThrowInternalError(ctx, "path expected");
             }
             var path = JSApi.GetString(ctx, argv[0]);
-            if (!string.IsNullOrEmpty(path))
+            if (string.IsNullOrEmpty(path))
             {
                 return JSApi.JS_ThrowInternalError(ctx, "invalid path");
             }
+
+            var context = ScriptEngine.GetContext(ctx);
+            var runtime = context.GetRuntime();
+            var fileSystem = runtime.GetFileSystem();
+            var resolver = runtime.GetFileResolver();
+            string resolvedPath;
+            if (!resolver.ResolvePath(fileSystem, path, out resolvedPath))
+            {
+                return JSApi.JS_ThrowInternalError(ctx, "file not found");
+            }
+            var source = fileSystem.ReadAllText(resolvedPath);
+            return context.EvalSource(source, resolvedPath);
+        }
+
+        [MonoPInvokeCallback(typeof(JSCFunction))]
+        public static JSValue _AddSearchPath(JSContext ctx, JSValue this_obj, int argc, JSValue[] argv)
+        {
+            if (argc < 1 || !argv[0].IsString())
+            {
+                return JSApi.JS_ThrowInternalError(ctx, "path expected");
+            }
+            var path = JSApi.GetString(ctx, argv[0]);
+            if (string.IsNullOrEmpty(path))
+            {
+                return JSApi.JS_ThrowInternalError(ctx, "invalid path");
+            }
+
+            var runtime = ScriptEngine.GetRuntime(ctx);
             runtime.AddSearchPath(path);
             return JSApi.JS_UNDEFINED;
         }
