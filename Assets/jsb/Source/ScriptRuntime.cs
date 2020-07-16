@@ -96,7 +96,7 @@ namespace QuickJS
             {
                 throw new NullReferenceException(nameof(fileSystem));
             }
-            var bindAll = typeof(Values).GetMethod("BindAll");
+            var bindAll = typeof(Values).GetMethod("BindAll", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static);
             if (bindAll == null)
             {
                 throw new Exception("Generate binding code before run");

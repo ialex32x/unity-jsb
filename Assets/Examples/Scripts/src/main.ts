@@ -200,3 +200,5 @@ print("Nullish coalescing Operator:", a?.b ?? "ok");
 //     }
 // }
 // xhr.send();
+
+jsb.DoFile("dofile_test");

@@ -14,11 +14,6 @@ declare function print(...args: any[]): void;
 // declare function dostring(source: string, filename?: string): void
 
 // /**
-//  * 执行指定脚本
-//  */
-// declare function dofile(filename: string): void
-
-// /**
 //  * 是否开启 print 函数的 stacktrace 输出 (默认关闭)
 //  */
 // declare function enableStacktrace(enabled: boolean): void
@@ -29,6 +24,11 @@ declare namespace jsb {
      * 可空类型返回值 (仅用于声明)
      */
     type Nullable<T> = T;
+
+    /**
+     * 执行指定脚本 (慎用, 与 webpack 等工具的结合性可能不太好)
+     */
+    function DoFile(filename: string): void
 
     /**
      * 将指定路径添加到 duktape 加载脚本的搜索目录列表

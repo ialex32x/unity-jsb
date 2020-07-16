@@ -58,7 +58,7 @@ namespace QuickJS.Editor
                             {
                                 using (new PreservedCodeGen(this))
                                 {
-                                    using (var method = new PlainMethodCodeGen(this, "public static void BindAll(TypeRegister register)"))
+                                    using (var method = new PlainMethodCodeGen(this, "private static void BindAll(TypeRegister register)"))
                                     {
                                         foreach (var type in orderedTypes)
                                         {

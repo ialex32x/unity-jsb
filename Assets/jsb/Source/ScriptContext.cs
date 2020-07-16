@@ -246,10 +246,13 @@ namespace QuickJS
         public static void Bind(TypeRegister register)
         {
             var ns_jsb = register.CreateNamespace("jsb");
+
+            ns_jsb.AddFunction("DoFile", _DoFile, 1);
             ns_jsb.AddFunction("AddSearchPath", _AddSearchPath, 1);
             ns_jsb.AddFunction("Yield", yield_func, 1);
             ns_jsb.AddFunction("ToJSArray", to_js_array, 1);
             ns_jsb.AddFunction("Import", js_import_type, 2);
+
             {
                 var ns_jsb_hotfix = ns_jsb.CreateNamespace("hotfix");
                 ns_jsb_hotfix.AddFunction("replace_single", hotfix_replace_single, 2);
@@ -306,9 +309,16 @@ namespace QuickJS
             }
         }
 
-        public void EvalSource(string source, string fileName)
+        public JSValue EvalSource(string source, string fileName)
         {
             var jsValue = JSApi.JS_Eval(_ctx, source, fileName);
+
+            return jsValue;
+        }
+
+        public void EvalSourceFree(string source, string fileName)
+        {
+            var jsValue = EvalSource(source, fileName);
             if (JSApi.JS_IsException(jsValue))
             {
                 _ctx.print_exception();
