@@ -1463,6 +1463,10 @@ namespace QuickJS.Editor
         // 导出一些必要的基本类型 (预实现的辅助功能需要用到, DuktapeJS)
         private void ExportBuiltins()
         {
+            TransformType(typeof(Enum))
+                .AddTSMethodDeclaration("static GetValues<T>(enumType: any): System.Array<T>", "GetValue", typeof(Type))
+            ;
+            
             TransformType(typeof(Array))
                 .Rename("System.Array<T>")
 
