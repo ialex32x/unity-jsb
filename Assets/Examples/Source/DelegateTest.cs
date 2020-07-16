@@ -68,5 +68,10 @@ namespace jsb
             var h2 = new HotfixTest2();
             UnityEngine.Debug.LogFormat("HotfixTest2: {0}", h2.Foo(12));
         }
+
+        public static InnerTest[] GetArray()
+        {
+            return null;
+        }
     }
 }

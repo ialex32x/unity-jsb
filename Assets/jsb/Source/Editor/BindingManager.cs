@@ -709,6 +709,10 @@ namespace QuickJS.Editor
             {
                 return names.Count > 1 ? $"({String.Join(" | ", names)})" : names[0];
             }
+            if (type == typeof(Array))
+            {
+                return "System.Array<any>";
+            }
             if (type.IsArray)
             {
                 if (type.GetElementType() == typeof(byte))
@@ -1466,7 +1470,7 @@ namespace QuickJS.Editor
             TransformType(typeof(Enum))
                 .AddTSMethodDeclaration("static GetValues<T>(enumType: any): System.Array<T>", "GetValue", typeof(Type))
             ;
-            
+
             TransformType(typeof(Array))
                 .Rename("System.Array<T>")
 
