@@ -70,20 +70,6 @@ namespace QuickJS.Binding
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static unsafe JSValue js_push_classvalue(JSContext ctx, IO.ByteBuffer o)
-        {
-            if (o == null)
-            {
-                return JSApi.JS_UNDEFINED;
-            }
-
-            fixed (byte* buf = o.data)
-            {
-                return JSApi.JS_NewArrayBufferCopy(ctx, buf, o.readableBytes);
-            }
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static JSValue js_push_classvalue(JSContext ctx, ScriptPromise promise)
         {
             if (promise == null)
