@@ -153,11 +153,13 @@ print("[HOTFIX][JS] hotfix.Foo(1) 返回值:", hotfix.Foo(1));
 print("[HOTFIX][JS] hotfix.Foo(1) 返回值:", hotfix.Foo("good day"));
 HotfixTest.SimpleStaticCall();
 
-// var takeBuffer = NoNamespaceClass.MakeBytes();
-// var testBuffer = new Uint8Array(takeBuffer);
-// var backBuffer = new Uint8Array(NoNamespaceClass.TestBytes(testBuffer));
+var takeBuffer = NoNamespaceClass.MakeBytes();
+var testBuffer = new Uint8Array(jsb.ToArrayBuffer(takeBuffer));
+var restoreBytes = jsb.ToBytes(testBuffer);
+var backBuffer = new Uint8Array(jsb.ToArrayBuffer(NoNamespaceClass.TestBytes(restoreBytes)));
 
-// backBuffer.forEach(val => print(val));
+print("byte[] 处理");
+backBuffer.forEach(val => print(val));
 
 {
     const { x, z } = NoNamespaceClass.TestOut(233);

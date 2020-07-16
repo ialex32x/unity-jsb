@@ -250,7 +250,9 @@ namespace QuickJS
             ns_jsb.AddFunction("DoFile", _DoFile, 1);
             ns_jsb.AddFunction("AddSearchPath", _AddSearchPath, 1);
             ns_jsb.AddFunction("Yield", yield_func, 1);
-            ns_jsb.AddFunction("ToJSArray", to_js_array, 1);
+            ns_jsb.AddFunction("ToArray", to_js_array, 1);
+            ns_jsb.AddFunction("ToArrayBuffer", to_js_array_buffer, 1);
+            ns_jsb.AddFunction("ToBytes", to_cs_bytes, 1);
             ns_jsb.AddFunction("Import", js_import_type, 2);
 
             {

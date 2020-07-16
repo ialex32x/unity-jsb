@@ -237,7 +237,7 @@ namespace QuickJS.Editor
             ;
 
             AddTSTypeNameMap(typeof(sbyte), "number");
-            AddTSTypeNameMap(typeof(byte), "number");
+            AddTSTypeNameMap(typeof(byte), "jsb.byte");
             AddTSTypeNameMap(typeof(int), "number");
             AddTSTypeNameMap(typeof(uint), "number");
             AddTSTypeNameMap(typeof(short), "number");
@@ -260,7 +260,7 @@ namespace QuickJS.Editor
             AddTSTypeNameMap(typeof(Vector4), "UnityEngine.Vector4");
             AddTSTypeNameMap(typeof(Quaternion), "UnityEngine.Quaternion");
             AddTSTypeNameMap(typeof(ScriptValueArray), "any[]");
-            AddTSTypeNameMap(typeof(QuickJS.IO.ByteBuffer), "jsb.ByteBuffer", CodeGenerator.NameOfBuffer);
+            AddTSTypeNameMap(typeof(QuickJS.IO.ByteBuffer), "jsb.ByteBuffer");
 
             TransformType(typeof(QuickJS.IO.ByteBuffer))
                 .Rename("jsb.ByteBuffer")
@@ -715,10 +715,10 @@ namespace QuickJS.Editor
             }
             if (type.IsArray)
             {
-                if (type.GetElementType() == typeof(byte))
-                {
-                    return CodeGenerator.NameOfBuffer;
-                }
+                // if (type.GetElementType() == typeof(byte))
+                // {
+                //     return CodeGenerator.NameOfBuffer;
+                // }
                 var elementType = type.GetElementType();
                 var tsFullName = GetTSTypeFullName(elementType);
                 // return tsFullName + "[]";

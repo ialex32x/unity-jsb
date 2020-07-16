@@ -21,6 +21,11 @@ declare function print(...args: any[]): void;
 declare namespace jsb {
 
     /**
+     * 仅用于声明
+     */
+    type byte = number;
+
+    /**
      * 可空类型返回值 (仅用于声明)
      */
     type Nullable<T> = T;
@@ -71,8 +76,20 @@ declare namespace jsb {
     function Yield<T>(task: Task<T>): Promise<T>;
 
     // function ToJSArray(o: any): Array;
-    function ToJSArray<T>(o: System.Array<T>): Array<T>;
-    // function ToJSArray<T>(o: any): Array<T>;
+    /**
+     * 将 C# 数组转换为 JS 数组
+     */
+    function ToArray<T>(o: System.Array<T>): Array<T>;
+
+    /**
+     * 将 C# 数组转换为 JS ArrayBuffer
+     */
+    function ToArrayBuffer(o: System.Array<jsb.byte>): ArrayBuffer;
+
+    /**
+     * 将 JS ArrayBuffer 转换为 C# Array
+     */
+    function ToBytes(o: ArrayBuffer | Uint8Array): System.Array<jsb.byte>;
 
     function Import(type: string, privateAccess?: boolean): FunctionConstructor;
 
