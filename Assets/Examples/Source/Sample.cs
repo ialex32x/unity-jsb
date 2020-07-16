@@ -67,6 +67,7 @@ namespace jsb
             QuickJS.Extra.WebSocket.Bind(register);
             QuickJS.Extra.XMLHttpRequest.Bind(register);
             QuickJS.Extra.DOMCompatibleLayer.Bind(register);
+            QuickJS.Extra.NodeCompatibleLayer.Bind(register);
         }
 
         public void OnComplete(ScriptRuntime runtime)

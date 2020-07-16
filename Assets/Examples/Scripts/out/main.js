@@ -121,10 +121,12 @@ let hotfix = new HotfixTest();
 print("[HOTFIX][JS] hotfix.Foo(1) 返回值:", hotfix.Foo(1));
 print("[HOTFIX][JS] hotfix.Foo(1) 返回值:", hotfix.Foo("good day"));
 HotfixTest.SimpleStaticCall();
-// var takeBuffer = NoNamespaceClass.MakeBytes();
-// var testBuffer = new Uint8Array(takeBuffer);
-// var backBuffer = new Uint8Array(NoNamespaceClass.TestBytes(testBuffer));
-// backBuffer.forEach(val => print(val));
+var takeBuffer = NoNamespaceClass.MakeBytes();
+var testBuffer = new Uint8Array(jsb.ToArrayBuffer(takeBuffer));
+var restoreBytes = jsb.ToBytes(testBuffer);
+var backBuffer = new Uint8Array(jsb.ToArrayBuffer(NoNamespaceClass.TestBytes(restoreBytes)));
+print("byte[] 处理");
+backBuffer.forEach(val => print(val));
 {
     const { x, z } = NoNamespaceClass.TestOut(233);
     print("out:", x, z);

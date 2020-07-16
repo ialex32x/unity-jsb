@@ -1,6 +1,11 @@
 
+// 测试: 不导出基类的情况
+public class NoNamespaceBase
+{
+}
+
 [QuickJS.JSType]
-public class NoNamespaceClass
+public class NoNamespaceClass : NoNamespaceBase
 {
     public static void Moo()
     {

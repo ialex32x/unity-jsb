@@ -109,6 +109,49 @@ namespace QuickJS
             return JSApi.JS_UNDEFINED;
         }
 
+        // arraybuffer => c# array<byte>
+        [MonoPInvokeCallback(typeof(JSCFunction))]
+        public static unsafe JSValue to_cs_bytes(JSContext ctx, JSValue this_obj, int argc, JSValue[] argv)
+        {
+            if (argc < 1)
+            {
+                return JSApi.JS_ThrowInternalError(ctx, "byte[] expected");
+            }
+
+            byte[] o;
+            if (!Values.js_get_primitive_array(ctx, argv[0], out o))
+            {
+                return JSApi.JS_ThrowInternalError(ctx, "byte[] expected");
+            }
+
+            return Values.js_push_classvalue(ctx, o);
+        }
+
+        // c# array<byte> => js arraybuffer
+        [MonoPInvokeCallback(typeof(JSCFunction))]
+        public static unsafe JSValue to_js_array_buffer(JSContext ctx, JSValue this_obj, int argc, JSValue[] argv)
+        {
+            if (argc < 1)
+            {
+                return JSApi.JS_ThrowInternalError(ctx, "byte[] expected");
+            }
+
+            byte[] o;
+            if (!Values.js_get_classvalue(ctx, argv[0], out o))
+            {
+                return JSApi.JS_ThrowInternalError(ctx, "byte[] expected");
+            }
+            if (o == null)
+            {
+                return JSApi.JS_NULL;
+            }
+            fixed (byte* mem_ptr = o)
+            {
+                return JSApi.JS_NewArrayBufferCopy(ctx, mem_ptr, o.Length);
+            }
+        }
+
+        // c# array => js array
         [MonoPInvokeCallback(typeof(JSCFunction))]
         public static JSValue to_js_array(JSContext ctx, JSValue this_obj, int argc, JSValue[] argv)
         {
