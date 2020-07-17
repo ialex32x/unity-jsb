@@ -11,11 +11,11 @@
 * 支持在JS异步函数中等待 System.Threading.Tasks.Task 对象 (limited support)
 * 向 JS 导入 C# 运算符重载 +, -, *, /, ==, -(负)
 * 支持 Websocket (limited support)
+* [初步] 支持 XMLHttpRequest (limited support)
 * [初步] 未导出的类型通过反射方式进行 C#/JS 交互
 * [初步] 运行时替换 C# 代码 (hotfix, limited support)
 * [未完成] 支持 JS 字节码 (QuickJS)
 * [未完成] Webpack HMR 运行时模块热替换 (limited support, for development only)
-* [未完成] 支持 XMLHttpRequest (limited support)
 
 # 特性示例
 > 推荐使用 typescript 编写脚本, unity-jsb 对导出的 C# 类型自动生成了对应的 d.ts 声明, 以提供强类型辅助. 示例代码均使用 typescript. <br/>
@@ -96,7 +96,7 @@ async function testAsyncFunc () {
 testAsyncFunc();
 ```
 
-## 重载运算符
+## 运算符重载
 
 ```ts
 {
@@ -119,7 +119,7 @@ testAsyncFunc();
 }
 ```
 
-## 支持模块
+## 模块
 
 ```ts
 // 支持 ES6 模块 (import)
@@ -132,7 +132,7 @@ require("./test");
 Object.keys(require.cache).forEach(key => console.log(key));
 ```
 
-## 支持 WebSocket
+## WebSocket 
 
 ```ts
 let ws = new WebSocket("ws://127.0.0.1:8080/websocket", "default");
@@ -157,7 +157,26 @@ ws.onmessage = function (msg) {
 };
 ```
 
-## 支持 Hotfix (初步功能)
+## XMLHttpRequest
+
+```ts
+let xhr = new XMLHttpRequest();
+xhr.open("GET", "http://127.0.0.1:8080/windows/checksum.txt");
+xhr.timeout = 1000;
+xhr.onreadystatechange = function () {
+    console.log("readyState:", xhr.readyState);
+    if (xhr.readyState !== 4) {
+        return;
+    }
+    console.log("status:", xhr.status);
+    if (xhr.status == 200) {
+        console.log("responseText:", xhr.responseText);
+    }
+}
+xhr.send();
+```
+
+## Hotfix (初步功能)
 ```ts
 
 jsb.hotfix.replace_single("HotfixTest", "Foo", function (x: number) {
@@ -197,7 +216,7 @@ jsb.hotfix.before_single("HotfixTest", "AnotherCall", function () {
 > 完成度 ~70%
 
 # 文档 
-[wiki](https://github.com/ialex32x/unity-jsb/wiki)
+[Wiki](https://github.com/ialex32x/unity-jsb/wiki)
 
 # Referenced libraries
 
