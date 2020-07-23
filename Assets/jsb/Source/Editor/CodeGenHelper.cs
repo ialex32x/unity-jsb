@@ -357,6 +357,23 @@ namespace QuickJS.Editor
         }
     }
 
+    public class EditorOnlyCodeGen : IDisposable
+    {
+        protected CodeGenerator cg;
+
+        public EditorOnlyCodeGen(CodeGenerator cg)
+        {
+            this.cg = cg;
+            cg.cs.AppendLineL("#if UNITY_EDITOR");
+        }
+
+
+        public void Dispose()
+        {
+            cg.cs.AppendLineL("#endif");
+        }
+    }
+
     public class PlatformCodeGen : IDisposable
     {
         protected CodeGenerator cg;

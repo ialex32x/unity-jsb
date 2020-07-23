@@ -440,7 +440,7 @@ namespace QuickJS.Editor
 
         // 增加导出类型 (需要在 Collect 阶段进行)
         //NOTE: editor mscorlib 与 runtime 存在差异, 需要手工 block 差异
-        public TypeTransform AddExportedType(Type type, bool importBaseType = false)
+        public TypeTransform AddExportedType(Type type, bool importBaseType = false, bool isEditorRuntime = false)
         {
             if (type.IsGenericTypeDefinition)
             {
@@ -450,7 +450,7 @@ namespace QuickJS.Editor
             var tt = TransformType(type);
             if (!_exportedTypes.ContainsKey(type))
             {
-                var typeBindingInfo = new TypeBindingInfo(this, type);
+                var typeBindingInfo = new TypeBindingInfo(this, type, isEditorRuntime);
                 _exportedTypes.Add(type, typeBindingInfo);
                 log.AppendLine($"AddExportedType: {type} Assembly: {type.Assembly}");
 
@@ -470,7 +470,7 @@ namespace QuickJS.Editor
                     {
                         if (importBaseType)
                         {
-                            AddExportedType(baseType, importBaseType);
+                            AddExportedType(baseType, importBaseType, isEditorRuntime);
                         }
                     }
                 }
@@ -496,51 +496,6 @@ namespace QuickJS.Editor
                 return delegateBindingInfo;
             }
             return null;
-        }
-
-        public static bool IsExtensionMethod(MethodBase method)
-        {
-            return method.IsDefined(typeof(System.Runtime.CompilerServices.ExtensionAttribute), false);
-        }
-
-        // 是否包含指针参数
-        public static bool ContainsPointer(MethodBase method)
-        {
-            var parameters = method.GetParameters();
-            for (int i = 0, size = parameters.Length; i < size; i++)
-            {
-                var parameterType = parameters[i].ParameterType;
-                if (parameterType.IsPointer)
-                {
-                    return true;
-                }
-            }
-            return false;
-        }
-
-        // 是否包含按引用传参 (ref/out)
-        public static bool ContainsByRefParameters(MethodBase method)
-        {
-            var parameters = method.GetParameters();
-            for (int i = 0, size = parameters.Length; i < size; i++)
-            {
-                var parameterType = parameters[i].ParameterType;
-                if (parameterType.IsByRef)
-                {
-                    return true;
-                }
-            }
-            return false;
-        }
-
-        public static bool IsGenericMethod(MethodBase method)
-        {
-            return method.GetGenericArguments().Length > 0;
-        }
-
-        public static bool IsUnsupported(MethodBase method)
-        {
-            return ContainsPointer(method) || IsGenericMethod(method);
         }
 
         public void CollectHotfix(Type type)

@@ -361,9 +361,10 @@ namespace QuickJS.Editor
 
     public class TypeBindingInfo
     {
-        public BindingManager bindingManager;
-        public Type type;
-        public TypeTransform transform;
+        public readonly BindingManager bindingManager;
+        public readonly Type type;
+        public readonly TypeTransform transform;
+        public readonly bool isEditorRuntime;
 
         public Type super
         {
@@ -375,11 +376,11 @@ namespace QuickJS.Editor
             get { return type.IsDefined(typeof(JSOmitAttribute)); }
         }
 
-        public string name; // 绑定代码名
+        public readonly string name; // 绑定代码名
 
-        public string jsNamespace; // js 命名空间
+        public readonly string jsNamespace; // js 命名空间
 
-        public string jsName; // js注册名
+        public readonly string jsName; // js注册名
 
         public List<OperatorBindingInfo> operators = new List<OperatorBindingInfo>();
 
@@ -422,10 +423,11 @@ namespace QuickJS.Editor
             return info.Name;
         }
 
-        public TypeBindingInfo(BindingManager bindingManager, Type type)
+        public TypeBindingInfo(BindingManager bindingManager, Type type, bool isEditorRuntime)
         {
             this.bindingManager = bindingManager;
             this.type = type;
+            this.isEditorRuntime = isEditorRuntime;
             this.transform = bindingManager.GetTypeTransform(type);
             var naming = this.transform?.GetTypeNaming() ?? GetNamingAttribute(type);
             var indexOfTypeName = naming.LastIndexOf('.');

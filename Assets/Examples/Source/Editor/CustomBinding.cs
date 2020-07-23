@@ -13,8 +13,12 @@ namespace jsb.Editor
             bindingManager.AddExportedType(typeof(Time));
             // bindingManager.AddExportedType(typeof(System.Net.Dns));
             bindingManager.AddExportedType(typeof(System.Net.IPHostEntry));
-            
+
             bindingManager.AddExportedType(typeof(System.Enum));
+
+// #if UNITY_EDITOR // [test] editor only
+//             bindingManager.AddExportedType(typeof(UnityEditor.EditorApplication), false, true);
+// #endif
         }
     }
 }

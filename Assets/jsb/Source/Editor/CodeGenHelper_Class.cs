@@ -27,6 +27,10 @@ namespace QuickJS.Editor
             {
                 prefix += "abstract ";
             }
+            if (typeBindingInfo.isEditorRuntime)
+            {
+                this.cg.tsDeclare.AppendLine("@jsb.EditorRuntime");
+            }
             this.cg.tsDeclare.AppendLine($"{prefix}class {regName}{extends}{implements} {{");
             this.cg.tsDeclare.AddTabLevel();
 

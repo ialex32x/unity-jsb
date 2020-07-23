@@ -62,7 +62,17 @@ namespace QuickJS.Editor
                                     {
                                         foreach (var type in orderedTypes)
                                         {
-                                            method.AddStatement("{0}.{1}.Bind(register);", this.bindingManager.prefs.ns, type.name);
+                                            if (type.isEditorRuntime)
+                                            {
+                                                using (new EditorOnlyCodeGen(this))
+                                                {
+                                                    method.AddStatement("{0}.{1}.Bind(register);", this.bindingManager.prefs.ns, type.name);
+                                                }
+                                            }
+                                            else
+                                            {
+                                                method.AddStatement("{0}.{1}.Bind(register);", this.bindingManager.prefs.ns, type.name);
+                                            }
                                         }
                                         method.AddStatement("{0}.{1}.Bind(register);", this.bindingManager.prefs.ns, CodeGenerator.NameOfDelegates);
                                     }
@@ -154,6 +164,21 @@ namespace QuickJS.Editor
 
         // 生成类型绑定
         public void Generate(TypeBindingInfo typeBindingInfo)
+        {
+            if (typeBindingInfo.isEditorRuntime)
+            {
+                using (new EditorOnlyCodeGen(this))
+                {
+                    GenerateInternal(typeBindingInfo);
+                }
+            }
+            else
+            {
+                GenerateInternal(typeBindingInfo);
+            }
+        }
+
+        private void GenerateInternal(TypeBindingInfo typeBindingInfo)
         {
             using (new PlatformCodeGen(this))
             {
