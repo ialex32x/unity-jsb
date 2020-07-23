@@ -440,7 +440,7 @@ namespace QuickJS.Editor
 
         // 增加导出类型 (需要在 Collect 阶段进行)
         //NOTE: editor mscorlib 与 runtime 存在差异, 需要手工 block 差异
-        public TypeTransform AddExportedType(Type type, bool importBaseType = false)
+        public TypeTransform AddExportedType(Type type, bool importBaseType = false, bool isEditorRuntime = false)
         {
             if (type.IsGenericTypeDefinition)
             {
@@ -450,7 +450,7 @@ namespace QuickJS.Editor
             var tt = TransformType(type);
             if (!_exportedTypes.ContainsKey(type))
             {
-                var typeBindingInfo = new TypeBindingInfo(this, type);
+                var typeBindingInfo = new TypeBindingInfo(this, type, isEditorRuntime);
                 _exportedTypes.Add(type, typeBindingInfo);
                 log.AppendLine($"AddExportedType: {type} Assembly: {type.Assembly}");
 
