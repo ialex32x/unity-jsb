@@ -10,7 +10,6 @@ namespace QuickJS.Editor
 
     public partial class BindingManager
     {
-        #region Log
         public void Info(string message)
         {
             log.AppendLine(message);
@@ -78,6 +77,5 @@ namespace QuickJS.Editor
             Debug.LogWarningFormat(fmt, args);
             log.AppendLine(fmt, args);
         }
-        #endregion 
     }
 }
