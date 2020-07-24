@@ -27,7 +27,11 @@ namespace jsb
             catch (Exception exception)
             {
                 var logger = ScriptEngine.GetLogger();
-                logger.Write(LogLevel.Error, "{0}: {1}\n{2}", path, exception.Message, exception.StackTrace);
+
+                if (logger != null)
+                {
+                    logger.Write(LogLevel.Error, "{0}: {1}\n{2}", path, exception.Message, exception.StackTrace);
+                }
                 return null;
             }
         }
@@ -41,7 +45,11 @@ namespace jsb
             catch (Exception exception)
             {
                 var logger = ScriptEngine.GetLogger();
-                logger.Write(LogLevel.Error, "{0}: {1}\n{2}", path, exception.Message, exception.StackTrace);
+
+                if (logger != null)
+                {
+                    logger.Write(LogLevel.Error, "{0}: {1}\n{2}", path, exception.Message, exception.StackTrace);
+                }
                 return null;
             }
         }
@@ -65,7 +73,11 @@ namespace jsb
             catch (Exception exception)
             {
                 var logger = ScriptEngine.GetLogger();
-                logger.Write(LogLevel.Error, "{0}: {1}\n{2}", path, exception.Message, exception.StackTrace);
+
+                if (logger != null)
+                {
+                    logger.Write(LogLevel.Error, "{0}: {1}\n{2}", path, exception.Message, exception.StackTrace);
+                }
                 return null;
             }
         }
@@ -80,7 +92,11 @@ namespace jsb
             catch (Exception exception)
             {
                 var logger = ScriptEngine.GetLogger();
-                logger.Write(LogLevel.Error, "{0}: {1}\n{2}", path, exception.Message, exception.StackTrace);
+                
+                if (logger != null)
+                {
+                    logger.Write(LogLevel.Error, "{0}: {1}\n{2}", path, exception.Message, exception.StackTrace);
+                }
                 return null;
             }
         }
@@ -130,7 +146,11 @@ namespace jsb
             catch (Exception exception)
             {
                 var logger = ScriptEngine.GetLogger();
-                logger.Write(LogLevel.Error, "{0}: {1}\n{2}", path, exception.Message, exception.StackTrace);
+                
+                if (logger != null)
+                {
+                    logger.Write(LogLevel.Error, "{0}: {1}\n{2}", path, exception.Message, exception.StackTrace);
+                }
                 return null;
             }
         }
@@ -145,7 +165,11 @@ namespace jsb
             catch (Exception exception)
             {
                 var logger = ScriptEngine.GetLogger();
-                logger.Write(LogLevel.Error, "{0}: {1}\n{2}", path, exception.Message, exception.StackTrace);
+                
+                if (logger != null)
+                {
+                    logger.Write(LogLevel.Error, "{0}: {1}\n{2}", path, exception.Message, exception.StackTrace);
+                }
                 return null;
             }
         }

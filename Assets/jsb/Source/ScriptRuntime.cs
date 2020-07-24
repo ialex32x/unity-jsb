@@ -1,10 +1,8 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.IO;
-using System.Text;
 using AOT;
 using QuickJS.Native;
 using System.Threading;
@@ -24,8 +22,7 @@ namespace QuickJS
         public Func<JSContext, string, string, int, string> OnSourceMap;
 
         private JSRuntime _rt;
-        private bool _dumpStacktrace;
-        private Regex _stRegex;
+        private bool _withStacktrace;
         private IScriptLogger _logger;
         private List<ScriptContext> _contexts = new List<ScriptContext>();
         private ScriptContext _mainContext;
@@ -43,6 +40,12 @@ namespace QuickJS
         private Utils.AutoReleasePool _autorelease;
         private GameObject _container;
         private bool _isValid; // destroy 调用后立即 = false
+
+        public bool withStacktrace
+        {
+            get { return _withStacktrace; }
+            set { _withStacktrace = value; }
+        }
 
         public ScriptRuntime()
         {
@@ -82,7 +85,12 @@ namespace QuickJS
             _fileResolver.AddSearchPath(path);
         }
 
-        public void Initialize(IFileSystem fileSystem, IScriptRuntimeListener runner, IScriptLogger logger, IO.IByteBufferAllocator byteBufferAllocator, int step = 30)
+        public void Initialize(IFileSystem fileSystem, IScriptRuntimeListener runner)
+        {
+            Initialize(fileSystem, runner, new UnityLogger(), new IO.ByteBufferPooledAllocator());
+        }
+
+        public void Initialize(IFileSystem fileSystem, IScriptRuntimeListener runner, IScriptLogger logger, IO.IByteBufferAllocator byteBufferAllocator)
         {
             if (logger == null)
             {
@@ -347,69 +355,6 @@ namespace QuickJS
             }
         }
 
-        private string js_source_position(JSContext ctx, string funcName, string fileName, int lineNumber)
-        {
-            return $"{funcName} ({fileName}:{lineNumber})";
-        }
-
-        public void EnableStacktrace()
-        {
-            _dumpStacktrace = true;
-        }
-
-        public void DisableStacktrace()
-        {
-            _dumpStacktrace = false;
-        }
-
-        public void AppendStacktrace(JSContext ctx, StringBuilder sb)
-        {
-            if (!_dumpStacktrace)
-            {
-                return;
-            }
-            var globalObject = JSApi.JS_GetGlobalObject(ctx);
-            var errorConstructor = JSApi.JS_GetProperty(ctx, globalObject, JSApi.JS_ATOM_Error);
-            var errorObject = JSApi.JS_CallConstructor(ctx, errorConstructor);
-            var stackValue = JSApi.JS_GetProperty(ctx, errorObject, JSApi.JS_ATOM_stack);
-            var stack = JSApi.GetString(ctx, stackValue);
-
-            if (!string.IsNullOrEmpty(stack))
-            {
-                var errlines = stack.Split('\n');
-                if (_stRegex == null)
-                {
-                    _stRegex = new Regex(@"^\s+at\s(.+)\s\((.+\.js):(\d+)\)(.*)$", RegexOptions.Compiled);
-                }
-                for (var i = 0; i < errlines.Length; i++)
-                {
-                    var line = errlines[i];
-                    var matches = _stRegex.Matches(line);
-                    if (matches.Count == 1)
-                    {
-                        var match = matches[0];
-                        if (match.Groups.Count >= 4)
-                        {
-                            var funcName = match.Groups[1].Value;
-                            var fileName = match.Groups[2].Value;
-                            var lineNumber = 0;
-                            int.TryParse(match.Groups[3].Value, out lineNumber);
-                            var extra = match.Groups.Count >= 5 ? match.Groups[4].Value : "";
-                            var sroucePosition = (OnSourceMap ?? js_source_position)(ctx, funcName, fileName, lineNumber);
-                            sb.AppendLine($"    at {sroucePosition}{extra}");
-                            continue;
-                        }
-                    }
-                    sb.AppendLine(line);
-                }
-            }
-
-            JSApi.JS_FreeValue(ctx, stackValue);
-            JSApi.JS_FreeValue(ctx, errorObject);
-            JSApi.JS_FreeValue(ctx, errorConstructor);
-            JSApi.JS_FreeValue(ctx, globalObject);
-        }
-
         public void Destroy()
         {
             _isValid = false;
@@ -419,13 +364,13 @@ namespace QuickJS
             }
             catch (Exception e)
             {
-                _logger.Error(e);
+                _logger?.Error(e);
             }
 
             _timerManager.Destroy();
             _objectCache.Clear();
             _typeDB.Destroy();
-            
+
             GC.Collect();
             GC.WaitForPendingFinalizers();
             CollectPendingGarbage();
@@ -453,7 +398,7 @@ namespace QuickJS
             }
             catch (Exception e)
             {
-                _logger.Error(e);
+                _logger?.Error(e);
             }
 
         }

@@ -18,6 +18,7 @@ namespace jsb
         public FileLoader fileLoader;
         public string baseUrl = "http://127.0.0.1:8182";
         public bool sourceMap;
+        public bool stacktrace;
         private ScriptRuntime _rt;
 
         void Awake()
@@ -44,12 +45,12 @@ namespace jsb
                 // _rt.AddSearchPath("Assets/Examples/Scripts/dist");
             }
 
-            _rt.EnableStacktrace();
+            _rt.withStacktrace = stacktrace;
             if (sourceMap)
             {
                 _rt.EnableSourceMap();
             }
-            _rt.Initialize(fileSystem, this, new UnityLogger(), new ByteBufferPooledAllocator());
+            _rt.Initialize(fileSystem, this);
         }
 
         void Update()

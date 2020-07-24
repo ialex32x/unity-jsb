@@ -157,7 +157,10 @@ namespace QuickJS.Binding
             {
                 var logger = _register.GetLogger();
 
-                logger.Write(LogLevel.Error, "define property failed: {0}", ctx.GetExceptionString());
+                if (logger != null)
+                {
+                    logger.Write(LogLevel.Error, "define property failed: {0}", ctx.GetExceptionString());
+                }
             }
             JSApi.JS_FreeValue(ctx, getterVal);
             JSApi.JS_FreeValue(ctx, setterVal);
@@ -179,7 +182,10 @@ namespace QuickJS.Binding
             {
                 var logger = _register.GetLogger();
 
-                logger.Write(LogLevel.Error, "define property failed: {0}", ctx.GetExceptionString());
+                if (logger != null)
+                {
+                    logger.Write(LogLevel.Error, "define property failed: {0}", ctx.GetExceptionString());
+                }
             }
             JSApi.JS_FreeValue(ctx, getterVal);
             JSApi.JS_FreeValue(ctx, setterVal);

@@ -187,6 +187,7 @@ namespace QuickJS.Utils
             ns.AddFunction("setImmediate", js_set_immediate, 2);
             ns.AddFunction("setInterval", js_set_interval, 3);
             ns.AddFunction("setTimeout", js_set_timeout, 3);
+            ns.AddFunction("clearImmediate", js_clear_timer, 1);
             ns.AddFunction("clearInterval", js_clear_timer, 1);
             ns.AddFunction("clearTimeout", js_clear_timer, 1);
             
