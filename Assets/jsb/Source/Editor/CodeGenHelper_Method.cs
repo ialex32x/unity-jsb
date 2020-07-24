@@ -505,7 +505,7 @@ namespace QuickJS.Editor
             }
 
             var isExtension = BindingManager.IsExtensionMethod(method);
-            var isRaw = method.IsDefined(typeof(JSCFunctionAttribute));
+            // var isRaw = method.IsDefined(typeof(JSCFunctionAttribute));
             var parameters = method.GetParameters();
             var in_params = new List<ParameterInfo>();
             var out_params = new List<ParameterInfo>();
@@ -514,27 +514,27 @@ namespace QuickJS.Editor
             var caller = this.cg.AppendGetThisCS(method);
             var returnType = GetReturnType(method);
 
-            if (isRaw)
-            {
-                do
-                {
-                    if (!isExtension)
-                    {
-                        if (returnType == typeof(int) && in_params.Count == 1)
-                        {
-                            var p = in_params[0];
-                            if (p.ParameterType == typeof(IntPtr) && !p.IsOut)
-                            {
-                                cg.cs.AppendLine($"return {caller}.{method.Name}(ctx);");
-                                return;
-                            }
-                        }
-                        cg.bindingManager.Error($"invalid JSCFunction definition: {method}");
-                        break;
-                    }
-                    cg.bindingManager.Error($"Extension as JSCFunction is not supported: {method}");
-                } while (false);
-            }
+            // if (isRaw)
+            // {
+            //     do
+            //     {
+            //         if (!isExtension)
+            //         {
+            //             if (returnType == typeof(int) && in_params.Count == 1)
+            //             {
+            //                 var p = in_params[0];
+            //                 if (p.ParameterType == typeof(IntPtr) && !p.IsOut)
+            //                 {
+            //                     cg.cs.AppendLine($"return {caller}.{method.Name}(ctx);");
+            //                     return;
+            //                 }
+            //             }
+            //             cg.bindingManager.Error($"invalid JSCFunction definition: {method}");
+            //             break;
+            //         }
+            //         cg.bindingManager.Error($"Extension as JSCFunction is not supported: {method}");
+            //     } while (false);
+            // }
 
             if (returnType == null || returnType == typeof(void))
             {

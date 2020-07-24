@@ -66,6 +66,7 @@ namespace QuickJS.Editor
         // 按照参数数逆序排序所有变体
         // 有相同参数数量要求的方法记录在同一个 Variant 中 (变参方法按最少参数数计算, 不计变参参数数)
         public SortedDictionary<int, MethodBaseVariant<T>> variants = new SortedDictionary<int, MethodBaseVariant<T>>(new MethodVariantComparer());
+        public MethodBase _cfunc;
 
         public int count
         {
@@ -92,12 +93,22 @@ namespace QuickJS.Editor
             return argc;
         }
 
-        public void Add(T method, bool isExtension)
+        public bool Add(T method, bool isExtension)
         {
+            if (method.IsDefined(typeof(JSCFunctionAttribute)))
+            {
+                if (!method.IsStatic || _cfunc != null)
+                {
+                    return false;
+                }
+                this._cfunc = method;
+                return true;
+            }
+
             var parameters = method.GetParameters();
             var nargs = GetTSParameterCount(parameters);
             var isVararg = IsVarargMethod(parameters);
-            MethodBaseVariant<T> variants;
+            MethodBaseVariant<T> variant;
             if (isVararg)
             {
                 nargs--;
@@ -108,14 +119,15 @@ namespace QuickJS.Editor
                 nargs--;
             }
 
-            if (!this.variants.TryGetValue(nargs, out variants))
+            if (!this.variants.TryGetValue(nargs, out variant))
             {
-                variants = new MethodBaseVariant<T>(nargs);
-                this.variants.Add(nargs, variants);
+                variant = new MethodBaseVariant<T>(nargs);
+                this.variants.Add(nargs, variant);
             }
 
             _count++;
-            variants.Add(method, isVararg);
+            variant.Add(method, isVararg);
+            return true;
         }
     }
 
@@ -635,14 +647,18 @@ namespace QuickJS.Editor
             else
             {
                 var group = isStatic ? staticMethods : methods;
-                MethodBindingInfo overrides;
+                MethodBindingInfo methodBindingInfo;
                 var methodName = TypeBindingInfo.GetNamingAttribute(methodInfo);
-                if (!group.TryGetValue(methodName, out overrides))
+                if (!group.TryGetValue(methodName, out methodBindingInfo))
                 {
-                    overrides = new MethodBindingInfo(isIndexer, isStatic, methodName, renameRegName ?? methodName);
-                    group.Add(methodName, overrides);
+                    methodBindingInfo = new MethodBindingInfo(isIndexer, isStatic, methodName, renameRegName ?? methodName);
+                    group.Add(methodName, methodBindingInfo);
                 }
-                overrides.Add(methodInfo, isExtension);
+                if (!methodBindingInfo.Add(methodInfo, isExtension))
+                {
+                    bindingManager.Info("fail to add method: {0}", methodInfo.Name);
+                    return;
+                }
             }
 
             CollectDelegate(methodInfo);
@@ -669,7 +685,11 @@ namespace QuickJS.Editor
                 }
             }
 
-            constructors.Add(constructorInfo, false);
+            if (!constructors.Add(constructorInfo, false))
+            {
+                bindingManager.Info("add constructor failed: {0}", constructorInfo.Name);
+                return;
+            }
             CollectDelegate(constructorInfo);
             this.bindingManager.Info("[AddConstructor] {0}.{1}", type, constructorInfo);
         }

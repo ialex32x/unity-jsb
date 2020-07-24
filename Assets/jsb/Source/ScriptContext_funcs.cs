@@ -58,7 +58,10 @@ namespace QuickJS
             }
 
             sb.AppendLine();
-            runtime.AppendStacktrace(ctx, sb);
+            if (runtime.withStacktrace)
+            {
+                runtime.GetContext(ctx).AppendStacktrace(sb);
+            }
             logger.ScriptWrite((LogLevel)magic, sb.ToString());
             return JSApi.JS_UNDEFINED;
         }

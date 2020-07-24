@@ -70,7 +70,7 @@ namespace QuickJS.Utils
                 }
                 catch (Exception exception)
                 {
-                    context.GetLogger().Error(exception);
+                    context.GetLogger()?.Error(exception);
                 }
             }
 

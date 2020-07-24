@@ -112,6 +112,14 @@ namespace QuickJS.Binding
             JSApi.JS_SetProperty(_ctx, _ctor, nameAtom, op);
         }
 
+        public void AddRawMethod(bool bStatic, string name, JSCFunction method)
+        {
+            var nameAtom = _register.GetAtom(name);
+            var db = _register.GetTypeDB();
+            var funcVal = db.NewDynamicMethod(nameAtom, method);
+            JSApi.JS_DefinePropertyValue(_ctx, bStatic ? _ctor : _proto, nameAtom, funcVal, JSPropFlags.DEFAULT);
+        }
+
         public void AddMethod(bool bStatic, string name, IDynamicMethod method)
         {
             var nameAtom = _register.GetAtom(name);
@@ -157,7 +165,10 @@ namespace QuickJS.Binding
             {
                 var logger = _register.GetLogger();
 
-                logger.Write(LogLevel.Error, "define property failed: {0}", ctx.GetExceptionString());
+                if (logger != null)
+                {
+                    logger.Write(LogLevel.Error, "define property failed: {0}", ctx.GetExceptionString());
+                }
             }
             JSApi.JS_FreeValue(ctx, getterVal);
             JSApi.JS_FreeValue(ctx, setterVal);
@@ -179,7 +190,10 @@ namespace QuickJS.Binding
             {
                 var logger = _register.GetLogger();
 
-                logger.Write(LogLevel.Error, "define property failed: {0}", ctx.GetExceptionString());
+                if (logger != null)
+                {
+                    logger.Write(LogLevel.Error, "define property failed: {0}", ctx.GetExceptionString());
+                }
             }
             JSApi.JS_FreeValue(ctx, getterVal);
             JSApi.JS_FreeValue(ctx, setterVal);

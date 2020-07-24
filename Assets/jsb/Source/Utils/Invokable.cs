@@ -25,7 +25,11 @@ namespace QuickJS.Utils
             catch (Exception exception)
             {
                 var logger = ScriptEngine.GetLogger();
-                logger.Error(exception);
+                
+                if (logger != null)
+                {
+                    logger.Error(exception);
+                }
             }
         }
 

@@ -4,11 +4,10 @@ using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
-using AOT;
+using System.Text.RegularExpressions;
 using QuickJS.Binding;
 using QuickJS.Native;
 using QuickJS.Utils;
-using UnityEngine;
 using Object = UnityEngine.Object;
 
 namespace QuickJS
@@ -24,6 +23,7 @@ namespace QuickJS
         private JSValue _require; // require function object 
         private CoroutineManager _coroutines;
         private bool _isValid;
+        private Regex _stRegex;
 
         private JSValue _globalObject;
         private JSValue _operatorCreate;
@@ -152,7 +152,7 @@ namespace QuickJS
             }
             catch (Exception e)
             {
-                _runtime.GetLogger().Error(e);
+                _runtime.GetLogger()?.Error(e);
             }
             _atoms.Clear();
 
@@ -352,6 +352,56 @@ namespace QuickJS
                 JSApi.JS_SetPropertyStr(ctx, global_object, "console", console);
             }
             JSApi.JS_FreeValue(ctx, global_object);
+        }
+
+        private string js_source_position(JSContext ctx, string funcName, string fileName, int lineNumber)
+        {
+            return $"{funcName} ({fileName}:{lineNumber})";
+        }
+
+        public void AppendStacktrace(StringBuilder sb)
+        {
+            var ctx = _ctx;
+            var globalObject = JSApi.JS_GetGlobalObject(ctx);
+            var errorConstructor = JSApi.JS_GetProperty(ctx, globalObject, JSApi.JS_ATOM_Error);
+            var errorObject = JSApi.JS_CallConstructor(ctx, errorConstructor);
+            var stackValue = JSApi.JS_GetProperty(ctx, errorObject, JSApi.JS_ATOM_stack);
+            var stack = JSApi.GetString(ctx, stackValue);
+
+            if (!string.IsNullOrEmpty(stack))
+            {
+                var errlines = stack.Split('\n');
+                if (_stRegex == null)
+                {
+                    _stRegex = new Regex(@"^\s+at\s(.+)\s\((.+\.js):(\d+)\)(.*)$", RegexOptions.Compiled);
+                }
+                for (var i = 0; i < errlines.Length; i++)
+                {
+                    var line = errlines[i];
+                    var matches = _stRegex.Matches(line);
+                    if (matches.Count == 1)
+                    {
+                        var match = matches[0];
+                        if (match.Groups.Count >= 4)
+                        {
+                            var funcName = match.Groups[1].Value;
+                            var fileName = match.Groups[2].Value;
+                            var lineNumber = 0;
+                            int.TryParse(match.Groups[3].Value, out lineNumber);
+                            var extra = match.Groups.Count >= 5 ? match.Groups[4].Value : "";
+                            var sroucePosition = (_runtime.OnSourceMap ?? js_source_position)(ctx, funcName, fileName, lineNumber);
+                            sb.AppendLine($"    at {sroucePosition}{extra}");
+                            continue;
+                        }
+                    }
+                    sb.AppendLine(line);
+                }
+            }
+
+            JSApi.JS_FreeValue(ctx, stackValue);
+            JSApi.JS_FreeValue(ctx, errorObject);
+            JSApi.JS_FreeValue(ctx, errorConstructor);
+            JSApi.JS_FreeValue(ctx, globalObject);
         }
 
         public static implicit operator JSContext(ScriptContext sc)

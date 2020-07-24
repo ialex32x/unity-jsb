@@ -137,4 +137,19 @@ namespace QuickJS.Binding
             return val;
         }
     }
+
+    public class DynamicMethodInvoke : IDynamicMethod
+    {
+        private JSCFunction _method;
+
+        public DynamicMethodInvoke(JSCFunction method)
+        {
+            _method = method;
+        }
+
+        public JSValue Invoke(JSContext ctx, JSValue this_obj, int argc, JSValue[] argv)
+        {
+            return _method.Invoke(ctx, this_obj, argc, argv);
+        }
+    }
 }

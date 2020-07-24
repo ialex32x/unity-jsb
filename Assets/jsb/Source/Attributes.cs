@@ -40,6 +40,33 @@ namespace QuickJS
     {
     }
 
+    // 不产生包装, 直接导出 (签名必须符合 JSCFunction)
+    // 这种方式导出的方法不支持重载, 需要在方法内部自行处理变参
+    [AttributeUsage(AttributeTargets.Method, AllowMultiple = false)]
+    public class JSCFunctionAttribute : Attribute
+    {
+        // 是否静态
+        public bool isStatic { get; set; }
+
+        // [可选] d.ts 对应输出信息
+        public string[] difinitions { get; set; }
+
+        public JSCFunctionAttribute()
+        {
+        }
+
+        public JSCFunctionAttribute(bool isStatic, params string[] difinitions)
+        {
+            this.isStatic = isStatic;
+            this.difinitions = difinitions;
+        }
+
+        public JSCFunctionAttribute(params string[] difinitions)
+        {
+            this.difinitions = difinitions;
+        }
+    }
+
     [AttributeUsage(AttributeTargets.Class |
                     AttributeTargets.Struct |
                     AttributeTargets.Interface |
@@ -96,16 +123,6 @@ namespace QuickJS
         public JSNamingAttribute(string name)
         {
             this.name = name;
-        }
-    }
-
-    // 指定函数不产生绑定代码 (直接传ctx)
-    [AttributeUsage(AttributeTargets.Method,
-                    AllowMultiple = false)]
-    public class JSCFunctionAttribute : Attribute
-    {
-        public JSCFunctionAttribute()
-        {
         }
     }
 
