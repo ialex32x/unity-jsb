@@ -230,6 +230,11 @@ namespace QuickJS.Utils
             return type;
         }
 
+        public JSValue NewDynamicMethod(JSAtom name, JSCFunction method)
+        {
+            return NewDynamicMethod(name, new DynamicMethodInvoke(method));
+        }
+
         public JSValue NewDynamicMethod(JSAtom name, IDynamicMethod method)
         {
             if (method == null)

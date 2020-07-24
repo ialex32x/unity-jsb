@@ -174,8 +174,7 @@ backBuffer.forEach(val => print(val));
 async function test_custom_promise () {
     let go = new UnityEngine.GameObject("custome.promise.test");
     var sb = go.AddComponent(SampleBehaviour);
-    await sb.Wait();
-    print("after wait");
+    print("after wait a promise (created in C#):", await sb.Wait());
 }
 test_custom_promise();
 

@@ -88,6 +88,11 @@ namespace QuickJS.Editor
                 var methodBindingInfo = kv.Value;
                 if (transform == null || !transform.IsRedirectedMethod(methodBindingInfo.regName))
                 {
+                    if (methodBindingInfo._cfunc != null)
+                    {
+                        continue;
+                    }
+
                     using (new PInvokeGuardCodeGen(cg))
                     {
                         using (new BindingFuncDeclareCodeGen(cg, methodBindingInfo.name))
@@ -382,14 +387,45 @@ namespace QuickJS.Editor
                     // 静态方法
                     foreach (var kv in typeBindingInfo.staticMethods)
                     {
-                        var regName = kv.Value.regName;
-                        var funcName = kv.Value.name;
-                        string redirect;
-                        if (this.typeBindingInfo.transform != null && this.typeBindingInfo.transform.TryRedirectMethod(regName, out redirect))
+                        var methodBindingInfo = kv.Value;
+                        var regName = methodBindingInfo.regName;
+                        if (methodBindingInfo._cfunc != null)
                         {
-                            funcName = redirect;
+                            var attr = (JSCFunctionAttribute)methodBindingInfo._cfunc.GetCustomAttribute(typeof(JSCFunctionAttribute));
+                            var methodDeclType = this.cg.bindingManager.GetCSTypeFullName(methodBindingInfo._cfunc.DeclaringType);
+                            var isStatic = attr.isStatic ? "true" : "false";
+                            cg.cs.AppendLine("cls.AddRawMethod({0}, \"{1}\", {2}.{3});", isStatic, regName, methodDeclType, methodBindingInfo._cfunc.Name);
+                            foreach (var defEntry in attr.difinitions)
+                            {
+                                string tsMethodRename;
+                                var prefix = attr.isStatic ? "static" : "";
+                                if (defEntry.StartsWith("("))
+                                {
+                                    if (this.cg.bindingManager.GetTSMethodRename(methodBindingInfo._cfunc, out tsMethodRename))
+                                    {
+                                        this.cg.tsDeclare.AppendLine($"{prefix}{tsMethodRename}{defEntry}");
+                                    }
+                                    else
+                                    {
+                                        this.cg.tsDeclare.AppendLine($"{prefix}{regName}{defEntry}");
+                                    }
+                                }
+                                else
+                                {
+                                    this.cg.tsDeclare.AppendLine($"{prefix}{defEntry}");
+                                }
+                            }
                         }
-                        cg.cs.AppendLine("cls.AddMethod(true, \"{0}\", {1});", regName, funcName);
+                        else
+                        {
+                            var funcName = methodBindingInfo.name;
+                            string redirect;
+                            if (this.typeBindingInfo.transform != null && this.typeBindingInfo.transform.TryRedirectMethod(regName, out redirect))
+                            {
+                                funcName = redirect;
+                            }
+                            cg.cs.AppendLine("cls.AddMethod(true, \"{0}\", {1});", regName, funcName);
+                        }
                     }
 
                     // 属性
