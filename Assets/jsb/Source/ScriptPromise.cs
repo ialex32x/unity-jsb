@@ -50,7 +50,7 @@ namespace QuickJS
             }
             var context = _context;
             var ctx = (JSContext)_context;
-            var backVal = Binding.Values.js_push_classvalue(ctx, value);
+            var backVal = Binding.Values.js_push_var(ctx, value);
             if (backVal.IsException())
             {
                 ctx.print_exception();
