@@ -24,7 +24,7 @@ project(unity-jsb)
 
 set(TOP_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 set(OUT_DIR ${TOP_DIR}/build)
-set(QJS_DIR ${TOP_DIR}/quickjs-2020-04-12)
+set(QJS_DIR ${TOP_DIR}/quickjs-${QJS_VERSION})
 
 if (CONFIG_WIN32)
     if (CONFIG_WIN32_64)
@@ -45,7 +45,7 @@ endif ()
 
 add_definitions(
     -DCONFIG_BIGNUM
-    -DCONFIG_VERSION="2020-04-12"
+    -DCONFIG_VERSION="${QJS_VERSION}"
 )
 
 include_directories(${QJS_DIR})
