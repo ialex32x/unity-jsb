@@ -39,7 +39,6 @@ endif ()
 
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fPIC -shared -g -Wall -Wno-array-bounds -Wno-format-truncation")
 if (CONFIG_LTO)
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -flto")
     add_definitions(-DCONFIG_LTO)
 endif ()
 
@@ -82,3 +81,6 @@ else () # WINDOWS
 endif ()
 
 target_link_libraries(quickjs ${QJS_LIBS})
+if (CONFIG_LTO)
+    set_target_properties(quickjs PROPERTIES INTERPROCEDURAL_OPTIMIZATION TRUE)
+endif ()

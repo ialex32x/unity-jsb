@@ -1667,11 +1667,13 @@ static inline size_t js_def_malloc_usable_size(void *ptr)
     return _msize(ptr);
 #elif defined(EMSCRIPTEN)
     return 0;
+#elif defined(__ANDROID__)
+    return 0;
 #elif defined(__linux__)
     return malloc_usable_size(ptr);
 #else
     /* change this to `return 0;` if compilation fails */
-    return malloc_usable_size(ptr);
+    return 0;
 #endif
 }
 
@@ -1740,6 +1742,8 @@ static const JSMallocFunctions def_malloc_funcs = {
 #elif defined(_WIN32)
     (size_t (*)(const void *))_msize,
 #elif defined(EMSCRIPTEN)
+    NULL,
+#elif defined(__ANDROID__)
     NULL,
 #elif defined(__linux__)
     (size_t (*)(const void *))malloc_usable_size,
