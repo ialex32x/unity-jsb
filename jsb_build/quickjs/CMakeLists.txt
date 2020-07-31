@@ -81,6 +81,9 @@ else () # WINDOWS
 endif ()
 
 target_link_libraries(quickjs ${QJS_LIBS})
+
 if (CONFIG_LTO)
-    set_target_properties(quickjs PROPERTIES INTERPROCEDURAL_OPTIMIZATION TRUE)
+#    set_target_properties(quickjs PROPERTIES INTERPROCEDURAL_OPTIMIZATION TRUE)
 endif ()
+
+# -DCMAKE_OSX_DEPLOYMENT_TARGET:STRING=10.13
