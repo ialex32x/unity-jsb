@@ -1,5 +1,12 @@
 cmake_minimum_required(VERSION 3.7.2)
 
+# before project definition
+
+if (APPLE and not IOS) 
+    # -DCMAKE_OSX_DEPLOYMENT_TARGET:STRING=10.13
+    set(CMAKE_OSX_DEPLOYMENT_TARGET "10.13" CACHE STRING "Minimum OS X deployment version")
+endif ()
+
 if (CONFIG_WIN32)
     if (CONFIG_WIN32_64)
         set(CMAKE_C_COMPILER x86_64-w64-mingw32-gcc)
@@ -85,5 +92,3 @@ target_link_libraries(quickjs ${QJS_LIBS})
 if (CONFIG_LTO)
 #    set_target_properties(quickjs PROPERTIES INTERPROCEDURAL_OPTIMIZATION TRUE)
 endif ()
-
-# -DCMAKE_OSX_DEPLOYMENT_TARGET:STRING=10.13
