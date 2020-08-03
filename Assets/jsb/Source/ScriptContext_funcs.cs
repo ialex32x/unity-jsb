@@ -57,9 +57,9 @@ namespace QuickJS
                 JSApi.JS_FreeCString(ctx, pstr);
             }
 
-            sb.AppendLine();
             if (runtime.withStacktrace)
             {
+                sb.AppendLine();
                 runtime.GetContext(ctx).AppendStacktrace(sb);
             }
 
@@ -71,7 +71,7 @@ namespace QuickJS
             {
                 Debug.LogErrorFormat("Logger Exception: {0}\n{1}", exception, exception.StackTrace);
             }
-            
+
             return JSApi.JS_UNDEFINED;
         }
 

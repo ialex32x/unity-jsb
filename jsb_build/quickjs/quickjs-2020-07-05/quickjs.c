@@ -1556,7 +1556,7 @@ static void set_dummy_numeric_ops(JSNumericOperations *ops)
 
 #endif /* CONFIG_BIGNUM */
 
-#if !defined(CONFIG_STACK_CHECK)
+#if !defined(CONFIG_STACK_CHECK) || defined(CONFIG_DISABLE_STACK_CHECK)
 /* no stack limitation */
 static inline uint8_t *js_get_stack_pointer(void)
 {

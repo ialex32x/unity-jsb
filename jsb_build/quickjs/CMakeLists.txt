@@ -50,6 +50,7 @@ if (CONFIG_LTO)
 endif ()
 
 add_definitions(
+    -DCONFIG_DISABLE_STACK_CHECK
     -DCONFIG_BIGNUM
     -DCONFIG_VERSION="${QJS_VERSION}"
 )
