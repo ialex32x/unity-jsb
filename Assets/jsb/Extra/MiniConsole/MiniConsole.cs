@@ -15,9 +15,11 @@ namespace QuickJS.Extra
     using UnityEngine;
     using UnityEngine.UI;
 
-    public class MiniConsole : IScriptLogger
+    public class MiniConsole : IScriptLogger, ILogHandler
     {
         private int _maxLines = 100;
+        private ILogHandler _defaultHandler;
+
         public Text textTemplate;
         public ScrollRect scrollRect;
 
@@ -29,6 +31,9 @@ namespace QuickJS.Extra
             this.scrollRect = scrollRect;
             this.textTemplate = textTemplate;
             textTemplate.gameObject.SetActive(false);
+
+            _defaultHandler = Debug.unityLogger.logHandler;
+            Debug.unityLogger.logHandler = this;
         }
 
         private void NewEntry(string text, Color color)
@@ -38,31 +43,32 @@ namespace QuickJS.Extra
                 return;
             }
 
-            if (_lines.Count > _maxLines)
+            try
             {
-                var textInst = _lines[0];
-                _lines.RemoveAt(0);
-                textInst.text = text;
-                textInst.color = color;
-                textInst.transform.SetSiblingIndex(textInst.transform.parent.childCount - 1);
-                _lines.Add(textInst);
-                LayoutRebuilder.ForceRebuildLayoutImmediate(textInst.transform.parent.GetComponent<RectTransform>());
+                if (_lines.Count > _maxLines)
+                {
+                    var textInst = _lines[0];
+                    _lines.RemoveAt(0);
+                    textInst.text = text;
+                    textInst.color = color;
+                    textInst.transform.SetSiblingIndex(textInst.transform.parent.childCount - 1);
+                    _lines.Add(textInst);
+                    LayoutRebuilder.ForceRebuildLayoutImmediate(textInst.transform.parent.GetComponent<RectTransform>());
+                }
+                else
+                {
+                    var textInst = Object.Instantiate(textTemplate);
+                    textInst.text = text;
+                    textInst.color = color;
+                    textInst.transform.SetParent(textTemplate.transform.parent);
+                    textInst.gameObject.SetActive(true);
+                    _lines.Add(textInst);
+                    LayoutRebuilder.ForceRebuildLayoutImmediate(textInst.transform.parent.GetComponent<RectTransform>());
+                }
             }
-            else
+            catch (Exception)
             {
-                var textInst = Object.Instantiate(textTemplate);
-                textInst.text = text;
-                textInst.color = color;
-                textInst.transform.SetParent(textTemplate.transform.parent);
-                textInst.gameObject.SetActive(true);
-                _lines.Add(textInst);
-                LayoutRebuilder.ForceRebuildLayoutImmediate(textInst.transform.parent.GetComponent<RectTransform>());
             }
-        }
-
-        public void Error(Exception exception)
-        {
-            LogException(exception);
         }
 
         public void Write(LogLevel ll, string text)
@@ -109,10 +115,40 @@ namespace QuickJS.Extra
             }
         }
 
+        public void Error(Exception exception)
+        {
+            LogException(exception);
+        }
+
         private void LogError(string text)
         {
-            Debug.LogError(text);
+            _defaultHandler.LogFormat(LogType.Error, null, "{0}", text);
             NewEntry(text, Color.red);
+        }
+
+        private void LogException(Exception exception)
+        {
+            var text = exception.ToString();
+            _defaultHandler.LogFormat(LogType.Error, null, "{0}", text);
+            NewEntry(text, Color.cyan);
+        }
+
+        private void LogException(string text)
+        {
+            _defaultHandler.LogFormat(LogType.Error, null, "{0}", text);
+            NewEntry(text, Color.cyan);
+        }
+
+        private void Log(string text)
+        {
+            _defaultHandler.LogFormat(LogType.Log, null, "{0}", text);
+            NewEntry(text, Color.white);
+        }
+
+        private void LogWarning(string text)
+        {
+            _defaultHandler.LogFormat(LogType.Warning, null, "{0}", text);
+            NewEntry(text, Color.yellow);
         }
 
         private void LogErrorFormat(string fmt, object[] args)
@@ -130,21 +166,31 @@ namespace QuickJS.Extra
             Log(string.Format(fmt, args));
         }
 
-        private void LogException(Exception exception)
+        public void LogException(Exception exception, Object context)
         {
-            var text = exception.ToString();
-            Debug.LogError(text);
-            NewEntry(text, Color.cyan);
+            LogException(exception);
         }
 
-        private void Log(string text)
+        public void LogFormat(LogType logType, Object context, string format, params object[] args)
         {
-            NewEntry(text, Color.white);
-        }
-
-        private void LogWarning(string text)
-        {
-            NewEntry(text, Color.yellow);
+            switch (logType)
+            {
+                case LogType.Log:
+                    LogFormat(format, args);
+                    break;
+                case LogType.Warning:
+                    LogWarningFormat(format, args);
+                    break;
+                case LogType.Error:
+                    LogErrorFormat(format, args);
+                    break;
+                case LogType.Exception:
+                    LogException(string.Format(format, args));
+                    break;
+                case LogType.Assert:
+                    LogException(string.Format(format, args));
+                    break;
+            }
         }
     }
 }

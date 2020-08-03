@@ -69,7 +69,7 @@ namespace QuickJS
             }
             catch (Exception exception)
             {
-                Debug.LogErrorFormat("Logger Exception: {0}\n{1}", exception, exception.StackTrace);
+                // Debug.LogErrorFormat("Logger Exception: {0}\n{1}", exception, exception.StackTrace);
             }
 
             return JSApi.JS_UNDEFINED;
