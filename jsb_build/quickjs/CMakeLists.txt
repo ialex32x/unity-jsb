@@ -1,5 +1,14 @@
 cmake_minimum_required(VERSION 3.7.2)
 
+# before project definition
+
+if (APPLE) 
+    if (NOT IOS)
+        # -DCMAKE_OSX_DEPLOYMENT_TARGET:STRING=10.13
+        set(CMAKE_OSX_DEPLOYMENT_TARGET "10.13" CACHE STRING "Minimum OS X deployment version")
+    endif ()
+endif ()
+
 if (CONFIG_WIN32)
     if (CONFIG_WIN32_64)
         set(CMAKE_C_COMPILER x86_64-w64-mingw32-gcc)
@@ -24,7 +33,7 @@ project(unity-jsb)
 
 set(TOP_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 set(OUT_DIR ${TOP_DIR}/build)
-set(QJS_DIR ${TOP_DIR}/quickjs-2020-04-12)
+set(QJS_DIR ${TOP_DIR}/quickjs-${QJS_VERSION})
 
 if (CONFIG_WIN32)
     if (CONFIG_WIN32_64)
@@ -39,13 +48,13 @@ endif ()
 
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fPIC -shared -g -Wall -Wno-array-bounds -Wno-format-truncation")
 if (CONFIG_LTO)
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -flto")
     add_definitions(-DCONFIG_LTO)
 endif ()
 
 add_definitions(
+    -DCONFIG_DISABLE_STACK_CHECK
     -DCONFIG_BIGNUM
-    -DCONFIG_VERSION="2020-04-12"
+    -DCONFIG_VERSION="${QJS_VERSION}"
 )
 
 include_directories(${QJS_DIR})
@@ -82,3 +91,7 @@ else () # WINDOWS
 endif ()
 
 target_link_libraries(quickjs ${QJS_LIBS})
+
+if (CONFIG_LTO)
+#    set_target_properties(quickjs PROPERTIES INTERPROCEDURAL_OPTIMIZATION TRUE)
+endif ()

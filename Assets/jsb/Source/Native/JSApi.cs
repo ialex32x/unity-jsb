@@ -82,7 +82,7 @@ namespace QuickJS.Native
 #if (UNITY_IPHONE || UNITY_WEBGL) && !UNITY_EDITOR
 	    const string JSBDLL = "__Internal";
 #else
-        const string JSBDLL = "libquickjs";
+        const string JSBDLL = "quickjs";
 #endif
 
         public const int JS_TAG_FIRST = -11; /* first negative tag */

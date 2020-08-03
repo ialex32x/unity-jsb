@@ -17,7 +17,7 @@ namespace QuickJS.Extra.WebSockets
 #if UNITY_IPHONE && !UNITY_EDITOR
 	    const string WSDLL = "__Internal";
 #else
-        const string WSDLL = "libwebsockets";
+        const string WSDLL = "websockets";
 #endif
         [DllImport(WSDLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern unsafe lws_context ulws_create(byte* name, size_t len, IntPtr callback, size_t rx_buffer_size, size_t tx_packet_size);

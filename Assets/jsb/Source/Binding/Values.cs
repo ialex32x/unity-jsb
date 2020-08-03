@@ -31,7 +31,10 @@ namespace QuickJS.Binding
         protected static bool js_script_error(JSContext ctx)
         {
             var logger = ScriptEngine.GetLogger(ctx);
-            logger.ScriptWrite(LogLevel.Error, ctx.GetExceptionString());
+            if (logger != null)
+            {
+                logger.ScriptWrite(LogLevel.Error, ctx.GetExceptionString());
+            }
             return false;
         }
     }
