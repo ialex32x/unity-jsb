@@ -46,6 +46,7 @@ namespace QuickJS.Extra
                 textInst.color = color;
                 textInst.transform.SetSiblingIndex(textInst.transform.parent.childCount - 1);
                 _lines.Add(textInst);
+                LayoutRebuilder.ForceRebuildLayoutImmediate(textInst.transform.parent.GetComponent<RectTransform>());
             }
             else
             {
@@ -55,6 +56,7 @@ namespace QuickJS.Extra
                 textInst.transform.SetParent(textTemplate.transform.parent);
                 textInst.gameObject.SetActive(true);
                 _lines.Add(textInst);
+                LayoutRebuilder.ForceRebuildLayoutImmediate(textInst.transform.parent.GetComponent<RectTransform>());
             }
         }
 
@@ -109,27 +111,30 @@ namespace QuickJS.Extra
 
         private void LogError(string text)
         {
+            Debug.LogError(text);
             NewEntry(text, Color.red);
         }
 
         private void LogErrorFormat(string fmt, object[] args)
         {
-            NewEntry(string.Format(fmt, args), Color.red);
+            LogError(string.Format(fmt, args));
         }
 
         private void LogWarningFormat(string fmt, object[] args)
         {
-            NewEntry(string.Format(fmt, args), Color.yellow);
+            LogWarning(string.Format(fmt, args));
         }
 
         private void LogFormat(string fmt, object[] args)
         {
-            NewEntry(string.Format(fmt, args), Color.white);
+            Log(string.Format(fmt, args));
         }
 
         private void LogException(Exception exception)
         {
-            NewEntry(exception.ToString(), Color.red);
+            var text = exception.ToString();
+            Debug.LogError(text);
+            NewEntry(text, Color.cyan);
         }
 
         private void Log(string text)
