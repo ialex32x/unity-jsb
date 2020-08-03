@@ -2,9 +2,11 @@ cmake_minimum_required(VERSION 3.7.2)
 
 # before project definition
 
-if (APPLE and not IOS) 
-    # -DCMAKE_OSX_DEPLOYMENT_TARGET:STRING=10.13
-    set(CMAKE_OSX_DEPLOYMENT_TARGET "10.13" CACHE STRING "Minimum OS X deployment version")
+if (APPLE) 
+    if (NOT IOS)
+        # -DCMAKE_OSX_DEPLOYMENT_TARGET:STRING=10.13
+        set(CMAKE_OSX_DEPLOYMENT_TARGET "10.13" CACHE STRING "Minimum OS X deployment version")
+    endif ()
 endif ()
 
 if (CONFIG_WIN32)
