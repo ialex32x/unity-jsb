@@ -38,7 +38,6 @@ namespace QuickJS.Extra
 
         public void OnComplete(ScriptRuntime runtime)
         {
-            // runtime.EvalMain("worker");
         }
 
         private void Start(JSContext ctx, JSValue value, string scriptPath)
@@ -126,11 +125,13 @@ namespace QuickJS.Extra
 
         public static void Bind(TypeRegister register)
         {
-            var cls = register.CreateClass("Worker", typeof(JSWorker), _js_worker_ctor);
+            var ns = register.CreateNamespace();
+            var cls = ns.CreateClass("Worker", typeof(JSWorker), _js_worker_ctor);
             cls.AddMethod(false, "postMessage", _js_worker_postMessage, 1);
             cls.AddProperty(false, "onmessage", _js_worker_onmessage_get, _js_worker_onmessage_set);
             cls.AddMethod(false, "terminate", _js_worker_terminate);
             cls.Close();
+            ns.Close();
         }
     }
 }

@@ -203,3 +203,5 @@ print("Nullish coalescing Operator:", a?.b ?? "ok");
 // xhr.send();
 
 jsb.DoFile("dofile_test");
+
+let worker = new Worker("worker");
