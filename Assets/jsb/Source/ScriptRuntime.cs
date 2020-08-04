@@ -29,7 +29,6 @@ namespace QuickJS
 
         // private Mutext _lock;
         private JSRuntime _rt;
-        private bool _isWorker;
         private int _runtimeId;
         private bool _withStacktrace;
         private IScriptLogger _logger;
@@ -51,6 +50,8 @@ namespace QuickJS
         private Utils.AutoReleasePool _autorelease;
         private GameObject _container;
         private bool _isValid; // destroy 调用后立即 = false
+        private bool _isRunning;
+        private bool _isWorker;
 
         public bool withStacktrace
         {
@@ -62,9 +63,13 @@ namespace QuickJS
 
         public int id { get { return _runtimeId; } }
 
+        public bool isRunning { get { return _isRunning; } }
+
         public ScriptRuntime(int runtimeId)
         {
             _isValid = true;
+            _isRunning = true;
+            _isWorker = false;
             _runtimeId = runtimeId;
             // _rwlock = new ReaderWriterLockSlim();
             _mainThreadId = Thread.CurrentThread.ManagedThreadId;
@@ -160,6 +165,7 @@ namespace QuickJS
 
             var runtime = ScriptEngine.CreateRuntime();
 
+            runtime._isWorker = true;
             runtime.Initialize(_fileSystem, _fileResolver, listener, _logger, new IO.ByteBufferPooledAllocator());
             return runtime;
         }
@@ -422,6 +428,15 @@ namespace QuickJS
                     var action = _pendingGC.Dequeue();
                     action.callback(this, action.value);
                 }
+            }
+        }
+
+        public void Shutdown()
+        {
+            _isRunning = false;
+            if (!_isWorker)
+            {
+                Destroy();
             }
         }
 

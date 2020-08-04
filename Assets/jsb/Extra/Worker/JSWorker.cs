@@ -17,7 +17,6 @@ namespace QuickJS.Extra
 
     public class JSWorker : Values, IScriptRuntimeListener, IScriptFinalize
     {
-        private bool _running = true;
         private Thread _thread;
         private ScriptContext _parent;
         private ScriptRuntime _worker;
@@ -27,6 +26,10 @@ namespace QuickJS.Extra
         }
 
         public void OnJSFinalize()
+        {
+        }
+
+        private void OnWorkerAfterDestroy(int id)
         {
         }
 
@@ -52,8 +55,8 @@ namespace QuickJS.Extra
 
             _parent = parent.GetContext(ctx);
             _worker = runtime;
+            _worker.OnAfterDestroy += OnWorkerAfterDestroy;
             _worker.EvalMain(scriptPath);
-            _running = true;
             _thread = new Thread(new ThreadStart(Run));
             _thread.Priority = ThreadPriority.Lowest;
             _thread.IsBackground = true;
@@ -65,7 +68,7 @@ namespace QuickJS.Extra
             // onmessage = JSApi.JS_GetProperty(ctx, "onmessage");
             var tick = Environment.TickCount;
 
-            while (_running)
+            while (_worker.isRunning)
             {
                 Thread.Yield();
 

@@ -150,7 +150,7 @@ namespace QuickJS
             for (int i = 0, count = copylist.Count; i < count; ++i)
             {
                 var runtime = copylist[i];
-                runtime.Destroy();
+                runtime.Shutdown();
             }
         }
 
