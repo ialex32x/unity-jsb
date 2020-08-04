@@ -150,6 +150,10 @@ namespace QuickJS
 
         public void Destroy()
         {
+            if (!_isValid)
+            {
+                return;
+            }
             _isValid = false;
 
             try

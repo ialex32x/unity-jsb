@@ -62,7 +62,7 @@ namespace jsb
 
         void Update()
         {
-            _rt.Update(Time.deltaTime);
+            _rt.Update((int)(Time.deltaTime * 1000f));
         }
 
         void OnDestroy()
@@ -75,8 +75,11 @@ namespace jsb
             _mConsole.Write(LogLevel.Info, "Bind");
             QuickJS.Extra.WebSocket.Bind(register);
             QuickJS.Extra.XMLHttpRequest.Bind(register);
-            QuickJS.Extra.DOMCompatibleLayer.Bind(register);
-            QuickJS.Extra.NodeCompatibleLayer.Bind(register);
+            if (!runtime.isWorker)
+            {
+                QuickJS.Extra.DOMCompatibleLayer.Bind(register);
+                QuickJS.Extra.NodeCompatibleLayer.Bind(register);
+            }
             _mConsole.Write(LogLevel.Info, "Bind Finish");
         }
 

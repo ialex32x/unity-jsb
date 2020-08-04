@@ -23,7 +23,7 @@ namespace QuickJS
         }
 
         public event Action<ScriptRuntime> OnDestroy;
-        public event Action<ScriptRuntime> OnAfterDestroy;
+        public event Action<int> OnAfterDestroy;
         public event Action OnUpdate;
         public Func<JSContext, string, string, int, string> OnSourceMap;
 
@@ -32,6 +32,7 @@ namespace QuickJS
         private bool _withStacktrace;
         private IScriptLogger _logger;
         private int _freeContextSlot = -1;
+        // private ReaderWriterLockSlim _rwlock;
         private List<ScriptContextRef> _contextRefs = new List<ScriptContextRef>();
         private ScriptContext _mainContext;
         private Queue<JSAction> _pendingGC = new Queue<JSAction>();
@@ -55,12 +56,15 @@ namespace QuickJS
             set { _withStacktrace = value; }
         }
 
+        public bool isWorker { get { return false; } }
+
         public int id { get { return _runtimeId; } }
 
         public ScriptRuntime(int runtimeId)
         {
             _isValid = true;
             _runtimeId = runtimeId;
+            // _rwlock = new ReaderWriterLockSlim();
             _fileResolver = new FileResolver();
             _mainThreadId = Thread.CurrentThread.ManagedThreadId;
             _rt = JSApi.JS_NewRuntime();
@@ -96,46 +100,63 @@ namespace QuickJS
             _fileResolver.AddSearchPath(path);
         }
 
-        public void Initialize(IFileSystem fileSystem, IScriptRuntimeListener runner)
+        public void Initialize(IFileSystem fileSystem, IScriptRuntimeListener listener)
         {
-            Initialize(fileSystem, runner, new UnityLogger(), new IO.ByteBufferPooledAllocator());
+            Initialize(fileSystem, listener, new UnityLogger(), new IO.ByteBufferPooledAllocator());
         }
 
-        public void Initialize(IFileSystem fileSystem, IScriptRuntimeListener runner, IScriptLogger logger, IO.IByteBufferAllocator byteBufferAllocator)
+        public void Initialize(IFileSystem fileSystem, IScriptRuntimeListener listener, IScriptLogger logger, IO.IByteBufferAllocator byteBufferAllocator)
         {
             if (logger == null)
             {
                 throw new NullReferenceException(nameof(logger));
             }
-            if (runner == null)
+            if (listener == null)
             {
-                throw new NullReferenceException(nameof(runner));
+                throw new NullReferenceException(nameof(listener));
             }
             if (fileSystem == null)
             {
                 throw new NullReferenceException(nameof(fileSystem));
             }
-            var bindAll = typeof(Values).GetMethod("BindAll", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static);
-            if (bindAll == null)
+            MethodInfo bindAll = null;
+            if (!isWorker)
             {
-                throw new Exception("Generate binding code before run");
+                bindAll = typeof(Values).GetMethod("BindAll", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static);
+                if (bindAll == null)
+                {
+                    throw new Exception("Generate binding code before run");
+                }
             }
             _byteBufferAllocator = byteBufferAllocator;
             _autorelease = new Utils.AutoReleasePool();
             _fileSystem = fileSystem;
             _logger = logger;
             _timerManager = new TimerManager(_logger);
-
             _typeDB = new TypeDB(this, _mainContext);
+
             var register = new TypeRegister(this, _mainContext);
             register.RegisterType(typeof(ScriptBridge));
             // await Task.Run(() => runner.OnBind(this, register));
-            bindAll.Invoke(null, new object[] { register });
-            runner.OnBind(this, register);
+            if (bindAll != null)
+            {
+                bindAll.Invoke(null, new object[] { register });
+            }
+            listener.OnBind(this, register);
             TimerManager.Bind(register);
             ScriptContext.Bind(register);
             register.Finish();
-            runner.OnComplete(this);
+            listener.OnComplete(this);
+        }
+
+        public ScriptRuntime CreateWorker()
+        {
+            if (isWorker)
+            {
+                throw new Exception("cannot create a worker inside a worker");
+            }
+
+            return null;
         }
 
         public void AutoRelease(Utils.IReferenceObject referenceObject)
@@ -175,6 +196,7 @@ namespace QuickJS
 
         public ScriptContext CreateContext()
         {
+            // _rwlock.EnterWriteLock();
             ScriptContextRef freeEntry;
             int slotIndex;
             if (_freeContextSlot < 0)
@@ -200,6 +222,7 @@ namespace QuickJS
             {
                 _mainContext = context;
             }
+            // _rwlock.ExitWriteLock();
 
             context.RegisterBuiltins();
             return context;
@@ -207,6 +230,7 @@ namespace QuickJS
 
         private void OnContextDestroy(ScriptContext context)
         {
+            // _rwlock.EnterWriteLock();
             var id = context.id;
             if (id > 0)
             {
@@ -216,31 +240,24 @@ namespace QuickJS
                 entry.target = null;
                 _freeContextSlot = index;
             }
-        }
-
-        public ScriptContext GetMainContext()
-        {
-            return _mainContext;
+            // _rwlock.ExitWriteLock();
         }
 
         public ScriptContext GetContext(JSContext ctx)
         {
-            if (_mainContext.IsContext(ctx))
-            {
-                return _mainContext;
-            }
-
+            // _rwlock.EnterReadLock();
+            ScriptContext context = null;
             var id = (int)JSApi.JS_GetContextOpaque(ctx);
             if (id > 0)
             {
                 var index = id - 1;
                 if (index < _contextRefs.Count)
                 {
-                    return _contextRefs[index].target;
+                    context = _contextRefs[index].target;
                 }
             }
-
-            return null;
+            // _rwlock.ExitReadLock();
+            return context;
         }
 
         private static void _FreeValueAction(ScriptRuntime rt, JSValue value)
@@ -344,7 +361,7 @@ namespace QuickJS
         }
 
         // main loop
-        public void Update(float deltaTime)
+        public void Update(int ms)
         {
             if (_pendingGC.Count != 0)
             {
@@ -355,7 +372,6 @@ namespace QuickJS
             ExecutePendingJob();
 
             // poll here;
-            var ms = (int)(deltaTime * 1000f);
             _timerManager.Update(ms);
 
             if (_autorelease != null)
@@ -401,6 +417,10 @@ namespace QuickJS
 
         public void Destroy()
         {
+            if (!_isValid)
+            {
+                return;
+            }
             _isValid = false;
             try
             {
@@ -419,6 +439,7 @@ namespace QuickJS
             GC.WaitForPendingFinalizers();
             CollectPendingGarbage();
 
+            // _rwlock.EnterWriteLock();
             for (int i = 0, count = _contextRefs.Count; i < count; i++)
             {
                 var contextRef = _contextRefs[i];
@@ -427,6 +448,8 @@ namespace QuickJS
 
             _contextRefs.Clear();
             _mainContext = null;
+            // _rwlock.ExitWriteLock();
+
 
             if (_container != null)
             {
@@ -435,12 +458,13 @@ namespace QuickJS
             }
 
             JSApi.JS_FreeRuntime(_rt);
+            var id = _runtimeId;
             _runtimeId = -1;
             _rt = JSRuntime.Null;
 
             try
             {
-                OnAfterDestroy?.Invoke(this);
+                OnAfterDestroy?.Invoke(id);
             }
             catch (Exception e)
             {
