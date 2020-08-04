@@ -132,21 +132,26 @@ namespace QuickJS
             return runtime;
         }
 
-        public static void Destroy()
+        public static void Shutdown()
         {
             _rwlock.EnterWriteLock();
-            for (int i = 0, len = _runtimeRefs.Count; i < len; ++i)
+            var len = _runtimeRefs.Count;
+            var copylist = new List<ScriptRuntime>(len);
+            for (int i = 0; i < len; ++i)
             {
                 var runtime = _runtimeRefs[i].target;
                 if (runtime != null)
                 {
-                    runtime.OnAfterDestroy -= OnRuntimeAfterDestroy;
-                    runtime.Destroy();
+                    copylist.Add(runtime);
                 }
             }
-            _runtimeRefs.Clear();
-            _freeSlot = -1;
             _rwlock.ExitWriteLock();
+
+            for (int i = 0, count = copylist.Count; i < count; ++i)
+            {
+                var runtime = copylist[i];
+                runtime.Destroy();
+            }
         }
 
         private static void OnRuntimeAfterDestroy(int runtimeId)

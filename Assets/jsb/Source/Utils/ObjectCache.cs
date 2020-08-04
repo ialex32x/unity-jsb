@@ -11,6 +11,7 @@ namespace QuickJS.Utils
         {
             public int next;
             public object target;
+            public bool finalizer;
         }
 
         private bool _disposing;
@@ -138,7 +139,7 @@ namespace QuickJS.Utils
             return r;
         }
 
-        public int AddObject(object o)
+        public int AddObject(object o, bool finalizer)
         {
             if (!_disposing && o != null)
             {
@@ -149,6 +150,7 @@ namespace QuickJS.Utils
                     _map.Add(freeEntry);
                     freeEntry.next = -1;
                     freeEntry.target = o;
+                    freeEntry.finalizer = finalizer;
                     // UnityEngine.Debug.LogFormat("[cache] (new) add object at {0}", id);
                     return id;
                 }
@@ -159,6 +161,7 @@ namespace QuickJS.Utils
                     _freeIndex = freeEntry.next;
                     freeEntry.next = -1;
                     freeEntry.target = o;
+                    freeEntry.finalizer = finalizer;
                     // UnityEngine.Debug.LogFormat("[cache] (reuse) add object at {0} [{1}]", id, o.GetType());
                     return id;
                 }
@@ -192,11 +195,20 @@ namespace QuickJS.Utils
             if (TryGetObject(id, out o))
             {
                 var entry = _map[id];
+                var finalizer = entry.finalizer;
                 entry.next = _freeIndex;
                 entry.target = null;
                 _freeIndex = id;
                 // UnityEngine.Debug.LogFormat("[cache] remove object at {0}", id);
                 RemoveJSValue(o);
+                if (finalizer)
+                {
+                    var jsf = o as IScriptFinalize;
+                    if (jsf != null)
+                    {
+                        jsf.OnJSFinalize();
+                    }
+                }
                 return true;
             }
             return false;

@@ -38,7 +38,7 @@ namespace QuickJS.Binding
                     {
                         var bridge = gameObject.AddComponent<ScriptBridge>();
                         var cache = ScriptEngine.GetObjectCache(ctx);
-                        var object_id = cache.AddObject(bridge);
+                        var object_id = cache.AddObject(bridge, false);
                         var val = JSApi.jsb_construct_bridge_object(ctx, ctor, object_id);
                         if (val.IsException())
                         {

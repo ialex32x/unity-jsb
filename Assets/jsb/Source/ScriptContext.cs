@@ -15,6 +15,7 @@ namespace QuickJS
     public partial class ScriptContext
     {
         public event Action<ScriptContext> OnDestroy;
+        public event Action<int> OnAfterDestroy;
 
         private ScriptRuntime _runtime;
         private int _contextId;
@@ -174,6 +175,7 @@ namespace QuickJS
             JSApi.JS_FreeValue(_ctx, _moduleCache);
             JSApi.JS_FreeValue(_ctx, _require);
             JSApi.JS_FreeContext(_ctx);
+            var id = _contextId;
             _contextId = -1;
 
             if (_coroutines != null)
@@ -183,6 +185,14 @@ namespace QuickJS
             }
 
             _ctx = JSContext.Null;
+            try
+            {
+                OnAfterDestroy?.Invoke(id);
+            }
+            catch (Exception e)
+            {
+                _runtime.GetLogger()?.WriteException(e);
+            }
         }
 
         public void FreeValue(JSValue value)

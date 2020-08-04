@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Sockets;
+using System.Threading;
 using AOT;
 using System.Text;
 
@@ -17,6 +18,7 @@ namespace QuickJS.Extra
 
     public class MiniConsole : IScriptLogger, ILogHandler
     {
+        private int _mainThreadId;
         private int _maxLines = 100;
         private ILogHandler _defaultHandler;
 
@@ -27,6 +29,7 @@ namespace QuickJS.Extra
 
         public MiniConsole(ScrollRect scrollRect, Text textTemplate, int maxLines)
         {
+            this._mainThreadId = Thread.CurrentThread.ManagedThreadId;
             this._maxLines = maxLines;
             this.scrollRect = scrollRect;
             this.textTemplate = textTemplate;
@@ -38,6 +41,11 @@ namespace QuickJS.Extra
 
         private void NewEntry(string text, Color color)
         {
+            if (_mainThreadId != Thread.CurrentThread.ManagedThreadId)
+            {
+                return;
+            }
+            
             if (scrollRect == null)
             {
                 return;

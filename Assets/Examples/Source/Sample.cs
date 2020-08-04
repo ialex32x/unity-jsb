@@ -32,12 +32,13 @@ namespace jsb
 
             _mConsole = new MiniConsole(scrollRect, text, 100);
             _rt = ScriptEngine.CreateRuntime();
-            _rt.AddSearchPath("node_modules");
+            var fileResolver =  new FileResolver();
+            fileResolver.AddSearchPath("node_modules");
 
             if (fileLoader == FileLoader.Resources)
             {
                 fileSystem = new ResourcesFileSystem(_mConsole);
-                _rt.AddSearchPath("dist");
+                fileResolver.AddSearchPath("dist");
             }
             else if (fileLoader == FileLoader.HMR)
             {
@@ -47,7 +48,7 @@ namespace jsb
             else
             {
                 fileSystem = new DefaultFileSystem(_mConsole);
-                _rt.AddSearchPath("Assets/Examples/Scripts/out");
+                fileResolver.AddSearchPath("Assets/Examples/Scripts/out");
                 // _rt.AddSearchPath("Assets/Examples/Scripts/dist");
             }
 
@@ -57,7 +58,7 @@ namespace jsb
                 _rt.EnableSourceMap();
             }
             _mConsole.Write(LogLevel.Info, "Init");
-            _rt.Initialize(fileSystem, this, _mConsole, new ByteBufferPooledAllocator());
+            _rt.Initialize(fileSystem, fileResolver, this, _mConsole, new ByteBufferPooledAllocator());
         }
 
         void Update()
@@ -67,7 +68,7 @@ namespace jsb
 
         void OnDestroy()
         {
-            _rt.Destroy();
+            ScriptEngine.Shutdown();
         }
 
         public void OnBind(ScriptRuntime runtime, TypeRegister register)
@@ -75,11 +76,9 @@ namespace jsb
             _mConsole.Write(LogLevel.Info, "Bind");
             QuickJS.Extra.WebSocket.Bind(register);
             QuickJS.Extra.XMLHttpRequest.Bind(register);
-            if (!runtime.isWorker)
-            {
-                QuickJS.Extra.DOMCompatibleLayer.Bind(register);
-                QuickJS.Extra.NodeCompatibleLayer.Bind(register);
-            }
+            QuickJS.Extra.DOMCompatibleLayer.Bind(register);
+            QuickJS.Extra.NodeCompatibleLayer.Bind(register);
+            QuickJS.Extra.JSWorker.Bind(register);
             _mConsole.Write(LogLevel.Info, "Bind Finish");
         }
 

@@ -27,13 +27,13 @@ namespace QuickJS.Native
                 if (objectCache != null)
                 {
                     object obj;
-                    if (objectCache.RemoveObject(header.value, out obj))
+                    try
                     {
-                        var jsf = obj as IScriptFinalize;
-                        if (jsf != null)
-                        {
-                            jsf.OnJSFinalize();
-                        }
+                        objectCache.RemoveObject(header.value, out obj);
+                    }
+                    catch (Exception exception)
+                    {
+                        runtime.GetLogger()?.WriteException(exception);
                     }
                 }
             }
@@ -150,7 +150,7 @@ namespace QuickJS.Native
             {
                 // var pointer = (byte*)(void*)ptr;
                 // return Encoding.UTF8.GetString(pointer, len);
-                
+
                 var buffer = new byte[len];
                 Marshal.Copy(ptr, buffer, 0, len);
                 return Encoding.UTF8.GetString(buffer);

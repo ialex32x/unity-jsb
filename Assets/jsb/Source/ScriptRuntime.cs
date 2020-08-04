@@ -27,7 +27,9 @@ namespace QuickJS
         public event Action OnUpdate;
         public Func<JSContext, string, string, int, string> OnSourceMap;
 
+        // private Mutext _lock;
         private JSRuntime _rt;
+        private bool _isWorker;
         private int _runtimeId;
         private bool _withStacktrace;
         private IScriptLogger _logger;
@@ -56,7 +58,7 @@ namespace QuickJS
             set { _withStacktrace = value; }
         }
 
-        public bool isWorker { get { return false; } }
+        public bool isWorker { get { return _isWorker; } }
 
         public int id { get { return _runtimeId; } }
 
@@ -65,7 +67,6 @@ namespace QuickJS
             _isValid = true;
             _runtimeId = runtimeId;
             // _rwlock = new ReaderWriterLockSlim();
-            _fileResolver = new FileResolver();
             _mainThreadId = Thread.CurrentThread.ManagedThreadId;
             _rt = JSApi.JS_NewRuntime();
             JSApi.JS_SetRuntimeOpaque(_rt, (IntPtr)_runtimeId);
@@ -102,10 +103,10 @@ namespace QuickJS
 
         public void Initialize(IFileSystem fileSystem, IScriptRuntimeListener listener)
         {
-            Initialize(fileSystem, listener, new UnityLogger(), new IO.ByteBufferPooledAllocator());
+            Initialize(fileSystem, new FileResolver(), listener, new UnityLogger(), new IO.ByteBufferPooledAllocator());
         }
 
-        public void Initialize(IFileSystem fileSystem, IScriptRuntimeListener listener, IScriptLogger logger, IO.IByteBufferAllocator byteBufferAllocator)
+        public void Initialize(IFileSystem fileSystem, IFileResolver resolver, IScriptRuntimeListener listener, IScriptLogger logger, IO.IByteBufferAllocator byteBufferAllocator)
         {
             if (logger == null)
             {
@@ -128,6 +129,7 @@ namespace QuickJS
                     throw new Exception("Generate binding code before run");
                 }
             }
+            _fileResolver = resolver;
             _byteBufferAllocator = byteBufferAllocator;
             _autorelease = new Utils.AutoReleasePool();
             _fileSystem = fileSystem;
@@ -149,14 +151,17 @@ namespace QuickJS
             listener.OnComplete(this);
         }
 
-        public ScriptRuntime CreateWorker()
+        public ScriptRuntime CreateWorker(IScriptRuntimeListener listener)
         {
             if (isWorker)
             {
                 throw new Exception("cannot create a worker inside a worker");
             }
 
-            return null;
+            var runtime = ScriptEngine.CreateRuntime();
+
+            runtime.Initialize(_fileSystem, _fileResolver, listener, _logger, new IO.ByteBufferPooledAllocator());
+            return runtime;
         }
 
         public void AutoRelease(Utils.IReferenceObject referenceObject)
@@ -241,6 +246,11 @@ namespace QuickJS
                 _freeContextSlot = index;
             }
             // _rwlock.ExitWriteLock();
+        }
+
+        public ScriptContext GetMainContext()
+        {
+            return _mainContext;
         }
 
         public ScriptContext GetContext(JSContext ctx)
@@ -417,18 +427,21 @@ namespace QuickJS
 
         public void Destroy()
         {
-            if (!_isValid)
+            lock (this)
             {
-                return;
-            }
-            _isValid = false;
-            try
-            {
-                OnDestroy?.Invoke(this);
-            }
-            catch (Exception e)
-            {
-                _logger?.WriteException(e);
+                if (!_isValid)
+                {
+                    return;
+                }
+                _isValid = false;
+                try
+                {
+                    OnDestroy?.Invoke(this);
+                }
+                catch (Exception e)
+                {
+                    _logger?.WriteException(e);
+                }
             }
 
             _timerManager.Destroy();
@@ -470,7 +483,6 @@ namespace QuickJS
             {
                 _logger?.WriteException(e);
             }
-
         }
 
         public static implicit operator JSRuntime(ScriptRuntime se)

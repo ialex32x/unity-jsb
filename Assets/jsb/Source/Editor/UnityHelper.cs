@@ -234,7 +234,7 @@ namespace QuickJS.Editor
         {
             if (playModeStateChange == PlayModeStateChange.EnteredEditMode)
             {
-                EditorApplication.delayCall += () => ScriptEngine.Destroy();
+                EditorApplication.delayCall += () => ScriptEngine.Shutdown();
             }
         }
     }

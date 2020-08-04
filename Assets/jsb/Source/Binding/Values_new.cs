@@ -141,7 +141,20 @@ namespace QuickJS.Binding
         public static JSValue NewBridgeClassObject(JSContext ctx, JSValue new_target, object o, int type_id)
         {
             var cache = ScriptEngine.GetObjectCache(ctx);
-            var object_id = cache.AddObject(o);
+            var object_id = cache.AddObject(o, false);
+            var val = JSApi.JSB_NewBridgeClassObject(ctx, new_target, object_id);
+            if (JSApi.JS_IsException(val))
+            {
+                cache.RemoveObject(object_id);
+            }
+            
+            return val;
+        }
+
+        public static JSValue NewBridgeClassObject(JSContext ctx, JSValue new_target, IScriptFinalize o, int type_id)
+        {
+            var cache = ScriptEngine.GetObjectCache(ctx);
+            var object_id = cache.AddObject(o, true);
             var val = JSApi.JSB_NewBridgeClassObject(ctx, new_target, object_id);
             if (JSApi.JS_IsException(val))
             {
@@ -176,7 +189,7 @@ namespace QuickJS.Binding
             }
 
             var cache = runtime.GetObjectCache();
-            var object_id = cache.AddObject(o);
+            var object_id = cache.AddObject(o, false);
             var val = JSApi.jsb_new_bridge_object(ctx, proto, object_id);
             if (val.IsException())
             {
