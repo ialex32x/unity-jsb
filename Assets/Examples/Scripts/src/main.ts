@@ -205,3 +205,7 @@ print("Nullish coalescing Operator:", a?.b ?? "ok");
 jsb.DoFile("dofile_test");
 
 let worker = new Worker("worker");
+
+// setInterval(function () {
+//     worker.postMessage("hello, worker!");
+// }, 5000);
