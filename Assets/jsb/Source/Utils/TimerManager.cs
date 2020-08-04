@@ -13,12 +13,12 @@ namespace QuickJS.Utils
         private uint _idgen;
         private Dictionary<uint, ulong> _timers = new Dictionary<uint, ulong>();
 
-        public uint SetTimeout(ScriptFunction fn, int ms)
+        public TimerManager(IScriptLogger logger, int jiffies = 8, int slots = 160, int depth = 4, int prealloc = 50, int capacity = 500)
+        : base(logger, jiffies, slots, depth, prealloc, capacity)
         {
-            return CreateTimer(fn, ms, true);
         }
 
-        public uint SetTimeout(Action fn, int ms)
+        public uint SetTimeout(ScriptFunction fn, int ms)
         {
             return CreateTimer(fn, ms, true);
         }
@@ -26,19 +26,6 @@ namespace QuickJS.Utils
         public uint SetInterval(ScriptFunction fn, int ms)
         {
             return CreateTimer(fn, ms, false);
-        }
-
-        public uint SetInterval(Action fn, int ms)
-        {
-            return CreateTimer(fn, ms, false);
-        }
-
-        private uint CreateTimer(Action fn, int ms, bool once)
-        {
-            var id = ++_idgen;
-            var timer = this.Add(ms, once, new InvokableAction(fn));
-            _timers.Add(id, timer);
-            return id;
         }
 
         private uint CreateTimer(ScriptFunction fn, int ms, bool once)
@@ -77,7 +64,7 @@ namespace QuickJS.Utils
             }
             return JSApi.JS_UNDEFINED;
         }
-        
+
         [MonoPInvokeCallback(typeof(JSCFunction))]
         public static JSValue js_set_immediate(JSContext ctx, JSValue this_obj, int argc, JSValue[] argv)
         {
@@ -183,14 +170,14 @@ namespace QuickJS.Utils
         public static void Bind(TypeRegister register)
         {
             var ns = register.CreateNamespace();
-            
+
             ns.AddFunction("setImmediate", js_set_immediate, 2);
             ns.AddFunction("setInterval", js_set_interval, 3);
             ns.AddFunction("setTimeout", js_set_timeout, 3);
             ns.AddFunction("clearImmediate", js_clear_timer, 1);
             ns.AddFunction("clearInterval", js_clear_timer, 1);
             ns.AddFunction("clearTimeout", js_clear_timer, 1);
-            
+
             ns.Close();
         }
     }

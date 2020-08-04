@@ -45,12 +45,12 @@ namespace QuickJS.Native
                 {
                     if (string.IsNullOrEmpty(stack))
                     {
-                        logger.ScriptWrite(logLevel, "[{0}] {1} {2}",
+                        logger.Write(logLevel, "[{0}] {1} {2}",
                             fileName, title, message);
                     }
                     else
                     {
-                        logger.ScriptWrite(logLevel, "[{0}] {1} {2}\n{3}",
+                        logger.Write(logLevel, "[{0}] {1} {2}\n{3}",
                             fileName, title, message, stack);
                     }
                 }
@@ -58,12 +58,12 @@ namespace QuickJS.Native
                 {
                     if (string.IsNullOrEmpty(stack))
                     {
-                        logger.ScriptWrite(logLevel, "[{0}:{1}] {2} {3}",
+                        logger.Write(logLevel, "[{0}:{1}] {2} {3}",
                         fileName, lineNumber, title, message);
                     }
                     else
                     {
-                        logger.ScriptWrite(logLevel, "[{0}:{1}] {2} {3}\n{4}",
+                        logger.Write(logLevel, "[{0}:{1}] {2} {3}\n{4}",
                             fileName, lineNumber, title, message, stack);
                     }
                 }

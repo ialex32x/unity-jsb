@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using AOT;
 using QuickJS.Native;
 using QuickJS.Utils;
@@ -10,28 +11,35 @@ namespace QuickJS
     // 暂时只做单实例
     public class ScriptEngine
     {
+        // private class ScriptRuntimeRef
+        // {
+        //     public int next;
+        //     public ScriptRuntime target;
+        // }
+
         public const uint VERSION = 0x723;
 
-        private static ScriptRuntime _runtime;
+        private static ScriptRuntime _mainRuntime;
+        // private static List<ScriptRuntimeRef> _runtimeRefs = new List<ScriptRuntimeRef>();
 
         public static IScriptLogger GetLogger()
         {
-            return _runtime.GetLogger();
+            return _mainRuntime.GetLogger();
         }
 
         public static IScriptLogger GetLogger(JSContext ctx)
         {
-            return _runtime.GetLogger();
+            return _mainRuntime.GetLogger();
         }
 
         public static ScriptRuntime GetRuntime()
         {
-            return _runtime;
+            return _mainRuntime;
         }
 
         public static ObjectCache GetObjectCache(JSRuntime rt)
         {
-            return _runtime.GetObjectCache();
+            return _mainRuntime.GetObjectCache();
         }
 
         public static ObjectCache GetObjectCache(JSContext ctx)
@@ -56,37 +64,38 @@ namespace QuickJS
 
         public static ScriptRuntime GetRuntime(JSContext ctx)
         {
-            return _runtime;
+            var rt = JSApi.JS_GetRuntime(ctx);
+            return GetRuntime(rt);
         }
         
         public static ScriptRuntime GetRuntime(JSRuntime rt)
         {
-            return _runtime;
+            return _mainRuntime;
         }
 
         public static ScriptContext GetContext(JSContext ctx)
         {
-            return _runtime.GetContext(ctx);
+            return _mainRuntime.GetContext(ctx);
         }
 
         public static ScriptRuntime CreateRuntime()
         {
-            _runtime = new ScriptRuntime();
-            _runtime.OnAfterDestroy += OnRuntimeAfterDestroy;
-            return _runtime;
+            _mainRuntime = new ScriptRuntime(1);
+            _mainRuntime.OnAfterDestroy += OnRuntimeAfterDestroy;
+            return _mainRuntime;
         }
 
         public static void Destroy()
         {
-            if (_runtime != null)
+            if (_mainRuntime != null)
             {
-                _runtime.Destroy();
+                _mainRuntime.Destroy();
             }
         }
 
         private static void OnRuntimeAfterDestroy(ScriptRuntime runtime)
         {
-            _runtime = null;
+            _mainRuntime = null;
         }
     }
 }

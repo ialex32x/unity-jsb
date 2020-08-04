@@ -17,6 +17,7 @@ namespace QuickJS
         public event Action<ScriptContext> OnDestroy;
 
         private ScriptRuntime _runtime;
+        private int _contextId;
         private JSContext _ctx;
         private AtomCache _atoms;
         private JSValue _moduleCache; // commonjs module cache
@@ -30,11 +31,16 @@ namespace QuickJS
         private JSValue _numberConstructor;
         private JSValue _stringConstructor;
 
-        public ScriptContext(ScriptRuntime runtime)
+        // id = context slot index + 1
+        public int id { get { return _contextId; } }
+
+        public ScriptContext(ScriptRuntime runtime, int contextId)
         {
             _isValid = true;
             _runtime = runtime;
+            _contextId = contextId;
             _ctx = JSApi.JS_NewContext(_runtime);
+            JSApi.JS_SetContextOpaque(_ctx, (IntPtr)_contextId);
             JSApi.JS_AddIntrinsicOperators(_ctx);
             _atoms = new AtomCache(_ctx);
             _moduleCache = JSApi.JS_NewObject(_ctx);
@@ -152,7 +158,7 @@ namespace QuickJS
             }
             catch (Exception e)
             {
-                _runtime.GetLogger()?.Error(e);
+                _runtime.GetLogger()?.WriteException(e);
             }
             _atoms.Clear();
 
@@ -164,6 +170,7 @@ namespace QuickJS
             JSApi.JS_FreeValue(_ctx, _moduleCache);
             JSApi.JS_FreeValue(_ctx, _require);
             JSApi.JS_FreeContext(_ctx);
+            _contextId = -1;
 
             if (_coroutines != null)
             {

@@ -93,29 +93,7 @@ namespace QuickJS.Extra
             }
         }
 
-        public void ScriptWrite(LogLevel ll, string text)
-        {
-            switch (ll)
-            {
-                case LogLevel.Info: Log(text); return;
-                case LogLevel.Warn: LogWarning(text); return;
-                case LogLevel.Error: LogError(text); return;
-                default: LogError(text); return;
-            }
-        }
-
-        public void ScriptWrite(LogLevel ll, string fmt, params object[] args)
-        {
-            switch (ll)
-            {
-                case LogLevel.Info: LogFormat(fmt, args); return;
-                case LogLevel.Warn: LogWarningFormat(fmt, args); return;
-                case LogLevel.Error: LogErrorFormat(fmt, args); return;
-                default: LogErrorFormat(fmt, args); return;
-            }
-        }
-
-        public void Error(Exception exception)
+        public void WriteException(Exception exception)
         {
             LogException(exception);
         }
