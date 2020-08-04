@@ -36,17 +36,17 @@ namespace jsb
 
             if (fileLoader == FileLoader.Resources)
             {
-                fileSystem = new ResourcesFileSystem();
+                fileSystem = new ResourcesFileSystem(_mConsole);
                 _rt.AddSearchPath("dist");
             }
             else if (fileLoader == FileLoader.HMR)
             {
                 Debug.LogWarningFormat("功能未完成");
-                fileSystem = new HttpFileSystem(baseUrl);
+                fileSystem = new HttpFileSystem(_mConsole, baseUrl);
             }
             else
             {
-                fileSystem = new DefaultFileSystem();
+                fileSystem = new DefaultFileSystem(_mConsole);
                 _rt.AddSearchPath("Assets/Examples/Scripts/out");
                 // _rt.AddSearchPath("Assets/Examples/Scripts/dist");
             }

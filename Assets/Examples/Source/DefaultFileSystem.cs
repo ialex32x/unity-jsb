@@ -13,6 +13,13 @@ namespace jsb
 
     public class DefaultFileSystem : IFileSystem
     {
+        private IScriptLogger _logger;
+
+        public DefaultFileSystem(IScriptLogger logger)
+        {
+            _logger = logger;
+        }
+
         public bool Exists(string path)
         {
             return System.IO.File.Exists(path);
@@ -26,11 +33,9 @@ namespace jsb
             }
             catch (Exception exception)
             {
-                var logger = ScriptEngine.GetLogger();
-
-                if (logger != null)
+                if (_logger != null)
                 {
-                    logger.Write(LogLevel.Error, "{0}: {1}\n{2}", path, exception.Message, exception.StackTrace);
+                    _logger.Write(LogLevel.Error, "{0}: {1}\n{2}", path, exception.Message, exception.StackTrace);
                 }
                 return null;
             }
@@ -44,11 +49,9 @@ namespace jsb
             }
             catch (Exception exception)
             {
-                var logger = ScriptEngine.GetLogger();
-
-                if (logger != null)
+                if (_logger != null)
                 {
-                    logger.Write(LogLevel.Error, "{0}: {1}\n{2}", path, exception.Message, exception.StackTrace);
+                    _logger.Write(LogLevel.Error, "{0}: {1}\n{2}", path, exception.Message, exception.StackTrace);
                 }
                 return null;
             }
@@ -57,6 +60,13 @@ namespace jsb
 
     public class ResourcesFileSystem : IFileSystem
     {
+        private IScriptLogger _logger;
+
+        public ResourcesFileSystem(IScriptLogger logger)
+        {
+            _logger = logger;
+        }
+
         public bool Exists(string path)
         {
             var asset = Resources.Load<TextAsset>(path);
@@ -72,11 +82,9 @@ namespace jsb
             }
             catch (Exception exception)
             {
-                var logger = ScriptEngine.GetLogger();
-
-                if (logger != null)
+                if (_logger != null)
                 {
-                    logger.Write(LogLevel.Error, "{0}: {1}\n{2}", path, exception.Message, exception.StackTrace);
+                    _logger.Write(LogLevel.Error, "{0}: {1}\n{2}", path, exception.Message, exception.StackTrace);
                 }
                 return null;
             }
@@ -91,11 +99,9 @@ namespace jsb
             }
             catch (Exception exception)
             {
-                var logger = ScriptEngine.GetLogger();
-                
-                if (logger != null)
+                if (_logger != null)
                 {
-                    logger.Write(LogLevel.Error, "{0}: {1}\n{2}", path, exception.Message, exception.StackTrace);
+                    _logger.Write(LogLevel.Error, "{0}: {1}\n{2}", path, exception.Message, exception.StackTrace);
                 }
                 return null;
             }
@@ -105,10 +111,13 @@ namespace jsb
     public class HttpFileSystem : IFileSystem
     {
         private string _url;
+        private IScriptLogger _logger;
 
-        public HttpFileSystem(string baseUrl)
+
+        public HttpFileSystem(IScriptLogger logger, string baseUrl)
         {
             _url = baseUrl;
+            _logger = logger;
         }
 
         private string GetRemote(string path)
@@ -145,11 +154,9 @@ namespace jsb
             }
             catch (Exception exception)
             {
-                var logger = ScriptEngine.GetLogger();
-                
-                if (logger != null)
+                if (_logger != null)
                 {
-                    logger.Write(LogLevel.Error, "{0}: {1}\n{2}", path, exception.Message, exception.StackTrace);
+                    _logger.Write(LogLevel.Error, "{0}: {1}\n{2}", path, exception.Message, exception.StackTrace);
                 }
                 return null;
             }
@@ -164,11 +171,9 @@ namespace jsb
             }
             catch (Exception exception)
             {
-                var logger = ScriptEngine.GetLogger();
-                
-                if (logger != null)
+                if (_logger != null)
                 {
-                    logger.Write(LogLevel.Error, "{0}: {1}\n{2}", path, exception.Message, exception.StackTrace);
+                    _logger.Write(LogLevel.Error, "{0}: {1}\n{2}", path, exception.Message, exception.StackTrace);
                 }
                 return null;
             }

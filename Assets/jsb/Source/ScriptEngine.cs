@@ -22,16 +22,12 @@ namespace QuickJS
         private static ScriptRuntime _mainRuntime;
         // private static List<ScriptRuntimeRef> _runtimeRefs = new List<ScriptRuntimeRef>();
 
-        public static IScriptLogger GetLogger()
-        {
-            return _mainRuntime.GetLogger();
-        }
-
         public static IScriptLogger GetLogger(JSContext ctx)
         {
             return _mainRuntime.GetLogger();
         }
 
+        // unstable interface
         public static ScriptRuntime GetRuntime()
         {
             return _mainRuntime;
@@ -85,6 +81,7 @@ namespace QuickJS
             return _mainRuntime;
         }
 
+        //TODO: destroy all runtime
         public static void Destroy()
         {
             if (_mainRuntime != null)
