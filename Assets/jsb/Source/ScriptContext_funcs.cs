@@ -65,11 +65,11 @@ namespace QuickJS
 
             try
             {
-                logger.ScriptWrite((LogLevel)magic, sb.ToString());
+                logger.Write((LogLevel)magic, sb.ToString());
             }
-            catch (Exception exception)
+            catch (Exception)
             {
-                Debug.LogErrorFormat("Logger Exception: {0}\n{1}", exception, exception.StackTrace);
+                // Debug.LogErrorFormat("Logger Exception: {0}\n{1}", exception, exception.StackTrace);
             }
 
             return JSApi.JS_UNDEFINED;

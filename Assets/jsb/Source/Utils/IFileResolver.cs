@@ -17,6 +17,26 @@ namespace QuickJS.Utils
         public string main;
     }
 
+    public class SubFileResolver : IFileResolver
+    {
+        private IFileResolver _resolver;
+
+        public SubFileResolver(IFileResolver resolver)
+        {
+            _resolver = resolver;
+        }
+
+        public void AddSearchPath(string path)
+        {
+            throw new NotSupportedException();
+        }
+
+        public bool ResolvePath(IFileSystem fileSystem, string fileName, out string resolvedPath)
+        {
+            return _resolver.ResolvePath(fileSystem, fileName, out resolvedPath);
+        }
+    }
+
     public class FileResolver : IFileResolver
     {
         private List<string> _searchPaths = new List<string>();
@@ -43,19 +63,19 @@ namespace QuickJS.Utils
 
             var extIndex = fileName.LastIndexOf('.');
             var slashIndex = fileName.LastIndexOf('/');
-            
+
             if (extIndex < 0 || slashIndex > extIndex)
             {
                 if (_ResolvePath(fileSystem, fileName + ".js", out searchPath, out resolvedPath))
                 {
                     return true;
                 }
-                
+
                 if (_ResolvePath(fileSystem, PathUtils.Combine(fileName, "index.js"), out searchPath, out resolvedPath))
                 {
                     return true;
                 }
-            
+
                 if (_ResolvePath(fileSystem, PathUtils.Combine(fileName, "package.json"), out searchPath, out resolvedPath))
                 {
                     var packageData = fileSystem.ReadAllText(resolvedPath);
@@ -83,7 +103,7 @@ namespace QuickJS.Utils
             resolvedPath = null;
             return false;
         }
-        
+
         private bool _ResolvePath(IFileSystem fileSystem, string fileName, out string searchPath, out string resolvedPath)
         {
             if (fileSystem.Exists(fileName))

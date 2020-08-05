@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Threading;
 using AOT;
 using QuickJS.Native;
 using QuickJS.Utils;
@@ -7,86 +9,175 @@ namespace QuickJS
 {
     using UnityEngine;
 
-    // 暂时只做单实例
     public class ScriptEngine
     {
-        public const uint VERSION = 0x723;
-
-        private static ScriptRuntime _runtime;
-
-        public static IScriptLogger GetLogger()
+        private class ScriptRuntimeRef
         {
-            return _runtime.GetLogger();
+            public int next;
+            public ScriptRuntime target;
+        }
+
+        public const uint VERSION = 0x723 + 1;
+
+        private static int _freeSlot = -1;
+        private static List<ScriptRuntimeRef> _runtimeRefs = new List<ScriptRuntimeRef>();
+        private static ReaderWriterLockSlim _rwlock = new ReaderWriterLockSlim();
+
+        private static IO.ByteBufferThreadedPooledAllocator _sharedAllocator;
+
+        static ScriptEngine()
+        {
+            _sharedAllocator = new IO.ByteBufferThreadedPooledAllocator();
         }
 
         public static IScriptLogger GetLogger(JSContext ctx)
         {
-            return _runtime.GetLogger();
+            return GetRuntime(ctx).GetLogger();
         }
 
-        public static ScriptRuntime GetRuntime()
+        // unstable interface
+        public static int ForEachRuntime(Action<ScriptRuntime> visitor)
         {
-            return _runtime;
+            var count = 0;
+            try
+            {
+                _rwlock.EnterReadLock();
+                for (int i = 0, len = _runtimeRefs.Count; i < len; ++i)
+                {
+                    var slot = _runtimeRefs[i];
+                    if (slot.target != null)
+                    {
+                        count++;
+                        visitor(slot.target);
+                    }
+                }
+            }
+            finally
+            {
+                _rwlock.ExitReadLock();
+            }
+            return count;
         }
 
         public static ObjectCache GetObjectCache(JSRuntime rt)
         {
-            return _runtime.GetObjectCache();
+            return GetRuntime(rt).GetObjectCache();
         }
 
         public static ObjectCache GetObjectCache(JSContext ctx)
         {
-            return GetRuntime(ctx)?.GetObjectCache();
+            return GetRuntime(ctx).GetObjectCache();
         }
 
         public static TypeDB GetTypeDB(JSContext ctx)
         {
-            return GetRuntime(ctx)?.GetTypeDB();
+            return GetRuntime(ctx).GetTypeDB();
         }
 
-        public static IO.IByteBufferAllocator GetByteBufferAllocator(JSContext ctx)
+        // 可跨越运行时分配 (但内容非线程安全)
+        public static IO.ByteBuffer AllocSharedByteBuffer(int size)
         {
-            return GetRuntime(ctx)?.GetByteBufferAllocator();
+            return _sharedAllocator.Alloc(size);
         }
 
+        /// <summary>
+        /// 分配一个在指定 JSContext 下使用的 Buffer
+        /// </summary>
         public static IO.ByteBuffer AllocByteBuffer(JSContext ctx, int size)
         {
-            return GetByteBufferAllocator(ctx)?.Alloc(size);
+            return GetRuntime(ctx).GetByteBufferAllocator()?.Alloc(size);
         }
 
         public static ScriptRuntime GetRuntime(JSContext ctx)
         {
-            return _runtime;
+            var rt = JSApi.JS_GetRuntime(ctx);
+            return GetRuntime(rt);
         }
-        
+
         public static ScriptRuntime GetRuntime(JSRuntime rt)
         {
-            return _runtime;
+            ScriptRuntime runtime = null;
+            var id = (int)JSApi.JS_GetRuntimeOpaque(rt);
+            if (id > 0)
+            {
+                var index = id - 1;
+                _rwlock.EnterReadLock();
+                var slot = _runtimeRefs[index];
+                runtime = slot.target;
+                _rwlock.ExitReadLock();
+            }
+            return runtime;
         }
 
         public static ScriptContext GetContext(JSContext ctx)
         {
-            return _runtime.GetContext(ctx);
+            var rt = JSApi.JS_GetRuntime(ctx);
+            return GetRuntime(rt).GetContext(ctx);
         }
 
         public static ScriptRuntime CreateRuntime()
         {
-            _runtime = new ScriptRuntime();
-            _runtime.OnAfterDestroy += OnRuntimeAfterDestroy;
-            return _runtime;
+            _rwlock.EnterWriteLock();
+            ScriptRuntimeRef freeEntry;
+            int slotIndex;
+            if (_freeSlot < 0)
+            {
+                freeEntry = new ScriptRuntimeRef();
+                slotIndex = _runtimeRefs.Count;
+                _runtimeRefs.Add(freeEntry);
+                freeEntry.next = -1;
+            }
+            else
+            {
+                slotIndex = _freeSlot;
+                freeEntry = _runtimeRefs[slotIndex];
+                _freeSlot = freeEntry.next;
+                freeEntry.next = -1;
+            }
+
+            var runtime = new ScriptRuntime(slotIndex + 1);
+            freeEntry.target = runtime;
+            runtime.OnAfterDestroy += OnRuntimeAfterDestroy;
+            _rwlock.ExitWriteLock();
+
+            return runtime;
         }
 
-        public static void Destroy()
+        public static void Shutdown()
         {
-            if (_runtime != null)
+            _rwlock.EnterWriteLock();
+            var len = _runtimeRefs.Count;
+            var copylist = new List<ScriptRuntime>(len);
+            for (int i = 0; i < len; ++i)
             {
-                _runtime.Destroy();
+                var runtime = _runtimeRefs[i].target;
+                if (runtime != null)
+                {
+                    copylist.Add(runtime);
+                }
+            }
+            _rwlock.ExitWriteLock();
+
+            for (int i = 0, count = copylist.Count; i < count; ++i)
+            {
+                var runtime = copylist[i];
+                runtime.Shutdown();
             }
         }
 
-        private static void OnRuntimeAfterDestroy(ScriptRuntime runtime)
+        private static void OnRuntimeAfterDestroy(int runtimeId)
         {
-            _runtime = null;
+            if (runtimeId <= 0)
+            {
+                return;
+            }
+            _rwlock.EnterWriteLock();
+            var index = runtimeId - 1;
+            var freeEntry = _runtimeRefs[index];
+            freeEntry.next = _freeSlot;
+            freeEntry.target = null;
+            _freeSlot = index;
+            _rwlock.ExitWriteLock();
         }
     }
 }

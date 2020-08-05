@@ -32,22 +32,23 @@ namespace jsb
 
             _mConsole = new MiniConsole(scrollRect, text, 100);
             _rt = ScriptEngine.CreateRuntime();
-            _rt.AddSearchPath("node_modules");
+            var fileResolver = new FileResolver();
+            fileResolver.AddSearchPath("node_modules");
 
             if (fileLoader == FileLoader.Resources)
             {
-                fileSystem = new ResourcesFileSystem();
-                _rt.AddSearchPath("dist");
+                fileSystem = new ResourcesFileSystem(_mConsole);
+                fileResolver.AddSearchPath("dist");
             }
             else if (fileLoader == FileLoader.HMR)
             {
                 Debug.LogWarningFormat("功能未完成");
-                fileSystem = new HttpFileSystem(baseUrl);
+                fileSystem = new HttpFileSystem(_mConsole, baseUrl);
             }
             else
             {
-                fileSystem = new DefaultFileSystem();
-                _rt.AddSearchPath("Assets/Examples/Scripts/out");
+                fileSystem = new DefaultFileSystem(_mConsole);
+                fileResolver.AddSearchPath("Assets/Examples/Scripts/out");
                 // _rt.AddSearchPath("Assets/Examples/Scripts/dist");
             }
 
@@ -57,17 +58,17 @@ namespace jsb
                 _rt.EnableSourceMap();
             }
             _mConsole.Write(LogLevel.Info, "Init");
-            _rt.Initialize(fileSystem, this, _mConsole, new ByteBufferPooledAllocator());
+            _rt.Initialize(fileSystem, fileResolver, this, _mConsole, new ByteBufferPooledAllocator());
         }
 
         void Update()
         {
-            _rt.Update(Time.deltaTime);
+            _rt.Update((int)(Time.deltaTime * 1000f));
         }
 
         void OnDestroy()
         {
-            _rt.Destroy();
+            ScriptEngine.Shutdown();
         }
 
         public void OnBind(ScriptRuntime runtime, TypeRegister register)
@@ -75,15 +76,21 @@ namespace jsb
             _mConsole.Write(LogLevel.Info, "Bind");
             QuickJS.Extra.WebSocket.Bind(register);
             QuickJS.Extra.XMLHttpRequest.Bind(register);
-            QuickJS.Extra.DOMCompatibleLayer.Bind(register);
-            QuickJS.Extra.NodeCompatibleLayer.Bind(register);
+            if (!runtime.isWorker)
+            {
+                QuickJS.Extra.DOMCompatibleLayer.Bind(register);
+                QuickJS.Extra.NodeCompatibleLayer.Bind(register);
+            }
             _mConsole.Write(LogLevel.Info, "Bind Finish");
         }
 
         public void OnComplete(ScriptRuntime runtime)
         {
-            _mConsole.Write(LogLevel.Info, "run");
-            _rt.EvalMain("main.js");
+            if (!runtime.isWorker)
+            {
+                _mConsole.Write(LogLevel.Info, "run");
+                _rt.EvalMain("main.js");
+            }
         }
     }
 }

@@ -157,6 +157,7 @@ namespace QuickJS.Utils
     {
         private int _threadId;
         private int _poolCapacity = 500;
+        private IScriptLogger _logger;
         private List<TimeHandle> _pool = new List<TimeHandle>();
         private Dictionary<ulong, TimeHandle> _timeHandles = new Dictionary<ulong, TimeHandle>();
         private Wheel[] _wheels;
@@ -168,9 +169,10 @@ namespace QuickJS.Utils
         private List<TimeHandle> _tcache2 = new List<TimeHandle>();
         private List<TimeHandle> _recycle = new List<TimeHandle>();
 
-        public Scheduler(int jiffies = 8, int slots = 160, int depth = 4, int prealloc = 50, int capacity = 500)
+        public Scheduler(IScriptLogger logger, int jiffies = 8, int slots = 160, int depth = 4, int prealloc = 50, int capacity = 500)
         {
             _threadId = Thread.CurrentThread.ManagedThreadId;
+            _logger = logger;
             _jiffies = jiffies;
             _wheels = new Wheel[depth];
             for (int i = 0; i < depth; i++)
@@ -343,7 +345,8 @@ namespace QuickJS.Utils
                         }
                         catch (Exception exception)
                         {
-                            UnityEngine.Debug.LogErrorFormat("Scheduler Exception: {0}", exception);
+                            _logger?.WriteException(exception);
+                            // UnityEngine.Debug.LogErrorFormat("Scheduler Exception: {0}", exception);
                         }
                     }
 

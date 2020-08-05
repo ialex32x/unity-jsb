@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Sockets;
+using System.Threading;
 using AOT;
 using System.Text;
 
@@ -78,21 +79,29 @@ namespace QuickJS.Extra
             }
         }
 
+        private static ReaderWriterLockSlim _rwlock = new ReaderWriterLockSlim();
         private static List<WebSocket> _websockets = new List<WebSocket>();
 
         private static WebSocket GetWebSocket(lws_context context)
         {
-            var count = _websockets.Count;
-            for (var i = 0; i < count; i++)
+            try
             {
-                var websocket = _websockets[i];
-                if (websocket._context == context)
+                _rwlock.EnterReadLock();
+                var count = _websockets.Count;
+                for (var i = 0; i < count; i++)
                 {
-                    return websocket;
+                    var websocket = _websockets[i];
+                    if (websocket._context == context)
+                    {
+                        return websocket;
+                    }
                 }
+                return null;
             }
-
-            return null;
+            finally
+            {
+                _rwlock.ExitReadLock();
+            }
         }
 
         private lws _wsi;
@@ -272,7 +281,10 @@ namespace QuickJS.Extra
                 runtime.OnUpdate -= Update;
                 runtime.OnDestroy -= Destroy;
             }
+
+            _rwlock.EnterWriteLock();
             _websockets.Remove(this);
+            _rwlock.ExitWriteLock();
             // UnityEngine.Debug.LogWarning("ws.destroy");
         }
 
@@ -482,7 +494,11 @@ namespace QuickJS.Extra
             _url = url;
             _buffer = buffer;
             _protocols = protocols != null ? protocols.ToArray() : new string[] { "" };
+
+            _rwlock.EnterWriteLock();
             _websockets.Add(this);
+            _rwlock.ExitWriteLock();
+            
             do
             {
                 if (_protocols != null && _protocols.Length > 0)

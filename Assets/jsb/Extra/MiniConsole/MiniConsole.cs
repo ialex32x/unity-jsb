@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Sockets;
+using System.Threading;
 using AOT;
 using System.Text;
 
@@ -15,9 +16,12 @@ namespace QuickJS.Extra
     using UnityEngine;
     using UnityEngine.UI;
 
-    public class MiniConsole : IScriptLogger
+    public class MiniConsole : IScriptLogger, ILogHandler
     {
+        private int _mainThreadId;
         private int _maxLines = 100;
+        private ILogHandler _defaultHandler;
+
         public Text textTemplate;
         public ScrollRect scrollRect;
 
@@ -25,42 +29,54 @@ namespace QuickJS.Extra
 
         public MiniConsole(ScrollRect scrollRect, Text textTemplate, int maxLines)
         {
+            this._mainThreadId = Thread.CurrentThread.ManagedThreadId;
             this._maxLines = maxLines;
             this.scrollRect = scrollRect;
             this.textTemplate = textTemplate;
             textTemplate.gameObject.SetActive(false);
+
+            _defaultHandler = Debug.unityLogger.logHandler;
+            Debug.unityLogger.logHandler = this;
         }
 
         private void NewEntry(string text, Color color)
         {
+            if (_mainThreadId != Thread.CurrentThread.ManagedThreadId)
+            {
+                return;
+            }
+            
             if (scrollRect == null)
             {
                 return;
             }
 
-            if (_lines.Count > _maxLines)
+            try
             {
-                var textInst = _lines[0];
-                _lines.RemoveAt(0);
-                textInst.text = text;
-                textInst.color = color;
-                textInst.transform.SetSiblingIndex(textInst.transform.parent.childCount - 1);
-                _lines.Add(textInst);
+                if (_lines.Count > _maxLines)
+                {
+                    var textInst = _lines[0];
+                    _lines.RemoveAt(0);
+                    textInst.text = text;
+                    textInst.color = color;
+                    textInst.transform.SetSiblingIndex(textInst.transform.parent.childCount - 1);
+                    _lines.Add(textInst);
+                    LayoutRebuilder.ForceRebuildLayoutImmediate(textInst.transform.parent.GetComponent<RectTransform>());
+                }
+                else
+                {
+                    var textInst = Object.Instantiate(textTemplate);
+                    textInst.text = text;
+                    textInst.color = color;
+                    textInst.transform.SetParent(textTemplate.transform.parent);
+                    textInst.gameObject.SetActive(true);
+                    _lines.Add(textInst);
+                    LayoutRebuilder.ForceRebuildLayoutImmediate(textInst.transform.parent.GetComponent<RectTransform>());
+                }
             }
-            else
+            catch (Exception)
             {
-                var textInst = Object.Instantiate(textTemplate);
-                textInst.text = text;
-                textInst.color = color;
-                textInst.transform.SetParent(textTemplate.transform.parent);
-                textInst.gameObject.SetActive(true);
-                _lines.Add(textInst);
             }
-        }
-
-        public void Error(Exception exception)
-        {
-            LogException(exception);
         }
 
         public void Write(LogLevel ll, string text)
@@ -85,61 +101,82 @@ namespace QuickJS.Extra
             }
         }
 
-        public void ScriptWrite(LogLevel ll, string text)
+        public void WriteException(Exception exception)
         {
-            switch (ll)
-            {
-                case LogLevel.Info: Log(text); return;
-                case LogLevel.Warn: LogWarning(text); return;
-                case LogLevel.Error: LogError(text); return;
-                default: LogError(text); return;
-            }
-        }
-
-        public void ScriptWrite(LogLevel ll, string fmt, params object[] args)
-        {
-            switch (ll)
-            {
-                case LogLevel.Info: LogFormat(fmt, args); return;
-                case LogLevel.Warn: LogWarningFormat(fmt, args); return;
-                case LogLevel.Error: LogErrorFormat(fmt, args); return;
-                default: LogErrorFormat(fmt, args); return;
-            }
+            LogException(exception);
         }
 
         private void LogError(string text)
         {
+            _defaultHandler.LogFormat(LogType.Error, null, "{0}", text);
             NewEntry(text, Color.red);
-        }
-
-        private void LogErrorFormat(string fmt, object[] args)
-        {
-            NewEntry(string.Format(fmt, args), Color.red);
-        }
-
-        private void LogWarningFormat(string fmt, object[] args)
-        {
-            NewEntry(string.Format(fmt, args), Color.yellow);
-        }
-
-        private void LogFormat(string fmt, object[] args)
-        {
-            NewEntry(string.Format(fmt, args), Color.white);
         }
 
         private void LogException(Exception exception)
         {
-            NewEntry(exception.ToString(), Color.red);
+            var text = exception.ToString();
+            _defaultHandler.LogFormat(LogType.Error, null, "{0}", text);
+            NewEntry(text, Color.cyan);
+        }
+
+        private void LogException(string text)
+        {
+            _defaultHandler.LogFormat(LogType.Error, null, "{0}", text);
+            NewEntry(text, Color.cyan);
         }
 
         private void Log(string text)
         {
+            _defaultHandler.LogFormat(LogType.Log, null, "{0}", text);
             NewEntry(text, Color.white);
         }
 
         private void LogWarning(string text)
         {
+            _defaultHandler.LogFormat(LogType.Warning, null, "{0}", text);
             NewEntry(text, Color.yellow);
+        }
+
+        private void LogErrorFormat(string fmt, object[] args)
+        {
+            LogError(string.Format(fmt, args));
+        }
+
+        private void LogWarningFormat(string fmt, object[] args)
+        {
+            LogWarning(string.Format(fmt, args));
+        }
+
+        private void LogFormat(string fmt, object[] args)
+        {
+            Log(string.Format(fmt, args));
+        }
+
+        public void LogException(Exception exception, Object context)
+        {
+            LogException(exception);
+        }
+
+        public void LogFormat(LogType logType, Object context, string format, params object[] args)
+        {
+            switch (logType)
+            {
+                case LogType.Log:
+                    LogFormat(format, args);
+                    break;
+                case LogType.Warning:
+                    LogWarningFormat(format, args);
+                    break;
+                case LogType.Error:
+                    LogErrorFormat(format, args);
+                    break;
+                case LogType.Exception:
+                    LogException(string.Format(format, args));
+                    break;
+                case LogType.Assert:
+                    LogException(string.Format(format, args));
+                    break;
+            }
         }
     }
 }

@@ -163,4 +163,11 @@ print("Nullish coalescing Operator:", (_d = (_c = a) === null || _c === void 0 ?
 // }
 // xhr.send();
 jsb.DoFile("dofile_test");
+let worker = new Worker("worker");
+worker.onmessage = function (data) {
+    console.log("main thread receive message from worker", data);
+};
+// setInterval(function () {
+//     worker.postMessage("hello, worker!");
+// }, 5000);
 //# sourceMappingURL=main.js.map

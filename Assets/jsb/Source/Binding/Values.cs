@@ -33,7 +33,7 @@ namespace QuickJS.Binding
             var logger = ScriptEngine.GetLogger(ctx);
             if (logger != null)
             {
-                logger.ScriptWrite(LogLevel.Error, ctx.GetExceptionString());
+                logger.Write(LogLevel.Error, ctx.GetExceptionString());
             }
             return false;
         }

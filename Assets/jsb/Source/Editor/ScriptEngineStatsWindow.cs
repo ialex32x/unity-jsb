@@ -56,16 +56,8 @@ namespace QuickJS.Editor
             }
         }
 
-        protected override void OnPaint()
+        private void InspectRuntime(ScriptRuntime runtime)
         {
-            var runtime = ScriptEngine.GetRuntime();
-
-            if (runtime == null)
-            {
-                EditorGUILayout.HelpBox("No Running Runtime", MessageType.Info);
-                return;
-            }
-
             if (!_touch)
             {
                 Capture(runtime);
@@ -122,6 +114,19 @@ namespace QuickJS.Editor
             });
 
             EditorGUILayout.EndScrollView();
+        }
+
+        protected override void OnPaint()
+        {
+            var count = ScriptEngine.ForEachRuntime(runtime => InspectRuntime(runtime));
+
+            if (count == 0)
+            {
+                EditorGUILayout.HelpBox("No Running Runtime", MessageType.Info);
+                return;
+            }
+
+
         }
     }
 }
