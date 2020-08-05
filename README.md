@@ -230,7 +230,8 @@ jsb.hotfix.before_single("HotfixTest", "AnotherCall", function () {
 ![ts_code_complete](jsb_build/res/ts_code_complete.png)
 
 # 多线程
-> 暂不支持多线程访问
+> 单个运行时不支持多线程使用. 
+> JS 环境下通过 Worker 支持多线程脚本运行.
 
 # Debugger
 > 暂不支持
