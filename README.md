@@ -11,6 +11,7 @@
 * 支持在JS异步函数中等待 System.Threading.Tasks.Task 对象 (limited support)
 * 向 JS 导入 C# 运算符重载 +, -, *, /, ==, -(负)
 * 支持 Websocket (limited support)
+* [初步] 支持 Worker (limited support)
 * [初步] 支持 XMLHttpRequest (limited support)
 * [初步] 未导出的类型通过反射方式进行 C#/JS 交互
 * [初步] 运行时替换 C# 代码 (hotfix, limited support)
@@ -174,6 +175,31 @@ xhr.onreadystatechange = function () {
     }
 }
 xhr.send();
+```
+
+## Worker
+> Worker 在后台线程中执行, 默认不进行C#类型绑定, 可通过 onmessage/postMessage 与主线程通讯
+```ts
+/// master.js
+
+let worker = new Worker("worker");
+
+worker.onmessage = function (data) { 
+    console.log("master receive message from worker", data);
+}
+
+// setTimeout(function () { worker.terminate(); }, 5000);
+
+/// worker.js 
+
+setInterval(function () {
+    postMessage("message form worker");
+}, 3000)
+
+onmessage = function (data) {
+    console.log("worker get message from master:", data);
+}
+
 ```
 
 ## Hotfix (初步功能)
