@@ -41,6 +41,7 @@ namespace QuickJS
         private int _mainThreadId;
         private uint _class_id_alloc = JSApi.__JSB_GetClassID();
 
+        private IScriptRuntimeListener _listener;
         private IFileResolver _fileResolver;
         private IFileSystem _fileSystem;
         private ObjectCache _objectCache = new ObjectCache();
@@ -117,23 +118,27 @@ namespace QuickJS
             {
                 throw new NullReferenceException(nameof(logger));
             }
-            if (listener == null)
-            {
-                throw new NullReferenceException(nameof(listener));
-            }
+
             if (fileSystem == null)
             {
                 throw new NullReferenceException(nameof(fileSystem));
             }
+
             MethodInfo bindAll = null;
             if (!isWorker)
             {
+                if (listener == null)
+                {
+                    throw new NullReferenceException(nameof(listener));
+                }
+
                 bindAll = typeof(Values).GetMethod("BindAll", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static);
                 if (bindAll == null)
                 {
                     throw new Exception("Generate binding code before run");
                 }
             }
+            _listener = listener;
             _fileResolver = resolver;
             _byteBufferAllocator = byteBufferAllocator;
             _autorelease = new Utils.AutoReleasePool();
@@ -156,7 +161,7 @@ namespace QuickJS
             listener.OnComplete(this);
         }
 
-        public ScriptRuntime CreateWorker(IScriptRuntimeListener listener)
+        public ScriptRuntime CreateWorker()
         {
             if (isWorker)
             {
@@ -166,7 +171,7 @@ namespace QuickJS
             var runtime = ScriptEngine.CreateRuntime();
 
             runtime._isWorker = true;
-            runtime.Initialize(_fileSystem, _fileResolver, listener, _logger, new IO.ByteBufferPooledAllocator());
+            runtime.Initialize(_fileSystem, _fileResolver, _listener, _logger, new IO.ByteBufferPooledAllocator());
             return runtime;
         }
 

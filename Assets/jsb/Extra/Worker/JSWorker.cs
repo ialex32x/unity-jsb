@@ -15,44 +15,54 @@ namespace QuickJS.Extra
     using QuickJS.Binding;
     using System.Threading;
 
-    public class JSWorker : Values, IScriptRuntimeListener, IScriptFinalize
+    public class JSWorker : Values, IScriptFinalize
     {
         private Thread _thread;
         private ScriptContext _parent;
         private ScriptRuntime _worker;
+        private Queue<IO.ByteBuffer> _messageQueue;
 
         private JSWorker()
         {
         }
 
+        private void Release()
+        {
+            lock (_messageQueue)
+            {
+                while (true)
+                {
+                    var buf = _messageQueue.Dequeue();
+                    if (buf == null)
+                    {
+                        break;
+                    }
+                    buf.Release();
+                }
+            }
+        }
+
         public void OnJSFinalize()
         {
+            Release();
         }
 
         private void OnWorkerAfterDestroy(int id)
         {
-        }
-
-        public void OnBind(ScriptRuntime runtime, TypeRegister register)
-        {
-            QuickJS.Extra.WebSocket.Bind(register);
-            QuickJS.Extra.XMLHttpRequest.Bind(register);
-        }
-
-        public void OnComplete(ScriptRuntime runtime)
-        {
+            Release();
         }
 
         private void Start(JSContext ctx, JSValue value, string scriptPath)
         {
             var parent = ScriptEngine.GetRuntime(ctx);
-            var runtime = parent.CreateWorker(this);
+            var runtime = parent.CreateWorker();
 
             if (runtime == null)
             {
                 throw new NullReferenceException();
             }
 
+            _messageQueue = new Queue<ByteBuffer>();
             _parent = parent.GetContext(ctx);
             _worker = runtime;
             _worker.OnAfterDestroy += OnWorkerAfterDestroy;
@@ -65,12 +75,35 @@ namespace QuickJS.Extra
 
         private void Run()
         {
-            // onmessage = JSApi.JS_GetProperty(ctx, "onmessage");
             var tick = Environment.TickCount;
+            var list = new List<IO.ByteBuffer>();
+            var context = _worker.GetMainContext();
+            var globalObject = context.GetGlobalObject();
+            var onmessage = JSApi.JS_GetPropertyStr(context, globalObject, "onmessage");
 
             while (_worker.isRunning)
             {
-                Thread.Yield();
+                lock (_messageQueue)
+                {
+                    list.AddRange(_messageQueue);
+                    _messageQueue.Clear();
+                }
+
+                if (list.Count == 0)
+                {
+                    Thread.Yield();
+                }
+                else
+                {
+                    for (int i = 0, count = list.Count; i < count; i++)
+                    {
+                        var buf = list[i];
+
+                        //TODO: restore js object 
+
+                        buf.Release();
+                    }
+                }
 
                 var now = Environment.TickCount;
                 var dt = now - tick;
@@ -79,6 +112,8 @@ namespace QuickJS.Extra
                 _worker.Update(dt);
             }
 
+            JSApi.JS_FreeValue(context, onmessage);
+            JSApi.JS_FreeValue(context, globalObject);
             _worker.Destroy();
         }
 

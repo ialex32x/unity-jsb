@@ -23,6 +23,13 @@ namespace QuickJS
         private static List<ScriptRuntimeRef> _runtimeRefs = new List<ScriptRuntimeRef>();
         private static ReaderWriterLockSlim _rwlock = new ReaderWriterLockSlim();
 
+        private static IO.ByteBufferThreadedPooledAllocator _sharedAllocator;
+
+        static ScriptEngine()
+        {
+            _sharedAllocator = new IO.ByteBufferThreadedPooledAllocator();
+        }
+
         public static IScriptLogger GetLogger(JSContext ctx)
         {
             return GetRuntime(ctx).GetLogger();
@@ -67,14 +74,18 @@ namespace QuickJS
             return GetRuntime(ctx).GetTypeDB();
         }
 
-        public static IO.IByteBufferAllocator GetByteBufferAllocator(JSContext ctx)
+        // 可跨越运行时分配 (但内容非线程安全)
+        public static IO.ByteBuffer AllocSharedByteBuffer(int size)
         {
-            return GetRuntime(ctx).GetByteBufferAllocator();
+            return _sharedAllocator.Alloc(size);
         }
 
+        /// <summary>
+        /// 分配一个在指定 JSContext 下使用的 Buffer
+        /// </summary>
         public static IO.ByteBuffer AllocByteBuffer(JSContext ctx, int size)
         {
-            return GetByteBufferAllocator(ctx)?.Alloc(size);
+            return GetRuntime(ctx).GetByteBufferAllocator()?.Alloc(size);
         }
 
         public static ScriptRuntime GetRuntime(JSContext ctx)

@@ -32,7 +32,7 @@ namespace jsb
 
             _mConsole = new MiniConsole(scrollRect, text, 100);
             _rt = ScriptEngine.CreateRuntime();
-            var fileResolver =  new FileResolver();
+            var fileResolver = new FileResolver();
             fileResolver.AddSearchPath("node_modules");
 
             if (fileLoader == FileLoader.Resources)
@@ -76,16 +76,22 @@ namespace jsb
             _mConsole.Write(LogLevel.Info, "Bind");
             QuickJS.Extra.WebSocket.Bind(register);
             QuickJS.Extra.XMLHttpRequest.Bind(register);
-            QuickJS.Extra.DOMCompatibleLayer.Bind(register);
-            QuickJS.Extra.NodeCompatibleLayer.Bind(register);
             QuickJS.Extra.JSWorker.Bind(register);
+            if (!runtime.isWorker)
+            {
+                QuickJS.Extra.DOMCompatibleLayer.Bind(register);
+                QuickJS.Extra.NodeCompatibleLayer.Bind(register);
+            }
             _mConsole.Write(LogLevel.Info, "Bind Finish");
         }
 
         public void OnComplete(ScriptRuntime runtime)
         {
-            _mConsole.Write(LogLevel.Info, "run");
-            _rt.EvalMain("main.js");
+            if (!runtime.isWorker)
+            {
+                _mConsole.Write(LogLevel.Info, "run");
+                _rt.EvalMain("main.js");
+            }
         }
     }
 }
