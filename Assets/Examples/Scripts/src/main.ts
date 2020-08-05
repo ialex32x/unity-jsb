@@ -59,7 +59,7 @@ actions.onFunc = undefined;
 
 print("测试: 事件");
 actions.onEvent.on(v => print("测试事件1:", v));
-function instanceEventHandler(v: number) { print("测试事件2:", v)}
+function instanceEventHandler(v: number) { print("测试事件2:", v) }
 actions.onEvent.on(instanceEventHandler);
 actions.DipatchEvent(123);
 actions.onEvent.off(instanceEventHandler);
@@ -67,7 +67,7 @@ actions.DipatchEvent(123);
 
 print("测试: 静态事件");
 jsb.DelegateTest.onStaticEvent.on(v => print("测试静态事件1:", v));
-function staticEventHandler(v: number) { print("测试静态事件2:", v)}
+function staticEventHandler(v: number) { print("测试静态事件2:", v) }
 jsb.DelegateTest.onStaticEvent.on(staticEventHandler);
 jsb.DelegateTest.DipatchStaticEvent(123);
 jsb.DelegateTest.onStaticEvent.off(staticEventHandler);
@@ -171,7 +171,7 @@ backBuffer.forEach(val => print(val));
     print("ref/out:", g, x, z);
 }
 
-async function test_custom_promise () {
+async function test_custom_promise() {
     let go = new UnityEngine.GameObject("custome.promise.test");
     var sb = go.AddComponent(SampleBehaviour);
     print("after wait a promise (created in C#):", await sb.Wait());
@@ -205,6 +205,10 @@ print("Nullish coalescing Operator:", a?.b ?? "ok");
 jsb.DoFile("dofile_test");
 
 let worker = new Worker("worker");
+
+worker.onmessage = function (data) { 
+    console.log("master receive message from worker", data);
+}
 
 // setInterval(function () {
 //     worker.postMessage("hello, worker!");

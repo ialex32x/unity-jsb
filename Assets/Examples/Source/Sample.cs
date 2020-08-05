@@ -76,7 +76,6 @@ namespace jsb
             _mConsole.Write(LogLevel.Info, "Bind");
             QuickJS.Extra.WebSocket.Bind(register);
             QuickJS.Extra.XMLHttpRequest.Bind(register);
-            QuickJS.Extra.JSWorker.Bind(register);
             if (!runtime.isWorker)
             {
                 QuickJS.Extra.DOMCompatibleLayer.Bind(register);

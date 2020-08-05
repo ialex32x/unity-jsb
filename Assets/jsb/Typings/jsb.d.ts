@@ -4,6 +4,8 @@
  */
 declare function print(...args: any[]): void;
 
+declare function postMessage(data: any): void;
+
 // declare function require(id: string): any;
 
 // /**

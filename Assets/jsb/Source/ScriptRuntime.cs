@@ -36,7 +36,7 @@ namespace QuickJS
         // private ReaderWriterLockSlim _rwlock;
         private List<ScriptContextRef> _contextRefs = new List<ScriptContextRef>();
         private ScriptContext _mainContext;
-        private Queue<JSAction> _pendingGC = new Queue<JSAction>();
+        private Queue<JSAction> _pendingActions = new Queue<JSAction>();
 
         private int _mainThreadId;
         private uint _class_id_alloc = JSApi.__JSB_GetClassID();
@@ -155,6 +155,10 @@ namespace QuickJS
                 bindAll.Invoke(null, new object[] { register });
             }
             listener.OnBind(this, register);
+            if (!_isWorker)
+            {
+                JSWorker.Bind(register);
+            }
             TimerManager.Bind(register);
             ScriptContext.Bind(register);
             register.Finish();
@@ -281,18 +285,19 @@ namespace QuickJS
             return context;
         }
 
-        private static void _FreeValueAction(ScriptRuntime rt, JSValue value)
+        private static void _FreeValueAction(ScriptRuntime rt, JSAction action)
         {
-            JSApi.JS_FreeValueRT(rt, value);
+            JSApi.JS_FreeValueRT(rt, action.value);
         }
 
-        private static void _FreeValueAndDelegationAction(ScriptRuntime rt, JSValue value)
+        private static void _FreeValueAndDelegationAction(ScriptRuntime rt, JSAction action)
         {
             var cache = rt.GetObjectCache();
-            cache.RemoveDelegate(value);
-            JSApi.JS_FreeValueRT(rt, value);
+            cache.RemoveDelegate(action.value);
+            JSApi.JS_FreeValueRT(rt, action.value);
         }
 
+        // 可在 GC 线程直接调用此方法
         public void FreeDelegationValue(JSValue value)
         {
             if (_mainThreadId == Thread.CurrentThread.ManagedThreadId)
@@ -310,13 +315,14 @@ namespace QuickJS
                     value = value,
                     callback = _FreeValueAndDelegationAction,
                 };
-                lock (_pendingGC)
+                lock (_pendingActions)
                 {
-                    _pendingGC.Enqueue(act);
+                    _pendingActions.Enqueue(act);
                 }
             }
         }
 
+        // 可在 GC 线程直接调用此方法
         public void FreeValue(JSValue value)
         {
             if (_mainThreadId == Thread.CurrentThread.ManagedThreadId)
@@ -333,13 +339,14 @@ namespace QuickJS
                     value = value,
                     callback = _FreeValueAction,
                 };
-                lock (_pendingGC)
+                lock (_pendingActions)
                 {
-                    _pendingGC.Enqueue(act);
+                    _pendingActions.Enqueue(act);
                 }
             }
         }
 
+        // 可在 GC 线程直接调用此方法
         public void FreeValues(JSValue[] values)
         {
             if (values == null)
@@ -355,7 +362,7 @@ namespace QuickJS
             }
             else
             {
-                lock (_pendingGC)
+                lock (_pendingActions)
                 {
                     for (int i = 0, len = values.Length; i < len; i++)
                     {
@@ -364,9 +371,17 @@ namespace QuickJS
                             value = values[i],
                             callback = _FreeValueAction,
                         };
-                        _pendingGC.Enqueue(act);
+                        _pendingActions.Enqueue(act);
                     }
                 }
+            }
+        }
+
+        public void EnqueueAction(JSAction action)
+        {
+            lock (_pendingActions)
+            {
+                _pendingActions.Enqueue(action);
             }
         }
 
@@ -384,9 +399,9 @@ namespace QuickJS
         // main loop
         public void Update(int ms)
         {
-            if (_pendingGC.Count != 0)
+            if (_pendingActions.Count != 0)
             {
-                CollectPendingGarbage();
+                ExecutePendingActions();
             }
 
             OnUpdate?.Invoke(); //TODO: optimize
@@ -419,25 +434,26 @@ namespace QuickJS
             }
         }
 
-        private void CollectPendingGarbage()
+        private void ExecutePendingActions()
         {
-            lock (_pendingGC)
+            lock (_pendingActions)
             {
                 while (true)
                 {
-                    if (_pendingGC.Count == 0)
+                    if (_pendingActions.Count == 0)
                     {
                         break;
                     }
 
-                    var action = _pendingGC.Dequeue();
-                    action.callback(this, action.value);
+                    var action = _pendingActions.Dequeue();
+                    action.callback(this, action);
                 }
             }
         }
 
         public void Shutdown()
         {
+            //TODO: lock?
             _isRunning = false;
             if (!_isWorker)
             {
@@ -470,7 +486,7 @@ namespace QuickJS
 
             GC.Collect();
             GC.WaitForPendingFinalizers();
-            CollectPendingGarbage();
+            ExecutePendingActions();
 
             // _rwlock.EnterWriteLock();
             for (int i = 0, count = _contextRefs.Count; i < count; i++)
