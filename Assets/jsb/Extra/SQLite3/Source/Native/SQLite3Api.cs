@@ -115,6 +115,9 @@ namespace QuickJS.Extra.SQLite3
 
         [DllImport(SQLITE3DLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern int sqlite3_close_v2(sqlite3 db);
+
+        [DllImport(SQLITE3DLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern int sqlite3_libversion_number();
     }
 }
 #endif
