@@ -3,7 +3,7 @@
 console.log("in worker");
 
 setInterval(function () {
-    console.log("worker log");
+    // console.log("worker log");
     postMessage("message form worker");
 }, 3000)
 

@@ -1,5 +1,5 @@
 "use strict";
-var _a, _b, _c, _d;
+var _a, _b;
 Object.defineProperty(exports, "__esModule", { value: true });
 print("first line");
 // import { fib } from "./fib_module.js";
@@ -143,9 +143,9 @@ async function test_custom_promise() {
 test_custom_promise();
 // Optional Chaining
 let a = 1;
-print("Optional Chaining", ((_b = (_a = a) === null || _a === void 0 ? void 0 : _a.b) === null || _b === void 0 ? void 0 : _b.c) === undefined);
+print("Optional Chaining", ((_a = a === null || a === void 0 ? void 0 : a.b) === null || _a === void 0 ? void 0 : _a.c) === undefined);
 // Nullish coalescing Operator
-print("Nullish coalescing Operator:", (_d = (_c = a) === null || _c === void 0 ? void 0 : _c.b, (_d !== null && _d !== void 0 ? _d : "ok")));
+print("Nullish coalescing Operator:", (_b = a === null || a === void 0 ? void 0 : a.b) !== null && _b !== void 0 ? _b : "ok");
 // const protobuf = require("protobufjs");
 // print("protobufjs:", protobuf);
 // let xhr = new XMLHttpRequest();
@@ -167,7 +167,8 @@ let worker = new Worker("worker");
 worker.onmessage = function (data) {
     console.log("master receive message from worker:", data);
 };
-// setInterval(function () {
-//     worker.postMessage("hello, worker!");
-// }, 5000);
+let worker_i = 0;
+setInterval(function () {
+    worker.postMessage("hello, worker! i am master!" + (worker_i++));
+}, 5000);
 //# sourceMappingURL=main.js.map

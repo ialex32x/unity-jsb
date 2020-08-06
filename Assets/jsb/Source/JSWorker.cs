@@ -24,7 +24,6 @@ namespace QuickJS
         private ScriptRuntime _parentRuntime;
         private ScriptRuntime _runtime;
         private Queue<IO.ByteBuffer> _inbox = new Queue<ByteBuffer>();
-        private Queue<IO.ByteBuffer> _outbox = new Queue<ByteBuffer>();
 
         private JSWorker()
         {
@@ -37,19 +36,6 @@ namespace QuickJS
                 while (_inbox.Count != 0)
                 {
                     var buf = _inbox.Dequeue();
-                    if (buf == null)
-                    {
-                        break;
-                    }
-                    buf.Release();
-                }
-            }
-
-            lock (_outbox)
-            {
-                while (_outbox.Count != 0)
-                {
-                    var buf = _outbox.Dequeue();
                     if (buf == null)
                     {
                         break;
@@ -130,7 +116,8 @@ namespace QuickJS
             var context = _runtime.GetMainContext();
             var globalObject = context.GetGlobalObject();
             var onmessage = JSApi.JS_GetPropertyStr(context, globalObject, "onmessage");
-
+            JSContext ctx = context;
+            var logger = _runtime.GetLogger();
 
             while (_runtime.isRunning)
             {
@@ -148,12 +135,34 @@ namespace QuickJS
                 {
                     for (int i = 0, count = list.Count; i < count; i++)
                     {
-                        var buf = list[i];
+                        var byteBuffer = list[i];
 
-                        //TODO: restore js object 
+                        unsafe
+                        {
+                            JSValue data;
+                            fixed (byte* buf = byteBuffer.data)
+                            {
+                                data = JSApi.JS_ReadObject(ctx, buf, byteBuffer.readableBytes, 0);
+                            }
 
-                        buf.Release();
+                            if (data.IsException())
+                            {
+                                var exceptionString = ctx.GetExceptionString();
+                                if (logger != null)
+                                {
+                                    logger.Write(LogLevel.Error, exceptionString);
+                                }
+                            }
+                            else
+                            {
+                                var argv = stackalloc JSValue[1] { data };
+                                var rval = JSApi.JS_Call(ctx, onmessage, globalObject, 1, argv);
+                                JSApi.JS_FreeValue(ctx, rval);
+                            }
+                        }
+                        byteBuffer.Release();
                     }
+                    list.Clear();
                 }
 
                 var now = Environment.TickCount;
@@ -163,8 +172,8 @@ namespace QuickJS
                 _runtime.Update(dt);
             }
 
-            JSApi.JS_FreeValue(context, onmessage);
-            JSApi.JS_FreeValue(context, globalObject);
+            JSApi.JS_FreeValue(ctx, onmessage);
+            JSApi.JS_FreeValue(ctx, globalObject);
             _runtime.Destroy();
         }
 
@@ -306,15 +315,38 @@ namespace QuickJS
                     throw new ThisBoundException();
                 }
 
+                if (argc < 1)
+                {
+                    return JSApi.JS_ThrowInternalError(ctx, "invalid parameter");
+                }
+
                 if (!self._runtime.isRunning)
                 {
                     return JSApi.JS_ThrowInternalError(ctx, "worker is not running");
                 }
 
-                //TODO: write object
-                var buffer = ScriptEngine.AllocSharedByteBuffer(1);
+                size_t psize;
+                var dataStore = JSApi.JS_WriteObject(ctx, out psize, argv[0], 0);
+                if (dataStore == IntPtr.Zero)
+                {
+                    return JSApi.JS_ThrowInternalError(ctx, "fail to write object");
+                }
 
-                // 
+                var buffer = ScriptEngine.AllocSharedByteBuffer(psize);
+                buffer.WriteBytes(dataStore, psize);
+                JSApi.js_free(ctx, dataStore);
+
+                lock (self._inbox)
+                {
+                    if (self._runtime.isRunning)
+                    {
+                        self._inbox.Enqueue(buffer);
+                    }
+                    else
+                    {
+                        buffer.Release();
+                    }
+                }
 
                 return JSApi.JS_UNDEFINED;
             }

@@ -210,6 +210,6 @@ worker.onmessage = function (data) {
     console.log("master receive message from worker:", data);
 }
 
-// setInterval(function () {
-//     worker.postMessage("hello, worker!");
-// }, 5000);
+setInterval(function () {
+    worker.postMessage("hello, worker! i am master!");
+}, 5000);
