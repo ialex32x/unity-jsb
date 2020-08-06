@@ -16,7 +16,7 @@ REM cmake -G "Visual Studio 16 2019" -A x64 ..\..\..\websockets
 REM cd %BUILD_PATH%
 REM cmake --build x64_Debug --config Debug
 REM mkdir ..\..\prebuilt\Plugins\x64\
-REM xcopy /Y .\x64_Debug\Debug\libwebsockets.dll ..\..\prebuilt\Plugins\x64\
+REM xcopy /Y .\x64_Debug\Debug\websockets.dll ..\..\prebuilt\Plugins\x64\
 
 rd /s /q x64_release 2>nul
 echo building x64_release
@@ -26,7 +26,7 @@ cmake -G "Visual Studio 16 2019" -A x64 ..\..\..\websockets
 cd %BUILD_PATH%
 cmake --build x64_release --config Release
 mkdir ..\..\prebuilt\Plugins\x64\
-xcopy /Y .\x64_release\Release\libwebsockets.dll ..\..\prebuilt\Plugins\x64\
+xcopy /Y .\x64_release\Release\websockets.dll ..\..\prebuilt\Plugins\x64\
 
 rd /s /q x86_release 2>nul
 echo building x86_release
@@ -36,6 +36,6 @@ cmake -G "Visual Studio 16 2019" -A Win32 ..\..\..\websockets
 cd %BUILD_PATH%
 cmake --build x86_release --config Release
 mkdir ..\..\prebuilt\Plugins\x86\
-xcopy /Y .\x86_release\Release\libwebsockets.dll ..\..\prebuilt\Plugins\x86\
+xcopy /Y .\x86_release\Release\websockets.dll ..\..\prebuilt\Plugins\x86\
 
 cd %BASE_PATH%

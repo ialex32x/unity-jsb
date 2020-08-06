@@ -104,9 +104,16 @@ namespace QuickJS.Native
         public const int JS_TAG_FLOAT64 = 7;
 
         // #define JS_WRITE_OBJ_BYTECODE (1 << 0) /* allow function/module */
-        public const int JS_WRITE_OBJ_BYTECODE = 1 << 0;
+        public const int JS_WRITE_OBJ_BYTECODE  = 1 << 0;
+        public const int JS_WRITE_OBJ_BSWAP     = 1 << 1; /* byte swapped output */
+        public const int JS_WRITE_OBJ_SAB       = 1 << 2; /* allow SharedArrayBuffer */
+        public const int JS_WRITE_OBJ_REFERENCE = 1 << 3; /* allow object references to
+
         // #define JS_READ_OBJ_BYTECODE  (1 << 0) /* allow function/module */
-        public const int JS_READ_OBJ_BYTECODE = 1 << 0;
+        public const int JS_READ_OBJ_BYTECODE  = 1 << 0;
+        public const int JS_READ_OBJ_ROM_DATA  = 1 << 1; /* avoid duplicating 'buf' data */
+        public const int JS_READ_OBJ_SAB       = 1 << 2; /* allow SharedArrayBuffer */
+        public const int JS_READ_OBJ_REFERENCE = 1 << 3; /* allow object references */
 
         public static JSValue[] EmptyValues = new JSValue[0];
 

@@ -2,8 +2,10 @@ using System;
 using System.IO;
 using System.Text;
 using System.Net;
+using System.Threading;
 using System.Collections;
 using System.Collections.Generic;
+using System.Runtime.InteropServices;
 
 namespace QuickJS
 {
@@ -13,7 +15,6 @@ namespace QuickJS
     using QuickJS.Utils;
     using QuickJS.Native;
     using QuickJS.Binding;
-    using System.Threading;
 
     public class JSWorker : Values, IScriptFinalize
     {
@@ -23,7 +24,6 @@ namespace QuickJS
         private ScriptRuntime _parentRuntime;
         private ScriptRuntime _runtime;
         private Queue<IO.ByteBuffer> _inbox = new Queue<ByteBuffer>();
-        private Queue<IO.ByteBuffer> _outbox = new Queue<ByteBuffer>();
 
         private JSWorker()
         {
@@ -36,19 +36,6 @@ namespace QuickJS
                 while (_inbox.Count != 0)
                 {
                     var buf = _inbox.Dequeue();
-                    if (buf == null)
-                    {
-                        break;
-                    }
-                    buf.Release();
-                }
-            }
-
-            lock (_outbox)
-            {
-                while (_outbox.Count != 0)
-                {
-                    var buf = _outbox.Dequeue();
                     if (buf == null)
                     {
                         break;
@@ -129,7 +116,8 @@ namespace QuickJS
             var context = _runtime.GetMainContext();
             var globalObject = context.GetGlobalObject();
             var onmessage = JSApi.JS_GetPropertyStr(context, globalObject, "onmessage");
-
+            JSContext ctx = context;
+            var logger = _runtime.GetLogger();
 
             while (_runtime.isRunning)
             {
@@ -147,12 +135,34 @@ namespace QuickJS
                 {
                     for (int i = 0, count = list.Count; i < count; i++)
                     {
-                        var buf = list[i];
+                        var byteBuffer = list[i];
 
-                        //TODO: restore js object 
+                        unsafe
+                        {
+                            JSValue data;
+                            fixed (byte* buf = byteBuffer.data)
+                            {
+                                data = JSApi.JS_ReadObject(ctx, buf, byteBuffer.readableBytes, 0);
+                            }
 
-                        buf.Release();
+                            if (data.IsException())
+                            {
+                                var exceptionString = ctx.GetExceptionString();
+                                if (logger != null)
+                                {
+                                    logger.Write(LogLevel.Error, exceptionString);
+                                }
+                            }
+                            else
+                            {
+                                var argv = stackalloc JSValue[1] { data };
+                                var rval = JSApi.JS_Call(ctx, onmessage, globalObject, 1, argv);
+                                JSApi.JS_FreeValue(ctx, rval);
+                            }
+                        }
+                        byteBuffer.Release();
                     }
+                    list.Clear();
                 }
 
                 var now = Environment.TickCount;
@@ -162,8 +172,8 @@ namespace QuickJS
                 _runtime.Update(dt);
             }
 
-            JSApi.JS_FreeValue(context, onmessage);
-            JSApi.JS_FreeValue(context, globalObject);
+            JSApi.JS_FreeValue(ctx, onmessage);
+            JSApi.JS_FreeValue(ctx, globalObject);
             _runtime.Destroy();
         }
 
@@ -172,40 +182,61 @@ namespace QuickJS
         {
             var worker = action.worker;
 
-            if (worker._runtime.isRunning && worker._parentRuntime.isRunning)
+            try
             {
-                var context = runtime.GetMainContext();
-                var ctx = (JSContext)context;
-                var onmessage = JSApi.JS_GetProperty(ctx, worker._self, context.GetAtom("onmessage"));
-                if (onmessage.IsException())
+                if (worker._runtime.isRunning && worker._parentRuntime.isRunning)
                 {
-                    var exceptionString = ctx.GetExceptionString();
-                    var logger = runtime.GetLogger();
-                    if (logger != null)
+                    var context = runtime.GetMainContext();
+                    var ctx = (JSContext)context;
+                    var onmessage = JSApi.JS_GetProperty(ctx, worker._self, context.GetAtom("onmessage"));
+                    if (onmessage.IsException())
                     {
-                        logger.Write(LogLevel.Error, exceptionString);
-                    }
-                }
-                else
-                {
-                    if (JSApi.JS_IsFunction(ctx, onmessage) == 1)
-                    {
-                        //TODO: read object => jsvalue
-                        var data = JSApi.JS_UNDEFINED;
-                        var argv = stackalloc JSValue[1] { data };
-                        var rval = JSApi.JS_Call(ctx, onmessage, worker._self, 1, argv);
-                        JSApi.JS_FreeValue(ctx, rval);
+                        var exceptionString = ctx.GetExceptionString();
+                        var logger = runtime.GetLogger();
+                        if (logger != null)
+                        {
+                            logger.Write(LogLevel.Error, exceptionString);
+                        }
                     }
                     else
                     {
-                        // not function
+                        if (JSApi.JS_IsFunction(ctx, onmessage) == 1)
+                        {
+                            // read object => jsvalue
+                            JSValue data;
+                            fixed (byte* buf = action.buffer.data)
+                            {
+                                data = JSApi.JS_ReadObject(ctx, buf, action.buffer.readableBytes, 0);
+                            }
 
+                            if (data.IsException())
+                            {
+                                var exceptionString = ctx.GetExceptionString();
+                                var logger = runtime.GetLogger();
+                                if (logger != null)
+                                {
+                                    logger.Write(LogLevel.Error, exceptionString);
+                                }
+                            }
+                            else
+                            {
+                                var argv = stackalloc JSValue[1] { data };
+                                var rval = JSApi.JS_Call(ctx, onmessage, worker._self, 1, argv);
+                                JSApi.JS_FreeValue(ctx, rval);
+                            }
+                        }
+                        else
+                        {
+                            // not function
+                        }
+                        JSApi.JS_FreeValue(ctx, onmessage);
                     }
-                    JSApi.JS_FreeValue(ctx, onmessage);
                 }
             }
-
-            action.buffer.Release();
+            finally
+            {
+                action.buffer.Release();
+            }
         }
 
         private JSValue _js_self_postMessage(JSContext ctx, JSValue this_obj, int argc, JSValue[] argv)
@@ -218,8 +249,21 @@ namespace QuickJS
                     return JSApi.JS_ThrowInternalError(ctx, "worker is not running");
                 }
 
-                //TODO: write object
-                var buffer = ScriptEngine.AllocSharedByteBuffer(1);
+                if (argc < 1)
+                {
+                    return JSApi.JS_ThrowInternalError(ctx, "invalid parameter");
+                }
+
+                size_t psize;
+                var dataStore = JSApi.JS_WriteObject(ctx, out psize, argv[0], 0);
+                if (dataStore == IntPtr.Zero)
+                {
+                    return JSApi.JS_ThrowInternalError(ctx, "fail to write object");
+                }
+
+                var buffer = ScriptEngine.AllocSharedByteBuffer(psize);
+                buffer.WriteBytes(dataStore, psize);
+                JSApi.js_free(ctx, dataStore);
 
                 this._parentRuntime.EnqueueAction(new JSAction()
                 {
@@ -271,15 +315,38 @@ namespace QuickJS
                     throw new ThisBoundException();
                 }
 
+                if (argc < 1)
+                {
+                    return JSApi.JS_ThrowInternalError(ctx, "invalid parameter");
+                }
+
                 if (!self._runtime.isRunning)
                 {
                     return JSApi.JS_ThrowInternalError(ctx, "worker is not running");
                 }
 
-                //TODO: write object
-                var buffer = ScriptEngine.AllocSharedByteBuffer(1);
+                size_t psize;
+                var dataStore = JSApi.JS_WriteObject(ctx, out psize, argv[0], 0);
+                if (dataStore == IntPtr.Zero)
+                {
+                    return JSApi.JS_ThrowInternalError(ctx, "fail to write object");
+                }
 
-                // 
+                var buffer = ScriptEngine.AllocSharedByteBuffer(psize);
+                buffer.WriteBytes(dataStore, psize);
+                JSApi.js_free(ctx, dataStore);
+
+                lock (self._inbox)
+                {
+                    if (self._runtime.isRunning)
+                    {
+                        self._inbox.Enqueue(buffer);
+                    }
+                    else
+                    {
+                        buffer.Release();
+                    }
+                }
 
                 return JSApi.JS_UNDEFINED;
             }

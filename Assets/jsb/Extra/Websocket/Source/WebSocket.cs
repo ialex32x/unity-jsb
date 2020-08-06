@@ -1,4 +1,4 @@
-#if !UNITY_WEBGL || UNITY_WEBGL
+#if !UNITY_WEBGL
 using System;
 using System.Collections.Generic;
 using System.Net;

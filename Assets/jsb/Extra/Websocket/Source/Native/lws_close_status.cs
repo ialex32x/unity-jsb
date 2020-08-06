@@ -1,4 +1,4 @@
-﻿#if !UNITY_WEBGL || UNITY_WEBGL
+﻿#if !UNITY_WEBGL 
 namespace QuickJS.Extra.WebSockets
 {
     /*
