@@ -13,9 +13,9 @@ namespace QuickJS.Extra
     using QuickJS.IO;
     using QuickJS.Native;
     using QuickJS.Binding;
-    using QuickJS.Extra.SQLite3;
+    using QuickJS.Extra.Sqlite;
 
-    public class SQLite : Values, IScriptFinalize
+    public class SqliteConnection : Values, IScriptFinalize
     {
         public void OnJSFinalize()
         {
@@ -23,7 +23,7 @@ namespace QuickJS.Extra
 
         public static void Bind(TypeRegister register)
         {
-            
+
         }
     }
 }

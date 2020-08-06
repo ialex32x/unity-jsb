@@ -3,12 +3,12 @@ using System;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
-namespace QuickJS.Extra.SQLite3
+namespace QuickJS.Extra.Sqlite
 {
     using size_t = QuickJS.Native.size_t;
     using sqlite3 = IntPtr;
 
-    public class SQLite3Api
+    public class SqliteApi
     {
 #if UNITY_IPHONE && !UNITY_EDITOR
 	    const string SQLITE3DLL = "__Internal";
