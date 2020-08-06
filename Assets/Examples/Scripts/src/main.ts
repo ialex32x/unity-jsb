@@ -207,7 +207,7 @@ jsb.DoFile("dofile_test");
 let worker = new Worker("worker");
 
 worker.onmessage = function (data) { 
-    console.log("master receive message from worker", data);
+    console.log("master receive message from worker:", data);
 }
 
 // setInterval(function () {

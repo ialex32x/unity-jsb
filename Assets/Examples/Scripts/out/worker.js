@@ -4,6 +4,6 @@ setInterval(function () {
     postMessage("message form worker");
 }, 3000);
 onmessage = function (data) {
-    console.log("worker get message:", data);
+    console.log("worker get message from master:", data);
 };
 //# sourceMappingURL=worker.js.map
