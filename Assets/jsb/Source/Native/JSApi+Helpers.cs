@@ -6,8 +6,42 @@ using AOT;
 
 namespace QuickJS.Native
 {
+    using JSValueConst = JSValue;
+    using JS_BOOL = Int32;
+
     public partial class JSApi
     {
+        [MonoPInvokeCallback(typeof(JSHostPromiseRejectionTracker))]
+        public static void PromiseRejectionTracker(JSContext ctx, JSValueConst promise, JSValueConst reason, JS_BOOL is_handled, IntPtr opaque)
+        {
+            if (is_handled != 1)
+            {
+                var logger = ScriptEngine.GetLogger(ctx);
+                if (logger != null)
+                {
+                    var reasonStr = GetString(ctx, reason);
+                    var is_error = JS_IsError(ctx, reason);
+
+                    do
+                    {
+                        if (is_error == 1)
+                        {
+                            var val = JS_GetPropertyStr(ctx, reason, "stack");
+                            if (!JS_IsUndefined(val))
+                            {
+                                var stack = GetString(ctx, val);
+                                JS_FreeValue(ctx, val);
+                                logger.Write(LogLevel.Error, "Unhandled promise rejection: {0}\n{1}", reasonStr, stack);
+                                return;
+                            }
+                            JS_FreeValue(ctx, val);
+                        }
+                        logger.Write(LogLevel.Error, "Unhandled promise rejection: {0}", reasonStr);
+                    } while (false);
+                }
+            }
+        }
+
         [MonoPInvokeCallback(typeof(JSCFunctionMagic))]
         public static JSValue class_private_ctor(JSContext ctx, JSValue new_target, int argc, JSValue[] argv, int magic)
         {

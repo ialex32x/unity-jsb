@@ -75,6 +75,7 @@ namespace QuickJS
             // _rwlock = new ReaderWriterLockSlim();
             _mainThreadId = Thread.CurrentThread.ManagedThreadId;
             _rt = JSApi.JS_NewRuntime();
+            JSApi.JS_SetHostPromiseRejectionTracker(_rt, JSApi.PromiseRejectionTracker, IntPtr.Zero);
             JSApi.JS_SetRuntimeOpaque(_rt, (IntPtr)_runtimeId);
             JSApi.JS_SetModuleLoaderFunc(_rt, module_normalize, module_loader, IntPtr.Zero);
             CreateContext();

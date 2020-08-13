@@ -17,6 +17,14 @@ namespace QuickJS.Native
     using int64_t = Int64;
     using uint64_t = UInt64;
 
+    /* is_handled = TRUE means that the rejection is handled */
+    #if UNITY_EDITOR_WIN || UNITY_STANDALONE_WIN
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    #endif
+    public delegate void JSHostPromiseRejectionTracker(JSContext ctx, JSValueConst promise,
+                                            JSValueConst reason,
+                                            JS_BOOL is_handled, IntPtr opaque);
+
 #if UNITY_EDITOR_WIN || UNITY_STANDALONE_WIN
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
 #endif
@@ -178,6 +186,16 @@ namespace QuickJS.Native
 
         [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern unsafe JSValue JS_NewPromiseCapability(JSContext ctx, JSValue* resolving_funcs);
+
+        [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern void JS_SetHostPromiseRejectionTracker(JSRuntime rt, IntPtr cb, IntPtr opaque);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void JS_SetHostPromiseRejectionTracker(JSRuntime rt, JSHostPromiseRejectionTracker cb, IntPtr opaque)
+        {
+            var fn = Marshal.GetFunctionPointerForDelegate(cb);
+            JS_SetHostPromiseRejectionTracker(rt, fn, opaque);
+        }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static unsafe JSValue JS_NewPromiseCapability(JSContext ctx, JSValue[] resolving_funcs)
