@@ -449,7 +449,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   scrollRect: {fileID: 988056250}
   text: {fileID: 1107551418}
-  fileLoader: 1
+  fileLoader: 0
   baseUrl: http://127.0.0.1:8182
   sourceMap: 0
   stacktrace: 0
