@@ -99,8 +99,8 @@ namespace QuickJS
             {
                 return JSApi.JS_ThrowInternalError(ctx, "file not found");
             }
-            var source = fileSystem.ReadAllText(resolvedPath);
-            return context.EvalSource(source, resolvedPath);
+            var source = fileSystem.ReadAllBytes(resolvedPath);
+            return ScriptRuntime.EvalSource(ctx, source, resolvedPath);
         }
 
         [MonoPInvokeCallback(typeof(JSCFunction))]

@@ -17,13 +17,15 @@ namespace QuickJS.Utils
             var request = WebRequest.CreateHttp(src);
             request.Method = "GET";
             var rsp = await request.GetResponseAsync() as HttpWebResponse;
-            var reader = new StreamReader(rsp.GetResponseStream());
+            var stream = rsp.GetResponseStream();
+            var reader = new StreamReader(stream);
             var reseponseText = await reader.ReadToEndAsync();
             if (!context.IsValid())
             {
                 return;
             }
-            context.EvalSourceFree(reseponseText, src);
+            var bytes = System.Text.Encoding.UTF8.GetBytes(reseponseText);
+            context.EvalSourceFree(bytes, src);
         }
 
         // return promise

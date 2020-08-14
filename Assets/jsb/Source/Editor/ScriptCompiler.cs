@@ -67,7 +67,7 @@ namespace QuickJS.Editor
                             uint tagValue = commonJSModule ? ScriptRuntime.BYTECODE_COMMONJS_MODULE_TAG : ScriptRuntime.BYTECODE_ES6_MODULE_TAG;
 
                             outputBytes = new byte[psize + tagSize];
-                            Buffer.BlockCopy(BitConverter.GetBytes(tagValue), 0, outputBytes, 0, tagSize);
+                            Buffer.BlockCopy(BitConverter.GetBytes(Utils.TextUtils.ToNetworkByteOrder(tagValue)), 0, outputBytes, 0, tagSize);
                             Marshal.Copy(byteCode, outputBytes, tagSize, psize);
                         }
                         JSApi.js_free(_ctx, byteCode);

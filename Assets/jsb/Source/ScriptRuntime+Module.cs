@@ -16,11 +16,11 @@ namespace QuickJS
         public const uint BYTECODE_COMMONJS_MODULE_TAG = ScriptEngine.VERSION << 8 | 0x23;
         public const uint BYTECODE_ES6_MODULE_TAG = ScriptEngine.VERSION << 8 | 0xfe;
 
-        private static uint TryReadByteCodeTagValue(byte[] bytes)
+        public static uint TryReadByteCodeTagValue(byte[] bytes)
         {
             if (bytes != null && bytes.Length > sizeof(uint))
             {
-                return BitConverter.ToUInt32(bytes, 0);
+                return TextUtils.ToHostByteOrder(BitConverter.ToUInt32(bytes, 0));
             }
             return 0;
         }
@@ -241,6 +241,53 @@ namespace QuickJS
             }
         }
 
+        public static unsafe JSValue EvalSource(JSContext ctx, byte[] source, string fileName)
+        {
+            var tagValue = TryReadByteCodeTagValue(source);
+
+            if (tagValue == BYTECODE_ES6_MODULE_TAG)
+            {
+                return JSApi.JS_ThrowInternalError(ctx, "eval does not support es6 module bytecode");
+            }
+
+            if (tagValue == BYTECODE_COMMONJS_MODULE_TAG)
+            {
+                fixed (byte* intput_ptr = source)
+                {
+                    var bytecodeFunc = JSApi.JS_ReadObject(ctx, intput_ptr + sizeof(uint), source.Length - sizeof(uint), JSApi.JS_READ_OBJ_BYTECODE);
+
+                    if (bytecodeFunc.tag == JSApi.JS_TAG_FUNCTION_BYTECODE)
+                    {
+                        var func_val = JSApi.JS_EvalFunction(ctx, bytecodeFunc); // it's CallFree (bytecodeFunc)
+                        if (JSApi.JS_IsFunction(ctx, func_val) != 1)
+                        {
+                            JSApi.JS_FreeValue(ctx, func_val);
+                            return JSApi.JS_ThrowInternalError(ctx, "failed to eval bytecode module");
+                        }
+
+                        var rval = JSApi.JS_Call(ctx, func_val, JSApi.JS_UNDEFINED);
+                        JSApi.JS_FreeValue(ctx, func_val);
+                        return rval;
+                    }
+
+                    JSApi.JS_FreeValue(ctx, bytecodeFunc);
+                    return JSApi.JS_ThrowInternalError(ctx, "failed to eval bytecode module");
+                }
+            }
+
+            var input_bytes = Utils.TextUtils.GetNullTerminatedBytes(source);
+            var fn_bytes = Utils.TextUtils.GetNullTerminatedBytes(fileName);
+
+            fixed (byte* input_ptr = input_bytes)
+            fixed (byte* fn_ptr = fn_bytes)
+            {
+                var input_len = (size_t)(input_bytes.Length - 1);
+
+                // return JS_Eval(ctx, input_ptr, input_len, fn_ptr, JSEvalFlags.JS_EVAL_TYPE_GLOBAL);
+                return JSApi.JS_Eval(ctx, input_ptr, input_len, fn_ptr, JSEvalFlags.JS_EVAL_TYPE_MODULE | JSEvalFlags.JS_EVAL_FLAG_STRICT);
+            }
+        }
+
         [MonoPInvokeCallback(typeof(JSModuleLoaderFunc))]
         public static unsafe JSModuleDef module_loader(JSContext ctx, string module_name, IntPtr opaque)
         {
@@ -309,7 +356,7 @@ namespace QuickJS
                     JSApi.JS_ThrowReferenceError(ctx, "module is null");
                     return JSModuleDef.Null;
                 }
-                
+
                 return _NewModuleDef(ctx, func_val, module_name);
             }
         }

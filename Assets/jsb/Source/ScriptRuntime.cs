@@ -392,8 +392,7 @@ namespace QuickJS
             if (_fileResolver.ResolvePath(_fileSystem, fileName, out resolvedPath))
             {
                 var source = _fileSystem.ReadAllBytes(resolvedPath);
-                var input_bytes = TextUtils.GetShebangNullTerminatedCommonJSBytes(source);
-                _mainContext.EvalMain(input_bytes, resolvedPath);
+                _mainContext.EvalMain(source, resolvedPath);
             }
         }
 
