@@ -32,7 +32,7 @@ namespace QuickJS
 
         public static IScriptLogger GetLogger(JSContext ctx)
         {
-            return GetRuntime(ctx).GetLogger();
+            return GetRuntime(ctx)?.GetLogger();
         }
 
         // unstable interface

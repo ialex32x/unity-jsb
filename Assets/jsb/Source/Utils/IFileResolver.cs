@@ -66,6 +66,12 @@ namespace QuickJS.Utils
 
             if (extIndex < 0 || slashIndex > extIndex)
             {
+                // try resolve bytecode file
+                if (_ResolvePath(fileSystem, fileName + ".js.bytes", out searchPath, out resolvedPath))
+                {
+                    return true;
+                }
+
                 if (_ResolvePath(fileSystem, fileName + ".js", out searchPath, out resolvedPath))
                 {
                     return true;

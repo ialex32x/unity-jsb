@@ -18,9 +18,9 @@ namespace QuickJS.Native
     using uint64_t = UInt64;
 
     /* is_handled = TRUE means that the rejection is handled */
-    #if UNITY_EDITOR_WIN || UNITY_STANDALONE_WIN
+#if UNITY_EDITOR_WIN || UNITY_STANDALONE_WIN
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    #endif
+#endif
     public delegate void JSHostPromiseRejectionTracker(JSContext ctx, JSValueConst promise,
                                             JSValueConst reason,
                                             JS_BOOL is_handled, IntPtr opaque);
@@ -112,15 +112,15 @@ namespace QuickJS.Native
         public const int JS_TAG_FLOAT64 = 7;
 
         // #define JS_WRITE_OBJ_BYTECODE (1 << 0) /* allow function/module */
-        public const int JS_WRITE_OBJ_BYTECODE  = 1 << 0;
-        public const int JS_WRITE_OBJ_BSWAP     = 1 << 1; /* byte swapped output */
-        public const int JS_WRITE_OBJ_SAB       = 1 << 2; /* allow SharedArrayBuffer */
+        public const int JS_WRITE_OBJ_BYTECODE = 1 << 0;
+        public const int JS_WRITE_OBJ_BSWAP = 1 << 1; /* byte swapped output */
+        public const int JS_WRITE_OBJ_SAB = 1 << 2; /* allow SharedArrayBuffer */
         public const int JS_WRITE_OBJ_REFERENCE = 1 << 3; /* allow object references to
 
         // #define JS_READ_OBJ_BYTECODE  (1 << 0) /* allow function/module */
-        public const int JS_READ_OBJ_BYTECODE  = 1 << 0;
-        public const int JS_READ_OBJ_ROM_DATA  = 1 << 1; /* avoid duplicating 'buf' data */
-        public const int JS_READ_OBJ_SAB       = 1 << 2; /* allow SharedArrayBuffer */
+        public const int JS_READ_OBJ_BYTECODE = 1 << 0;
+        public const int JS_READ_OBJ_ROM_DATA = 1 << 1; /* avoid duplicating 'buf' data */
+        public const int JS_READ_OBJ_SAB = 1 << 2; /* allow SharedArrayBuffer */
         public const int JS_READ_OBJ_REFERENCE = 1 << 3; /* allow object references */
 
         public static JSValue[] EmptyValues = new JSValue[0];
@@ -160,7 +160,7 @@ namespace QuickJS.Native
 
         [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern IntPtr JS_GetRuntimeOpaque(JSRuntime rt);
-        
+
         [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern void JS_SetRuntimeOpaque(JSRuntime rt, IntPtr opaque);
 
@@ -700,23 +700,6 @@ namespace QuickJS.Native
         [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern JS_BOOL JSB_ToUint32(JSContext ctx, out uint32_t pres, JSValueConst val);
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static unsafe JSValue JS_Eval(JSContext ctx, string input, string filename)
-        {
-            //TEMP CODE
-            var input_bytes = Utils.TextUtils.GetNullTerminatedBytes(input);
-            var fn_bytes = Utils.TextUtils.GetNullTerminatedBytes(filename);
-
-            fixed (byte* input_ptr = input_bytes)
-            fixed (byte* fn_ptr = fn_bytes)
-            {
-                var input_len = (size_t)(input_bytes.Length - 1);
-                // return JS_Eval(ctx, input_ptr, input_len, fn_ptr, JSEvalFlags.JS_EVAL_TYPE_GLOBAL);
-                return JS_Eval(ctx, input_ptr, input_len, fn_ptr,
-                    JSEvalFlags.JS_EVAL_TYPE_MODULE | JSEvalFlags.JS_EVAL_FLAG_STRICT);
-            }
-        }
-
         [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern void js_free(JSContext ctx, IntPtr ptr);
 
@@ -727,8 +710,15 @@ namespace QuickJS.Native
         public static extern unsafe JSValue JS_ReadObject(JSContext ctx, byte* buf, size_t buf_len, int flags);
 
         [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern unsafe JSValue JS_Eval(JSContext ctx, byte* input, size_t input_len, byte* filename,
-            JSEvalFlags eval_flags);
+        public static extern unsafe JSValue JS_Eval(JSContext ctx, byte* input, size_t input_len, byte* filename, JSEvalFlags eval_flags);
+
+        [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern JSValue JS_EvalFunction(JSContext ctx, JSValue fun_obj);
+
+        /* load the dependencies of the module 'obj'. Useful when JS_ReadObject()
+           returns a module. */
+        [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern int JS_ResolveModule(JSContext ctx, JSValueConst obj);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool JS_IsNumber(JSValueConst v)

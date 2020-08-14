@@ -27,6 +27,11 @@ namespace QuickJS.Native
         public void print_exception(LogLevel logLevel = LogLevel.Error, string title = "")
         {
             var logger = ScriptEngine.GetLogger(this);
+            print_exception(logger, logLevel, title);
+        }
+
+        public void print_exception(IScriptLogger logger, LogLevel logLevel, string title)
+        {
             var ex = JSApi.JS_GetException(this);
 
             if (logger != null)

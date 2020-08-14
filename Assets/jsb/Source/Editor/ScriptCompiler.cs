@@ -15,6 +15,7 @@ namespace QuickJS.Editor
     {
         private JSRuntime _rt;
         private JSContext _ctx;
+        private UnityLogger _logger = new UnityLogger();
 
         public ScriptCompiler()
         {
@@ -43,20 +44,31 @@ namespace QuickJS.Editor
                 fixed (byte* input_ptr = input_bytes)
                 fixed (byte* fn_ptr = fn_bytes)
                 {
+                    var evalFlags = JSEvalFlags.JS_EVAL_FLAG_COMPILE_ONLY | JSEvalFlags.JS_EVAL_FLAG_STRICT;
                     var input_len = (size_t)(input_bytes.Length - 1);
-                    var rval = JSApi.JS_Eval(_ctx, input_ptr, input_len, fn_ptr, JSEvalFlags.JS_EVAL_TYPE_MODULE | JSEvalFlags.JS_EVAL_FLAG_COMPILE_ONLY);
+                    if (!commonJSModule)
+                    {
+                        evalFlags |= JSEvalFlags.JS_EVAL_TYPE_MODULE;
+                    }
+
+                    var rval = JSApi.JS_Eval(_ctx, input_ptr, input_len, fn_ptr, evalFlags);
                     if (JSApi.JS_IsException(rval))
                     {
-                        _ctx.print_exception();
+                        _ctx.print_exception(_logger, LogLevel.Error, "[ScriptCompiler]");
                     }
                     else
                     {
                         size_t psize;
                         var byteCode = JSApi.JS_WriteObject(_ctx, out psize, rval, JSApi.JS_WRITE_OBJ_BYTECODE);
+                        JSApi.JS_FreeValue(_ctx, rval);
                         if (byteCode != IntPtr.Zero)
                         {
-                            outputBytes = new byte[psize];
-                            Marshal.Copy(byteCode, outputBytes, 0, psize);
+                            var tagSize = sizeof(uint);
+                            uint tagValue = commonJSModule ? ScriptRuntime.BYTECODE_COMMONJS_MODULE_TAG : ScriptRuntime.BYTECODE_ES6_MODULE_TAG;
+
+                            outputBytes = new byte[psize + tagSize];
+                            Buffer.BlockCopy(BitConverter.GetBytes(tagValue), 0, outputBytes, 0, tagSize);
+                            Marshal.Copy(byteCode, outputBytes, tagSize, psize);
                         }
                         JSApi.js_free(_ctx, byteCode);
                     }
