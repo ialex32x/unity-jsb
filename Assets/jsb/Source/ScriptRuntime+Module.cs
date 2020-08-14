@@ -16,17 +16,10 @@ namespace QuickJS
         public const uint COMMONJS_MODULE_TAG = ScriptEngine.VERSION << 8 | 0x23;
         public const uint ES6_MODULE_TAG = ScriptEngine.VERSION  << 8 | 0xfe;
 
-        public static string EnsureExtension(string fileName)
-        {
-            return fileName != null && (fileName.EndsWith(".js") || fileName.EndsWith(".jsx") || fileName.EndsWith(".json")) ? fileName : fileName + ".js";
-        }
-
         public static string module_resolve(IFileSystem fs, IFileResolver resolver, string module_base_name, string module_id)
         {
-            // var module_id = EnsureExtension(module_name);
             var parent_id = module_base_name;
             var resolving = module_id;
-            // Debug.LogFormat("module_normalize module_id:'{0}', parent_id:'{1}'", module_id, parent_id);
 
             // 将相对目录展开
             if (module_id.StartsWith("./") || module_id.StartsWith("../") || module_id.Contains("/./") ||
