@@ -15,7 +15,7 @@
 * [初步] 支持 XMLHttpRequest (limited support)
 * [初步] 未导出的类型通过反射方式进行 C#/JS 交互
 * [初步] 运行时替换 C# 代码 (hotfix, limited support)
-* [未完成] 支持 JS 字节码 (QuickJS)
+* 支持 JS 字节码 (QuickJS)
 * [未完成] Webpack HMR 运行时模块热替换 (limited support, for development only)
 
 # 特性示例
