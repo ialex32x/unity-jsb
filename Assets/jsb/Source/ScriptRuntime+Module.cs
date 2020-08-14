@@ -16,7 +16,7 @@ namespace QuickJS
         public const uint BYTECODE_COMMONJS_MODULE_TAG = ScriptEngine.VERSION << 8 | 0x23;
         public const uint BYTECODE_ES6_MODULE_TAG = ScriptEngine.VERSION << 8 | 0xfe;
 
-        private static uint TryReadByteCodeTagValue(byte[] bytes)
+        public static uint TryReadByteCodeTagValue(byte[] bytes)
         {
             if (bytes != null && bytes.Length > sizeof(uint))
             {
@@ -269,7 +269,7 @@ namespace QuickJS
                         JSApi.JS_FreeValue(ctx, func_val);
                         return rval;
                     }
-                    
+
                     JSApi.JS_FreeValue(ctx, bytecodeFunc);
                     return JSApi.JS_ThrowInternalError(ctx, "failed to eval bytecode module");
                 }

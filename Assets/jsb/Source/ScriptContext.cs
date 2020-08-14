@@ -288,8 +288,14 @@ namespace QuickJS
             ns_jsb.Close();
         }
 
-        public unsafe void EvalMain(byte[] input_bytes, string fileName)
+        public unsafe void EvalMain(byte[] source, string fileName)
         {
+            var tagValue = ScriptRuntime.TryReadByteCodeTagValue(source);
+            if (tagValue == ScriptRuntime.BYTECODE_ES6_MODULE_TAG)
+            {
+                throw new Exception("es6 module bytecode as main is unsupported");
+            }
+
             var dirname = PathUtils.GetDirectoryName(fileName);
             var filename_bytes = TextUtils.GetNullTerminatedBytes(fileName);
             var filename_atom = GetAtom(fileName);
@@ -303,32 +309,69 @@ namespace QuickJS
             var require_argv = new JSValue[5] { exports_obj, require_obj, module_obj, filename_obj, dirname_obj };
             JSApi.JS_SetProperty(_ctx, require_obj, GetAtom("moduleId"), JSApi.JS_DupValue(_ctx, filename_obj));
 
-            fixed (byte* input_ptr = input_bytes)
-            fixed (byte* resolved_id_ptr = filename_bytes)
+            if (tagValue == ScriptRuntime.BYTECODE_COMMONJS_MODULE_TAG)
             {
-                var input_len = (size_t)(input_bytes.Length - 1);
-                var func_val = JSApi.JS_Eval(_ctx, input_ptr, input_len, resolved_id_ptr, JSEvalFlags.JS_EVAL_TYPE_GLOBAL | JSEvalFlags.JS_EVAL_FLAG_STRICT);
-                if (func_val.IsException())
+                // bytecode
+                fixed (byte* intput_ptr = source)
                 {
-                    FreeValues(require_argv);
-                    _ctx.print_exception();
-                    return;
-                }
+                    var bytecodeFunc = JSApi.JS_ReadObject(_ctx, intput_ptr + sizeof(uint), source.Length - sizeof(uint), JSApi.JS_READ_OBJ_BYTECODE);
 
-                if (JSApi.JS_IsFunction(_ctx, func_val) == 1)
-                {
-                    var rval = JSApi.JS_Call(_ctx, func_val, JSApi.JS_UNDEFINED, require_argv.Length, require_argv);
-                    if (rval.IsException())
+                    if (bytecodeFunc.tag == JSApi.JS_TAG_FUNCTION_BYTECODE)
                     {
+                        var func_val = JSApi.JS_EvalFunction(_ctx, bytecodeFunc); // it's CallFree (bytecodeFunc)
+                        if (JSApi.JS_IsFunction(_ctx, func_val) != 1)
+                        {
+                            JSApi.JS_FreeValue(_ctx, func_val);
+                            FreeValues(require_argv);
+                            throw new Exception("failed to eval bytecode module");
+                        }
+
+                        var rval = JSApi.JS_Call(_ctx, func_val, JSApi.JS_UNDEFINED);
                         JSApi.JS_FreeValue(_ctx, func_val);
+                        if (rval.IsException())
+                        {
+                            _ctx.print_exception();
+                        }
+                        FreeValues(require_argv);
+                        return;
+                    }
+
+                    JSApi.JS_FreeValue(_ctx, bytecodeFunc);
+                    FreeValues(require_argv);
+                    throw new Exception("failed to eval bytecode module");
+                }
+            }
+            else
+            {
+                // source
+                var input_bytes = TextUtils.GetShebangNullTerminatedCommonJSBytes(source);
+                fixed (byte* input_ptr = input_bytes)
+                fixed (byte* resolved_id_ptr = filename_bytes)
+                {
+                    var input_len = (size_t)(input_bytes.Length - 1);
+                    var func_val = JSApi.JS_Eval(_ctx, input_ptr, input_len, resolved_id_ptr, JSEvalFlags.JS_EVAL_TYPE_GLOBAL | JSEvalFlags.JS_EVAL_FLAG_STRICT);
+                    if (func_val.IsException())
+                    {
                         FreeValues(require_argv);
                         _ctx.print_exception();
                         return;
                     }
-                }
 
-                JSApi.JS_FreeValue(_ctx, func_val);
-                FreeValues(require_argv);
+                    if (JSApi.JS_IsFunction(_ctx, func_val) == 1)
+                    {
+                        var rval = JSApi.JS_Call(_ctx, func_val, JSApi.JS_UNDEFINED, require_argv.Length, require_argv);
+                        if (rval.IsException())
+                        {
+                            JSApi.JS_FreeValue(_ctx, func_val);
+                            FreeValues(require_argv);
+                            _ctx.print_exception();
+                            return;
+                        }
+                    }
+
+                    JSApi.JS_FreeValue(_ctx, func_val);
+                    FreeValues(require_argv);
+                }
             }
         }
 
