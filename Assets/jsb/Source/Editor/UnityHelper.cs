@@ -107,7 +107,7 @@ namespace QuickJS.Editor
             {
                 var obj = objects[i];
                 var assetPath = AssetDatabase.GetAssetPath(obj);
-                if (CheckAnyScripts(assetPath))
+                if (CheckAnyScripts(assetPath, 5))
                 {
                     return true;
                 }
@@ -115,13 +115,19 @@ namespace QuickJS.Editor
             return false;
         }
 
-        private static bool CheckAnyScripts(string assetPath)
+        private static bool CheckAnyScripts(string assetPath, int maxDepth)
         {
+            if (maxDepth <= 0)
+            {
+                Debug.LogWarningFormat("max depth limited: {0}", assetPath);
+                return false;
+            }
+
             if (Directory.Exists(assetPath))
             {
                 foreach (var subDir in Directory.GetDirectories(assetPath))
                 {
-                    if (CheckAnyScripts(subDir))
+                    if (CheckAnyScripts(subDir, maxDepth - 1))
                     {
                         return true;
                     }
@@ -129,7 +135,7 @@ namespace QuickJS.Editor
 
                 foreach (var subFile in Directory.GetFiles(assetPath))
                 {
-                    if (CheckAnyScripts(subFile))
+                    if (CheckAnyScripts(subFile, maxDepth))
                     {
                         return true;
                     }
