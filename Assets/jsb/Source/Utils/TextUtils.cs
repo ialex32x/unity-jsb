@@ -86,6 +86,11 @@ namespace QuickJS.Utils
         /// </summary>
         public static byte[] GetShebangNullTerminatedCommonJSBytes(byte[] str)
         {
+            return GetShebangNullTerminatedCommonJSBytes(str, _header, _footer);
+        }
+
+        public static byte[] GetShebangNullTerminatedCommonJSBytes(byte[] str, byte[] header, byte[] footer)
+        {
             if (str == null)
             {
                 return str;
@@ -97,8 +102,8 @@ namespace QuickJS.Utils
                 count--;
             }
 
-            var header_size = _header.Length;
-            var footer_size = _footer.Length;
+            var header_size = header.Length;
+            var footer_size = footer.Length;
             var bom_size = 0;
             if (count >= 3)
             {
@@ -110,7 +115,7 @@ namespace QuickJS.Utils
             }
 
             var bytes = new byte[header_size + count + footer_size + 1 - bom_size];
-            Array.Copy(_header, 0, bytes, 0, header_size);
+            Array.Copy(header, 0, bytes, 0, header_size);
             Array.Copy(str, bom_size, bytes, header_size, count - bom_size);
 
             if (count >= 2)
@@ -137,7 +142,7 @@ namespace QuickJS.Utils
                 }
             }
 
-            Array.Copy(_footer, 0, bytes, header_size + count - bom_size, footer_size);
+            Array.Copy(footer, 0, bytes, header_size + count - bom_size, footer_size);
             return bytes;
         }
 

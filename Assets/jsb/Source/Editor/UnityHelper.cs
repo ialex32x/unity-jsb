@@ -119,7 +119,7 @@ namespace QuickJS.Editor
         {
             if (maxDepth <= 0)
             {
-                Debug.LogWarningFormat("max depth limited: {0}", assetPath);
+                // Debug.LogWarningFormat("max depth limited: {0}", assetPath);
                 return false;
             }
 
