@@ -332,24 +332,9 @@ namespace QuickJS
             }
         }
 
-        public unsafe JSValue EvalSource(string input, string fileName)
+        public void EvalSourceFree(byte[] source, string fileName)
         {
-            var input_bytes = Utils.TextUtils.GetNullTerminatedBytes(input);
-            var fn_bytes = Utils.TextUtils.GetNullTerminatedBytes(fileName);
-
-            fixed (byte* input_ptr = input_bytes)
-            fixed (byte* fn_ptr = fn_bytes)
-            {
-                var input_len = (size_t)(input_bytes.Length - 1);
-
-                // return JS_Eval(ctx, input_ptr, input_len, fn_ptr, JSEvalFlags.JS_EVAL_TYPE_GLOBAL);
-                return JSApi.JS_Eval(_ctx, input_ptr, input_len, fn_ptr, JSEvalFlags.JS_EVAL_TYPE_MODULE | JSEvalFlags.JS_EVAL_FLAG_STRICT);
-            }
-        }
-
-        public void EvalSourceFree(string source, string fileName)
-        {
-            var jsValue = EvalSource(source, fileName);
+            var jsValue = ScriptRuntime.EvalSource(_ctx, source, fileName);
             if (JSApi.JS_IsException(jsValue))
             {
                 _ctx.print_exception();

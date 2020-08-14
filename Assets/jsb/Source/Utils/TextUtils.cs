@@ -16,6 +16,16 @@ namespace QuickJS.Utils
             _footer = Encoding.UTF8.GetBytes("\n})");
         }
 
+        public static uint ToHostByteOrder(uint x)
+        {
+            return (uint)System.Net.IPAddress.NetworkToHostOrder((int)x);
+        }
+
+        public static uint ToNetworkByteOrder(uint x)
+        {
+            return (uint)System.Net.IPAddress.HostToNetworkOrder((int)x);
+        }
+
         /// <summary>
         /// 剔除行注释
         /// </summary>
