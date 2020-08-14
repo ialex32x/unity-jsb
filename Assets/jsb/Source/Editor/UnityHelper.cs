@@ -160,25 +160,31 @@ namespace QuickJS.Editor
         [MenuItem("Assets/JS Bridge/Compile (bytecode)")]
         public static void CompileBytecode()
         {
-            CompileBytecode(false);
+            CompileBytecode(null);
             AssetDatabase.Refresh();
         }
 
-        [MenuItem("Assets/JS Bridge/Compile as CommonJS Module (bytecode)", true)]
-        public static bool CompileBytecodeCommonJSValidate()
+        // workspace: path of tsconfig.json
+        public static void CompileBytecode(string workspace)
         {
-            return CheckAnyScriptExists();
-        }
+            var commonJSModule = false;
+            var tsconfigPath = string.IsNullOrEmpty(workspace) ? "tsconfig.json" : Path.Combine(workspace, "tsconfig.json");
+            if (File.Exists(tsconfigPath))
+            {
+                var text = Utils.TextUtils.NormalizeJson(File.ReadAllText(tsconfigPath));
+                var tsconfig = JsonUtility.FromJson<TSConfig>(text);
+                var module = tsconfig.compilerOptions.module;
+                if (module == "commonjs")
+                {
+                    commonJSModule = true;
+                    Debug.LogFormat("read tsconfig.json: compile as commonjs module mode");
+                }
+            }
+            else
+            {
+                Debug.LogFormat("no tsconfig.json found, compile as ES6 module mode");
+            }
 
-        [MenuItem("Assets/JS Bridge/Compile as CommonJS Module (bytecode)")]
-        public static void CompileBytecodeCommonJS()
-        {
-            CompileBytecode(true);
-            AssetDatabase.Refresh();
-        }
-
-        private static void CompileBytecode(bool commonJSModule)
-        {
             using (var compiler = new ScriptCompiler())
             {
                 var objects = Selection.objects;

@@ -700,23 +700,6 @@ namespace QuickJS.Native
         [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern JS_BOOL JSB_ToUint32(JSContext ctx, out uint32_t pres, JSValueConst val);
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static unsafe JSValue JS_Eval(JSContext ctx, string input, string filename)
-        {
-            //TEMP CODE
-            var input_bytes = Utils.TextUtils.GetNullTerminatedBytes(input);
-            var fn_bytes = Utils.TextUtils.GetNullTerminatedBytes(filename);
-
-            fixed (byte* input_ptr = input_bytes)
-            fixed (byte* fn_ptr = fn_bytes)
-            {
-                var input_len = (size_t)(input_bytes.Length - 1);
-                // return JS_Eval(ctx, input_ptr, input_len, fn_ptr, JSEvalFlags.JS_EVAL_TYPE_GLOBAL);
-                return JS_Eval(ctx, input_ptr, input_len, fn_ptr,
-                    JSEvalFlags.JS_EVAL_TYPE_MODULE | JSEvalFlags.JS_EVAL_FLAG_STRICT);
-            }
-        }
-
         [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern void js_free(JSContext ctx, IntPtr ptr);
 

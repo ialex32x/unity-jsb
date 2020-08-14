@@ -13,6 +13,9 @@ namespace QuickJS
 
     public partial class ScriptRuntime
     {
+        public const uint COMMONJS_MODULE_TAG = ScriptEngine.VERSION << 8 | 0x23;
+        public const uint ES6_MODULE_TAG = ScriptEngine.VERSION  << 8 | 0xfe;
+
         public static string EnsureExtension(string fileName)
         {
             return fileName != null && (fileName.EndsWith(".js") || fileName.EndsWith(".jsx") || fileName.EndsWith(".json")) ? fileName : fileName + ".js";
@@ -49,6 +52,25 @@ namespace QuickJS
             }
 
             throw new Exception(string.Format("module not found: {0}", module_id));
+        }
+
+        [MonoPInvokeCallback(typeof(JSModuleNormalizeFunc))]
+        public static IntPtr module_normalize(JSContext ctx, string module_base_name, string module_name,
+            IntPtr opaque)
+        {
+            try
+            {
+                var runtime = ScriptEngine.GetRuntime(ctx);
+                var fileResolver = runtime._fileResolver;
+                var fileSystem = runtime._fileSystem;
+                var resolve_to = module_resolve(fileSystem, fileResolver, module_base_name, module_name);
+                return JSApi.js_strndup(ctx, resolve_to);
+            }
+            catch (Exception exception)
+            {
+                JSApi.JS_ThrowInternalError(ctx, exception.Message);
+                return IntPtr.Zero;
+            }
         }
 
         // require(id);
@@ -172,25 +194,6 @@ namespace QuickJS
             }
         }
 
-        [MonoPInvokeCallback(typeof(JSModuleNormalizeFunc))]
-        public static IntPtr module_normalize(JSContext ctx, string module_base_name, string module_name,
-            IntPtr opaque)
-        {
-            try
-            {
-                var runtime = ScriptEngine.GetRuntime(ctx);
-                var fileResolver = runtime._fileResolver;
-                var fileSystem = runtime._fileSystem;
-                var resolve_to = module_resolve(fileSystem, fileResolver, module_base_name, module_name);
-                return JSApi.js_strndup(ctx, resolve_to);
-            }
-            catch (Exception exception)
-            {
-                JSApi.JS_ThrowInternalError(ctx, exception.Message);
-                return IntPtr.Zero;
-            }
-        }
-
         [MonoPInvokeCallback(typeof(JSModuleLoaderFunc))]
         public static unsafe JSModuleDef module_loader(JSContext ctx, string module_name, IntPtr opaque)
         {
@@ -208,8 +211,7 @@ namespace QuickJS
                 fixed (byte* fn_ptr = fn_bytes)
                 {
                     var input_len = (size_t)(input_bytes.Length - 1);
-                    var  func_val = JSApi.JS_Eval(ctx, input_ptr, input_len, fn_ptr,
-                            JSEvalFlags.JS_EVAL_TYPE_MODULE | JSEvalFlags.JS_EVAL_FLAG_COMPILE_ONLY);
+                    var func_val = JSApi.JS_Eval(ctx, input_ptr, input_len, fn_ptr, JSEvalFlags.JS_EVAL_TYPE_MODULE | JSEvalFlags.JS_EVAL_FLAG_COMPILE_ONLY);
 
                     if (JSApi.JS_IsException(func_val))
                     {
@@ -224,10 +226,8 @@ namespace QuickJS
                     {
                         mod = new JSModuleDef(func_val.u.ptr);
                         var meta = JSApi.JS_GetImportMeta(ctx, mod);
-                        JSApi.JS_DefinePropertyValueStr(ctx, meta, "url",
-                            JSApi.JS_NewString(ctx, $"file://{module_name}"), JSPropFlags.JS_PROP_C_W_E);
-                        JSApi.JS_DefinePropertyValueStr(ctx, meta, "main",
-                            JSApi.JS_NewBool(ctx, false), JSPropFlags.JS_PROP_C_W_E);
+                        JSApi.JS_DefinePropertyValueStr(ctx, meta, "url", JSApi.JS_NewString(ctx, $"file://{module_name}"), JSPropFlags.JS_PROP_C_W_E);
+                        JSApi.JS_DefinePropertyValueStr(ctx, meta, "main", JSApi.JS_NewBool(ctx, false), JSPropFlags.JS_PROP_C_W_E);
                         JSApi.JS_FreeValue(ctx, meta);
                     }
                 }

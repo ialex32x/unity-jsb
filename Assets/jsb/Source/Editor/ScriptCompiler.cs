@@ -55,8 +55,12 @@ namespace QuickJS.Editor
                         var byteCode = JSApi.JS_WriteObject(_ctx, out psize, rval, JSApi.JS_WRITE_OBJ_BYTECODE);
                         if (byteCode != IntPtr.Zero)
                         {
-                            outputBytes = new byte[psize];
-                            Marshal.Copy(byteCode, outputBytes, 0, psize);
+                            var tagSize = sizeof(uint);
+                            uint tagValue = commonJSModule ? ScriptRuntime.COMMONJS_MODULE_TAG : ScriptRuntime.ES6_MODULE_TAG;
+
+                            outputBytes = new byte[psize + tagSize];
+                            Buffer.BlockCopy(BitConverter.GetBytes(tagValue), 0, outputBytes, 0, tagSize);
+                            Marshal.Copy(byteCode, outputBytes, tagSize, psize);
                         }
                         JSApi.js_free(_ctx, byteCode);
                     }
