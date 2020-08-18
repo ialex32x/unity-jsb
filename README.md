@@ -233,6 +233,16 @@ jsb.hotfix.before_single("HotfixTest", "AnotherCall", function () {
 > 单个运行时不支持多线程使用. 
 > JS 环境下通过 Worker 支持多线程脚本运行.
 
+# 附加模块
+Extra 为可选附加模块, 可以按需要删除不需要的模块. 直接删除目录即可.
+* Websocket
+* XMLHttpRequest
+* SourceMap (支持 stacktrace 转换)
+* MiniConsole (演示了如何将日志转向界面)
+* NodeCompatibleLayer (experimental)
+* DOMCompatibleLayer (experimental)
+* UdpSocket (未实现)
+
 # Debugger
 > 暂不支持
 
