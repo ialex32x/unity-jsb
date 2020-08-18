@@ -196,6 +196,15 @@ namespace QuickJS.Extra.Sqlite.Native
             NO_VTAB = 0x04,
         }
 
+        public enum DataTypes : int
+        {
+            INTEGER = 1,
+            FLOAT = 2,
+            BLOB = 4,
+            NULL = 5,
+            TEXT = 3,
+        }
+
 #if UNITY_EDITOR_WIN || UNITY_STANDALONE_WIN
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
 #endif
@@ -228,8 +237,23 @@ namespace QuickJS.Extra.Sqlite.Native
         [DllImport(SQLITE3DLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern ResultCode sqlite3_close_v2(sqlite3 db);
 
+        #region error
+        [DllImport(SQLITE3DLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern int sqlite3_errcode(sqlite3 db);
+        [DllImport(SQLITE3DLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern int sqlite3_extended_errcode(sqlite3 db);
+        #endregion 
+
+        #region memory management
+        [DllImport(SQLITE3DLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern IntPtr sqlite3_malloc(int size);
+        [DllImport(SQLITE3DLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern IntPtr sqlite3_realloc(IntPtr ptr, int size);
+        [DllImport(SQLITE3DLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern sqlite3_uint64 sqlite3_msize(IntPtr ptr);
         [DllImport(SQLITE3DLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern void sqlite3_free(IntPtr ptr);
+        #endregion
 
         [DllImport(SQLITE3DLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern int sqlite3_libversion_number();
@@ -289,9 +313,19 @@ namespace QuickJS.Extra.Sqlite.Native
         public static extern ResultCode sqlite3_finalize(sqlite3_stmt pStmt);
 
         #region sqlite3 bind
-        // ResultCode sqlite3_bind_blob(sqlite3_stmt pStmt, int index, const void*, int n, void(*)(void*));
-        // ResultCode sqlite3_bind_blob64(sqlite3_stmt pStmt, int index, const void*, sqlite3_uint64, void(*)(void*));
-        // ResultCode sqlite3_bind_double(sqlite3_stmt pStmt, int index, double);
+
+        [DllImport(SQLITE3DLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern ResultCode sqlite3_clear_bindings(sqlite3_stmt pStmt);
+        [DllImport(SQLITE3DLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern ResultCode sqlite3_reset(sqlite3_stmt pStmt);
+
+        [DllImport(SQLITE3DLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern unsafe ResultCode sqlite3_bind_blob(sqlite3_stmt pStmt, int index, byte* ptr, int n, /*void(*)(void*)*/IntPtr xDel);
+        [DllImport(SQLITE3DLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern unsafe ResultCode sqlite3_bind_blob64(sqlite3_stmt pStmt, int index, byte* ptr, sqlite3_uint64 n, /*void(*)(void*)*/IntPtr xDel);
+
+        [DllImport(SQLITE3DLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern ResultCode sqlite3_bind_double(sqlite3_stmt pStmt, int index, double value);
 
         [DllImport(SQLITE3DLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern ResultCode sqlite3_bind_int(sqlite3_stmt pStmt, int index, int value);
@@ -318,19 +352,27 @@ namespace QuickJS.Extra.Sqlite.Native
         // ResultCode sqlite3_bind_text64(sqlite3_stmt pStmt, int index, const char*, sqlite3_uint64, void(*)(void*), unsigned char encoding);
         // ResultCode sqlite3_bind_value(sqlite3_stmt pStmt, int index, const sqlite3_value*);
         // ResultCode sqlite3_bind_pointer(sqlite3_stmt pStmt, int index, void*, const char*,void(*)(void*));
-        // ResultCode sqlite3_bind_zeroblob(sqlite3_stmt pStmt, int index, int n);
-        // ResultCode sqlite3_bind_zeroblob64(sqlite3_stmt pStmt, int index, sqlite3_uint64);
+
+        [DllImport(SQLITE3DLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern ResultCode sqlite3_bind_zeroblob(sqlite3_stmt pStmt, int index, int n);
+        [DllImport(SQLITE3DLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern ResultCode sqlite3_bind_zeroblob64(sqlite3_stmt pStmt, int index, sqlite3_uint64 n);
+
         #endregion
 
         #region sqlite3 column
 
-        // const void* sqlite3_column_blob(sqlite3_stmt *, int iCol);
-        // double sqlite3_column_double(sqlite3_stmt*, int iCol);
+        [DllImport(SQLITE3DLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern IntPtr sqlite3_column_blob(sqlite3_stmt pStmt, int iCol);
+
+        [DllImport(SQLITE3DLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern double sqlite3_column_double(sqlite3_stmt pStmt, int iCol);
 
         [DllImport(SQLITE3DLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern int sqlite3_column_int(sqlite3_stmt pStmt, int iCol);
 
-        // sqlite3_int64 sqlite3_column_int64(sqlite3_stmt*, int iCol);
+        [DllImport(SQLITE3DLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern sqlite3_int64 sqlite3_column_int64(sqlite3_stmt pStmt, int iCol);
 
         [DllImport(SQLITE3DLL, CallingConvention = CallingConvention.Cdecl, EntryPoint = "sqlite3_column_text")]
         private static extern unsafe IntPtr _sqlite3_column_text(sqlite3_stmt pStmt, int iCol);
@@ -355,7 +397,8 @@ namespace QuickJS.Extra.Sqlite.Native
         [DllImport(SQLITE3DLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern int sqlite3_column_bytes(sqlite3_stmt pStmt, int iCol);
         // int sqlite3_column_bytes16(sqlite3_stmt*, int iCol);
-        // int sqlite3_column_type(sqlite3_stmt*, int iCol);
+        [DllImport(SQLITE3DLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern DataTypes sqlite3_column_type(sqlite3_stmt pStmt, int iCol);
 
         [DllImport(SQLITE3DLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern int sqlite3_column_count(sqlite3_stmt pStmt);
