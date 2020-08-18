@@ -7,8 +7,10 @@ set(OUT_DIR ${TOP_DIR}/build)
 set(LIBSQLITE3_DIR ${TOP_DIR}/sqlite-amalgamation-3320300)
 
 include_directories(${LIBSQLITE3_DIR})
+include_directories(${TOP_DIR})
+
 set(LIBSQLITE3_SRCS
-    ${LIBSQLITE3_DIR}/sqlite3.c
+    ${TOP_DIR}/unity_sqlite.c
 )
 
 if (MSVC)
