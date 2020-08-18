@@ -1,4 +1,3 @@
-#if !UNITY_WEBGL
 using System;
 using System.Collections.Generic;
 using System.Net;
@@ -7,24 +6,14 @@ using System.Threading;
 using AOT;
 using System.Text;
 
-namespace QuickJS.Extra
+namespace QuickJS.Extra.Sqlite
 {
     using QuickJS;
     using QuickJS.IO;
     using QuickJS.Native;
     using QuickJS.Binding;
-    using QuickJS.Extra.Sqlite;
 
-    public class SqliteConnection : Values, IScriptFinalize
+    public class SqliteConnection 
     {
-        public void OnJSFinalize()
-        {
-        }
-
-        public static void Bind(TypeRegister register)
-        {
-
-        }
     }
 }
-#endif
