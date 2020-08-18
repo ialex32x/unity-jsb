@@ -407,6 +407,12 @@ namespace QuickJS
                     JSApi.JS_SetPropertyStr(ctx, console, "assert", JSApi.JS_NewCFunctionMagic(ctx, _print, "assert", 1, JSCFunctionEnum.JS_CFUNC_generic_magic, 3));
                 }
                 JSApi.JS_SetPropertyStr(ctx, global_object, "console", console);
+
+                var threading = JSApi.JS_NewObject(ctx);
+                {
+                    JSApi.JS_SetPropertyStr(ctx, threading, "sleep", JSApi.JS_NewCFunctionMagic(ctx, _sleep, "sleep", 1, JSCFunctionEnum.JS_CFUNC_generic_magic, 0));
+                }
+                JSApi.JS_SetPropertyStr(ctx, global_object, "threading", threading);
             }
             JSApi.JS_FreeValue(ctx, global_object);
         }

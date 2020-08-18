@@ -19,6 +19,24 @@ namespace QuickJS
         #region Builtins
 
         [MonoPInvokeCallback(typeof(JSCFunctionMagic))]
+        private static JSValue _sleep(JSContext ctx, JSValue this_obj, int argc, JSValue[] argv, int magic)
+        {
+            int pres = 0;
+            if (argc > 0)
+            {
+                if (JSApi.JS_ToInt32(ctx, out pres, argv[0]) != 0)
+                {
+                    return JSApi.JS_ThrowInternalError(ctx, "invalid parameter: milliseconds");
+                }
+            }
+            if (pres > 0)
+            {
+                System.Threading.Thread.Sleep(pres);
+            }
+            return JSApi.JS_UNDEFINED;
+        }
+
+        [MonoPInvokeCallback(typeof(JSCFunctionMagic))]
         private static JSValue _print(JSContext ctx, JSValue this_obj, int argc, JSValue[] argv, int magic)
         {
             var runtime = ScriptEngine.GetRuntime(ctx);
