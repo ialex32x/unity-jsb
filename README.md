@@ -7,16 +7,24 @@
 
 
 # 特性支持
-* 支持在JS异步函数中等待 Unity YieldInstruction 对象
-* 支持在JS异步函数中等待 System.Threading.Tasks.Task 对象 (limited support)
-* 向 JS 导入 C# 运算符重载 +, -, *, /, ==, -(负)
-* 支持 Websocket (limited support)
-* [初步] 支持 Worker (limited support)
-* [初步] 支持 XMLHttpRequest (limited support)
-* [初步] 未导出的类型通过反射方式进行 C#/JS 交互
-* [初步] 运行时替换 C# 代码 (hotfix, limited support)
+* JS异步函数与 Unity 协程/ C# Tasking 的结合 (limited support)
+* 支持运算符重载 +, -, *, /, ==, -(负)
+* [初步] 支持 JS Worker (limited support)
+* [初步] 支持未导出的C#类型的 JS 交互
+* [初步] 支持 C# 代码热更 (hotfix, limited support)
 * 支持 JS 字节码 (QuickJS)
 * [未完成] Webpack HMR 运行时模块热替换 (limited support, for development only)
+
+# 附加模块支持
+Extra 为可选附加模块, 提供不同的特定功能, 不需要的直接删除相应目录即可.
+* Websocket (初步支持, limited support)
+* XMLHttpRequest (初步支持, limited support)
+* SourceMap (支持 stacktrace 转换)
+* MiniConsole (演示了如何将日志转向界面)
+* NodeCompatibleLayer (experimental)
+* DOMCompatibleLayer (experimental)
+* UdpSocket (未实现)
+* SQLite (未实现)
 
 # 特性示例
 > 推荐使用 typescript 编写脚本, unity-jsb 对导出的 C# 类型自动生成了对应的 d.ts 声明, 以提供强类型辅助. 示例代码均使用 typescript. <br/>
@@ -202,7 +210,9 @@ onmessage = function (data) {
 
 ```
 
-## Hotfix (初步功能)
+## Hotfix
+初步功能, 尚未实现完整流程.
+
 ```ts
 
 jsb.hotfix.replace_single("HotfixTest", "Foo", function (x: number) {
@@ -253,3 +263,5 @@ jsb.hotfix.before_single("HotfixTest", "AnotherCall", function () {
 * [libwebsockets](https://github.com/warmcat/libwebsockets)
 * [mbedtls](https://github.com/ARMmbed/mbedtls)
 * [zlib](https://zlib.net/)
+* [sqlite3](https://sqlite.org/index.html)
+
