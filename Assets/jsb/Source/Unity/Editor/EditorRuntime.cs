@@ -61,7 +61,6 @@ namespace QuickJS.Editor
 
         private void OnPlayModeStateChanged(PlayModeStateChange mode)
         {
-            Debug.LogError(mode);
             switch (mode)
             {
                 case PlayModeStateChange.EnteredEditMode: _runMode = RunMode.Editor; EditorApplication.delayCall += OnInit; break;
