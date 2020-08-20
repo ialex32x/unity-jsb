@@ -2,7 +2,6 @@ using System;
 using System.Reflection;
 using System.Collections.Generic;
 using QuickJS.Native;
-using System.Runtime.CompilerServices;
 
 namespace QuickJS.Binding
 {

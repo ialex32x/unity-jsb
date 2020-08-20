@@ -1,13 +1,9 @@
 using System;
-using System.Collections.Generic;
 using System.Runtime.CompilerServices;
-using AOT;
 using QuickJS.Native;
 
 namespace QuickJS.Binding
 {
-    using UnityEngine;
-
     // 处理委托的绑定
     public partial class Values
     {

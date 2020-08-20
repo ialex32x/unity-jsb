@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using QuickJS.Native;
-using System.Runtime.CompilerServices;
-using UnityEngine;
 
 namespace QuickJS.Binding
 {
