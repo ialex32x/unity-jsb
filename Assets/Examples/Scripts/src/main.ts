@@ -213,3 +213,5 @@ worker.onmessage = function (data) {
 setInterval(function () {
     worker.postMessage("hello, worker! i am master!");
 }, 5000);
+
+global["testGlobalVar"] = "test";

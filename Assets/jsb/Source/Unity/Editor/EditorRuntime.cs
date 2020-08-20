@@ -13,8 +13,15 @@ namespace QuickJS.Editor
     [InitializeOnLoad]
     public class EditorRuntime : IScriptRuntimeListener
     {
+        private enum RunMode
+        {
+            Editor,
+            Playing,
+            None,
+        }
         private static EditorRuntime _instance;
         private ScriptRuntime _runtime;
+        private RunMode _runMode;
         private long _tick;
 
         static EditorRuntime()
@@ -22,36 +29,58 @@ namespace QuickJS.Editor
             _instance = new EditorRuntime();
         }
 
-        [UnityEditor.Callbacks.DidReloadScripts]
-        public static void OnDidReloadScripts()
+        public EditorRuntime()
+        {
+            _runMode = RunMode.None;
+            EditorApplication.delayCall += OnInit;
+            EditorApplication.playModeStateChanged += OnPlayModeStateChanged;
+        }
+
+        ~EditorRuntime()
         {
         }
 
-        public EditorRuntime()
+        private void OnInit()
         {
-            _tick = Environment.TickCount;
-
-            if (EditorApplication.isPlaying)
+            if (_runMode == RunMode.Playing)
             {
-                Debug.LogFormat(".isPlaying");
                 return;
             }
+            _tick = Environment.TickCount;
+
             var logger = new UnityLogger();
             var fileResolver = new FileResolver();
             var fileSystem = new DefaultFileSystem(logger);
             fileResolver.AddSearchPath("Assets/Examples/Scripts/out/editor");
             fileResolver.AddSearchPath("node_modules");
 
-            _runtime = ScriptEngine.CreateRuntime();
+            _runtime = ScriptEngine.CreateRuntime(true);
             _runtime.Initialize(fileSystem, fileResolver, this, logger, new ByteBufferPooledAllocator());
-            EditorApplication.update += OnUpdate;
+            _runtime.OnDestroy += OnDestroy;
+        }
+
+        private void OnPlayModeStateChanged(PlayModeStateChange mode)
+        {
+            Debug.LogError(mode);
+            switch (mode)
+            {
+                case PlayModeStateChange.EnteredEditMode: _runMode = RunMode.Editor; EditorApplication.delayCall += OnInit; break;
+                case PlayModeStateChange.EnteredPlayMode: _runMode = RunMode.Playing; break;
+            }
+        }
+
+        private void OnDestroy(ScriptRuntime rt)
+        {
         }
 
         private void OnUpdate()
         {
-            var tick = Environment.TickCount;
-            _runtime.Update((int)(tick - _tick));
-            _tick = tick;
+            if (_runtime != null)
+            {
+                var tick = Environment.TickCount;
+                _runtime.Update((int)(tick - _tick));
+                _tick = tick;
+            }
         }
 
         public void OnBind(ScriptRuntime runtime, TypeRegister register)

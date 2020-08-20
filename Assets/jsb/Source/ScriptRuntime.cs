@@ -398,6 +398,11 @@ namespace QuickJS
         // main loop
         public void Update(int ms)
         {
+            if (!_isValid || !_isRunning)
+            {
+                return;
+            }
+            
             if (_pendingActions.Count != 0)
             {
                 ExecutePendingActions();
