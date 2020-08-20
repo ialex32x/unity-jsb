@@ -225,13 +225,13 @@ namespace QuickJS.Editor
         public PInvokeGuardCodeGen(CodeGenerator cg)
         {
             this.cg = cg;
-            this.cg.cs.AppendLine("[AOT.MonoPInvokeCallbackAttribute(typeof({0}))]", typeof(QuickJS.Native.JSCFunction).Name);
+            this.cg.cs.AppendLine("[MonoPInvokeCallbackAttribute(typeof({0}))]", typeof(QuickJS.Native.JSCFunction).Name);
         }
 
         public PInvokeGuardCodeGen(CodeGenerator cg, Type target)
         {
             this.cg = cg;
-            this.cg.cs.AppendLine("[AOT.MonoPInvokeCallbackAttribute(typeof({0}))]", target.FullName);
+            this.cg.cs.AppendLine("[MonoPInvokeCallbackAttribute(typeof({0}))]", target.FullName);
         }
 
         public void Dispose()

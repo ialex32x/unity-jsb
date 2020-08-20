@@ -7,7 +7,6 @@ using System.Collections.Generic;
 
 namespace QuickJS.Extra
 {
-    using AOT;
     using UnityEngine;
     using QuickJS;
     using QuickJS.IO;

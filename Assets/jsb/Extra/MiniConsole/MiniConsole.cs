@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading;
-using AOT;
 using System.Text;
 
 namespace QuickJS.Extra

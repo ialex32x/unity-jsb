@@ -9,7 +9,6 @@ using System.Runtime.InteropServices;
 
 namespace QuickJS
 {
-    using AOT;
     using QuickJS;
     using QuickJS.IO;
     using QuickJS.Utils;

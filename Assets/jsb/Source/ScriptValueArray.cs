@@ -1,5 +1,4 @@
 using System;
-using AOT;
 using QuickJS.Native;
 
 namespace QuickJS
