@@ -100,6 +100,12 @@ namespace QuickJS.Editor
             EditorWindow.GetWindow<PrefsEditor>().Show();
         }
 
+        [MenuItem("JS Bridge/Console ...", false, 5002)]
+        public static void OpenJSConsole()
+        {
+            EditorWindow.GetWindow<EditorRuntimeConsole>().Show();
+        }
+
         public static bool CheckAnyScriptExists()
         {
             var objects = Selection.objects;

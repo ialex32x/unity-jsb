@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Threading;
-using AOT;
 using QuickJS.Native;
 using QuickJS.Utils;
 
@@ -15,6 +14,7 @@ namespace QuickJS
         {
             public int next;
             public ScriptRuntime target;
+            public bool isEditorRuntime;
         }
 
         public const uint VERSION = 0x723 + 1;
@@ -88,6 +88,30 @@ namespace QuickJS
             return GetRuntime(ctx).GetByteBufferAllocator()?.Alloc(size);
         }
 
+        /// <summary>
+        /// (内部使用) 获取第一个有效的前台运行时 (不包括编辑器运行时)
+        /// </summary>
+        public static ScriptRuntime GetRuntime(bool isEditorRuntime)
+        {
+            ScriptRuntime target = null;
+            _rwlock.EnterWriteLock();
+            var len = _runtimeRefs.Count;
+            for (int i = 0; i < len; ++i)
+            {
+                var runtimeRef = _runtimeRefs[i];
+                if (runtimeRef.isEditorRuntime == isEditorRuntime)
+                {
+                    var runtime = runtimeRef.target;
+                    if (runtime != null && !runtime.isWorker && runtime.isRunning)
+                    {
+                        target = runtime;
+                    }
+                }
+            }
+            _rwlock.ExitWriteLock();
+            return target;
+        }
+
         public static ScriptRuntime GetRuntime(JSContext ctx)
         {
             var rt = JSApi.JS_GetRuntime(ctx);
@@ -117,6 +141,11 @@ namespace QuickJS
 
         public static ScriptRuntime CreateRuntime()
         {
+            return CreateRuntime(false);
+        }
+
+        public static ScriptRuntime CreateRuntime(bool isEditorRuntime)
+        {
             _rwlock.EnterWriteLock();
             ScriptRuntimeRef freeEntry;
             int slotIndex;
@@ -137,12 +166,16 @@ namespace QuickJS
 
             var runtime = new ScriptRuntime(slotIndex + 1);
             freeEntry.target = runtime;
+            freeEntry.isEditorRuntime = isEditorRuntime;
             runtime.OnAfterDestroy += OnRuntimeAfterDestroy;
             _rwlock.ExitWriteLock();
 
             return runtime;
         }
 
+        /// <summary>
+        /// 关闭所有运行时 (不包括编辑器运行时)
+        /// </summary>
         public static void Shutdown()
         {
             _rwlock.EnterWriteLock();
@@ -150,10 +183,14 @@ namespace QuickJS
             var copylist = new List<ScriptRuntime>(len);
             for (int i = 0; i < len; ++i)
             {
-                var runtime = _runtimeRefs[i].target;
-                if (runtime != null)
+                var runtimeRef = _runtimeRefs[i];
+                if (!runtimeRef.isEditorRuntime)
                 {
-                    copylist.Add(runtime);
+                    var runtime = runtimeRef.target;
+                    if (runtime != null)
+                    {
+                        copylist.Add(runtime);
+                    }
                 }
             }
             _rwlock.ExitWriteLock();

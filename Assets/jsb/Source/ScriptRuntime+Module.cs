@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
-using AOT;
 using QuickJS.Native;
 using System.Threading;
 
@@ -241,7 +240,7 @@ namespace QuickJS
             }
         }
 
-        public static unsafe JSValue EvalSource(JSContext ctx, byte[] source, string fileName)
+        public static unsafe JSValue EvalSource(JSContext ctx, byte[] source, string fileName, bool bModule)
         {
             var tagValue = TryReadByteCodeTagValue(source);
 
@@ -282,9 +281,14 @@ namespace QuickJS
             fixed (byte* fn_ptr = fn_bytes)
             {
                 var input_len = (size_t)(input_bytes.Length - 1);
-
-                // return JS_Eval(ctx, input_ptr, input_len, fn_ptr, JSEvalFlags.JS_EVAL_TYPE_GLOBAL);
-                return JSApi.JS_Eval(ctx, input_ptr, input_len, fn_ptr, JSEvalFlags.JS_EVAL_TYPE_MODULE | JSEvalFlags.JS_EVAL_FLAG_STRICT);
+                var evalFlags = JSEvalFlags.JS_EVAL_FLAG_STRICT;
+                
+                if (bModule)
+                {
+                    evalFlags |= JSEvalFlags.JS_EVAL_TYPE_MODULE;
+                }
+                
+                return JSApi.JS_Eval(ctx, input_ptr, input_len, fn_ptr, evalFlags);
             }
         }
 

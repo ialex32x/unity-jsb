@@ -2,7 +2,7 @@
 using QuickJS.Binding;
 using System.Threading.Tasks;
 
-namespace QuickJS.Utils
+namespace QuickJS
 {
     public interface IScriptRuntimeListener
     {

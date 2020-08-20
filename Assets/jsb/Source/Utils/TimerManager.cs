@@ -1,13 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using AOT;
 using QuickJS.Binding;
 using QuickJS.Native;
 
 namespace QuickJS.Utils
 {
-    using UnityEngine;
-
     public class TimerManager : Scheduler
     {
         private uint _idgen;

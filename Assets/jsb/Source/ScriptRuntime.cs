@@ -3,7 +3,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.IO;
-using AOT;
 using QuickJS.Native;
 using System.Threading;
 using System.Reflection;
@@ -399,6 +398,11 @@ namespace QuickJS
         // main loop
         public void Update(int ms)
         {
+            if (!_isValid || !_isRunning)
+            {
+                return;
+            }
+            
             if (_pendingActions.Count != 0)
             {
                 ExecutePendingActions();
@@ -449,6 +453,11 @@ namespace QuickJS
                     action.callback(this, action);
                 }
             }
+        }
+
+        ~ScriptRuntime()
+        {
+            Shutdown();
         }
 
         public void Shutdown()

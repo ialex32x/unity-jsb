@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
-using AOT;
 using QuickJS.Binding;
 using QuickJS.Native;
 using QuickJS.Utils;
@@ -118,7 +117,7 @@ namespace QuickJS
                 return JSApi.JS_ThrowInternalError(ctx, "file not found");
             }
             var source = fileSystem.ReadAllBytes(resolvedPath);
-            return ScriptRuntime.EvalSource(ctx, source, resolvedPath);
+            return ScriptRuntime.EvalSource(ctx, source, resolvedPath, true);
         }
 
         [MonoPInvokeCallback(typeof(JSCFunction))]

@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Runtime.CompilerServices;
 using System.Text;
-using AOT;
 using QuickJS.Native;
 
 namespace QuickJS.Utils
