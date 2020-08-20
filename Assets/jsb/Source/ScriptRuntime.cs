@@ -450,6 +450,11 @@ namespace QuickJS
             }
         }
 
+        ~ScriptRuntime()
+        {
+            Shutdown();
+        }
+
         public void Shutdown()
         {
             //TODO: lock?

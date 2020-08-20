@@ -24,8 +24,7 @@ namespace QuickJS.Utils
             {
                 return;
             }
-            var bytes = System.Text.Encoding.UTF8.GetBytes(reseponseText);
-            context.EvalSourceFree(bytes, src);
+            context.EvalSourceFree(reseponseText, src);
         }
 
         // return promise

@@ -375,12 +375,32 @@ namespace QuickJS
             }
         }
 
+        public void EvalSourceFree(string source, string fileName)
+        {
+            EvalSourceFree(source, fileName, null);
+        }
+
+        public void EvalSourceFree(string source, string fileName, Action<JSContext, JSValue> onEvalReturn)
+        {
+            var bytes = System.Text.Encoding.UTF8.GetBytes(source);
+            EvalSourceFree(bytes, fileName, onEvalReturn);
+        }
+
         public void EvalSourceFree(byte[] source, string fileName)
         {
-            var jsValue = ScriptRuntime.EvalSource(_ctx, source, fileName);
+            EvalSourceFree(source, fileName, null);
+        }
+
+        public void EvalSourceFree(byte[] source, string fileName, Action<JSContext, JSValue> onEvalReturn)
+        {
+            var jsValue = ScriptRuntime.EvalSource(_ctx, source, fileName, false);
             if (JSApi.JS_IsException(jsValue))
             {
                 _ctx.print_exception();
+            }
+            else
+            {
+                onEvalReturn(_ctx, jsValue);
             }
 
             JSApi.JS_FreeValue(_ctx, jsValue);
