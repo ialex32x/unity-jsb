@@ -60,18 +60,23 @@ namespace QuickJS.Editor
                                 {
                                     using (var method = new PlainMethodCodeGen(this, "private static void BindAll(TypeRegister register)"))
                                     {
+                                        var editorTypes = new List<TypeBindingInfo>();
                                         foreach (var type in orderedTypes)
                                         {
                                             if (type.isEditorRuntime)
                                             {
-                                                using (new EditorOnlyCodeGen(this))
-                                                {
-                                                    method.AddStatement("{0}.{1}.Bind(register);", this.bindingManager.prefs.ns, type.name);
-                                                }
+                                                editorTypes.Add(type);
                                             }
                                             else
                                             {
                                                 method.AddStatement("{0}.{1}.Bind(register);", this.bindingManager.prefs.ns, type.name);
+                                            }
+                                        }
+                                        using (new EditorOnlyCodeGen(this))
+                                        {
+                                            foreach (var editorType in editorTypes)
+                                            {
+                                                method.AddStatement("{0}.{1}.Bind(register);", this.bindingManager.prefs.ns, editorType.name);
                                             }
                                         }
                                         method.AddStatement("{0}.{1}.Bind(register);", this.bindingManager.prefs.ns, CodeGenerator.NameOfDelegates);

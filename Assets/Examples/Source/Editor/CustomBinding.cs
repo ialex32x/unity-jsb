@@ -16,9 +16,10 @@ namespace jsb.Editor
 
             bindingManager.AddExportedType(typeof(System.Enum));
 
-// #if UNITY_EDITOR // [test] editor only
-//             bindingManager.AddExportedType(typeof(UnityEditor.EditorApplication), false, true);
-// #endif
+#if UNITY_EDITOR 
+            // [test] editor only
+            bindingManager.AddExportedType(typeof(UnityEditor.EditorApplication), false, true);
+#endif
         }
     }
 }
