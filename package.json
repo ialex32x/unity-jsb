@@ -18,6 +18,7 @@
         "gulp-concat": "^2.6.1",
         "gulp-rename": "^2.0.0",
         "gulp-uglify": "^3.0.0",
+        "html-webpack-plugin": "^4.3.0",
         "run-sequence": "^2.2.1",
         "ts-loader": "^8.0.0",
         "typescript": "^3.9.6",
