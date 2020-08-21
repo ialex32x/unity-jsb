@@ -540,6 +540,11 @@ namespace QuickJS.Native
             return JSB_NewCFunctionMagic(ctx, fn, atom, length, cproto, magic);
         }
 
+        [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
+        private static extern JSValue JS_NewCFunction2(JSContext ctx, IntPtr func,
+            [MarshalAs(UnmanagedType.LPStr)] string name,
+            int length, JSCFunctionEnum cproto, int magic);
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static JSValue JS_NewCFunctionMagic(JSContext ctx, JSCFunctionMagic func,
             [MarshalAs(UnmanagedType.LPStr)] string name,
@@ -549,11 +554,7 @@ namespace QuickJS.Native
             return JS_NewCFunction2(ctx, fn, name, length, cproto, magic);
         }
 
-        [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern JSValue JS_NewCFunction2(JSContext ctx, IntPtr func,
-            [MarshalAs(UnmanagedType.LPStr)] string name,
-            int length, JSCFunctionEnum cproto, int magic);
-
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static JSValue JS_NewCFunction2(JSContext ctx, JSCFunction func, string name, int length,
             JSCFunctionEnum cproto, int magic)
         {

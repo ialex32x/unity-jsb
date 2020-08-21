@@ -58,12 +58,45 @@ namespace QuickJS.Extra
             }
         }
 
-        public static void Bind(TypeRegister register)
+        [MonoPInvokeCallback(typeof(JSCFunction))]
+        public static JSValue js_self_addEventListener(JSContext ctx, JSValue this_obj, int argc, JSValue[] argv)
+        {
+            Debug.LogFormat("js_self_addEventListener");
+            //TODO: self.addEventListener("beforeunload", function () { ... });
+            return JSApi.JS_UNDEFINED;
+        }
+
+        [MonoPInvokeCallback(typeof(JSCFunction))]
+        public static JSValue js_self_location_reload(JSContext ctx, JSValue this_obj, int argc, JSValue[] argv)
+        {
+            Debug.LogFormat("js_self_location_reload");
+            //TODO: self.location.reload();
+            return JSApi.JS_UNDEFINED;
+        }
+
+        public static void Bind(TypeRegister register, Uri uri)
         {
             var context = register.GetContext();
             JSContext ctx = context;
             var globalObject = context.GetGlobalObject();
+            var locationObj = JSApi.JS_NewObject(ctx);
+            JSApi.JS_SetProperty(ctx, locationObj, register.GetAtom("href"), JSApi.JS_NewString(ctx, uri.ToString()));
+            JSApi.JS_SetProperty(ctx, locationObj, register.GetAtom("port"), JSApi.JS_NewInt32(ctx, uri.Port));
+            JSApi.JS_SetProperty(ctx, locationObj, register.GetAtom("hostname"), JSApi.JS_NewString(ctx, uri.Host));
+            JSApi.JS_SetProperty(ctx, locationObj, register.GetAtom("protocol"), JSApi.JS_NewString(ctx, uri.Scheme));
+            JSApi.JS_SetProperty(ctx, locationObj, register.GetAtom("search"), JSApi.JS_NewString(ctx, ""));
+            JSApi.JS_SetProperty(ctx, locationObj, register.GetAtom("reload"), JSApi.JS_NewCFunction(ctx, js_self_location_reload, "reload", 0));
+                JSApi.JS_SetProperty(ctx, globalObject, register.GetAtom("location"), JSApi.JS_DupValue(ctx, locationObj));
+            
             JSApi.JS_SetProperty(ctx, globalObject, register.GetAtom("window"), JSApi.JS_DupValue(ctx, globalObject));
+            {
+                var selfObj = JSApi.JS_NewObject(ctx);
+
+                JSApi.JS_SetProperty(ctx, selfObj, register.GetAtom("location"), JSApi.JS_DupValue(ctx, locationObj));
+                JSApi.JS_SetProperty(ctx, selfObj, register.GetAtom("addEventListener"), JSApi.JS_NewCFunction(ctx, js_self_addEventListener, "addEventListener", 2));
+                JSApi.JS_SetProperty(ctx, globalObject, register.GetAtom("self"), selfObj);
+            }
+            JSApi.JS_FreeValue(ctx, locationObj);
             JSApi.JS_FreeValue(ctx, globalObject);
 
             //TODO: 临时代码
