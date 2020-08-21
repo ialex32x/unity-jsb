@@ -61,6 +61,7 @@ namespace QuickJS.Extra
         [MonoPInvokeCallback(typeof(JSCFunction))]
         public static JSValue js_self_addEventListener(JSContext ctx, JSValue this_obj, int argc, JSValue[] argv)
         {
+            Debug.LogFormat("js_self_addEventListener");
             //TODO: self.addEventListener("beforeunload", function () { ... });
             return JSApi.JS_UNDEFINED;
         }
@@ -68,6 +69,7 @@ namespace QuickJS.Extra
         [MonoPInvokeCallback(typeof(JSCFunction))]
         public static JSValue js_self_location_reload(JSContext ctx, JSValue this_obj, int argc, JSValue[] argv)
         {
+            Debug.LogFormat("js_self_location_reload");
             //TODO: self.location.reload();
             return JSApi.JS_UNDEFINED;
         }
