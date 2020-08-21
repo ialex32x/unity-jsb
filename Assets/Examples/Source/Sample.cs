@@ -20,7 +20,7 @@ namespace jsb
         public UnityEngine.UI.ScrollRect scrollRect;
         public UnityEngine.UI.Text text;
         public FileLoader fileLoader;
-        public string baseUrl = "http://127.0.0.1:8182";
+        public string baseUrl = "http://127.0.0.1:8183";
         public bool sourceMap;
         public bool stacktrace;
         private ScriptRuntime _rt;
@@ -78,7 +78,8 @@ namespace jsb
             QuickJS.Extra.XMLHttpRequest.Bind(register);
             if (!runtime.isWorker)
             {
-                QuickJS.Extra.DOMCompatibleLayer.Bind(register);
+                var uri = new Uri(baseUrl);
+                QuickJS.Extra.DOMCompatibleLayer.Bind(register, uri);
                 QuickJS.Extra.NodeCompatibleLayer.Bind(register);
             }
             _mConsole.Write(LogLevel.Info, "Bind Finish");
