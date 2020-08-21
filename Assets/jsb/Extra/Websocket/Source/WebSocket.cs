@@ -281,10 +281,11 @@ namespace QuickJS.Extra
                 runtime.OnDestroy -= Destroy;
             }
 
+            _jsContext = JSContext.Null;
+            _jsThis = JSApi.JS_UNDEFINED;
             _rwlock.EnterWriteLock();
             _websockets.Remove(this);
             _rwlock.ExitWriteLock();
-            // UnityEngine.Debug.LogWarning("ws.destroy");
         }
 
         private void OnWrite()
@@ -611,8 +612,6 @@ namespace QuickJS.Extra
 
         public void OnJSFinalize()
         {
-            _jsContext = JSContext.Null;
-            _jsThis = JSApi.JS_UNDEFINED;
             Destroy();
         }
 
