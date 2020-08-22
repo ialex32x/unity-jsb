@@ -450,7 +450,13 @@ namespace QuickJS.Editor
             var tt = TransformType(type);
             if (!_exportedTypes.ContainsKey(type))
             {
-                var typeBindingInfo = new TypeBindingInfo(this, type, isEditorRuntime);
+                //TODO: 设置导出绑定代码与定义声明选项
+                var flags = TypeBindingFlags.Default; 
+                if (isEditorRuntime) 
+                {
+                    flags |= TypeBindingFlags.EditorRuntime;
+                }
+                var typeBindingInfo = new TypeBindingInfo(this, type, flags);
                 _exportedTypes.Add(type, typeBindingInfo);
                 log.AppendLine($"AddExportedType: {type} Assembly: {type.Assembly}");
 
