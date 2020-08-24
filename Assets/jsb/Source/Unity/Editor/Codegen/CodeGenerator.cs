@@ -22,30 +22,32 @@ namespace QuickJS.Editor
         public BindingManager bindingManager;
         public TextGenerator cs;
         public TextGenerator tsDeclare;
-        // public TextGenerator tsSource;
-        // public TextGenerator jsSource;
+        public TypeBindingFlags typeBindingFlags;
 
-        public CodeGenerator(BindingManager bindingManager)
+        public CodeGenerator(BindingManager bindingManager, TypeBindingFlags typeBindingFlags)
         {
+            this.typeBindingFlags = typeBindingFlags;
             this.bindingManager = bindingManager;
             var tab = this.bindingManager.prefs.tab;
             var newline = this.bindingManager.prefs.newline;
             cs = new TextGenerator(newline, tab);
             tsDeclare = new TextGenerator(newline, tab);
-            // tsSource = new TextGenerator(newline, tab);
-            // jsSource = new TextGenerator(newline, tab);
         }
 
         public void Clear()
         {
             cs.Clear();
-            tsDeclare.Clear();
-            // tsSource.Clear();
-            // jsSource.Clear();
+            if (!bindingManager.prefs.singleTSD)
+            {
+                tsDeclare.Clear();
+            }
         }
 
         public void GenerateBindingList(List<TypeBindingInfo> orderedTypes)
         {
+            this.cs.enabled = (typeBindingFlags & TypeBindingFlags.BindingCode) != 0;
+            this.tsDeclare.enabled = (typeBindingFlags & TypeBindingFlags.TypeDefinition) != 0;
+
             using (new PlatformCodeGen(this))
             {
                 using (new TopLevelCodeGen(this, CodeGenerator.NameOfDelegates))
@@ -92,6 +94,9 @@ namespace QuickJS.Editor
         // 生成委托绑定
         public void Generate(DelegateBindingInfo[] delegateBindingInfos, List<HotfixDelegateBindingInfo> exportedHotfixDelegates)
         {
+            this.cs.enabled = (typeBindingFlags & TypeBindingFlags.BindingCode) != 0;
+            this.tsDeclare.enabled = (typeBindingFlags & TypeBindingFlags.TypeDefinition) != 0;
+
             using (new PlatformCodeGen(this))
             {
                 using (new TopLevelCodeGen(this, CodeGenerator.NameOfDelegates))
@@ -170,6 +175,9 @@ namespace QuickJS.Editor
         // 生成类型绑定
         public void Generate(TypeBindingInfo typeBindingInfo)
         {
+            this.cs.enabled = (typeBindingInfo.bindingFlags & TypeBindingFlags.BindingCode) != 0 && (typeBindingFlags & TypeBindingFlags.BindingCode) != 0;
+            this.tsDeclare.enabled = (typeBindingInfo.bindingFlags & TypeBindingFlags.TypeDefinition) != 0 && (typeBindingFlags & TypeBindingFlags.TypeDefinition) != 0;
+
             if (typeBindingInfo.isEditorRuntime)
             {
                 using (new EditorOnlyCodeGen(this))
@@ -231,7 +239,7 @@ namespace QuickJS.Editor
             File.Copy(srcPath, Path.Combine(dir, filename));
         }
 
-        public void WriteTo(string csOutDir, string tsOutDir, string filename, string tx)
+        public void WriteCSharp(string csOutDir, string filename, string tx)
         {
             try
             {
@@ -247,53 +255,48 @@ namespace QuickJS.Editor
             {
                 this.bindingManager.Error("write csharp file failed [{0}]: {1}", filename, exception.Message);
             }
+        }
 
+        public void WriteTSD(string tsOutDir, string tx)
+        {
             try
             {
-                if (this.tsDeclare.enabled && this.tsDeclare.size > 0)
+                if (bindingManager.prefs.singleTSD)
                 {
-                    var tsName = filename + ".d.ts" + tx;
-                    var tsPath = Path.Combine(tsOutDir, tsName);
-                    this.bindingManager.AddOutputFile(tsOutDir, tsPath);
-                    WriteAllText(tsPath, this.tsDeclare.ToString());
+                    if (this.tsDeclare.enabled && this.tsDeclare.size > 0)
+                    {
+                        var tsName = "jsb.autogen.d.ts" + tx;
+                        var tsPath = Path.Combine(tsOutDir, tsName);
+                        this.bindingManager.AddOutputFile(tsOutDir, tsPath);
+                        WriteAllText(tsPath, this.tsDeclare.ToString());
+                    }
+                }
+            }
+            catch (Exception exception)
+            {
+                this.bindingManager.Error("write typescript declaration file failed [{0}]: {1}", "jsb.autogen", exception.Message);
+            }
+        }
+
+        public void WriteTSD(string tsOutDir, string filename, string tx)
+        {
+            try
+            {
+                if (!bindingManager.prefs.singleTSD)
+                {
+                    if (this.tsDeclare.enabled && this.tsDeclare.size > 0)
+                    {
+                        var tsName = filename + ".d.ts" + tx;
+                        var tsPath = Path.Combine(tsOutDir, tsName);
+                        this.bindingManager.AddOutputFile(tsOutDir, tsPath);
+                        WriteAllText(tsPath, this.tsDeclare.ToString());
+                    }
                 }
             }
             catch (Exception exception)
             {
                 this.bindingManager.Error("write typescript declaration file failed [{0}]: {1}", filename, exception.Message);
             }
-
-            // try
-            // {
-            //     if (this.tsSource.enabled && this.tsSource.size > 0)
-            //     {
-            //         var tsName = filename + ".ts" + tx;
-            //         var tsPath = Path.Combine(outDir, tsName);
-            //         this.bindingManager.AddOutputFile(tsPath);
-            //         WriteAllText(tsPath, this.tsSource.ToString());
-            //         CopyFile(tsPath, bindingManager.prefs.tsDir, tsName);
-            //     }
-            // }
-            // catch (Exception exception)
-            // {
-            //     this.bindingManager.Error("write typescript source failed [{0}]: {1}", filename, exception.Message);
-            // }
-
-            // try
-            // {
-            //     if (this.jsSource.enabled && this.jsSource.size > 0)
-            //     {
-            //         var jsName = filename + ".js" + tx;
-            //         var jsPath = Path.Combine(outDir, jsName);
-            //         this.bindingManager.AddOutputFile(jsPath);
-            //         WriteAllText(jsPath, this.jsSource.ToString());
-            //         CopyFile(jsPath, bindingManager.prefs.jsDir, jsName);
-            //     }
-            // }
-            // catch (Exception exception)
-            // {
-            //     this.bindingManager.Error("write javascript source failed [{0}]: {1}", filename, exception.Message);
-            // }
         }
 
         // type: csharp 方法本身返回值的类型

@@ -55,28 +55,48 @@ namespace QuickJS.Editor
 
         public void BeginBlock()
         {
+            if (!enabled)
+            {
+                return;
+            }
             AppendLine("{");
             tabLevel++;
         }
 
         public void EndBlock()
         {
+            if (!enabled)
+            {
+                return;
+            }
             tabLevel--;
             AppendLine("}");
         }
 
         public void AddTabLevel()
         {
+            if (!enabled)
+            {
+                return;
+            }
             tabLevel++;
         }
 
         public void DecTabLevel()
         {
+            if (!enabled)
+            {
+                return;
+            }
             tabLevel--;
         }
 
         public void AppendTab()
         {
+            if (!enabled)
+            {
+                return;
+            }
             for (var i = 0; i < tabLevel; i++)
             {
                 sb.Append(tab);
@@ -85,6 +105,11 @@ namespace QuickJS.Editor
 
         public void AppendLines(params string[] lines)
         {
+            if (!enabled)
+            {
+                return;
+            }
+
             foreach (var line in lines)
             {
                 AppendLine(line);
@@ -93,11 +118,19 @@ namespace QuickJS.Editor
 
         public void AppendLine()
         {
+            if (!enabled)
+            {
+                return;
+            }
             sb.Append(newline);
         }
 
         public void AppendLine(string text)
         {
+            if (!enabled)
+            {
+                return;
+            }
             AppendTab();
             sb.Append(text);
             sb.Append(newline);
@@ -105,6 +138,10 @@ namespace QuickJS.Editor
 
         public void AppendLine(string text, object arg1)
         {
+            if (!enabled)
+            {
+                return;
+            }
             AppendTab();
             sb.AppendFormat(text, arg1);
             sb.Append(newline);
@@ -112,6 +149,10 @@ namespace QuickJS.Editor
 
         public void AppendLine(string text, object arg1, object arg2)
         {
+            if (!enabled)
+            {
+                return;
+            }
             AppendTab();
             sb.AppendFormat(text, arg1, arg2);
             sb.Append(newline);
@@ -119,6 +160,11 @@ namespace QuickJS.Editor
 
         public void AppendLine(string text, object arg1, object arg2, object arg3)
         {
+            if (!enabled)
+            {
+                return;
+            }
+            
             AppendTab();
             sb.AppendFormat(text, arg1, arg2, arg3);
             sb.Append(newline);
@@ -126,6 +172,11 @@ namespace QuickJS.Editor
 
         public void AppendLine(string text, params object[] args)
         {
+            if (!enabled)
+            {
+                return;
+            }
+            
             AppendTab();
             sb.AppendFormat(text, args);
             sb.Append(newline);
@@ -133,86 +184,161 @@ namespace QuickJS.Editor
 
         public void AppendLineL(string text)
         {
+            if (!enabled)
+            {
+                return;
+            }
+            
             sb.Append(text);
             sb.Append(newline);
         }
 
         public void AppendLineL(string text, object arg1)
         {
+            if (!enabled)
+            {
+                return;
+            }
+            
             sb.AppendFormat(text, arg1);
             sb.Append(newline);
         }
 
         public void AppendLineL(string text, object arg1, object arg2)
         {
+            if (!enabled)
+            {
+                return;
+            }
+            
             sb.AppendFormat(text, arg1, arg2);
             sb.Append(newline);
         }
 
         public void AppendLineL(string text, object arg1, object arg2, object arg3)
         {
+            if (!enabled)
+            {
+                return;
+            }
+            
             sb.AppendFormat(text, arg1, arg2, arg3);
             sb.Append(newline);
         }
 
         public void AppendLineL(string text, params object[] args)
         {
+            if (!enabled)
+            {
+                return;
+            }
+            
             sb.AppendFormat(text, args);
             sb.Append(newline);
         }
 
         public void Append(string text)
         {
+            if (!enabled)
+            {
+                return;
+            }
+            
             AppendTab();
             sb.Append(text);
         }
 
         public void Append(string text, object arg1)
         {
+            if (!enabled)
+            {
+                return;
+            }
+            
             AppendTab();
             sb.AppendFormat(text, arg1);
         }
 
         public void Append(string text, object arg1, object arg2)
         {
+            if (!enabled)
+            {
+                return;
+            }
+            
             AppendTab();
             sb.AppendFormat(text, arg1, arg2);
         }
 
         public void Append(string text, object arg1, object arg2, object arg3)
         {
+            if (!enabled)
+            {
+                return;
+            }
+            
             AppendTab();
             sb.AppendFormat(text, arg1, arg2, arg3);
         }
 
         public void Append(string text, params object[] args)
         {
+            if (!enabled)
+            {
+                return;
+            }
+            
             AppendTab();
             sb.AppendFormat(text, args);
         }
 
         public void AppendL(string text)
         {
+            if (!enabled)
+            {
+                return;
+            }
+            
             sb.Append(text);
         }
 
         public void AppendL(string text, object arg1)
         {
+            if (!enabled)
+            {
+                return;
+            }
+            
             sb.AppendFormat(text, arg1);
         }
 
         public void AppendL(string text, object arg1, object arg2)
         {
+            if (!enabled)
+            {
+                return;
+            }
+            
             sb.AppendFormat(text, arg1, arg2);
         }
 
         public void AppendL(string text, object arg1, object arg2, object arg3)
         {
+            if (!enabled)
+            {
+                return;
+            }
+            
             sb.AppendFormat(text, arg1, arg2, arg3);
         }
 
         public void AppendL(string text, params object[] args)
         {
+            if (!enabled)
+            {
+                return;
+            }
+            
             sb.AppendFormat(text, args);
         }
 
