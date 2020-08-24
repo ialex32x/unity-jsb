@@ -50,7 +50,7 @@ namespace QuickJS.Editor
 
             using (new PlatformCodeGen(this))
             {
-                using (new TopLevelCodeGen(this, CodeGenerator.NameOfDelegates))
+                using (new TopLevelCodeGen(this, CodeGenerator.NameOfBindingList))
                 {
                     using (new NamespaceCodeGen(this, typeof(Values).Namespace))
                     {
@@ -58,6 +58,11 @@ namespace QuickJS.Editor
                         {
                             using (new PlainClassCodeGen(this, typeof(Values).Name))
                             {
+                                using (new PreservedCodeGen(this))
+                                {
+                                    this.cs.AppendLine("public const uint CodeGenVersion = {0};", ScriptEngine.VERSION);
+                                }
+
                                 using (new PreservedCodeGen(this))
                                 {
                                     using (var method = new PlainMethodCodeGen(this, "private static void BindAll(TypeRegister register)"))
