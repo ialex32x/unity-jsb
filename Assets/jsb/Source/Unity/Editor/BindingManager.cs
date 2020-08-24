@@ -1619,15 +1619,14 @@ namespace QuickJS.Editor
             list.Add(filename);
         }
 
-        public void Generate(bool bTSDefinitionFiles)
+        public void Generate(TypeBindingFlags typeBindingFlags)
         {
-            var cg = new CodeGenerator(this);
+            var cg = new CodeGenerator(this, typeBindingFlags);
             var csOutDir = prefs.procOutDir;
             var tsOutDir = prefs.procTypescriptDir;
             var extraExt = prefs.extraExt;
             // var extraExt = "";
 
-            cg.tsDeclare.enabled = bTSDefinitionFiles;
             if (!Directory.Exists(csOutDir))
             {
                 Directory.CreateDirectory(csOutDir);
@@ -1660,7 +1659,8 @@ namespace QuickJS.Editor
                         OnPreGenerateType(typeBindingInfo);
                         cg.Generate(typeBindingInfo);
                         OnPostGenerateType(typeBindingInfo);
-                        cg.WriteTo(csOutDir, tsOutDir, typeBindingInfo.GetFileName(), extraExt);
+                        cg.WriteCSharp(csOutDir, typeBindingInfo.GetFileName(), extraExt);
+                        cg.WriteTSD(tsOutDir, typeBindingInfo.GetFileName(), extraExt);
                     }
                 }
                 catch (Exception exception)
@@ -1679,7 +1679,8 @@ namespace QuickJS.Editor
 
                     cg.Clear();
                     cg.Generate(exportedDelegatesArray, _exportedHotfixDelegates);
-                    cg.WriteTo(csOutDir, tsOutDir, CodeGenerator.NameOfDelegates, extraExt);
+                    cg.WriteCSharp(csOutDir, CodeGenerator.NameOfDelegates, extraExt);
+                    cg.WriteTSD(tsOutDir, CodeGenerator.NameOfDelegates, extraExt);
                 }
                 catch (Exception exception)
                 {
@@ -1694,7 +1695,22 @@ namespace QuickJS.Editor
                 {
                     cg.Clear();
                     cg.GenerateBindingList(_collectedTypes);
-                    cg.WriteTo(csOutDir, tsOutDir, CodeGenerator.NameOfBindingList, extraExt);
+                    cg.WriteCSharp(csOutDir, CodeGenerator.NameOfBindingList, extraExt);
+                    cg.WriteTSD(tsOutDir, CodeGenerator.NameOfBindingList, extraExt);
+                }
+                catch (Exception exception)
+                {
+                    Error($"generate delegates failed: {exception.Message}");
+                    Debug.LogError(exception.StackTrace);
+                }
+            }
+
+            if (!cancel)
+            {
+                try
+                {
+                    cg.Clear();
+                    cg.WriteTSD(tsOutDir, extraExt);
                 }
                 catch (Exception exception)
                 {

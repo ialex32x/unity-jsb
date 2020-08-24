@@ -23,6 +23,7 @@ namespace QuickJS.Editor
         public bool debugCodegen = false;
 
         public bool optToString = true; // 自动转换为 toString()
+        public bool singleTSD = true; // 输出到单个 d.ts 声明文件中
 
         // 生成类型绑定代码类型前缀
         public string typeBindingPrefix = "QuickJS_";

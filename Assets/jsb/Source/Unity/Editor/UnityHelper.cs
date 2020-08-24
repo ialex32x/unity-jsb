@@ -44,7 +44,7 @@ namespace QuickJS.Editor
         {
             var bm = new BindingManager(Prefs.Load());
             bm.Collect();
-            bm.Generate(true);
+            bm.Generate(TypeBindingFlags.Default);
             bm.Cleanup();
             bm.Report();
             AssetDatabase.Refresh();
@@ -55,7 +55,7 @@ namespace QuickJS.Editor
         {
             var bm = new BindingManager(Prefs.Load());
             bm.Collect();
-            bm.Generate(false);
+            bm.Generate(TypeBindingFlags.TypeDefinition);
             bm.Cleanup();
             bm.Report();
             AssetDatabase.Refresh();
