@@ -787,6 +787,8 @@ namespace QuickJS.Editor
             {
                 switch (method.Name)
                 {
+                    case "op_Modulus":
+                        return $"{arglist[0]} % {arglist[1]}";
                     case "op_Inequality":
                         return $"{arglist[0]} != {arglist[1]}";
                     case "op_LessThan":
