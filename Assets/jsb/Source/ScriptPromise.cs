@@ -41,7 +41,7 @@ namespace QuickJS
             Invoke(1, value);
         }
 
-        private void Invoke(int index, object value)
+        private unsafe void Invoke(int index, object value)
         {
             if (_context == null)
             {
@@ -57,7 +57,7 @@ namespace QuickJS
                 throw new Exception("js exception");
             }
 
-            var argv = new[] { backVal };
+            var argv = stackalloc[] { backVal };
             var rval = JSApi.JS_Call(ctx, _resolving_funcs[index], JSApi.JS_UNDEFINED, 1, argv);
             JSApi.JS_FreeValue(ctx, backVal);
             if (rval.IsException())
