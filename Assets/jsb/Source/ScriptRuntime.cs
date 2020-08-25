@@ -393,6 +393,10 @@ namespace QuickJS
                 var source = _fileSystem.ReadAllBytes(resolvedPath);
                 _mainContext.EvalMain(source, resolvedPath);
             }
+            else
+            {
+                throw new Exception("can not resolve file path");
+            }
         }
 
         // main loop
