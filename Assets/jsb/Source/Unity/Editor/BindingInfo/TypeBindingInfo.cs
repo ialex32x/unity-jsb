@@ -209,20 +209,29 @@ namespace QuickJS.Editor
 
             var isExtension = BindingManager.IsExtensionMethod(methodInfo);
             var isStatic = methodInfo.IsStatic && !isExtension;
+            var methodName = TypeBindingInfo.GetNamingAttribute(methodInfo);
             if (IsSupportedOperators(methodInfo))
             {
-                var methodName = TypeBindingInfo.GetNamingAttribute(methodInfo);
                 var parameters = methodInfo.GetParameters();
                 var declaringType = methodInfo.DeclaringType;
+                OperatorBindingInfo operatorBindingInfo = null;
                 switch (methodName)
                 {
+                    case "op_LessThan":
+                        if (parameters.Length == 2)
+                        {
+                            if (parameters[0].ParameterType == declaringType && parameters[1].ParameterType == declaringType)
+                            {
+                                operatorBindingInfo = new OperatorBindingInfo(methodInfo, isExtension, isStatic, methodName, "<", "<", 2);
+                            }
+                        }
+                        break;
                     case "op_Addition":
                         if (parameters.Length == 2)
                         {
                             if (parameters[0].ParameterType == declaringType && parameters[1].ParameterType == declaringType)
                             {
-                                var bindingInfo = new OperatorBindingInfo(methodInfo, isExtension, isStatic, methodName, "+", "+", 2);
-                                operators.Add(bindingInfo);
+                                operatorBindingInfo = new OperatorBindingInfo(methodInfo, isExtension, isStatic, methodName, "+", "+", 2);
                             }
                         }
                         break;
@@ -231,8 +240,7 @@ namespace QuickJS.Editor
                         {
                             if (parameters[0].ParameterType == declaringType && parameters[1].ParameterType == declaringType)
                             {
-                                var bindingInfo = new OperatorBindingInfo(methodInfo, isExtension, isStatic, methodName, "-", "-", 2);
-                                operators.Add(bindingInfo);
+                                operatorBindingInfo = new OperatorBindingInfo(methodInfo, isExtension, isStatic, methodName, "-", "-", 2);
                             }
                         }
                         break;
@@ -241,8 +249,7 @@ namespace QuickJS.Editor
                         {
                             if (parameters[0].ParameterType == declaringType && parameters[1].ParameterType == declaringType)
                             {
-                                var bindingInfo = new OperatorBindingInfo(methodInfo, isExtension, isStatic, methodName, "==", "==", 2);
-                                operators.Add(bindingInfo);
+                                operatorBindingInfo = new OperatorBindingInfo(methodInfo, isExtension, isStatic, methodName, "==", "==", 2);
                             }
                         }
                         break;
@@ -251,13 +258,11 @@ namespace QuickJS.Editor
                         {
                             var op0 = bindingManager.GetExportedType(parameters[0].ParameterType);
                             var op1 = bindingManager.GetExportedType(parameters[1].ParameterType);
-                            if (op0 == null || op1 == null)
+                            if (op0 != null && op1 != null)
                             {
-                                return;
+                                var bindingName = methodName + "_" + op0.name + "_" + op1.name;
+                                operatorBindingInfo = new OperatorBindingInfo(methodInfo, isExtension, isStatic, bindingName, "*", "*", 2);
                             }
-                            var bindingName = methodName + "_" + op0.name + "_" + op1.name;
-                            var bindingInfo = new OperatorBindingInfo(methodInfo, isExtension, isStatic, bindingName, "*", "*", 2);
-                            operators.Add(bindingInfo);
                         }
                         break;
                     case "op_Division":
@@ -265,41 +270,42 @@ namespace QuickJS.Editor
                         {
                             var op0 = bindingManager.GetExportedType(parameters[0].ParameterType);
                             var op1 = bindingManager.GetExportedType(parameters[1].ParameterType);
-                            if (op0 == null || op1 == null)
+                            if (op0 != null && op1 != null)
                             {
-                                return;
+                                var bindingName = methodName + "_" + op0.name + "_" + op1.name;
+                                operatorBindingInfo = new OperatorBindingInfo(methodInfo, isExtension, isStatic, bindingName, "/", "/", 2);
                             }
-                            var bindingName = methodName + "_" + op0.name + "_" + op1.name;
-                            var bindingInfo = new OperatorBindingInfo(methodInfo, isExtension, isStatic, bindingName, "/", "/", 2);
-                            operators.Add(bindingInfo);
                         }
                         break;
                     case "op_UnaryNegation":
                         {
-                            var bindingInfo = new OperatorBindingInfo(methodInfo, isExtension, isStatic, methodName, "neg", "-", 1);
-                            operators.Add(bindingInfo);
+                            operatorBindingInfo = new OperatorBindingInfo(methodInfo, isExtension, isStatic, methodName, "neg", "-", 1);
                         }
                         break;
-                    default:
-                        bindingManager.Info("skip unsupported operator method: {0}", methodInfo.Name);
-                        return;
                 }
-            }
-            else
-            {
-                var group = isStatic ? staticMethods : methods;
-                MethodBindingInfo methodBindingInfo;
-                var methodName = TypeBindingInfo.GetNamingAttribute(methodInfo);
-                if (!group.TryGetValue(methodName, out methodBindingInfo))
+
+                if (operatorBindingInfo != null)
                 {
-                    methodBindingInfo = new MethodBindingInfo(isIndexer, isStatic, methodName, renameRegName ?? methodName);
-                    group.Add(methodName, methodBindingInfo);
-                }
-                if (!methodBindingInfo.Add(methodInfo, isExtension))
-                {
-                    bindingManager.Info("fail to add method: {0}", methodInfo.Name);
+                    operators.Add(operatorBindingInfo);
+                    CollectDelegate(methodInfo);
+                    bindingManager.Info("[AddOperator] {0}.{1}", type, methodInfo);
                     return;
                 }
+
+                // fallback to normal method binding
+            }
+
+            var group = isStatic ? staticMethods : methods;
+            MethodBindingInfo methodBindingInfo;
+            if (!group.TryGetValue(methodName, out methodBindingInfo))
+            {
+                methodBindingInfo = new MethodBindingInfo(isIndexer, isStatic, methodName, renameRegName ?? methodName);
+                group.Add(methodName, methodBindingInfo);
+            }
+            if (!methodBindingInfo.Add(methodInfo, isExtension))
+            {
+                bindingManager.Info("fail to add method: {0}", methodInfo.Name);
+                return;
             }
 
             CollectDelegate(methodInfo);
