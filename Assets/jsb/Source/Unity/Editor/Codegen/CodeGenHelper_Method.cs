@@ -380,9 +380,10 @@ namespace QuickJS.Editor
             //TODO: 需要处理参数类型归并问题, 因为如果类型没有导入 ts 中, 可能会在声明中出现相同参数列表的定义
             //      在 MethodVariant 中创建每个方法对应的TS类型名参数列表, 完全相同的不再输出
             var prefix = "";
-            if (method.Name.StartsWith("op_"))
+            // if (method.Name.StartsWith("op_"))
+            if (bindingInfo is OperatorBindingInfo)
             {
-                prefix += "//";
+                prefix += "// js_op_overloading: ";
             }
             if (method.IsStatic && !isExtension)
             {
@@ -763,9 +764,10 @@ namespace QuickJS.Editor
             }
 
             var paramsToGet = isExtension ? parameters.Skip(1).ToArray() : parameters;
-            var arglist = Concat(AppendGetParameters(hasParams, nargs, paramsToGet));
+            var arglist = AppendGetParameters(hasParams, nargs, paramsToGet);
+            var arglistSig = Concat(arglist);
             var transform = cg.bindingManager.GetTypeTransform(method.DeclaringType);
-           
+
             if (transform == null || !transform.OnBinding(BindingPoints.METHOD_BINDING_BEFORE_INVOKE, method, cg))
             {
             }
@@ -773,15 +775,36 @@ namespace QuickJS.Editor
             if (isExtension)
             {
                 var methodDeclType = this.cg.bindingManager.GetCSTypeFullName(method.DeclaringType);
-                if (arglist.Length > 0)
+                if (arglistSig.Length > 0)
                 {
-                    arglist = ", " + arglist;
+                    arglistSig = ", " + arglistSig;
                 }
 
-                return $"{methodDeclType}.{method.Name}({caller}{arglist})";
+                return $"{methodDeclType}.{method.Name}({caller}{arglistSig})";
             }
 
-            return $"{caller}.{method.Name}({arglist})";
+            if (method.IsSpecialName)
+            {
+                switch (method.Name)
+                {
+                    case "op_Inequality":
+                        return $"{arglist[0]} != {arglist[1]}";
+                    case "op_LessThan":
+                        return $"{arglist[0]} < {arglist[1]}";
+                    case "op_LessThanOrEqual":
+                        return $"{arglist[0]} <= {arglist[1]}";
+                    case "op_GreaterThan":
+                        return $"{arglist[0]} > {arglist[1]}";
+                    case "op_GreaterThanOrEqual":
+                        return $"{arglist[0]} >= {arglist[1]}";
+                    case "op_Explicit":
+                    case "op_Implicit":
+                        var implicitTypeName = this.cg.bindingManager.GetCSTypeFullName(GetReturnType(method));
+                        return $"({implicitTypeName}){arglist[0]}";
+                }
+            }
+
+            return $"{caller}.{method.Name}({arglistSig})";
         }
 
         public MethodCodeGen(CodeGenerator cg, MethodBindingInfo bindingInfo)
