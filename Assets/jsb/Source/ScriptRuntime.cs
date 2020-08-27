@@ -385,13 +385,47 @@ namespace QuickJS
             }
         }
 
-        public void EvalMain(string fileName)
+        public void EvalFile(string fileName)
+        {
+            EvalFile(fileName, typeof(void));
+        }
+
+        public T EvalFile<T>(string fileName)
+        {
+            return (T)EvalFile(fileName, typeof(T));
+        }
+
+        public object EvalFile(string fileName, Type returnType)
         {
             string resolvedPath;
             if (_fileResolver.ResolvePath(_fileSystem, fileName, out resolvedPath))
             {
                 var source = _fileSystem.ReadAllBytes(resolvedPath);
-                _mainContext.EvalMain(source, resolvedPath);
+                return _mainContext.EvalSource(source, resolvedPath, returnType);
+            }
+            else
+            {
+                throw new Exception("can not resolve file path");
+            }
+        }
+
+        public void EvalMain(string fileName)
+        {
+            EvalMain(fileName, typeof(void));
+        }
+
+        public T EvalMain<T>(string fileName)
+        {
+            return (T)EvalMain(fileName, typeof(T));
+        }
+
+        public object EvalMain(string fileName, Type returnType)
+        {
+            string resolvedPath;
+            if (_fileResolver.ResolvePath(_fileSystem, fileName, out resolvedPath))
+            {
+                var source = _fileSystem.ReadAllBytes(resolvedPath);
+                return _mainContext.EvalMain(source, resolvedPath, returnType);
             }
             else
             {
@@ -406,7 +440,7 @@ namespace QuickJS
             {
                 return;
             }
-            
+
             if (_pendingActions.Count != 0)
             {
                 ExecutePendingActions();

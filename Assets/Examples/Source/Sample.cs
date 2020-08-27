@@ -93,6 +93,17 @@ namespace jsb
             {
                 _mConsole.Write(LogLevel.Info, "run");
                 _rt.EvalMain("main.js");
+
+                // 测试, 获取脚本本身返回值
+                var act = _rt.EvalFile<Action>("do_from_cs");
+                if (act != null)
+                {
+                    act();
+                }
+                else
+                {
+                    Debug.LogWarning("act null");
+                }
             }
         }
     }
