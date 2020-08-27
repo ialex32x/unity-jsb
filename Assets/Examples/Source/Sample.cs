@@ -104,6 +104,15 @@ namespace jsb
                 {
                     Debug.LogWarning("act null");
                 }
+                var v = _rt.EvalFile<ScriptValue>("do_from_cs_v");
+                if (v != null)
+                {
+                    Debug.LogFormat("v.test = {0}", v.GetProperty<string>("test"));
+                }
+                else
+                {
+                    Debug.LogWarning("v null");
+                }
             }
         }
     }
