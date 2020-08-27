@@ -1,3 +1,4 @@
+using System;
 using System.Reflection;
 using QuickJS.Native;
 
@@ -79,6 +80,42 @@ namespace QuickJS.Binding
             else
             {
                 _methodInfo.Invoke(self, args);
+                return JSApi.JS_UNDEFINED;
+            }
+        }
+    }
+
+    public class DynamicDelegateMethod : IDynamicMethod
+    {
+        private Delegate _delegate;
+
+        public DynamicDelegateMethod(Delegate d)
+        {
+            _delegate = d;
+        }
+        
+        public JSValue Invoke(JSContext ctx, JSValue this_obj, int argc, JSValue[] argv)
+        {
+            var self = _delegate.Target;
+            var methodInfo = _delegate.Method;
+            var parameters = methodInfo.GetParameters();
+            var nArgs = argc;
+            var args = new object[nArgs];
+            for (var i = 0; i < nArgs; i++)
+            {
+                if (!Values.js_get_var(ctx, argv[i], parameters[i].ParameterType, out args[i]))
+                {
+                    return JSApi.JS_ThrowInternalError(ctx, "failed to cast val");
+                }
+            }
+            if (methodInfo.ReturnType != typeof(void))
+            {
+                var ret = methodInfo.Invoke(self, args);
+                return Values.js_push_var(ctx, ret);
+            }
+            else
+            {
+                methodInfo.Invoke(self, args);
                 return JSApi.JS_UNDEFINED;
             }
         }
