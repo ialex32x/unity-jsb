@@ -34,22 +34,12 @@ namespace QuickJS.Editor
             titleContent = new GUIContent("JS Console");
         }
 
-        private void onEvalReturn(JSContext ctx, JSValue jsValue)
-        {
-            var logger = ScriptEngine.GetLogger(ctx);
-            if (logger != null)
-            {
-                var ret = JSApi.GetString(ctx, jsValue);
-                logger.Write(LogLevel.Info, ret);
-            }
-        }
-
         protected override void OnPaint()
         {
             _isEditorRuntime = EditorGUILayout.Toggle("EditorRuntime", _isEditorRuntime);
             var runtime = ScriptEngine.GetRuntime(_isEditorRuntime);
             var available = runtime != null;
-            
+
             using (new EditorGUI.DisabledGroupScope(!available))
             {
                 using (new EditorGUILayout.HorizontalScope())
@@ -57,11 +47,16 @@ namespace QuickJS.Editor
                     _text = EditorGUILayout.TextField(">", _text);
                     if (GUILayout.Button("Run", GUILayout.Width(36f)))
                     {
-                        runtime.GetMainContext().EvalSourceFree(_text, "eval", onEvalReturn);
+                        var ret = runtime.GetMainContext().EvalSource<string>(_text, "eval");
+                        var logger = runtime.GetLogger();
+                        if (logger != null)
+                        {
+                            logger.Write(LogLevel.Info, ret);
+                        }
                     }
                 }
             }
-            
+
             if (!available)
             {
                 EditorGUILayout.HelpBox("Runtime Not Available", MessageType.Warning);

@@ -24,7 +24,7 @@ namespace QuickJS.Utils
             {
                 return;
             }
-            context.EvalSourceFree(reseponseText, src);
+            context.EvalSource(reseponseText, src);
         }
 
         // return promise

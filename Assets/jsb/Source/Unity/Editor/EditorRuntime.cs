@@ -118,7 +118,12 @@ namespace QuickJS.Editor
         {
             if (_instance._runtime != null)
             {
-                _instance._runtime.GetMainContext().EvalSourceFree(code, "eval", onEvalReturn);
+                var ret = _instance._runtime.GetMainContext().EvalSource<string>(code, "eval");
+                var logger = _instance._runtime.GetLogger();
+                if (logger != null)
+                {
+                    logger.Write(LogLevel.Info, ret);
+                }
             }
         }
     }

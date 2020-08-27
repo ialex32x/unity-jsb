@@ -406,35 +406,40 @@ namespace QuickJS
             }
         }
 
-        public void EvalSourceFree(string source, string fileName)
-        {
-            EvalSourceFree(source, fileName, null);
-        }
-
-        public void EvalSourceFree(string source, string fileName, Action<JSContext, JSValue> onEvalReturn)
+        public void EvalSource(string source, string fileName)
         {
             var bytes = System.Text.Encoding.UTF8.GetBytes(source);
-            EvalSourceFree(bytes, fileName, onEvalReturn);
+            EvalSource(bytes, fileName, typeof(void));
         }
 
-        public void EvalSourceFree(byte[] source, string fileName)
+        public T EvalSource<T>(string source, string fileName)
         {
-            EvalSourceFree(source, fileName, null);
+            var bytes = System.Text.Encoding.UTF8.GetBytes(source);
+            return (T)EvalSource(bytes, fileName, typeof(T));
         }
 
-        public void EvalSourceFree(byte[] source, string fileName, Action<JSContext, JSValue> onEvalReturn)
+        public void EvalSource(byte[] source, string fileName)
+        {
+            EvalSource(source, fileName, typeof(void));
+        }
+
+        public T EvalSource<T>(byte[] source, string fileName)
+        {
+            return (T)EvalSource(source, fileName, typeof(T));
+        }
+
+        public object EvalSource(byte[] source, string fileName, Type returnType)
         {
             var jsValue = ScriptRuntime.EvalSource(_ctx, source, fileName, false);
             if (JSApi.JS_IsException(jsValue))
             {
-                _ctx.print_exception();
+                var ex = _ctx.GetExceptionString();
+                throw new JSException(ex);
             }
-            else
-            {
-                onEvalReturn(_ctx, jsValue);
-            }
-
+            object retObject;
+            Values.js_get_var(_ctx, jsValue, returnType, out retObject);
             JSApi.JS_FreeValue(_ctx, jsValue);
+            return retObject;
         }
 
         public void RegisterBuiltins()
