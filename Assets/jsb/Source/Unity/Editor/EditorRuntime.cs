@@ -19,14 +19,17 @@ namespace QuickJS.Editor
             Playing,
             None,
         }
+#pragma warning disable 0649
         private static EditorRuntime _instance;
+#pragma warning restore 0649
         private ScriptRuntime _runtime;
         private RunMode _runMode;
         private long _tick;
 
         static EditorRuntime()
         {
-            _instance = new EditorRuntime();
+            //TODO: 暂时屏蔽
+            // _instance = new EditorRuntime();
         }
 
         public EditorRuntime()

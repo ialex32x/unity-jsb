@@ -10,7 +10,13 @@ namespace QuickJS
 {
     public class ScriptDelegate : ScriptValue
     {
+        // 一个 JSValue (function) 可能会被用于映射多个委托对象
         private List<Delegate> _matches = new List<Delegate>();
+
+        public Delegate Any()
+        {
+            return _matches.Count != 0 ? _matches[0] : null;
+        }
 
         public Delegate Match(Type delegateType)
         {

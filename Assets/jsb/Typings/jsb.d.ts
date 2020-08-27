@@ -82,6 +82,20 @@ declare namespace jsb {
     // function Yield(enumerator: System.Collections.IEnumerator): Promise<System.Object>;
     function Yield<T>(task: Task<T>): Promise<T>;
 
+    /**
+     * 将 C# 委托强制转换为 JS Function
+     * @summary 如果传入的已经是 Function, 将直接返回
+     * @summary 如果传入的是一个 C# 委托对象, 将通过 dynamic method wrapper 产生一个 JS Function 
+     * @summary 谨慎: 无法再从 function 还原此委托, 两者不会建立关联 (会构成强引用循环) 
+     * @summary 谨慎: NewDynamicDelegate 会产生一个与 Runtime 相同生命周期的对象, 该对象将持有 Delegate 对象引用 
+     */
+    function ToFunction(o: System.Delegate | Function): Function;
+
+    /**
+     * [待定]
+     */
+    function ToDelegate(o: System.Delegate | Function, typeName: string): System.Delegate;
+
     // function ToJSArray(o: any): Array;
     /**
      * 将 C# 数组转换为 JS 数组

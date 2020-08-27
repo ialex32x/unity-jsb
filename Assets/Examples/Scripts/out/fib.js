@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.fib = void 0;
 /* fib module */
 function fib(n) {
     if (n <= 0)

@@ -268,23 +268,6 @@ namespace QuickJS.Editor
                 .SetMethodBlocked("ReadAllBytes", typeof(IntPtr))
                 .SetMethodBlocked("WriteBytes", typeof(IntPtr), typeof(int));
 
-            AddExportedType(typeof(QuickJS.IO.ByteBuffer));
-            AddExportedType(typeof(LayerMask));
-            AddExportedType(typeof(Color));
-            AddExportedType(typeof(Color32));
-            AddExportedType(typeof(Vector2));
-            AddExportedType(typeof(Vector2Int));
-            AddExportedType(typeof(Vector3));
-            AddExportedType(typeof(Vector3Int));
-            AddExportedType(typeof(Vector4));
-            AddExportedType(typeof(Quaternion));
-            AddExportedType(typeof(Matrix4x4));
-            AddExportedType(typeof(PrimitiveType));
-            AddExportedType(typeof(GameObject), true);
-            AddExportedType(typeof(Camera), true);
-            AddExportedType(typeof(Transform), true);
-            AddExportedType(typeof(MonoBehaviour), true);
-
             AddCSTypeNameMap(typeof(sbyte), "sbyte");
             AddCSTypeNameMap(typeof(byte), "byte");
             AddCSTypeNameMap(typeof(int), "int");
@@ -1500,8 +1483,28 @@ namespace QuickJS.Editor
             AddExportedType(typeof(ushort));
             AddExportedType(typeof(object));
             AddExportedType(typeof(Array));
-            AddExportedType(typeof(Object));
+            AddExportedType(typeof(Delegate))
+                .SetMemberBlocked("CreateDelegate")
+            ;
+            
+            AddExportedType(typeof(LayerMask));
+            AddExportedType(typeof(Color));
+            AddExportedType(typeof(Color32));
+            AddExportedType(typeof(Vector2));
+            AddExportedType(typeof(Vector2Int));
             AddExportedType(typeof(Vector3));
+            AddExportedType(typeof(Vector3Int));
+            AddExportedType(typeof(Vector4));
+            AddExportedType(typeof(Quaternion));
+            AddExportedType(typeof(Matrix4x4));
+            AddExportedType(typeof(PrimitiveType));
+            AddExportedType(typeof(Object));
+            AddExportedType(typeof(GameObject), true);
+            AddExportedType(typeof(Camera), true);
+            AddExportedType(typeof(Transform), true);
+            AddExportedType(typeof(MonoBehaviour), true);
+            
+            AddExportedType(typeof(QuickJS.IO.ByteBuffer));
         }
 
         // implicitExport: 默认进行导出(黑名单例外), 否则根据导出标记或手工添加

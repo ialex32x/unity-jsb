@@ -219,6 +219,10 @@ namespace QuickJS.Binding
         // 返回值已经过 DupValue
         public JSValue GetConstructor(Type type)
         {
+            if (type == typeof(JSFunction))
+            {
+                return _context.GetFunctionConstructor();
+            }
             if (type == typeof(string) || type == typeof(char))
             {
                 return _context.GetStringConstructor();

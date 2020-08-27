@@ -24,6 +24,13 @@ namespace jsb
         }
 
         public Action onAction;
+        public void AddAction()
+        {
+            onAction += () =>
+             {
+                 UnityEngine.Debug.Log("这是在 C# 中添加到委托上的一个 C# Action");
+             };
+        }
         public Action<string, float, int> onActionWithArgs;
         public Func<int, int> onFunc;
 
