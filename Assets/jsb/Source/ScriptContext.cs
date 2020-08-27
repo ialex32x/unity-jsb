@@ -290,12 +290,23 @@ namespace QuickJS
 
         public unsafe void EvalMain(byte[] source, string fileName)
         {
+            EvalMain(source, fileName, typeof(void));
+        }
+
+        public unsafe T EvalMain<T>(byte[] source, string fileName)
+        {
+            return (T)EvalMain(source, fileName, typeof(T));
+        }
+
+        public unsafe object EvalMain(byte[] source, string fileName, Type expectedReturnType)
+        {
             var tagValue = ScriptRuntime.TryReadByteCodeTagValue(source);
             if (tagValue == ScriptRuntime.BYTECODE_ES6_MODULE_TAG)
             {
                 throw new Exception("es6 module bytecode as main is unsupported");
             }
 
+            object csValue = null;
             var dirname = PathUtils.GetDirectoryName(fileName);
             var filename_bytes = TextUtils.GetNullTerminatedBytes(fileName);
             var filename_atom = GetAtom(fileName);
@@ -331,9 +342,15 @@ namespace QuickJS
                         if (rval.IsException())
                         {
                             _ctx.print_exception();
+                            JSApi.JS_FreeValue(_ctx, rval);
+                            FreeValues(require_argv);
+                            throw new Exception("failed to eval bytecode module");
                         }
+
+                        Values.js_get_var(_ctx, rval, expectedReturnType, out csValue);
+                        JSApi.JS_FreeValue(_ctx, rval);
                         FreeValues(require_argv);
-                        return;
+                        return csValue;
                     }
 
                     JSApi.JS_FreeValue(_ctx, bytecodeFunc);
@@ -354,7 +371,7 @@ namespace QuickJS
                     {
                         FreeValues(require_argv);
                         _ctx.print_exception();
-                        return;
+                        throw new Exception("failed to eval module");
                     }
 
                     if (JSApi.JS_IsFunction(_ctx, func_val) == 1)
@@ -365,13 +382,15 @@ namespace QuickJS
                             JSApi.JS_FreeValue(_ctx, func_val);
                             FreeValues(require_argv);
                             _ctx.print_exception();
-                            return;
+                            throw new Exception("failed to eval module");
                         }
+                        Values.js_get_var(_ctx, rval, expectedReturnType, out csValue);
                         JSApi.JS_FreeValue(_ctx, rval);
                     }
 
                     JSApi.JS_FreeValue(_ctx, func_val);
                     FreeValues(require_argv);
+                    return csValue;
                 }
             }
         }

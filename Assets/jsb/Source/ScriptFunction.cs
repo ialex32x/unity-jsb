@@ -1,5 +1,5 @@
-﻿using QuickJS.Native;
-using UnityEngine;
+﻿using System;
+using QuickJS.Native;
 
 namespace QuickJS
 {
@@ -40,21 +40,32 @@ namespace QuickJS
             {
                 var context = _context;
 
-                _context = null;
-                context.FreeValue(_jsValue);
+                base.Dispose(bManaged);
                 context.FreeValue(_thisValue);
+                _thisValue = JSApi.JS_UNDEFINED;
                 if (_args != null)
                 {
                     context.FreeValues(_args);
+                    _args = null;
                 }
             }
         }
 
         public unsafe void Invoke()
         {
+            Invoke(typeof(void));
+        }
+
+        public unsafe T Invoke<T>()
+        {
+            return (T)Invoke(typeof(T));
+        }
+
+        private unsafe object Invoke(Type resultType)
+        {
             if (_context == null)
             {
-                return;
+                return null;
             }
             JSContext ctx = _context;
             var argc = _args == null ? 0 : _args.Length;
@@ -63,42 +74,63 @@ namespace QuickJS
                 var rVal = JSApi.JS_Call(ctx, _jsValue, _thisValue, argc, ptr);
                 if (JSApi.JS_IsException(rVal))
                 {
-                    ctx.print_exception();
+                    var ex = ctx.GetExceptionString();
+                    throw new JSException(ex);
                 }
 
+                object resultObject = null;
+                Binding.Values.js_get_var(ctx, rVal, resultType, out resultObject);
                 JSApi.JS_FreeValue(ctx, rVal);
+                return resultObject;
             }
         }
 
-        public void Invoke(object arg1)
+        public unsafe void Invoke(object arg1)
         {
-            if (_context == null)
-            {
-                return;
-            }
-            var ctx = (JSContext) _context;
-            var val = Binding.Values.js_push_classvalue(ctx, arg1);
-            Invoke(new[] {val});
+            Invoke(typeof(void), arg1);
         }
 
-        public void Invoke(JSValue[] argv)
+        public unsafe T Invoke<T>(object arg1)
+        {
+            return (T)Invoke(typeof(T), arg1);
+        }
+
+        public unsafe object Invoke(Type resultType, object arg1)
         {
             if (_context == null)
             {
-                return;
+                return null;
             }
-            JSContext ctx = _context;
-            var rVal = JSApi.JS_Call(ctx, _jsValue, _thisValue, argv.Length, argv);
+            var ctx = (JSContext)_context;
+            var val = Binding.Values.js_push_var(ctx, arg1);
+            var args = stackalloc[] { val };
+            var rVal = _Invoke(1, args);
             if (JSApi.JS_IsException(rVal))
             {
-                ctx.print_exception();
+                var ex = ctx.GetExceptionString();
+                JSApi.JS_FreeValue(ctx, val);
+                throw new JSException(ex);
             }
-
+            object rObj = null;
+            Binding.Values.js_get_var(ctx, rVal, resultType, out rObj);
             JSApi.JS_FreeValue(ctx, rVal);
+            JSApi.JS_FreeValue(ctx, val);
+            return rObj;
         }
 
-        // reflect call
-        public object Invoke(object this_obj, object[] parameters)
+        private unsafe JSValue _Invoke(int argc, JSValue* argv)
+        {
+            if (_context == null)
+            {
+                return JSApi.JS_UNDEFINED;
+            }
+            JSContext ctx = _context;
+            var rVal = JSApi.JS_Call(ctx, _jsValue, _thisValue, argc, argv);
+            return rVal;
+        }
+
+        //TODO: reflect call
+        public object Invoke(Type resultType, object this_obj, object[] parameters)
         {
             throw new System.NotImplementedException();
         }

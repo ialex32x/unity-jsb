@@ -29,6 +29,8 @@ namespace QuickJS.Binding
                 return JSApi.JS_DupValue(ctx, dDelegate);
             }
 
+            //TODO: c# delegate 通过 dynamic method wrapper 产生一个 jsvalue
+
             // fallback
             return js_push_object(ctx, (object)o);
         }

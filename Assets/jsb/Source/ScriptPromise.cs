@@ -52,9 +52,9 @@ namespace QuickJS
             var backVal = Binding.Values.js_push_var(ctx, value);
             if (backVal.IsException())
             {
-                ctx.print_exception();
+                var ex = ctx.GetExceptionString();
                 Release();
-                throw new Exception("js exception");
+                throw new JSException(ex);
             }
 
             var argv = stackalloc[] { backVal };
@@ -62,9 +62,9 @@ namespace QuickJS
             JSApi.JS_FreeValue(ctx, backVal);
             if (rval.IsException())
             {
-                ctx.print_exception();
+                var ex = ctx.GetExceptionString();
                 Release();
-                throw new Exception("js exception");
+                throw new JSException(ex);
             }
 
             JSApi.JS_FreeValue(ctx, rval);
