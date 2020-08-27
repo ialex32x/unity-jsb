@@ -189,6 +189,7 @@ namespace QuickJS
                                     return rval;
                                 }
                                 // success
+                                JSApi.JS_FreeValue(ctx, rval);
                             }
                             else
                             {
@@ -222,6 +223,7 @@ namespace QuickJS
                                     runtime.FreeValues(require_argv);
                                     return rval;
                                 }
+                                JSApi.JS_FreeValue(ctx, rval);
                             }
 
                             JSApi.JS_FreeValue(ctx, func_val);

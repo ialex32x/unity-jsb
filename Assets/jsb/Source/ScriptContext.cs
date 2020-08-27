@@ -367,6 +367,7 @@ namespace QuickJS
                             _ctx.print_exception();
                             return;
                         }
+                        JSApi.JS_FreeValue(_ctx, rval);
                     }
 
                     JSApi.JS_FreeValue(_ctx, func_val);
