@@ -16,29 +16,44 @@ namespace QuickJS.Binding
             var removerFunc = JSApi.JSB_NewCFunction(ctx, remover, context.GetAtom("off"), 1, JSCFunctionEnum.JS_CFUNC_generic, 0);
             JSApi.JS_SetProperty(ctx, ret, context.GetAtom("off"), removerFunc);
             return ret;
-            // return JSApi.JS_ThrowInternalError(ctx, "invalid this_obj, unbound?");
         }
+
+        // // 创建一个委托绑定
+        // // add/remove 只在 可读&可写 有效
+        // // get/set 对应 可读/可写
+        // public static JSValue js_new_delegate(JSContext ctx, object this_obj, JSCFunction adder, JSCFunction remover, JSCFunction setter, JSCFunction getter)
+        // {
+        //     var context = ScriptEngine.GetContext(ctx);
+        //     var ret = NewBridgeClassObject(ctx, this_obj);
+        //     if (adder != null)
+        //     {
+        //         var adderFunc = JSApi.JSB_NewCFunction(ctx, adder, context.GetAtom("on"), 1, JSCFunctionEnum.JS_CFUNC_generic, 0);
+        //         JSApi.JS_SetProperty(ctx, ret, context.GetAtom("on"), adderFunc);
+        //     }
+        //     if (remover != null)
+        //     {
+        //         var removerFunc = JSApi.JSB_NewCFunction(ctx, remover, context.GetAtom("off"), 1, JSCFunctionEnum.JS_CFUNC_generic, 0);
+        //         JSApi.JS_SetProperty(ctx, ret, context.GetAtom("off"), removerFunc);
+        //     }
+        //     return ret;
+        // }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static JSValue js_push_delegate(JSContext ctx, Delegate o)
         {
+            if (o == null)
+            {
+                return JSApi.JS_NULL;
+            }
+
             var dDelegate = o.Target as ScriptDelegate;
             if (dDelegate != null)
             {
                 return JSApi.JS_DupValue(ctx, dDelegate);
             }
 
-            //TODO: c# delegate 通过 dynamic method wrapper 产生一个 jsvalue 
-            // (但是本质上会导致此委托泄露, 且不能合理地与 get_delegate 行为匹配, 无法还原此委托)
-            // var context = ScriptEngine.GetContext(ctx);
-            // var types = context.GetTypeDB();
-            // var name = context.GetAtom(o.Method.Name);
-            // return types.NewDynamicDelegate(name, o);
-
-            //TODO: 目前无法将普通委托专为 JSValue
-            // fallback, will always fail
-            // return js_push_object(ctx, (object)o);
-            return JSApi.JS_UNDEFINED;
+            // fallback
+            return js_push_object(ctx, (object)o);
         }
 
         public static bool js_get_delegate_array<T>(JSContext ctx, JSValue val, out T[] o)
@@ -78,26 +93,64 @@ namespace QuickJS.Binding
             return ret;
         }
 
-        public static bool js_get_delegate(JSContext ctx, JSValue val, Type delegateType, out Delegate o)
+        // 从 JSValue 反推 Delegate
+        // 不约束委托类型 (因此也不会自动创建委托, 不存在已有映射时, 将失败)
+        public static bool js_get_delegate_unsafe(JSContext ctx, JSValue val, out Delegate o)
         {
-            //TODO: 20200320 !!! 如果 o 不是 jsobject, 且是 Delegate 但不是 ScriptDelegate, 则 ... 处理
             if (val.IsNullish())
             {
                 o = null;
                 return true;
             }
 
-            if (JSApi.JS_IsObject(val) || JSApi.JS_IsFunction(ctx, val) == 1)
+            if (JSApi.JS_IsFunction(ctx, val) == 1)
             {
                 ScriptDelegate fn;
                 var cache = ScriptEngine.GetObjectCache(ctx);
 
                 if (cache.TryGetDelegate(val, out fn))
                 {
-                    // Debug.LogWarningFormat("cache hit {0}", heapptr);
+                    o = fn.Any();
+                    return o != null;
+                }
+                else
+                {
+                    o = null;
+                    return false;
+                }
+            }
+
+            // 检查 val 是否是一个委托对象 wrapped object
+            if (JSApi.JS_IsObject(val))
+            {
+                return js_get_classvalue<Delegate>(ctx, val, out o);
+            }
+
+            o = null;
+            return false;        }
+
+        // 从 JSValue 反推 Delegate
+        // JSValue 可能是一个 js function, cs delegate (js object)
+        public static bool js_get_delegate(JSContext ctx, JSValue val, Type delegateType, out Delegate o)
+        {
+            if (val.IsNullish())
+            {
+                o = null;
+                return true;
+            }
+
+            if (JSApi.JS_IsFunction(ctx, val) == 1)
+            {
+                ScriptDelegate fn;
+                var cache = ScriptEngine.GetObjectCache(ctx);
+
+                if (cache.TryGetDelegate(val, out fn))
+                {
+                    // 已经存在映射关系, 找出符合预期类型的委托
                     o = fn.Match(delegateType);
                     if (o == null)
                     {
+                        // 存在 JSValue => Delegate 的多重映射
                         var types = ScriptEngine.GetTypeDB(ctx);
                         var func = types.GetDelegateFunc(delegateType);
                         o = Delegate.CreateDelegate(delegateType, fn, func, false);
@@ -110,8 +163,9 @@ namespace QuickJS.Binding
                 }
                 else
                 {
-                    // 默认赋值操作
-                    var types = ScriptEngine.GetTypeDB(ctx);
+                    // 建立新的映射关系
+                    var context = ScriptEngine.GetContext(ctx);
+                    var types = context.GetTypeDB();
                     var func = types.GetDelegateFunc(delegateType);
 
                     if (func == null)
@@ -120,7 +174,7 @@ namespace QuickJS.Binding
                         return false;
                     }
 
-                    fn = new ScriptDelegate(ScriptEngine.GetContext(ctx), val);
+                    fn = new ScriptDelegate(context, val);
                     o = Delegate.CreateDelegate(delegateType, fn, func, false);
                     if (o != null)
                     {
@@ -129,15 +183,20 @@ namespace QuickJS.Binding
 
                     // ScriptDelegate 拥有 js 对象的强引用, 此 js 对象无法释放 cache 中的 object, 所以这里用弱引用注册
                     // 会出现的问题是, 如果 c# 没有对 ScriptDelegate 的强引用, 那么反复 get_delegate 会重复创建 ScriptDelegate
-                    // Debug.LogWarningFormat("cache create : {0}", heapptr);
                     cache.AddDelegate(val, fn);
                     return o != null;
                 }
             }
-            // else if (DuktapeDLL.duk_is_object(ctx, idx))
-            // {
-            //     return js_get_classvalue<T>(ctx, idx, out o);
-            // }
+
+            // 检查 val 是否是一个委托对象 wrapped object
+            if (JSApi.JS_IsObject(val))
+            {
+                if (js_get_classvalue<Delegate>(ctx, val, out o))
+                {
+                    return o == null || o.GetType() == delegateType;
+                }
+            }
+
             o = null;
             return false;
         }

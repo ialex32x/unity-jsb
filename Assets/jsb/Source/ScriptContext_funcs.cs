@@ -15,6 +15,22 @@ namespace QuickJS
 {
     public partial class ScriptContext
     {
+        private static Type FindType(string type_name)
+        {
+            Type type = null; //Assembly.GetExecutingAssembly().GetType(type_name);
+            var assemblies = AppDomain.CurrentDomain.GetAssemblies();
+            for (int i = 0, count = assemblies.Length; i < count; i++)
+            {
+                var assembly = assemblies[i];
+                type = assembly.GetType(type_name);
+                if (type != null)
+                {
+                    break;
+                }
+            }
+            return type;
+        }
+
         #region Builtins
 
         [MonoPInvokeCallback(typeof(JSCFunctionMagic))]
@@ -138,6 +154,71 @@ namespace QuickJS
             return JSApi.JS_UNDEFINED;
         }
 
+        // 尝试将传入的委托转换为 js function
+        [MonoPInvokeCallback(typeof(JSCFunction))]
+        public static unsafe JSValue to_js_function(JSContext ctx, JSValue this_obj, int argc, JSValue[] argv)
+        {
+            if (argc >= 1)
+            {
+                if (JSApi.JS_IsFunction(ctx, argv[0]) == 1)
+                {
+                    return JSApi.JS_DupValue(ctx, argv[0]);
+                }
+
+                if (JSApi.JS_IsObject(argv[0]))
+                {
+                    Delegate o;
+                    if (Values.js_get_delegate_unsafe(ctx, argv[0], out o))
+                    {
+                        if (o != null)
+                        {
+                            var sd = o.Target as ScriptDelegate;
+                            if (sd != null)
+                            {
+                                return JSApi.JS_DupValue(ctx, sd);
+                            }
+
+                            // 尝试将传入的委托转换为 js function
+                            // c# delegate 通过 dynamic method wrapper 产生一个 jsvalue 
+                            // 谨慎: 无法再从 function 还原此委托, 两者不会建立关联 (构成强引用循环)
+                            // 谨慎: NewDynamicDelegate 会产生一个与 Runtime 相同生命周期的对象, 该对象将持有 Delegate 对象引用
+                            var context = ScriptEngine.GetContext(ctx);
+                            var types = context.GetTypeDB();
+                            var name = context.GetAtom(o.Method.Name);
+
+                            return types.NewDynamicDelegate(name, o);
+                        }
+
+                        return JSApi.JS_NULL;
+                    }
+                }
+            }
+
+            return JSApi.JS_ThrowInternalError(ctx, "not implemented");
+        }
+
+        // 尝试将传入的 function 转换为 cs delegate
+        // 暂时只转换 ScriptDelegate
+        [MonoPInvokeCallback(typeof(JSCFunction))]
+        public static unsafe JSValue to_cs_delegate(JSContext ctx, JSValue this_obj, int argc, JSValue[] argv)
+        {
+            if (argc == 2)
+            {
+                var type_name = JSApi.GetString(ctx, argv[1]);
+                var type = FindType(type_name);
+                if (type != null)
+                {
+                    Delegate d;
+                    if (Values.js_get_delegate(ctx, argv[0], type, out d))
+                    {
+                        return Values.js_push_object(ctx, d);
+                    }
+                }
+            }
+
+            return JSApi.JS_ThrowInternalError(ctx, "invalid parameters");
+        }
+
         // arraybuffer => c# array<byte>
         [MonoPInvokeCallback(typeof(JSCFunction))]
         public static unsafe JSValue to_cs_bytes(JSContext ctx, JSValue this_obj, int argc, JSValue[] argv)
@@ -247,7 +328,8 @@ namespace QuickJS
             }
 
             var type_name = JSApi.GetString(ctx, argv[0]);
-            var type = Assembly.GetExecutingAssembly().GetType(type_name);
+            var type = FindType(type_name);
+
             if (type == null)
             {
                 return JSApi.JS_UNDEFINED;

@@ -69,6 +69,8 @@ namespace jsb
         void OnDestroy()
         {
             ScriptEngine.Shutdown();
+            GC.Collect();
+            GC.WaitForPendingFinalizers();
         }
 
         public void OnBind(ScriptRuntime runtime, TypeRegister register)

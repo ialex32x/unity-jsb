@@ -1,5 +1,4 @@
 "use strict";
-var _a, _b, _c, _d;
 Object.defineProperty(exports, "__esModule", { value: true });
 print("first line");
 // import { fib } from "./fib_module.js";
@@ -30,10 +29,22 @@ async function destroy() {
 destroy();
 let actions = new jsb.DelegateTest();
 print("测试: 委托");
+actions.AddAction();
+// {
+//     // (不建议) 可以将 C# 委托强行转换成 Function
+//     let dangerous = jsb.ToFunction(<Function>actions.onAction);
+//     dangerous.call(null);
+// }
+actions.CallAction();
+print("print 委托对象", actions.onAction);
 actions.onAction = function () {
-    console.log("js action");
+    console.log("js action1");
 };
 actions.CallAction();
+print("print 委托对象", actions.onAction);
+actions.onAction = null;
+actions.CallAction();
+print("print 委托对象", actions.onAction);
 print("测试: 带参数的委托");
 actions.onActionWithArgs = (a, b, c) => {
     console.log(a, b, c);
@@ -141,34 +152,14 @@ async function test_custom_promise() {
     print("after wait a promise (created in C#):", await sb.Wait());
 }
 test_custom_promise();
-// Optional Chaining
-let a = 1;
-print("Optional Chaining", ((_b = (_a = a) === null || _a === void 0 ? void 0 : _a.b) === null || _b === void 0 ? void 0 : _b.c) === undefined);
-// Nullish coalescing Operator
-print("Nullish coalescing Operator:", (_d = (_c = a) === null || _c === void 0 ? void 0 : _c.b, (_d !== null && _d !== void 0 ? _d : "ok")));
+// Optional Chaining/Nullish coalescing Operator 需要较新的 tsc 编译, 或者直接在 js 代码中使用
+// // Optional Chaining
+// let a: any = 1;
+// print("Optional Chaining", a?.b?.c === undefined);
+// // Nullish coalescing Operator
+// print("Nullish coalescing Operator:", a?.b ?? "ok");
 // const protobuf = require("protobufjs");
 // print("protobufjs:", protobuf);
-// let xhr = new XMLHttpRequest();
-// xhr.open("GET", "http://127.0.0.1:8080/windows/checksum.txt");
-// xhr.timeout = 1000;
-// xhr.onreadystatechange = function () {
-//     console.log("readyState:", xhr.readyState);
-//     if (xhr.readyState !== 4) {
-//         return;
-//     }
-//     console.log("status:", xhr.status);
-//     if (xhr.status == 200) {
-//         console.log("responseText:", xhr.responseText);
-//     }
-// }
-// xhr.send();
 jsb.DoFile("dofile_test");
-let worker = new Worker("worker");
-worker.onmessage = function (data) {
-    console.log("master receive message from worker:", data);
-};
-setInterval(function () {
-    worker.postMessage("hello, worker! i am master!");
-}, 5000);
 global["testGlobalVar"] = "test";
 //# sourceMappingURL=main.js.map

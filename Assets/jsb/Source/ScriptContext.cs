@@ -31,6 +31,7 @@ namespace QuickJS
         private JSValue _operatorCreate;
         private JSValue _numberConstructor;
         private JSValue _stringConstructor;
+        private JSValue _functionConstructor;
 
         // id = context slot index + 1
         public int id { get { return _contextId; } }
@@ -49,6 +50,7 @@ namespace QuickJS
             _globalObject = JSApi.JS_GetGlobalObject(_ctx);
             _numberConstructor = JSApi.JS_GetProperty(_ctx, _globalObject, JSApi.JS_ATOM_Number);
             _stringConstructor = JSApi.JS_GetProperty(_ctx, _globalObject, JSApi.JS_ATOM_String);
+            _functionConstructor = JSApi.JS_GetProperty(_ctx, _globalObject, JSApi.JS_ATOM_Function);
             _operatorCreate = JSApi.JS_UNDEFINED;
 
             var operators = JSApi.JS_GetProperty(_ctx, _globalObject, JSApi.JS_ATOM_Operators);
@@ -169,6 +171,7 @@ namespace QuickJS
 
             JSApi.JS_FreeValue(_ctx, _numberConstructor);
             JSApi.JS_FreeValue(_ctx, _stringConstructor);
+            JSApi.JS_FreeValue(_ctx, _functionConstructor);
             JSApi.JS_FreeValue(_ctx, _globalObject);
             JSApi.JS_FreeValue(_ctx, _operatorCreate);
 
@@ -223,6 +226,12 @@ namespace QuickJS
             return JSApi.JS_DupValue(_ctx, _stringConstructor);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public JSValue GetFunctionConstructor()
+        {
+            return JSApi.JS_DupValue(_ctx, _functionConstructor);
+        }
+
         ///<summary>
         /// 获取 number.constructor (增加引用计数)
         ///</summary>
@@ -274,6 +283,8 @@ namespace QuickJS
             ns_jsb.AddFunction("ToArray", to_js_array, 1);
             ns_jsb.AddFunction("ToArrayBuffer", to_js_array_buffer, 1);
             ns_jsb.AddFunction("ToBytes", to_cs_bytes, 1);
+            ns_jsb.AddFunction("ToFunction", to_js_function, 1);
+            ns_jsb.AddFunction("ToDelegate", to_cs_delegate, 1);
             ns_jsb.AddFunction("Import", js_import_type, 2);
 
             {
@@ -395,35 +406,40 @@ namespace QuickJS
             }
         }
 
-        public void EvalSourceFree(string source, string fileName)
-        {
-            EvalSourceFree(source, fileName, null);
-        }
-
-        public void EvalSourceFree(string source, string fileName, Action<JSContext, JSValue> onEvalReturn)
+        public void EvalSource(string source, string fileName)
         {
             var bytes = System.Text.Encoding.UTF8.GetBytes(source);
-            EvalSourceFree(bytes, fileName, onEvalReturn);
+            EvalSource(bytes, fileName, typeof(void));
         }
 
-        public void EvalSourceFree(byte[] source, string fileName)
+        public T EvalSource<T>(string source, string fileName)
         {
-            EvalSourceFree(source, fileName, null);
+            var bytes = System.Text.Encoding.UTF8.GetBytes(source);
+            return (T)EvalSource(bytes, fileName, typeof(T));
         }
 
-        public void EvalSourceFree(byte[] source, string fileName, Action<JSContext, JSValue> onEvalReturn)
+        public void EvalSource(byte[] source, string fileName)
+        {
+            EvalSource(source, fileName, typeof(void));
+        }
+
+        public T EvalSource<T>(byte[] source, string fileName)
+        {
+            return (T)EvalSource(source, fileName, typeof(T));
+        }
+
+        public object EvalSource(byte[] source, string fileName, Type returnType)
         {
             var jsValue = ScriptRuntime.EvalSource(_ctx, source, fileName, false);
             if (JSApi.JS_IsException(jsValue))
             {
-                _ctx.print_exception();
+                var ex = _ctx.GetExceptionString();
+                throw new JSException(ex);
             }
-            else
-            {
-                onEvalReturn(_ctx, jsValue);
-            }
-
+            object retObject;
+            Values.js_get_var(_ctx, jsValue, returnType, out retObject);
             JSApi.JS_FreeValue(_ctx, jsValue);
+            return retObject;
         }
 
         public void RegisterBuiltins()

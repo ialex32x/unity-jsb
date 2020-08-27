@@ -144,7 +144,7 @@ namespace QuickJS.Binding
 
         // push 一个对象实例 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static JSValue js_push_object(JSContext ctx, object o)
+        public static JSValue js_push_object(JSContext ctx, object o)
         {
             var cache = ScriptEngine.GetObjectCache(ctx);
             JSValue heapptr;
