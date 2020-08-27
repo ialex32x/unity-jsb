@@ -13,6 +13,8 @@ namespace QuickJS.Binding
 
         static Values()
         {
+            init_js_cast_map();
+            init_cs_cast_map();
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

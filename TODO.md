@@ -4,3 +4,4 @@
     [ ] 通过 BindingManager 辅助得到 export types
     [ ] 生成 d.ts
 
+> 专门定义一个委托的 JS 类型映射

@@ -234,6 +234,20 @@ namespace QuickJS.Utils
             return NewDynamicMethod(name, new DynamicMethodInvoke(method));
         }
 
+        public JSValue NewDynamicDelegate(JSAtom name, Delegate d)
+        {
+            if (d == null)
+            {
+                return JSApi.JS_NULL;
+            }
+            
+            var method = new DynamicDelegateMethod(d);
+            var magic = _dynamicMethods.Count;
+            var funValue = JSApi.JSB_NewCFunctionMagic(_context, JSApi._DynamicMethodInvoke, name, 0, JSCFunctionEnum.JS_CFUNC_generic_magic, magic);
+            _dynamicMethods.Add(method);
+            return funValue;
+        }
+
         public JSValue NewDynamicMethod(JSAtom name, IDynamicMethod method)
         {
             if (method == null)

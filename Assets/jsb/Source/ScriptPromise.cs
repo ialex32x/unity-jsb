@@ -41,7 +41,7 @@ namespace QuickJS
             Invoke(1, value);
         }
 
-        private void Invoke(int index, object value)
+        private unsafe void Invoke(int index, object value)
         {
             if (_context == null)
             {
@@ -52,19 +52,19 @@ namespace QuickJS
             var backVal = Binding.Values.js_push_var(ctx, value);
             if (backVal.IsException())
             {
-                ctx.print_exception();
+                var ex = ctx.GetExceptionString();
                 Release();
-                throw new Exception("js exception");
+                throw new JSException(ex);
             }
 
-            var argv = new[] { backVal };
+            var argv = stackalloc[] { backVal };
             var rval = JSApi.JS_Call(ctx, _resolving_funcs[index], JSApi.JS_UNDEFINED, 1, argv);
             JSApi.JS_FreeValue(ctx, backVal);
             if (rval.IsException())
             {
-                ctx.print_exception();
+                var ex = ctx.GetExceptionString();
                 Release();
-                throw new Exception("js exception");
+                throw new JSException(ex);
             }
 
             JSApi.JS_FreeValue(ctx, rval);

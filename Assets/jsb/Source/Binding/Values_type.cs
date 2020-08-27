@@ -11,6 +11,14 @@ namespace QuickJS.Binding
     // 处理类型
     public partial class Values
     {
+        public static JSValue js_push_type(JSContext ctx, Type o)
+        {
+            var context = ScriptEngine.GetContext(ctx);
+            var types = context.GetTypeDB();
+            var jsVal = types.GetPrototypeOf(o);
+            return JSApi.JS_DupValue(ctx, jsVal);
+        }
+        
         public static bool js_get_type(JSContext ctx, JSValue jsValue, out Type o)
         {
             if (JSApi.JS_IsString(jsValue))
@@ -36,24 +44,24 @@ namespace QuickJS.Binding
                     switch (header.type_id)
                     {
                         case BridgeObjectType.TypeRef:
-                        {
-                            var types = context.GetTypeDB();
-                            o = types.GetType(header.value);
-                            // Debug.Log($"get type from exported registry {o}:{typeid}");
-                            return o != null;
-                        }
+                            {
+                                var types = context.GetTypeDB();
+                                o = types.GetType(header.value);
+                                // Debug.Log($"get type from exported registry {o}:{typeid}");
+                                return o != null;
+                            }
                         case BridgeObjectType.ObjectRef:
-                        {
-                            var cache = context.GetObjectCache();
-                            object obj;
-                            cache.TryGetObject(header.value, out obj);
-                            o = obj.GetType();
-                            return o != null;
-                        }
+                            {
+                                var cache = context.GetObjectCache();
+                                object obj;
+                                cache.TryGetObject(header.value, out obj);
+                                o = obj.GetType();
+                                return o != null;
+                            }
                     }
                 }
             }
-            
+
             o = null;
             return false;
         }
@@ -81,7 +89,7 @@ namespace QuickJS.Binding
                 }
                 return true;
             }
-            
+
             // fallthrough
             return js_get_classvalue<Type[]>(ctx, val, out o);
         }

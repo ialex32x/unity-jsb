@@ -19,7 +19,6 @@ namespace QuickJS.Binding
             // return JSApi.JS_ThrowInternalError(ctx, "invalid this_obj, unbound?");
         }
 
-        // 尝试还原 js function/dispatcher
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static JSValue js_push_delegate(JSContext ctx, Delegate o)
         {
@@ -29,8 +28,17 @@ namespace QuickJS.Binding
                 return JSApi.JS_DupValue(ctx, dDelegate);
             }
 
-            // fallback
-            return js_push_object(ctx, (object)o);
+            //TODO: c# delegate 通过 dynamic method wrapper 产生一个 jsvalue 
+            // (但是本质上会导致此委托泄露, 且不能合理地与 get_delegate 行为匹配, 无法还原此委托)
+            // var context = ScriptEngine.GetContext(ctx);
+            // var types = context.GetTypeDB();
+            // var name = context.GetAtom(o.Method.Name);
+            // return types.NewDynamicDelegate(name, o);
+
+            //TODO: 目前无法将普通委托专为 JSValue
+            // fallback, will always fail
+            // return js_push_object(ctx, (object)o);
+            return JSApi.JS_UNDEFINED;
         }
 
         public static bool js_get_delegate_array<T>(JSContext ctx, JSValue val, out T[] o)
