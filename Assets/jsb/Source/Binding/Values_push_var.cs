@@ -31,6 +31,7 @@ namespace QuickJS.Binding
             _CSCastMap[typeof(double)] = cs_value_cast_double;
             _CSCastMap[typeof(string)] = cs_value_cast_string;
             _CSCastMap[typeof(Type)] = cs_value_cast_type;
+            _CSCastMap[typeof(ScriptValue)] = cs_value_cast_value;
         }
 
         // 自动判断类型
@@ -135,6 +136,11 @@ namespace QuickJS.Binding
         private static JSValue cs_value_cast_type(JSContext ctx, object o)
         {
             return js_push_type(ctx, (Type)o);
+        }
+
+        private static JSValue cs_value_cast_value(JSContext ctx, object o)
+        {
+            return js_push_classvalue(ctx, (ScriptValue)o);
         }
     }
 }
