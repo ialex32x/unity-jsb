@@ -41,4 +41,4 @@ cmake --build Android_x86_release --config Release
 mkdir -p ../../prebuilt/Plugins/Android/libs/x86/
 cp ./Android_x86_release/libquickjs.so ../../prebuilt/Plugins/Android/libs/x86/
 
-cd %BASE_PATH%
+cd $BASE_PATH
