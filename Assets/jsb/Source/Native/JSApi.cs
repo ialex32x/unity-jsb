@@ -87,6 +87,8 @@ namespace QuickJS.Native
 
     public partial class JSApi
     {
+        const int JSB_VERSION = 0x1;
+        
 #if (UNITY_IPHONE || UNITY_WEBGL) && !UNITY_EDITOR
 	    const string JSBDLL = "__Internal";
 #else
@@ -152,7 +154,10 @@ namespace QuickJS.Native
 
         static JSApi()
         {
-            __JSB_Init();
+            if (__JSB_Init() != JSB_VERSION)
+            {
+                throw new Exception("invalid unity_qjs.c, try to rebuild it");
+            }
         }
 
         [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
@@ -886,7 +891,7 @@ namespace QuickJS.Native
         public static readonly JSAtom JS_ATOM_prototype = JSB_ATOM_prototype();
 
         [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl, EntryPoint = "JSB_Init")]
-        public static extern void __JSB_Init();
+        public static extern int __JSB_Init();
 
         [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl, EntryPoint = "JSB_GetClassID")]
         public static extern JSClassID __JSB_GetClassID();

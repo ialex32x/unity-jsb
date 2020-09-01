@@ -647,11 +647,12 @@ JS_BOOL jsb_set_byte_4(JSValue val, byte v0, byte v1, byte v2, byte v3)
     return FALSE;
 }
 
-void JSB_Init()
+int JSB_Init()
 {
     if (js_class_id_begin == 0)
     {
         JS_NewClassID(&js_bridge_class_id);
         JS_NewClassID(&js_class_id_begin);
     }
+    return 0x1; // version tag for unity_qjs.c
 }
