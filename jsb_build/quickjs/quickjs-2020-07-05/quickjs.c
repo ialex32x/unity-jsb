@@ -984,6 +984,7 @@ static double log2(double v) { return log(v) / log(2.0); }
 #if defined(__APPLE__)
 // https://stackoverflow.com/questions/5167269/clock-gettime-alternative-in-mac-os-x
 // not best solution
+#include <mach/mach_time.h>
 #ifndef CLOCK_REALTIME
 #define CLOCK_REALTIME 0
 int clock_gettime(int clk_id, struct timespec *t){
