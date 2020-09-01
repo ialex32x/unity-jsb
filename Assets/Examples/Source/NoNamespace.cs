@@ -7,6 +7,9 @@ public class NoNamespaceBase
 [QuickJS.JSType]
 public class NoNamespaceClass : NoNamespaceBase
 {
+    public static void V1(UnityEngine.Vector3 v) { }
+    public static void V1(UnityEngine.Vector2 v) { }
+
     public static void Moo()
     {
     }
