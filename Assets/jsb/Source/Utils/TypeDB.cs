@@ -59,11 +59,6 @@ namespace QuickJS.Utils
             return dynamicType;
         }
 
-        public Type GetType(int index)
-        {
-            return index >= 0 && index < _types.Count ? _types[index] : null;
-        }
-
         public void AddDelegate(Type type, MethodInfo method)
         {
             _delegates[type] = method;
@@ -91,10 +86,15 @@ namespace QuickJS.Utils
             }
 
             _prototypes[type] = JSApi.JS_DupValue(_context, proto);
-            var index = _types.Count;
             _types.Add(type);
+            var index = _types.Count;
             _typeIndex[type] = index;
             return index;
+        }
+
+        public Type GetType(int index)
+        {
+            return index >= 1 && index <= _types.Count ? _types[index - 1] : null;
         }
 
         public int GetTypeID(Type type)
