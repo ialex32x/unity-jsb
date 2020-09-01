@@ -16,7 +16,7 @@
 * [初步] 编辑器执行 JS 脚本
 * [未完成] Webpack HMR 运行时模块热替换 (limited support, for development only)
 
-# 附加模块支持
+# 附加模块支持 (可选)
 Extra 为可选附加模块, 提供不同的特定功能, 不需要的直接删除相应目录即可.
 * Websocket (初步支持, limited support)
 * XMLHttpRequest (初步支持, limited support)
@@ -28,12 +28,15 @@ Extra 为可选附加模块, 提供不同的特定功能, 不需要的直接删�
 * SQLite (未实现)
 
 # 特性示例
-> 推荐使用 typescript 编写脚本, unity-jsb 对导出的 C# 类型自动生成了对应的 d.ts 声明, 以提供强类型辅助. 示例代码均使用 typescript. <br/>
+> 推荐使用 typescript 编写脚本, unity-jsb 对导出的 C# 类型自动生成了对应的 d.ts 声明, 以提供强类型辅助. 示例代码均使用 typescript. 
+>
 > 也可以根据喜好选择 coffeescript/clojurescript 等任何可以编译成 javascript 的语言. 最终运行的都是 javascript.
 
 ## MonoBehaviour in Javascript
-> 支持 JS class 直接继承 MonoBehaviour <br/>
-> 所有响应函数支持 JS 异步函数 <br/>
+> 支持 JS class 直接继承 MonoBehaviour 
+>
+> 所有响应函数支持 JS 异步函数
+
 ```ts
 class MyClass extends UnityEngine.MonoBehaviour {
     protected _tick = 0;
@@ -107,6 +110,9 @@ testAsyncFunc();
 ```
 
 ## 运算符重载
+> 可以直接支持 Vector3 * Vector3, Vector3 * float 等写法.
+>
+> 需要特别注意的是, JS 中没有值类型概念, Vector3 是按引用赋值的, 切记!
 
 ```ts
 {
