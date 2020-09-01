@@ -372,10 +372,19 @@ namespace QuickJS.Editor
                     continue;
                 }
 
-                if (transform != null && transform.IsMemberBlocked(field.Name))
+                if (transform != null)
                 {
-                    bindingManager.Info("skip blocked field: {0}", field.Name);
-                    continue;
+                    if (transform.IsMemberBlocked(field.Name))
+                    {
+                        bindingManager.Info("skip blocked field: {0}", field.Name);
+                        continue;
+                    }
+
+                    if (transform.Filter(field))
+                    {
+                        bindingManager.Info("skip filtered field: {0}", field.Name);
+                        continue;
+                    }
                 }
 
                 AddField(field);
@@ -408,10 +417,19 @@ namespace QuickJS.Editor
                     continue;
                 }
 
-                if (transform != null && transform.IsMemberBlocked(evt.Name))
+                if (transform != null)
                 {
-                    bindingManager.Info("skip blocked event: {0}", evt.Name);
-                    continue;
+                    if (transform.IsMemberBlocked(evt.Name))
+                    {
+                        bindingManager.Info("skip blocked event: {0}", evt.Name);
+                        continue;
+                    }
+
+                    if (transform.Filter(evt))
+                    {
+                        bindingManager.Info("skip filtered event: {0}", evt.Name);
+                        continue;
+                    }
                 }
 
                 AddEvent(evt);
@@ -444,10 +462,19 @@ namespace QuickJS.Editor
                     continue;
                 }
 
-                if (transform != null && transform.IsMemberBlocked(property.Name))
+                if (transform != null)
                 {
-                    bindingManager.Info("skip blocked property: {0}", property.Name);
-                    continue;
+                    if (transform.IsMemberBlocked(property.Name))
+                    {
+                        bindingManager.Info("skip blocked property: {0}", property.Name);
+                        continue;
+                    }
+
+                    if (transform.Filter(property))
+                    {
+                        bindingManager.Info("skip filtered property: {0}", property.Name);
+                        continue;
+                    }
                 }
 
                 //NOTE: 索引访问
@@ -511,6 +538,15 @@ namespace QuickJS.Editor
                         continue;
                     }
 
+                    if (transform != null)
+                    {
+                        if (transform.Filter(constructor))
+                        {
+                            bindingManager.Info("skip filtered constructor: {0}", constructor.Name);
+                            continue;
+                        }
+                    }
+
                     AddConstructor(constructor);
                 }
             }
@@ -556,10 +592,19 @@ namespace QuickJS.Editor
                     continue;
                 }
 
-                if (transform != null && transform.IsMemberBlocked(method.Name))
+                if (transform != null)
                 {
-                    bindingManager.Info("skip blocked method: {0}", method.Name);
-                    continue;
+                    if (transform.IsMemberBlocked(method.Name))
+                    {
+                        bindingManager.Info("skip blocked method: {0}", method.Name);
+                        continue;
+                    }
+
+                    if (transform.Filter(method))
+                    {
+                        bindingManager.Info("skip filtered method: {0}", method.Name);
+                        continue;
+                    }
                 }
 
                 if (BindingManager.IsExtensionMethod(method))

@@ -43,10 +43,83 @@ namespace QuickJS.Editor
 
         private Dictionary<string, string> _redirectedMethods = new Dictionary<string, string>();
 
+        private Dictionary<Type, Delegate> _filters = new Dictionary<Type, Delegate>();
+        private Func<ConstructorInfo, bool> _filterConstructorInfo;
+        private Func<PropertyInfo, bool> _filterPropertyInfo;
+        private Func<FieldInfo, bool> _filterFieldInfo;
+        private Func<EventInfo, bool> _filterEventInfo;
+        private Func<MethodInfo, bool> _filterMethodInfo;
+
         public TypeTransform(Type type)
         {
             _type = type;
         }
+
+        public void OnFilter<T>(Func<T, bool> callback)
+        {
+            _filters[typeof(T)] = callback;
+        }
+
+        public bool Filter<T>(T info)
+        {
+            Delegate d;
+            if (!_filters.TryGetValue(typeof(T), out d))
+            {
+                return false;
+            }
+            var t = (Func<T, bool>)d;
+            return t(info);
+        }
+
+        // public void OnFilter(Func<ConstructorInfo, bool> callback)
+        // {
+        //     _filterConstructorInfo = callback;
+        // }
+
+        // public void OnFilter(Func<PropertyInfo, bool> callback)
+        // {
+        //     _filterPropertyInfo = callback;
+        // }
+
+        // public void OnFilter(Func<FieldInfo, bool> callback)
+        // {
+        //     _filterFieldInfo = callback;
+        // }
+
+        // public void OnFilter(Func<EventInfo, bool> callback)
+        // {
+        //     _filterEventInfo = callback;
+        // }
+
+        // public void OnFilter(Func<MethodInfo, bool> callback)
+        // {
+        //     _filterMethodInfo = callback;
+        // }
+
+        // public bool Filter(ConstructorInfo info)
+        // {
+        //     return _filterConstructorInfo(info);
+        // }
+
+        // public bool Filter(PropertyInfo info)
+        // {
+        //     return _filterPropertyInfo(info);
+        // }
+
+        // public bool Filter(FieldInfo info)
+        // {
+        //     return _filterFieldInfo(info);
+        // }
+
+        // public bool Filter(EventInfo info)
+        // {
+        //     return _filterEventInfo(info);
+        // }
+
+        // public bool Filter(MethodInfo info)
+        // {
+        //     return _filterMethodInfo(info);
+        // }
 
         public void AddExtensionMethod(MethodInfo method)
         {

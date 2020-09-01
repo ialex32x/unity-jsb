@@ -21,6 +21,7 @@ namespace jsb
         public UnityEngine.UI.Text text;
         public FileLoader fileLoader;
         public string baseUrl = "http://127.0.0.1:8183";
+        public string entryFileName = "main.js";
         public bool sourceMap;
         public bool stacktrace;
         private ScriptRuntime _rt;
@@ -92,7 +93,7 @@ namespace jsb
             if (!runtime.isWorker)
             {
                 _mConsole.Write(LogLevel.Info, "run");
-                _rt.EvalMain("main.js");
+                _rt.EvalMain(entryFileName);
 
                 // 测试, 获取脚本本身返回值
                 var act = _rt.EvalFile<Action>("do_from_cs");
