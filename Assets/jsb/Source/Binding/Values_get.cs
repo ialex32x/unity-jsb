@@ -1197,29 +1197,6 @@ namespace QuickJS.Binding
             return false;
         }
 
-        public static bool js_get_cached_object_id(JSContext ctx, JSValue val, out int o)
-        {
-            if (val.IsNullish())
-            {
-                o = -1;
-                return false;
-            }
-            var header = JSApi.jsb_get_payload_header(val);
-            switch (header.type_id)
-            {
-                case BridgeObjectType.ObjectRef:
-                    o = header.value;
-                    return o >= 0;
-                case BridgeObjectType.TypeRef:
-                    o = header.value;
-                    return o >= 0;
-            }
-
-            //TODO: if o is Delegate, try get from delegate cache list
-            o = -1;
-            return false;
-        }
-
         // 只处理 JS_OBJECT
         public static bool js_get_object(JSContext ctx, JSValue val, out object o)
         {
