@@ -219,6 +219,16 @@ typedef struct JSPayload
     char data[1];
 } JSPayload;
 
+// added: v1
+JS_BOOL jsb_set_payload(JSContext *ctx, JSValue obj, int32_t type_id, int32_t value, int32_t size)
+{
+    JSPayload *sv = (JSPayload *)js_mallocz(ctx, sizeof(JSPayloadHeader) + size);
+    sv->header.type_id = type_id;
+    sv->header.value = value;
+    JS_SetOpaque(obj, sv);
+    return TRUE;
+}
+
 JSValue jsb_construct_bridge_object(JSContext *ctx, JSValue proto, int32_t object_id)
 {
     JSValue obj = JS_CallConstructor(ctx, proto, 0, NULL);
