@@ -433,6 +433,11 @@ namespace QuickJS
             }
         }
 
+        public bool IsMainThread()
+        {
+            return _mainThreadId == Thread.CurrentThread.ManagedThreadId;
+        }
+
         // main loop
         public void Update(int ms)
         {
@@ -549,7 +554,10 @@ namespace QuickJS
 
             if (_container != null)
             {
-                Object.DestroyImmediate(_container);
+                if (_mainThreadId == Thread.CurrentThread.ManagedThreadId)
+                {
+                    Object.DestroyImmediate(_container);
+                }
                 _container = null;
             }
 

@@ -245,15 +245,15 @@ namespace QuickJS.Editor
 
         static UnityHelper()
         {
-            EditorApplication.playModeStateChanged += OnPlayModeStateChanged;
+            // EditorApplication.playModeStateChanged += OnPlayModeStateChanged;
         }
 
-        private static void OnPlayModeStateChanged(PlayModeStateChange playModeStateChange)
-        {
-            if (playModeStateChange == PlayModeStateChange.EnteredEditMode)
-            {
-                EditorApplication.delayCall += () => ScriptEngine.Shutdown();
-            }
-        }
+        // private static void OnPlayModeStateChanged(PlayModeStateChange playModeStateChange)
+        // {
+        //     if (playModeStateChange == PlayModeStateChange.EnteredEditMode)
+        //     {
+        //         EditorApplication.delayCall += () => ScriptEngine.Shutdown();
+        //     }
+        // }
     }
 }
