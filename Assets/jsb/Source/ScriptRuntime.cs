@@ -135,7 +135,13 @@ namespace QuickJS
                 bindAll = typeof(Values).GetMethod("BindAll", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static);
                 if (bindAll == null)
                 {
-                    throw new Exception("Generate binding code before run");
+                    throw new Exception("generate binding code before run");
+                }
+
+                var codeGenVersion = typeof(Values).GetField("CodeGenVersion");
+                if (codeGenVersion == null || !codeGenVersion.IsLiteral || codeGenVersion.FieldType != typeof(uint))
+                {
+                    throw new Exception("binding code version mismatch");
                 }
             }
             _listener = listener;
