@@ -21,7 +21,7 @@ namespace QuickJS.Binding
             {
                 return true;
             }
-            if (type == typeof(Type))
+            if (type == typeof(Type)) //TODO: remove
             {
                 Type otype;
                 return js_get_type(ctx, jsValue, out otype); // 只要求匹配 Type 本身, 不比较具体 Type
@@ -30,30 +30,38 @@ namespace QuickJS.Binding
 
             if (JSApi.JS_IsObject(jsValue))
             {
-                if (JSApi.JS_IsFunction(ctx, jsValue) == 1)
+                if (type == typeof(ScriptFunction) || type.BaseType == typeof(MulticastDelegate))
                 {
-                    //TODO: 完善处理 delegate 
-                    return type == typeof(ScriptFunction) || type.BaseType == typeof(MulticastDelegate);
+                    return JSApi.JS_IsFunction(ctx, jsValue) == 1;
                 }
 
                 var header = JSApi.jsb_get_payload_header(jsValue);
-                if (header.type_id == BridgeObjectType.ObjectRef)
+                switch (header.type_id)
                 {
-                    var cache = ScriptEngine.GetObjectCache(ctx);
-                    return cache.MatchObjectType(header.value, type);
+                    case BridgeObjectType.ObjectRef:
+                        {
+                            var cache = ScriptEngine.GetObjectCache(ctx);
+                            return cache.MatchObjectType(header.value, type);
+                        }
+                    case BridgeObjectType.TypeRef:
+                        {
+                            return type == typeof(Type);
+                        }
+                    case BridgeObjectType.ValueType:
+                        {
+                            var context = ScriptEngine.GetContext(ctx);
+                            var type_id = JSApi.JSB_GetBridgeType(ctx, jsValue, context.GetAtom(Values.KeyForCSharpTypeID));
+                            if (type_id >= 0)
+                            {
+                                var types = context.GetTypeDB();
+                                var o = types.GetType(type_id);
+                                // Debug.Log($"get type from exported registry {o}:{type_id} expected:{type}");
+                                return o == type;
+                            }
+                            break;
+                        }
                 }
 
-                if (header.type_id == BridgeObjectType.TypeRef)
-                {
-                    var types = ScriptEngine.GetTypeDB(ctx);
-                    var eType = types.GetType(header.value);
-                    if (eType != null)
-                    {
-                        // Debug.LogFormat("match type? {0} {1} {2}", eType, type, typeid); 
-                        return eType == type;
-                    }
-                    // Debug.LogFormat("match type {0} with typeid {1}", type, typeid);
-                }
                 return type.IsSubclassOf(typeof(ScriptValue));
             }
 
