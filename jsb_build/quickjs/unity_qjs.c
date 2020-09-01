@@ -338,7 +338,7 @@ JSPayload *jsb_get_payload(JSValue val)
 JS_BOOL jsb_get_floats(JSValue val, int n, float *v0)
 {
     JSPayload *sv = JS_GetOpaque(val, js_bridge_class_id);
-    if (sv)
+    if (sv && sv->header.type_id == JS_BO_VALUE && sv->header.value == sizeof(float) * n)
     {
         float *ptr = (float *)&(sv->data[0]);
         for (int i = 0; i < n; ++i)
@@ -353,7 +353,7 @@ JS_BOOL jsb_get_floats(JSValue val, int n, float *v0)
 JS_BOOL jsb_set_floats(JSValue val, int n, float *v0)
 {
     JSPayload *sv = JS_GetOpaque(val, js_bridge_class_id);
-    if (sv)
+    if (sv && sv->header.type_id == JS_BO_VALUE && sv->header.value == sizeof(float) * n)
     {
         float *ptr = (float *)&(sv->data[0]);
         for (int i = 0; i < n; ++i)
@@ -368,7 +368,7 @@ JS_BOOL jsb_set_floats(JSValue val, int n, float *v0)
 JS_BOOL jsb_get_float_2(JSValue val, float *v0, float *v1)
 {
     JSPayload *sv = JS_GetOpaque(val, js_bridge_class_id);
-    if (sv)
+    if (sv && sv->header.type_id == JS_BO_VALUE && sv->header.value == sizeof(float) * 2)
     {
         float *ptr = (float *)&(sv->data[0]);
         *v0 = ptr[0];
@@ -381,7 +381,7 @@ JS_BOOL jsb_get_float_2(JSValue val, float *v0, float *v1)
 JS_BOOL jsb_set_float_2(JSValue val, float v0, float v1)
 {
     JSPayload *sv = JS_GetOpaque(val, js_bridge_class_id);
-    if (sv)
+    if (sv && sv->header.type_id == JS_BO_VALUE && sv->header.value == sizeof(float) * 2)
     {
         float *ptr = (float *)&(sv->data[0]);
         ptr[0] = v0;
@@ -394,7 +394,7 @@ JS_BOOL jsb_set_float_2(JSValue val, float v0, float v1)
 JS_BOOL jsb_get_float_3(JSValue val, float *v0, float *v1, float *v2)
 {
     JSPayload *sv = JS_GetOpaque(val, js_bridge_class_id);
-    if (sv)
+    if (sv && sv->header.type_id == JS_BO_VALUE && sv->header.value == sizeof(float) * 3)
     {
         float *ptr = (float *)&(sv->data[0]);
         *v0 = ptr[0];
@@ -408,7 +408,7 @@ JS_BOOL jsb_get_float_3(JSValue val, float *v0, float *v1, float *v2)
 JS_BOOL jsb_set_float_3(JSValue val, float v0, float v1, float v2)
 {
     JSPayload *sv = JS_GetOpaque(val, js_bridge_class_id);
-    if (sv)
+    if (sv && sv->header.type_id == JS_BO_VALUE && sv->header.value == sizeof(float) * 3)
     {
         float *ptr = (float *)&(sv->data[0]);
         ptr[0] = v0;
@@ -422,7 +422,7 @@ JS_BOOL jsb_set_float_3(JSValue val, float v0, float v1, float v2)
 JS_BOOL jsb_get_float_4(JSValue val, float *v0, float *v1, float *v2, float *v3)
 {
     JSPayload *sv = JS_GetOpaque(val, js_bridge_class_id);
-    if (sv)
+    if (sv && sv->header.type_id == JS_BO_VALUE && sv->header.value == sizeof(float) * 4)
     {
         float *ptr = (float *)&(sv->data[0]);
         *v0 = ptr[0];
@@ -437,7 +437,7 @@ JS_BOOL jsb_get_float_4(JSValue val, float *v0, float *v1, float *v2, float *v3)
 JS_BOOL jsb_set_float_4(JSValue val, float v0, float v1, float v2, float v3)
 {
     JSPayload *sv = JS_GetOpaque(val, js_bridge_class_id);
-    if (sv)
+    if (sv && sv->header.type_id == JS_BO_VALUE && sv->header.value == sizeof(float) * 4)
     {
         float *ptr = (float *)&(sv->data[0]);
         ptr[0] = v0;
@@ -449,10 +449,40 @@ JS_BOOL jsb_set_float_4(JSValue val, float v0, float v1, float v2, float v3)
     return FALSE;
 }
 
+JS_BOOL jsb_get_ints(JSValue val, int n, int *v0)
+{
+    JSPayload *sv = JS_GetOpaque(val, js_bridge_class_id);
+    if (sv && sv->header.type_id == JS_BO_VALUE && sv->header.value == sizeof(int) * n)
+    {
+        int *ptr = (int *)&(sv->data[0]);
+        for (int i = 0; i < n; ++i)
+        {
+            *(v0 + i) = ptr[0];
+        }
+        return TRUE;
+    }
+    return FALSE;
+}
+
+JS_BOOL jsb_set_ints(JSValue val, int n, int *v0)
+{
+    JSPayload *sv = JS_GetOpaque(val, js_bridge_class_id);
+    if (sv && sv->header.type_id == JS_BO_VALUE && sv->header.value == sizeof(int) * n)
+    {
+        int *ptr = (int *)&(sv->data[0]);
+        for (int i = 0; i < n; ++i)
+        {
+            ptr[i] = *(v0 + i);
+        }
+        return TRUE;
+    }
+    return FALSE;
+}
+
 JS_BOOL jsb_get_int_1(JSValue val, int *v0)
 {
     JSPayload *sv = JS_GetOpaque(val, js_bridge_class_id);
-    if (sv)
+    if (sv && sv->header.type_id == JS_BO_VALUE && sv->header.value == sizeof(int))
     {
         int *ptr = (int *)&(sv->data[0]);
         *v0 = ptr[0];
@@ -464,7 +494,7 @@ JS_BOOL jsb_get_int_1(JSValue val, int *v0)
 JS_BOOL jsb_set_int_1(JSValue val, int v0)
 {
     JSPayload *sv = JS_GetOpaque(val, js_bridge_class_id);
-    if (sv)
+    if (sv && sv->header.type_id == JS_BO_VALUE && sv->header.value == sizeof(int))
     {
         int *ptr = (int *)&(sv->data[0]);
         ptr[0] = v0;
@@ -476,7 +506,7 @@ JS_BOOL jsb_set_int_1(JSValue val, int v0)
 JS_BOOL jsb_get_int_2(JSValue val, int *v0, int *v1)
 {
     JSPayload *sv = JS_GetOpaque(val, js_bridge_class_id);
-    if (sv)
+    if (sv && sv->header.type_id == JS_BO_VALUE && sv->header.value == sizeof(int) * 2)
     {
         int *ptr = (int *)&(sv->data[0]);
         *v0 = ptr[0];
@@ -489,7 +519,7 @@ JS_BOOL jsb_get_int_2(JSValue val, int *v0, int *v1)
 JS_BOOL jsb_set_int_2(JSValue val, int v0, int v1)
 {
     JSPayload *sv = JS_GetOpaque(val, js_bridge_class_id);
-    if (sv)
+    if (sv && sv->header.type_id == JS_BO_VALUE && sv->header.value == sizeof(int) * 2)
     {
         int *ptr = (int *)&(sv->data[0]);
         ptr[0] = v0;
@@ -502,7 +532,7 @@ JS_BOOL jsb_set_int_2(JSValue val, int v0, int v1)
 JS_BOOL jsb_get_int_3(JSValue val, int *v0, int *v1, int *v2)
 {
     JSPayload *sv = JS_GetOpaque(val, js_bridge_class_id);
-    if (sv)
+    if (sv && sv->header.type_id == JS_BO_VALUE && sv->header.value == sizeof(int) * 3)
     {
         int *ptr = (int *)&(sv->data[0]);
         *v0 = ptr[0];
@@ -516,7 +546,7 @@ JS_BOOL jsb_get_int_3(JSValue val, int *v0, int *v1, int *v2)
 JS_BOOL jsb_set_int_3(JSValue val, int v0, int v1, int v2)
 {
     JSPayload *sv = JS_GetOpaque(val, js_bridge_class_id);
-    if (sv)
+    if (sv && sv->header.type_id == JS_BO_VALUE && sv->header.value == sizeof(int) * 3)
     {
         int *ptr = (int *)&(sv->data[0]);
         ptr[0] = v0;
@@ -530,7 +560,7 @@ JS_BOOL jsb_set_int_3(JSValue val, int v0, int v1, int v2)
 JS_BOOL jsb_get_int_4(JSValue val, int *v0, int *v1, int *v2, int *v3)
 {
     JSPayload *sv = JS_GetOpaque(val, js_bridge_class_id);
-    if (sv)
+    if (sv && sv->header.type_id == JS_BO_VALUE && sv->header.value == sizeof(int) * 4)
     {
         int *ptr = (int *)&(sv->data[0]);
         *v0 = ptr[0];
@@ -545,7 +575,7 @@ JS_BOOL jsb_get_int_4(JSValue val, int *v0, int *v1, int *v2, int *v3)
 JS_BOOL jsb_set_int_4(JSValue val, int v0, int v1, int v2, int v3)
 {
     JSPayload *sv = JS_GetOpaque(val, js_bridge_class_id);
-    if (sv)
+    if (sv && sv->header.type_id == JS_BO_VALUE && sv->header.value == sizeof(int) * 4)
     {
         int *ptr = (int *)&(sv->data[0]);
         ptr[0] = v0;
@@ -557,10 +587,40 @@ JS_BOOL jsb_set_int_4(JSValue val, int v0, int v1, int v2, int v3)
     return FALSE;
 }
 
+JS_BOOL jsb_get_bytes(JSValue val, int n, byte *v0)
+{
+    JSPayload *sv = JS_GetOpaque(val, js_bridge_class_id);
+    if (sv && sv->header.type_id == JS_BO_VALUE && sv->header.value == sizeof(byte) * n)
+    {
+        byte *ptr = (byte *)&(sv->data[0]);
+        for (int i = 0; i < n; ++i)
+        {
+            *(v0 + i) = ptr[0];
+        }
+        return TRUE;
+    }
+    return FALSE;
+}
+
+JS_BOOL jsb_set_bytes(JSValue val, int n, byte *v0)
+{
+    JSPayload *sv = JS_GetOpaque(val, js_bridge_class_id);
+    if (sv && sv->header.type_id == JS_BO_VALUE && sv->header.value == sizeof(byte) * n)
+    {
+        byte *ptr = (byte *)&(sv->data[0]);
+        for (int i = 0; i < n; ++i)
+        {
+            ptr[i] = *(v0 + i);
+        }
+        return TRUE;
+    }
+    return FALSE;
+}
+
 JS_BOOL jsb_get_byte_4(JSValue val, byte *v0, byte *v1, byte *v2, byte *v3)
 {
     JSPayload *sv = JS_GetOpaque(val, js_bridge_class_id);
-    if (sv)
+    if (sv && sv->header.type_id == JS_BO_VALUE && sv->header.value == sizeof(byte) * 4)
     {
         byte *ptr = (byte *)&(sv->data[0]);
         *v0 = ptr[0];
@@ -575,7 +635,7 @@ JS_BOOL jsb_get_byte_4(JSValue val, byte *v0, byte *v1, byte *v2, byte *v3)
 JS_BOOL jsb_set_byte_4(JSValue val, byte v0, byte v1, byte v2, byte v3)
 {
     JSPayload *sv = JS_GetOpaque(val, js_bridge_class_id);
-    if (sv)
+    if (sv && sv->header.type_id == JS_BO_VALUE && sv->header.value == sizeof(byte) * 4)
     {
         byte *ptr = (byte *)&(sv->data[0]);
         ptr[0] = v0;
@@ -586,16 +646,6 @@ JS_BOOL jsb_set_byte_4(JSValue val, byte v0, byte v1, byte v2, byte v3)
     }
     return FALSE;
 }
-
-// static void jsb_array_buffer_free(JSRuntime *rt, void *opaque, void *ptr)
-// {
-//     js_free_rt(rt, ptr);
-// }
-
-// char *jsb_new_buffer()
-// {
-//     JS_NewArrayBuffer(ctx, buf, len, jsb_array_buffer_free, NULL, FALSE);
-// }
 
 void JSB_Init()
 {
