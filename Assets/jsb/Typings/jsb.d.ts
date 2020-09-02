@@ -76,7 +76,7 @@ declare namespace jsb {
      */
     interface Task<T> {
     }
-    
+
     // @ts-ignore
     // function Yield(instruction: UnityEngine.YieldInstruction): Promise<UnityEngine.YieldInstruction>;
     // function Yield(enumerator: System.Collections.IEnumerator): Promise<System.Object>;
@@ -88,8 +88,9 @@ declare namespace jsb {
      * @summary 如果传入的是一个 C# 委托对象, 将通过 dynamic method wrapper 产生一个 JS Function 
      * @summary 谨慎: 无法再从 function 还原此委托, 两者不会建立关联 (会构成强引用循环) 
      * @summary 谨慎: NewDynamicDelegate 会产生一个与 Runtime 相同生命周期的对象, 该对象将持有 Delegate 对象引用 
+     * @param makeDynamic 是否创建委托的JS函数包装 (NewDynamicDelegate) [默认 false]
      */
-    function ToFunction(o: System.Delegate | Function): Function;
+    function ToFunction(o: System.Delegate | Function, makeDynamic?: boolean): Function;
 
     /**
      * [待定]
@@ -154,7 +155,7 @@ declare namespace jsb {
      */
     class Dispatcher {
         readonly handlers: Array<Handler>
-        
+
         constructor()
 
         /**

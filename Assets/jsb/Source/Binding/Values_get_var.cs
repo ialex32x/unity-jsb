@@ -66,7 +66,7 @@ namespace QuickJS.Binding
             _JSCastMap[typeof(double)] = js_value_cast_double;
             _JSCastMap[typeof(string)] = js_value_cast_string;
             _JSCastMap[typeof(Type)] = js_value_cast_type;
-            _JSCastMap[typeof(ScriptValue)] = js_value_cast_value;
+            _JSCastMap[typeof(ScriptValue)] = js_value_cast_script_value;
         }
 
         private static bool js_value_cast_void(JSContext ctx, JSValue val, out object o)
@@ -187,7 +187,7 @@ namespace QuickJS.Binding
             return rs;
         }
 
-        private static bool js_value_cast_value(JSContext ctx, JSValue val, out object o)
+        private static bool js_value_cast_script_value(JSContext ctx, JSValue val, out object o)
         {
             ScriptValue rval;
             var rs = js_get_classvalue(ctx, val, out rval);

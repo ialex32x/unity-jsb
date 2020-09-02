@@ -7,36 +7,29 @@ namespace QuickJS.Binding
     // 处理委托的绑定
     public partial class Values
     {
-        public static JSValue js_new_event(JSContext ctx, object this_obj, JSCFunction adder, JSCFunction remover)
+        //TODO: 不能这么处理, 要么提供 cahced event object, 要么换方案
+        public static JSValue js_new_event(JSContext ctx, JSValue this_obj, object self, string name, JSCFunction adder, JSCFunction remover)
         {
             var context = ScriptEngine.GetContext(ctx);
-            var ret = NewBridgeClassObject(ctx, this_obj);
-            var adderFunc = JSApi.JSB_NewCFunction(ctx, adder, context.GetAtom("on"), 1, JSCFunctionEnum.JS_CFUNC_generic, 0);
-            JSApi.JS_SetProperty(ctx, ret, context.GetAtom("on"), adderFunc);
-            var removerFunc = JSApi.JSB_NewCFunction(ctx, remover, context.GetAtom("off"), 1, JSCFunctionEnum.JS_CFUNC_generic, 0);
-            JSApi.JS_SetProperty(ctx, ret, context.GetAtom("off"), removerFunc);
-            return ret;
+            // var atom = context.GetAtom(name);
+            // var rval = JSApi.JS_GetProperty(ctx, this_obj, atom);
+            // if (rval.IsObject())
+            // {
+            //     UnityEngine.Debug.LogWarning("use cached event object");
+            //     return JSApi.JS_DupValue(ctx, rval);
+            // }
+            // JSApi.JS_FreeValue(ctx, rval);
+            // 创建一个虚对象映射, 不存在 self 到 rval 的映射, rval 持有 self 的 object id, 是与 this_obj 指向相同对象的不同 object id
+            var rval = NewBridgeClassObject(ctx, self, false);
+            var atom_on = context.GetAtom("on");
+            var atom_off = context.GetAtom("off");
+            var adderFunc = JSApi.JSB_NewCFunction(ctx, adder, atom_on, 1, JSCFunctionEnum.JS_CFUNC_generic, 0);
+            JSApi.JS_SetProperty(ctx, rval, atom_on, adderFunc);
+            var removerFunc = JSApi.JSB_NewCFunction(ctx, remover, atom_off, 1, JSCFunctionEnum.JS_CFUNC_generic, 0);
+            JSApi.JS_SetProperty(ctx, rval, atom_off, removerFunc);
+            // JSApi.JS_SetProperty(ctx, this_obj, atom, JSApi.JS_DupValue(ctx, rval));
+            return rval;
         }
-
-        // // 创建一个委托绑定
-        // // add/remove 只在 可读&可写 有效
-        // // get/set 对应 可读/可写
-        // public static JSValue js_new_delegate(JSContext ctx, object this_obj, JSCFunction adder, JSCFunction remover, JSCFunction setter, JSCFunction getter)
-        // {
-        //     var context = ScriptEngine.GetContext(ctx);
-        //     var ret = NewBridgeClassObject(ctx, this_obj);
-        //     if (adder != null)
-        //     {
-        //         var adderFunc = JSApi.JSB_NewCFunction(ctx, adder, context.GetAtom("on"), 1, JSCFunctionEnum.JS_CFUNC_generic, 0);
-        //         JSApi.JS_SetProperty(ctx, ret, context.GetAtom("on"), adderFunc);
-        //     }
-        //     if (remover != null)
-        //     {
-        //         var removerFunc = JSApi.JSB_NewCFunction(ctx, remover, context.GetAtom("off"), 1, JSCFunctionEnum.JS_CFUNC_generic, 0);
-        //         JSApi.JS_SetProperty(ctx, ret, context.GetAtom("off"), removerFunc);
-        //     }
-        //     return ret;
-        // }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static JSValue js_push_delegate(JSContext ctx, Delegate o)
@@ -93,8 +86,9 @@ namespace QuickJS.Binding
             return ret;
         }
 
-        // 从 JSValue 反推 Delegate
-        // 不约束委托类型 (因此也不会自动创建委托, 不存在已有映射时, 将失败)
+        /// <summary>
+        /// 从 JSValue 反推 Delegate. 不约束委托类型 (因此也不会自动创建委托, 不存在已有映射时, 将失败)
+        /// </summary>
         public static bool js_get_delegate_unsafe(JSContext ctx, JSValue val, out Delegate o)
         {
             if (val.IsNullish())
@@ -127,10 +121,13 @@ namespace QuickJS.Binding
             }
 
             o = null;
-            return false;        }
+            return false;
+        }
 
-        // 从 JSValue 反推 Delegate
-        // JSValue 可能是一个 js function, cs delegate (js object)
+        /// <summary>
+        /// 从 JSValue 反推 Delegate, JSValue 可能是一个 js function, cs delegate (js object) <br/>
+        /// 注意: 会自动创建 ScriptDelegate 映射
+        /// </summary>
         public static bool js_get_delegate(JSContext ctx, JSValue val, Type delegateType, out Delegate o)
         {
             if (val.IsNullish())
@@ -139,61 +136,57 @@ namespace QuickJS.Binding
                 return true;
             }
 
-            if (JSApi.JS_IsFunction(ctx, val) == 1)
-            {
-                ScriptDelegate fn;
-                var cache = ScriptEngine.GetObjectCache(ctx);
-
-                if (cache.TryGetDelegate(val, out fn))
-                {
-                    // 已经存在映射关系, 找出符合预期类型的委托
-                    o = fn.Match(delegateType);
-                    if (o == null)
-                    {
-                        // 存在 JSValue => Delegate 的多重映射
-                        var types = ScriptEngine.GetTypeDB(ctx);
-                        var func = types.GetDelegateFunc(delegateType);
-                        o = Delegate.CreateDelegate(delegateType, fn, func, false);
-                        if (o != null)
-                        {
-                            fn.Add(o);
-                        }
-                    }
-                    return o != null;
-                }
-                else
-                {
-                    // 建立新的映射关系
-                    var context = ScriptEngine.GetContext(ctx);
-                    var types = context.GetTypeDB();
-                    var func = types.GetDelegateFunc(delegateType);
-
-                    if (func == null)
-                    {
-                        o = null;
-                        return false;
-                    }
-
-                    fn = new ScriptDelegate(context, val);
-                    o = Delegate.CreateDelegate(delegateType, fn, func, false);
-                    if (o != null)
-                    {
-                        fn.Add(o);
-                    }
-
-                    // ScriptDelegate 拥有 js 对象的强引用, 此 js 对象无法释放 cache 中的 object, 所以这里用弱引用注册
-                    // 会出现的问题是, 如果 c# 没有对 ScriptDelegate 的强引用, 那么反复 get_delegate 会重复创建 ScriptDelegate
-                    cache.AddDelegate(val, fn);
-                    return o != null;
-                }
-            }
-
             // 检查 val 是否是一个委托对象 wrapped object
             if (JSApi.JS_IsObject(val))
             {
                 if (js_get_classvalue<Delegate>(ctx, val, out o))
                 {
                     return o == null || o.GetType() == delegateType;
+                }
+                if (JSApi.JS_IsFunction(ctx, val) == 1)
+                {
+                    ScriptDelegate fn;
+                    var cache = ScriptEngine.GetObjectCache(ctx);
+
+                    if (cache.TryGetDelegate(val, out fn))
+                    {
+                        // 已经存在映射关系, 找出符合预期类型的委托
+                        o = fn.Match(delegateType);
+                        if (o == null)
+                        {
+                            // 存在 JSValue => Delegate 的多重映射
+                            var types = ScriptEngine.GetTypeDB(ctx);
+                            var func = types.GetDelegateFunc(delegateType);
+                            o = Delegate.CreateDelegate(delegateType, fn, func, false);
+                            if (o != null)
+                            {
+                                fn.Add(o);
+                            }
+                        }
+                        return o != null;
+                    }
+                    else
+                    {
+                        // 建立新的映射关系
+                        var context = ScriptEngine.GetContext(ctx);
+                        var types = context.GetTypeDB();
+                        var func = types.GetDelegateFunc(delegateType);
+
+                        if (func == null)
+                        {
+                            o = null;
+                            return false;
+                        }
+
+                        fn = new ScriptDelegate(context, val);
+                        o = Delegate.CreateDelegate(delegateType, fn, func, false);
+                        if (o != null)
+                        {
+                            fn.Add(o);
+                        }
+
+                        return o != null;
+                    }
                 }
             }
 

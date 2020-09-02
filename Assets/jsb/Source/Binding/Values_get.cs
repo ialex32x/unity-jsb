@@ -76,6 +76,13 @@ namespace QuickJS.Binding
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool js_get_primitive(JSContext ctx, JSValue val, out bool o)
         {
+#if JSB_STRICT
+            if (!val.IsBoolean())
+            {
+                o = false;
+                return false;
+            }
+#endif
             var r = JSApi.JS_ToBool(ctx, val);
             o = r != 0;
             return r >= 0;
@@ -89,6 +96,13 @@ namespace QuickJS.Binding
                 o = null;
                 return true;
             }
+#if JSB_STRICT
+            if (!val.IsBoolean())
+            {
+                o = null;
+                return false;
+            }
+#endif
             var r = JSApi.JS_ToBool(ctx, val);
             o = r != 0;
             return r >= 0;
@@ -793,10 +807,17 @@ namespace QuickJS.Binding
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool js_get_primitive(JSContext ctx, JSValue val, out float o)
         {
+#if JSB_STRICT
+            if (!val.IsNumber())
+            {
+                o = 0f;
+                return false;
+            }
+#endif
             double pres;
-            JSApi.JS_ToFloat64(ctx, out pres, val);
+            var res = JSApi.JS_ToFloat64(ctx, out pres, val);
             o = (float)pres; // no check
-            return true;
+            return res == 0;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -807,10 +828,17 @@ namespace QuickJS.Binding
                 o = null;
                 return true;
             }
+#if JSB_STRICT
+            if (!val.IsNumber())
+            {
+                o = null;
+                return false;
+            }
+#endif
             double pres;
-            JSApi.JS_ToFloat64(ctx, out pres, val);
+            var res = JSApi.JS_ToFloat64(ctx, out pres, val);
             o = (float)pres; // no check
-            return true;
+            return res == 0;
         }
 
         public static bool js_get_primitive_array(JSContext ctx, JSValue val, out float[] o)
@@ -1028,6 +1056,11 @@ namespace QuickJS.Binding
             return js_get_classvalue<T?[]>(ctx, val, out o);
         }
 
+        public static bool js_get_classvalue(JSContext ctx, JSValue val, out Delegate o)
+        {
+            return js_get_delegate_unsafe(ctx, val, out o);
+        }
+
         // not value type (except string/array)
         public static bool js_get_classvalue<T>(JSContext ctx, JSValue val, out T o)
         where T : class
@@ -1057,20 +1090,33 @@ namespace QuickJS.Binding
 
         public static bool js_get_classvalue(JSContext ctx, JSValue val, out ScriptValue o)
         {
-            object obj;
-            if (js_get_cached_object(ctx, val, out obj))
+            var context = ScriptEngine.GetContext(ctx);
+            var cache = context.GetObjectCache();
+
+            if (cache.TryGetScriptValue(val, out o))
             {
-                if (obj is ScriptValue)
-                {
-                    o = (ScriptValue)obj;
-                    return true;
-                }
-            }
-            if (JSApi.JS_IsObject(val))
-            {
-                o = new ScriptValue(ScriptEngine.GetContext(ctx), val);
                 return true;
             }
+
+            o = new ScriptValue(context, val);
+            return true;
+        }
+
+        public static bool js_get_classvalue(JSContext ctx, JSValue val, out ScriptFunction o)
+        {
+            if (JSApi.JS_IsFunction(ctx, val) != 0)
+            {
+                var context = ScriptEngine.GetContext(ctx);
+                var cache = context.GetObjectCache();
+                if (cache.TryGetScriptValue(val, out o))
+                {
+                    return true;
+                }
+
+                o = new ScriptFunction(ScriptEngine.GetContext(ctx), val);
+                return true;
+            }
+
             o = null;
             return false;
         }
@@ -1133,48 +1179,6 @@ namespace QuickJS.Binding
             return false;
         }
 
-        public static bool js_get_classvalue(JSContext ctx, JSValue val, out ScriptValueArray o)
-        {
-            object obj;
-            if (js_get_cached_object(ctx, val, out obj))
-            {
-                if (obj is ScriptValueArray)
-                {
-                    o = (ScriptValueArray)obj;
-                    return true;
-                }
-            }
-            if (JSApi.JS_IsArray(ctx, val) != 0)
-            {
-                o = new ScriptValueArray(ScriptEngine.GetContext(ctx), val);
-                return true;
-            }
-            o = null;
-            return false;
-        }
-
-        public static bool js_get_classvalue(JSContext ctx, JSValue val, out ScriptFunction o)
-        {
-            if (JSApi.JS_IsFunction(ctx, val) != 0)
-            {
-                object obj;
-                if (js_get_cached_object(ctx, val, out obj))
-                {
-                    if (obj is ScriptFunction)
-                    {
-                        o = (ScriptFunction)obj;
-                        return true;
-                    }
-                }
-
-                o = new ScriptFunction(ScriptEngine.GetContext(ctx), val);
-                return true;
-            }
-
-            o = null;
-            return false;
-        }
-
         public static bool js_get_cached_object(JSContext ctx, JSValue val, out object o)
         {
             if (val.IsNullish())
@@ -1190,6 +1194,9 @@ namespace QuickJS.Binding
                 case BridgeObjectType.TypeRef:
                     o = ScriptEngine.GetTypeDB(ctx).GetType(header.value);
                     return o != null;
+                case BridgeObjectType.ValueType:
+                    o = null;
+                    return false;
             }
 
             //TODO: if o is Delegate, try get from delegate cache list

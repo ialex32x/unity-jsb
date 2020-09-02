@@ -160,6 +160,8 @@ namespace QuickJS
         {
             if (argc >= 1)
             {
+                var make_dynamic = argc >= 2 && JSApi.JS_ToBool(ctx, argv[1]) == 1;
+
                 if (JSApi.JS_IsFunction(ctx, argv[0]) == 1)
                 {
                     return JSApi.JS_DupValue(ctx, argv[0]);
@@ -182,19 +184,20 @@ namespace QuickJS
                             // c# delegate 通过 dynamic method wrapper 产生一个 jsvalue 
                             // 谨慎: 无法再从 function 还原此委托, 两者不会建立关联 (构成强引用循环)
                             // 谨慎: NewDynamicDelegate 会产生一个与 Runtime 相同生命周期的对象, 该对象将持有 Delegate 对象引用
-                            var context = ScriptEngine.GetContext(ctx);
-                            var types = context.GetTypeDB();
-                            var name = context.GetAtom(o.Method.Name);
+                            if (make_dynamic)
+                            {
+                                var context = ScriptEngine.GetContext(ctx);
+                                var types = context.GetTypeDB();
+                                var name = context.GetAtom(o.Method.Name);
 
-                            return types.NewDynamicDelegate(name, o);
+                                return types.NewDynamicDelegate(name, o);
+                            }
                         }
-
-                        return JSApi.JS_NULL;
                     }
                 }
             }
 
-            return JSApi.JS_ThrowInternalError(ctx, "not implemented");
+            return JSApi.JS_UNDEFINED;
         }
 
         // 尝试将传入的 function 转换为 cs delegate

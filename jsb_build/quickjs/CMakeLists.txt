@@ -55,6 +55,7 @@ add_definitions(
     -DCONFIG_DISABLE_STACK_CHECK
     -DCONFIG_BIGNUM
     -DCONFIG_VERSION="${QJS_VERSION}"
+    # -D_GNU_SOURCE # ok?
 )
 
 include_directories(${QJS_DIR})
@@ -73,10 +74,9 @@ endif ()
 
 if (APPLE) 
     if (IOS)
-        add_library(quickjs STATIC ${QJS_SRCS})
-        set(CMAKE_OSX_ARCHITECTURES "$(ARCHS_STANDARD)")
         set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fembed-bitcode")
-		set_xcode_property (quickjs IPHONEOS_DEPLOYMENT_TARGET "7.0" "all")
+        add_library(quickjs STATIC ${QJS_SRCS})
+        set_xcode_property (quickjs IPHONEOS_DEPLOYMENT_TARGET "8.0" "all")
     else ()
         add_library(quickjs MODULE ${QJS_SRCS})
         set(CMAKE_OSX_ARCHITECTURES "$(ARCHS_STANDARD_64_BIT)")

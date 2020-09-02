@@ -45,6 +45,7 @@ namespace QuickJS.Binding
                         }
                         else
                         {
+                            cache.AddJSValue(bridge, val);
                             bridge.SetBridge(ctx, val, ctor);
                             // JSApi.JSB_SetBridgeType(ctx, val, type_id);
                         }

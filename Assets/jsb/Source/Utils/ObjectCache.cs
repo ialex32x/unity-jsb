@@ -23,8 +23,9 @@ namespace QuickJS.Utils
         // host object => jsvalue heapptr (dangerous, no ref count)
         private Dictionary<object, JSValue> _rmap = new Dictionary<object, JSValue>(EqualityComparer.Default);
 
-        // weak reference table for delegates (dangerous, no ref count)
-        private Dictionary<JSValue, WeakReference> _delegateMap = new Dictionary<JSValue, WeakReference>();
+        // 刻意与 ScriptValue 隔离
+        private JSWeakMap<ScriptDelegate> _delegateMap = new JSWeakMap<ScriptDelegate>();
+        private JSWeakMap<ScriptValue> _scriptValueMap = new JSWeakMap<ScriptValue>();
 
         public int GetManagedObjectCount()
         {
@@ -41,27 +42,29 @@ namespace QuickJS.Utils
             return _delegateMap.Count;
         }
 
+        public int GetScriptValueCount()
+        {
+            return _scriptValueMap.Count;
+        }
+
         public void Clear()
         {
+            if (_disposing)
+            {
+                return;
+            }
             _disposing = true;
             _freeIndex = 0;
             _map.Clear();
             _rmap.Clear();
-
-            var mapSize = _delegateMap.Values.Count;
-            var delegates = new WeakReference[mapSize];
-            _delegateMap.Values.CopyTo(delegates, 0);
             _delegateMap.Clear();
-            for (var i = 0; i < mapSize; i++)
-            {
-                var d = delegates[i].Target as ScriptDelegate;
-                if (d != null)
-                {
-                    d.Dispose();
-                }
-            }
+            _scriptValueMap.Clear();
         }
 
+        /// <summary>
+        /// 建立 object to jsvalue 的映射. 
+        /// 外部必须自己保证 object 存在的情况下对应的 js value 不会被释放.
+        /// </summary>
         public void AddJSValue(object o, JSValue heapptr)
         {
             if (_disposing)
@@ -70,7 +73,14 @@ namespace QuickJS.Utils
             }
             if (o != null)
             {
-                _rmap.Add(o, heapptr);
+#if JSB_DEBUG
+                JSValue oldPtr;
+                if (TryGetJSValue(o, out oldPtr))
+                {
+                    UnityEngine.Debug.LogErrorFormat("exists object => js value mapping {0}: {1} => {2}", o, oldPtr, heapptr);
+                }
+#endif
+                _rmap[o] = heapptr;
             }
         }
 
@@ -91,52 +101,6 @@ namespace QuickJS.Utils
                 return false;
             }
             return o != null && _rmap.Remove(o);
-        }
-
-        public void AddDelegate(JSValue jso, ScriptDelegate o)
-        {
-            if (_disposing)
-            {
-                return;
-            }
-            ScriptDelegate old;
-            if (TryGetDelegate(jso, out old))
-            {
-                old.Dispose();
-            }
-            _delegateMap[jso] = new WeakReference(o);
-            // 不能直接保留 o -> jso 的映射 (会产生o的强引用)
-            // Delegate 对 ScriptDelegate 存在强引用 (首参), ScriptDelegate 对 jsobject 存在强引用
-            // AddJSValue(o, jso); 
-        }
-
-        public bool TryGetDelegate(JSValue jso, out ScriptDelegate o)
-        {
-            WeakReference weakRef;
-            if (_delegateMap.TryGetValue(jso, out weakRef))
-            {
-                o = weakRef.Target as ScriptDelegate;
-                return o != null;
-            }
-            o = null;
-            return false;
-        }
-
-        public bool RemoveDelegate(JSValue jso)
-        {
-            if (_disposing)
-            {
-                return false;
-            }
-            WeakReference weakRef;
-            var r = false;
-            if (_delegateMap.TryGetValue(jso, out weakRef))
-            {
-                r = true;
-                _delegateMap.Remove(jso);
-                // RemoveJSValue(weakRef.Target);
-            }
-            return r;
         }
 
         public int AddObject(object o, bool finalizer)
@@ -275,5 +239,67 @@ namespace QuickJS.Utils
             }
             return false;
         }
+
+        #region delegate mapping 
+
+        public void AddDelegate(JSValue jso, ScriptDelegate o)
+        {
+            if (_disposing)
+            {
+                return;
+            }
+            _delegateMap.Add(jso, o);
+        }
+
+        public bool TryGetDelegate(JSValue jso, out ScriptDelegate o)
+        {
+            return _delegateMap.TryGetValue(jso, out o);
+        }
+
+        public bool RemoveDelegate(JSValue jso)
+        {
+            if (_disposing)
+            {
+                return false;
+            }
+            return _delegateMap.Remove(jso);
+        }
+
+        #endregion
+
+        #region script value mapping 
+
+        public void AddScriptValue(JSValue jso, ScriptValue o)
+        {
+            if (_disposing)
+            {
+                return;
+            }
+            _scriptValueMap.Add(jso, o);
+        }
+
+        public bool TryGetScriptValue<T>(JSValue jso, out T o)
+        where T : ScriptValue
+        {
+            ScriptValue value;
+            if (_scriptValueMap.TryGetValue(jso, out value))
+            {
+                o = value as T;
+                return true;
+            }
+            o = null;
+            return false;
+        }
+
+        public bool RemoveScriptValue(JSValue jso)
+        {
+            if (_disposing)
+            {
+                return false;
+            }
+            return _scriptValueMap.Remove(jso);
+        }
+
+        #endregion 
     }
 }

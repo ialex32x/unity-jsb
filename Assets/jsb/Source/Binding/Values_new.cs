@@ -146,7 +146,11 @@ namespace QuickJS.Binding
             {
                 cache.RemoveObject(object_id);
             }
-            
+            else
+            {
+                cache.AddJSValue(o, val);
+            }
+
             return val;
         }
 
@@ -159,23 +163,27 @@ namespace QuickJS.Binding
             {
                 cache.RemoveObject(object_id);
             }
-            
+            else
+            {
+                cache.AddJSValue(o, val);
+            }
+
             return val;
         }
 
         //NOTE: 用于对 c# 对象产生 js 包装对象
         // 分两种情况, 这里是第2种, 用于一般情况
-        public static JSValue NewBridgeClassObject(JSContext ctx, object o)
+        public static JSValue NewBridgeClassObject(JSContext ctx, object o, bool makeRef)
         {
             if (o == null)
             {
                 return JSApi.JS_UNDEFINED;
             }
-            
+
             var type = o.GetType();
             var runtime = ScriptEngine.GetRuntime(ctx);
             var db = runtime.GetTypeDB();
-            var proto = db.GetPrototypeOf(type);
+            var proto = db.GetPrototypeOf(type.BaseType == typeof(MulticastDelegate) ? typeof(Delegate) : type);
 
             if (proto.IsNullish())
             {
@@ -193,6 +201,13 @@ namespace QuickJS.Binding
             if (val.IsException())
             {
                 cache.RemoveObject(object_id);
+            }
+            else
+            {
+                if (makeRef)
+                {
+                    cache.AddJSValue(o, val);
+                }
             }
 
             return val;

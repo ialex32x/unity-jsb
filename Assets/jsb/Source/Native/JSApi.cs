@@ -87,7 +87,8 @@ namespace QuickJS.Native
 
     public partial class JSApi
     {
-        const int JSB_VERSION = 0x1;
+        const int CS_JSB_VERSION = 0x1;
+        public static readonly int SO_JSB_VERSION;
         
 #if (UNITY_IPHONE || UNITY_WEBGL) && !UNITY_EDITOR
 	    const string JSBDLL = "__Internal";
@@ -154,10 +155,12 @@ namespace QuickJS.Native
 
         static JSApi()
         {
-            if (__JSB_Init() != JSB_VERSION)
-            {
-                throw new Exception("invalid unity_qjs.c, try to rebuild it");
-            }
+            SO_JSB_VERSION = __JSB_Init();
+        }
+
+        public static bool IsValid()
+        {
+            return CS_JSB_VERSION == SO_JSB_VERSION;
         }
 
         [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
@@ -303,7 +306,8 @@ namespace QuickJS.Native
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static JSValue ThrowException(JSContext ctx, Exception exception)
         {
-            var message = string.Format("{0}\n{1}", exception.Message, exception.StackTrace);
+            // var message = string.Format("{0}\n{1}", exception.ToString(), exception.StackTrace);
+            var message = exception.ToString();
             return JS_ThrowInternalError(ctx, message);
         }
 
@@ -647,6 +651,12 @@ namespace QuickJS.Native
         public static unsafe JSValue JS_Call(JSContext ctx, JSValueConst func_obj, JSValueConst this_obj)
         {
             return JS_Call(ctx, func_obj, this_obj, 0, (JSValueConst*)0);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static unsafe JSValue JS_Call(JSContext ctx, JSValueConst func_obj)
+        {
+            return JS_Call(ctx, func_obj, JS_UNDEFINED, 0, (JSValueConst*)0);
         }
 
         [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
