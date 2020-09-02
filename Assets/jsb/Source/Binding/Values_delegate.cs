@@ -7,6 +7,7 @@ namespace QuickJS.Binding
     // 处理委托的绑定
     public partial class Values
     {
+        //TODO: 不能这么处理, 要么提供 cahced event object, 要么换方案
         public static JSValue js_new_event(JSContext ctx, object this_obj, JSCFunction adder, JSCFunction remover)
         {
             var context = ScriptEngine.GetContext(ctx);

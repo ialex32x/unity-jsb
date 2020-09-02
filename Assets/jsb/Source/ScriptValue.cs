@@ -55,7 +55,7 @@ namespace QuickJS
 
                 _context = null;
                 context.OnDestroy -= OnDestroy;
-                context.FreeValue(_jsValue);
+                context.GetRuntime().FreeScriptValue(_jsValue);
                 _jsValue = JSApi.JS_UNDEFINED;
             }
         }

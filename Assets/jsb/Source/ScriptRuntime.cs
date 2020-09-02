@@ -312,6 +312,13 @@ namespace QuickJS
             JSApi.JS_FreeValueRT(rt, action.value);
         }
 
+        private static void _FreeValueAndScriptValueAction(ScriptRuntime rt, JSAction action)
+        {
+            var cache = rt.GetObjectCache();
+            cache.RemoveScriptValue(action.value);
+            JSApi.JS_FreeValueRT(rt, action.value);
+        }
+
         // 可在 GC 线程直接调用此方法
         public void FreeDelegationValue(JSValue value)
         {
@@ -329,6 +336,31 @@ namespace QuickJS
                 {
                     value = value,
                     callback = _FreeValueAndDelegationAction,
+                };
+                lock (_pendingActions)
+                {
+                    _pendingActions.Enqueue(act);
+                }
+            }
+        }
+
+        // 可在 GC 线程直接调用此方法
+        public void FreeScriptValue(JSValue value)
+        {
+            if (_mainThreadId == Thread.CurrentThread.ManagedThreadId)
+            {
+                _objectCache.RemoveScriptValue(value);
+                if (_rt != JSRuntime.Null)
+                {
+                    JSApi.JS_FreeValueRT(_rt, value);
+                }
+            }
+            else
+            {
+                var act = new JSAction()
+                {
+                    value = value,
+                    callback = _FreeValueAndScriptValueAction,
                 };
                 lock (_pendingActions)
                 {
