@@ -20,7 +20,7 @@ namespace QuickJS.Binding
             // }
             // JSApi.JS_FreeValue(ctx, rval);
             // 创建一个虚对象映射, 不存在 self 到 rval 的映射, rval 持有 self 的 object id, 是与 this_obj 指向相同对象的不同 object id
-            var rval = NewBridgeClassObject(ctx, self, false); 
+            var rval = NewBridgeClassObject(ctx, self, false);
             var atom_on = context.GetAtom("on");
             var atom_off = context.GetAtom("off");
             var adderFunc = JSApi.JSB_NewCFunction(ctx, adder, atom_on, 1, JSCFunctionEnum.JS_CFUNC_generic, 0);
@@ -136,58 +136,57 @@ namespace QuickJS.Binding
                 return true;
             }
 
-            if (JSApi.JS_IsFunction(ctx, val) == 1)
-            {
-                ScriptDelegate fn;
-                var cache = ScriptEngine.GetObjectCache(ctx);
-
-                if (cache.TryGetDelegate(val, out fn))
-                {
-                    // 已经存在映射关系, 找出符合预期类型的委托
-                    o = fn.Match(delegateType);
-                    if (o == null)
-                    {
-                        // 存在 JSValue => Delegate 的多重映射
-                        var types = ScriptEngine.GetTypeDB(ctx);
-                        var func = types.GetDelegateFunc(delegateType);
-                        o = Delegate.CreateDelegate(delegateType, fn, func, false);
-                        if (o != null)
-                        {
-                            fn.Add(o);
-                        }
-                    }
-                    return o != null;
-                }
-                else
-                {
-                    // 建立新的映射关系
-                    var context = ScriptEngine.GetContext(ctx);
-                    var types = context.GetTypeDB();
-                    var func = types.GetDelegateFunc(delegateType);
-
-                    if (func == null)
-                    {
-                        o = null;
-                        return false;
-                    }
-
-                    fn = new ScriptDelegate(context, val);
-                    o = Delegate.CreateDelegate(delegateType, fn, func, false);
-                    if (o != null)
-                    {
-                        fn.Add(o);
-                    }
-
-                    return o != null;
-                }
-            }
-
             // 检查 val 是否是一个委托对象 wrapped object
             if (JSApi.JS_IsObject(val))
             {
                 if (js_get_classvalue<Delegate>(ctx, val, out o))
                 {
                     return o == null || o.GetType() == delegateType;
+                }
+                if (JSApi.JS_IsFunction(ctx, val) == 1)
+                {
+                    ScriptDelegate fn;
+                    var cache = ScriptEngine.GetObjectCache(ctx);
+
+                    if (cache.TryGetDelegate(val, out fn))
+                    {
+                        // 已经存在映射关系, 找出符合预期类型的委托
+                        o = fn.Match(delegateType);
+                        if (o == null)
+                        {
+                            // 存在 JSValue => Delegate 的多重映射
+                            var types = ScriptEngine.GetTypeDB(ctx);
+                            var func = types.GetDelegateFunc(delegateType);
+                            o = Delegate.CreateDelegate(delegateType, fn, func, false);
+                            if (o != null)
+                            {
+                                fn.Add(o);
+                            }
+                        }
+                        return o != null;
+                    }
+                    else
+                    {
+                        // 建立新的映射关系
+                        var context = ScriptEngine.GetContext(ctx);
+                        var types = context.GetTypeDB();
+                        var func = types.GetDelegateFunc(delegateType);
+
+                        if (func == null)
+                        {
+                            o = null;
+                            return false;
+                        }
+
+                        fn = new ScriptDelegate(context, val);
+                        o = Delegate.CreateDelegate(delegateType, fn, func, false);
+                        if (o != null)
+                        {
+                            fn.Add(o);
+                        }
+
+                        return o != null;
+                    }
                 }
             }
 

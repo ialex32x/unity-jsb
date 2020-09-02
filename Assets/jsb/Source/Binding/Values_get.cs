@@ -1028,6 +1028,11 @@ namespace QuickJS.Binding
             return js_get_classvalue<T?[]>(ctx, val, out o);
         }
 
+        public static bool js_get_classvalue(JSContext ctx, JSValue val, out Delegate o)
+        {
+            return js_get_delegate_unsafe(ctx, val, out o);
+        }
+
         // not value type (except string/array)
         public static bool js_get_classvalue<T>(JSContext ctx, JSValue val, out T o)
         where T : class

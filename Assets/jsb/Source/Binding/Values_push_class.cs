@@ -107,6 +107,11 @@ namespace QuickJS.Binding
             return db.GetConstructorOf(type);
         }
 
+        public static JSValue js_push_classvalue(JSContext ctx, Delegate o)
+        {
+            return js_push_delegate(ctx, o);
+        }
+
         // variant push
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static JSValue js_push_classvalue(JSContext ctx, object o)
