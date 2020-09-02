@@ -306,7 +306,8 @@ namespace QuickJS.Native
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static JSValue ThrowException(JSContext ctx, Exception exception)
         {
-            var message = string.Format("{0}\n{1}", exception.Message, exception.StackTrace);
+            // var message = string.Format("{0}\n{1}", exception.ToString(), exception.StackTrace);
+            var message = exception.ToString();
             return JS_ThrowInternalError(ctx, message);
         }
 
