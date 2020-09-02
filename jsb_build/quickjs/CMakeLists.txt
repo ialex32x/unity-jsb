@@ -55,6 +55,7 @@ add_definitions(
     -DCONFIG_DISABLE_STACK_CHECK
     -DCONFIG_BIGNUM
     -DCONFIG_VERSION="${QJS_VERSION}"
+    # -D_GNU_SOURCE # ok?
 )
 
 include_directories(${QJS_DIR})
