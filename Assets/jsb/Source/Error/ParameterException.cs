@@ -23,7 +23,7 @@ namespace QuickJS
 
         public override string ToString()
         {
-            return string.Format("{0} [expect {1} at {2}]", base.ToString(), type, index);
+            return string.Format("{0} [expect {1} at {2}]", Message, type, index);
         }
     }
 }
