@@ -793,10 +793,17 @@ namespace QuickJS.Binding
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool js_get_primitive(JSContext ctx, JSValue val, out float o)
         {
+            #if JSB_STRICT
+            if (!val.IsNumber())
+            {
+                o = 0f;
+                return false;
+            }
+            #endif
             double pres;
-            JSApi.JS_ToFloat64(ctx, out pres, val);
+            var res = JSApi.JS_ToFloat64(ctx, out pres, val);
             o = (float)pres; // no check
-            return true;
+            return res == 0;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -808,9 +815,9 @@ namespace QuickJS.Binding
                 return true;
             }
             double pres;
-            JSApi.JS_ToFloat64(ctx, out pres, val);
+            var res = JSApi.JS_ToFloat64(ctx, out pres, val);
             o = (float)pres; // no check
-            return true;
+            return res == 0;
         }
 
         public static bool js_get_primitive_array(JSContext ctx, JSValue val, out float[] o)
