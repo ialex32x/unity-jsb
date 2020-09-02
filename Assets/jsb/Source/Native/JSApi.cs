@@ -87,7 +87,8 @@ namespace QuickJS.Native
 
     public partial class JSApi
     {
-        const int JSB_VERSION = 0x1;
+        const int CS_JSB_VERSION = 0x1;
+        public static readonly int SO_JSB_VERSION;
         
 #if (UNITY_IPHONE || UNITY_WEBGL) && !UNITY_EDITOR
 	    const string JSBDLL = "__Internal";
@@ -154,10 +155,12 @@ namespace QuickJS.Native
 
         static JSApi()
         {
-            if (__JSB_Init() != JSB_VERSION)
-            {
-                throw new Exception("invalid unity_qjs.c, try to rebuild it");
-            }
+            SO_JSB_VERSION = __JSB_Init();
+        }
+
+        public static bool IsValid()
+        {
+            return CS_JSB_VERSION == SO_JSB_VERSION;
         }
 
         [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]

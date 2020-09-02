@@ -138,10 +138,19 @@ namespace QuickJS
                     throw new Exception("generate binding code before run");
                 }
 
-                var codeGenVersion = typeof(Values).GetField("CodeGenVersion");
-                if (codeGenVersion == null || !codeGenVersion.IsLiteral || codeGenVersion.FieldType != typeof(uint))
+                var codeGenVersionField = typeof(Values).GetField("CodeGenVersion");
+                if (codeGenVersionField == null || !codeGenVersionField.IsStatic || !codeGenVersionField.IsLiteral || codeGenVersionField.FieldType != typeof(uint))
                 {
                     throw new Exception("binding code version mismatch");
+                }
+
+                var codeGenVersion = (uint)codeGenVersionField.GetValue(null);
+                if (codeGenVersion != ScriptEngine.VERSION)
+                {
+                    if (logger != null)
+                    {
+                        logger.Write(LogLevel.Warn, "CodeGenVersion: {0} != {1}", codeGenVersion, ScriptEngine.VERSION);
+                    }
                 }
             }
             _listener = listener;
