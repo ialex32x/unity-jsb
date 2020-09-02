@@ -73,6 +73,9 @@ namespace QuickJS
                         if (JSApi.JS_IsFunction(_ctx, create) == 1)
                         {
                             _operatorCreate = create;
+
+                            // Function.prototype[Symbol.operatorSet] = Operators.create();
+                            CreateDefaultOperators(_functionConstructor);
                         }
                         else
                         {
@@ -80,6 +83,20 @@ namespace QuickJS
                         }
                     }
                 }
+            }
+        }
+
+        private unsafe void CreateDefaultOperators(JSValue constructor)
+        {
+            var rval = JSApi.JS_Call(_ctx, _operatorCreate);
+            if (rval.IsException())
+            {
+                var ex = _ctx.GetExceptionString();
+                GetLogger()?.Write(LogLevel.Error, ex);
+            }
+            else
+            {
+                JSApi.JS_DefinePropertyValue(_ctx, constructor, JSApi.JS_ATOM_Symbol_operatorSet, rval, JSPropFlags.DEFAULT);
             }
         }
 

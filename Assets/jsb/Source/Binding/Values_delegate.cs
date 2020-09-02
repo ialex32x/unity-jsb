@@ -8,17 +8,29 @@ namespace QuickJS.Binding
     public partial class Values
     {
         //TODO: 不能这么处理, 要么提供 cahced event object, 要么换方案
-        public static JSValue js_new_event(JSContext ctx, object this_obj, JSCFunction adder, JSCFunction remover)
+        public static JSValue js_new_event(JSContext ctx, JSValue this_obj, object self, string name, JSCFunction adder, JSCFunction remover)
         {
             var context = ScriptEngine.GetContext(ctx);
-            var ret = NewBridgeClassObject(ctx, this_obj);
-            var adderFunc = JSApi.JSB_NewCFunction(ctx, adder, context.GetAtom("on"), 1, JSCFunctionEnum.JS_CFUNC_generic, 0);
-            JSApi.JS_SetProperty(ctx, ret, context.GetAtom("on"), adderFunc);
-            var removerFunc = JSApi.JSB_NewCFunction(ctx, remover, context.GetAtom("off"), 1, JSCFunctionEnum.JS_CFUNC_generic, 0);
-            JSApi.JS_SetProperty(ctx, ret, context.GetAtom("off"), removerFunc);
-            return ret;
+            // var atom = context.GetAtom(name);
+            // var rval = JSApi.JS_GetProperty(ctx, this_obj, atom);
+            // if (rval.IsObject())
+            // {
+            //     UnityEngine.Debug.LogWarning("use cached event object");
+            //     return JSApi.JS_DupValue(ctx, rval);
+            // }
+            // JSApi.JS_FreeValue(ctx, rval);
+            // 创建一个虚对象映射, 不存在 self 到 rval 的映射, rval 持有 self 的 object id, 是与 this_obj 指向相同对象的不同 object id
+            var rval = NewBridgeClassObject(ctx, self, false); 
+            var atom_on = context.GetAtom("on");
+            var atom_off = context.GetAtom("off");
+            var adderFunc = JSApi.JSB_NewCFunction(ctx, adder, atom_on, 1, JSCFunctionEnum.JS_CFUNC_generic, 0);
+            JSApi.JS_SetProperty(ctx, rval, atom_on, adderFunc);
+            var removerFunc = JSApi.JSB_NewCFunction(ctx, remover, atom_off, 1, JSCFunctionEnum.JS_CFUNC_generic, 0);
+            JSApi.JS_SetProperty(ctx, rval, atom_off, removerFunc);
+            // JSApi.JS_SetProperty(ctx, this_obj, atom, JSApi.JS_DupValue(ctx, rval));
+            return rval;
         }
-        
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static JSValue js_push_delegate(JSContext ctx, Delegate o)
         {
@@ -74,8 +86,9 @@ namespace QuickJS.Binding
             return ret;
         }
 
-        // 从 JSValue 反推 Delegate
-        // 不约束委托类型 (因此也不会自动创建委托, 不存在已有映射时, 将失败)
+        /// <summary>
+        /// 从 JSValue 反推 Delegate. 不约束委托类型 (因此也不会自动创建委托, 不存在已有映射时, 将失败)
+        /// </summary>
         public static bool js_get_delegate_unsafe(JSContext ctx, JSValue val, out Delegate o)
         {
             if (val.IsNullish())
@@ -108,10 +121,13 @@ namespace QuickJS.Binding
             }
 
             o = null;
-            return false;        }
+            return false;
+        }
 
-        // 从 JSValue 反推 Delegate
-        // JSValue 可能是一个 js function, cs delegate (js object)
+        /// <summary>
+        /// 从 JSValue 反推 Delegate, JSValue 可能是一个 js function, cs delegate (js object) <br/>
+        /// 注意: 会自动创建 ScriptDelegate 映射
+        /// </summary>
         public static bool js_get_delegate(JSContext ctx, JSValue val, Type delegateType, out Delegate o)
         {
             if (val.IsNullish())

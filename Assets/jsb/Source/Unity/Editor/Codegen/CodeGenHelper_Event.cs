@@ -81,11 +81,11 @@ namespace QuickJS.Editor
             this.cg = cg;
             this.eventBindingInfo = eventBindingInfo;
 
-            var eventInfo = this.eventBindingInfo.eventInfo;
-            var declaringType = eventInfo.DeclaringType;
-            var tsFieldVar = BindingManager.GetTSVariable(eventBindingInfo.regName);
+            // var eventInfo = this.eventBindingInfo.eventInfo;
+            // var declaringType = eventInfo.DeclaringType;
+            // var tsFieldVar = BindingManager.GetTSVariable(eventBindingInfo.regName);
             var caller = this.cg.AppendGetThisCS(eventBindingInfo);
-            this.cg.cs.AppendLine("return js_new_event(ctx, {0}, {1}, {2});", caller, this.eventBindingInfo.adderName, this.eventBindingInfo.removerName);
+            this.cg.cs.AppendLine("return js_new_event(ctx, this_obj, {0}, \"*{1}\", {2}, {3});", caller, this.eventBindingInfo.regName, this.eventBindingInfo.adderName, this.eventBindingInfo.removerName);
         }
 
         public virtual void Dispose()

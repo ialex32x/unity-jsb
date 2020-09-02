@@ -153,7 +153,7 @@ namespace QuickJS.Binding
                 // Debug.LogWarningFormat("cache hit push {0}", heapptr);
                 return JSApi.JS_DupValue(ctx, heapptr);
             }
-            return NewBridgeClassObject(ctx, o);
+            return NewBridgeClassObject(ctx, o, true);
         }
     }
 }

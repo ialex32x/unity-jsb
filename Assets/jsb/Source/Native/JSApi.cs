@@ -652,6 +652,12 @@ namespace QuickJS.Native
             return JS_Call(ctx, func_obj, this_obj, 0, (JSValueConst*)0);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static unsafe JSValue JS_Call(JSContext ctx, JSValueConst func_obj)
+        {
+            return JS_Call(ctx, func_obj, JS_UNDEFINED, 0, (JSValueConst*)0);
+        }
+
         [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern unsafe JSValue JS_Call(JSContext ctx, JSValueConst func_obj, JSValueConst this_obj,
             int argc, JSValueConst* argv);

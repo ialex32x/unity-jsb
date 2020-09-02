@@ -173,7 +173,7 @@ namespace QuickJS.Binding
 
         //NOTE: 用于对 c# 对象产生 js 包装对象
         // 分两种情况, 这里是第2种, 用于一般情况
-        public static JSValue NewBridgeClassObject(JSContext ctx, object o)
+        public static JSValue NewBridgeClassObject(JSContext ctx, object o, bool makeRef)
         {
             if (o == null)
             {
@@ -183,7 +183,7 @@ namespace QuickJS.Binding
             var type = o.GetType();
             var runtime = ScriptEngine.GetRuntime(ctx);
             var db = runtime.GetTypeDB();
-            var proto = db.GetPrototypeOf(type);
+            var proto = db.GetPrototypeOf(type.BaseType == typeof(MulticastDelegate) ? typeof(Delegate) : type);
 
             if (proto.IsNullish())
             {
@@ -204,7 +204,10 @@ namespace QuickJS.Binding
             }
             else
             {
-                cache.AddJSValue(o, val);
+                if (makeRef)
+                {
+                    cache.AddJSValue(o, val);
+                }
             }
 
             return val;
