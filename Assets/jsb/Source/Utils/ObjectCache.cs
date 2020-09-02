@@ -26,6 +26,9 @@ namespace QuickJS.Utils
         // weak reference table for delegates (dangerous, no ref count)
         private Dictionary<JSValue, WeakReference> _delegateMap = new Dictionary<JSValue, WeakReference>();
 
+        // weak reference table for script values (dangerous, no ref count)
+        // private Dictionary<JSValue, WeakReference> _valueMap = new Dictionary<JSValue, WeakReference>();
+
         public int GetManagedObjectCount()
         {
             return _map.Count;
@@ -48,11 +51,11 @@ namespace QuickJS.Utils
             _map.Clear();
             _rmap.Clear();
 
-            var mapSize = _delegateMap.Values.Count;
-            var delegates = new WeakReference[mapSize];
+            var delegateMapSize = _delegateMap.Values.Count;
+            var delegates = new WeakReference[delegateMapSize];
             _delegateMap.Values.CopyTo(delegates, 0);
             _delegateMap.Clear();
-            for (var i = 0; i < mapSize; i++)
+            for (var i = 0; i < delegateMapSize; i++)
             {
                 var d = delegates[i].Target as ScriptDelegate;
                 if (d != null)
@@ -60,8 +63,25 @@ namespace QuickJS.Utils
                     d.Dispose();
                 }
             }
+
+            // var valueMapSize = _valueMap.Values.Count;
+            // var values = new WeakReference[valueMapSize];
+            // _valueMap.Values.CopyTo(values, 0);
+            // _valueMap.Clear();
+            // for (var i = 0; i < valueMapSize; i++)
+            // {
+            //     var d = values[i].Target as ScriptValue;
+            //     if (d != null)
+            //     {
+            //         d.Dispose();
+            //     }
+            // }
         }
 
+        /// <summary>
+        /// 建立 object to jsvalue 的映射. 
+        /// 外部必须自己保证 object 存在的情况下对应的 js value 不会被释放.
+        /// </summary>
         public void AddJSValue(object o, JSValue heapptr)
         {
             if (_disposing)
@@ -70,6 +90,12 @@ namespace QuickJS.Utils
             }
             if (o != null)
             {
+#if JSB_DEBUG
+                if (RemoveJSValue(o))
+                {
+                    UnityEngine.Debug.LogErrorFormat("exists object => js value mapping {0}: {1}", o, heapptr);
+                }
+#endif
                 _rmap.Add(o, heapptr);
             }
         }

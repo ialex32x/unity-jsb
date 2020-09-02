@@ -23,7 +23,8 @@ namespace QuickJS.Native
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool IsException()
         {
-            return JSApi.JS_IsException(this);
+            // return JSApi.JS_IsException(this);
+            return tag == JSApi.JS_TAG_EXCEPTION;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -35,43 +36,46 @@ namespace QuickJS.Native
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool IsNullish()
         {
-            return JSApi.JS_IsNull(this) || JSApi.JS_IsUndefined(this);
+            // return JSApi.JS_IsNull(this) || JSApi.JS_IsUndefined(this);
+            return tag == JSApi.JS_TAG_NULL || tag == JSApi.JS_TAG_UNDEFINED;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool IsNull()
         {
-            return JSApi.JS_IsNull(this);
+            return tag == JSApi.JS_TAG_NULL;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool IsUndefined()
         {
-            return JSApi.JS_IsUndefined(this);
+            return tag == JSApi.JS_TAG_UNDEFINED;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool IsBoolean()
         {
-            return JSApi.JS_IsBool(this);
+            return tag == JSApi.JS_TAG_BOOL;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool IsString()
         {
-            return JSApi.JS_IsString(this);
+            return tag == JSApi.JS_TAG_STRING;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool IsNumber()
         {
-            return JSApi.JS_IsNumber(this);
+            // return JSApi.JS_IsNumber(this);
+            return tag == JSApi.JS_TAG_INT || tag == JSApi.JS_TAG_FLOAT64;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool IsObject()
         {
-            return JSApi.JS_IsObject(this);
+            // return JSApi.JS_IsObject(this);
+            return tag == JSApi.JS_TAG_OBJECT;
         }
 
         public override int GetHashCode()
@@ -111,9 +115,9 @@ namespace QuickJS.Native
 
             switch (tag)
             {
-                case JSApi.JS_TAG_SYMBOL: return string.Format("Symbol:{0:X}", (ulong) u.ptr); 
-                case JSApi.JS_TAG_STRING: return string.Format("String:{0:X}", (ulong) u.ptr); 
-                default: return string.Format("Ref:{0:X}", (ulong) u.ptr);
+                case JSApi.JS_TAG_SYMBOL: return string.Format("Symbol:{0:X}", (ulong)u.ptr);
+                case JSApi.JS_TAG_STRING: return string.Format("String:{0:X}", (ulong)u.ptr);
+                default: return string.Format("Ref:{0:X}", (ulong)u.ptr);
             }
         }
 

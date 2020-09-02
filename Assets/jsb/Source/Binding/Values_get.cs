@@ -1057,6 +1057,8 @@ namespace QuickJS.Binding
 
         public static bool js_get_classvalue(JSContext ctx, JSValue val, out ScriptValue o)
         {
+            //TODO: 目前并没有对 ScriptValue 及其子类做映射缓存, js_get_cached_object 总是无效的
+            //      ScriptValue 保持 js value 的强引用, 所以不适合直接做缓存
             object obj;
             if (js_get_cached_object(ctx, val, out obj))
             {
@@ -1066,13 +1068,9 @@ namespace QuickJS.Binding
                     return true;
                 }
             }
-            if (JSApi.JS_IsObject(val))
-            {
-                o = new ScriptValue(ScriptEngine.GetContext(ctx), val);
-                return true;
-            }
-            o = null;
-            return false;
+            var context = ScriptEngine.GetContext(ctx);
+            o = new ScriptValue(context, val);
+            return true;
         }
 
         public static bool js_get_classvalue(JSContext ctx, JSValue val, out QuickJS.IO.ByteBuffer o)
@@ -1133,20 +1131,20 @@ namespace QuickJS.Binding
             return false;
         }
 
-        public static bool js_get_classvalue(JSContext ctx, JSValue val, out ScriptValueArray o)
+        public static bool js_get_classvalue(JSContext ctx, JSValue val, out ScriptArray o)
         {
             object obj;
             if (js_get_cached_object(ctx, val, out obj))
             {
-                if (obj is ScriptValueArray)
+                if (obj is ScriptArray)
                 {
-                    o = (ScriptValueArray)obj;
+                    o = (ScriptArray)obj;
                     return true;
                 }
             }
             if (JSApi.JS_IsArray(ctx, val) != 0)
             {
-                o = new ScriptValueArray(ScriptEngine.GetContext(ctx), val);
+                o = new ScriptArray(ScriptEngine.GetContext(ctx), val);
                 return true;
             }
             o = null;

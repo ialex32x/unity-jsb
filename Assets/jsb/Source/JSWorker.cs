@@ -17,6 +17,13 @@ namespace QuickJS
 
     public class JSWorker : Values, IScriptFinalize
     {
+        private class JSWorkerArgs
+        {
+            // for worker only 
+            public JSWorker worker;
+            public IO.ByteBuffer buffer;
+        }
+
         private JSValue _self; // 在 main thread 中的 worker 自身
 
         private Thread _thread;
@@ -179,10 +186,12 @@ namespace QuickJS
         // 在主线程回调
         private static unsafe void _PostMessage(ScriptRuntime runtime, JSAction action)
         {
-            var worker = action.worker;
+            var args = (JSWorkerArgs)action.args;
+            var buffer = args.buffer;
 
             try
             {
+                var worker = args.worker;
                 if (worker._runtime.isRunning && worker._parentRuntime.isRunning)
                 {
                     var context = runtime.GetMainContext();
@@ -203,9 +212,9 @@ namespace QuickJS
                         {
                             // read object => jsvalue
                             JSValue data;
-                            fixed (byte* buf = action.buffer.data)
+                            fixed (byte* buf = buffer.data)
                             {
-                                data = JSApi.JS_ReadObject(ctx, buf, action.buffer.readableBytes, 0);
+                                data = JSApi.JS_ReadObject(ctx, buf, buffer.readableBytes, 0);
                             }
 
                             if (data.IsException())
@@ -234,7 +243,7 @@ namespace QuickJS
             }
             finally
             {
-                action.buffer.Release();
+                buffer.Release();
             }
         }
 
@@ -266,8 +275,11 @@ namespace QuickJS
 
                 this._parentRuntime.EnqueueAction(new JSAction()
                 {
-                    worker = this,
-                    buffer = buffer,
+                    args = new JSWorkerArgs()
+                    {
+                        worker = this,
+                        buffer = buffer,
+                    },
                     callback = _PostMessage,
                 });
                 return JSApi.JS_UNDEFINED;

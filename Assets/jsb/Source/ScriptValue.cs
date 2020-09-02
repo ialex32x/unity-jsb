@@ -105,7 +105,13 @@ namespace QuickJS
             if (obj is ScriptValue)
             {
                 var other = (ScriptValue)obj;
-                return other._jsValue.Equals(_jsValue);
+                return other._jsValue == _jsValue;
+            }
+            
+            if (obj is JSValue)
+            {
+                var other = (JSValue)obj;
+                return other == _jsValue;
             }
 
             return false;

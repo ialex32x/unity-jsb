@@ -5,9 +5,9 @@ namespace QuickJS
 {
     using UnityEngine;
 
-    public class ScriptValueArray : ScriptValue
+    public class ScriptArray : ScriptValue
     {
-        public ScriptValueArray(ScriptContext context, JSValue jsValue)
+        public ScriptArray(ScriptContext context, JSValue jsValue)
         : base(context, jsValue)
         {
         }

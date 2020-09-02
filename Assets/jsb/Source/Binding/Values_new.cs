@@ -146,7 +146,11 @@ namespace QuickJS.Binding
             {
                 cache.RemoveObject(object_id);
             }
-            
+            else
+            {
+                cache.AddJSValue(o, val);
+            }
+
             return val;
         }
 
@@ -159,7 +163,11 @@ namespace QuickJS.Binding
             {
                 cache.RemoveObject(object_id);
             }
-            
+            else
+            {
+                cache.AddJSValue(o, val);
+            }
+
             return val;
         }
 
@@ -171,7 +179,7 @@ namespace QuickJS.Binding
             {
                 return JSApi.JS_UNDEFINED;
             }
-            
+
             var type = o.GetType();
             var runtime = ScriptEngine.GetRuntime(ctx);
             var db = runtime.GetTypeDB();
@@ -193,6 +201,10 @@ namespace QuickJS.Binding
             if (val.IsException())
             {
                 cache.RemoveObject(object_id);
+            }
+            else
+            {
+                cache.AddJSValue(o, val);
             }
 
             return val;

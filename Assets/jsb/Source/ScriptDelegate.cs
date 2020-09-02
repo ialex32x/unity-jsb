@@ -11,6 +11,7 @@ namespace QuickJS
     public class ScriptDelegate : ScriptValue
     {
         // 一个 JSValue (function) 可能会被用于映射多个委托对象
+        // managed to managed object cycle reference, it's safe without weakreference
         private List<Delegate> _matches = new List<Delegate>();
 
         public Delegate Any()
