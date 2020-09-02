@@ -23,47 +23,12 @@ namespace QuickJS
             _jsValue = jsValue;
             JSApi.JS_DupValue(context, jsValue);
             _context.OnDestroy += OnDestroy;
+            _context.GetObjectCache().AddScriptValue(_jsValue, this);
         }
 
         private void OnDestroy(ScriptContext context)
         {
             Dispose();
-        }
-
-        public static ScriptValue CreateObject(JSContext ctx)
-        {
-            var context = ScriptEngine.GetContext(ctx);
-            var val = JSApi.JS_NewObject(ctx);
-            var sv = new ScriptValue(context, val);
-            JSApi.JS_FreeValue(ctx, val);
-            return sv;
-        }
-
-        public T GetProperty<T>(string key)
-        {
-            var ctx = (JSContext)_context;
-            var propVal = JSApi.JS_GetPropertyStr(ctx, _jsValue, key);
-            if (propVal.IsException())
-            {
-                var ex = ctx.GetExceptionString();
-                throw new JSException(ex);
-            }
-
-            object o;
-            if (Binding.Values.js_get_var(ctx, propVal, typeof(T), out o))
-            {
-                JSApi.JS_FreeValue(ctx, propVal);
-                return (T)o;
-            }
-            JSApi.JS_FreeValue(ctx, propVal);
-            throw new JSException("invalid cast");
-        }
-
-        public void SetProperty(string key, object value)
-        {
-            var ctx = (JSContext)_context;
-            var jsValue = Binding.Values.js_push_var(ctx, value);
-            JSApi.JS_SetPropertyStr(_context, _jsValue, key, jsValue);
         }
 
         public static implicit operator JSValue(ScriptValue value)
@@ -115,6 +80,33 @@ namespace QuickJS
             }
 
             return false;
+        }
+        
+        public T GetProperty<T>(string key)
+        {
+            var ctx = (JSContext)_context;
+            var propVal = JSApi.JS_GetPropertyStr(ctx, _jsValue, key);
+            if (propVal.IsException())
+            {
+                var ex = ctx.GetExceptionString();
+                throw new JSException(ex);
+            }
+
+            object o;
+            if (Binding.Values.js_get_var(ctx, propVal, typeof(T), out o))
+            {
+                JSApi.JS_FreeValue(ctx, propVal);
+                return (T)o;
+            }
+            JSApi.JS_FreeValue(ctx, propVal);
+            throw new JSException("invalid cast");
+        }
+
+        public void SetProperty(string key, object value)
+        {
+            var ctx = (JSContext)_context;
+            var jsValue = Binding.Values.js_push_var(ctx, value);
+            JSApi.JS_SetPropertyStr(_context, _jsValue, key, jsValue);
         }
     }
 }

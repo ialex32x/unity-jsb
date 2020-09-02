@@ -8,12 +8,88 @@ using UnityEngine;
 
 namespace QuickJS
 {
-    public class ScriptDelegate : ScriptValue
+    // 刻意与 ScriptValue 隔离
+    public class ScriptDelegate : IDisposable
     {
+        protected ScriptContext _context;
+        protected /*readonly*/ JSValue _jsValue;
+
         // 一个 JSValue (function) 可能会被用于映射多个委托对象
         // managed to managed object cycle reference, it's safe without weakreference
         private List<Delegate> _matches = new List<Delegate>();
 
+        public JSContext ctx
+        {
+            get { return _context; }
+        }
+
+        public ScriptDelegate(ScriptContext context, JSValue jsValue)
+        {
+            _context = context;
+            _jsValue = jsValue;
+            JSApi.JS_DupValue(context, jsValue);
+            _context.OnDestroy += OnDestroy;
+            // ScriptDelegate 拥有 js 对象的强引用, 此 js 对象无法释放 cache 中的 object, 所以这里用弱引用注册
+            // 会出现的问题是, 如果 c# 没有对 ScriptDelegate 的强引用, 那么反复 get_delegate 会重复创建 ScriptDelegate
+            _context.GetObjectCache().AddDelegate(_jsValue, this);
+        }
+
+        private void OnDestroy(ScriptContext context)
+        {
+            Dispose();
+        }
+
+        public static implicit operator JSValue(ScriptDelegate value)
+        {
+            return value._jsValue;
+        }
+
+        ~ScriptDelegate()
+        {
+            Dispose(false);
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool bManaged)
+        {
+            if (_context != null)
+            {
+                var context = _context;
+
+                _context = null;
+                context.OnDestroy -= OnDestroy;
+                context.GetRuntime().FreeDelegationValue(_jsValue);
+                _jsValue = JSApi.JS_UNDEFINED;
+            }
+        }
+
+        public override int GetHashCode()
+        {
+            return _jsValue.GetHashCode();
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (obj is ScriptDelegate)
+            {
+                var other = (ScriptDelegate)obj;
+                return other._jsValue == _jsValue;
+            }
+            
+            if (obj is JSValue)
+            {
+                var other = (JSValue)obj;
+                return other == _jsValue;
+            }
+
+            return false;
+        }
+        
         public Delegate Any()
         {
             return _matches.Count != 0 ? _matches[0] : null;
@@ -39,10 +115,6 @@ namespace QuickJS
                 throw new ArgumentNullException();
             }
             _matches.Add(d);
-        }
-
-        public ScriptDelegate(ScriptContext context, JSValue jsValue) : base(context, jsValue)
-        {
         }
 
         public unsafe JSValue Invoke(JSContext ctx)
@@ -85,18 +157,6 @@ namespace QuickJS
         {
             JSValue rval = JSApi.JS_Call(ctx, _jsValue, this_obj, argc, argv);
             return rval;
-        }
-
-        protected override void Dispose(bool bManaged)
-        {
-            if (_context != null)
-            {
-                var context = _context;
-
-                _context = null;
-                context.GetRuntime().FreeDelegationValue(_jsValue);
-                _jsValue = JSApi.JS_UNDEFINED;
-            }
         }
     }
 }

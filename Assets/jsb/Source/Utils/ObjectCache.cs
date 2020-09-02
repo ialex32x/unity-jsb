@@ -23,11 +23,12 @@ namespace QuickJS.Utils
         // host object => jsvalue heapptr (dangerous, no ref count)
         private Dictionary<object, JSValue> _rmap = new Dictionary<object, JSValue>(EqualityComparer.Default);
 
+        // 刻意与 ScriptValue 隔离
         // weak reference table for delegates (dangerous, no ref count)
         private Dictionary<JSValue, WeakReference> _delegateMap = new Dictionary<JSValue, WeakReference>();
 
         // weak reference table for script values (dangerous, no ref count)
-        // private Dictionary<JSValue, WeakReference> _valueMap = new Dictionary<JSValue, WeakReference>();
+        private Dictionary<JSValue, WeakReference> _scriptValueMap = new Dictionary<JSValue, WeakReference>();
 
         public int GetManagedObjectCount()
         {
@@ -64,18 +65,18 @@ namespace QuickJS.Utils
                 }
             }
 
-            // var valueMapSize = _valueMap.Values.Count;
-            // var values = new WeakReference[valueMapSize];
-            // _valueMap.Values.CopyTo(values, 0);
-            // _valueMap.Clear();
-            // for (var i = 0; i < valueMapSize; i++)
-            // {
-            //     var d = values[i].Target as ScriptValue;
-            //     if (d != null)
-            //     {
-            //         d.Dispose();
-            //     }
-            // }
+            var valueMapSize = _scriptValueMap.Values.Count;
+            var values = new WeakReference[valueMapSize];
+            _scriptValueMap.Values.CopyTo(values, 0);
+            _scriptValueMap.Clear();
+            for (var i = 0; i < valueMapSize; i++)
+            {
+                var d = values[i].Target as ScriptValue;
+                if (d != null)
+                {
+                    d.Dispose();
+                }
+            }
         }
 
         /// <summary>
@@ -117,52 +118,6 @@ namespace QuickJS.Utils
                 return false;
             }
             return o != null && _rmap.Remove(o);
-        }
-
-        public void AddDelegate(JSValue jso, ScriptDelegate o)
-        {
-            if (_disposing)
-            {
-                return;
-            }
-            ScriptDelegate old;
-            if (TryGetDelegate(jso, out old))
-            {
-                old.Dispose();
-            }
-            _delegateMap[jso] = new WeakReference(o);
-            // 不能直接保留 o -> jso 的映射 (会产生o的强引用)
-            // Delegate 对 ScriptDelegate 存在强引用 (首参), ScriptDelegate 对 jsobject 存在强引用
-            // AddJSValue(o, jso); 
-        }
-
-        public bool TryGetDelegate(JSValue jso, out ScriptDelegate o)
-        {
-            WeakReference weakRef;
-            if (_delegateMap.TryGetValue(jso, out weakRef))
-            {
-                o = weakRef.Target as ScriptDelegate;
-                return o != null;
-            }
-            o = null;
-            return false;
-        }
-
-        public bool RemoveDelegate(JSValue jso)
-        {
-            if (_disposing)
-            {
-                return false;
-            }
-            WeakReference weakRef;
-            var r = false;
-            if (_delegateMap.TryGetValue(jso, out weakRef))
-            {
-                r = true;
-                _delegateMap.Remove(jso);
-                // RemoveJSValue(weakRef.Target);
-            }
-            return r;
         }
 
         public int AddObject(object o, bool finalizer)
@@ -301,5 +256,103 @@ namespace QuickJS.Utils
             }
             return false;
         }
+
+        #region delegate mapping 
+
+        public void AddDelegate(JSValue jso, ScriptDelegate o)
+        {
+            if (_disposing)
+            {
+                return;
+            }
+            ScriptDelegate old;
+            if (TryGetDelegate(jso, out old))
+            {
+                old.Dispose();
+            }
+            _delegateMap[jso] = new WeakReference(o);
+            // 不能直接保留 o -> jso 的映射 (会产生o的强引用)
+            // Delegate 对 ScriptDelegate 存在强引用 (首参), ScriptDelegate 对 jsobject 存在强引用
+            // AddJSValue(o, jso); 
+        }
+
+        public bool TryGetDelegate(JSValue jso, out ScriptDelegate o)
+        {
+            WeakReference weakRef;
+            if (_delegateMap.TryGetValue(jso, out weakRef))
+            {
+                o = weakRef.Target as ScriptDelegate;
+                return o != null;
+            }
+            o = null;
+            return false;
+        }
+
+        public bool RemoveDelegate(JSValue jso)
+        {
+            if (_disposing)
+            {
+                return false;
+            }
+            WeakReference weakRef;
+            var r = false;
+            if (_delegateMap.TryGetValue(jso, out weakRef))
+            {
+                r = true;
+                _delegateMap.Remove(jso);
+                // RemoveJSValue(weakRef.Target);
+            }
+            return r;
+        }
+
+        #endregion
+
+        #region script value mapping 
+
+        public void AddScriptValue(JSValue jso, ScriptValue o)
+        {
+            if (_disposing)
+            {
+                return;
+            }
+            ScriptValue old;
+            if (TryGetScriptValue(jso, out old))
+            {
+                old.Dispose();
+            }
+            _scriptValueMap[jso] = new WeakReference(o);
+        }
+
+        public bool TryGetScriptValue<T>(JSValue jso, out T o)
+        where T : ScriptValue
+        {
+            WeakReference weakRef;
+            if (_scriptValueMap.TryGetValue(jso, out weakRef))
+            {
+                o = weakRef.Target as T;
+                return o != null;
+            }
+            o = null;
+            return false;
+        }
+
+        public bool RemoveScriptValue(ScriptValue jso)
+        {
+            if (_disposing)
+            {
+                return false;
+            }
+            WeakReference weakRef;
+            var r = false;
+            if (_scriptValueMap.TryGetValue(jso, out weakRef))
+            {
+                r = true;
+                _scriptValueMap.Remove(jso);
+                // RemoveJSValue(weakRef.Target);
+            }
+            return r;
+        }
+
+        #endregion 
     }
 }

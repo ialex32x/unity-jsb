@@ -181,9 +181,6 @@ namespace QuickJS.Binding
                         fn.Add(o);
                     }
 
-                    // ScriptDelegate 拥有 js 对象的强引用, 此 js 对象无法释放 cache 中的 object, 所以这里用弱引用注册
-                    // 会出现的问题是, 如果 c# 没有对 ScriptDelegate 的强引用, 那么反复 get_delegate 会重复创建 ScriptDelegate
-                    cache.AddDelegate(val, fn);
                     return o != null;
                 }
             }

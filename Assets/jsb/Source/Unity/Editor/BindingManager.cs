@@ -259,7 +259,7 @@ namespace QuickJS.Editor
             AddTSTypeNameMap(typeof(Vector3Int), "UnityEngine.Vector3Int");
             AddTSTypeNameMap(typeof(Vector4), "UnityEngine.Vector4");
             AddTSTypeNameMap(typeof(Quaternion), "UnityEngine.Quaternion");
-            AddTSTypeNameMap(typeof(ScriptArray), "any[]");
+            // AddTSTypeNameMap(typeof(ScriptArray), "any[]");
             AddTSTypeNameMap(typeof(QuickJS.IO.ByteBuffer), "jsb.ByteBuffer");
 
             TransformType(typeof(QuickJS.IO.ByteBuffer))

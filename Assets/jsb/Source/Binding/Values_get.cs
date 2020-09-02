@@ -1057,20 +1057,35 @@ namespace QuickJS.Binding
 
         public static bool js_get_classvalue(JSContext ctx, JSValue val, out ScriptValue o)
         {
-            //TODO: 目前并没有对 ScriptValue 及其子类做映射缓存, js_get_cached_object 总是无效的
-            //      ScriptValue 保持 js value 的强引用, 所以不适合直接做缓存
-            object obj;
-            if (js_get_cached_object(ctx, val, out obj))
-            {
-                if (obj is ScriptValue)
-                {
-                    o = (ScriptValue)obj;
-                    return true;
-                }
-            }
             var context = ScriptEngine.GetContext(ctx);
+            var cache = context.GetObjectCache();
+
+            if (cache.TryGetScriptValue(val, out o))
+            {
+                return true;
+            }
+
             o = new ScriptValue(context, val);
             return true;
+        }
+
+        public static bool js_get_classvalue(JSContext ctx, JSValue val, out ScriptFunction o)
+        {
+            if (JSApi.JS_IsFunction(ctx, val) != 0)
+            {
+                var context = ScriptEngine.GetContext(ctx);
+                var cache = context.GetObjectCache();
+                if (cache.TryGetScriptValue(val, out o))
+                {
+                    return true;
+                }
+                
+                o = new ScriptFunction(ScriptEngine.GetContext(ctx), val);
+                return true;
+            }
+
+            o = null;
+            return false;
         }
 
         public static bool js_get_classvalue(JSContext ctx, JSValue val, out QuickJS.IO.ByteBuffer o)
@@ -1131,48 +1146,6 @@ namespace QuickJS.Binding
             return false;
         }
 
-        public static bool js_get_classvalue(JSContext ctx, JSValue val, out ScriptArray o)
-        {
-            object obj;
-            if (js_get_cached_object(ctx, val, out obj))
-            {
-                if (obj is ScriptArray)
-                {
-                    o = (ScriptArray)obj;
-                    return true;
-                }
-            }
-            if (JSApi.JS_IsArray(ctx, val) != 0)
-            {
-                o = new ScriptArray(ScriptEngine.GetContext(ctx), val);
-                return true;
-            }
-            o = null;
-            return false;
-        }
-
-        public static bool js_get_classvalue(JSContext ctx, JSValue val, out ScriptFunction o)
-        {
-            if (JSApi.JS_IsFunction(ctx, val) != 0)
-            {
-                object obj;
-                if (js_get_cached_object(ctx, val, out obj))
-                {
-                    if (obj is ScriptFunction)
-                    {
-                        o = (ScriptFunction)obj;
-                        return true;
-                    }
-                }
-
-                o = new ScriptFunction(ScriptEngine.GetContext(ctx), val);
-                return true;
-            }
-
-            o = null;
-            return false;
-        }
-
         public static bool js_get_cached_object(JSContext ctx, JSValue val, out object o)
         {
             if (val.IsNullish())
@@ -1188,6 +1161,9 @@ namespace QuickJS.Binding
                 case BridgeObjectType.TypeRef:
                     o = ScriptEngine.GetTypeDB(ctx).GetType(header.value);
                     return o != null;
+                case BridgeObjectType.ValueType:
+                    o = null;
+                    return false;
             }
 
             //TODO: if o is Delegate, try get from delegate cache list
