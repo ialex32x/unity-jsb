@@ -18,27 +18,7 @@ namespace QuickJS.Binding
             JSApi.JS_SetProperty(ctx, ret, context.GetAtom("off"), removerFunc);
             return ret;
         }
-
-        // // 创建一个委托绑定
-        // // add/remove 只在 可读&可写 有效
-        // // get/set 对应 可读/可写
-        // public static JSValue js_new_delegate(JSContext ctx, object this_obj, JSCFunction adder, JSCFunction remover, JSCFunction setter, JSCFunction getter)
-        // {
-        //     var context = ScriptEngine.GetContext(ctx);
-        //     var ret = NewBridgeClassObject(ctx, this_obj);
-        //     if (adder != null)
-        //     {
-        //         var adderFunc = JSApi.JSB_NewCFunction(ctx, adder, context.GetAtom("on"), 1, JSCFunctionEnum.JS_CFUNC_generic, 0);
-        //         JSApi.JS_SetProperty(ctx, ret, context.GetAtom("on"), adderFunc);
-        //     }
-        //     if (remover != null)
-        //     {
-        //         var removerFunc = JSApi.JSB_NewCFunction(ctx, remover, context.GetAtom("off"), 1, JSCFunctionEnum.JS_CFUNC_generic, 0);
-        //         JSApi.JS_SetProperty(ctx, ret, context.GetAtom("off"), removerFunc);
-        //     }
-        //     return ret;
-        // }
-
+        
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static JSValue js_push_delegate(JSContext ctx, Delegate o)
         {
