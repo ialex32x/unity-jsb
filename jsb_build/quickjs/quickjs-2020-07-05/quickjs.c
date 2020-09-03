@@ -4110,7 +4110,7 @@ static int js_string_memcmp(const JSString *p1, const JSString *p2, int len)
 }
 
 /* return < 0, 0 or > 0 */
-static int js_string_compare(JSContext *ctx,
+int js_string_compare(JSContext *ctx,
                              const JSString *p1, const JSString *p2)
 {
     int res, len;
