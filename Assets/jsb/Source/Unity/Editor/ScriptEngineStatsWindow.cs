@@ -21,6 +21,7 @@ namespace QuickJS.Editor
             public int jSObjectCount;
             public int delegateCount;
             public int scriptValueCount;
+            public int scriptPromiseCount;
             public int activeTimer;
         }
 
@@ -97,6 +98,7 @@ namespace QuickJS.Editor
             snapshot.jSObjectCount = objectCache.GetJSObjectCount();
             snapshot.delegateCount = objectCache.GetDelegateCount();
             snapshot.scriptValueCount = objectCache.GetScriptValueCount();
+            snapshot.scriptPromiseCount = objectCache.GetScriptPromiseCount();
 
             var timeManager = runtime.GetTimerManager();
             snapshot.activeTimer = timeManager.GetActiveTimeHandleCount();
@@ -142,6 +144,7 @@ namespace QuickJS.Editor
                 EditorGUILayout.IntField("JSObject Count", snapshot.jSObjectCount);
                 EditorGUILayout.IntField("Delegate Mapping Count", snapshot.delegateCount);
                 EditorGUILayout.IntField("ScriptValue Mapping Count", snapshot.scriptValueCount);
+                EditorGUILayout.IntField("ScriptPromise Mapping Count", snapshot.scriptPromiseCount);
                 EditorGUILayout.IntField("Active Timer", snapshot.activeTimer);
             });
             EditorGUILayout.EndVertical();

@@ -31,8 +31,7 @@ public class SampleBehaviour : MonoBehaviour
             return JSApi.JS_UNDEFINED;
         }
 
-        var context = ScriptEngine.GetContext(ctx);
-        self._p = new ScriptPromise(context);
+        self._p = new ScriptPromise(ctx);
 
         return Values.js_push_classvalue(ctx, self._p);
     }
@@ -44,10 +43,17 @@ public class SampleBehaviour : MonoBehaviour
         {
             return;
         }
+        
         if (GUILayout.Button("Resolve"))
         {
             _p = null;
-            p.Resolve("我是一个C#字符串, 传给JS");
+            p.Resolve("执行成功测试, 我是一个C#字符串, 传给JS");
+        }
+
+        if (GUILayout.Button("Reject"))
+        {
+            _p = null;
+            p.Reject("执行失败测试");
         }
     }
 }
