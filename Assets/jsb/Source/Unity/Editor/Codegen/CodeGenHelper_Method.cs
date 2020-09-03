@@ -148,6 +148,11 @@ namespace QuickJS.Editor
             return arglist;
         }
 
+        protected virtual void InvokeVoidReturn()
+        {
+            cg.cs.AppendLine("return JSApi.JS_UNDEFINED;");
+        }
+
         // 对参数进行取值, 如果此参数无需取值, 则返回 false
         protected bool WriteParameterGetter(ParameterInfo parameter, int index, string argname)
         {
@@ -157,6 +162,30 @@ namespace QuickJS.Editor
             // 非 out 参数才需要取值
             if (!parameter.IsOut || !parameter.ParameterType.IsByRef)
             {
+                if (ptype == typeof(Native.JSContext))
+                {
+                    this.cg.cs.AppendLine("{0} = ctx;", argname);
+                    return false;
+                }
+
+                if (ptype == typeof(ScriptContext))
+                {
+                    this.cg.cs.AppendLine("{0} = {1}.GetContext(ctx);", argname, nameof(ScriptEngine));
+                    return false;
+                }
+
+                if (ptype == typeof(Native.JSRuntime))
+                {
+                    this.cg.cs.AppendLine("{0} = JSApi.JS_GetRuntime(ctx);", argname);
+                    return false;
+                }
+
+                if (ptype == typeof(ScriptRuntime))
+                {
+                    this.cg.cs.AppendLine("{0} = {1}.GetRuntime(ctx);", argname, nameof(ScriptEngine));
+                    return false;
+                }
+
                 var getter = this.cg.bindingManager.GetScriptObjectGetter(ptype, "ctx", $"argv[{index}]", argname);
                 this.cg.cs.AppendLine("if (!{0})", getter);
                 using (this.cg.cs.CodeBlockScope())
@@ -413,10 +442,22 @@ namespace QuickJS.Editor
                 }
 
                 // 剔除 out 参数
+                // 提出 JSContext, JSRuntime, ScriptContext, ScriptRuntime
                 for (int i = 0, len = parameters.Length; i < len;)
                 {
                     var parameter = parameters[i];
-                    if (parameter.IsOut)
+                    var parameterType = parameter.ParameterType;
+                    if (parameterType == typeof(Native.JSContext) || parameterType == typeof(Native.JSRuntime))
+                    {
+                        ArrayUtility.RemoveAt(ref parameters, i);
+                        len--;
+                    }
+                    else if (parameterType == typeof(ScriptContext) || parameterType == typeof(ScriptRuntime))
+                    {
+                        ArrayUtility.RemoveAt(ref parameters, i);
+                        len--;
+                    }
+                    else if (parameter.IsOut)
                     {
                         ArrayUtility.RemoveAt(ref parameters, i);
                         len--;
@@ -424,7 +465,7 @@ namespace QuickJS.Editor
                     }
                     else
                     {
-                        if (parameter.ParameterType.IsByRef)
+                        if (parameterType.IsByRef)
                         {
                             refParameters.Add(parameter);
                         }
@@ -472,12 +513,6 @@ namespace QuickJS.Editor
 
         protected virtual void EndInvokeBinding() { }
 
-        // 写入无返回值的C#方法的返回代码
-        protected virtual void InvokeVoidReturn()
-        {
-            cg.cs.AppendLine("return JSApi.JS_UNDEFINED;");
-        }
-
         protected void SplitParamters(ParameterInfo[] parameters, int index, List<ParameterInfo> in_params, List<ParameterInfo> out_params)
         {
             for (int i = index, len = parameters.Length; i < len; i++)
@@ -491,6 +526,17 @@ namespace QuickJS.Editor
                 else
                 {
                     in_params.Add(p);
+                }
+            }
+        }
+
+        private void WriteRebindThis(MethodBase method, string caller)
+        {
+            if (!method.IsStatic && method.DeclaringType.IsValueType) // struct 非静态方法 检查 Mutable 属性
+            {
+                if (!string.IsNullOrEmpty(caller))
+                {
+                    cg.cs.AppendLine($"js_rebind_this(ctx, this_obj, {caller});");
                 }
             }
         }
@@ -515,70 +561,52 @@ namespace QuickJS.Editor
             var caller = this.cg.AppendGetThisCS(method);
             var returnType = GetReturnType(method);
 
-            // if (isRaw)
-            // {
-            //     do
-            //     {
-            //         if (!isExtension)
-            //         {
-            //             if (returnType == typeof(int) && in_params.Count == 1)
-            //             {
-            //                 var p = in_params[0];
-            //                 if (p.ParameterType == typeof(IntPtr) && !p.IsOut)
-            //                 {
-            //                     cg.cs.AppendLine($"return {caller}.{method.Name}(ctx);");
-            //                     return;
-            //                 }
-            //             }
-            //             cg.bindingManager.Error($"invalid JSCFunction definition: {method}");
-            //             break;
-            //         }
-            //         cg.bindingManager.Error($"Extension as JSCFunction is not supported: {method}");
-            //     } while (false);
-            // }
-
             if (returnType == null || returnType == typeof(void))
             {
                 // 方法本身没有返回值
                 this.BeginInvokeBinding();
                 cg.cs.AppendLine($"{this.GetInvokeBinding(caller, method, isVararg, isExtension, argc, parameters)};");
                 this.EndInvokeBinding();
-                var backVars = out_params.Count > 0 ? _WriteBackParametersByRef(isExtension, out_params, null) : null;
 
-                if (!method.IsStatic && method.DeclaringType.IsValueType) // struct 非静态方法 检查 Mutable 属性
+                if (out_params.Count > 0)
                 {
-                    if (!string.IsNullOrEmpty(caller))
-                    {
-                        cg.cs.AppendLine($"js_rebind_this(ctx, this_obj, {caller});");
-                    }
-                }
+                    var backVars = _WriteBackParametersByRef(isExtension, out_params, null);
 
-                if (string.IsNullOrEmpty(backVars))
-                {
-                    this.InvokeVoidReturn();
+                    WriteRebindThis(method, caller);
+                    cg.cs.AppendLine("return {0};", backVars);
                 }
                 else
                 {
-                    cg.cs.AppendLine("return {0};", backVars);
+                    WriteRebindThis(method, caller);
+                    InvokeVoidReturn();
                 }
             }
             else
             {
                 var retVar = "ret"; // cs return value var name
-                var retJsVar = "ret_js";
                 this.BeginInvokeBinding();
                 cg.cs.AppendLine($"var {retVar} = {this.GetInvokeBinding(caller, method, isVararg, isExtension, argc, parameters)};");
                 this.EndInvokeBinding();
 
                 var retPusher = cg.AppendMethodReturnValuePusher(method, returnType, retVar);
-                cg.cs.AppendLine("var {0} = {1};", retJsVar, retPusher);
-                cg.cs.AppendLine("if (JSApi.JS_IsException({0}))", retJsVar);
-                using (cg.cs.CodeBlockScope())
+
+                if (out_params.Count > 0)
                 {
-                    cg.cs.AppendLine("return {0};", retJsVar);
+                    var retJsVar = "ret_js";
+                    cg.cs.AppendLine("var {0} = {1};", retJsVar, retPusher);
+                    cg.cs.AppendLine("if (JSApi.JS_IsException({0}))", retJsVar);
+                    using (cg.cs.CodeBlockScope())
+                    {
+                        cg.cs.AppendLine("return {0};", retJsVar);
+                    }
+
+                    var backVars = _WriteBackParametersByRef(isExtension, out_params, retJsVar);
+                    cg.cs.AppendLine("return {0};", backVars);
                 }
-                var backVars = out_params.Count > 0 ? _WriteBackParametersByRef(isExtension, out_params, retJsVar) : retJsVar;
-                cg.cs.AppendLine("return {0};", backVars);
+                else
+                {
+                    cg.cs.AppendLine("return {0};", retPusher);
+                }
             }
         }
 

@@ -21,6 +21,9 @@ namespace QuickJS.Editor
         // 按照参数数逆序排序所有变体
         // 有相同参数数量要求的方法记录在同一个 Variant 中 (变参方法按最少参数数计算, 不计变参参数数)
         public SortedDictionary<int, MethodBaseVariant<T>> variants = new SortedDictionary<int, MethodBaseVariant<T>>(new MethodVariantComparer());
+
+        // 标记为 JSCFunction, 不生成包装代码, 直接注册给JS
+        // 必须为静态函数, 且函数签名完全匹配 JSCFunction
         public MethodBase _cfunc;
 
         public int count

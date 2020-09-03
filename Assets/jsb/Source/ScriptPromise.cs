@@ -7,7 +7,7 @@ using UnityEngine;
 
 namespace QuickJS
 {
-    public class ScriptPromise : IDisposable
+    public abstract class ScriptPromise : IDisposable
     {
         private ScriptContext _context;
         private JSValue _promise;
@@ -60,11 +60,6 @@ namespace QuickJS
             return _context != null ? _promise : JSApi.JS_UNDEFINED;
         }
 
-        public void Resolve(object value = null)
-        {
-            Invoke(0, value);
-        }
-
         public void Reject(object value = null)
         {
             Invoke(1, value);
@@ -75,7 +70,7 @@ namespace QuickJS
         /// </summary>
         /// <param name="index">0 表示成功, 1 表示失败</param>
         /// <param name="value">传参给回调</param>
-        private unsafe void Invoke(int index, object value)
+        protected unsafe void Invoke(int index, object value)
         {
             if (_context == null)
             {
@@ -104,6 +99,42 @@ namespace QuickJS
             JSApi.JS_FreeValue(ctx, rval);
             Dispose();
             context.GetRuntime().ExecutePendingJob();
+        }
+    }
+
+    public class TypedScriptPromise<TResult> : ScriptPromise
+    {
+        public TypedScriptPromise(JSContext ctx)
+        : base(ctx)
+        {
+        }
+
+        public TypedScriptPromise(ScriptContext context)
+        : base(context)
+        {
+        }
+
+        public void Resolve(TResult value)
+        {
+            Invoke(0, value);
+        }
+    }
+
+    public class AnyScriptPromise : ScriptPromise
+    {
+        public AnyScriptPromise(JSContext ctx)
+        : base(ctx)
+        {
+        }
+
+        public AnyScriptPromise(ScriptContext context)
+        : base(context)
+        {
+        }
+
+        public void Resolve(object value = null)
+        {
+            Invoke(0, value);
         }
     }
 }
