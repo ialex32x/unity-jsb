@@ -48,7 +48,7 @@ namespace QuickJS.Extra
                 var co = context.GetCoroutineManager();
                 if (co != null)
                 {
-                    co.Load(context, srcValue);
+                    co.EvalSourceAsync(context, srcValue);
                 }
                 return JSApi.JS_UNDEFINED;
             }

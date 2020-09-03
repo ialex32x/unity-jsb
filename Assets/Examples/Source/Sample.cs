@@ -95,25 +95,25 @@ namespace jsb
                 _mConsole.Write(LogLevel.Info, "run");
                 _rt.EvalMain(entryFileName);
 
-                // 测试, 获取脚本本身返回值
-                var act = _rt.EvalFile<Action>("do_from_cs");
-                if (act != null)
-                {
-                    act();
-                }
-                else
-                {
-                    Debug.LogWarning("act null");
-                }
-                var v = _rt.EvalFile<ScriptValue>("do_from_cs_v");
-                if (v != null)
-                {
-                    Debug.LogFormat("v.test = {0}", v.GetProperty<string>("test"));
-                }
-                else
-                {
-                    Debug.LogWarning("v null");
-                }
+                // // 测试, 获取脚本本身返回值
+                // var act = _rt.EvalFile<Action>("do_from_cs");
+                // if (act != null)
+                // {
+                //     act();
+                // }
+                // else
+                // {
+                //     Debug.LogWarning("act null");
+                // }
+                // var v = _rt.EvalFile<ScriptValue>("do_from_cs_v");
+                // if (v != null)
+                // {
+                //     Debug.LogFormat("v.test = {0}", v.GetProperty<string>("test"));
+                // }
+                // else
+                // {
+                //     Debug.LogWarning("v null");
+                // }
             }
         }
     }

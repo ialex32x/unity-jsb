@@ -22,13 +22,7 @@ namespace QuickJS
             _context = context;
             _jsValue = jsValue;
             JSApi.JS_DupValue(context, jsValue);
-            _context.OnDestroy += OnDestroy;
             _context.GetObjectCache().AddScriptValue(_jsValue, this);
-        }
-
-        private void OnDestroy(ScriptContext context)
-        {
-            Dispose();
         }
 
         public static implicit operator JSValue(ScriptValue value)
@@ -54,7 +48,6 @@ namespace QuickJS
                 var context = _context;
 
                 _context = null;
-                context.OnDestroy -= OnDestroy;
                 context.GetRuntime().FreeScriptValue(_jsValue);
                 _jsValue = JSApi.JS_UNDEFINED;
             }

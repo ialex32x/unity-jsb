@@ -424,6 +424,37 @@ namespace QuickJS
             }
         }
 
+        // 可在 GC 线程直接调用此方法
+        public unsafe void FreeValues(int argc, JSValue* values)
+        {
+            if (argc == 0)
+            {
+                return;
+            }
+            if (_mainThreadId == Thread.CurrentThread.ManagedThreadId)
+            {
+                for (int i = 0; i < argc; i++)
+                {
+                    JSApi.JS_FreeValueRT(_rt, values[i]);
+                }
+            }
+            else
+            {
+                lock (_pendingActions)
+                {
+                    for (int i = 0; i < argc; i++)
+                    {
+                        var act = new JSAction()
+                        {
+                            value = values[i],
+                            callback = _FreeValueAction,
+                        };
+                        _pendingActions.Enqueue(act);
+                    }
+                }
+            }
+        }
+
         public void EnqueueAction(JSAction action)
         {
             lock (_pendingActions)

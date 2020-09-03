@@ -11,8 +11,13 @@ namespace QuickJS.Utils
 {
     public class CoroutineManager : MonoBehaviour
     {
-        //TODO: 临时代码
-        public async void Load(ScriptContext context, string src)
+        public class JSSourceArgs
+        {
+            public string source;
+            public string src;
+        }
+
+        public async void EvalSourceAsync(ScriptContext context, string src)
         {
             var request = WebRequest.CreateHttp(src);
             request.Method = "GET";
@@ -24,7 +29,26 @@ namespace QuickJS.Utils
             {
                 return;
             }
-            context.EvalSource(reseponseText, src);
+            var runtime = context.GetRuntime();
+
+            if (runtime.IsMainThread())
+            {
+                context.EvalSource(reseponseText, src);
+            }
+            else
+            {
+                runtime.EnqueueAction(new JSAction()
+                {
+                    callback = _EvalSource,
+                    args = new JSSourceArgs() { source = reseponseText, src = src },
+                });
+            }
+        }
+
+        private static void _EvalSource(ScriptRuntime runtime, JSAction value)
+        {
+            var args = (JSSourceArgs)value.args;
+            runtime.GetMainContext().EvalSource(args.source, args.src);
         }
 
         // return promise

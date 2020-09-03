@@ -225,6 +225,11 @@ namespace QuickJS
             _runtime.FreeValues(values);
         }
 
+        public unsafe void FreeValues(int argc , JSValue* values)
+        {
+            _runtime.FreeValues(argc, values);
+        }
+
         ///<summary>
         /// 获取全局对象 (增加引用计数)
         ///</summary>
@@ -303,7 +308,8 @@ namespace QuickJS
             ns_jsb.AddFunction("ToFunction", to_js_function, 1);
             ns_jsb.AddFunction("ToDelegate", to_cs_delegate, 1);
             ns_jsb.AddFunction("Import", js_import_type, 2);
-
+            ns_jsb.AddFunction("GC", _gc, 0);
+            ns_jsb.AddFunction("Sleep", _sleep, 1);
             {
                 var ns_jsb_hotfix = ns_jsb.CreateNamespace("hotfix");
                 ns_jsb_hotfix.AddFunction("replace_single", hotfix_replace_single, 2);
@@ -480,12 +486,6 @@ namespace QuickJS
                     JSApi.JS_SetPropertyStr(ctx, console, "assert", JSApi.JS_NewCFunctionMagic(ctx, _print, "assert", 1, JSCFunctionEnum.JS_CFUNC_generic_magic, 3));
                 }
                 JSApi.JS_SetPropertyStr(ctx, global_object, "console", console);
-
-                var threading = JSApi.JS_NewObject(ctx);
-                {
-                    JSApi.JS_SetPropertyStr(ctx, threading, "sleep", JSApi.JS_NewCFunctionMagic(ctx, _sleep, "sleep", 1, JSCFunctionEnum.JS_CFUNC_generic_magic, 0));
-                }
-                JSApi.JS_SetPropertyStr(ctx, global_object, "threading", threading);
             }
             JSApi.JS_FreeValue(ctx, global_object);
         }
