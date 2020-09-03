@@ -110,7 +110,8 @@ namespace QuickJS
                 JSApi.JS_FreeCString(ctx, pstr);
             }
 
-            if (runtime.withStacktrace)
+            var logLevel = magic == -1 ? LogLevel.Info : (LogLevel) magic;
+            if (magic == -1 || logLevel > LogLevel.Warn || runtime.withStacktrace)
             {
                 sb.AppendLine();
                 runtime.GetContext(ctx).AppendStacktrace(sb);
@@ -118,7 +119,7 @@ namespace QuickJS
 
             try
             {
-                logger.Write((LogLevel)magic, sb.ToString());
+                logger.Write(logLevel, sb.ToString());
             }
             catch (Exception)
             {
