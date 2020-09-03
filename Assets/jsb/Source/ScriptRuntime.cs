@@ -556,6 +556,14 @@ namespace QuickJS
                 return;
             }
 
+#if UNITY_EDITOR
+            if (UnityEditor.EditorApplication.isCompiling)
+            {
+                ScriptEngine.Shutdown();
+                _logger?.Write(LogLevel.Warn, "assembly reloading, shutdown script engine immediately");
+                return;
+            }
+#endif
             if (_pendingActions.Count != 0)
             {
                 ExecutePendingActions();

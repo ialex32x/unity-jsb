@@ -9,6 +9,7 @@ namespace jsb
 {
     using UnityEngine;
 
+    // test
     public class Sample : MonoBehaviour, IScriptRuntimeListener
     {
         public enum FileLoader
@@ -64,7 +65,10 @@ namespace jsb
 
         void Update()
         {
-            _rt.Update((int)(Time.deltaTime * 1000f));
+            if (_rt != null)
+            {
+                _rt.Update((int)(Time.deltaTime * 1000f));
+            }
         }
 
         void OnDestroy()
@@ -95,7 +99,7 @@ namespace jsb
                 _mConsole.Write(LogLevel.Info, "run");
                 _rt.EvalMain(entryFileName);
 
-                // // 测试, 获取脚本本身返回值
+                // // 测试, 获取脚本本身返回值 
                 // var act = _rt.EvalFile<Action>("do_from_cs");
                 // if (act != null)
                 // {
