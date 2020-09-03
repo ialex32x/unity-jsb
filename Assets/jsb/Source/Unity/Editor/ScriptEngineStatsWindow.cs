@@ -167,6 +167,12 @@ namespace QuickJS.Editor
                 var snapshot = _snapshots[i];
                 snapshot.alive = false;
             }
+            
+            if (GUILayout.Button("GC (mono)"))
+            {
+                GC.Collect();
+                GC.WaitForPendingFinalizers();
+            }
 
             _alive = ScriptEngine.ForEachRuntime(runtime => Capture(runtime));
 

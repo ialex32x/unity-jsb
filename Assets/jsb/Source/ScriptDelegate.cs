@@ -28,15 +28,9 @@ namespace QuickJS
             _context = context;
             _jsValue = jsValue;
             JSApi.JS_DupValue(context, jsValue);
-            _context.OnDestroy += OnDestroy;
             // ScriptDelegate 拥有 js 对象的强引用, 此 js 对象无法释放 cache 中的 object, 所以这里用弱引用注册
             // 会出现的问题是, 如果 c# 没有对 ScriptDelegate 的强引用, 那么反复 get_delegate 会重复创建 ScriptDelegate
             _context.GetObjectCache().AddDelegate(_jsValue, this);
-        }
-
-        private void OnDestroy(ScriptContext context)
-        {
-            Dispose();
         }
 
         public static implicit operator JSValue(ScriptDelegate value)
@@ -62,7 +56,6 @@ namespace QuickJS
                 var context = _context;
 
                 _context = null;
-                context.OnDestroy -= OnDestroy;
                 context.GetRuntime().FreeDelegationValue(_jsValue);
                 _jsValue = JSApi.JS_UNDEFINED;
             }
