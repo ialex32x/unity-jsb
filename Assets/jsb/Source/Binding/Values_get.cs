@@ -1088,6 +1088,45 @@ namespace QuickJS.Binding
             return false;
         }
 
+        public static bool js_get_classvalue<T>(JSContext ctx, JSValue val, out TypedScriptPromise<T> o)
+        {
+            ScriptPromise value;
+            if (js_get_classvalue(ctx, val, out value))
+            {
+                o = value as TypedScriptPromise<T>;
+                return true;
+            }
+            o = null;
+            return false;
+        }
+
+        public static bool js_get_classvalue(JSContext ctx, JSValue val, out AnyScriptPromise o)
+        {
+            ScriptPromise value;
+            if (js_get_classvalue(ctx, val, out value))
+            {
+                o = value as AnyScriptPromise;
+                return true;
+            }
+            o = null;
+            return false;
+        }
+
+        public static bool js_get_classvalue(JSContext ctx, JSValue val, out ScriptPromise o)
+        {
+            var context = ScriptEngine.GetContext(ctx);
+            var cache = context.GetObjectCache();
+
+            if (cache.TryGetScriptPromise(val, out o))
+            {
+                return true;
+            }
+
+            // 不能构造一个 JS Promise
+            o = null;
+            return false;
+        }
+
         public static bool js_get_classvalue(JSContext ctx, JSValue val, out ScriptValue o)
         {
             var context = ScriptEngine.GetContext(ctx);

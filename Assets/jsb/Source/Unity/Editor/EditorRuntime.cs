@@ -10,7 +10,7 @@ namespace QuickJS.Editor
     using QuickJS.Binding;
     using QuickJS.Native;
 
-    [InitializeOnLoad]
+    // [InitializeOnLoad]
     public class EditorRuntime : IScriptRuntimeListener
     {
         private enum RunMode
@@ -28,19 +28,42 @@ namespace QuickJS.Editor
 
         static EditorRuntime()
         {
-            //TODO: 暂时屏蔽
-            // _instance = new EditorRuntime();
+            Debug.LogWarningFormat("init");
+            _instance = new EditorRuntime();
+        }
+
+        public static EditorRuntime GetInstance()
+        {
+            return _instance;
         }
 
         public EditorRuntime()
         {
             _runMode = RunMode.None;
             EditorApplication.delayCall += OnInit;
+            EditorApplication.update += OnUpdate;
+            EditorApplication.quitting += OnQuitting;
             EditorApplication.playModeStateChanged += OnPlayModeStateChanged;
         }
 
         ~EditorRuntime()
         {
+        }
+
+        private void OnQuitting()
+        {
+            if (_runtime == null)
+            {
+                return;
+            }
+            var runtime = _runtime;
+            _runtime = null;
+            _runMode = RunMode.None;
+            EditorApplication.delayCall -= OnInit;
+            EditorApplication.update -= OnUpdate;
+            EditorApplication.quitting -= OnQuitting;
+            EditorApplication.playModeStateChanged -= OnPlayModeStateChanged;
+            runtime.Shutdown();
         }
 
         private void OnInit()
@@ -59,7 +82,6 @@ namespace QuickJS.Editor
 
             _runtime = ScriptEngine.CreateRuntime(true);
             _runtime.Initialize(fileSystem, fileResolver, this, logger, new ByteBufferPooledAllocator());
-            _runtime.OnDestroy += OnDestroy;
         }
 
         private void OnPlayModeStateChanged(PlayModeStateChange mode)
@@ -71,14 +93,15 @@ namespace QuickJS.Editor
             }
         }
 
-        private void OnDestroy(ScriptRuntime rt)
-        {
-        }
-
         private void OnUpdate()
         {
             if (_runtime != null)
             {
+                if (EditorApplication.isCompiling)
+                {
+                    OnQuitting();
+                    return;
+                }
                 var tick = Environment.TickCount;
                 _runtime.Update((int)(tick - _tick));
                 _tick = tick;

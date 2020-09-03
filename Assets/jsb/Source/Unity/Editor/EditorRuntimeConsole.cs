@@ -16,9 +16,11 @@ namespace QuickJS.Editor
     using QuickJS.Binding;
     using QuickJS.Native;
 
+    //
     public class EditorRuntimeConsole : BaseEditorWindow
     {
         private string _text;
+        private string _rvalToString;
         private bool _isEditorRuntime = true;
 
         void Awake()
@@ -37,6 +39,10 @@ namespace QuickJS.Editor
         protected override void OnPaint()
         {
             _isEditorRuntime = EditorGUILayout.Toggle("EditorRuntime", _isEditorRuntime);
+            if (_isEditorRuntime)
+            {
+                EditorRuntime.GetInstance();
+            }
             var runtime = ScriptEngine.GetRuntime(_isEditorRuntime);
             var available = runtime != null;
 
@@ -47,15 +53,17 @@ namespace QuickJS.Editor
                     _text = EditorGUILayout.TextField(">", _text);
                     if (GUILayout.Button("Run", GUILayout.Width(36f)))
                     {
-                        var ret = runtime.GetMainContext().EvalSource<string>(_text, "eval");
-                        var logger = runtime.GetLogger();
-                        if (logger != null)
+                        using (var ret = runtime.GetMainContext().EvalSource<ScriptValue>(_text, "eval"))
                         {
-                            logger.Write(LogLevel.Info, ret);
+                            _rvalToString = ret.ToString() ?? "";
+                            _rvalToString += "\n\n";
+                            _rvalToString += ret.JSONStringify();
                         }
                     }
                 }
             }
+
+            EditorGUILayout.TextArea(_rvalToString);
 
             if (!available)
             {

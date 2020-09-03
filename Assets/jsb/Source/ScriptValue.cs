@@ -65,7 +65,7 @@ namespace QuickJS
                 var other = (ScriptValue)obj;
                 return other._jsValue == _jsValue;
             }
-            
+
             if (obj is JSValue)
             {
                 var other = (JSValue)obj;
@@ -74,7 +74,7 @@ namespace QuickJS
 
             return false;
         }
-        
+
         public T GetProperty<T>(string key)
         {
             var ctx = (JSContext)_context;
@@ -99,7 +99,29 @@ namespace QuickJS
         {
             var ctx = (JSContext)_context;
             var jsValue = Binding.Values.js_push_var(ctx, value);
-            JSApi.JS_SetPropertyStr(_context, _jsValue, key, jsValue);
+            JSApi.JS_SetPropertyStr(ctx, _jsValue, key, jsValue);
+        }
+
+        public override string ToString()
+        {
+            if (_context == null)
+            {
+                return null;
+            }
+            return JSApi.GetString(_context, _jsValue);
+        }
+
+        public string JSONStringify()
+        {
+            if (_context == null)
+            {
+                return null;
+            }
+            var ctx = (JSContext)_context;
+            var rval = JSApi.JS_JSONStringify(ctx, _jsValue, JSApi.JS_UNDEFINED, JSApi.JS_UNDEFINED);
+            var str = JSApi.GetString(ctx, rval);
+            JSApi.JS_FreeValue(ctx, rval);
+            return str;
         }
     }
 }

@@ -247,6 +247,12 @@ namespace QuickJS
                 }
                 JSApi.JS_FreeValue(_ctx, rval);
             }
+            #if UNITY_EDITOR
+            if (UnityEditor.EditorApplication.isCompiling)
+            {
+                Release();
+            }
+            #endif 
         }
 
         void OnApplicationFocus()

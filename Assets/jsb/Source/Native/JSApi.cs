@@ -631,6 +631,9 @@ namespace QuickJS.Native
         public static extern unsafe JSValue JS_ParseJSON(JSContext ctx, byte* buf, size_t buf_len, byte* filename);
 
         [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern JSValue JS_JSONStringify(JSContext ctx, JSValueConst obj, JSValueConst replacer, JSValueConst space0);
+
+        [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern JSValue JS_CallConstructor(JSContext ctx, JSValueConst func_obj, int argc, [MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 2)] JSValueConst[] argv);
 
         [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]

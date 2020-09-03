@@ -27,9 +27,9 @@ namespace QuickJS.Editor
 
         private Vector2 _sv;
         private int _alive;
-        private bool _autoCap;
+        private bool _autoCap = true;
         private float _time;
-        private float _timeCap = 5f;
+        private float _timeCap = 10f;
         private List<Snapshot> _snapshots = new List<Snapshot>();
 
         [MenuItem("JS Bridge/Stats Viewer", false, 5000)]
@@ -42,6 +42,11 @@ namespace QuickJS.Editor
         {
             base.OnEnable();
             titleContent = new GUIContent("ScriptEngine Stats");
+        }
+
+        protected override void OnDisable()
+        {
+            base.OnDisable();
         }
 
         string ToSizeText(long size)
@@ -170,13 +175,6 @@ namespace QuickJS.Editor
                 var snapshot = _snapshots[i];
                 snapshot.alive = false;
             }
-            
-            if (GUILayout.Button("GC (mono)"))
-            {
-                GC.Collect();
-                GC.WaitForPendingFinalizers();
-            }
-
             _alive = ScriptEngine.ForEachRuntime(runtime => Capture(runtime));
 
             if (_alive == 0)
@@ -184,11 +182,22 @@ namespace QuickJS.Editor
                 EditorGUILayout.HelpBox("No Running Runtime", MessageType.Info);
                 return;
             }
-            _autoCap = EditorGUILayout.Toggle("Auto", _autoCap);
-            if (GUILayout.Button("Capture"))
+
+            Block("Control", () =>
             {
-                _alive = ScriptEngine.ForEachRuntime(runtime => Capture(runtime));
-            }
+                _autoCap = EditorGUILayout.Toggle("Auto", _autoCap);
+
+                if (GUILayout.Button("GC (mono)"))
+                {
+                    GC.Collect();
+                    GC.WaitForPendingFinalizers();
+                }
+
+                if (GUILayout.Button("Capture"))
+                {
+                    _alive = ScriptEngine.ForEachRuntime(runtime => Capture(runtime));
+                }
+            });
 
             _sv = EditorGUILayout.BeginScrollView(_sv);
             EditorGUILayout.BeginHorizontal();
