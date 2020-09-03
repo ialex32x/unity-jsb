@@ -10,6 +10,22 @@ namespace QuickJS.Editor
 
     public class TextGenerator
     {
+        public class IndentBlock : IDisposable
+        {
+            private TextGenerator _generator;
+
+            public IndentBlock(TextGenerator generator)
+            {
+                _generator = generator;
+                _generator.AddTabLevel();
+            }
+
+            public void Dispose()
+            {
+                _generator.DecTabLevel();
+            }
+        }
+
         public class CodeBlock : IDisposable
         {
             private TextGenerator _generator;
@@ -48,9 +64,14 @@ namespace QuickJS.Editor
             return sb.ToString();
         }
 
-        public CodeBlock Block()
+        public CodeBlock CodeBlockScope()
         {
             return new CodeBlock(this);
+        }
+
+        public IndentBlock IndentBlockScope()
+        {
+            return new IndentBlock(this);
         }
 
         public void BeginBlock()

@@ -159,7 +159,7 @@ namespace QuickJS.Editor
             {
                 var getter = this.cg.bindingManager.GetScriptObjectGetter(ptype, "ctx", $"argv[{index}]", argname);
                 this.cg.cs.AppendLine("if (!{0})", getter);
-                using (this.cg.cs.Block())
+                using (this.cg.cs.CodeBlockScope())
                 {
                     this.cg.cs.AppendLine("throw new ParameterException(typeof({0}), {1});", argType, index);
                 }
@@ -573,7 +573,7 @@ namespace QuickJS.Editor
                 var retPusher = cg.AppendMethodReturnValuePusher(method, returnType, retVar);
                 cg.cs.AppendLine("var {0} = {1};", retJsVar, retPusher);
                 cg.cs.AppendLine("if (JSApi.JS_IsException({0}))", retJsVar);
-                using (cg.cs.Block())
+                using (cg.cs.CodeBlockScope())
                 {
                     cg.cs.AppendLine("return {0};", retJsVar);
                 }
@@ -606,7 +606,7 @@ namespace QuickJS.Editor
 
                 cg.cs.AppendLine("var out{0} = {1};", i, pusher);
                 cg.cs.AppendLine("if (JSApi.JS_IsException(out{0}))", i);
-                using (cg.cs.Block())
+                using (cg.cs.CodeBlockScope())
                 {
                     for (var j = 0; j < i; j++)
                     {

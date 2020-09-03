@@ -9,13 +9,13 @@ namespace QuickJS.Editor
     using UnityEngine;
     using UnityEditor;
 
-    public class DelegateBindingInfo
+    public class DelegateBridgeBindingInfo
     {
         public HashSet<Type> types = new HashSet<Type>();
         public Type returnType;
         public ParameterInfo[] parameters;
 
-        public DelegateBindingInfo(Type returnType, ParameterInfo[] parameters)
+        public DelegateBridgeBindingInfo(Type returnType, ParameterInfo[] parameters)
         {
             this.returnType = returnType;
             this.parameters = parameters;

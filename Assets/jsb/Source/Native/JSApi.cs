@@ -89,7 +89,7 @@ namespace QuickJS.Native
     {
         const int CS_JSB_VERSION = 0x1;
         public static readonly int SO_JSB_VERSION;
-        
+
 #if (UNITY_IPHONE || UNITY_WEBGL) && !UNITY_EDITOR
 	    const string JSBDLL = "__Internal";
 #else
@@ -963,6 +963,11 @@ namespace QuickJS.Native
         #endregion
 
         #region critical
+
+        // 新改, 未编译 quickjs.so
+        /* return < 0, 0 or > 0 */
+        // [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
+        // public static extern int js_string_compare(JSContext ctx, /*const JSString*/ IntPtr p1, /*const JSString*/ IntPtr p2);
 
         [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern unsafe IntPtr js_strndup(JSContext ctx, byte* s, size_t n);

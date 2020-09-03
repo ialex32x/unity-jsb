@@ -51,11 +51,11 @@ namespace QuickJS.Editor
         {
         }
 
-        public virtual void OnPreGenerateDelegate(BindingManager bindingManager, DelegateBindingInfo bindingInfo)
+        public virtual void OnPreGenerateDelegate(BindingManager bindingManager, DelegateBridgeBindingInfo bindingInfo)
         {
         }
 
-        public virtual void OnPostGenerateDelegate(BindingManager bindingManager, DelegateBindingInfo bindingInfo)
+        public virtual void OnPostGenerateDelegate(BindingManager bindingManager, DelegateBridgeBindingInfo bindingInfo)
         {
         }
 

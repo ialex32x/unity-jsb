@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using QuickJS.Native;
 
@@ -148,6 +149,7 @@ namespace QuickJS.Editor
             foreach (var kv in this.typeBindingInfo.properties)
             {
                 var propertyBindingInfo = kv.Value;
+
                 // 静态
                 if (propertyBindingInfo.staticPair.IsValid())
                 {
@@ -167,6 +169,7 @@ namespace QuickJS.Editor
                             }
                         }
                     }
+
                     // 可写属性
                     if (propertyBindingInfo.staticPair.setterName != null)
                     {
@@ -184,6 +187,7 @@ namespace QuickJS.Editor
                         }
                     }
                 }
+
                 // 非静态
                 if (propertyBindingInfo.instancePair.IsValid())
                 {
@@ -221,10 +225,13 @@ namespace QuickJS.Editor
                     }
                 }
             }
+
             // 所有字段
             foreach (var kv in this.typeBindingInfo.fields)
             {
                 var fieldBindingInfo = kv.Value;
+
+                // 可读
                 if (fieldBindingInfo.getterName != null)
                 {
                     using (new PInvokeGuardCodeGen(cg, typeof(JSGetterCFunction)))
@@ -240,7 +247,8 @@ namespace QuickJS.Editor
                         }
                     }
                 }
-                // 可写字段 
+
+                // 可写 
                 if (fieldBindingInfo.setterName != null)
                 {
                     using (new PInvokeGuardCodeGen(cg, typeof(JSSetterCFunction)))
@@ -257,45 +265,37 @@ namespace QuickJS.Editor
                     }
                 }
             }
-            // 所有事件 (当做field相似处理)
+
+            // 所有事件
             foreach (var kv in this.typeBindingInfo.events)
             {
                 var eventBindingInfo = kv.Value;
                 using (new PInvokeGuardCodeGen(cg))
                 {
-                    using (new BindingFuncDeclareCodeGen(cg, eventBindingInfo.adderName))
+                    using (new BindingFuncDeclareCodeGen(cg, eventBindingInfo.name))
                     {
                         using (new TryCatchGuradCodeGen(cg))
                         {
-                            using (new EventAdderCodeGen(cg, eventBindingInfo))
+                            using (new EventOperationCodeGen(cg, eventBindingInfo))
                             {
                             }
                         }
                     }
                 }
+            }
+
+            // 所有委托 (Field/Property)
+            foreach (var kv in this.typeBindingInfo.delegates)
+            {
+                var delegateBindingInfo = kv.Value;
                 using (new PInvokeGuardCodeGen(cg))
                 {
-                    using (new BindingFuncDeclareCodeGen(cg, eventBindingInfo.removerName))
+                    using (new BindingFuncDeclareCodeGen(cg, delegateBindingInfo.name))
                     {
                         using (new TryCatchGuradCodeGen(cg))
                         {
-                            using (new EventRemoverCodeGen(cg, eventBindingInfo))
+                            using (new DelegateOperationCodeGen(cg, delegateBindingInfo))
                             {
-                            }
-                        }
-                    }
-                }
-                if (!eventBindingInfo.isStatic)
-                {
-                    using (new PInvokeGuardCodeGen(cg))
-                    {
-                        using (new BindingGetterFuncDeclareCodeGen(cg, eventBindingInfo.proxyName))
-                        {
-                            using (new TryCatchGuradCodeGen(cg))
-                            {
-                                using (new EventProxyCodeGen(cg, eventBindingInfo))
-                                {
-                                }
                             }
                         }
                     }
@@ -468,6 +468,7 @@ namespace QuickJS.Editor
                             cg.tsDeclare.AppendLine($"{tsPropertyPrefix}{tsPropertyVar}: {tsPropertyType}");
                         }
                     }
+
                     foreach (var kv in typeBindingInfo.fields)
                     {
                         var bindingInfo = kv.Value;
@@ -495,26 +496,65 @@ namespace QuickJS.Editor
                         cg.AppendJSDoc(bindingInfo.fieldInfo);
                         cg.tsDeclare.AppendLine($"{tsFieldPrefix}{tsFieldVar}: {tsFieldType}");
                     }
+
                     foreach (var kv in typeBindingInfo.events)
                     {
                         var eventBindingInfo = kv.Value;
                         var bStatic = eventBindingInfo.isStatic;
-                        //NOTE: 静态事件在绑定过程直接定义， 非静态事件推迟到构造时直接赋值创建
                         var tsFieldVar = BindingManager.GetTSVariable(eventBindingInfo.regName);
                         var tsFieldType = this.cg.bindingManager.GetTSTypeFullName(eventBindingInfo.eventInfo.EventHandlerType);
                         var tsFieldPrefix = "";
                         if (bStatic)
                         {
                             tsFieldPrefix += "static ";
-                            cg.cs.AppendLine($"cls.AddStaticEvent(\"{tsFieldVar}\", {eventBindingInfo.adderName}, {eventBindingInfo.removerName});");
+                            cg.cs.AppendLine($"cls.AddMethod(true, \"{tsFieldVar}\", {eventBindingInfo.name});");
                         }
                         else
                         {
-                            cg.cs.AppendLine($"cls.AddProperty(false, \"{tsFieldVar}\", {eventBindingInfo.proxyName}, null);");
+                            cg.cs.AppendLine($"cls.AddMethod(false, \"{tsFieldVar}\", {eventBindingInfo.name});");
                         }
-                        tsFieldPrefix += "readonly ";
-                        cg.tsDeclare.AppendLine($"{tsFieldPrefix}{tsFieldVar}: jsb.event<{tsFieldType}>");
+                        // tsFieldPrefix += "readonly ";
+                        // cg.tsDeclare.AppendLine($"{tsFieldPrefix}{tsFieldVar}: jsb.event<{tsFieldType}>");
+                        cg.tsDeclare.AppendLine($"{tsFieldPrefix}{tsFieldVar}(op: \"add\" | \"remove\", fn: {tsFieldType})");
                     }
+
+                    foreach (var kv in typeBindingInfo.delegates)
+                    {
+                        var delegateBindingInfo = kv.Value;
+                        var bStatic = delegateBindingInfo.isStatic;
+                        var tsFieldVar = BindingManager.GetTSVariable(delegateBindingInfo.regName);
+                        var tsFieldType = this.cg.bindingManager.GetTSTypeFullName(delegateBindingInfo.delegateType);
+                        var tsFieldPrefix = "";
+                        if (bStatic)
+                        {
+                            tsFieldPrefix += "static ";
+                            cg.cs.AppendLine($"cls.AddMethod(true, \"{tsFieldVar}\", {delegateBindingInfo.name});");
+                        }
+                        else
+                        {
+                            cg.cs.AppendLine($"cls.AddMethod(false, \"{tsFieldVar}\", {delegateBindingInfo.name});");
+                        }
+                        // tsFieldPrefix += "readonly ";
+                        // cg.tsDeclare.AppendLine($"{tsFieldPrefix}{tsFieldVar}: jsb.event<{tsFieldType}>");
+                        var ops = new List<string>();
+
+                        if (delegateBindingInfo.writable)
+                        {
+                            if (delegateBindingInfo.readable)
+                            {
+                                ops.Add("add");
+                                ops.Add("remove");
+                            }
+                            ops.Add("set");
+                        }
+                        if (delegateBindingInfo.readable)
+                        {
+                            ops.Add("get");
+                        }
+                        var op = string.Join(" | ", ops.Select((o, i) => $"\"{o}\""));
+                        cg.tsDeclare.AppendLine($"{tsFieldPrefix}{tsFieldVar}(op: {op}, fn: {tsFieldType})");
+                    }
+
                     cg.cs.AppendLine("cls.Close();");
                 }
             }

@@ -40,10 +40,10 @@ namespace QuickJS.Editor
         void OnPostGenerateType(BindingManager bindingManager, TypeBindingInfo bindingInfo);
         
         // 生成指定Delegate类型的绑定代码前
-        void OnPreGenerateDelegate(BindingManager bindingManager, DelegateBindingInfo bindingInfo);
+        void OnPreGenerateDelegate(BindingManager bindingManager, DelegateBridgeBindingInfo bindingInfo);
 
         // 生成指定Delegate类型的绑定代码后
-        void OnPostGenerateDelegate(BindingManager bindingManager, DelegateBindingInfo bindingInfo);
+        void OnPostGenerateDelegate(BindingManager bindingManager, DelegateBridgeBindingInfo bindingInfo);
         
         // 完成默认清理行为后 
         void OnCleanup(BindingManager bindingManager);

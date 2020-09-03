@@ -97,7 +97,7 @@ namespace QuickJS.Editor
         }
 
         // 生成委托绑定
-        public void Generate(DelegateBindingInfo[] delegateBindingInfos, List<HotfixDelegateBindingInfo> exportedHotfixDelegates)
+        public void Generate(DelegateBridgeBindingInfo[] delegateBindingInfos, List<HotfixDelegateBindingInfo> exportedHotfixDelegates)
         {
             this.cs.enabled = (typeBindingFlags & TypeBindingFlags.BindingCode) != 0;
             this.tsDeclare.enabled = (typeBindingFlags & TypeBindingFlags.TypeDefinition) != 0;
@@ -342,6 +342,11 @@ namespace QuickJS.Editor
             return AppendGetThisCS(bindingInfo.isStatic, bindingInfo.fieldInfo.DeclaringType);
         }
 
+        public string AppendGetThisCS(DelegateBindingInfo bindingInfo)
+        {
+            return AppendGetThisCS(bindingInfo.isStatic, bindingInfo.declaringType);
+        }
+
         public string AppendGetThisCS(EventBindingInfo bindingInfo)
         {
             var isStatic = bindingInfo.isStatic;
@@ -391,7 +396,7 @@ namespace QuickJS.Editor
                 // this.cs.AppendLine($"DuktapeDLL.duk_push_this(ctx);");
                 var getter = this.bindingManager.GetScriptObjectGetter(declaringType, "ctx", "this_obj", caller);
                 this.cs.AppendLine("if (!{0})", getter);
-                using (this.cs.Block())
+                using (this.cs.CodeBlockScope())
                 {
                     this.cs.AppendLine("throw new ThisBoundException();");
                 }

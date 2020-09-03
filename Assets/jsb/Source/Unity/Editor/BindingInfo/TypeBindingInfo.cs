@@ -43,6 +43,7 @@ namespace QuickJS.Editor
         public Dictionary<string, PropertyBindingInfo> properties = new Dictionary<string, PropertyBindingInfo>();
         public Dictionary<string, FieldBindingInfo> fields = new Dictionary<string, FieldBindingInfo>();
         public Dictionary<string, EventBindingInfo> events = new Dictionary<string, EventBindingInfo>();
+        public Dictionary<string, DelegateBindingInfo> delegates = new Dictionary<string, DelegateBindingInfo>();
         public ConstructorBindingInfo constructors;
 
         public Assembly Assembly
@@ -163,8 +164,16 @@ namespace QuickJS.Editor
             try
             {
                 bindingManager.CollectDelegate(fieldInfo.FieldType);
-                fields.Add(fieldInfo.Name, new FieldBindingInfo(fieldInfo));
-                bindingManager.Info("[AddField] {0}.{1}", type, fieldInfo.Name);
+                if (fieldInfo.FieldType.BaseType == typeof(MulticastDelegate))
+                {
+                    delegates.Add(fieldInfo.Name, new DelegateBindingInfo(type, fieldInfo));
+                    bindingManager.Info("[AddField] As Delegate: {0}.{1}", type, fieldInfo.Name);
+                }
+                else
+                {
+                    fields.Add(fieldInfo.Name, new FieldBindingInfo(fieldInfo));
+                    bindingManager.Info("[AddField] {0}.{1}", type, fieldInfo.Name);
+                }
             }
             catch (Exception exception)
             {
@@ -177,8 +186,16 @@ namespace QuickJS.Editor
             try
             {
                 bindingManager.CollectDelegate(propInfo.PropertyType);
-                properties.Add(propInfo.Name, new PropertyBindingInfo(propInfo));
-                bindingManager.Info("[AddProperty] {0}.{1}", type, propInfo.Name);
+                if (propInfo.PropertyType.BaseType == typeof(MulticastDelegate))
+                {
+                    delegates.Add(propInfo.Name, new DelegateBindingInfo(type, propInfo));
+                    bindingManager.Info("[AddProperty] As Delegate: {0}.{1}", type, propInfo.Name);
+                }
+                else
+                {
+                    properties.Add(propInfo.Name, new PropertyBindingInfo(propInfo));
+                    bindingManager.Info("[AddProperty] {0}.{1}", type, propInfo.Name);
+                }
             }
             catch (Exception exception)
             {
@@ -480,7 +497,7 @@ namespace QuickJS.Editor
                 //NOTE: 索引访问
                 if (property.Name == "Item")
                 {
-                    if (property.CanRead && property.GetMethod != null)
+                    if (property.CanRead && property.GetMethod != null && property.GetMethod.IsPublic)
                     {
                         if (BindingManager.IsUnsupported(property.GetMethod))
                         {
@@ -491,7 +508,7 @@ namespace QuickJS.Editor
                         AddMethod(property.GetMethod, true, "$GetValue");
                     }
 
-                    if (property.CanWrite && property.SetMethod != null)
+                    if (property.CanWrite && property.SetMethod != null && property.SetMethod.IsPublic)
                     {
                         if (BindingManager.IsUnsupported(property.SetMethod))
                         {

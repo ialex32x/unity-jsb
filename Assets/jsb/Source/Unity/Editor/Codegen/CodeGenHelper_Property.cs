@@ -49,7 +49,7 @@ namespace QuickJS.Editor
             this.cg.cs.AppendLine("{0} value;", propertyType);
             var getter = this.cg.bindingManager.GetScriptObjectGetter(propertyInfo.PropertyType, "ctx", "arg_val", "value");
             this.cg.cs.AppendLine("if (!{0})", getter);
-            using (this.cg.cs.Block())
+            using (this.cg.cs.CodeBlockScope())
             {
                 this.cg.cs.AppendLine("throw new ParameterException(typeof({0}), 0);", propertyType);
             }

@@ -37,35 +37,35 @@ actions.AddAction();
 // }
 actions.CallAction();
 print("print 委托对象", actions.onAction);
-actions.onAction = function () {
+actions.onAction("set", function () {
     console.log("js action1");
-};
+});
 actions.CallAction();
 print("print 委托对象", actions.onAction);
-actions.onAction = null;
+actions.onAction("set", null);
 actions.CallAction();
 print("print 委托对象", actions.onAction);
 print("测试: 带参数的委托");
-actions.onActionWithArgs = (a, b, c) => {
+actions.onActionWithArgs("set", (a, b, c) => {
     console.log(a, b, c);
-};
+});
 actions.CallActionWithArgs("string", 123, 456);
-actions.onFunc = v => v * 2;
+actions.onFunc("set", v => v * 2);
 console.log(actions.CallFunc(111));
-actions.onFunc = undefined;
+actions.onFunc("set", undefined);
 print("测试: 事件");
-actions.onEvent.on(v => print("测试事件1:", v));
+actions.onEvent("add", v => print("测试事件1:", v));
 function instanceEventHandler(v) { print("测试事件2:", v); }
-actions.onEvent.on(instanceEventHandler);
+actions.onEvent("add", instanceEventHandler);
 actions.DipatchEvent(123);
-actions.onEvent.off(instanceEventHandler);
+actions.onEvent("remove", instanceEventHandler);
 actions.DipatchEvent(123);
 print("测试: 静态事件");
-jsb.DelegateTest.onStaticEvent.on(v => print("测试静态事件1:", v));
+jsb.DelegateTest.onStaticEvent("add", v => print("测试静态事件1:", v));
 function staticEventHandler(v) { print("测试静态事件2:", v); }
-jsb.DelegateTest.onStaticEvent.on(staticEventHandler);
+jsb.DelegateTest.onStaticEvent("add", staticEventHandler);
 jsb.DelegateTest.DipatchStaticEvent(123);
-jsb.DelegateTest.onStaticEvent.off(staticEventHandler);
+jsb.DelegateTest.onStaticEvent("remove", staticEventHandler);
 jsb.DelegateTest.DipatchStaticEvent(123);
 let v1 = new UnityEngine.Vector3(0, 0, 0);
 let start = Date.now();
