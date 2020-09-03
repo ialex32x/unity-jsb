@@ -149,7 +149,7 @@ backBuffer.forEach(val => print(val));
 async function test_custom_promise() {
     let go = new UnityEngine.GameObject("custome.promise.test");
     var sb = go.AddComponent(SampleBehaviour);
-    print("after wait a promise (created in C#):", await sb.Wait());
+    print("after wait a promise (created in C#):", await sb.SimpleWait(1));
 }
 test_custom_promise();
 // Optional Chaining/Nullish coalescing Operator 需要较新的 tsc 编译, 或者直接在 js 代码中使用

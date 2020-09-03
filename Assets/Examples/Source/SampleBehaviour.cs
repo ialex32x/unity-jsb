@@ -6,7 +6,7 @@ using QuickJS.Binding;
 [JSType]
 public class SampleBehaviour : MonoBehaviour
 {
-    private ScriptPromise _p;
+    private TypedScriptPromise<string> _p;
 
     // 可以通过 JSCFunctionAttribute 标记此函数直接接入JS参数
     // 这种情况下, 可以不用 try/catch 包装, 但仍需自己保证 JSValue 的引用平衡, 否则会导致崩溃
@@ -18,22 +18,15 @@ public class SampleBehaviour : MonoBehaviour
         return JSApi.JS_UNDEFINED;
     }
 
-    [JSCFunction("Wait(): Promise<string>")]
-    public static JSValue Wait(JSContext ctx, JSValue this_obj, int argc, JSValue[] argv)
+    public TypedScriptPromise<string> SimpleWait(ScriptContext ctx, int t)
     {
-        SampleBehaviour self;
-        if (!Values.js_get_classvalue(ctx, this_obj, out self))
+        if (_p != null)
         {
-            throw new ThisBoundException();
-        }
-        if (self._p != null)
-        {
-            return JSApi.JS_UNDEFINED;
+            return null;
         }
 
-        self._p = new ScriptPromise(ctx);
-
-        return Values.js_push_classvalue(ctx, self._p);
+        _p = new TypedScriptPromise<string>(ctx);
+        return _p;
     }
 
     void OnGUI()

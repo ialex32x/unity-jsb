@@ -389,6 +389,7 @@ namespace QuickJS.Editor
                     {
                         var methodBindingInfo = kv.Value;
                         var regName = methodBindingInfo.regName;
+                        
                         if (methodBindingInfo._cfunc != null)
                         {
                             var attr = (JSCFunctionAttribute)methodBindingInfo._cfunc.GetCustomAttribute(typeof(JSCFunctionAttribute));

@@ -434,8 +434,8 @@ namespace QuickJS.Editor
             if (!_exportedTypes.ContainsKey(type))
             {
                 //TODO: 设置导出绑定代码与定义声明选项
-                var flags = TypeBindingFlags.Default; 
-                if (isEditorRuntime) 
+                var flags = TypeBindingFlags.Default;
+                if (isEditorRuntime)
                 {
                     flags |= TypeBindingFlags.EditorRuntime;
                 }
@@ -656,6 +656,19 @@ namespace QuickJS.Editor
             if (type == typeof(Array))
             {
                 return "System.Array<any>";
+            }
+            if (type == typeof(ScriptPromise))
+            {
+                return "Promise<void>";
+            }
+            if (type.IsSubclassOf(typeof(ScriptPromise)))
+            {
+                if (type.IsGenericType)
+                {
+                    var gt = type.GetGenericArguments()[0];
+                    return "Promise<" + GetTSTypeFullName(gt) + ">";
+                }
+                return "Promise<any>";
             }
             if (type.IsArray)
             {
@@ -1486,7 +1499,7 @@ namespace QuickJS.Editor
             AddExportedType(typeof(Delegate))
                 .SetMemberBlocked("CreateDelegate")
             ;
-            
+
             AddExportedType(typeof(LayerMask));
             AddExportedType(typeof(Color));
             AddExportedType(typeof(Color32));
@@ -1503,7 +1516,7 @@ namespace QuickJS.Editor
             AddExportedType(typeof(Camera), true);
             AddExportedType(typeof(Transform), true);
             AddExportedType(typeof(MonoBehaviour), true);
-            
+
             AddExportedType(typeof(QuickJS.IO.ByteBuffer));
         }
 
