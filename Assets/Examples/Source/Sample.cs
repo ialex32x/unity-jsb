@@ -22,7 +22,8 @@ namespace jsb
         public UnityEngine.UI.Text text;
         public FileLoader fileLoader;
         public string baseUrl = "http://127.0.0.1:8183";
-        public string entryFileName = "main.js";
+        [ExampleScriptsHint("Assets/Examples/Scripts/out")]
+        public string entryFileName = "example_main.js";
         public bool sourceMap;
         public bool stacktrace;
         private ScriptRuntime _rt;
@@ -30,6 +31,7 @@ namespace jsb
 
         void Awake()
         {
+            Debug.LogFormat("Thread: {0}", System.Threading.Thread.CurrentThread.ManagedThreadId);
             IFileSystem fileSystem;
 
             _mConsole = new MiniConsole(scrollRect, text, 100);

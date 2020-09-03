@@ -17,8 +17,9 @@ namespace QuickJS.Extra
 
     public class MiniConsole : IScriptLogger, ILogHandler
     {
+        private bool _loopCheck;
         private int _mainThreadId;
-        private int _maxLines = 100;
+        private int _maxLines = 50;
         private ILogHandler _defaultHandler;
 
         public Text textTemplate;
@@ -52,6 +53,10 @@ namespace QuickJS.Extra
 
             try
             {
+                if (text.Length > 503)
+                {
+                    text = text.Substring(0, 500) + "...";
+                }
                 if (_lines.Count > _maxLines)
                 {
                     var textInst = _lines[0];
@@ -107,33 +112,68 @@ namespace QuickJS.Extra
 
         private void LogError(string text)
         {
+            if (_loopCheck)
+            {
+                return;
+            }
+
+            _loopCheck = true;
             _defaultHandler.LogFormat(LogType.Error, null, "{0}", text);
             NewEntry(text, Color.red);
+            _loopCheck = false;
         }
 
         private void LogException(Exception exception)
         {
+            if (_loopCheck)
+            {
+                return;
+            }
+
+            _loopCheck = true;
             var text = exception.ToString();
             _defaultHandler.LogFormat(LogType.Error, null, "{0}", text);
             NewEntry(text, Color.cyan);
+            _loopCheck = false;
         }
 
         private void LogException(string text)
         {
+            if (_loopCheck)
+            {
+                return;
+            }
+
+            _loopCheck = true;
             _defaultHandler.LogFormat(LogType.Error, null, "{0}", text);
             NewEntry(text, Color.cyan);
+            _loopCheck = false;
         }
 
         private void Log(string text)
         {
+            if (_loopCheck)
+            {
+                return;
+            }
+
+            _loopCheck = true;
             _defaultHandler.LogFormat(LogType.Log, null, "{0}", text);
             NewEntry(text, Color.white);
+            _loopCheck = false;
         }
 
         private void LogWarning(string text)
         {
+            if (_loopCheck)
+            {
+                return;
+            }
+
+            _loopCheck = true;
             _defaultHandler.LogFormat(LogType.Warning, null, "{0}", text);
             NewEntry(text, Color.yellow);
+            _loopCheck = false;
         }
 
         private void LogErrorFormat(string fmt, object[] args)

@@ -4,6 +4,9 @@ using System.Text;
 using System.Net;
 using System.Collections;
 using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
+using QuickJS.Utils;
 
 namespace QuickJS.Extra
 {
@@ -114,7 +117,7 @@ namespace QuickJS.Extra
             OnReadyStateChange();
         }
 
-        private async void Send()
+        private void Send()
         {
             if (_state != ReadyState.OPENED)
             {
@@ -126,20 +129,52 @@ namespace QuickJS.Extra
             {
                 return;
             }
-            var rsp = await _request.GetResponseAsync() as HttpWebResponse;
-            if (_state != ReadyState.LOADING)
+
+            //TODO: 替换做法
+            new Thread(_SendAsync).Start();
+        }
+
+        //TODO: 处理线程安全问题
+        private void _SendAsync()
+        {
+            Debug.LogFormat("Thread: {0}", System.Threading.Thread.CurrentThread.ManagedThreadId);
+            try
             {
-                return;
+                var rsp = _request.GetResponse() as HttpWebResponse;
+                if (_state != ReadyState.LOADING)
+                {
+                    return;
+                }
+
+                var reader = new StreamReader(rsp.GetResponseStream());
+                _reseponseText = reader.ReadToEnd();
+                if (_state != ReadyState.LOADING)
+                {
+                    return;
+                }
+                _code = rsp.StatusCode;
             }
-            var reader = new StreamReader(rsp.GetResponseStream());
-            _reseponseText = await reader.ReadToEndAsync();
-            if (_state != ReadyState.LOADING)
+            catch (Exception ex)
             {
-                return;
+                Debug.LogError(ex);
+                if (_state != ReadyState.LOADING)
+                {
+                    return;
+                }
             }
-            _state = ReadyState.DONE;
-            _code = rsp.StatusCode;
-            OnReadyStateChange();
+
+            ScriptEngine.GetRuntime(_jsContext).EnqueueAction(new JSAction()
+            {
+                callback = OnCallback,
+                args = this,
+            });
+        }
+
+        private static void OnCallback(ScriptRuntime runtime, JSAction action)
+        {
+            var xhr = action.args as XMLHttpRequest;
+            xhr._state = ReadyState.DONE;
+            xhr.OnReadyStateChange();
         }
 
         [MonoPInvokeCallback(typeof(JSCFunctionMagic))]

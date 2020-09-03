@@ -39,25 +39,21 @@ class MySubClass extends MyClass {
     }
 }
 
-export function run() {
+let gameObject = new UnityEngine.GameObject();
+let comp1 = gameObject.AddComponent(MySubClass);
+let comp2 = gameObject.AddComponent(MyClass);
 
-    let gameObject = new UnityEngine.GameObject();
-    let comp1 = gameObject.AddComponent(MySubClass);
-    let comp2 = gameObject.AddComponent(MyClass);
+comp1.vv = 1;
+comp2.vv = 2;
 
-    comp1.vv = 1;
-    comp2.vv = 2;
+comp1.play();
 
-    comp1.play();
+{
+    let results = gameObject.GetComponents(MySubClass);
+    results.forEach(it => console.log("GetComponents(MySubClass):", it.vv));
+}
 
-    {
-        let results = gameObject.GetComponents(MySubClass);
-        results.forEach(it => console.log("GetComponents(MySubClass):", it.vv));
-    }
-
-    {
-        let results = gameObject.GetComponents(MyClass);
-        results.forEach(it => console.log("GetComponents(MyClass):", it.vv));
-    }
-
+{
+    let results = gameObject.GetComponents(MyClass);
+    results.forEach(it => console.log("GetComponents(MyClass):", it.vv));
 }
