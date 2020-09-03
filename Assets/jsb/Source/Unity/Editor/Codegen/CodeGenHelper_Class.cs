@@ -515,7 +515,7 @@ namespace QuickJS.Editor
                         }
                         // tsFieldPrefix += "readonly ";
                         // cg.tsDeclare.AppendLine($"{tsFieldPrefix}{tsFieldVar}: jsb.event<{tsFieldType}>");
-                        cg.tsDeclare.AppendLine($"{tsFieldPrefix}{tsFieldVar}(op: \"add\" | \"remove\", fn: {tsFieldType})");
+                        cg.tsDeclare.AppendLine($"{tsFieldPrefix}{tsFieldVar}(op: \"add\" | \"remove\", fn: {tsFieldType}): void");
                     }
 
                     foreach (var kv in typeBindingInfo.delegates)
@@ -536,23 +536,24 @@ namespace QuickJS.Editor
                         }
                         // tsFieldPrefix += "readonly ";
                         // cg.tsDeclare.AppendLine($"{tsFieldPrefix}{tsFieldVar}: jsb.event<{tsFieldType}>");
-                        var ops = new List<string>();
 
-                        if (delegateBindingInfo.writable)
-                        {
-                            if (delegateBindingInfo.readable)
-                            {
-                                ops.Add("add");
-                                ops.Add("remove");
-                            }
-                            ops.Add("set");
-                        }
                         if (delegateBindingInfo.readable)
                         {
-                            ops.Add("get");
+                            if (delegateBindingInfo.writable)
+                            {
+                                cg.tsDeclare.AppendLine($"{tsFieldPrefix}{tsFieldVar}(op: \"get\"): {tsFieldType}");
+                                cg.tsDeclare.AppendLine($"{tsFieldPrefix}{tsFieldVar}(op: \"add\" | \"remove\" | \"set\", fn?: {tsFieldType}): void");
+                                cg.tsDeclare.AppendLine($"{tsFieldPrefix}{tsFieldVar}(op: \"add\" | \"remove\" | \"set\" | \"get\", fn?: {tsFieldType}): {tsFieldType} | void");
+                            }
+                            else
+                            {
+                                cg.tsDeclare.AppendLine($"{tsFieldPrefix}{tsFieldVar}(op: \"get\"): {tsFieldType}");
+                            }
                         }
-                        var op = string.Join(" | ", ops.Select((o, i) => $"\"{o}\""));
-                        cg.tsDeclare.AppendLine($"{tsFieldPrefix}{tsFieldVar}(op: {op}, fn: {tsFieldType})");
+                        else
+                        {
+                            cg.tsDeclare.AppendLine($"{tsFieldPrefix}{tsFieldVar}(op: \"set\", fn: {tsFieldType})");
+                        }
                     }
 
                     cg.cs.AppendLine("cls.Close();");

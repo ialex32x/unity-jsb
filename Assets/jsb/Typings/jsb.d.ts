@@ -37,6 +37,10 @@ declare namespace jsb {
      */
     function DoFile(filename: string): void
 
+    function GC(): void
+
+    function Sleep(millisecondsTimeout?: number): void
+
     /**
      * 将指定路径添加到 duktape 加载脚本的搜索目录列表
      */
