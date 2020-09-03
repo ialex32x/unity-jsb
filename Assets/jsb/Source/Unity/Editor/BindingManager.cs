@@ -24,7 +24,7 @@ namespace QuickJS.Editor
         private List<string> _typePrefixBlacklist;
         private Dictionary<Type, TypeBindingInfo> _exportedTypes = new Dictionary<Type, TypeBindingInfo>();
         private List<TypeBindingInfo> _collectedTypes = new List<TypeBindingInfo>(); // 已经完成导出的类型 
-        private Dictionary<Type, DelegateBindingInfo> _exportedDelegates = new Dictionary<Type, DelegateBindingInfo>();
+        private Dictionary<Type, DelegateBridgeBindingInfo> _exportedDelegates = new Dictionary<Type, DelegateBridgeBindingInfo>();
         private Dictionary<Type, Type> _redirectDelegates = new Dictionary<Type, Type>();
 
         private HashSet<Type> _hotfixTypes = new HashSet<Type>();
@@ -472,14 +472,14 @@ namespace QuickJS.Editor
             return _exportedTypes.Remove(type);
         }
 
-        public DelegateBindingInfo GetDelegateBindingInfo(Type type)
+        public DelegateBridgeBindingInfo GetDelegateBindingInfo(Type type)
         {
             Type target;
             if (_redirectDelegates.TryGetValue(type, out target))
             {
                 type = target;
             }
-            DelegateBindingInfo delegateBindingInfo;
+            DelegateBridgeBindingInfo delegateBindingInfo;
             if (_exportedDelegates.TryGetValue(type, out delegateBindingInfo))
             {
                 return delegateBindingInfo;
@@ -594,7 +594,7 @@ namespace QuickJS.Editor
                         return;
                     }
                 }
-                var delegateBindingInfo = new DelegateBindingInfo(returnType, parameters);
+                var delegateBindingInfo = new DelegateBridgeBindingInfo(returnType, parameters);
                 delegateBindingInfo.types.Add(delegateType);
                 _exportedDelegates.Add(delegateType, delegateBindingInfo);
                 log.AppendLine("add delegate: {0}", delegateType);
@@ -1223,7 +1223,7 @@ namespace QuickJS.Editor
             }
         }
 
-        public void OnPreGenerateDelegate(DelegateBindingInfo bindingInfo)
+        public void OnPreGenerateDelegate(DelegateBridgeBindingInfo bindingInfo)
         {
             for (int i = 0, size = _bindingProcess.Count; i < size; i++)
             {
@@ -1239,7 +1239,7 @@ namespace QuickJS.Editor
             }
         }
 
-        public void OnPostGenerateDelegate(DelegateBindingInfo bindingInfo)
+        public void OnPostGenerateDelegate(DelegateBridgeBindingInfo bindingInfo)
         {
             for (int i = 0, size = _bindingProcess.Count; i < size; i++)
             {
@@ -1677,7 +1677,7 @@ namespace QuickJS.Editor
             {
                 try
                 {
-                    var exportedDelegatesArray = new DelegateBindingInfo[this._exportedDelegates.Count];
+                    var exportedDelegatesArray = new DelegateBridgeBindingInfo[this._exportedDelegates.Count];
                     this._exportedDelegates.Values.CopyTo(exportedDelegatesArray, 0);
 
                     cg.Clear();

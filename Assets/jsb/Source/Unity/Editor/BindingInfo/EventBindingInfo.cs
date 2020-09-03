@@ -9,7 +9,6 @@ namespace QuickJS.Editor
     using UnityEngine;
     using UnityEditor;
 
-    
     public class EventBindingInfo
     {
         public string name = null; // 绑定代码名
@@ -27,17 +26,15 @@ namespace QuickJS.Editor
         {
             this.declaringType = declaringType;
             this.eventInfo = eventInfo;
-            do
+
+            if (this.isStatic)
             {
-                if (this.isStatic)
-                {
-                    this.name = "BindStaticEvent_" + eventInfo.Name;
-                }
-                else
-                {
-                    this.name = "BindEvent_" + eventInfo.Name;
-                }
-            } while (false);
+                this.name = "BindStaticEvent_" + eventInfo.Name;
+            }
+            else
+            {
+                this.name = "BindEvent_" + eventInfo.Name;
+            }
 
             this.regName = TypeBindingInfo.GetNamingAttribute(eventInfo);
         }

@@ -97,7 +97,7 @@ namespace QuickJS.Editor
         }
 
         // 生成委托绑定
-        public void Generate(DelegateBindingInfo[] delegateBindingInfos, List<HotfixDelegateBindingInfo> exportedHotfixDelegates)
+        public void Generate(DelegateBridgeBindingInfo[] delegateBindingInfos, List<HotfixDelegateBindingInfo> exportedHotfixDelegates)
         {
             this.cs.enabled = (typeBindingFlags & TypeBindingFlags.BindingCode) != 0;
             this.tsDeclare.enabled = (typeBindingFlags & TypeBindingFlags.TypeDefinition) != 0;
@@ -340,6 +340,11 @@ namespace QuickJS.Editor
         public string AppendGetThisCS(FieldBindingInfo bindingInfo)
         {
             return AppendGetThisCS(bindingInfo.isStatic, bindingInfo.fieldInfo.DeclaringType);
+        }
+
+        public string AppendGetThisCS(DelegateBindingInfo bindingInfo)
+        {
+            return AppendGetThisCS(bindingInfo.isStatic, bindingInfo.declaringType);
         }
 
         public string AppendGetThisCS(EventBindingInfo bindingInfo)
