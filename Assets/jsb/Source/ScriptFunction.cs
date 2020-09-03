@@ -85,12 +85,12 @@ namespace QuickJS
             }
         }
 
-        public unsafe void Invoke(object arg1)
+        public void Invoke(object arg1)
         {
             Invoke(typeof(void), arg1);
         }
 
-        public unsafe T Invoke<T>(object arg1)
+        public T Invoke<T>(object arg1)
         {
             return (T)Invoke(typeof(T), arg1);
         }
@@ -118,6 +118,43 @@ namespace QuickJS
             return rObj;
         }
 
+        public void Invoke(params object[] parameters)
+        {
+            Invoke(typeof(void), parameters);
+        }
+
+        public T Invoke<T>(params object[] parameters)
+        {
+            return (T)Invoke(typeof(T), parameters);
+        }
+
+        public unsafe object Invoke(Type resultType, params object[] parameters)
+        {
+            if (_context == null)
+            {
+                return null;
+            }
+            var ctx = (JSContext)_context;
+            var count = parameters.Length;
+            var args = stackalloc JSValue[count];
+            for (var i = 0; i < count; i++)
+            {
+                args[i] = Binding.Values.js_push_var(ctx, parameters[i]);
+            }
+            var rVal = _Invoke(count, args);
+            if (JSApi.JS_IsException(rVal))
+            {
+                var ex = ctx.GetExceptionString();
+                _context.FreeValues(count, args);
+                throw new JSException(ex);
+            }
+            object rObj = null;
+            Binding.Values.js_get_var(ctx, rVal, resultType, out rObj);
+            JSApi.JS_FreeValue(ctx, rVal);
+            _context.FreeValues(count, args);
+            return rObj;
+        }
+
         private unsafe JSValue _Invoke(int argc, JSValue* argv)
         {
             if (_context == null)
@@ -127,12 +164,6 @@ namespace QuickJS
             JSContext ctx = _context;
             var rVal = JSApi.JS_Call(ctx, _jsValue, _thisValue, argc, argv);
             return rVal;
-        }
-
-        //TODO: reflect call
-        public object Invoke(Type resultType, object this_obj, object[] parameters)
-        {
-            throw new System.NotImplementedException();
         }
     }
 }

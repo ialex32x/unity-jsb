@@ -225,6 +225,11 @@ namespace QuickJS
             _runtime.FreeValues(values);
         }
 
+        public unsafe void FreeValues(int argc , JSValue* values)
+        {
+            _runtime.FreeValues(argc, values);
+        }
+
         ///<summary>
         /// 获取全局对象 (增加引用计数)
         ///</summary>
