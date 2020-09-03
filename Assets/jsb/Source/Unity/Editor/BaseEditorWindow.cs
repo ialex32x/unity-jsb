@@ -20,6 +20,10 @@ namespace QuickJS.Editor
             _blockStyle.normal.background = MakeTex(100, 100, new Color32(56, 56, 56, 0));
         }
 
+        protected virtual void OnDisable()
+        {
+        }
+
         protected virtual void OnPaint()
         {
         }
