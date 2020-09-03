@@ -26,6 +26,7 @@ namespace QuickJS.Utils
         // 刻意与 ScriptValue 隔离
         private JSWeakMap<ScriptDelegate> _delegateMap = new JSWeakMap<ScriptDelegate>();
         private JSWeakMap<ScriptValue> _scriptValueMap = new JSWeakMap<ScriptValue>();
+        private JSWeakMap<ScriptPromise> _scriptPromiseMap = new JSWeakMap<ScriptPromise>();
 
         public int GetManagedObjectCount()
         {
@@ -47,6 +48,11 @@ namespace QuickJS.Utils
             return _scriptValueMap.Count;
         }
 
+        public int GetScriptPromiseCount()
+        {
+            return _scriptPromiseMap.Count;
+        }
+
         public void Clear()
         {
             if (_disposing)
@@ -59,6 +65,7 @@ namespace QuickJS.Utils
             _rmap.Clear();
             _delegateMap.Clear();
             _scriptValueMap.Clear();
+            _scriptPromiseMap.Clear();
         }
 
         /// <summary>
@@ -298,6 +305,41 @@ namespace QuickJS.Utils
                 return false;
             }
             return _scriptValueMap.Remove(jso);
+        }
+
+        #endregion 
+
+        #region script promise mapping 
+
+        public void AddScriptPromise(JSValue jso, ScriptPromise o)
+        {
+            if (_disposing)
+            {
+                return;
+            }
+            _scriptPromiseMap.Add(jso, o);
+        }
+
+        public bool TryGetScriptPromise<T>(JSValue jso, out T o)
+        where T : ScriptPromise
+        {
+            ScriptPromise value;
+            if (_scriptPromiseMap.TryGetValue(jso, out value))
+            {
+                o = value as T;
+                return true;
+            }
+            o = null;
+            return false;
+        }
+
+        public bool RemoveScriptPromise(JSValue jso)
+        {
+            if (_disposing)
+            {
+                return false;
+            }
+            return _scriptPromiseMap.Remove(jso);
         }
 
         #endregion 

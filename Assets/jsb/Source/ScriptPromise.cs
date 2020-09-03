@@ -7,26 +7,55 @@ using UnityEngine;
 
 namespace QuickJS
 {
-    public class ScriptPromise
+    public class ScriptPromise : IDisposable
     {
         private ScriptContext _context;
         private JSValue _promise;
         private JSValue[] _resolving_funcs;
+
+        public ScriptPromise(JSContext ctx)
+        : this(ScriptEngine.GetContext(ctx))
+        {
+        }
 
         public ScriptPromise(ScriptContext context)
         {
             _context = context;
             _resolving_funcs = new[] { JSApi.JS_UNDEFINED, JSApi.JS_UNDEFINED };
             _promise = JSApi.JS_NewPromiseCapability(_context, _resolving_funcs);
-            _context.OnDestroy += OnDestroy;
+            _context.GetObjectCache().AddScriptPromise(_promise, this);
+        }
+
+        ~ScriptPromise()
+        {
+            Dispose(false);
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool bManaged)
+        {
+            if (_context != null)
+            {
+                var context = _context;
+                _context = null;
+                context.FreeValues(_resolving_funcs);
+                _resolving_funcs = null;
+                context.GetRuntime().FreeScriptPromise(_promise);
+                _promise = JSApi.JS_UNDEFINED;
+            }
         }
 
         public static implicit operator JSValue(ScriptPromise value)
         {
-            return value._promise;
+            return value.GetPromiseValue();
         }
 
-        public JSValue GetValue()
+        public JSValue GetPromiseValue()
         {
             return _context != null ? _promise : JSApi.JS_UNDEFINED;
         }
@@ -41,6 +70,11 @@ namespace QuickJS
             Invoke(1, value);
         }
 
+        /// <summary>
+        /// 完成此 Promise
+        /// </summary>
+        /// <param name="index">0 表示成功, 1 表示失败</param>
+        /// <param name="value">传参给回调</param>
         private unsafe void Invoke(int index, object value)
         {
             if (_context == null)
@@ -53,7 +87,7 @@ namespace QuickJS
             if (backVal.IsException())
             {
                 var ex = ctx.GetExceptionString();
-                Release();
+                Dispose();
                 throw new JSException(ex);
             }
 
@@ -63,36 +97,13 @@ namespace QuickJS
             if (rval.IsException())
             {
                 var ex = ctx.GetExceptionString();
-                Release();
+                Dispose();
                 throw new JSException(ex);
             }
 
             JSApi.JS_FreeValue(ctx, rval);
-            Release();
+            Dispose();
             context.GetRuntime().ExecutePendingJob();
-        }
-
-        private void OnDestroy(ScriptContext context)
-        {
-            Release();
-        }
-
-        public void Release()
-        {
-            if (_context != null)
-            {
-                var context = _context;
-                _context = null;
-                context.OnDestroy -= OnDestroy;
-                var len = _resolving_funcs.Length;
-                for (var i = 0; i < len; i++)
-                {
-                    JSApi.JS_FreeValue(context, _resolving_funcs[i]);
-                    _resolving_funcs[i] = JSApi.JS_UNDEFINED;
-                }
-                JSApi.JS_FreeValue(context, _promise);
-                _promise = JSApi.JS_UNDEFINED;
-            }
         }
     }
 }
