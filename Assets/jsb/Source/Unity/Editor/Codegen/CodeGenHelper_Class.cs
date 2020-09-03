@@ -148,6 +148,7 @@ namespace QuickJS.Editor
             foreach (var kv in this.typeBindingInfo.properties)
             {
                 var propertyBindingInfo = kv.Value;
+
                 // 静态
                 if (propertyBindingInfo.staticPair.IsValid())
                 {
@@ -167,6 +168,7 @@ namespace QuickJS.Editor
                             }
                         }
                     }
+
                     // 可写属性
                     if (propertyBindingInfo.staticPair.setterName != null)
                     {
@@ -184,6 +186,7 @@ namespace QuickJS.Editor
                         }
                     }
                 }
+
                 // 非静态
                 if (propertyBindingInfo.instancePair.IsValid())
                 {
@@ -221,6 +224,7 @@ namespace QuickJS.Editor
                     }
                 }
             }
+
             // 所有字段
             foreach (var kv in this.typeBindingInfo.fields)
             {
@@ -257,45 +261,19 @@ namespace QuickJS.Editor
                     }
                 }
             }
-            // 所有事件 (当做field相似处理)
+
+            // 所有事件
             foreach (var kv in this.typeBindingInfo.events)
             {
                 var eventBindingInfo = kv.Value;
                 using (new PInvokeGuardCodeGen(cg))
                 {
-                    using (new BindingFuncDeclareCodeGen(cg, eventBindingInfo.adderName))
+                    using (new BindingFuncDeclareCodeGen(cg, eventBindingInfo.name))
                     {
                         using (new TryCatchGuradCodeGen(cg))
                         {
-                            using (new EventAdderCodeGen(cg, eventBindingInfo))
+                            using (new EventOperationCodeGen(cg, eventBindingInfo))
                             {
-                            }
-                        }
-                    }
-                }
-                using (new PInvokeGuardCodeGen(cg))
-                {
-                    using (new BindingFuncDeclareCodeGen(cg, eventBindingInfo.removerName))
-                    {
-                        using (new TryCatchGuradCodeGen(cg))
-                        {
-                            using (new EventRemoverCodeGen(cg, eventBindingInfo))
-                            {
-                            }
-                        }
-                    }
-                }
-                if (!eventBindingInfo.isStatic)
-                {
-                    using (new PInvokeGuardCodeGen(cg))
-                    {
-                        using (new BindingGetterFuncDeclareCodeGen(cg, eventBindingInfo.proxyName))
-                        {
-                            using (new TryCatchGuradCodeGen(cg))
-                            {
-                                using (new EventProxyCodeGen(cg, eventBindingInfo))
-                                {
-                                }
                             }
                         }
                     }
@@ -468,6 +446,7 @@ namespace QuickJS.Editor
                             cg.tsDeclare.AppendLine($"{tsPropertyPrefix}{tsPropertyVar}: {tsPropertyType}");
                         }
                     }
+
                     foreach (var kv in typeBindingInfo.fields)
                     {
                         var bindingInfo = kv.Value;
@@ -495,6 +474,7 @@ namespace QuickJS.Editor
                         cg.AppendJSDoc(bindingInfo.fieldInfo);
                         cg.tsDeclare.AppendLine($"{tsFieldPrefix}{tsFieldVar}: {tsFieldType}");
                     }
+
                     foreach (var kv in typeBindingInfo.events)
                     {
                         var eventBindingInfo = kv.Value;
@@ -506,14 +486,15 @@ namespace QuickJS.Editor
                         if (bStatic)
                         {
                             tsFieldPrefix += "static ";
-                            cg.cs.AppendLine($"cls.AddStaticEvent(\"{tsFieldVar}\", {eventBindingInfo.adderName}, {eventBindingInfo.removerName});");
+                            cg.cs.AppendLine($"cls.AddMethod(true, \"{tsFieldVar}\", {eventBindingInfo.name});");
                         }
                         else
                         {
-                            cg.cs.AppendLine($"cls.AddProperty(false, \"{tsFieldVar}\", {eventBindingInfo.proxyName}, null);");
+                            cg.cs.AppendLine($"cls.AddMethod(false, \"{tsFieldVar}\", {eventBindingInfo.name});");
                         }
-                        tsFieldPrefix += "readonly ";
-                        cg.tsDeclare.AppendLine($"{tsFieldPrefix}{tsFieldVar}: jsb.event<{tsFieldType}>");
+                        // tsFieldPrefix += "readonly ";
+                        // cg.tsDeclare.AppendLine($"{tsFieldPrefix}{tsFieldVar}: jsb.event<{tsFieldType}>");
+                        cg.tsDeclare.AppendLine($"{tsFieldPrefix}{tsFieldVar}(op: \"add\" | \"on\" | \"remove\" | \"off\", fn: {tsFieldType})");
                     }
                     cg.cs.AppendLine("cls.Close();");
                 }

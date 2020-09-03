@@ -12,9 +12,7 @@ namespace QuickJS.Editor
     
     public class EventBindingInfo
     {
-        public string adderName = null; // 绑定代码名
-        public string removerName = null;
-        public string proxyName = null; // 非静态event需要一个property.getter在实例上创建一个event object实例
+        public string name = null; // 绑定代码名
         public string regName = null; // js 注册名
 
         public Type declaringType;
@@ -33,14 +31,11 @@ namespace QuickJS.Editor
             {
                 if (this.isStatic)
                 {
-                    this.adderName = "BindStaticAdd_" + eventInfo.Name;
-                    this.removerName = "BindStaticRemove_" + eventInfo.Name;
+                    this.name = "BindStaticEvent_" + eventInfo.Name;
                 }
                 else
                 {
-                    this.adderName = "BindAdd_" + eventInfo.Name;
-                    this.removerName = "BindRemove_" + eventInfo.Name;
-                    this.proxyName = "BindProxy_" + eventInfo.Name;
+                    this.name = "BindEvent_" + eventInfo.Name;
                 }
             } while (false);
 

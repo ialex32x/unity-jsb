@@ -18,7 +18,8 @@ namespace QuickJS.Editor
             this.cg = cg;
             this.cg.cs.AppendLine("[{0}]", typeof(JSBindingAttribute).Name);
             // this.cg.cs.AppendLine("[UnityEngine.Scripting.Preserve]");
-            this.cg.cs.AppendLine("public partial class {0} : {1} {{", CodeGenerator.NameOfDelegates, typeof(Binding.Values).Name);
+            this.cg.cs.AppendLine("public partial class {0} : {1}", CodeGenerator.NameOfDelegates, typeof(Binding.Values).Name);
+            this.cg.cs.AppendLine("{");
             this.cg.cs.AddTabLevel();
         }
 
@@ -91,7 +92,8 @@ namespace QuickJS.Editor
             {
                 arglist = ", " + arglist;
             }
-            this.cg.cs.AppendLine($"public static unsafe {returnTypeName} {delegateName}({firstArgument}{arglist}) {{");
+            this.cg.cs.AppendLine($"public static unsafe {returnTypeName} {delegateName}({firstArgument}{arglist})");
+            this.cg.cs.AppendLine("{");
             this.cg.cs.AddTabLevel();
             this.cg.cs.AppendLine("var ctx = fn.ctx;");
 
@@ -226,7 +228,8 @@ namespace QuickJS.Editor
             {
                 arglist = ", " + arglist;
             }
-            this.cg.cs.AppendLine($"public static unsafe {returnTypeName} {delegateName}({firstArgument}{arglist}) {{");
+            this.cg.cs.AppendLine($"public static unsafe {returnTypeName} {delegateName}({firstArgument}{arglist})");
+            this.cg.cs.AppendLine("{");
             this.cg.cs.AddTabLevel();
             this.cg.cs.AppendLine("var ctx = fn.ctx;");
 
@@ -239,16 +242,15 @@ namespace QuickJS.Editor
                     var pusher = this.cg.AppendValuePusher(parameter.ParameterType, parameter.Name);
                     this.cg.cs.AppendLine("argv[{0}] = {1};", i, pusher);
                     this.cg.cs.AppendLine("if (argv[{0}].IsException())", i);
-                    this.cg.cs.AppendLine("{");
-                    this.cg.cs.AddTabLevel();
-                    for (var j = 0; j < i; j++)
+                    using (this.cg.cs.CodeBlockScope())
                     {
-                        this.cg.cs.AppendLine("JSApi.JS_FreeValue(ctx, argv[{0}]);", j);
-                    }
+                        for (var j = 0; j < i; j++)
+                        {
+                            this.cg.cs.AppendLine("JSApi.JS_FreeValue(ctx, argv[{0}]);", j);
+                        }
 
-                    this.cg.cs.AppendLine("throw new Exception(ctx.GetExceptionString());");
-                    this.cg.cs.DecTabLevel();
-                    this.cg.cs.AppendLine("}");
+                        this.cg.cs.AppendLine("throw new Exception(ctx.GetExceptionString());");
+                    }
                 }
                 this.cg.cs.AppendLine("var this_obj = js_push_classvalue_hotfix(ctx, {0});", self_name);
                 this.cg.cs.AppendLine("var rval = fn.Invoke(ctx, this_obj, {0}, argv);", nargs);
@@ -271,17 +273,15 @@ namespace QuickJS.Editor
                 CheckReturnValue();
 
                 this.cg.cs.AppendLine("if (succ)");
-                this.cg.cs.AppendLine("{");
-                this.cg.cs.AddTabLevel();
-                this.cg.cs.AppendLine($"return {retName};");
-                this.cg.cs.DecTabLevel();
-                this.cg.cs.AppendLine("}");
+                using (this.cg.cs.CodeBlockScope())
+                {
+                    this.cg.cs.AppendLine($"return {retName};");
+                }
                 this.cg.cs.AppendLine("else");
-                this.cg.cs.AppendLine("{");
-                this.cg.cs.AddTabLevel();
-                this.cg.cs.AppendLine($"throw new Exception(\"js exception caught\");");
-                this.cg.cs.DecTabLevel();
-                this.cg.cs.AppendLine("}");
+                using (this.cg.cs.CodeBlockScope())
+                {
+                    this.cg.cs.AppendLine($"throw new Exception(\"js exception caught\");");
+                }
             }
             else
             {
@@ -293,11 +293,10 @@ namespace QuickJS.Editor
         private void CheckReturnValue()
         {
             this.cg.cs.AppendLine("if (rval.IsException())");
-            this.cg.cs.AppendLine("{");
-            this.cg.cs.AddTabLevel();
-            this.cg.cs.AppendLine("throw new Exception(ctx.GetExceptionString());");
-            this.cg.cs.DecTabLevel();
-            this.cg.cs.AppendLine("}");
+            using (this.cg.cs.CodeBlockScope())
+            {
+                this.cg.cs.AppendLine("throw new Exception(ctx.GetExceptionString());");
+            }
             this.cg.cs.AppendLine("JSApi.JS_FreeValue(ctx, rval);");
         }
 

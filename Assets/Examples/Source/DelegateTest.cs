@@ -6,6 +6,18 @@ namespace jsb
     [JSType]
     public class DelegateTest
     {
+        public Action actionFieldRW;
+        public readonly Action actionFieldR;
+        public Action actionPropG { get; }
+        public Action actionPropS { set { } }
+        public Action actionPropGS { get; set; }
+
+        public static Action actionFieldRW_s;
+        public static readonly Action actionFieldR_s;
+        public static Action actionPropG_s { get; }
+        public static Action actionPropS_s { set { } }
+        public static Action actionPropGS_s { get; set; }
+
         public class NotExportedClass
         {
             public string value = "未导出类的访问测试";

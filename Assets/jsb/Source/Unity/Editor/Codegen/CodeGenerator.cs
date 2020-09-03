@@ -391,7 +391,7 @@ namespace QuickJS.Editor
                 // this.cs.AppendLine($"DuktapeDLL.duk_push_this(ctx);");
                 var getter = this.bindingManager.GetScriptObjectGetter(declaringType, "ctx", "this_obj", caller);
                 this.cs.AppendLine("if (!{0})", getter);
-                using (this.cs.Block())
+                using (this.cs.CodeBlockScope())
                 {
                     this.cs.AppendLine("throw new ThisBoundException();");
                 }

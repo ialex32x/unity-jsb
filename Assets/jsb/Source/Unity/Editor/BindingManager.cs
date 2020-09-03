@@ -121,7 +121,7 @@ namespace QuickJS.Editor
                     {
                         cg.cs.AppendLine("var inject = _js_game_object_add_component(ctx, argv[0], self, arg0);");
                         cg.cs.AppendLine("if (!inject.IsUndefined())");
-                        using (cg.cs.Block())
+                        using (cg.cs.CodeBlockScope())
                         {
                             cg.cs.AppendLine("return inject;");
                         }

@@ -7,28 +7,24 @@ namespace QuickJS.Binding
     // 处理委托的绑定
     public partial class Values
     {
-        //TODO: 不能这么处理, 要么提供 cahced event object, 要么换方案
-        public static JSValue js_new_event(JSContext ctx, JSValue this_obj, object self, string name, JSCFunction adder, JSCFunction remover)
+        public const int EVT_OP_NONE = 0;
+        public const int EVT_OP_ADD = 1;
+        public const int EVT_OP_REMOVE = 2;
+        public const int EVT_OP_SET = 3; // only for delegate
+        public const int EVT_OP_GET = 4; // only for delegate
+
+        public static int js_parse_event_op(JSContext ctx, JSValue val)
         {
-            var context = ScriptEngine.GetContext(ctx);
-            // var atom = context.GetAtom(name);
-            // var rval = JSApi.JS_GetProperty(ctx, this_obj, atom);
-            // if (rval.IsObject())
-            // {
-            //     UnityEngine.Debug.LogWarning("use cached event object");
-            //     return JSApi.JS_DupValue(ctx, rval);
-            // }
-            // JSApi.JS_FreeValue(ctx, rval);
-            // 创建一个虚对象映射, 不存在 self 到 rval 的映射, rval 持有 self 的 object id, 是与 this_obj 指向相同对象的不同 object id
-            var rval = NewBridgeClassObject(ctx, self, false);
-            var atom_on = context.GetAtom("on");
-            var atom_off = context.GetAtom("off");
-            var adderFunc = JSApi.JSB_NewCFunction(ctx, adder, atom_on, 1, JSCFunctionEnum.JS_CFUNC_generic, 0);
-            JSApi.JS_SetProperty(ctx, rval, atom_on, adderFunc);
-            var removerFunc = JSApi.JSB_NewCFunction(ctx, remover, atom_off, 1, JSCFunctionEnum.JS_CFUNC_generic, 0);
-            JSApi.JS_SetProperty(ctx, rval, atom_off, removerFunc);
-            // JSApi.JS_SetProperty(ctx, this_obj, atom, JSApi.JS_DupValue(ctx, rval));
-            return rval;
+            //TODO: 临时方案, 低效
+            var str = JSApi.GetString(ctx, val);
+            switch (str)
+            {
+                case "add": case "on": return EVT_OP_ADD;
+                case "remove": case "off": return EVT_OP_REMOVE;
+                case "set": return EVT_OP_SET;
+                case "get": return EVT_OP_GET;
+                default: return EVT_OP_NONE;
+            }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
