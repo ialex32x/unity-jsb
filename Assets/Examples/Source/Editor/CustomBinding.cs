@@ -23,6 +23,9 @@ namespace jsb.Editor
                 .SetMemberBlocked("SetAccessControl")
                 .OnFilter<MethodInfo>(info => info.GetParameters().Length == 4); // not available in .net standard 2.0
 
+            bindingManager.AddExportedType(typeof(TWrapper<int>));
+            bindingManager.AddExportedType(typeof(TWrapper<Vector3>));
+
 #if UNITY_EDITOR 
             // [test] editor only
             bindingManager.AddExportedType(typeof(UnityEditor.EditorApplication), false, true);
