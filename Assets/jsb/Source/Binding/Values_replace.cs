@@ -92,32 +92,22 @@ namespace QuickJS.Binding
             }
         }
 
-
-        // [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        // public static bool js_rebind_this(JSContext ctx, object o)
+        // public static bool js_rebind_this<T>(JSContext ctx, JSValue this_obj, ref T o)
+        // where T : struct
         // {
-        //     DuktapeDLL.duk_push_this(ctx);
-        //     var ret = duk_rebind_native(ctx, -1, o);
-        //     DuktapeDLL.duk_pop(ctx);
-        //     return ret;
+        //     //X-TODO: type rebind-op map
         // }
 
-        //         public static bool duk_get_native_refid(JSContext ctx, int idx, out int id)
-        //         {
-        //             if (DuktapeDLL.duk_unity_get_refid(ctx, idx, out id))
-        //             {
-        //                 return true;
-        //             }
-        //             return false;
-        //         }
-        // public static bool duk_rebind_native(JSContext ctx, int idx, object o)
-        // {
-        //     int id;
-        //     if (DuktapeDLL.duk_unity_get_refid(ctx, idx, out id))
-        //     {
-        //         return DuktapeVM.GetObjectCache(ctx).ReplaceObject(id, o);
-        //     }
-        //     return false;
-        // }
+        // fallback
+        public static bool js_rebind_this(JSContext ctx, JSValue this_obj, object o)
+        {
+            var header = JSApi.jsb_get_payload_header(this_obj);
+            switch (header.type_id)
+            {
+                case BridgeObjectType.ObjectRef:
+                    return ScriptEngine.GetObjectCache(ctx).ReplaceObject(header.value, o);
+            }
+            return false;
+        }
     }
 }

@@ -12,6 +12,8 @@ namespace jsb.Editor
             bindingManager.AddExportedType(typeof(WaitForEndOfFrame), true);
             // AddExportedType(typeof(System.Collections.IEnumerator), true);
             bindingManager.AddExportedType(typeof(Time));
+            bindingManager.AddExportedType(typeof(Ray));
+            bindingManager.AddExportedType(typeof(RaycastHit));
             // bindingManager.AddExportedType(typeof(System.Net.Dns));
             bindingManager.AddExportedType(typeof(System.Net.IPHostEntry));
 

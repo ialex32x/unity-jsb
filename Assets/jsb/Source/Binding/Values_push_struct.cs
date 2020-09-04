@@ -10,7 +10,7 @@ namespace QuickJS.Binding
     public partial class Values
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static JSValue js_push_structvalue(JSContext ctx, LayerMask o)
+        public static JSValue js_push_structvalue(JSContext ctx, ref LayerMask o)
         {
             var proto = FindPrototypeOf(ctx, typeof(LayerMask));
             JSValue val = JSApi.jsb_new_bridge_value(ctx, proto, sizeof(int) * 1);
@@ -19,7 +19,7 @@ namespace QuickJS.Binding
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static JSValue js_push_structvalue(JSContext ctx, Color o)
+        public static JSValue js_push_structvalue(JSContext ctx, ref Color o)
         {
             var proto = FindPrototypeOf(ctx, typeof(Color));
             JSValue val = JSApi.jsb_new_bridge_value(ctx, proto, sizeof(float) * 4);
@@ -28,7 +28,7 @@ namespace QuickJS.Binding
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static JSValue js_push_structvalue(JSContext ctx, Color32 o)
+        public static JSValue js_push_structvalue(JSContext ctx, ref Color32 o)
         {
             var proto = FindPrototypeOf(ctx, typeof(Color32));
             JSValue val = JSApi.jsb_new_bridge_value(ctx, proto, sizeof(byte) * 4);
@@ -37,7 +37,7 @@ namespace QuickJS.Binding
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static JSValue js_push_structvalue(JSContext ctx, Vector2 o)
+        public static JSValue js_push_structvalue(JSContext ctx, ref Vector2 o)
         {
             var proto = FindPrototypeOf(ctx, typeof(Vector2));
             JSValue val = JSApi.jsb_new_bridge_value(ctx, proto, sizeof(float) * 2);
@@ -46,7 +46,7 @@ namespace QuickJS.Binding
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static JSValue js_push_structvalue(JSContext ctx, Vector2Int o)
+        public static JSValue js_push_structvalue(JSContext ctx, ref Vector2Int o)
         {
             var proto = FindPrototypeOf(ctx, typeof(Vector2Int));
             JSValue val = JSApi.jsb_new_bridge_value(ctx, proto, sizeof(int) * 2);
@@ -55,7 +55,7 @@ namespace QuickJS.Binding
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static JSValue js_push_structvalue(JSContext ctx, Vector3 o)
+        public static JSValue js_push_structvalue(JSContext ctx, ref Vector3 o)
         {
             var proto = FindPrototypeOf(ctx, typeof(Vector3));
             JSValue val = JSApi.jsb_new_bridge_value(ctx, proto, sizeof(float) * 3);
@@ -64,7 +64,7 @@ namespace QuickJS.Binding
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static JSValue js_push_structvalue(JSContext ctx, Vector3Int o)
+        public static JSValue js_push_structvalue(JSContext ctx, ref Vector3Int o)
         {
             var proto = FindPrototypeOf(ctx, typeof(Vector2Int));
             JSValue val = JSApi.jsb_new_bridge_value(ctx, proto, sizeof(int) * 3);
@@ -73,7 +73,7 @@ namespace QuickJS.Binding
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static JSValue js_push_structvalue(JSContext ctx, Vector4 o)
+        public static JSValue js_push_structvalue(JSContext ctx, ref Vector4 o)
         {
             var proto = FindPrototypeOf(ctx, typeof(Vector4));
             JSValue val = JSApi.jsb_new_bridge_value(ctx, proto, sizeof(float) * 4);
@@ -82,7 +82,7 @@ namespace QuickJS.Binding
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static JSValue js_push_structvalue(JSContext ctx, Quaternion o)
+        public static JSValue js_push_structvalue(JSContext ctx, ref Quaternion o)
         {
             var proto = FindPrototypeOf(ctx, typeof(Quaternion));
             JSValue val = JSApi.jsb_new_bridge_value(ctx, proto, sizeof(float) * 4);
@@ -91,16 +91,16 @@ namespace QuickJS.Binding
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static unsafe JSValue js_push_structvalue(JSContext ctx, Matrix4x4 o)
+        public static unsafe JSValue js_push_structvalue(JSContext ctx, ref Matrix4x4 o)
         {
             var proto = FindPrototypeOf(ctx, typeof(Matrix4x4));
             JSValue val = JSApi.jsb_new_bridge_value(ctx, proto, sizeof(float) * 4 * 4);
-            
+
             _matrix_floats_buffer[0] = o.m00;
             _matrix_floats_buffer[1] = o.m10;
             _matrix_floats_buffer[2] = o.m20;
             _matrix_floats_buffer[3] = o.m30;
-            
+
             _matrix_floats_buffer[4] = o.m01;
             _matrix_floats_buffer[5] = o.m11;
             _matrix_floats_buffer[6] = o.m21;
@@ -125,8 +125,8 @@ namespace QuickJS.Binding
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static JSValue js_push_structvalue<T>(JSContext ctx, T o)
-                where T : struct
+        public static JSValue js_push_structvalue<T>(JSContext ctx, ref T o)
+            where T : struct
         {
             return js_push_classvalue(ctx, o);
         }
