@@ -487,6 +487,14 @@ namespace QuickJS
             }
         }
 
+        public void EnqueueAction(JSActionCallback callback, object args)
+        {
+            lock (_pendingActions)
+            {
+                _pendingActions.Enqueue(new JSAction() { callback = callback, args = args });
+            }
+        }
+
         public void EnqueueAction(JSAction action)
         {
             lock (_pendingActions)

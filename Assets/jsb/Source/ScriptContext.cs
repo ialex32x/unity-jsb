@@ -484,6 +484,7 @@ namespace QuickJS
                     JSApi.JS_SetPropertyStr(ctx, console, "warn", JSApi.JS_NewCFunctionMagic(ctx, _print, "warn", 1, JSCFunctionEnum.JS_CFUNC_generic_magic, 1));
                     JSApi.JS_SetPropertyStr(ctx, console, "error", JSApi.JS_NewCFunctionMagic(ctx, _print, "error", 1, JSCFunctionEnum.JS_CFUNC_generic_magic, 2));
                     JSApi.JS_SetPropertyStr(ctx, console, "assert", JSApi.JS_NewCFunctionMagic(ctx, _print, "assert", 1, JSCFunctionEnum.JS_CFUNC_generic_magic, 3));
+                    JSApi.JS_SetPropertyStr(ctx, console, "trace", JSApi.JS_NewCFunctionMagic(ctx, _print, "trace", 0, JSCFunctionEnum.JS_CFUNC_generic_magic, -1));
                 }
                 JSApi.JS_SetPropertyStr(ctx, global_object, "console", console);
             }

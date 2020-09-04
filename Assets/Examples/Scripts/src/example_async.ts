@@ -25,7 +25,5 @@ async function testUnityYieldInstructions() {
     console.warn("wait for unity YieldInstruction, next frame;", UnityEngine.Time.frameCount);
 }
 
-export function run() {
-    test();
-    testUnityYieldInstructions();
-}
+test();
+testUnityYieldInstructions();

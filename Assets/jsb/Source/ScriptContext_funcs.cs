@@ -74,43 +74,59 @@ namespace QuickJS
         [MonoPInvokeCallback(typeof(JSCFunctionMagic))]
         private static JSValue _print(JSContext ctx, JSValue this_obj, int argc, JSValue[] argv, int magic)
         {
+            if (argc == 0 && magic >= 0)
+            {
+                return JSApi.JS_UNDEFINED;
+            }
+
             var runtime = ScriptEngine.GetRuntime(ctx);
             if (runtime == null)
             {
                 return JSApi.JS_UNDEFINED;
             }
+
+            int i = 0;
+
+            if (magic == (int)LogLevel.Assert)
+            {
+                if (JSApi.JS_ToBool(ctx, argv[0]) == 1)
+                {
+                    return JSApi.JS_UNDEFINED;
+                }
+                i = 1;
+            }
+
             var logger = runtime.GetLogger();
             if (logger == null)
             {
                 return JSApi.JS_UNDEFINED;
             }
-            int i;
             var sb = new StringBuilder();
-            size_t len;
+            size_t str_len;
 
-            for (i = 0; i < argc; i++)
+            for (; i < argc; i++)
             {
-                if (i != 0)
-                {
-                    sb.Append(' ');
-                }
-
-                var pstr = JSApi.JS_ToCStringLen(ctx, out len, argv[i]);
+                var pstr = JSApi.JS_ToCStringLen(ctx, out str_len, argv[i]);
                 if (pstr == IntPtr.Zero)
                 {
                     return JSApi.JS_EXCEPTION;
                 }
 
-                var str = JSApi.GetString(ctx, pstr, len);
+                var str = JSApi.GetString(ctx, pstr, str_len);
                 if (str != null)
                 {
                     sb.Append(str);
                 }
 
                 JSApi.JS_FreeCString(ctx, pstr);
+                if (i != argc - 1)
+                {
+                    sb.Append(' ');
+                }
             }
 
-            if (runtime.withStacktrace)
+            var logLevel = magic == -1 ? LogLevel.Info : (LogLevel)magic;
+            if (magic == -1 || logLevel > LogLevel.Warn || runtime.withStacktrace)
             {
                 sb.AppendLine();
                 runtime.GetContext(ctx).AppendStacktrace(sb);
@@ -118,7 +134,7 @@ namespace QuickJS
 
             try
             {
-                logger.Write((LogLevel)magic, sb.ToString());
+                logger.Write(logLevel, sb.ToString());
             }
             catch (Exception)
             {

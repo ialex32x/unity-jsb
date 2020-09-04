@@ -1,6 +1,3 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.run = void 0;
 function delay(secs) {
     return new Promise((resolve, reject) => {
         setTimeout(() => {
@@ -23,9 +20,6 @@ async function testUnityYieldInstructions() {
     await jsb.Yield(null);
     console.warn("wait for unity YieldInstruction, next frame;", UnityEngine.Time.frameCount);
 }
-function run() {
-    test();
-    testUnityYieldInstructions();
-}
-exports.run = run;
+test();
+testUnityYieldInstructions();
 //# sourceMappingURL=example_async.js.map
