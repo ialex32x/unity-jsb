@@ -18,6 +18,12 @@ namespace QuickJS.Extra
 
     public class XMLHttpRequest : Values, IScriptFinalize
     {
+        private class ResponseArgs
+        {
+            public XMLHttpRequest request;
+            public string error;
+        }
+
         private enum ReadyState
         {
             /// <summary>
@@ -44,10 +50,15 @@ namespace QuickJS.Extra
 
         private JSValue _jsThis; // dangeous reference holder (no ref count)
         private JSContext _jsContext; // dangeous reference holder
-        private JSValue _onreadychange; 
 
-        private HttpWebRequest _request;
+        private JSValue _onerror;
+        private JSValue _onreadystatechange;
+
         private ReadyState _state;
+        private bool _bAsync;
+        private string _method;
+        private int _timeout;
+        private string _requestUriString;
         private HttpStatusCode _code;
         private string _reseponseText;
 
@@ -55,7 +66,8 @@ namespace QuickJS.Extra
         {
             _jsContext = ctx;
             _jsThis = value;
-            _onreadychange = JSApi.JS_UNDEFINED;
+            _onreadystatechange = JSApi.JS_UNDEFINED;
+            _onerror = JSApi.JS_UNDEFINED;
 
             var context = ScriptEngine.GetContext(ctx);
             var runtime = context.GetRuntime();
@@ -70,38 +82,63 @@ namespace QuickJS.Extra
 
         private void Destroy()
         {
-            var callback = _onreadychange;
-            if (!callback.IsNullish())
+            if (_jsThis.IsUndefined())
             {
-                _onreadychange = JSApi.JS_UNDEFINED;
-                JSApi.JS_FreeValue(_jsContext, callback);
+                return;
             }
             _state = ReadyState.UNSENT;
             _code = 0;
-            _request = null;
+            _jsThis = JSApi.JS_UNDEFINED;
+
+            if (_jsContext.IsValid())
+            {
+                JSApi.JS_FreeValue(_jsContext, _onreadystatechange);
+                _onreadystatechange = JSApi.JS_UNDEFINED;
+
+                JSApi.JS_FreeValue(_jsContext, _onerror);
+                _onerror = JSApi.JS_UNDEFINED;
+
+                _jsContext = JSContext.Null;
+            }
         }
 
         public void OnJSFinalize()
         {
-            var callback = _onreadychange;
-            if (!callback.IsNullish())
-            {
-                _onreadychange = JSApi.JS_UNDEFINED;
-                JSApi.JS_FreeValue(_jsContext, callback);
-            }
-            _jsContext = JSContext.Null;
-            _jsThis = JSApi.JS_UNDEFINED;
             Destroy();
         }
 
         private void OnReadyStateChange()
         {
-            if (!_jsContext.IsValid() || JSApi.JS_IsFunction(_jsContext, _onreadychange) != 1)
+            if (!_jsContext.IsValid() || JSApi.JS_IsFunction(_jsContext, _onreadystatechange) != 1)
             {
                 return;
             }
-            var ret = JSApi.JS_Call(_jsContext, _onreadychange, JSApi.JS_UNDEFINED);
+            var ret = JSApi.JS_Call(_jsContext, _onreadystatechange, JSApi.JS_UNDEFINED);
             JSApi.JS_FreeValue(_jsContext, ret);
+        }
+
+        private unsafe void OnError(string error)
+        {
+            if (!_jsContext.IsValid() || JSApi.JS_IsFunction(_jsContext, _onerror) != 1)
+            {
+                return;
+            }
+            var argv = stackalloc[] { Values.js_push_primitive(_jsContext, error) };
+            var ret = JSApi.JS_Call(_jsContext, _onerror, JSApi.JS_UNDEFINED, 1, argv);
+            if (ret.IsException())
+            {
+                var logger = ScriptEngine.GetLogger(_jsContext);
+                if (logger != null)
+                {
+                    var ex = _jsContext.GetExceptionString();
+                    logger.Write(LogLevel.Error, ex);
+                }
+            }
+            else
+            {
+                JSApi.JS_FreeValue(_jsContext, ret);
+            }
+            JSApi.JS_FreeValue(_jsContext, argv[0]);
         }
 
         private void Open(string requestUriString, string method, bool bAsync)
@@ -110,10 +147,10 @@ namespace QuickJS.Extra
             {
                 throw new InvalidOperationException();
             }
-            var uri = new Uri(requestUriString);
+            _bAsync = bAsync;
+            _method = method;
+            _requestUriString = requestUriString;
             _state = ReadyState.OPENED;
-            _request = WebRequest.CreateHttp(uri);
-            _request.Method = method;
             OnReadyStateChange();
         }
 
@@ -130,17 +167,29 @@ namespace QuickJS.Extra
                 return;
             }
 
-            //TODO: 替换做法
-            new Thread(_SendAsync).Start();
+            if (_bAsync)
+            {
+                //TODO: 替换做法
+                new Thread(_SendAsync).Start();
+            }
+            else
+            {
+                _SendAsync();
+            }
         }
 
         //TODO: 处理线程安全问题
         private void _SendAsync()
         {
-            Debug.LogFormat("Thread: {0}", System.Threading.Thread.CurrentThread.ManagedThreadId);
+            string error = null;
             try
             {
-                var rsp = _request.GetResponse() as HttpWebResponse;
+                var uri = new Uri(_requestUriString);
+                var request = WebRequest.CreateHttp(uri);
+                request.Method = _method;
+                request.Timeout = _timeout;
+
+                var rsp = request.GetResponse();
                 if (_state != ReadyState.LOADING)
                 {
                     return;
@@ -152,29 +201,39 @@ namespace QuickJS.Extra
                 {
                     return;
                 }
-                _code = rsp.StatusCode;
+                _code = ((HttpWebResponse)rsp).StatusCode;
             }
             catch (Exception ex)
             {
-                Debug.LogError(ex);
                 if (_state != ReadyState.LOADING)
                 {
                     return;
                 }
+                error = ex.ToString();
             }
 
-            ScriptEngine.GetRuntime(_jsContext).EnqueueAction(new JSAction()
+            ScriptEngine.GetRuntime(_jsContext).EnqueueAction(OnResponseCallback, new ResponseArgs()
             {
-                callback = OnCallback,
-                args = this,
+                request = this,
+                error = error,
             });
         }
 
-        private static void OnCallback(ScriptRuntime runtime, JSAction action)
+        private static void OnResponseCallback(ScriptRuntime runtime, JSAction action)
         {
-            var xhr = action.args as XMLHttpRequest;
-            xhr._state = ReadyState.DONE;
-            xhr.OnReadyStateChange();
+            var args = action.args as ResponseArgs;
+            if (args.request._state != ReadyState.UNSENT)
+            {
+                args.request._state = ReadyState.DONE;
+                if (args.error != null)
+                {
+                    args.request.OnError(args.error);
+                }
+                else
+                {
+                    args.request.OnReadyStateChange();
+                }
+            }
         }
 
         [MonoPInvokeCallback(typeof(JSCFunctionMagic))]
@@ -233,7 +292,7 @@ namespace QuickJS.Extra
                     throw new InvalidOperationException();
                 }
 
-                return JSApi.JS_NewInt32(ctx, self._request.Timeout);
+                return JSApi.JS_NewInt32(ctx, self._timeout);
             }
             catch (Exception exception)
             {
@@ -262,7 +321,7 @@ namespace QuickJS.Extra
                 }
                 int timeout;
                 JSApi.JS_ToInt32(ctx, out timeout, val);
-                self._request.Timeout = timeout;
+                self._timeout = timeout;
                 return JSApi.JS_UNDEFINED;
             }
             catch (Exception exception)
@@ -302,7 +361,7 @@ namespace QuickJS.Extra
                 {
                     throw new ThisBoundException();
                 }
-                return JSApi.JS_DupValue(ctx, self._onreadychange);
+                return JSApi.JS_DupValue(ctx, self._onreadystatechange);
             }
             catch (Exception exception)
             {
@@ -320,8 +379,46 @@ namespace QuickJS.Extra
                 {
                     throw new ThisBoundException();
                 }
-                JSApi.JS_FreeValue(ctx, self._onreadychange);
-                self._onreadychange = JSApi.JS_DupValue(ctx, val);
+                JSApi.JS_FreeValue(ctx, self._onreadystatechange);
+                self._onreadystatechange = JSApi.JS_DupValue(ctx, val);
+                return JSApi.JS_UNDEFINED;
+            }
+            catch (Exception exception)
+            {
+                return JSApi.ThrowException(ctx, exception);
+            }
+        }
+
+        [MonoPInvokeCallback(typeof(JSGetterCFunction))]
+        private static JSValue js_get_onerror(JSContext ctx, JSValue this_obj)
+        {
+            try
+            {
+                XMLHttpRequest self;
+                if (!js_get_classvalue(ctx, this_obj, out self))
+                {
+                    throw new ThisBoundException();
+                }
+                return JSApi.JS_DupValue(ctx, self._onerror);
+            }
+            catch (Exception exception)
+            {
+                return JSApi.ThrowException(ctx, exception);
+            }
+        }
+
+        [MonoPInvokeCallback(typeof(JSSetterCFunction))]
+        private static JSValue js_set_onerror(JSContext ctx, JSValue this_obj, JSValue val)
+        {
+            try
+            {
+                XMLHttpRequest self;
+                if (!js_get_classvalue(ctx, this_obj, out self))
+                {
+                    throw new ThisBoundException();
+                }
+                JSApi.JS_FreeValue(ctx, self._onerror);
+                self._onerror = JSApi.JS_DupValue(ctx, val);
                 return JSApi.JS_UNDEFINED;
             }
             catch (Exception exception)
@@ -404,6 +501,7 @@ namespace QuickJS.Extra
             cls.AddProperty(false, "responseText", js_get_responseText, null);
             cls.AddProperty(false, "timeout", js_get_timeout, js_set_timeout);
             cls.AddProperty(false, "onreadystatechange", js_get_onreadystatechange, js_set_onreadystatechange);
+            cls.AddProperty(false, "onerror", js_get_onerror, js_set_onerror);
             cls.Close();
             ns.Close();
         }

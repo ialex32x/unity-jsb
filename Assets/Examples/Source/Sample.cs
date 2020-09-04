@@ -31,7 +31,6 @@ namespace jsb
 
         void Awake()
         {
-            Debug.LogFormat("Thread: {0}", System.Threading.Thread.CurrentThread.ManagedThreadId);
             IFileSystem fileSystem;
 
             _mConsole = new MiniConsole(scrollRect, text, 100);
