@@ -1376,14 +1376,22 @@ namespace QuickJS.Editor
 
         public bool IsAssemblyBlocked(Assembly assembly)
         {
-            var fileInfo = new FileInfo(assembly.Location);
-            if (fileInfo.DirectoryName.EndsWith("/Editor/Data/Managed"))
+            try
             {
-                return true;
+                var fileInfo = new FileInfo(assembly.Location);
+                if (fileInfo.DirectoryName.EndsWith("/Editor/Data/Managed"))
+                {
+                    return true;
+                }
+                if (fileInfo.Name.StartsWith("UnityEditor"))
+                {
+                    return true;
+                }
             }
-            if (fileInfo.Name.StartsWith("UnityEditor"))
+            catch (Exception ex)
             {
-                return true;
+                Debug.LogErrorFormat("{0} {1} {2}", assembly, assembly.Location, ex);
+                return false;
             }
 
             var refs = assembly.GetReferencedAssemblies();
