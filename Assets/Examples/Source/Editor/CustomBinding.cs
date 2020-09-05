@@ -14,6 +14,7 @@ namespace jsb.Editor
             bindingManager.AddExportedType(typeof(Time));
             bindingManager.AddExportedType(typeof(Ray));
             bindingManager.AddExportedType(typeof(RaycastHit));
+            // bindingManager.AddExportedType(typeof(Physics)); // 无法自动处理部分重载
             // bindingManager.AddExportedType(typeof(System.Net.Dns));
             bindingManager.AddExportedType(typeof(System.Net.IPHostEntry));
 

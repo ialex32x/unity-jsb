@@ -91,6 +91,24 @@ namespace QuickJS.Binding
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static unsafe JSValue js_push_structvalue(JSContext ctx, ref Ray o)
+        {
+            var proto = FindPrototypeOf<Ray>(ctx);
+            JSValue val = JSApi.jsb_new_bridge_value(ctx, proto, sizeof(float) * 6);
+            var buffer = stackalloc float[6];
+            var origin = o.origin;
+            var direction = o.direction;
+            buffer[0] = origin.x;
+            buffer[1] = origin.y;
+            buffer[2] = origin.z;
+            buffer[3] = direction.x;
+            buffer[4] = direction.y;
+            buffer[5] = direction.z;
+            JSApi.jsb_set_floats(val, 6, buffer);
+            return val;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static unsafe JSValue js_push_structvalue(JSContext ctx, ref Matrix4x4 o)
         {
             var proto = FindPrototypeOf<Matrix4x4>(ctx);

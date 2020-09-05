@@ -217,6 +217,16 @@ namespace QuickJS.Binding
             return ret != 0;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static unsafe bool js_get_structvalue(JSContext ctx, JSValue val, out Ray o)
+        {
+            var buffer = stackalloc float[6];
+            var ret = JSApi.jsb_get_floats(val, 6, buffer);
+            o = new Ray(new Vector3(buffer[0], buffer[1], buffer[2]), 
+                new Vector3(buffer[3], buffer[4], buffer[5]));
+            return ret != 0;
+        }
+
         public static unsafe bool js_get_structvalue(JSContext ctx, JSValue val, out Matrix4x4 o)
         {
             int ret;

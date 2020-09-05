@@ -536,7 +536,7 @@ namespace QuickJS.Editor
             {
                 if (!string.IsNullOrEmpty(caller))
                 {
-                    cg.cs.AppendLine($"js_rebind_this(ctx, this_obj, {caller});");
+                    cg.cs.AppendLine($"js_rebind_this(ctx, this_obj, ref {caller});");
                 }
             }
         }
