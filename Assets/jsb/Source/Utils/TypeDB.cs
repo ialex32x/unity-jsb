@@ -118,12 +118,6 @@ namespace QuickJS.Utils
                 return JSApi.JS_UNDEFINED;
             }
 
-            if (cType == typeof(Enum))
-            {
-                type_id = -1;
-                return JSApi.JS_UNDEFINED;
-            }
-
             JSValue proto;
             if (_prototypes.TryGetValue(cType, out proto))
             {

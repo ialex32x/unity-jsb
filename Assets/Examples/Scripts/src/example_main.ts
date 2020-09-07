@@ -1,7 +1,8 @@
-print("first line");
+print("isMain?", module == require.main);
 
 // import { fib } from "./fib_module.js";
 import { fib } from "./fib";
+
 
 console.assert(true, "will not print");
 console.assert(false, "assert!!!");

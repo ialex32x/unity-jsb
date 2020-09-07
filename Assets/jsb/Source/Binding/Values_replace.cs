@@ -10,61 +10,76 @@ namespace QuickJS.Binding
     public partial class Values
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool js_rebind_this(JSContext ctx, JSValue this_obj, LayerMask o)
+        public static bool js_rebind_this(JSContext ctx, JSValue this_obj, ref LayerMask o)
         {
             return JSApi.jsb_set_int_1(this_obj, o.value) == 1;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool js_rebind_this(JSContext ctx, JSValue this_obj, Vector2 o)
+        public static bool js_rebind_this(JSContext ctx, JSValue this_obj, ref Vector2 o)
         {
             return JSApi.jsb_set_float_2(this_obj, o.x, o.y) == 1;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool js_rebind_this(JSContext ctx, JSValue this_obj, Vector2Int o)
+        public static bool js_rebind_this(JSContext ctx, JSValue this_obj, ref Vector2Int o)
         {
             return JSApi.jsb_set_int_2(this_obj, o.x, o.y) == 1;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool js_rebind_this(JSContext ctx, JSValue this_obj, Color o)
+        public static bool js_rebind_this(JSContext ctx, JSValue this_obj, ref Color o)
         {
             return JSApi.jsb_set_float_4(this_obj, o.r, o.g, o.b, o.a) == 1;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool js_rebind_this(JSContext ctx, JSValue this_obj, Color32 o)
+        public static bool js_rebind_this(JSContext ctx, JSValue this_obj, ref Color32 o)
         {
             return JSApi.jsb_set_int_4(this_obj, o.r, o.g, o.b, o.a) == 1;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool js_rebind_this(JSContext ctx, JSValue this_obj, Vector3 o)
+        public static bool js_rebind_this(JSContext ctx, JSValue this_obj, ref Vector3 o)
         {
             return JSApi.jsb_set_float_3(this_obj, o.x, o.y, o.z) == 1;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool js_rebind_this(JSContext ctx, JSValue this_obj, Vector3Int o)
+        public static bool js_rebind_this(JSContext ctx, JSValue this_obj, ref Vector3Int o)
         {
             return JSApi.jsb_set_int_3(this_obj, o.x, o.y, o.z) == 1;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool js_rebind_this(JSContext ctx, JSValue this_obj, Vector4 o)
+        public static bool js_rebind_this(JSContext ctx, JSValue this_obj, ref Vector4 o)
         {
             return JSApi.jsb_set_float_4(this_obj, o.x, o.y, o.z, o.w) == 1;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool js_rebind_this(JSContext ctx, JSValue this_obj, Quaternion o)
+        public static bool js_rebind_this(JSContext ctx, JSValue this_obj, ref Quaternion o)
         {
             return JSApi.jsb_set_float_4(this_obj, o.x, o.y, o.z, o.w) == 1;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static unsafe bool js_rebind_this(JSContext ctx, JSValue this_obj, Matrix4x4 o)
+        public static unsafe bool js_rebind_this(JSContext ctx, JSValue this_obj, ref Ray o)
+        {
+            var buffer = stackalloc float[6];
+            var origin = o.origin;
+            var direction = o.direction;
+            buffer[0] = origin.x;
+            buffer[1] = origin.y;
+            buffer[2] = origin.z;
+            buffer[3] = direction.x;
+            buffer[4] = direction.y;
+            buffer[5] = direction.z;
+            return JSApi.jsb_set_floats(this_obj, 6, buffer) == 1;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static unsafe bool js_rebind_this(JSContext ctx, JSValue this_obj, ref Matrix4x4 o)
         {
             _matrix_floats_buffer[0] = o.m00;
             _matrix_floats_buffer[1] = o.m10;
@@ -92,32 +107,29 @@ namespace QuickJS.Binding
             }
         }
 
+        public static bool js_rebind_this<T>(JSContext ctx, JSValue this_obj, ref T o)
+        where T : struct
+        {
+            //TODO: lookup type rebind-op map at first, fallback to object if fail
+            var header = JSApi.jsb_get_payload_header(this_obj);
+            switch (header.type_id)
+            {
+                case BridgeObjectType.ObjectRef:
+                    return ScriptEngine.GetObjectCache(ctx).ReplaceObject(header.value, o);
+            }
+            return false;
+        }
 
-        // [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        // public static bool js_rebind_this(JSContext ctx, object o)
-        // {
-        //     DuktapeDLL.duk_push_this(ctx);
-        //     var ret = duk_rebind_native(ctx, -1, o);
-        //     DuktapeDLL.duk_pop(ctx);
-        //     return ret;
-        // }
-
-        //         public static bool duk_get_native_refid(JSContext ctx, int idx, out int id)
-        //         {
-        //             if (DuktapeDLL.duk_unity_get_refid(ctx, idx, out id))
-        //             {
-        //                 return true;
-        //             }
-        //             return false;
-        //         }
-        // public static bool duk_rebind_native(JSContext ctx, int idx, object o)
-        // {
-        //     int id;
-        //     if (DuktapeDLL.duk_unity_get_refid(ctx, idx, out id))
-        //     {
-        //         return DuktapeVM.GetObjectCache(ctx).ReplaceObject(id, o);
-        //     }
-        //     return false;
-        // }
+        // fallback
+        public static bool js_rebind_this(JSContext ctx, JSValue this_obj, ref object o)
+        {
+            var header = JSApi.jsb_get_payload_header(this_obj);
+            switch (header.type_id)
+            {
+                case BridgeObjectType.ObjectRef:
+                    return ScriptEngine.GetObjectCache(ctx).ReplaceObject(header.value, o);
+            }
+            return false;
+        }
     }
 }

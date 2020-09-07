@@ -158,10 +158,12 @@ namespace QuickJS
                     var exports_obj = JSApi.JS_NewObject(ctx);
                     var require_obj = JSApi.JSB_NewCFunction(ctx, module_require, context.GetAtom("require"), 1, JSCFunctionEnum.JS_CFUNC_generic, 0);
                     var module_obj = context._new_commonjs_module(resolved_id, exports_obj, false);
+                    var main_mod_obj = context._dup_commonjs_main_module();
                     var filename_obj = JSApi.JS_AtomToString(ctx, module_id_atom);
                     var dirname_obj = JSApi.JS_AtomToString(ctx, dirname_atom);
 
                     JSApi.JS_SetProperty(ctx, require_obj, context.GetAtom("moduleId"), JSApi.JS_DupValue(ctx, filename_obj));
+                    JSApi.JS_SetProperty(ctx, require_obj, context.GetAtom("main"), main_mod_obj);
                     var require_argv = new JSValue[5] { exports_obj, require_obj, module_obj, filename_obj, dirname_obj, };
 
                     if (tagValue == BYTECODE_COMMONJS_MODULE_TAG)

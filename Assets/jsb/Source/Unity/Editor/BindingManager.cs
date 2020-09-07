@@ -817,12 +817,25 @@ namespace QuickJS.Editor
             return "js_get_classvalue";
         }
 
-        public string GetScriptObjectPusher(Type type)
+        public string GetScriptObjectPusher(Type type, string ctx, string value)
+        {
+            string op;
+            if (type.IsEnum)
+            {
+                var eType = type.GetEnumUnderlyingType();
+                var eTypeName = this.GetCSTypeFullName(eType);
+                return $"{this.GetScriptObjectPusher(eType, out op)}(ctx, ({eTypeName}){value})";
+            }
+            return $"{this.GetScriptObjectPusher(type, out op)}(ctx, {op}{value})";
+        }
+
+        public string GetScriptObjectPusher(Type type, out string op)
         {
             if (type.IsByRef)
             {
-                return GetScriptObjectPusher(type.GetElementType());
+                return GetScriptObjectPusher(type.GetElementType(), out op);
             }
+            op = "";
             string pusher;
             if (_csTypePusherMap.TryGetValue(type, out pusher))
             {
@@ -853,6 +866,7 @@ namespace QuickJS.Editor
                         }
                     }
                 }
+                op = "ref ";
                 return "js_push_structvalue";
             }
             if (type == typeof(string))
@@ -1362,14 +1376,22 @@ namespace QuickJS.Editor
 
         public bool IsAssemblyBlocked(Assembly assembly)
         {
-            var fileInfo = new FileInfo(assembly.Location);
-            if (fileInfo.DirectoryName.EndsWith("/Editor/Data/Managed"))
+            try
             {
-                return true;
+                var fileInfo = new FileInfo(assembly.Location);
+                if (fileInfo.DirectoryName.EndsWith("/Editor/Data/Managed"))
+                {
+                    return true;
+                }
+                if (fileInfo.Name.StartsWith("UnityEditor"))
+                {
+                    return true;
+                }
             }
-            if (fileInfo.Name.StartsWith("UnityEditor"))
+            catch (Exception ex)
             {
-                return true;
+                Debug.LogErrorFormat("{0} {1} {2}", assembly, assembly.Location, ex);
+                return false;
             }
 
             var refs = assembly.GetReferencedAssemblies();
