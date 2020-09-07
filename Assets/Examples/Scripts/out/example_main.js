@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-print("first line");
+print("isMain?", module == require.main);
 // import { fib } from "./fib_module.js";
 const fib_1 = require("./fib");
 console.assert(true, "will not print");

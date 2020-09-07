@@ -8,5 +8,5 @@
 // }
 // declare class TWrapper_Vector3 extends TWrapper<UnityEngine.Vector3> {
 // }
-
 // new TWrapper_Int32(1);
+//# sourceMappingURL=experimental_gtype.js.map

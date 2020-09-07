@@ -1,5 +1,5 @@
 
-class MyClass extends UnityEngine.MonoBehaviour {
+export class MyClass extends UnityEngine.MonoBehaviour {
     vv = 0;
     protected _tick = 0;
 
@@ -28,7 +28,7 @@ class MyClass extends UnityEngine.MonoBehaviour {
     }
 }
 
-class MySubClass extends MyClass {
+export class MySubClass extends MyClass {
     Awake() {
         super.Awake();
         console.log("MySubClass.Awake", this._tick++);
@@ -39,21 +39,24 @@ class MySubClass extends MyClass {
     }
 }
 
-let gameObject = new UnityEngine.GameObject();
-let comp1 = gameObject.AddComponent(MySubClass);
-let comp2 = gameObject.AddComponent(MyClass);
+if (module == require.main) {
+    print("example_monobehaviour");
+    let gameObject = new UnityEngine.GameObject();
+    let comp1 = gameObject.AddComponent(MySubClass);
+    let comp2 = gameObject.AddComponent(MyClass);
 
-comp1.vv = 1;
-comp2.vv = 2;
+    comp1.vv = 1;
+    comp2.vv = 2;
 
-comp1.play();
+    comp1.play();
 
-{
-    let results = gameObject.GetComponents(MySubClass);
-    results.forEach(it => console.log("GetComponents(MySubClass):", it.vv));
-}
+    {
+        let results = gameObject.GetComponents(MySubClass);
+        results.forEach(it => console.log("GetComponents(MySubClass):", it.vv));
+    }
 
-{
-    let results = gameObject.GetComponents(MyClass);
-    results.forEach(it => console.log("GetComponents(MyClass):", it.vv));
+    {
+        let results = gameObject.GetComponents(MyClass);
+        results.forEach(it => console.log("GetComponents(MyClass):", it.vv));
+    }
 }

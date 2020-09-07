@@ -295,6 +295,12 @@ namespace QuickJS
             return module_obj;
         }
 
+        // retrn the main module value (commonjs module) directly
+        public JSValue _dup_commonjs_main_module()
+        {
+            return JSApi.JS_GetProperty(_ctx, _require, GetAtom("main"));
+        }
+
         public static void Bind(TypeRegister register)
         {
             var ns_jsb = register.CreateNamespace("jsb");
@@ -348,11 +354,12 @@ namespace QuickJS
 
             var exports_obj = JSApi.JS_NewObject(_ctx);
             var require_obj = JSApi.JS_DupValue(_ctx, _require);
-            var module_obj = _new_commonjs_module("", exports_obj, true);
+            var module_obj = _new_commonjs_module("", exports_obj, false);
             var filename_obj = JSApi.JS_AtomToString(_ctx, filename_atom);
             var dirname_obj = JSApi.JS_AtomToString(_ctx, dirname_atom);
             var require_argv = new JSValue[5] { exports_obj, require_obj, module_obj, filename_obj, dirname_obj };
             JSApi.JS_SetProperty(_ctx, require_obj, GetAtom("moduleId"), JSApi.JS_DupValue(_ctx, filename_obj));
+            JSApi.JS_SetProperty(_ctx, require_obj, GetAtom("main"), JSApi.JS_DupValue(_ctx, module_obj));
 
             if (tagValue == ScriptRuntime.BYTECODE_COMMONJS_MODULE_TAG)
             {
@@ -381,8 +388,10 @@ namespace QuickJS
                             throw new Exception("failed to eval bytecode module");
                         }
 
+                        // success
                         Values.js_get_var(_ctx, rval, expectedReturnType, out csValue);
                         JSApi.JS_FreeValue(_ctx, rval);
+                        JSApi.JS_SetProperty(_ctx, module_obj, GetAtom("loaded"), JSApi.JS_NewBool(_ctx, true));
                         FreeValues(require_argv);
                         return csValue;
                     }
@@ -423,6 +432,7 @@ namespace QuickJS
                     }
 
                     JSApi.JS_FreeValue(_ctx, func_val);
+                    JSApi.JS_SetProperty(_ctx, module_obj, GetAtom("loaded"), JSApi.JS_NewBool(_ctx, true));
                     FreeValues(require_argv);
                     return csValue;
                 }

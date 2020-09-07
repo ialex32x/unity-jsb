@@ -1,3 +1,6 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.MySubClass = exports.MyClass = void 0;
 class MyClass extends UnityEngine.MonoBehaviour {
     constructor() {
         super(...arguments);
@@ -24,6 +27,7 @@ class MyClass extends UnityEngine.MonoBehaviour {
         UnityEngine.Object.Destroy(this.gameObject);
     }
 }
+exports.MyClass = MyClass;
 class MySubClass extends MyClass {
     Awake() {
         super.Awake();
@@ -33,18 +37,22 @@ class MySubClass extends MyClass {
         console.log("MySubClass.play");
     }
 }
-let gameObject = new UnityEngine.GameObject();
-let comp1 = gameObject.AddComponent(MySubClass);
-let comp2 = gameObject.AddComponent(MyClass);
-comp1.vv = 1;
-comp2.vv = 2;
-comp1.play();
-{
-    let results = gameObject.GetComponents(MySubClass);
-    results.forEach(it => console.log("GetComponents(MySubClass):", it.vv));
-}
-{
-    let results = gameObject.GetComponents(MyClass);
-    results.forEach(it => console.log("GetComponents(MyClass):", it.vv));
+exports.MySubClass = MySubClass;
+if (module == require.main) {
+    print("example_monobehaviour");
+    let gameObject = new UnityEngine.GameObject();
+    let comp1 = gameObject.AddComponent(MySubClass);
+    let comp2 = gameObject.AddComponent(MyClass);
+    comp1.vv = 1;
+    comp2.vv = 2;
+    comp1.play();
+    {
+        let results = gameObject.GetComponents(MySubClass);
+        results.forEach(it => console.log("GetComponents(MySubClass):", it.vv));
+    }
+    {
+        let results = gameObject.GetComponents(MyClass);
+        results.forEach(it => console.log("GetComponents(MyClass):", it.vv));
+    }
 }
 //# sourceMappingURL=example_monobehaviour.js.map
