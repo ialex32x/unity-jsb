@@ -14,15 +14,21 @@ namespace QuickJS.Editor
         public HashSet<Type> types = new HashSet<Type>();
         public Type returnType;
         public ParameterInfo[] parameters;
+        public bool isEditorRuntime;
 
-        public DelegateBridgeBindingInfo(Type returnType, ParameterInfo[] parameters)
+        public DelegateBridgeBindingInfo(Type returnType, ParameterInfo[] parameters, bool isEditorRuntime)
         {
             this.returnType = returnType;
             this.parameters = parameters;
+            this.isEditorRuntime = isEditorRuntime;
         }
 
-        public bool Equals(Type returnType, ParameterInfo[] parameters)
+        public bool Equals(Type returnType, ParameterInfo[] parameters, bool isEditorRuntime)
         {
+            if (this.isEditorRuntime != isEditorRuntime)
+            {
+                return false;
+            }
             if (returnType != this.returnType || parameters.Length != this.parameters.Length)
             {
                 return false;

@@ -113,6 +113,7 @@ namespace QuickJS.Editor
                             for (var i = 0; i < exportedHotfixDelegates.Count; i++)
                             {
                                 var bindingInfo = exportedHotfixDelegates[i];
+
                                 using (new PreservedCodeGen(this))
                                 {
                                     using (new HotfixDelegateCodeGen(this, bindingInfo, i))
@@ -131,10 +132,13 @@ namespace QuickJS.Editor
                                     specs.Add(nargs, 0);
                                 }
                                 this.bindingManager.OnPreGenerateDelegate(bindingInfo);
-                                using (new PreservedCodeGen(this))
+                                using (new EditorOnlyCodeGen(this, bindingInfo.isEditorRuntime))
                                 {
-                                    using (new DelegateCodeGen(this, bindingInfo, i))
+                                    using (new PreservedCodeGen(this))
                                     {
+                                        using (new DelegateCodeGen(this, bindingInfo, i))
+                                        {
+                                        }
                                     }
                                 }
                                 this.bindingManager.OnPostGenerateDelegate(bindingInfo);
@@ -183,14 +187,7 @@ namespace QuickJS.Editor
             this.cs.enabled = (typeBindingInfo.bindingFlags & TypeBindingFlags.BindingCode) != 0 && (typeBindingFlags & TypeBindingFlags.BindingCode) != 0;
             this.tsDeclare.enabled = (typeBindingInfo.bindingFlags & TypeBindingFlags.TypeDefinition) != 0 && (typeBindingFlags & TypeBindingFlags.TypeDefinition) != 0;
 
-            if (typeBindingInfo.isEditorRuntime)
-            {
-                using (new EditorOnlyCodeGen(this))
-                {
-                    GenerateInternal(typeBindingInfo);
-                }
-            }
-            else
+            using (new EditorOnlyCodeGen(this, typeBindingInfo.isEditorRuntime))
             {
                 GenerateInternal(typeBindingInfo);
             }

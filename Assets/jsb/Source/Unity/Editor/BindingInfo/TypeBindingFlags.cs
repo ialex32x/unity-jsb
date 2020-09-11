@@ -10,6 +10,6 @@ namespace QuickJS.Editor
         TypeDefinition = 2, // 生成 d.ts 声明
         Default = BindingCode | TypeDefinition,
 
-        EditorRuntime = 4, // 编辑器运行时标记
+        EditorRuntime = 4, // mark as editor runtime only 
     }
 }
