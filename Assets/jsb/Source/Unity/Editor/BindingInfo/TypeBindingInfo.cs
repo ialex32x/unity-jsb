@@ -15,8 +15,9 @@ namespace QuickJS.Editor
         public readonly Type type;
         public readonly TypeTransform transform;
 
-        public readonly TypeBindingFlags bindingFlags;
-        public bool isEditorRuntime { get { return (bindingFlags & TypeBindingFlags.EditorRuntime) != 0; } }
+        public TypeBindingFlags bindingFlags { get { return transform.bindingFlags; } }
+
+        public bool isEditorRuntime { get { return (transform.bindingFlags & TypeBindingFlags.EditorRuntime) != 0; } }
 
         // 父类类型
         public Type super
@@ -77,12 +78,11 @@ namespace QuickJS.Editor
             return info.Name;
         }
 
-        public TypeBindingInfo(BindingManager bindingManager, Type type, TypeBindingFlags bindingFlags)
+        public TypeBindingInfo(BindingManager bindingManager, Type type, TypeTransform typeTransform)
         {
             this.bindingManager = bindingManager;
             this.type = type;
-            this.bindingFlags = bindingFlags;
-            this.transform = bindingManager.GetTypeTransform(type);
+            this.transform = typeTransform;
             var naming = this.transform?.GetTypeNaming() ?? GetNamingAttribute(type);
             var indexOfTypeName = naming.LastIndexOf('.');
             if (indexOfTypeName >= 0) // 内部类

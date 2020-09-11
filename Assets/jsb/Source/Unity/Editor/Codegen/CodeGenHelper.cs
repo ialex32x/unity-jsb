@@ -360,17 +360,25 @@ namespace QuickJS.Editor
     public class EditorOnlyCodeGen : IDisposable
     {
         protected CodeGenerator cg;
+        protected bool isEditorOnly;
 
-        public EditorOnlyCodeGen(CodeGenerator cg)
+        public EditorOnlyCodeGen(CodeGenerator cg, bool isEditorOnly = true)
         {
             this.cg = cg;
-            cg.cs.AppendLineL("#if UNITY_EDITOR");
+            this.isEditorOnly = isEditorOnly;
+            if (isEditorOnly)
+            {
+                cg.cs.AppendLineL("#if UNITY_EDITOR");
+            }
         }
 
 
         public void Dispose()
         {
-            cg.cs.AppendLineL("#endif");
+            if (isEditorOnly)
+            {
+                cg.cs.AppendLineL("#endif");
+            }
         }
     }
 

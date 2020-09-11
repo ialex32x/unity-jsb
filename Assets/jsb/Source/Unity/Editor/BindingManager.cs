@@ -423,23 +423,18 @@ namespace QuickJS.Editor
 
         // 增加导出类型 (需要在 Collect 阶段进行)
         //NOTE: editor mscorlib 与 runtime 存在差异, 需要手工 block 差异
-        public TypeTransform AddExportedType(Type type, bool importBaseType = false, bool isEditorRuntime = false)
+        public TypeTransform AddExportedType(Type type, bool importBaseType = false)
         {
             if (type.IsGenericTypeDefinition)
             {
                 _whitelist.Add(type);
                 return null;
             }
-            var tt = TransformType(type);
+            var typeTransform = TransformType(type);
             if (!_exportedTypes.ContainsKey(type))
             {
                 //TODO: 设置导出绑定代码与定义声明选项
-                var flags = TypeBindingFlags.Default;
-                if (isEditorRuntime)
-                {
-                    flags |= TypeBindingFlags.EditorRuntime;
-                }
-                var typeBindingInfo = new TypeBindingInfo(this, type, flags);
+                var typeBindingInfo = new TypeBindingInfo(this, type, typeTransform);
                 _exportedTypes.Add(type, typeBindingInfo);
                 log.AppendLine($"AddExportedType: {type} Assembly: {type.Assembly}");
 
@@ -459,12 +454,12 @@ namespace QuickJS.Editor
                     {
                         if (importBaseType)
                         {
-                            AddExportedType(baseType, importBaseType, isEditorRuntime);
+                            AddExportedType(baseType, importBaseType);
                         }
                     }
                 }
             }
-            return tt;
+            return typeTransform;
         }
 
         public bool RemoveExportedType(Type type)
@@ -562,6 +557,35 @@ namespace QuickJS.Editor
             return true;
         }
 
+        public bool IsTypeEditorRuntime(Type type)
+        {
+            if (type == null || type == typeof(void))
+            {
+                return false;
+            }
+            if (type.Namespace != null && type.Namespace.StartsWith("UnityEditor"))
+            {
+                return true;
+            }
+            var tt = GetTypeTransform(type);
+            return (tt != null && tt.isEditorRuntime) 
+                || IsTypeEditorRuntime(type.DeclaringType) // check outter class for nested class
+            ;
+        }
+
+        public bool IsTypeEditorRuntime(ParameterInfo[] parameters)
+        {
+            for (int i = 0, count = parameters.Length; i < count; i++)
+            {
+                var parameter = parameters[i];
+                if (IsTypeEditorRuntime(parameter.ParameterType))
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
         // 收集所有 delegate 类型
         // delegateType: 委托本身的类型
         // explicitThis: 委托的首个参数作为 显式 this 传递
@@ -581,23 +605,25 @@ namespace QuickJS.Editor
                     log.AppendLine("skip unsafe (pointer) delegate: [{0}] {1}", delegateType, invoke);
                     return;
                 }
+                var isEditorRuntime = IsTypeEditorRuntime(delegateType) || IsTypeEditorRuntime(returnType) || IsTypeEditorRuntime(parameters);
+
                 // 是否存在等价 delegate
                 foreach (var kv in _exportedDelegates)
                 {
                     var regDelegateType = kv.Key;
                     var regDelegateBinding = kv.Value;
-                    if (regDelegateBinding.Equals(returnType, parameters))
+                    if (regDelegateBinding.Equals(returnType, parameters, isEditorRuntime))
                     {
-                        log.AppendLine("skip delegate: {0} && {1}", regDelegateBinding, delegateType);
+                        log.AppendLine("skip delegate: {0} && {1} editor: {2}", regDelegateBinding, delegateType, isEditorRuntime);
                         regDelegateBinding.types.Add(delegateType);
                         _redirectDelegates[delegateType] = regDelegateType;
                         return;
                     }
                 }
-                var delegateBindingInfo = new DelegateBridgeBindingInfo(returnType, parameters);
+                var delegateBindingInfo = new DelegateBridgeBindingInfo(returnType, parameters, isEditorRuntime);
                 delegateBindingInfo.types.Add(delegateType);
                 _exportedDelegates.Add(delegateType, delegateBindingInfo);
-                log.AppendLine("add delegate: {0}", delegateType);
+                log.AppendLine("add delegate: {0} editor: {1}", delegateType, isEditorRuntime);
                 for (var i = 0; i < parameters.Length; i++)
                 {
                     CollectDelegate(parameters[i].ParameterType);

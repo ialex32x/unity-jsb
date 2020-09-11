@@ -21,6 +21,8 @@ namespace QuickJS.Editor
         private JSHotfixAttribute _hotfix;
         private string _typeNaming;
 
+        public TypeBindingFlags bindingFlags = TypeBindingFlags.Default;
+
         // 扩展方法
         public readonly List<MethodInfo> extensionMethods = new List<MethodInfo>();
 
@@ -50,9 +52,17 @@ namespace QuickJS.Editor
         private Func<EventInfo, bool> _filterEventInfo;
         private Func<MethodInfo, bool> _filterMethodInfo;
 
+        public bool isEditorRuntime { get { return (bindingFlags & TypeBindingFlags.EditorRuntime) != 0; } }
+
         public TypeTransform(Type type)
         {
             _type = type;
+        }
+
+        public TypeTransform SetEditorRuntime()
+        {
+            bindingFlags |= TypeBindingFlags.EditorRuntime;
+            return this;
         }
 
         public void OnFilter<T>(Func<T, bool> callback)
