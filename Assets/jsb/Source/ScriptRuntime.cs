@@ -67,18 +67,9 @@ namespace QuickJS
 
         public ScriptRuntime(int runtimeId)
         {
-            _isValid = true;
-            _isRunning = true;
-            _isWorker = false;
             _runtimeId = runtimeId;
-            // _rwlock = new ReaderWriterLockSlim();
+            _isWorker = false;
             _mainThreadId = Thread.CurrentThread.ManagedThreadId;
-            _rt = JSApi.JS_NewRuntime();
-            JSApi.JS_SetHostPromiseRejectionTracker(_rt, JSApi.PromiseRejectionTracker, IntPtr.Zero);
-            JSApi.JS_SetRuntimeOpaque(_rt, (IntPtr)_runtimeId);
-            JSApi.JS_SetModuleLoaderFunc(_rt, module_normalize, module_loader, IntPtr.Zero);
-            CreateContext();
-            JSApi.JS_NewClass(_rt, JSApi.JSB_GetBridgeClassID(), "CSharpClass", JSApi.class_finalizer);
         }
 
         public GameObject GetContainer()
@@ -153,6 +144,17 @@ namespace QuickJS
                     }
                 }
             }
+            
+            _isValid = true;
+            _isRunning = true;
+            // _rwlock = new ReaderWriterLockSlim();
+            _rt = JSApi.JS_NewRuntime();
+            JSApi.JS_SetHostPromiseRejectionTracker(_rt, JSApi.PromiseRejectionTracker, IntPtr.Zero);
+            JSApi.JS_SetRuntimeOpaque(_rt, (IntPtr)_runtimeId);
+            JSApi.JS_SetModuleLoaderFunc(_rt, module_normalize, module_loader, IntPtr.Zero);
+            CreateContext();
+            JSApi.JS_NewClass(_rt, JSApi.JSB_GetBridgeClassID(), "CSharpClass", JSApi.class_finalizer);
+            
             _listener = listener;
             _fileResolver = resolver;
             _byteBufferAllocator = byteBufferAllocator;
