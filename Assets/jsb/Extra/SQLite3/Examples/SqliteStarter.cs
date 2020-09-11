@@ -7,12 +7,7 @@ using System.Text;
 
 namespace QuickJS.Extra.Sqlite
 {
-    using QuickJS;
-    using QuickJS.IO;
-    using QuickJS.Native;
-    using QuickJS.Binding;
     using Native;
-
     using UnityEngine;
 
     public class SqliteStarter : MonoBehaviour
@@ -25,7 +20,7 @@ namespace QuickJS.Extra.Sqlite
 
             sqlite3_stmt stmt;
             SqliteApi.sqlite3_prepare_v3(db, "select * from test;", out stmt);
-            while (SqliteApi.sqlite3_step(stmt) == SqliteApi.ResultCode.ROW)
+            while (SqliteApi.sqlite3_step(stmt) == ResultCode.ROW)
             {
                 var id = SqliteApi.sqlite3_column_int(stmt, 0);
                 var text = SqliteApi.sqlite3_column_text(stmt, 1);

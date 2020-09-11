@@ -1378,6 +1378,10 @@ namespace QuickJS.Editor
         {
             try
             {
+                if (string.IsNullOrEmpty(assembly.Location))
+                {
+                    return false;
+                }
                 var fileInfo = new FileInfo(assembly.Location);
                 if (fileInfo.DirectoryName.EndsWith("/Editor/Data/Managed"))
                 {

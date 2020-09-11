@@ -391,6 +391,9 @@ namespace QuickJS.Editor
                 case BuildTarget.iOS:
                     cg.cs.AppendLineL("#if UNITY_IOS");
                     break;
+                case BuildTarget.WSAPlayer:
+                    cg.cs.AppendLineL("#if UNITY_WSA");
+                    break;
                 case BuildTarget.StandaloneWindows:
                 case BuildTarget.StandaloneWindows64:
                     cg.cs.AppendLineL("#if UNITY_STANDALONE_WIN");
@@ -399,7 +402,7 @@ namespace QuickJS.Editor
                     cg.cs.AppendLineL("#if UNITY_STANDALONE_OSX");
                     break;
                 default:
-                    cg.cs.AppendLineL("#if false");
+                    cg.cs.AppendLineL("#if false // {0} is not supported", buildTarget);
                     break;
             }
         }
