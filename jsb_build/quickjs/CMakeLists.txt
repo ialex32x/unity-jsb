@@ -46,6 +46,10 @@ else ()
     set(QJS_LIBS -lm -ldl)
 endif ()
 
+if (CONFIG_WSA)
+    # set(QJS_LIBS ${QJS_LIBS} -lwinstorecompat)
+endif ()
+
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fPIC -shared -g -Wall -Wno-array-bounds -Wno-format-truncation")
 if (CONFIG_LTO)
     add_definitions(-DCONFIG_LTO)
