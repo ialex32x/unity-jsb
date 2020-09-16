@@ -60,6 +60,9 @@ add_definitions(
     -DCONFIG_BIGNUM
     -DCONFIG_VERSION="${QJS_VERSION}"
     # -D_GNU_SOURCE # ok?
+
+    # do not throw error when set typed array out of bound index
+    -DJSB_TYPED_ARRAY_NO_THROW
 )
 
 include_directories(${QJS_DIR})
