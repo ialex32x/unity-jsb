@@ -8450,7 +8450,11 @@ retry:
                             JS_ThrowTypeErrorDetachedArrayBuffer(ctx);
                             return -1;
                         }
+#ifdef JSB_TYPED_ARRAY_NO_THROW
+                        return TRUE;
+#else
                         return JS_ThrowTypeErrorOrFalse(ctx, flags, "out-of-bound numeric index");
+#endif
                     }
                 }
             } else {
@@ -8690,7 +8694,11 @@ static int JS_SetPropertyValue(JSContext *ctx, JSValueConst this_obj,
                     JS_ThrowTypeErrorDetachedArrayBuffer(ctx);
                     return -1;
                 } else {
+#ifdef JSB_TYPED_ARRAY_NO_THROW
+                    break;
+#else
                     return JS_ThrowTypeErrorOrFalse(ctx, flags, "out-of-bound numeric index");
+#endif
                 }
             }
             p->u.array.u.double_ptr[idx] = d;

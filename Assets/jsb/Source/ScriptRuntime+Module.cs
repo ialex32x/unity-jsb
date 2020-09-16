@@ -233,9 +233,9 @@ namespace QuickJS
                     }
 
                     JSApi.JS_SetProperty(ctx, module_obj, context.GetAtom("loaded"), JSApi.JS_NewBool(ctx, true));
-                    JSApi.JS_DupValue(ctx, exports_obj);
+                    var exports_ = JSApi.JS_GetProperty(ctx, module_obj, context.GetAtom("exports")); 
                     runtime.FreeValues(require_argv);
-                    return exports_obj;
+                    return exports_;
                 }
             }
             catch (Exception exception)
