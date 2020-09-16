@@ -69,5 +69,11 @@
 /jsb_build/quickjs/quickjs*/examples/test_fib
 
 /jsb_build/hotfix/obj
+/jsb_build/res/unversion_*.*
 
 /node_modules
+
+debug.log
+WSA*.pfx
+/Assets/WSA*.pfx
+/Assets/WSA*.pfx.meta
