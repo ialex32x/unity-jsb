@@ -61,10 +61,9 @@ namespace QuickJS.Utils
                 return true;
             }
 
-            var extIndex = fileName.LastIndexOf('.');
-            var slashIndex = fileName.LastIndexOf('/');
-
-            if (extIndex < 0 || slashIndex > extIndex)
+            // var extIndex = fileName.LastIndexOf('.');
+            // var slashIndex = fileName.LastIndexOf('/');
+            // if (extIndex < 0 || slashIndex > extIndex)
             {
                 // try resolve bytecode file
                 if (_ResolvePath(fileSystem, fileName + ".js.bytes", out searchPath, out resolvedPath))
