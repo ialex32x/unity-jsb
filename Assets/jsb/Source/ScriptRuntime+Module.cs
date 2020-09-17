@@ -30,9 +30,7 @@ namespace QuickJS
             try
             {
                 var runtime = ScriptEngine.GetRuntime(ctx);
-                var fileResolver = runtime._fileResolver;
-                var fileSystem = runtime._fileSystem;
-                var resolve_to = ScriptContext._file_commonjs_module_resolve(fileSystem, fileResolver, module_base_name, module_name);
+                var resolve_to = runtime.ResolveFilePath(module_base_name, module_name);
                 return JSApi.js_strndup(ctx, resolve_to);
             }
             catch (Exception exception)

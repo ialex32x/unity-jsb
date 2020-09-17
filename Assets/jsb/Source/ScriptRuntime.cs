@@ -301,6 +301,37 @@ namespace QuickJS
             return context;
         }
 
+        public string ResolveFilePath(string module_base_name, string module_id)
+        {
+            var parent_id = module_base_name;
+            var resolving = module_id;
+
+            // 将相对目录展开
+            if (module_id.StartsWith("./") || module_id.StartsWith("../") || module_id.Contains("/./") ||
+                module_id.Contains("/../"))
+            {
+                // 显式相对路径直接从 parent 模块路径拼接
+                var parent_path = PathUtils.GetDirectoryName(parent_id);
+                try
+                {
+                    resolving = PathUtils.ExtractPath(PathUtils.Combine(parent_path, module_id), '/');
+                }
+                catch
+                {
+                    // 不能提升到源代码目录外面
+                    throw new Exception(string.Format("invalid module path (out of sourceRoot): {0}", module_id));
+                }
+            }
+
+            string resolved;
+            if (_fileResolver.ResolvePath(_fileSystem, resolving, out resolved))
+            {
+                return resolved;
+            }
+
+            throw new Exception(string.Format("module not found: {0}", module_id));
+        }
+
         private static void _FreeValueAction(ScriptRuntime rt, JSAction action)
         {
             JSApi.JS_FreeValueRT(rt, action.value);

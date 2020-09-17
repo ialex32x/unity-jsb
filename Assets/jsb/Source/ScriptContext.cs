@@ -288,37 +288,6 @@ namespace QuickJS
             return JSApi.JS_GetProperty(_ctx, _require, GetAtom("main"));
         }
 
-        public static string _file_commonjs_module_resolve(IFileSystem fs, IPathResolver resolver, string module_base_name, string module_id)
-        {
-            var parent_id = module_base_name;
-            var resolving = module_id;
-
-            // 将相对目录展开
-            if (module_id.StartsWith("./") || module_id.StartsWith("../") || module_id.Contains("/./") ||
-                module_id.Contains("/../"))
-            {
-                // 显式相对路径直接从 parent 模块路径拼接
-                var parent_path = PathUtils.GetDirectoryName(parent_id);
-                try
-                {
-                    resolving = PathUtils.ExtractPath(PathUtils.Combine(parent_path, module_id), '/');
-                }
-                catch
-                {
-                    // 不能提升到源代码目录外面
-                    throw new Exception(string.Format("invalid module path (out of sourceRoot): {0}", module_id));
-                }
-            }
-
-            string resolved;
-            if (resolver.ResolvePath(fs, resolving, out resolved))
-            {
-                return resolved;
-            }
-
-            throw new Exception(string.Format("module not found: {0}", module_id));
-        }
-
         public void ResolveModule(string parent_module_id, string module_id, out string resolved_id, out JSValue mod_obj)
         {
             var mod_obj_cache = _get_commonjs_module(module_id);
@@ -344,9 +313,7 @@ namespace QuickJS
                 JSApi.JS_FreeValue(_ctx, exports);
             }
 
-            var fileSystem = _runtime.GetFileSystem();
-            var pathResolver = _runtime.GetPathResolver();
-            resolved_id = _file_commonjs_module_resolve(fileSystem, pathResolver, parent_module_id, module_id); // csharp exception
+            resolved_id = _runtime.ResolveFilePath(parent_module_id, module_id); // csharp exception
             mod_obj = _get_commonjs_module(resolved_id);
         }
 
