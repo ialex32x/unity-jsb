@@ -91,7 +91,6 @@ namespace QuickJS.Unity
                 return;
             }
 
-            var ctx = (JSContext)context;
             object result = null;
             var taskType = task.GetType();
             if (taskType.IsGenericType && taskType.GetGenericTypeDefinition() == typeof(Task<>))
@@ -106,6 +105,7 @@ namespace QuickJS.Unity
                 }
             }
 
+            var ctx = (JSContext)context;
             var backVal = Binding.Values.js_push_classvalue(ctx, result);
             if (backVal.IsException())
             {
