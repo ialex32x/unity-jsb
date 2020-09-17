@@ -139,7 +139,7 @@ namespace QuickJS.Binding
             {
                 JSApi.JS_FreeValue(ctx, ctorVal);
             }
-            // UnityEngine.Debug.LogFormat("define class {0}: {1}", type, protoVal);
+            // Debug.LogFormat("define class {0}: {1}", type, protoVal);
             JSApi.JS_FreeValue(ctx, protoVal);
             return decl;
         }
@@ -167,7 +167,7 @@ namespace QuickJS.Binding
             {
                 JSApi.JS_FreeValue(ctx, ctorVal);
             }
-            // UnityEngine.Debug.LogFormat("define class {0}: {1}", type, protoVal);
+            // Debug.LogFormat("define class {0}: {1}", type, protoVal);
             JSApi.JS_FreeValue(ctx, protoVal);
             return decl;
         }

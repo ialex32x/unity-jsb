@@ -1,9 +1,10 @@
-﻿using QuickJS.Editor;
-using System.Reflection;
+﻿using System.Reflection;
 
 namespace jsb.Editor
 {
+    using QuickJS.Unity;
     using UnityEngine;
+
     public class CustomBinding : AbstractBindingProcess
     {
         public override void OnPreExporting(BindingManager bindingManager)

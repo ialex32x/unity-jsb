@@ -4,7 +4,7 @@ using System.Text;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 
-namespace QuickJS.Editor
+namespace QuickJS.Unity
 {
     using Native;
     using UnityEngine;

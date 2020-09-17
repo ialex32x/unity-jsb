@@ -165,7 +165,7 @@ namespace QuickJS
             _typeDB = new TypeDB(this, _mainContext);
 
             var register = new TypeRegister(this, _mainContext);
-            register.RegisterType(typeof(ScriptBridge));
+            register.RegisterType(typeof(Unity.ScriptBridge));
             // await Task.Run(() => runner.OnBind(this, register));
             if (bindAll != null)
             {

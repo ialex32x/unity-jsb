@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace QuickJS.Editor
+namespace QuickJS.Unity
 {
     [Flags]
     public enum TypeBindingFlags

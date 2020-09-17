@@ -98,25 +98,6 @@ namespace QuickJS.Utils
             {
                 _slots[i] = new WheelSlot();
             }
-            // var united = (float)_timerange / 1000f;
-            // var repr = string.Empty;
-            // if (united < 60)
-            // {
-            //     repr = united + "s";
-            // }
-            // else if (united < 60 * 60)
-            // {
-            //     repr = (united / 60) + "m";
-            // }
-            // else if (united < 60 * 60 * 24)
-            // {
-            //     repr = (united / (60 * 60)) + "h";
-            // }
-            // else
-            // {
-            //     repr = (united / (60 * 60 * 24)) + "d";
-            // }
-            // UnityEngine.Debug.Log($"[init] wheel#{_depth} scale: {_interval} range: {_timerange} ({repr})");
         }
 
         public int Add(int delay, TimeHandle timer)

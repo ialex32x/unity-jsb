@@ -1,10 +1,9 @@
 using System;
 using System.Collections.Generic;
 
-namespace QuickJS
+namespace QuickJS.Unity
 {
     using Native;
-    using Binding;
     using UnityEngine;
 
     public class ScriptBridge : MonoBehaviour

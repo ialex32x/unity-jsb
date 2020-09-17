@@ -8,7 +8,6 @@ using System.Text.RegularExpressions;
 using QuickJS.Binding;
 using QuickJS.Native;
 using QuickJS.Utils;
-using Object = UnityEngine.Object;
 
 namespace QuickJS
 {
@@ -23,7 +22,7 @@ namespace QuickJS
         private AtomCache _atoms;
         private JSValue _moduleCache; // commonjs module cache
         private JSValue _require; // require function object 
-        private CoroutineManager _coroutines;
+        private ICoroutineManager _coroutines;
         private bool _isValid;
         private Regex _stRegex;
 
@@ -105,7 +104,7 @@ namespace QuickJS
             return _isValid;
         }
 
-        public CoroutineManager GetCoroutineManager()
+        public ICoroutineManager GetCoroutineManager()
         {
             if (_isValid)
             {
@@ -114,7 +113,7 @@ namespace QuickJS
                     var go = _runtime.GetContainer();
                     if (go != null)
                     {
-                        _coroutines = go.AddComponent<CoroutineManager>();
+                        _coroutines = go.AddComponent<Unity.DefaultCoroutineManager>();
                     }
                 }
             }
@@ -200,7 +199,7 @@ namespace QuickJS
 
             if (_coroutines != null)
             {
-                Object.DestroyImmediate(_coroutines);
+                _coroutines.Destroy();
                 _coroutines = null;
             }
 

@@ -1,6 +1,6 @@
 using System;
 
-namespace QuickJS.Editor
+namespace QuickJS.Unity
 {
     using QuickJS.Utils;
     using UnityEditor;

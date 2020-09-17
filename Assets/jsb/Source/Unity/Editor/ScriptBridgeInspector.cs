@@ -1,11 +1,10 @@
-﻿using UnityEditor;
-
-namespace QuickJS.Editor
+﻿
+namespace QuickJS.Unity
 {
-    using UEditor = UnityEditor.Editor;
+    using UnityEditor;
 
     [CustomEditor(typeof(ScriptBridge))]
-    public class ScriptBridgeInspector : UEditor
+    public class ScriptBridgeInspector : Editor
     {
         public override void OnInspectorGUI()
         {

@@ -5,7 +5,7 @@ using System.Text;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 
-namespace QuickJS.Editor
+namespace QuickJS.Unity
 {
     using UnityEngine;
     using UnityEditor;
