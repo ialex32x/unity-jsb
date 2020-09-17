@@ -28,6 +28,17 @@ namespace QuickJS.Utils
         private JSWeakMap<ScriptValue> _scriptValueMap = new JSWeakMap<ScriptValue>();
         private JSWeakMap<ScriptPromise> _scriptPromiseMap = new JSWeakMap<ScriptPromise>();
 
+        private IScriptLogger _logger;
+
+        public ObjectCache()
+        {
+        }
+
+        public ObjectCache(IScriptLogger logger)
+        {
+            _logger = logger;
+        }
+
         public int GetManagedObjectCount()
         {
             return _map.Count;
@@ -81,10 +92,13 @@ namespace QuickJS.Utils
             if (o != null)
             {
 #if JSB_DEBUG
-                JSValue oldPtr;
-                if (TryGetJSValue(o, out oldPtr))
+                if (_logger != null)
                 {
-                    UnityEngine.Debug.LogErrorFormat("exists object => js value mapping {0}: {1} => {2}", o, oldPtr, heapptr);
+                    JSValue oldPtr;
+                    if (TryGetJSValue(o, out oldPtr))
+                    {
+                        _logger.Write(LogLevel.Assert, "exists object => js value mapping {0}: {1} => {2}", o, oldPtr, heapptr);
+                    }
                 }
 #endif
                 _rmap[o] = heapptr;
@@ -122,7 +136,6 @@ namespace QuickJS.Utils
                     freeEntry.next = -1;
                     freeEntry.target = o;
                     freeEntry.finalizer = finalizer;
-                    // UnityEngine.Debug.LogFormat("[cache] (new) add object at {0}", id);
                     return id;
                 }
                 else
@@ -133,7 +146,6 @@ namespace QuickJS.Utils
                     freeEntry.next = -1;
                     freeEntry.target = o;
                     freeEntry.finalizer = finalizer;
-                    // UnityEngine.Debug.LogFormat("[cache] (reuse) add object at {0} [{1}]", id, o.GetType());
                     return id;
                 }
             }
@@ -170,7 +182,6 @@ namespace QuickJS.Utils
                 entry.next = _freeIndex;
                 entry.target = null;
                 _freeIndex = id;
-                // UnityEngine.Debug.LogFormat("[cache] remove object at {0}", id);
                 RemoveJSValue(o);
                 if (finalizer)
                 {
@@ -193,7 +204,6 @@ namespace QuickJS.Utils
             {
                 var entry = _map[id];
                 entry.target = o;
-                // UnityEngine.Debug.LogFormat("[cache] replace object at {0}", id);
                 JSValue heapptr;
                 if (oldValue != null && _rmap.TryGetValue(oldValue, out heapptr))
                 {

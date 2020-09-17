@@ -1,15 +1,8 @@
 using System;
 using System.Reflection;
-using System.Collections;
-using System.Collections.Generic;
-using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
 using System.Text;
 using QuickJS.Binding;
 using QuickJS.Native;
-using QuickJS.Utils;
-using UnityEngine;
-using Object = UnityEngine.Object;
 
 namespace QuickJS
 {
@@ -162,7 +155,7 @@ namespace QuickJS
             var context = ScriptEngine.GetContext(ctx);
             var runtime = context.GetRuntime();
             var fileSystem = runtime.GetFileSystem();
-            var resolver = runtime.GetFileResolver();
+            var resolver = runtime.GetPathResolver();
             string resolvedPath;
             if (!resolver.ResolvePath(fileSystem, path, out resolvedPath))
             {

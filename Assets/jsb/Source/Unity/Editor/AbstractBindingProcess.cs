@@ -3,7 +3,7 @@ using System.IO;
 using System.Collections.Generic;
 using System.Reflection;
 
-namespace QuickJS.Editor
+namespace QuickJS.Unity
 {
     using UnityEngine;
     using UnityEditor;

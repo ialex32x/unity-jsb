@@ -6,7 +6,7 @@ using System.Linq;
 using System.Reflection;
 using QuickJS.Native;
 
-namespace QuickJS.Editor
+namespace QuickJS.Unity
 {
     using UnityEngine;
     using UnityEditor;

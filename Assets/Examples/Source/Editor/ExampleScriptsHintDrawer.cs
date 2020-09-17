@@ -17,8 +17,7 @@ namespace jsb.Editor
         {
             var ta = attribute as ExampleScriptsHintAttribute;
             var files = Directory.GetFiles(ta.path);
-            _options = files.Where(file =>
-                    file.Contains("example_") && !file.EndsWith(".meta") && !file.EndsWith(".map"))
+            _options = files.Where(file => file.Contains("example_") && !file.EndsWith(".meta") && !file.EndsWith(".map"))
                 .Select((file, i) => new GUIContent(new FileInfo(file).Name.Replace(".js", "")))
                 .ToArray();
             if (_options.Length == 0)
@@ -39,7 +38,7 @@ namespace jsb.Editor
             }
             return -1;
         }
-        
+
         public override void OnGUI(Rect pos, SerializedProperty property, GUIContent label)
         {
             EditorGUI.BeginDisabledGroup(EditorApplication.isCompiling || EditorApplication.isPlayingOrWillChangePlaymode);

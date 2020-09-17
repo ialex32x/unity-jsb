@@ -6,12 +6,9 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
-using UnityEngine.Assertions;
 
-namespace QuickJS.Editor
+namespace QuickJS.Unity
 {
-    using Debug = UnityEngine.Debug;
-
     public static class ShellHelper
     {
         public static int Run(string command, string arguments, int maxIdleTime)
@@ -41,14 +38,14 @@ namespace QuickJS.Editor
                     if (!string.IsNullOrEmpty(e.Data))
                     {
                         output.AppendLine(e.Data);
-                        Debug.Log(e.Data);
+                        UnityEngine.Debug.Log(e.Data);
                     }
                 };
                 process.ErrorDataReceived += (sender, e) =>
                 {
                     if (!string.IsNullOrEmpty(e.Data))
                     {
-                        Debug.LogError(e.Data);
+                        UnityEngine.Debug.LogError(e.Data);
                     }
                 };
                 process.Start();
@@ -78,7 +75,7 @@ namespace QuickJS.Editor
                 }
                 // idle for too long with no output? -> kill
                 // nb: testing the process threads WaitState doesn't work on OSX
-                Debug.LogError("Idle process detected. See console for more details.");
+                UnityEngine.Debug.LogError("Idle process detected. See console for more details.");
                 process.Kill();
                 return -1;
             }

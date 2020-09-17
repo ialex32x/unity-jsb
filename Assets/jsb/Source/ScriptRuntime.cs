@@ -11,8 +11,6 @@ using QuickJS.Utils;
 
 namespace QuickJS
 {
-    using UnityEngine;
-
     public partial class ScriptRuntime
     {
         private class ScriptContextRef
@@ -41,14 +39,15 @@ namespace QuickJS
         private uint _class_id_alloc = JSApi.__JSB_GetClassID();
 
         private IScriptRuntimeListener _listener;
-        private IFileResolver _fileResolver;
+        private IPathResolver _fileResolver;
         private IFileSystem _fileSystem;
         private ObjectCache _objectCache = new ObjectCache();
         private TypeDB _typeDB;
         private TimerManager _timerManager;
         private IO.IByteBufferAllocator _byteBufferAllocator;
         private Utils.AutoReleasePool _autorelease;
-        private GameObject _container;
+        private UnityEngine.GameObject _container;
+
         private bool _isValid; // destroy 调用后立即 = false
         private bool _isRunning;
         private bool _isWorker;
@@ -72,18 +71,23 @@ namespace QuickJS
             _mainThreadId = Thread.CurrentThread.ManagedThreadId;
         }
 
-        public GameObject GetContainer()
+        public ICoroutineManager CreateCoroutineManager()
         {
             if (_container == null && _isValid)
             {
-                _container = new GameObject("JSRuntimeContainer");
-                _container.hideFlags = HideFlags.HideInHierarchy;
-                Object.DontDestroyOnLoad(_container);
+                _container = new UnityEngine.GameObject("JSRuntimeContainer");
+                _container.hideFlags = UnityEngine.HideFlags.HideInHierarchy;
+                UnityEngine.Object.DontDestroyOnLoad(_container);
             }
-            return _container;
+            if (_container != null)
+            {
+                return _container.AddComponent<Unity.DefaultCoroutineManager>();
+            }
+
+            return null;
         }
 
-        public IFileResolver GetFileResolver()
+        public IPathResolver GetPathResolver()
         {
             return _fileResolver;
         }
@@ -98,12 +102,7 @@ namespace QuickJS
             _fileResolver.AddSearchPath(path);
         }
 
-        public void Initialize(IFileSystem fileSystem, IScriptRuntimeListener listener)
-        {
-            Initialize(fileSystem, new FileResolver(), listener, new UnityLogger(), new IO.ByteBufferPooledAllocator());
-        }
-
-        public void Initialize(IFileSystem fileSystem, IFileResolver resolver, IScriptRuntimeListener listener, IScriptLogger logger, IO.IByteBufferAllocator byteBufferAllocator)
+        public void Initialize(IFileSystem fileSystem, IPathResolver resolver, IScriptRuntimeListener listener, IScriptLogger logger, IO.IByteBufferAllocator byteBufferAllocator)
         {
             if (logger == null)
             {
@@ -144,7 +143,7 @@ namespace QuickJS
                     }
                 }
             }
-            
+
             _isValid = true;
             _isRunning = true;
             // _rwlock = new ReaderWriterLockSlim();
@@ -154,7 +153,7 @@ namespace QuickJS
             JSApi.JS_SetModuleLoaderFunc(_rt, module_normalize, module_loader, IntPtr.Zero);
             CreateContext();
             JSApi.JS_NewClass(_rt, JSApi.JSB_GetBridgeClassID(), "CSharpClass", JSApi.class_finalizer);
-            
+
             _listener = listener;
             _fileResolver = resolver;
             _byteBufferAllocator = byteBufferAllocator;
@@ -165,7 +164,7 @@ namespace QuickJS
             _typeDB = new TypeDB(this, _mainContext);
 
             var register = new TypeRegister(this, _mainContext);
-            register.RegisterType(typeof(ScriptBridge));
+            register.RegisterType(typeof(Unity.ScriptBridge));
             // await Task.Run(() => runner.OnBind(this, register));
             if (bindAll != null)
             {
@@ -684,7 +683,7 @@ namespace QuickJS
             {
                 if (_mainThreadId == Thread.CurrentThread.ManagedThreadId)
                 {
-                    Object.DestroyImmediate(_container);
+                    UnityEngine.Object.DestroyImmediate(_container);
                 }
                 _container = null;
             }

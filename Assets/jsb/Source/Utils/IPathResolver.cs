@@ -3,9 +3,7 @@ using System.Collections.Generic;
 
 namespace QuickJS.Utils
 {
-    using UnityEngine;
-
-    public interface IFileResolver
+    public interface IPathResolver
     {
         void AddSearchPath(string path);
         bool ResolvePath(IFileSystem fileSystem, string fileName, out string resolvedPath);
@@ -17,11 +15,11 @@ namespace QuickJS.Utils
         public string main;
     }
 
-    public class SubFileResolver : IFileResolver
+    public class SubPathResolver : IPathResolver
     {
-        private IFileResolver _resolver;
+        private IPathResolver _resolver;
 
-        public SubFileResolver(IFileResolver resolver)
+        public SubPathResolver(IPathResolver resolver)
         {
             _resolver = resolver;
         }
@@ -37,12 +35,14 @@ namespace QuickJS.Utils
         }
     }
 
-    public class FileResolver : IFileResolver
+    public class PathResolver : IPathResolver
     {
+        private JsonConverter _jsonConv;
         private List<string> _searchPaths = new List<string>();
 
-        public FileResolver()
+        public PathResolver(JsonConverter jsonConv)
         {
+            _jsonConv = jsonConv;
         }
 
         public void AddSearchPath(string path)
@@ -86,7 +86,7 @@ namespace QuickJS.Utils
                     var packageData = fileSystem.ReadAllText(resolvedPath);
                     if (packageData != null)
                     {
-                        var packageConfig = JsonUtility.FromJson<PackageConfig>(packageData);
+                        var packageConfig = _jsonConv.Deserialize(packageData, typeof(PackageConfig)) as PackageConfig;
                         if (packageConfig != null)
                         {
                             var main = PathUtils.Combine(searchPath, fileName, packageConfig.main);

@@ -1,11 +1,10 @@
 using System;
 using System.Collections.Generic;
 
-namespace QuickJS.Editor
+namespace QuickJS.Unity
 {
     using UnityEngine;
     using UnityEditor;
-    using UnityEngine.Serialization;
 
     // js-bridge 配置 (editor only)
     public class Prefs
@@ -18,7 +17,7 @@ namespace QuickJS.Editor
         private string _filePath;
 
         // 静态绑定代码的生成目录
-        public string outDir = "Assets/Generated/CSharp";
+        public string outDir = "Assets/Generated/${platform}";
         public string typescriptDir = "Assets/Generated/Typings";
         public bool debugCodegen = false;
 
@@ -154,13 +153,14 @@ namespace QuickJS.Editor
             return defaultPrefs;
         }
 
-        private static string GetPlatform()
+        public static string GetPlatform()
         {
             var buildTarget = EditorUserBuildSettings.activeBuildTarget;
             switch (buildTarget)
             {
                 case BuildTarget.Android: return "Android";
                 case BuildTarget.iOS: return "iOS";
+                case BuildTarget.WSAPlayer: return "WSA"; // not supported
                 case BuildTarget.StandaloneWindows:
                 case BuildTarget.StandaloneWindows64: return "Windows";
                 case BuildTarget.StandaloneOSX: return "OSX";

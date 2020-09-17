@@ -4,6 +4,7 @@ using QuickJS.Binding;
 using QuickJS.Utils;
 using QuickJS.IO;
 using QuickJS.Extra;
+using QuickJS.Unity;
 
 namespace jsb
 {
@@ -35,7 +36,7 @@ namespace jsb
 
             _mConsole = new MiniConsole(scrollRect, text, 100);
             _rt = ScriptEngine.CreateRuntime();
-            var fileResolver = new FileResolver();
+            var fileResolver = new DefaultPathResolver();
             fileResolver.AddSearchPath("node_modules");
 
             if (fileLoader == FileLoader.Resources)

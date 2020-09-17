@@ -98,25 +98,6 @@ namespace QuickJS.Utils
             {
                 _slots[i] = new WheelSlot();
             }
-            // var united = (float)_timerange / 1000f;
-            // var repr = string.Empty;
-            // if (united < 60)
-            // {
-            //     repr = united + "s";
-            // }
-            // else if (united < 60 * 60)
-            // {
-            //     repr = (united / 60) + "m";
-            // }
-            // else if (united < 60 * 60 * 24)
-            // {
-            //     repr = (united / (60 * 60)) + "h";
-            // }
-            // else
-            // {
-            //     repr = (united / (60 * 60 * 24)) + "d";
-            // }
-            // UnityEngine.Debug.Log($"[init] wheel#{_depth} scale: {_interval} range: {_timerange} ({repr})");
         }
 
         public int Add(int delay, TimeHandle timer)
@@ -124,7 +105,7 @@ namespace QuickJS.Utils
             var offset = Math.Max(1, (delay - _interval + _jiffies - 1) / _interval);
             var index = Math.Max((_index + offset) % _slots.Length, 0);
             _slots[index].Add(timer);
-            // UnityEngine.Debug.LogWarning($"[wheel#{_depth}:{_index}<range:{_timerange} _interval:{_interval}>] add timer#{timer.id} delay:{delay} to index: {index} offset: {offset}");
+            // Debug.LogWarning($"[wheel#{_depth}:{_index}<range:{_timerange} _interval:{_interval}>] add timer#{timer.id} delay:{delay} to index: {index} offset: {offset}");
             return index;
         }
 
@@ -133,7 +114,7 @@ namespace QuickJS.Utils
             _slots[_index].Collect(cache);
             // if (cache.Count > 0)
             // {
-            //     UnityEngine.Debug.LogWarning($"[wheel#{_depth}:{_index}<range:{_timerange}>] collect timers {cache.Count}");
+            //     Debug.LogWarning($"[wheel#{_depth}:{_index}<range:{_timerange}>] collect timers {cache.Count}");
             // }
         }
 
@@ -142,7 +123,7 @@ namespace QuickJS.Utils
             ++_index;
             if (_depth > 0)
             {
-                // UnityEngine.Debug.Log($"[wheel#{_depth}:{_index}<range:{_timerange}>] tick...");
+                // Debug.Log($"[wheel#{_depth}:{_index}<range:{_timerange}>] tick...");
             }
             if (_index == _slots.Length)
             {
@@ -201,12 +182,12 @@ namespace QuickJS.Utils
                 if (delay < wheel.range)
                 {
                     wheel.Add(delay, timer);
-                    // UnityEngine.Debug.Log($"[rearrange] {timer.id} wheel#{i}:{wheel.index}");
+                    // Debug.Log($"[rearrange] {timer.id} wheel#{i}:{wheel.index}");
                     return;
                 }
             }
             _wheels[wheelCount - 1].Add(delay, timer);
-            // UnityEngine.Debug.Log($"[rearrange] {timer.id} wheel#{wheelCount - 1}:{_wheels[wheelCount - 1].index}");
+            // Debug.Log($"[rearrange] {timer.id} wheel#{wheelCount - 1}:{_wheels[wheelCount - 1].index}");
         }
 
         private TimeHandle GetTimeHandle(ulong id, int delay, bool once, TimeHandleCallback fn)
@@ -261,7 +242,7 @@ namespace QuickJS.Utils
             var timer = GetTimeHandle(id, delay, once, fn);
             _timeHandles[id] = timer;
             Rearrange(timer);
-            // UnityEngine.Debug.Log($"[Scheduler] Add timer#{timer.id} deadline: {timer.deadline}");
+            // Debug.Log($"[Scheduler] Add timer#{timer.id} deadline: {timer.deadline}");
             return id;
         }
 
@@ -291,7 +272,7 @@ namespace QuickJS.Utils
             _timeslice += ms;
             while (_timeslice >= _jiffies)
             {
-                // UnityEngine.Debug.Log($"[schedule] dt:{ms} _elapsed:@{_elapsed} _jiffies:{_jiffies}");
+                // Debug.Log($"[schedule] dt:{ms} _elapsed:@{_elapsed} _jiffies:{_jiffies}");
                 _timeslice -= _jiffies;
                 var wheelIndex = 0;
                 // console.log(`[schedule.wheel#${wheelIndex}] slot ${this._wheels[wheelIndex].index} @${this.elapsed}`)
@@ -301,7 +282,7 @@ namespace QuickJS.Utils
                     wheelIndex++;
                     while (wheelIndex < _wheels.Length)
                     {
-                        // UnityEngine.Debug.Log($"[schedule.wheel#{wheelIndex}] slot {_wheels[wheelIndex].index} @{_elapsed}");
+                        // Debug.Log($"[schedule.wheel#{wheelIndex}] slot {_wheels[wheelIndex].index} @{_elapsed}");
                         // _tcache2.Clear();
                         _wheels[wheelIndex].Collect(_tcache2);
                         for (int i = 0, size2 = _tcache2.Count; i < size2; ++i)
@@ -335,7 +316,7 @@ namespace QuickJS.Utils
                         timer.slot.Remove(timer);
                         timer.slot = null;
                     }
-                    // UnityEngine.Debug.LogError($"[timer#{timer.id}] active");
+                    // Debug.LogError($"[timer#{timer.id}] active");
 
                     if (!timer.deleted && handler != null)
                     {
@@ -346,7 +327,7 @@ namespace QuickJS.Utils
                         catch (Exception exception)
                         {
                             _logger?.WriteException(exception);
-                            // UnityEngine.Debug.LogErrorFormat("Scheduler Exception: {0}", exception);
+                            // Debug.LogErrorFormat("Scheduler Exception: {0}", exception);
                         }
                     }
 

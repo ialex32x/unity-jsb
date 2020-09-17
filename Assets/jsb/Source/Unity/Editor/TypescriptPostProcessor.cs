@@ -1,5 +1,5 @@
 
-namespace QuickJS.Editor
+namespace QuickJS.Unity
 {
     // public class TypeScriptPostProcessor : AssetPostprocessor
     // {

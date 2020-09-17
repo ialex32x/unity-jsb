@@ -4,7 +4,7 @@ using System.Text;
 using System.Reflection;
 using System.IO;
 
-namespace QuickJS.Editor
+namespace QuickJS.Unity
 {
     using QuickJS.Binding;
     using UnityEngine;
@@ -48,7 +48,7 @@ namespace QuickJS.Editor
             this.cs.enabled = (typeBindingFlags & TypeBindingFlags.BindingCode) != 0;
             this.tsDeclare.enabled = (typeBindingFlags & TypeBindingFlags.TypeDefinition) != 0;
 
-            using (new PlatformCodeGen(this))
+            using (new PlatformCodeGen(this, TypeBindingFlags.Default))
             {
                 using (new TopLevelCodeGen(this, CodeGenerator.NameOfBindingList))
                 {
@@ -102,7 +102,7 @@ namespace QuickJS.Editor
             this.cs.enabled = (typeBindingFlags & TypeBindingFlags.BindingCode) != 0;
             this.tsDeclare.enabled = (typeBindingFlags & TypeBindingFlags.TypeDefinition) != 0;
 
-            using (new PlatformCodeGen(this))
+            using (new PlatformCodeGen(this, TypeBindingFlags.Default))
             {
                 using (new TopLevelCodeGen(this, CodeGenerator.NameOfDelegates))
                 {
@@ -195,7 +195,7 @@ namespace QuickJS.Editor
 
         private void GenerateInternal(TypeBindingInfo typeBindingInfo)
         {
-            using (new PlatformCodeGen(this))
+            using (new PlatformCodeGen(this, TypeBindingFlags.Default))
             {
                 using (new TopLevelCodeGen(this, typeBindingInfo))
                 {

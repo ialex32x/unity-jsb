@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Reflection;
 
-namespace QuickJS.Editor
+namespace QuickJS.Unity
 {
     // 生成成员方法绑定代码
     public class OperatorCodeGen : MethodBaseCodeGen<MethodInfo>

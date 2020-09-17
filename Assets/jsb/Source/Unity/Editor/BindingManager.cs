@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Reflection;
 using System.Text.RegularExpressions;
 
-namespace QuickJS.Editor
+namespace QuickJS.Unity
 {
     using UnityEngine;
     using UnityEditor;
@@ -1537,18 +1537,18 @@ namespace QuickJS.Editor
                 .AddTSMethodDeclaration("static ConstrainedCopy<T>(sourceArray: System.Array<T>, sourceIndex: number, destinationArray: System.Array<T>, destinationIndex: number, length: number): void", "ConstrainedCopy", typeof(Array), typeof(int), typeof(Array), typeof(int), typeof(int))
             ;
 
-            AddExportedType(typeof(byte));
-            AddExportedType(typeof(sbyte));
-            AddExportedType(typeof(float));
-            AddExportedType(typeof(double));
-            AddExportedType(typeof(string));
-            AddExportedType(typeof(int));
-            AddExportedType(typeof(uint));
-            AddExportedType(typeof(short));
-            AddExportedType(typeof(ushort));
-            AddExportedType(typeof(object));
-            AddExportedType(typeof(Array));
-            AddExportedType(typeof(Delegate))
+            AddExportedType(typeof(byte)).SystemRuntime();
+            AddExportedType(typeof(sbyte)).SystemRuntime();
+            AddExportedType(typeof(float)).SystemRuntime();
+            AddExportedType(typeof(double)).SystemRuntime();
+            AddExportedType(typeof(string)).SystemRuntime();
+            AddExportedType(typeof(int)).SystemRuntime();
+            AddExportedType(typeof(uint)).SystemRuntime();
+            AddExportedType(typeof(short)).SystemRuntime();
+            AddExportedType(typeof(ushort)).SystemRuntime();
+            AddExportedType(typeof(object)).SystemRuntime();
+            AddExportedType(typeof(Array)).SystemRuntime();
+            AddExportedType(typeof(Delegate)).SystemRuntime()
                 .SetMemberBlocked("CreateDelegate")
             ;
 

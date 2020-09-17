@@ -1,15 +1,11 @@
 using System;
 using System.Collections.Generic;
-using System.Runtime.InteropServices;
-using System.Text;
 using QuickJS.Native;
 using QuickJS.Binding;
 using System.Reflection;
 
 namespace QuickJS.Utils
 {
-    using UnityEngine;
-
     public class TypeDB
     {
         private ScriptRuntime _runtime;

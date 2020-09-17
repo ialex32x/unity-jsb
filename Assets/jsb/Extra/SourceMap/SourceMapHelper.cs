@@ -28,7 +28,7 @@ namespace QuickJS.Extra
                 try
                 {
                     var runtime = ScriptEngine.GetRuntime(ctx);
-                    var fileResolver = runtime.GetFileResolver();
+                    var fileResolver = runtime.GetPathResolver();
                     var fileSystem = runtime.GetFileSystem();
                     string resolvedPath;
                     if (fileResolver.ResolvePath(fileSystem, fileName + ".map", out resolvedPath))

@@ -1,6 +1,6 @@
 using System;
 
-namespace QuickJS.Editor
+namespace QuickJS.Unity
 {
     using QuickJS.Utils;
     using UnityEditor;
@@ -74,8 +74,8 @@ namespace QuickJS.Editor
             }
             _tick = Environment.TickCount;
 
-            var logger = new UnityLogger();
-            var fileResolver = new FileResolver();
+            var logger = new Unity.DefaultLogger();
+            var fileResolver = new Unity.DefaultPathResolver();
             var fileSystem = new DefaultFileSystem(logger);
             fileResolver.AddSearchPath("Assets/Examples/Scripts/out/editor");
             fileResolver.AddSearchPath("node_modules");

@@ -35,7 +35,7 @@ namespace QuickJS.Binding
                 {
                     if (type == typeof(MonoBehaviour))
                     {
-                        var bridge = gameObject.AddComponent<ScriptBridge>();
+                        var bridge = gameObject.AddComponent<Unity.ScriptBridge>();
                         var cache = ScriptEngine.GetObjectCache(ctx);
                         var object_id = cache.AddObject(bridge, false);
                         var val = JSApi.jsb_construct_bridge_object(ctx, ctor, object_id);
@@ -88,14 +88,14 @@ namespace QuickJS.Binding
             return JSApi.JS_UNDEFINED;
         }
 
-        private static ScriptBridge _get_component(GameObject gameObject, JSValue ctor)
+        private static Unity.ScriptBridge _get_component(GameObject gameObject, JSValue ctor)
         {
             if (gameObject == null)
             {
                 return null;
             }
 
-            var allBridges = gameObject.GetComponents<ScriptBridge>();
+            var allBridges = gameObject.GetComponents<Unity.ScriptBridge>();
             for (int i = 0, size = allBridges.Length; i < size; i++)
             {
                 var bridge = allBridges[i];
@@ -107,14 +107,14 @@ namespace QuickJS.Binding
             return null;
         }
 
-        private static ScriptBridge _get_component(Transform transform, JSValue ctor)
+        private static Unity.ScriptBridge _get_component(Transform transform, JSValue ctor)
         {
             if (transform == null)
             {
                 return null;
             }
 
-            var allBridges = transform.GetComponents<ScriptBridge>();
+            var allBridges = transform.GetComponents<Unity.ScriptBridge>();
             for (int i = 0, size = allBridges.Length; i < size; i++)
             {
                 var bridge = allBridges[i];
@@ -126,7 +126,7 @@ namespace QuickJS.Binding
             return null;
         }
 
-        private static ScriptBridge _get_component_in_children(Transform transform, JSValue ctor, bool includeInactive)
+        private static Unity.ScriptBridge _get_component_in_children(Transform transform, JSValue ctor, bool includeInactive)
         {
             if (transform == null)
             {
@@ -155,7 +155,7 @@ namespace QuickJS.Binding
             return null;
         }
 
-        private static ScriptBridge _get_component_in_parent(Transform transform, JSValue ctor, bool includeInactive)
+        private static Unity.ScriptBridge _get_component_in_parent(Transform transform, JSValue ctor, bool includeInactive)
         {
             if (transform == null)
             {
@@ -261,7 +261,7 @@ namespace QuickJS.Binding
                     {
                         var array = JSApi.JS_NewArray(ctx);
                         var length = 0;
-                        var allBridges = gameObject.GetComponents<ScriptBridge>();
+                        var allBridges = gameObject.GetComponents<Unity.ScriptBridge>();
                         for (int i = 0, size = allBridges.Length; i < size; i++)
                         {
                             var bridge = allBridges[i];
@@ -302,7 +302,7 @@ namespace QuickJS.Binding
                 {
                     if (type == typeof(MonoBehaviour))
                     {
-                        var allBridges = gameObject.GetComponents<ScriptBridge>();
+                        var allBridges = gameObject.GetComponents<Unity.ScriptBridge>();
                         for (int i = 0, size = allBridges.Length; i < size; i++)
                         {
                             var bridge = allBridges[i];
@@ -344,7 +344,7 @@ namespace QuickJS.Binding
                     {
                         var array = JSApi.JS_NewArray(ctx);
                         var length = 0;
-                        var allBridges = gameObject.GetComponentsInChildren<ScriptBridge>(includeInactive);
+                        var allBridges = gameObject.GetComponentsInChildren<Unity.ScriptBridge>(includeInactive);
                         for (int i = 0, size = allBridges.Length; i < size; i++)
                         {
                             var bridge = allBridges[i];
@@ -387,7 +387,7 @@ namespace QuickJS.Binding
                     {
                         var array = JSApi.JS_NewArray(ctx);
                         var length = 0;
-                        var allBridges = gameObject.GetComponentsInParent<ScriptBridge>(includeInactive);
+                        var allBridges = gameObject.GetComponentsInParent<Unity.ScriptBridge>(includeInactive);
                         for (int i = 0, size = allBridges.Length; i < size; i++)
                         {
                             var bridge = allBridges[i];
