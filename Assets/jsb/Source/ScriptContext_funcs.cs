@@ -345,7 +345,14 @@ namespace QuickJS
             if (Values.js_get_cached_object(ctx, argv[0], out awaitObject))
             {
                 var context = ScriptEngine.GetContext(ctx);
-                return context.Yield(awaitObject);
+                var co = context.GetCoroutineManager();
+                if (co != null)
+                {
+                    return co.Yield(context, awaitObject);
+                }
+
+                return JSApi.JS_ThrowInternalError(ctx, "no async manager");
+                // return context.Yield(awaitObject);
             }
 
             return JSApi.JS_ThrowInternalError(ctx, "type YieldInstruction or Task expected");

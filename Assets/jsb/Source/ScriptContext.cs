@@ -116,17 +116,6 @@ namespace QuickJS
             return _coroutines;
         }
 
-        public JSValue Yield(object awaitObject)
-        {
-            GetCoroutineManager();
-            if (_coroutines != null)
-            {
-                return _coroutines.Yield(this, awaitObject);
-            }
-
-            return JSApi.JS_ThrowInternalError(_ctx, "no async manager");
-        }
-
         public TimerManager GetTimerManager()
         {
             return _runtime.GetTimerManager();
