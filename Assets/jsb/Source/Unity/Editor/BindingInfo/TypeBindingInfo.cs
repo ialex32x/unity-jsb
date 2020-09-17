@@ -17,7 +17,7 @@ namespace QuickJS.Editor
 
         public TypeBindingFlags bindingFlags { get { return transform.bindingFlags; } }
 
-        public bool isEditorRuntime { get { return (transform.bindingFlags & TypeBindingFlags.EditorRuntime) != 0; } }
+        public bool isEditorRuntime => transform.isEditorRuntime;
 
         // 父类类型
         public Type super

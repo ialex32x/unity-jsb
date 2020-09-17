@@ -52,16 +52,34 @@ namespace QuickJS.Editor
         private Func<EventInfo, bool> _filterEventInfo;
         private Func<MethodInfo, bool> _filterMethodInfo;
 
-        public bool isEditorRuntime { get { return (bindingFlags & TypeBindingFlags.EditorRuntime) != 0; } }
+        public bool isEditorRuntime { get { return (bindingFlags & TypeBindingFlags.UnityEditorRuntime) != 0; } }
 
         public TypeTransform(Type type)
         {
             _type = type;
         }
 
-        public TypeTransform SetEditorRuntime()
+        public TypeTransform EditorRuntime()
         {
-            bindingFlags |= TypeBindingFlags.EditorRuntime;
+            bindingFlags |= TypeBindingFlags.UnityEditorRuntime;
+            return this;
+        }
+
+        public TypeTransform SystemRuntime()
+        {
+            bindingFlags &= ~TypeBindingFlags.UnityRuntime;
+            return this;
+        }
+
+        public TypeTransform SetRuntime(TypeBindingFlags bf)
+        {
+            bindingFlags |= bf;
+            return this;
+        }
+
+        public TypeTransform UnsetRuntime(TypeBindingFlags bf)
+        {
+            bindingFlags &= ~bf;
             return this;
         }
 

@@ -8,8 +8,10 @@ namespace QuickJS.Editor
         None = 0,
         BindingCode = 1,  // 生成绑定代码
         TypeDefinition = 2, // 生成 d.ts 声明
-        Default = BindingCode | TypeDefinition,
 
-        EditorRuntime = 4, // mark as editor runtime only 
+        UnityEditorRuntime = 4, // mark as editor runtime only 
+        UnityRuntime = 8, 
+
+        Default = BindingCode | TypeDefinition | UnityRuntime,
     }
 }

@@ -187,7 +187,8 @@ namespace QuickJS.Editor
             this.typeBindingInfo = typeBindingInfo;
             this.cg.cs.AppendLine("[{0}]", typeof(JSBindingAttribute).Name);
             // this.cg.cs.AppendLine("[UnityEngine.Scripting.Preserve]");
-            this.cg.cs.AppendLine("public class {0} : {1} {{", typeBindingInfo.name, typeof(Binding.Values).Name);
+            this.cg.cs.AppendLine("public class {0} : {1}", typeBindingInfo.name, typeof(Binding.Values).Name);
+            this.cg.cs.AppendLine("{");
             this.cg.cs.AddTabLevel();
         }
 
@@ -385,40 +386,55 @@ namespace QuickJS.Editor
     public class PlatformCodeGen : IDisposable
     {
         protected CodeGenerator cg;
+        protected TypeBindingFlags bf;
+        protected string predef;
 
-        public PlatformCodeGen(CodeGenerator cg)
+        public PlatformCodeGen(CodeGenerator cg, TypeBindingFlags bf)
         {
             this.cg = cg;
+            this.bf = bf;
+            this.predef = string.Empty;
 
-            var buildTarget = EditorUserBuildSettings.activeBuildTarget;
-            switch (buildTarget)
+            if ((this.bf & TypeBindingFlags.UnityRuntime) != 0)
             {
-                case BuildTarget.Android:
-                    cg.cs.AppendLineL("#if UNITY_ANDROID");
-                    break;
-                case BuildTarget.iOS:
-                    cg.cs.AppendLineL("#if UNITY_IOS");
-                    break;
-                case BuildTarget.WSAPlayer:
-                    cg.cs.AppendLineL("#if UNITY_WSA");
-                    break;
-                case BuildTarget.StandaloneWindows:
-                case BuildTarget.StandaloneWindows64:
-                    cg.cs.AppendLineL("#if UNITY_STANDALONE_WIN");
-                    break;
-                case BuildTarget.StandaloneOSX:
-                    cg.cs.AppendLineL("#if UNITY_STANDALONE_OSX");
-                    break;
-                default:
-                    cg.cs.AppendLineL("#if false // {0} is not supported", buildTarget);
-                    break;
+                var buildTarget = EditorUserBuildSettings.activeBuildTarget;
+                switch (buildTarget)
+                {
+                    case BuildTarget.Android:
+                        predef = "UNITY_ANDROID";
+                        break;
+                    case BuildTarget.iOS:
+                        predef = "UNITY_IOS";
+                        break;
+                    case BuildTarget.WSAPlayer:
+                        predef = "UNITY_WSA"; // not supported
+                        break;
+                    case BuildTarget.StandaloneWindows:
+                    case BuildTarget.StandaloneWindows64:
+                        predef = "UNITY_STANDALONE_WIN";
+                        break;
+                    case BuildTarget.StandaloneOSX:
+                        predef = "UNITY_STANDALONE_OSX";
+                        break;
+                    default:
+                        predef = string.Format("false // {0} is not supported", buildTarget);
+                        break;
+                }
+            }
+
+            if (!string.IsNullOrEmpty(this.predef))
+            {
+                cg.cs.AppendLineL("#if {0}", this.predef);
             }
         }
 
 
         public void Dispose()
         {
-            cg.cs.AppendLineL("#endif");
+            if (!string.IsNullOrEmpty(predef))
+            {
+                cg.cs.AppendLineL("#endif");
+            }
         }
     }
 }
