@@ -23,37 +23,6 @@ namespace QuickJS
             return 0;
         }
 
-        public static string module_resolve(IFileSystem fs, IPathResolver resolver, string module_base_name, string module_id)
-        {
-            var parent_id = module_base_name;
-            var resolving = module_id;
-
-            // 将相对目录展开
-            if (module_id.StartsWith("./") || module_id.StartsWith("../") || module_id.Contains("/./") ||
-                module_id.Contains("/../"))
-            {
-                // 显式相对路径直接从 parent 模块路径拼接
-                var parent_path = PathUtils.GetDirectoryName(parent_id);
-                try
-                {
-                    resolving = PathUtils.ExtractPath(PathUtils.Combine(parent_path, module_id), '/');
-                }
-                catch
-                {
-                    // 不能提升到源代码目录外面
-                    throw new Exception(string.Format("invalid module path (out of sourceRoot): {0}", module_id));
-                }
-            }
-
-            string resolved;
-            if (resolver.ResolvePath(fs, resolving, out resolved))
-            {
-                return resolved;
-            }
-
-            throw new Exception(string.Format("module not found: {0}", module_id));
-        }
-
         [MonoPInvokeCallback(typeof(JSModuleNormalizeFunc))]
         public static IntPtr module_normalize(JSContext ctx, string module_base_name, string module_name,
             IntPtr opaque)
@@ -63,7 +32,7 @@ namespace QuickJS
                 var runtime = ScriptEngine.GetRuntime(ctx);
                 var fileResolver = runtime._fileResolver;
                 var fileSystem = runtime._fileSystem;
-                var resolve_to = module_resolve(fileSystem, fileResolver, module_base_name, module_name);
+                var resolve_to = ScriptContext._file_commonjs_module_resolve(fileSystem, fileResolver, module_base_name, module_name);
                 return JSApi.js_strndup(ctx, resolve_to);
             }
             catch (Exception exception)
@@ -100,14 +69,15 @@ namespace QuickJS
             JSApi.JS_FreeValue(ctx, parent_module_id_val);
 
             var runtime = context.GetRuntime();
-            var id = JSApi.GetString(ctx, argv[0]);
+            var module_id = JSApi.GetString(ctx, argv[0]);
 
             try
             {
                 var fileSystem = runtime._fileSystem;
-                var fileResolver = runtime._fileResolver;
-                var resolved_id = module_resolve(fileSystem, fileResolver, parent_module_id, id); // csharp exception
-                var cache = context._get_commonjs_module(resolved_id);
+                JSValue cache;
+                string resolved_id;
+                context.ResolveModule(parent_module_id, module_id, out resolved_id, out cache);
+
                 if (cache.IsObject())
                 {
                     var exports = JSApi.JS_GetProperty(ctx, cache, context.GetAtom("exports"));
@@ -115,6 +85,7 @@ namespace QuickJS
                     return exports;
                 }
 
+                //TODO: 与 ScriptContext Module Resolver 合并
                 var resolved_id_bytes = Utils.TextUtils.GetNullTerminatedBytes(resolved_id);
                 var dirname = PathUtils.GetDirectoryName(resolved_id);
                 var source = fileSystem.ReadAllBytes(resolved_id);
@@ -232,7 +203,7 @@ namespace QuickJS
                     }
 
                     JSApi.JS_SetProperty(ctx, module_obj, context.GetAtom("loaded"), JSApi.JS_NewBool(ctx, true));
-                    var exports_ = JSApi.JS_GetProperty(ctx, module_obj, context.GetAtom("exports")); 
+                    var exports_ = JSApi.JS_GetProperty(ctx, module_obj, context.GetAtom("exports"));
                     runtime.FreeValues(require_argv);
                     return exports_;
                 }
@@ -285,12 +256,12 @@ namespace QuickJS
             {
                 var input_len = (size_t)(input_bytes.Length - 1);
                 var evalFlags = JSEvalFlags.JS_EVAL_FLAG_STRICT;
-                
+
                 if (bModule)
                 {
                     evalFlags |= JSEvalFlags.JS_EVAL_TYPE_MODULE;
                 }
-                
+
                 return JSApi.JS_Eval(ctx, input_ptr, input_len, fn_ptr, evalFlags);
             }
         }

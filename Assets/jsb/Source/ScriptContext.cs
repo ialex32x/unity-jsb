@@ -23,6 +23,7 @@ namespace QuickJS
         private JSValue _moduleCache; // commonjs module cache
         private JSValue _require; // require function object 
         private ICoroutineManager _coroutines;
+        private IModuleResolver _moduleResolver = null;
         private bool _isValid;
         private Regex _stRegex;
 
@@ -209,7 +210,7 @@ namespace QuickJS
             _runtime.FreeValues(values);
         }
 
-        public unsafe void FreeValues(int argc , JSValue* values)
+        public unsafe void FreeValues(int argc, JSValue* values)
         {
             _runtime.FreeValues(argc, values);
         }
@@ -272,6 +273,8 @@ namespace QuickJS
             var prop = GetAtom(module_id);
 
             JSApi.JS_SetProperty(_ctx, _moduleCache, prop, JSApi.JS_DupValue(_ctx, module_obj));
+            JSApi.JS_SetProperty(_ctx, module_obj, GetAtom("id"), JSApi.JS_AtomToString(_ctx, prop));
+            // JSApi.JS_SetProperty(_ctx, module_obj, GetAtom("filename"), JSApi.JS_AtomToString(_ctx, prop));
             JSApi.JS_SetProperty(_ctx, module_obj, GetAtom("cache"), JSApi.JS_DupValue(_ctx, _moduleCache));
             JSApi.JS_SetProperty(_ctx, module_obj, GetAtom("loaded"), JSApi.JS_NewBool(_ctx, loaded));
             JSApi.JS_SetProperty(_ctx, module_obj, GetAtom("exports"), JSApi.JS_DupValue(_ctx, exports_obj));
@@ -283,6 +286,68 @@ namespace QuickJS
         public JSValue _dup_commonjs_main_module()
         {
             return JSApi.JS_GetProperty(_ctx, _require, GetAtom("main"));
+        }
+
+        public static string _file_commonjs_module_resolve(IFileSystem fs, IPathResolver resolver, string module_base_name, string module_id)
+        {
+            var parent_id = module_base_name;
+            var resolving = module_id;
+
+            // 将相对目录展开
+            if (module_id.StartsWith("./") || module_id.StartsWith("../") || module_id.Contains("/./") ||
+                module_id.Contains("/../"))
+            {
+                // 显式相对路径直接从 parent 模块路径拼接
+                var parent_path = PathUtils.GetDirectoryName(parent_id);
+                try
+                {
+                    resolving = PathUtils.ExtractPath(PathUtils.Combine(parent_path, module_id), '/');
+                }
+                catch
+                {
+                    // 不能提升到源代码目录外面
+                    throw new Exception(string.Format("invalid module path (out of sourceRoot): {0}", module_id));
+                }
+            }
+
+            string resolved;
+            if (resolver.ResolvePath(fs, resolving, out resolved))
+            {
+                return resolved;
+            }
+
+            throw new Exception(string.Format("module not found: {0}", module_id));
+        }
+
+        public void ResolveModule(string parent_module_id, string module_id, out string resolved_id, out JSValue mod_obj)
+        {
+            var mod_obj_cache = _get_commonjs_module(module_id);
+            if (mod_obj_cache.IsObject())
+            {
+                var id_obj = JSApi.JS_GetProperty(_ctx, mod_obj_cache, GetAtom("id"));
+                resolved_id = JSApi.GetString(_ctx, id_obj);
+                mod_obj = mod_obj_cache;
+                JSApi.JS_FreeValue(_ctx, id_obj);
+                return;
+            }
+            JSApi.JS_FreeValue(_ctx, mod_obj_cache);
+
+            if (_moduleResolver != null)
+            {
+                JSValue exports;
+                if (_moduleResolver.Resolve(parent_module_id, module_id, out resolved_id, out exports))
+                {
+                    mod_obj = _new_commonjs_module(resolved_id, exports, true);
+                    resolved_id = module_id;
+                    return;
+                }
+                JSApi.JS_FreeValue(_ctx, exports);
+            }
+
+            var fileSystem = _runtime.GetFileSystem();
+            var pathResolver = _runtime.GetPathResolver();
+            resolved_id = _file_commonjs_module_resolve(fileSystem, pathResolver, parent_module_id, module_id); // csharp exception
+            mod_obj = _get_commonjs_module(resolved_id);
         }
 
         public static void Bind(TypeRegister register)
@@ -338,7 +403,7 @@ namespace QuickJS
 
             var exports_obj = JSApi.JS_NewObject(_ctx);
             var require_obj = JSApi.JS_DupValue(_ctx, _require);
-            var module_obj = _new_commonjs_module("", exports_obj, false);
+            var module_obj = _new_commonjs_module(".", exports_obj, false);
             var filename_obj = JSApi.JS_AtomToString(_ctx, filename_atom);
             var dirname_obj = JSApi.JS_AtomToString(_ctx, dirname_atom);
             var require_argv = new JSValue[5] { exports_obj, require_obj, module_obj, filename_obj, dirname_obj };
