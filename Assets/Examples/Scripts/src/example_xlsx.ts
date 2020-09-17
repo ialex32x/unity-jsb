@@ -1,9 +1,15 @@
 
+//NOTE: 此处 xlsx 在 package.json 中以 devDependencies 方式依赖, 仅开发环境有效. 
+//      可以改为 dev, 自行按需调整.
+//      如运行报错, 请先确认是否已安装依赖包 (npm install 即可).
+
+console.log("please run 'npm install' at first if 'xlsx' module can not be resolved");
+
 import { read, utils } from "xlsx";
 
 let filename = "Assets/Examples/Data/test.xlsx";
 
-if (typeof jsb === "undefined") {
+if (typeof UnityEngine === "undefined") {
     // 运行在 nodejs 环境
 
     const fs = require("fs");

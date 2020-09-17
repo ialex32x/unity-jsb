@@ -1,8 +1,13 @@
 "use strict";
+//NOTE: 此处 xlsx 在 package.json 中以 devDependencies 方式依赖, 仅开发环境有效. 
+//      可以改为 dev, 自行按需调整.
+//      如运行报错, 请先确认是否已安装依赖包 (npm install 即可).
 Object.defineProperty(exports, "__esModule", { value: true });
+console.log("please run 'npm install' at first if 'xlsx' module can not be resolved");
 const xlsx_1 = require("xlsx");
 let filename = "Assets/Examples/Data/test.xlsx";
-if (typeof jsb === "undefined") {
+if (typeof UnityEngine === "undefined") {
+    // 运行在 nodejs 环境
     const fs = require("fs");
     let data = fs.readFileSync(filename);
     // console.log(data);
@@ -10,11 +15,10 @@ if (typeof jsb === "undefined") {
     console.log(filename, typeof wb);
 }
 else {
+    // 运行在 Unity 环境
     let bytes = System.IO.File.ReadAllBytes(filename);
     let data = jsb.ToArrayBuffer(bytes);
-    let wb = xlsx_1.read(data, {
-        type: "buffer",
-    });
+    let wb = xlsx_1.read(data, { type: "buffer" });
     console.log("read excel:", filename);
     for (var sheetIndex in wb.SheetNames) {
         var sheetName = wb.SheetNames[sheetIndex];
