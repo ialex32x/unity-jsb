@@ -5,7 +5,6 @@ using QuickJS.Native;
 namespace QuickJS.Binding
 {
     using Utils;
-    using UnityEngine;
 
     public class TypeRegister
     {

@@ -5,7 +5,6 @@ using System.Runtime.CompilerServices;
 namespace QuickJS.Binding
 {
     using Native;
-    using UnityEngine;
     using Utils;
 
     // 处理类型

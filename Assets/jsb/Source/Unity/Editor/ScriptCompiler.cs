@@ -15,7 +15,7 @@ namespace QuickJS.Unity
     {
         private JSRuntime _rt;
         private JSContext _ctx;
-        private UnityLogger _logger = new UnityLogger();
+        private Unity.DefaultLogger _logger = new Unity.DefaultLogger();
 
         public ScriptCompiler()
         {

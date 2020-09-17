@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Net;
 using QuickJS.Native;
-using UnityEngine;
 
 namespace QuickJS.Utils
 {

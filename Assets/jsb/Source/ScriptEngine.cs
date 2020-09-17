@@ -6,8 +6,6 @@ using QuickJS.Utils;
 
 namespace QuickJS
 {
-    using UnityEngine;
-
     public class ScriptEngine
     {
         private class ScriptRuntimeRef

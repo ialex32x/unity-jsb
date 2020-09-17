@@ -3,8 +3,6 @@ using System.Collections.Generic;
 
 namespace QuickJS.Utils
 {
-    using UnityEngine;
-
     public interface IFileSystem
     {
         bool Exists(string path);

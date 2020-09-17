@@ -7,7 +7,6 @@ using System.Threading;
 
 namespace QuickJS
 {
-    using UnityEngine;
     using Utils;
 
     public partial class ScriptRuntime
@@ -24,7 +23,7 @@ namespace QuickJS
             return 0;
         }
 
-        public static string module_resolve(IFileSystem fs, IFileResolver resolver, string module_base_name, string module_id)
+        public static string module_resolve(IFileSystem fs, IPathResolver resolver, string module_base_name, string module_id)
         {
             var parent_id = module_base_name;
             var resolving = module_id;

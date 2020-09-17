@@ -6,7 +6,6 @@ using System.Runtime.CompilerServices;
 namespace QuickJS.Binding
 {
     using Native;
-    using UnityEngine;
 
     // 处理类型匹配
     public partial class Values

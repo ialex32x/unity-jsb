@@ -3,8 +3,6 @@ using QuickJS.Native;
 
 namespace QuickJS
 {
-    using UnityEngine;
-
     public class ScriptString : ScriptValue
     {
         private bool _cached;

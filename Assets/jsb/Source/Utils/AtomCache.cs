@@ -3,9 +3,6 @@ using QuickJS.Native;
 
 namespace QuickJS.Utils
 {
-    using Utils;
-    using UnityEngine;
-
     public class AtomCache
     {
         private JSContext _ctx;

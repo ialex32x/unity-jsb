@@ -110,11 +110,7 @@ namespace QuickJS
             {
                 if (_coroutines == null)
                 {
-                    var go = _runtime.GetContainer();
-                    if (go != null)
-                    {
-                        _coroutines = go.AddComponent<Unity.DefaultCoroutineManager>();
-                    }
+                    _coroutines = _runtime.CreateCoroutineManager();
                 }
             }
             return _coroutines;

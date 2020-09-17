@@ -3,8 +3,6 @@ using System.Net;
 
 namespace QuickJS.IO
 {
-    using UnityEngine;
-
     // 容量会自动扩展 (翻倍)
     // 所有操作都不是线程安全的
     public class ByteBuffer : Utils.IReferenceObject
