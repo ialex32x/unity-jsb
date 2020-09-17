@@ -50,7 +50,12 @@ if (CONFIG_WSA)
     # set(QJS_LIBS ${QJS_LIBS} -lwinstorecompat)
 endif ()
 
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fPIC -shared -g -Wall -Wno-array-bounds -Wno-format-truncation")
+if (JSB_DEBUG)
+    add_definitions(-DJSB_DEBUG)
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g")
+endif ()
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fPIC -shared -Wall -Wno-array-bounds -Wno-format-truncation")
+
 if (CONFIG_LTO)
     add_definitions(-DCONFIG_LTO)
 endif ()
