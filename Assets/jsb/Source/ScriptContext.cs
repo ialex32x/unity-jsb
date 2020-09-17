@@ -288,34 +288,34 @@ namespace QuickJS
             return JSApi.JS_GetProperty(_ctx, _require, GetAtom("main"));
         }
 
-        public void ResolveModule(string parent_module_id, string module_id, out string resolved_id, out JSValue mod_obj)
-        {
-            var mod_obj_cache = _get_commonjs_module(module_id);
-            if (mod_obj_cache.IsObject())
-            {
-                var id_obj = JSApi.JS_GetProperty(_ctx, mod_obj_cache, GetAtom("id"));
-                resolved_id = JSApi.GetString(_ctx, id_obj);
-                mod_obj = mod_obj_cache;
-                JSApi.JS_FreeValue(_ctx, id_obj);
-                return;
-            }
-            JSApi.JS_FreeValue(_ctx, mod_obj_cache);
+        // public void ResolveModule(string parent_module_id, string module_id, out string resolved_id, out JSValue mod_obj)
+        // {
+        //     var mod_obj_cache = _get_commonjs_module(module_id);
+        //     if (mod_obj_cache.IsObject())
+        //     {
+        //         var id_obj = JSApi.JS_GetProperty(_ctx, mod_obj_cache, GetAtom("id"));
+        //         resolved_id = JSApi.GetString(_ctx, id_obj);
+        //         mod_obj = mod_obj_cache;
+        //         JSApi.JS_FreeValue(_ctx, id_obj);
+        //         return;
+        //     }
+        //     JSApi.JS_FreeValue(_ctx, mod_obj_cache);
 
-            if (_moduleResolver != null)
-            {
-                JSValue exports;
-                if (_moduleResolver.Resolve(parent_module_id, module_id, out resolved_id, out exports))
-                {
-                    mod_obj = _new_commonjs_module(resolved_id, exports, true);
-                    resolved_id = module_id;
-                    return;
-                }
-                JSApi.JS_FreeValue(_ctx, exports);
-            }
+        //     if (_moduleResolver != null)
+        //     {
+        //         JSValue exports;
+        //         if (_moduleResolver.Resolve(parent_module_id, module_id, out resolved_id, out exports))
+        //         {
+        //             mod_obj = _new_commonjs_module(resolved_id, exports, true);
+        //             resolved_id = module_id;
+        //             return;
+        //         }
+        //         JSApi.JS_FreeValue(_ctx, exports);
+        //     }
 
-            resolved_id = _runtime.ResolveFilePath(parent_module_id, module_id); // csharp exception
-            mod_obj = _get_commonjs_module(resolved_id);
-        }
+        //     resolved_id = _runtime.ResolveFilePath(parent_module_id, module_id); // csharp exception
+        //     mod_obj = _get_commonjs_module(resolved_id);
+        // }
 
         public static void Bind(TypeRegister register)
         {

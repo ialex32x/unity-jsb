@@ -71,10 +71,13 @@ namespace QuickJS
 
             try
             {
-                var fileSystem = runtime._fileSystem;
-                JSValue cache;
-                string resolved_id;
-                context.ResolveModule(parent_module_id, module_id, out resolved_id, out cache);
+                //TODO: use Module Resolver List
+                // JSValue cache;
+                // string resolved_id;
+                // context.ResolveModule(parent_module_id, module_id, out resolved_id, out cache);
+
+                var resolved_id = runtime.ResolveFilePath(parent_module_id, module_id); // csharp exception
+                var cache = context._get_commonjs_module(resolved_id);
 
                 if (cache.IsObject())
                 {
@@ -82,10 +85,11 @@ namespace QuickJS
                     JSApi.JS_FreeValue(ctx, cache);
                     return exports;
                 }
+                JSApi.JS_FreeValue(ctx, cache);
 
-                //TODO: 与 ScriptContext Module Resolver 合并
                 var resolved_id_bytes = Utils.TextUtils.GetNullTerminatedBytes(resolved_id);
                 var dirname = PathUtils.GetDirectoryName(resolved_id);
+                var fileSystem = runtime._fileSystem;
                 var source = fileSystem.ReadAllBytes(resolved_id);
                 if (source == null)
                 {
