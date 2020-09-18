@@ -1,15 +1,26 @@
-using System;
-using System.Collections.Generic;
 
 namespace QuickJS.Unity
 {
+    using IO;
     using Utils;
 
     public static class ScriptRuntimeExtensions
     {
-        public static void Initialize(this ScriptRuntime rt, IFileSystem fileSystem, IScriptRuntimeListener listener)
+        public static void AddModuleResolvers(this ScriptRuntime runtime)
         {
-            rt.Initialize(fileSystem, new Unity.DefaultPathResolver(), listener, new Unity.DefaultLogger(), new IO.ByteBufferPooledAllocator());
+            runtime.AddModuleResolver(new StaticModuleResolver());
+            runtime.AddModuleResolver(new JsonModuleResolver());
+            runtime.AddModuleResolver(new SourceModuleResolver(new DefaultJsonConverter()));
+        }
+
+        public static void Initialize(this ScriptRuntime runtime, IScriptRuntimeListener listener)
+        {
+            var logger = new DefaultLogger();
+            var fileResolver = new PathResolver();
+            var fileSystem = new DefaultFileSystem(logger);
+
+            runtime.AddModuleResolvers();
+            runtime.Initialize(fileSystem, fileResolver, listener, logger, new ByteBufferPooledAllocator());
         }
     }
 }

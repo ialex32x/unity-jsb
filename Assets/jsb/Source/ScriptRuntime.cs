@@ -39,8 +39,9 @@ namespace QuickJS
         private uint _class_id_alloc = JSApi.__JSB_GetClassID();
 
         private IScriptRuntimeListener _listener;
-        private IPathResolver _pathResolver;
         private IFileSystem _fileSystem;
+        private IPathResolver _pathResolver;
+        private List<IModuleResolver> _moduleResolvers = new List<IModuleResolver>();
         private ObjectCache _objectCache = new ObjectCache();
         private TypeDB _typeDB;
         private TimerManager _timerManager;
@@ -87,19 +88,78 @@ namespace QuickJS
             return null;
         }
 
-        public IPathResolver GetPathResolver()
-        {
-            return _pathResolver;
-        }
-
         public IFileSystem GetFileSystem()
         {
             return _fileSystem;
         }
 
+        public IPathResolver GetPathResolver()
+        {
+            return _pathResolver;
+        }
+
         public void AddSearchPath(string path)
         {
             _pathResolver.AddSearchPath(path);
+        }
+
+        public T AddModuleResolver<T>(T moduleResolver)
+        where T : IModuleResolver
+        {
+            _moduleResolvers.Add(moduleResolver);
+            return moduleResolver;
+        }
+
+        public T FindModuleResolver<T>()
+        {
+            for (int i = 0, count = _moduleResolvers.Count; i < count; i++)
+            {
+                var resolver = _moduleResolvers[i];
+                if (resolver is T)
+                {
+                    return (T)resolver;
+                }
+            }
+            return default(T);
+        }
+
+        public string ResolveFilePath(string parent_module_id, string module_id)
+        {
+            string resolved_id;
+            for (int i = 0, count = _moduleResolvers.Count; i < count; i++)
+            {
+                var resolver = _moduleResolvers[i];
+                if (resolver.ResolveModule(_fileSystem, _pathResolver, parent_module_id, module_id, out resolved_id))
+                {
+                    return resolved_id;
+                }
+            }
+
+            return null;
+        }
+
+        public JSValue ResolveModule(ScriptContext context, string parent_module_id, string module_id)
+        {
+            for (int i = 0, count = _moduleResolvers.Count; i < count; i++)
+            {
+                var resolver = _moduleResolvers[i];
+                string resolved_id;
+                if (resolver.ResolveModule(_fileSystem, _pathResolver, parent_module_id, module_id, out resolved_id))
+                {
+                    JSValue mod;
+                    if (context.LoadModuleCache(resolved_id, out mod))
+                    {
+                        var ctx = (JSContext)context;
+                        var exports = JSApi.JS_GetProperty(ctx, mod, context.GetAtom("exports"));
+                        JSApi.JS_FreeValue(ctx, mod);
+                        return exports;
+                    }
+
+                    return resolver.LoadModule(context, resolved_id);
+                }
+            }
+
+            return JSApi.JS_ThrowInternalError(context, "module can not be resolved");
         }
 
         public void Initialize(IFileSystem fileSystem, IPathResolver resolver, IScriptRuntimeListener listener, IScriptLogger logger, IO.IByteBufferAllocator byteBufferAllocator)
@@ -162,6 +222,7 @@ namespace QuickJS
             _logger = logger;
             _timerManager = new TimerManager(_logger);
             _typeDB = new TypeDB(this, _mainContext);
+            listener.OnCreate(this);
 
             var register = new TypeRegister(this, _mainContext);
             register.RegisterType(typeof(Unity.ScriptBridge));
@@ -299,37 +360,6 @@ namespace QuickJS
             }
             // _rwlock.ExitReadLock();
             return context;
-        }
-
-        public string ResolveFilePath(string module_base_name, string module_id)
-        {
-            var parent_id = module_base_name;
-            var resolving = module_id;
-
-            // 将相对目录展开
-            if (module_id.StartsWith("./") || module_id.StartsWith("../") || module_id.Contains("/./") ||
-                module_id.Contains("/../"))
-            {
-                // 显式相对路径直接从 parent 模块路径拼接
-                var parent_path = PathUtils.GetDirectoryName(parent_id);
-                try
-                {
-                    resolving = PathUtils.ExtractPath(PathUtils.Combine(parent_path, module_id), '/');
-                }
-                catch
-                {
-                    // 不能提升到源代码目录外面
-                    throw new Exception(string.Format("invalid module path (out of sourceRoot): {0}", module_id));
-                }
-            }
-
-            string resolved;
-            if (_pathResolver.ResolvePath(_fileSystem, resolving, out resolved))
-            {
-                return resolved;
-            }
-
-            throw new Exception(string.Format("module not found: {0}", module_id));
         }
 
         private static void _FreeValueAction(ScriptRuntime rt, JSAction action)
@@ -547,8 +577,8 @@ namespace QuickJS
 
         public object EvalFile(string fileName, Type returnType)
         {
-            string resolvedPath;
-            if (_pathResolver.ResolvePath(_fileSystem, fileName, out resolvedPath))
+            var resolvedPath = ResolveFilePath("", fileName);
+            if (resolvedPath != null)
             {
                 var source = _fileSystem.ReadAllBytes(resolvedPath);
                 return _mainContext.EvalSource(source, resolvedPath, returnType);
@@ -571,15 +601,15 @@ namespace QuickJS
 
         public object EvalMain(string fileName, Type returnType)
         {
-            string resolvedPath;
-            if (_pathResolver.ResolvePath(_fileSystem, fileName, out resolvedPath))
+            var resolvedPath = ResolveFilePath("", fileName);
+            if (resolvedPath != null)
             {
                 var source = _fileSystem.ReadAllBytes(resolvedPath);
                 return _mainContext.EvalMain(source, resolvedPath, returnType);
             }
             else
             {
-                throw new Exception("can not resolve file path");
+                throw new UnexpectedException(fileName, "can not resolve file path");
             }
         }
 

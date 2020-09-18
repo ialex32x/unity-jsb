@@ -74,14 +74,8 @@ namespace QuickJS.Unity
             }
             _tick = Environment.TickCount;
 
-            var logger = new Unity.DefaultLogger();
-            var fileResolver = new Unity.DefaultPathResolver();
-            var fileSystem = new DefaultFileSystem(logger);
-            fileResolver.AddSearchPath("Assets/Examples/Scripts/out/editor");
-            fileResolver.AddSearchPath("node_modules");
-
             _runtime = ScriptEngine.CreateRuntime(true);
-            _runtime.Initialize(fileSystem, fileResolver, this, logger, new ByteBufferPooledAllocator());
+            _runtime.Initialize(this);
         }
 
         private void OnPlayModeStateChanged(PlayModeStateChange mode)
@@ -106,6 +100,12 @@ namespace QuickJS.Unity
                 _runtime.Update((int)(tick - _tick));
                 _tick = tick;
             }
+        }
+
+        public void OnCreate(ScriptRuntime runtime)
+        {
+            runtime.AddSearchPath("Assets/Examples/Scripts/out/editor");
+            runtime.AddSearchPath("node_modules");
         }
 
         public void OnBind(ScriptRuntime runtime, TypeRegister register)

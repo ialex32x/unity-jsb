@@ -36,7 +36,7 @@ namespace jsb
 
             _mConsole = new MiniConsole(scrollRect, text, 100);
             _rt = ScriptEngine.CreateRuntime();
-            var fileResolver = new DefaultPathResolver();
+            var fileResolver = new PathResolver();
             fileResolver.AddSearchPath("node_modules");
 
             if (fileLoader == FileLoader.Resources)
@@ -62,6 +62,7 @@ namespace jsb
                 _rt.EnableSourceMap();
             }
             _mConsole.Write(LogLevel.Info, "Init");
+            _rt.AddModuleResolvers();
             _rt.Initialize(fileSystem, fileResolver, this, _mConsole, new ByteBufferPooledAllocator());
         }
 
@@ -80,8 +81,19 @@ namespace jsb
             GC.WaitForPendingFinalizers();
         }
 
+        public void OnCreate(ScriptRuntime runtime)
+        {
+        }
+
         public void OnBind(ScriptRuntime runtime, TypeRegister register)
         {
+            var staticModules = runtime.FindModuleResolver<StaticModuleResolver>();
+            if (staticModules != null)
+            {
+                staticModules.AddStaticModuleLoader("static_test1", context => QuickJS.Native.JSApi.JS_NewInt32(context, 123));
+                staticModules.AddStaticModuleLoader("static_test2", context => QuickJS.Native.JSApi.JS_NewInt32(context, 456));
+            }
+
             _mConsole.Write(LogLevel.Info, "Bind");
             QuickJS.Extra.WebSocket.Bind(register);
             QuickJS.Extra.XMLHttpRequest.Bind(register);

@@ -6,6 +6,8 @@ namespace QuickJS
 {
     public interface IScriptRuntimeListener
     {
+        void OnCreate(ScriptRuntime runtime);
+
         /// <summary> 
         /// <para>Runtime 执行类型注册时回调 (Worker 也会调用此方法)</para>
         /// <para>通过 runtime.isWorker 可以判断是否是 Worker Runtime</para>

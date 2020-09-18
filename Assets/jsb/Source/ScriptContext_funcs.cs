@@ -152,12 +152,13 @@ namespace QuickJS
                 return JSApi.JS_ThrowInternalError(ctx, "invalid path");
             }
 
+            //TODO: use runtime.EvalFile instead
+
             var context = ScriptEngine.GetContext(ctx);
             var runtime = context.GetRuntime();
             var fileSystem = runtime.GetFileSystem();
-            var resolver = runtime.GetPathResolver();
-            string resolvedPath;
-            if (!resolver.ResolvePath(fileSystem, path, out resolvedPath))
+            var resolvedPath = runtime.ResolveFilePath("", path);
+            if (resolvedPath == null)
             {
                 return JSApi.JS_ThrowInternalError(ctx, "file not found");
             }

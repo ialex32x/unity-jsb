@@ -30,8 +30,9 @@ namespace QuickJS.Extra
                     var runtime = ScriptEngine.GetRuntime(ctx);
                     var fileResolver = runtime.GetPathResolver();
                     var fileSystem = runtime.GetFileSystem();
+                    string searchPath;
                     string resolvedPath;
-                    if (fileResolver.ResolvePath(fileSystem, fileName + ".map", out resolvedPath))
+                    if (fileResolver.ResolvePath(fileSystem, fileName + ".map", out searchPath, out resolvedPath))
                     {
                         var fileContent = fileSystem.ReadAllBytes(resolvedPath);
                         if (fileContent != null && fileContent.Length > 0)
