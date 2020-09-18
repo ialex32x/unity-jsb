@@ -23,7 +23,7 @@ namespace QuickJS
         private JSValue _moduleCache; // commonjs module cache
         private JSValue _require; // require function object 
         private ICoroutineManager _coroutines;
-        private IModuleResolver _moduleResolver = null;
+        private List<IModuleResolver> _moduleResolvers = new List<IModuleResolver>();
         private bool _isValid;
         private Regex _stRegex;
 
@@ -286,6 +286,42 @@ namespace QuickJS
         public JSValue _dup_commonjs_main_module()
         {
             return JSApi.JS_GetProperty(_ctx, _require, GetAtom("main"));
+        }
+
+        //TODO: replace module_require
+        public JSValue ResolveModule(string parent_module_id, string module_id)
+        {
+            for (int i = 0, count = _moduleResolvers.Count; i < count; i++)
+            {
+                var resolver = _moduleResolvers[i];
+                JSValue mod;
+                string resolved_id;
+                if (resolver.ResolveModule(parent_module_id, module_id, out resolved_id))
+                {
+                    if (LoadModuleCache(resolved_id, out mod))
+                    {
+                        return mod;
+                    }
+
+                    return resolver.LoadModule(resolved_id);
+                }
+            }
+
+            return JSApi.JS_ThrowInternalError(_ctx, "module can not be resolved");
+        }
+
+        private bool LoadModuleCache(string module_id, out JSValue value)
+        {
+            var prop = GetAtom(module_id);
+            var mod = JSApi.JS_GetProperty(_ctx, _moduleCache, prop);
+            if (mod.IsObject())
+            {
+                value = mod;
+                return true;
+            }
+            value = JSApi.JS_UNDEFINED;
+            JSApi.JS_FreeValue(_ctx, mod);
+            return false;
         }
 
         // public void ResolveModule(string parent_module_id, string module_id, out string resolved_id, out JSValue mod_obj)

@@ -39,7 +39,7 @@ namespace QuickJS
         private uint _class_id_alloc = JSApi.__JSB_GetClassID();
 
         private IScriptRuntimeListener _listener;
-        private IPathResolver _fileResolver;
+        private IPathResolver _pathResolver;
         private IFileSystem _fileSystem;
         private ObjectCache _objectCache = new ObjectCache();
         private TypeDB _typeDB;
@@ -89,7 +89,7 @@ namespace QuickJS
 
         public IPathResolver GetPathResolver()
         {
-            return _fileResolver;
+            return _pathResolver;
         }
 
         public IFileSystem GetFileSystem()
@@ -99,7 +99,7 @@ namespace QuickJS
 
         public void AddSearchPath(string path)
         {
-            _fileResolver.AddSearchPath(path);
+            _pathResolver.AddSearchPath(path);
         }
 
         public void Initialize(IFileSystem fileSystem, IPathResolver resolver, IScriptRuntimeListener listener, IScriptLogger logger, IO.IByteBufferAllocator byteBufferAllocator)
@@ -155,7 +155,7 @@ namespace QuickJS
             JSApi.JS_NewClass(_rt, JSApi.JSB_GetBridgeClassID(), "CSharpClass", JSApi.class_finalizer);
 
             _listener = listener;
-            _fileResolver = resolver;
+            _pathResolver = resolver;
             _byteBufferAllocator = byteBufferAllocator;
             _autorelease = new Utils.AutoReleasePool();
             _fileSystem = fileSystem;
@@ -191,7 +191,7 @@ namespace QuickJS
             var runtime = ScriptEngine.CreateRuntime();
 
             runtime._isWorker = true;
-            runtime.Initialize(_fileSystem, _fileResolver, _listener, _logger, new IO.ByteBufferPooledAllocator());
+            runtime.Initialize(_fileSystem, _pathResolver, _listener, _logger, new IO.ByteBufferPooledAllocator());
             return runtime;
         }
 
@@ -324,7 +324,7 @@ namespace QuickJS
             }
 
             string resolved;
-            if (_fileResolver.ResolvePath(_fileSystem, resolving, out resolved))
+            if (_pathResolver.ResolvePath(_fileSystem, resolving, out resolved))
             {
                 return resolved;
             }
@@ -548,7 +548,7 @@ namespace QuickJS
         public object EvalFile(string fileName, Type returnType)
         {
             string resolvedPath;
-            if (_fileResolver.ResolvePath(_fileSystem, fileName, out resolvedPath))
+            if (_pathResolver.ResolvePath(_fileSystem, fileName, out resolvedPath))
             {
                 var source = _fileSystem.ReadAllBytes(resolvedPath);
                 return _mainContext.EvalSource(source, resolvedPath, returnType);
@@ -572,7 +572,7 @@ namespace QuickJS
         public object EvalMain(string fileName, Type returnType)
         {
             string resolvedPath;
-            if (_fileResolver.ResolvePath(_fileSystem, fileName, out resolvedPath))
+            if (_pathResolver.ResolvePath(_fileSystem, fileName, out resolvedPath))
             {
                 var source = _fileSystem.ReadAllBytes(resolvedPath);
                 return _mainContext.EvalMain(source, resolvedPath, returnType);
