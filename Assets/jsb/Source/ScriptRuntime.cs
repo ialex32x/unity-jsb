@@ -42,7 +42,7 @@ namespace QuickJS
         private IFileSystem _fileSystem;
         private IPathResolver _pathResolver;
         private List<IModuleResolver> _moduleResolvers = new List<IModuleResolver>();
-        private ObjectCache _objectCache = new ObjectCache();
+        private ObjectCache _objectCache;
         private TypeDB _typeDB;
         private TimerManager _timerManager;
         private IO.IByteBufferAllocator _byteBufferAllocator;
@@ -220,6 +220,7 @@ namespace QuickJS
             _autorelease = new Utils.AutoReleasePool();
             _fileSystem = fileSystem;
             _logger = logger;
+            _objectCache = new ObjectCache(_logger);
             _timerManager = new TimerManager(_logger);
             _typeDB = new TypeDB(this, _mainContext);
             listener.OnCreate(this);

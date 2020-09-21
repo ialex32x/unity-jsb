@@ -30,10 +30,6 @@ namespace QuickJS.Utils
 
         private IScriptLogger _logger;
 
-        public ObjectCache()
-        {
-        }
-
         public ObjectCache(IScriptLogger logger)
         {
             _logger = logger;

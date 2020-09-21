@@ -10,7 +10,7 @@ namespace QuickJS.Utils
         public class Slot
         {
             public int next;
-            // public JSValue jsValue;
+            public JSValue jsValue;
             public string stringValue;
         }
 
@@ -24,6 +24,13 @@ namespace QuickJS.Utils
         private int _freeIndex = -1;
         private List<Slot> _slots = new List<Slot>();
 
+        private JSContext _ctx;
+
+        public JSStringCache(JSContext ctx)
+        {
+            _ctx = ctx;
+        }
+
         public void Destroy()
         {
             if (_disposed)
@@ -31,48 +38,200 @@ namespace QuickJS.Utils
                 return;
             }
             _disposed = true;
+            Clear();
+        }
+
+        public void Clear()
+        {
+            foreach (var kv in _strMap)
+            {
+                var slotIndex = kv.Value;
+                var slot = _slots[slotIndex];
+                JSApi.JS_FreeValue(_ctx, slot.jsValue);
+            }
             _strMap.Clear();
             _jsvMap.Clear();
             _slots.Clear();
         }
 
-        public void Clear()
+        public void RemoveValue(string o)
         {
+            if (_disposed || string.IsNullOrEmpty(o))
+            {
+                return;
+            }
+
+            int slotIndex;
+            if (_strMap.TryGetValue(o, out slotIndex))
+            {
+                var slot = _slots[slotIndex];
+                _strMap.Remove(o);
+                _jsvMap.Remove(slot.jsValue);
+                JSApi.JS_FreeValue(_ctx, slot.jsValue);
+                slot.jsValue = JSApi.JS_UNDEFINED;
+                slot.stringValue = null;
+                slot.next = _freeIndex;
+                _freeIndex = slotIndex;
+            }
         }
 
-        // public int Add(string val)
-        // {
-        //     return Add(JSApi.JS_NewString(ctx, val));
-        // }
-
-        // public bool TryGetValue(JSValue val, out string str)
-        // {
-        // }
-
-        public int AddValue(JSValue val)
+        /// <summary>
+        /// 返回值并未调整计数, 外部需要使用时, 自行 DupValue
+        /// </summary>
+        public bool AddValue(string stringValue, out JSValue jsValue)
         {
-            // if (!_disposed && o != null)
-            // {
-            //     if (_freeIndex < 0)
-            //     {
-            //         var freeEntry = new Slot();
-            //         var id = _map.Count;
-            //         _map.Add(freeEntry);
-            //         freeEntry.next = -1;
-            //         freeEntry.stringValue = o;
-            //         return id;
-            //     }
-            //     else
-            //     {
-            //         var id = _freeIndex;
-            //         var freeEntry = _map[id];
-            //         _freeIndex = freeEntry.next;
-            //         freeEntry.next = -1;
-            //         freeEntry.target = o;
-            //         return id;
-            //     }
-            // }
-            return -1;
+            if (_disposed || string.IsNullOrEmpty(stringValue))
+            {
+                jsValue = JSApi.JS_UNDEFINED;
+                return false;
+            }
+            jsValue = JSApi.JS_NewString(_ctx, stringValue);
+            if (jsValue.IsString())
+            {
+                return _AddPair(jsValue, stringValue) >= 0;
+            }
+            JSApi.JS_FreeValue(_ctx, jsValue);
+            jsValue = JSApi.JS_UNDEFINED;
+            return false;
+        }
+
+        public bool AddValue(JSValue jsValue, out string stringValue)
+        {
+            if (_disposed || !jsValue.IsString())
+            {
+                stringValue = null;
+                return false;
+            }
+
+            stringValue = JSApi.GetString(_ctx, jsValue);
+            if (!string.IsNullOrEmpty(stringValue))
+            {
+                return _AddPair(JSApi.JS_DupValue(_ctx, jsValue), stringValue) >= 0;
+            }
+
+            return false;
+        }
+
+        private int _AddPair(JSValue jsValue, string stringValue)
+        {
+            if (_disposed)
+            {
+                return -1;
+            }
+
+            int findSlotIndex;
+            if (_strMap.TryGetValue(stringValue, out findSlotIndex))
+            {
+#if JSB_DEBUG
+                var slot = _slots[findSlotIndex];
+                if (slot.jsValue != jsValue)
+                {
+                    var logger = ScriptEngine.GetLogger(_ctx);
+                    if (logger != null)
+                    {
+                        logger.Write(LogLevel.Warn, "duplicated string cache: {0} != {1} => {2}", slot.jsValue, jsValue, slot.stringValue);
+                    }
+                }
+#endif
+                return findSlotIndex;
+            }
+
+            if (_freeIndex < 0)
+            {
+                var slot = new Slot();
+                var id = _slots.Count;
+                _slots.Add(slot);
+                slot.next = -1;
+                slot.stringValue = stringValue;
+                slot.jsValue = jsValue;
+                _strMap[stringValue] = id;
+                _jsvMap[jsValue] = id;
+                return id;
+            }
+            else
+            {
+                var id = _freeIndex;
+                var slot = _slots[id];
+                _freeIndex = slot.next;
+                slot.next = -1;
+                slot.stringValue = stringValue;
+                slot.jsValue = jsValue;
+                _strMap[stringValue] = id;
+                _jsvMap[jsValue] = id;
+                return id;
+            }
+        }
+
+        public bool TryGetValue(string stringValue, out JSValue jsValue)
+        {
+            if (!_disposed && !string.IsNullOrEmpty(stringValue))
+            {
+                int slotIndex;
+                if (_strMap.TryGetValue(stringValue, out slotIndex))
+                {
+                    var slot = _slots[slotIndex];
+                    jsValue = slot.jsValue;
+                    return true;
+                }
+            }
+
+            jsValue = JSApi.JS_UNDEFINED;
+            return false;
+        }
+
+        public bool GetValue(string stringValue, out JSValue jsValue)
+        {
+            if (!_disposed && !string.IsNullOrEmpty(stringValue))
+            {
+                int slotIndex;
+                if (_strMap.TryGetValue(stringValue, out slotIndex))
+                {
+                    var slot = _slots[slotIndex];
+                    jsValue = slot.jsValue;
+                    return true;
+                }
+
+                return AddValue(stringValue, out jsValue);
+            }
+
+            jsValue = JSApi.JS_UNDEFINED;
+            return false;
+        }
+
+        public bool TryGetValue(JSValue jsValue, out string stringValue)
+        {
+            if (!_disposed && jsValue.IsString())
+            {
+                int slotIndex;
+                if (_jsvMap.TryGetValue(jsValue, out slotIndex))
+                {
+                    var slot = _slots[slotIndex];
+                    stringValue = slot.stringValue;
+                    return true;
+                }
+            }
+
+            stringValue = null;
+            return false;
+        }
+
+        public bool GetValue(JSValue jsValue, out string stringValue)
+        {
+            if (!_disposed && jsValue.IsString())
+            {
+                int slotIndex;
+                if (_jsvMap.TryGetValue(jsValue, out slotIndex))
+                {
+                    var slot = _slots[slotIndex];
+                    stringValue = slot.stringValue;
+                    return true;
+                }
+
+                return AddValue(jsValue, out stringValue);
+            }
+
+            stringValue = null;
+            return false;
         }
     }
 }

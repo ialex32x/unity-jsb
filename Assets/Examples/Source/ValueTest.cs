@@ -6,7 +6,15 @@ namespace jsb
     [JSType]
     public class ValueTest
     {
-        //TODO: 参数 string 考虑一种可选的 index string 方式传递, 针对重复大字符串进行对象池优化传递
+        //TODO: 按 JSUseStringCache 属性配置使缓存行为可选功能未完成
+
+        public static void TakeStringWithCache([JSUseStringCache] string v)
+        {
+        }
+
+        public static void TakeString(string v)
+        {
+        }
 
         // 未完成
         [return: JSUseStringCache]

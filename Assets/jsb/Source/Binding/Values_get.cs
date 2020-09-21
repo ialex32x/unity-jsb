@@ -375,6 +375,14 @@ namespace QuickJS.Binding
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool js_get_primitive(JSContext ctx, JSValue val, out string o)
         {
+            //TODO: make this behaviour configurable?
+            var context = ScriptEngine.GetContext(ctx);
+            var cache = context.GetStringCache();
+            if (cache.TryGetValue(val, out o))
+            {
+                return true;
+            }
+
             o = JSApi.GetString(ctx, val); // no check
             return true;
         }

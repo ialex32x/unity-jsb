@@ -20,6 +20,8 @@ namespace QuickJS
         private int _contextId;
         private JSContext _ctx;
         private AtomCache _atoms;
+        private JSStringCache _stringCache;
+
         private JSValue _moduleCache; // commonjs module cache
         private JSValue _require; // require function object 
         private ICoroutineManager _coroutines;
@@ -44,6 +46,7 @@ namespace QuickJS
             JSApi.JS_SetContextOpaque(_ctx, (IntPtr)_contextId);
             JSApi.JS_AddIntrinsicOperators(_ctx);
             _atoms = new AtomCache(_ctx);
+            _stringCache = new JSStringCache(_ctx);
             _moduleCache = JSApi.JS_NewObject(_ctx);
 
             _globalObject = JSApi.JS_GetGlobalObject(_ctx);
@@ -152,6 +155,11 @@ namespace QuickJS
             return _atoms.GetAtom(name);
         }
 
+        public JSStringCache GetStringCache()
+        {
+            return _stringCache;
+        }
+
         public void Destroy()
         {
             if (!_isValid)
@@ -168,6 +176,7 @@ namespace QuickJS
             {
                 _runtime.GetLogger()?.WriteException(e);
             }
+            _stringCache.Destroy();
             _atoms.Clear();
 
             JSApi.JS_FreeValue(_ctx, _numberConstructor);
@@ -317,6 +326,8 @@ namespace QuickJS
             ns_jsb.AddFunction("ToDelegate", to_cs_delegate, 1);
             ns_jsb.AddFunction("Import", js_import_type, 2);
             ns_jsb.AddFunction("GC", _gc, 0);
+            ns_jsb.AddFunction("AddCacheString", _add_cache_string, 1);
+            ns_jsb.AddFunction("RemoveCacheString", _remove_cache_string, 1);
             ns_jsb.AddFunction("Sleep", _sleep, 1);
             {
                 var ns_jsb_hotfix = ns_jsb.CreateNamespace("hotfix");

@@ -41,6 +41,10 @@ declare namespace jsb {
 
     function Sleep(millisecondsTimeout?: number): void
 
+    function AddCacheString(str: string): string;
+
+    function RemoveCacheString(str: string): boolean;
+
     /**
      * 将指定路径添加到 duktape 加载脚本的搜索目录列表
      */
