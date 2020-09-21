@@ -721,7 +721,7 @@ namespace QuickJS
             }
 
             _timerManager.Destroy();
-            _objectCache.Clear();
+            _objectCache.Destroy();
             _typeDB.Destroy();
 
             GC.Collect();

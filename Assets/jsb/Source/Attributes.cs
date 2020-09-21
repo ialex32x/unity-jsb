@@ -156,6 +156,13 @@ namespace QuickJS
         }
     }
 
+    [AttributeUsage(AttributeTargets.Parameter
+                  | AttributeTargets.ReturnValue,
+                    AllowMultiple = false)]
+    public class JSUseStringCacheAttribute : Attribute
+    {
+    }
+
 #pragma warning disable 414
     [AttributeUsage(AttributeTargets.Method)]
     public class MonoPInvokeCallbackAttribute : Attribute
