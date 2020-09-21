@@ -220,6 +220,15 @@ namespace QuickJS.Binding
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static JSValue js_push_primitive(JSContext ctx, string o)
         {
+            //TODO: make this behaviour configurable?
+            var context = ScriptEngine.GetContext(ctx);
+            var cache = context.GetStringCache();
+            JSValue jsValue;
+            if (cache.TryGetValue(o, out jsValue))
+            {
+                return JSApi.JS_DupValue(ctx, jsValue);
+            }
+
             return JSApi.JS_NewString(ctx, o);
         }
 

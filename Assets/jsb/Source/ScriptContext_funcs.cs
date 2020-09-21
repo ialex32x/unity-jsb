@@ -45,6 +45,41 @@ namespace QuickJS
         }
 
         [MonoPInvokeCallback(typeof(JSCFunction))]
+        private static JSValue _add_cache_string(JSContext ctx, JSValue this_obj, int argc, JSValue[] argv)
+        {
+            if (argc > 0 && argv[0].IsString())
+            {
+                var context = ScriptEngine.GetContext(ctx);
+                var cache = context.GetStringCache();
+                string stringValue;
+                if (cache.GetValue(argv[0], out stringValue))
+                {
+                    return JSApi.JS_DupValue(ctx, argv[0]);
+                }
+            }
+
+            return JSApi.JS_UNDEFINED;
+        }
+
+        [MonoPInvokeCallback(typeof(JSCFunction))]
+        private static JSValue _remove_cache_string(JSContext ctx, JSValue this_obj, int argc, JSValue[] argv)
+        {
+            if (argc > 0 && argv[0].IsString())
+            {
+                var context = ScriptEngine.GetContext(ctx);
+                var cache = context.GetStringCache();
+                string stringValue;
+                if (cache.GetValue(argv[0], out stringValue))
+                {
+                    cache.RemoveValue(stringValue);
+                    return JSApi.JS_TRUE;
+                }
+            }
+
+            return JSApi.JS_FALSE;
+        }
+
+        [MonoPInvokeCallback(typeof(JSCFunction))]
         private static JSValue _gc(JSContext ctx, JSValue this_obj, int argc, JSValue[] argv)
         {
             // var runtime = ScriptEngine.GetRuntime(ctx);
@@ -152,12 +187,13 @@ namespace QuickJS
                 return JSApi.JS_ThrowInternalError(ctx, "invalid path");
             }
 
+            //TODO: use runtime.EvalFile instead
+
             var context = ScriptEngine.GetContext(ctx);
             var runtime = context.GetRuntime();
             var fileSystem = runtime.GetFileSystem();
-            var resolver = runtime.GetPathResolver();
-            string resolvedPath;
-            if (!resolver.ResolvePath(fileSystem, path, out resolvedPath))
+            var resolvedPath = runtime.ResolveFilePath("", path);
+            if (resolvedPath == null)
             {
                 return JSApi.JS_ThrowInternalError(ctx, "file not found");
             }
@@ -345,7 +381,14 @@ namespace QuickJS
             if (Values.js_get_cached_object(ctx, argv[0], out awaitObject))
             {
                 var context = ScriptEngine.GetContext(ctx);
-                return context.Yield(awaitObject);
+                var co = context.GetCoroutineManager();
+                if (co != null)
+                {
+                    return co.Yield(context, awaitObject);
+                }
+
+                return JSApi.JS_ThrowInternalError(ctx, "no async manager");
+                // return context.Yield(awaitObject);
             }
 
             return JSApi.JS_ThrowInternalError(ctx, "type YieldInstruction or Task expected");

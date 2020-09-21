@@ -20,6 +20,8 @@ namespace QuickJS
         private int _contextId;
         private JSContext _ctx;
         private AtomCache _atoms;
+        private JSStringCache _stringCache;
+
         private JSValue _moduleCache; // commonjs module cache
         private JSValue _require; // require function object 
         private ICoroutineManager _coroutines;
@@ -44,6 +46,7 @@ namespace QuickJS
             JSApi.JS_SetContextOpaque(_ctx, (IntPtr)_contextId);
             JSApi.JS_AddIntrinsicOperators(_ctx);
             _atoms = new AtomCache(_ctx);
+            _stringCache = new JSStringCache(_ctx);
             _moduleCache = JSApi.JS_NewObject(_ctx);
 
             _globalObject = JSApi.JS_GetGlobalObject(_ctx);
@@ -116,17 +119,6 @@ namespace QuickJS
             return _coroutines;
         }
 
-        public JSValue Yield(object awaitObject)
-        {
-            GetCoroutineManager();
-            if (_coroutines != null)
-            {
-                return _coroutines.Yield(this, awaitObject);
-            }
-
-            return JSApi.JS_ThrowInternalError(_ctx, "no async manager");
-        }
-
         public TimerManager GetTimerManager()
         {
             return _runtime.GetTimerManager();
@@ -163,6 +155,11 @@ namespace QuickJS
             return _atoms.GetAtom(name);
         }
 
+        public JSStringCache GetStringCache()
+        {
+            return _stringCache;
+        }
+
         public void Destroy()
         {
             if (!_isValid)
@@ -179,6 +176,7 @@ namespace QuickJS
             {
                 _runtime.GetLogger()?.WriteException(e);
             }
+            _stringCache.Destroy();
             _atoms.Clear();
 
             JSApi.JS_FreeValue(_ctx, _numberConstructor);
@@ -220,7 +218,7 @@ namespace QuickJS
             _runtime.FreeValues(values);
         }
 
-        public unsafe void FreeValues(int argc , JSValue* values)
+        public unsafe void FreeValues(int argc, JSValue* values)
         {
             _runtime.FreeValues(argc, values);
         }
@@ -281,11 +279,15 @@ namespace QuickJS
         {
             var module_obj = JSApi.JS_NewObject(_ctx);
             var prop = GetAtom(module_id);
+            var prop_val = JSApi.JS_AtomToString(_ctx, prop);
 
             JSApi.JS_SetProperty(_ctx, _moduleCache, prop, JSApi.JS_DupValue(_ctx, module_obj));
+            JSApi.JS_SetProperty(_ctx, module_obj, GetAtom("id"), JSApi.JS_DupValue(_ctx, prop_val));
+            JSApi.JS_SetProperty(_ctx, module_obj, GetAtom("filename"), JSApi.JS_DupValue(_ctx, prop_val));
             JSApi.JS_SetProperty(_ctx, module_obj, GetAtom("cache"), JSApi.JS_DupValue(_ctx, _moduleCache));
             JSApi.JS_SetProperty(_ctx, module_obj, GetAtom("loaded"), JSApi.JS_NewBool(_ctx, loaded));
             JSApi.JS_SetProperty(_ctx, module_obj, GetAtom("exports"), JSApi.JS_DupValue(_ctx, exports_obj));
+            JSApi.JS_FreeValue(_ctx, prop_val);
 
             return module_obj;
         }
@@ -294,6 +296,20 @@ namespace QuickJS
         public JSValue _dup_commonjs_main_module()
         {
             return JSApi.JS_GetProperty(_ctx, _require, GetAtom("main"));
+        }
+
+        public bool LoadModuleCache(string module_id, out JSValue value)
+        {
+            var prop = GetAtom(module_id);
+            var mod = JSApi.JS_GetProperty(_ctx, _moduleCache, prop);
+            if (mod.IsObject())
+            {
+                value = mod;
+                return true;
+            }
+            value = JSApi.JS_UNDEFINED;
+            JSApi.JS_FreeValue(_ctx, mod);
+            return false;
         }
 
         public static void Bind(TypeRegister register)
@@ -310,6 +326,8 @@ namespace QuickJS
             ns_jsb.AddFunction("ToDelegate", to_cs_delegate, 1);
             ns_jsb.AddFunction("Import", js_import_type, 2);
             ns_jsb.AddFunction("GC", _gc, 0);
+            ns_jsb.AddFunction("AddCacheString", _add_cache_string, 1);
+            ns_jsb.AddFunction("RemoveCacheString", _remove_cache_string, 1);
             ns_jsb.AddFunction("Sleep", _sleep, 1);
             {
                 var ns_jsb_hotfix = ns_jsb.CreateNamespace("hotfix");
@@ -349,7 +367,7 @@ namespace QuickJS
 
             var exports_obj = JSApi.JS_NewObject(_ctx);
             var require_obj = JSApi.JS_DupValue(_ctx, _require);
-            var module_obj = _new_commonjs_module("", exports_obj, false);
+            var module_obj = _new_commonjs_module(".", exports_obj, false);
             var filename_obj = JSApi.JS_AtomToString(_ctx, filename_atom);
             var dirname_obj = JSApi.JS_AtomToString(_ctx, dirname_atom);
             var require_argv = new JSValue[5] { exports_obj, require_obj, module_obj, filename_obj, dirname_obj };

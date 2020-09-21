@@ -39,9 +39,10 @@ namespace QuickJS
         private uint _class_id_alloc = JSApi.__JSB_GetClassID();
 
         private IScriptRuntimeListener _listener;
-        private IPathResolver _fileResolver;
         private IFileSystem _fileSystem;
-        private ObjectCache _objectCache = new ObjectCache();
+        private IPathResolver _pathResolver;
+        private List<IModuleResolver> _moduleResolvers = new List<IModuleResolver>();
+        private ObjectCache _objectCache;
         private TypeDB _typeDB;
         private TimerManager _timerManager;
         private IO.IByteBufferAllocator _byteBufferAllocator;
@@ -87,19 +88,78 @@ namespace QuickJS
             return null;
         }
 
-        public IPathResolver GetPathResolver()
-        {
-            return _fileResolver;
-        }
-
         public IFileSystem GetFileSystem()
         {
             return _fileSystem;
         }
 
+        public IPathResolver GetPathResolver()
+        {
+            return _pathResolver;
+        }
+
         public void AddSearchPath(string path)
         {
-            _fileResolver.AddSearchPath(path);
+            _pathResolver.AddSearchPath(path);
+        }
+
+        public T AddModuleResolver<T>(T moduleResolver)
+        where T : IModuleResolver
+        {
+            _moduleResolvers.Add(moduleResolver);
+            return moduleResolver;
+        }
+
+        public T FindModuleResolver<T>()
+        {
+            for (int i = 0, count = _moduleResolvers.Count; i < count; i++)
+            {
+                var resolver = _moduleResolvers[i];
+                if (resolver is T)
+                {
+                    return (T)resolver;
+                }
+            }
+            return default(T);
+        }
+
+        public string ResolveFilePath(string parent_module_id, string module_id)
+        {
+            string resolved_id;
+            for (int i = 0, count = _moduleResolvers.Count; i < count; i++)
+            {
+                var resolver = _moduleResolvers[i];
+                if (resolver.ResolveModule(_fileSystem, _pathResolver, parent_module_id, module_id, out resolved_id))
+                {
+                    return resolved_id;
+                }
+            }
+
+            return null;
+        }
+
+        public JSValue ResolveModule(ScriptContext context, string parent_module_id, string module_id)
+        {
+            for (int i = 0, count = _moduleResolvers.Count; i < count; i++)
+            {
+                var resolver = _moduleResolvers[i];
+                string resolved_id;
+                if (resolver.ResolveModule(_fileSystem, _pathResolver, parent_module_id, module_id, out resolved_id))
+                {
+                    JSValue mod;
+                    if (context.LoadModuleCache(resolved_id, out mod))
+                    {
+                        var ctx = (JSContext)context;
+                        var exports = JSApi.JS_GetProperty(ctx, mod, context.GetAtom("exports"));
+                        JSApi.JS_FreeValue(ctx, mod);
+                        return exports;
+                    }
+
+                    return resolver.LoadModule(context, resolved_id);
+                }
+            }
+
+            return JSApi.JS_ThrowInternalError(context, "module can not be resolved");
         }
 
         public void Initialize(IFileSystem fileSystem, IPathResolver resolver, IScriptRuntimeListener listener, IScriptLogger logger, IO.IByteBufferAllocator byteBufferAllocator)
@@ -155,13 +215,15 @@ namespace QuickJS
             JSApi.JS_NewClass(_rt, JSApi.JSB_GetBridgeClassID(), "CSharpClass", JSApi.class_finalizer);
 
             _listener = listener;
-            _fileResolver = resolver;
+            _pathResolver = resolver;
             _byteBufferAllocator = byteBufferAllocator;
             _autorelease = new Utils.AutoReleasePool();
             _fileSystem = fileSystem;
             _logger = logger;
+            _objectCache = new ObjectCache(_logger);
             _timerManager = new TimerManager(_logger);
             _typeDB = new TypeDB(this, _mainContext);
+            listener.OnCreate(this);
 
             var register = new TypeRegister(this, _mainContext);
             register.RegisterType(typeof(Unity.ScriptBridge));
@@ -191,7 +253,7 @@ namespace QuickJS
             var runtime = ScriptEngine.CreateRuntime();
 
             runtime._isWorker = true;
-            runtime.Initialize(_fileSystem, _fileResolver, _listener, _logger, new IO.ByteBufferPooledAllocator());
+            runtime.Initialize(_fileSystem, _pathResolver, _listener, _logger, new IO.ByteBufferPooledAllocator());
             return runtime;
         }
 
@@ -516,8 +578,8 @@ namespace QuickJS
 
         public object EvalFile(string fileName, Type returnType)
         {
-            string resolvedPath;
-            if (_fileResolver.ResolvePath(_fileSystem, fileName, out resolvedPath))
+            var resolvedPath = ResolveFilePath("", fileName);
+            if (resolvedPath != null)
             {
                 var source = _fileSystem.ReadAllBytes(resolvedPath);
                 return _mainContext.EvalSource(source, resolvedPath, returnType);
@@ -540,15 +602,15 @@ namespace QuickJS
 
         public object EvalMain(string fileName, Type returnType)
         {
-            string resolvedPath;
-            if (_fileResolver.ResolvePath(_fileSystem, fileName, out resolvedPath))
+            var resolvedPath = ResolveFilePath("", fileName);
+            if (resolvedPath != null)
             {
                 var source = _fileSystem.ReadAllBytes(resolvedPath);
                 return _mainContext.EvalMain(source, resolvedPath, returnType);
             }
             else
             {
-                throw new Exception("can not resolve file path");
+                throw new UnexpectedException(fileName, "can not resolve file path");
             }
         }
 
@@ -660,7 +722,7 @@ namespace QuickJS
             }
 
             _timerManager.Destroy();
-            _objectCache.Clear();
+            _objectCache.Destroy();
             _typeDB.Destroy();
 
             GC.Collect();

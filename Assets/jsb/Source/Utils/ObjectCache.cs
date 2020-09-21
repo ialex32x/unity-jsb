@@ -14,7 +14,7 @@ namespace QuickJS.Utils
             public bool finalizer;
         }
 
-        private bool _disposing;
+        private bool _disposed;
         private int _freeIndex = -1;
 
         // id => host object
@@ -29,10 +29,6 @@ namespace QuickJS.Utils
         private JSWeakMap<ScriptPromise> _scriptPromiseMap = new JSWeakMap<ScriptPromise>();
 
         private IScriptLogger _logger;
-
-        public ObjectCache()
-        {
-        }
 
         public ObjectCache(IScriptLogger logger)
         {
@@ -64,13 +60,13 @@ namespace QuickJS.Utils
             return _scriptPromiseMap.Count;
         }
 
-        public void Clear()
+        public void Destroy()
         {
-            if (_disposing)
+            if (_disposed)
             {
                 return;
             }
-            _disposing = true;
+            _disposed = true;
             _freeIndex = 0;
             _map.Clear();
             _rmap.Clear();
@@ -85,7 +81,7 @@ namespace QuickJS.Utils
         /// </summary>
         public void AddJSValue(object o, JSValue heapptr)
         {
-            if (_disposing)
+            if (_disposed)
             {
                 return;
             }
@@ -117,7 +113,7 @@ namespace QuickJS.Utils
 
         public bool RemoveJSValue(object o)
         {
-            if (_disposing)
+            if (_disposed)
             {
                 return false;
             }
@@ -126,7 +122,7 @@ namespace QuickJS.Utils
 
         public int AddObject(object o, bool finalizer)
         {
-            if (!_disposing && o != null)
+            if (!_disposed && o != null)
             {
                 if (_freeIndex < 0)
                 {
@@ -261,7 +257,7 @@ namespace QuickJS.Utils
 
         public void AddDelegate(JSValue jso, ScriptDelegate o)
         {
-            if (_disposing)
+            if (_disposed)
             {
                 return;
             }
@@ -275,7 +271,7 @@ namespace QuickJS.Utils
 
         public bool RemoveDelegate(JSValue jso)
         {
-            if (_disposing)
+            if (_disposed)
             {
                 return false;
             }
@@ -288,7 +284,7 @@ namespace QuickJS.Utils
 
         public void AddScriptValue(JSValue jso, ScriptValue o)
         {
-            if (_disposing)
+            if (_disposed)
             {
                 return;
             }
@@ -310,7 +306,7 @@ namespace QuickJS.Utils
 
         public bool RemoveScriptValue(JSValue jso)
         {
-            if (_disposing)
+            if (_disposed)
             {
                 return false;
             }
@@ -323,7 +319,7 @@ namespace QuickJS.Utils
 
         public void AddScriptPromise(JSValue jso, ScriptPromise o)
         {
-            if (_disposing)
+            if (_disposed)
             {
                 return;
             }
@@ -345,7 +341,7 @@ namespace QuickJS.Utils
 
         public bool RemoveScriptPromise(JSValue jso)
         {
-            if (_disposing)
+            if (_disposed)
             {
                 return false;
             }
