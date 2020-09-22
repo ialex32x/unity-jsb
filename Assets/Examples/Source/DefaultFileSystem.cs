@@ -94,6 +94,10 @@ namespace jsb
 
         public bool Exists(string path)
         {
+            if (!path.EndsWith(".js") && !path.EndsWith(".json") && !path.EndsWith(".jsonc"))
+            {
+                return false;
+            }
             var asset = GetRemote(path);
             return asset != null;
         }
