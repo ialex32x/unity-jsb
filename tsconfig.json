@@ -5,12 +5,12 @@
         "module": "commonjs",
         "target": "ES2018",
         "sourceRoot": "",
-        "outDir": "Assets/Examples/Scripts/out",
-        // "outFile": "Assets/Examples/Scripts/out/code.js",
+        "outDir": "Scripts/out",
+        // "outFile": "Scripts/out/code.js",
         "typeRoots": [
             "Assets/jsb/Typings",
             "Assets/Generated/Typings",
-            "Assets/Examples/Scripts/types"
+            "Scripts/types"
         ],
         "moduleResolution": "node",
         "types": [
@@ -31,8 +31,8 @@
     "include": [
         "Assets/jsb/Typings/**/*.ts",
         "Assets/Generated/**/*.ts",
-        "Assets/Examples/Scripts/types/**/*.ts", 
-        "Assets/Examples/Scripts/src/**/*.ts"
+        "Scripts/types/**/*.ts", 
+        "Scripts/src/**/*.ts"
     ],
     "exclude": [
         "Assets/Examples/Scripts/out/**/*"

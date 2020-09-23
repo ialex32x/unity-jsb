@@ -23,7 +23,7 @@ namespace jsb
         public UnityEngine.UI.Text text;
         public FileLoader fileLoader;
         public string baseUrl = "http://127.0.0.1:8183";
-        [ExampleScriptsHint("Assets/Examples/Scripts/out")]
+        [ExampleScriptsHint("Scripts/out")]
         public string entryFileName = "example_main.js";
         public bool sourceMap;
         public bool stacktrace;
@@ -42,7 +42,7 @@ namespace jsb
             if (fileLoader == FileLoader.Resources)
             {
                 fileSystem = new ResourcesFileSystem(_mConsole);
-                fileResolver.AddSearchPath("dist");
+                fileResolver.AddSearchPath("dist"); // 这里的路径相对于 Unity Resources 空间
             }
             else if (fileLoader == FileLoader.HMR)
             {
@@ -51,8 +51,9 @@ namespace jsb
             }
             else
             {
+                // 演示了一般文件系统的访问, 实际项目中典型的情况需要自行实现基于 AssetBundle(或 7z/zip) 的文件访问层
                 fileSystem = new DefaultFileSystem(_mConsole);
-                fileResolver.AddSearchPath("Assets/Examples/Scripts/out");
+                fileResolver.AddSearchPath("Scripts/out");
                 // _rt.AddSearchPath("Assets/Examples/Scripts/dist");
             }
 

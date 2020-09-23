@@ -20,32 +20,48 @@ gulp.task('compile', function () {
         // .pipe(babel())
         // .pipe(concat('main.js'))
         .pipe(minify())
-        .pipe(gulp.dest(self_config.output));
+        .pipe(gulp.dest(self_config.dist));
     return stream;
 });
 
-gulp.task('copy-res', function () {
-    let stream = gulp.src(self_config.output + '*')
+gulp.task('copy-res-scripts', function () {
+    let stream = gulp.src(self_config.dist + '*')
         .pipe(rename({ 'extname': '.js.txt' }))
         .pipe(gulp.dest(self_config.resources + "dist"))
     return stream;
 });
 
-gulp.task('copy-config', function () {
+gulp.task('copy-res-config', function () {
     let stream = gulp.src(self_config.config + '*')
         .pipe(rename({ 'extname': '.json.txt' }))
         .pipe(gulp.dest(self_config.resources + "config"))
     return stream;
 });
 
+gulp.task('copy-res-protogen', function () {
+    let stream = gulp.src(self_config.protogen + '*')
+        .pipe(rename({ 'extname': '.json.txt' }))
+        .pipe(gulp.dest(self_config.resources + "protogen"))
+    return stream;
+});
+
 gulp.task('clean', function () {
-    let stream = gulp.src([self_config.output + '*', self_config.resources + 'dist/*', self_config.resources + 'config/*'])
-        .pipe(clean({ force: true }))
+    let stream = gulp.src([
+        self_config.resources + 'dist/*',
+        self_config.resources + 'protogen/*',
+        self_config.resources + 'config/*'
+    ]).pipe(clean({ force: true }))
     return stream;
 });
 
 // 打包 
-gulp.task('default', gulp.series('clean', 'compile', 'copy-res', 'copy-config', function (cb) {
-    // target_platform = "release"
-    cb();
-}));
+gulp.task('default', gulp.series(
+    'clean',
+    'compile',
+    'copy-res-scripts',
+    'copy-res-config',
+    'copy-res-protogen',
+    function (cb) {
+        // target_platform = "release"
+        cb();
+    }));
