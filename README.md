@@ -257,10 +257,10 @@ jsb.hotfix.before_single("HotfixTest", "AnotherCall", function () {
 > 待测试
 
 # 状态
-> 完成度 ~70%
+> 完成度 ~80%
 
 # 文档 
-[Wiki](https://github.com/ialex32x/unity-jsb/wiki)
+详细说明参见 [Wiki](https://github.com/ialex32x/unity-jsb/wiki)
 
 # Referenced libraries
 
