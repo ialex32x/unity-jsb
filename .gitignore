@@ -77,3 +77,4 @@ debug.log
 WSA*.pfx
 /Assets/WSA*.pfx
 /Assets/WSA*.pfx.meta
+/Scripts/dist

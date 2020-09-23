@@ -1,6 +1,8 @@
 {
-    "source": "./Assets/Examples/Scripts/out/*.js",
-    "config": "./Assets/Examples/Scripts/config/*.json",
-    "output": "./Assets/Examples/Scripts/dist/", 
+    "source": "./Scripts/out/*.js",
+    "dist": "./Scripts/dist/",
+    "config": "./Scripts/config/*.json",
+    "protogen": "./Scripts/protogen/*.js",
+    "outputBase": "./Assets/Examples/Scripts/",
     "resources": "./Assets/Examples/Resources/"
 }
