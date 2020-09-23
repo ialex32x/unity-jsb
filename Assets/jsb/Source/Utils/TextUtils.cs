@@ -44,8 +44,12 @@ namespace QuickJS.Utils
                 {
                     if (json[i] == '/')
                     {
-                        state = 1;
-                        continue;
+                        // try to skip url scheme
+                        if (i == 0 || json[i - 1] != ':')
+                        {
+                            state = 1;
+                            continue;
+                        }
                     }
                 }
                 else if (state == 1)
