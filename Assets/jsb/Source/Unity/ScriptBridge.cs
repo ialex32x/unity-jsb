@@ -9,12 +9,12 @@ namespace QuickJS.Unity
     public class ScriptBridge : MonoBehaviour
     {
         private string _scriptTypeName;
-        
+
         public string scriptTypeName
         {
             get { return _scriptTypeName; }
         }
-        
+
         private bool _released;
         private JSContext _ctx;
         private JSValue _this_obj;
@@ -51,12 +51,53 @@ namespace QuickJS.Unity
 
         public int IsInstanceOf(JSValue ctor)
         {
+            if (_released)
+            {
+                return 0;
+            }
             return JSApi.JS_IsInstanceOf(_ctx, _this_obj, ctor);
         }
 
         public JSValue CloneValue()
         {
+            if (_released)
+            {
+                return JSApi.JS_UNDEFINED;
+            }
             return JSApi.JS_DupValue(_ctx, _this_obj);
+        }
+
+        public unsafe void ForEachProperty(Action<JSContext, JSAtom, JSValue> callback)
+        {
+            if (_released)
+            {
+                return;
+            }
+            JSPropertyEnum* ptab;
+            uint plen;
+            if (JSApi.JS_GetOwnPropertyNames(_ctx, out ptab, out plen, _this_obj, JSGPNFlags.JS_GPN_STRING_MASK) < 0)
+            {
+                // failed
+                return;
+            }
+
+            for (var i = 0; i < plen; i++)
+            {
+                var prop = JSApi.JS_GetProperty(_ctx, _this_obj, ptab[i].atom);
+                try
+                {
+                    callback(_ctx, ptab[i].atom, prop);
+                }
+                catch (Exception)
+                {
+                }
+                JSApi.JS_FreeValue(_ctx, prop);
+            }
+
+            for (var i = 0; i < plen; i++)
+            {
+                JSApi.JS_FreeAtom(_ctx, ptab[i].atom);
+            }
         }
 
         public void SetBridge(JSContext ctx, JSValue this_obj, JSValue ctor)
@@ -246,12 +287,12 @@ namespace QuickJS.Unity
                 }
                 JSApi.JS_FreeValue(_ctx, rval);
             }
-            #if UNITY_EDITOR
+#if UNITY_EDITOR
             if (UnityEditor.EditorApplication.isCompiling)
             {
                 Release();
             }
-            #endif 
+#endif
         }
 
         void OnApplicationFocus()

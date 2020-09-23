@@ -230,6 +230,9 @@ namespace QuickJS.Native
         }
 
         [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern unsafe int JS_GetOwnProperty(JSContext ctx, [In] JSPropertyDescriptor* desc, JSValueConst obj, JSAtom prop);
+
+        [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern JSValue JSB_NewPropertyObjectStr(JSContext ctx, JSValueConst this_obj,
             [MarshalAs(UnmanagedType.LPStr)] string name, JSPropFlags flags);
 
@@ -621,6 +624,9 @@ namespace QuickJS.Native
 
         [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern int JS_HasProperty(JSContext ctx, JSValueConst this_obj, JSAtom prop);
+
+        [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern unsafe int JS_GetOwnPropertyNames(JSContext ctx, out JSPropertyEnum* ptab, out uint32_t plen, JSValueConst obj, JSGPNFlags flags);
 
         // 不修改计数
         [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
