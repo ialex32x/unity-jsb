@@ -40,7 +40,7 @@ gulp.task('copy-res-config', function () {
 
 gulp.task('copy-res-protogen', function () {
     let stream = gulp.src(self_config.protogen + '*')
-        .pipe(rename({ 'extname': '.json.txt' }))
+        .pipe(rename({ 'extname': '.js.txt' }))
         .pipe(gulp.dest(self_config.resources + "protogen"))
     return stream;
 });
