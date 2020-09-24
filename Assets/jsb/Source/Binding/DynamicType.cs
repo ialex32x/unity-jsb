@@ -25,11 +25,11 @@ namespace QuickJS.Binding
             get { return _privateAccess; }
         }
 
-        public DynamicType(Type type)
+        public DynamicType(Type type, bool privateAccess)
         {
             _type = type;
             _type_id = -1;
-            _privateAccess = false;
+            _privateAccess = privateAccess;
         }
 
         public void OpenPrivateAccess()

@@ -31,15 +31,28 @@ namespace QuickJS.Utils
 
         public DynamicType GetDynamicType(Type type, bool privateAccess)
         {
-            var dynamicType = GetDynamicType(type);
-            if (dynamicType != null)
+            DynamicType dynamicType;
+            if (_dynamicTypes.TryGetValue(type, out dynamicType))
             {
-                dynamicType.OpenPrivateAccess();
+                if (privateAccess)
+                {
+                    dynamicType.OpenPrivateAccess();
+                }
+                return dynamicType;
             }
+
+            var register = new TypeRegister(_runtime, _context);
+
+            dynamicType = new DynamicType(type, privateAccess);
+            dynamicType.Bind(register);
+            _dynamicTypes[type] = dynamicType;
+
+            register.Finish();
             return dynamicType;
         }
 
-        public DynamicType GetDynamicType(Type type)
+        //TODO: 用于在动态类型注册过程中产生的关联类型注册
+        public DynamicType RegisterDynamicType(TypeRegister register, Type type)
         {
             DynamicType dynamicType;
             if (_dynamicTypes.TryGetValue(type, out dynamicType))
@@ -47,10 +60,8 @@ namespace QuickJS.Utils
                 return dynamicType;
             }
 
-            var register = new TypeRegister(_runtime, _context);
-            dynamicType = new DynamicType(type);
+            dynamicType = new DynamicType(type, false);
             dynamicType.Bind(register);
-            register.Finish();
             _dynamicTypes[type] = dynamicType;
             return dynamicType;
         }
@@ -230,7 +241,7 @@ namespace QuickJS.Utils
             {
                 return JSApi.JS_NULL;
             }
-            
+
             var method = new DynamicDelegateMethod(d);
             var magic = _dynamicMethods.Count;
             var funValue = JSApi.JSB_NewCFunctionMagic(_context, JSApi._DynamicMethodInvoke, name, 0, JSCFunctionEnum.JS_CFUNC_generic_magic, magic);

@@ -187,7 +187,7 @@ namespace QuickJS.Binding
 
             if (proto.IsNullish())
             {
-                db.GetDynamicType(type);
+                db.GetDynamicType(type, false);
                 proto = db.GetPrototypeOf(type);
                 if (proto.IsNullish())
                 {

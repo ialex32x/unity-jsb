@@ -423,27 +423,11 @@ namespace QuickJS
             var db = runtime.GetTypeDB();
             var proto = db.GetPrototypeOf(type);
 
-            if (privateAccess)
+            db.GetDynamicType(type, privateAccess);
+            // get proto again after dynamic type alloc if proto is undefined
+            if (proto.IsNullish())
             {
-                var dynamicType = db.GetDynamicType(type);
-
-                if (proto.IsNullish())
-                {
-                    proto = db.GetPrototypeOf(type);
-                }
-
-                if (dynamicType != null)
-                {
-                    dynamicType.OpenPrivateAccess();
-                }
-            }
-            else
-            {
-                if (proto.IsNullish())
-                {
-                    db.GetDynamicType(type);
-                    proto = db.GetPrototypeOf(type);
-                }
+                proto = db.GetPrototypeOf(type);
             }
 
             return JSApi.JS_GetProperty(ctx, proto, JSApi.JS_ATOM_constructor);
