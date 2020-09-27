@@ -9,12 +9,45 @@ namespace QuickJS.Binding
 
     public partial class Values
     {
+        public static JSValue js_push_structvalue(JSContext ctx, ref Rect o)
+        {
+            var proto = FindPrototypeOf<Rect>(ctx);
+            JSValue val = JSApi.jsb_new_bridge_value(ctx, proto, sizeof(float) * 4);
+            JSApi.jsb_set_float_4(val, o.x, o.y, o.width, o.height);
+            return val;
+        }
+
+        public static JSValue js_push_structvalue(JSContext ctx, ref Rect? o)
+        {
+            if (o == null)
+            {
+                return JSApi.JS_NULL;
+            }
+            var proto = FindPrototypeOf<Rect>(ctx);
+            JSValue val = JSApi.jsb_new_bridge_value(ctx, proto, sizeof(float) * 4);
+            var v = (Rect)o;
+            JSApi.jsb_set_float_4(val, v.x, v.y, v.width, v.height);
+            return val;
+        }
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static JSValue js_push_structvalue(JSContext ctx, ref LayerMask o)
         {
             var proto = FindPrototypeOf<LayerMask>(ctx);
             JSValue val = JSApi.jsb_new_bridge_value(ctx, proto, sizeof(int) * 1);
             JSApi.jsb_set_int_1(val, o.value);
+            return val;
+        }
+
+        public static JSValue js_push_structvalue(JSContext ctx, ref LayerMask? o)
+        {
+            if (o == null)
+            {
+                return JSApi.JS_NULL;
+            }
+            var proto = FindPrototypeOf<LayerMask>(ctx);
+            JSValue val = JSApi.jsb_new_bridge_value(ctx, proto, sizeof(int) * 1);
+            JSApi.jsb_set_int_1(val, ((LayerMask)o).value);
             return val;
         }
 
@@ -78,6 +111,19 @@ namespace QuickJS.Binding
             var proto = FindPrototypeOf<Vector4>(ctx);
             JSValue val = JSApi.jsb_new_bridge_value(ctx, proto, sizeof(float) * 4);
             JSApi.jsb_set_float_4(val, o.x, o.y, o.z, o.w);
+            return val;
+        }
+
+        public static JSValue js_push_structvalue(JSContext ctx, ref Vector4? o)
+        {
+            if (o == null)
+            {
+                return JSApi.JS_NULL;
+            }
+            var proto = FindPrototypeOf<Vector4>(ctx);
+            JSValue val = JSApi.jsb_new_bridge_value(ctx, proto, sizeof(float) * 4);
+            var v = (Vector4)o;
+            JSApi.jsb_set_float_4(val, v.x, v.y, v.z, v.w);
             return val;
         }
 
