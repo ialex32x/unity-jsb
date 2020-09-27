@@ -234,7 +234,7 @@ namespace QuickJS.Unity
             }
         }
 
-        protected void WriteTSAllVariants(MethodBaseBindingInfo<T> bindingInfo)
+        protected void WriteTSAllVariants(TypeBindingInfo typeBindingInfo, MethodBaseBindingInfo<T> bindingInfo)
         {
             var variants = bindingInfo.variants;
             //NOTE: 如果产生了无法在 typescript 中声明的方法, 则作标记, 并输出一条万能声明 
@@ -243,11 +243,11 @@ namespace QuickJS.Unity
             {
                 foreach (var method in variantKV.Value.plainMethods)
                 {
-                    WriteTSDeclaration(method, bindingInfo);
+                    WriteTSDeclaration(typeBindingInfo, method, bindingInfo);
                 }
                 foreach (var method in variantKV.Value.varargMethods)
                 {
-                    WriteTSDeclaration(method, bindingInfo);
+                    WriteTSDeclaration(typeBindingInfo, method, bindingInfo);
                 }
             }
         }
@@ -394,7 +394,7 @@ namespace QuickJS.Unity
             cg.cs.AppendLine($"return {error};");
         }
 
-        protected List<ParameterInfo> WriteTSDeclaration(T method, MethodBaseBindingInfo<T> bindingInfo)
+        protected List<ParameterInfo> WriteTSDeclaration(TypeBindingInfo typeBindingInfo, T method, MethodBaseBindingInfo<T> bindingInfo)
         {
             var isExtension = BindingManager.IsExtensionMethod(method);
             var refParameters = new List<ParameterInfo>();
@@ -405,6 +405,11 @@ namespace QuickJS.Unity
                 this.cg.tsDeclare.AppendLine(tsMethodDeclaration);
                 return refParameters;
             }
+            string tsMethodRename;
+            if (!this.cg.bindingManager.GetTSMethodRename(method, out tsMethodRename))
+            {
+                tsMethodRename = bindingInfo.regName;
+            }
             var isRaw = method.IsDefined(typeof(JSCFunctionAttribute));
             //TODO: 需要处理参数类型归并问题, 因为如果类型没有导入 ts 中, 可能会在声明中出现相同参数列表的定义
             //      在 MethodVariant 中创建每个方法对应的TS类型名参数列表, 完全相同的不再输出
@@ -414,19 +419,25 @@ namespace QuickJS.Unity
             {
                 prefix += "// js_op_overloading: ";
             }
+            else
+            {
+                var baseType = typeBindingInfo.type.BaseType;
+                if (baseType != null)
+                {
+                    //TODO: 需要检查 TypeBindingInfo 对此的命名修改
+                    if (baseType.GetMethods().Where(baseMethodInfo => baseMethodInfo.Name == tsMethodRename).Count() != 0)
+                    {
+                        prefix += "// @ts-ignore" + this.cg.tsDeclare.newline;
+                    }
+                }
+            }
+
             if (method.IsStatic && !isExtension)
             {
                 prefix += "static ";
             }
-            string tsMethodRename;
-            if (this.cg.bindingManager.GetTSMethodRename(method, out tsMethodRename))
-            {
-                this.cg.tsDeclare.Append($"{prefix}{tsMethodRename}(");
-            }
-            else
-            {
-                this.cg.tsDeclare.Append($"{prefix}{bindingInfo.regName}(");
-            }
+
+            this.cg.tsDeclare.Append($"{prefix}{tsMethodRename}(");
 
             if (isRaw)
             {
@@ -691,15 +702,15 @@ namespace QuickJS.Unity
             this.cg.cs.AppendLine("return val;");
         }
 
-        public ConstructorCodeGen(CodeGenerator cg, TypeBindingInfo bindingInfo)
+        public ConstructorCodeGen(CodeGenerator cg, TypeBindingInfo typeBindingInfo)
         : base(cg)
         {
             // WriteInstanceEvents(bindingInfo);
-            this.bindingInfo = bindingInfo.constructors;
+            this.bindingInfo = typeBindingInfo.constructors;
             if (this.bindingInfo.count > 0)
             {
                 WriteAllVariants(this.bindingInfo);
-                WriteTSAllVariants(this.bindingInfo);
+                WriteTSAllVariants(typeBindingInfo, this.bindingInfo);
             }
             else
             {
@@ -860,11 +871,11 @@ namespace QuickJS.Unity
             return null;
         }
 
-        public TSMethodCodeGen(CodeGenerator cg, MethodBindingInfo bindingInfo)
+        public TSMethodCodeGen(CodeGenerator cg, TypeBindingInfo typeBindingInfo, MethodBindingInfo bindingInfo)
             : base(cg)
         {
             this.bindingInfo = bindingInfo;
-            WriteTSAllVariants(this.bindingInfo);
+            WriteTSAllVariants(typeBindingInfo, this.bindingInfo);
         }
     }
 }

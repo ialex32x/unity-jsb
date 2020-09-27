@@ -74,7 +74,7 @@ namespace QuickJS.Unity
                     }
                 }
 
-                using (new TSMethodCodeGen(cg, methodBindingInfo))
+                using (new TSMethodCodeGen(cg, this.typeBindingInfo, methodBindingInfo))
                 {
                 }
             }
@@ -108,7 +108,7 @@ namespace QuickJS.Unity
                     }
                 }
 
-                using (new TSMethodCodeGen(cg, methodBindingInfo))
+                using (new TSMethodCodeGen(cg, typeBindingInfo, methodBindingInfo))
                 {
                 }
             }
@@ -131,7 +131,7 @@ namespace QuickJS.Unity
                     }
                 }
 
-                using (new TSOperatorCodeGen(cg, operatorBindingInfo))
+                using (new TSOperatorCodeGen(cg, typeBindingInfo, operatorBindingInfo))
                 {
                 }
             }

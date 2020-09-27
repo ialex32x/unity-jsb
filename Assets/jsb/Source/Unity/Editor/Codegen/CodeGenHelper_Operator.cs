@@ -68,11 +68,11 @@ namespace QuickJS.Unity
             return null;
         }
 
-        public TSOperatorCodeGen(CodeGenerator cg, OperatorBindingInfo bindingInfo)
+        public TSOperatorCodeGen(CodeGenerator cg, TypeBindingInfo typeBindingInfo, OperatorBindingInfo bindingInfo)
             : base(cg)
         {
             this.bindingInfo = bindingInfo;
-            WriteTSAllVariants(this.bindingInfo);
+            WriteTSAllVariants(typeBindingInfo, this.bindingInfo);
         }
     }
 }

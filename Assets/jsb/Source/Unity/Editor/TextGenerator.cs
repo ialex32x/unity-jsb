@@ -45,7 +45,7 @@ namespace QuickJS.Unity
         }
 
         public bool enabled = true;
-        private string newline;
+        public readonly string newline;
         private string tab;
         private StringBuilder sb = new StringBuilder();
         private int tabLevel;
