@@ -605,6 +605,11 @@ namespace QuickJS.Unity
                     log.AppendLine("skip unsafe (pointer) delegate: [{0}] {1}", delegateType, invoke);
                     return;
                 }
+                if (ContainsByRefParameters(invoke))
+                {
+                    log.AppendLine("skip ByRef delegate (unsupported yet): [{0}] {1}", delegateType, invoke);
+                    return;
+                }
                 var isEditorRuntime = IsTypeEditorRuntime(delegateType) || IsTypeEditorRuntime(returnType) || IsTypeEditorRuntime(parameters);
 
                 // 是否存在等价 delegate

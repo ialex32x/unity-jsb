@@ -3,9 +3,15 @@ using System;
 
 namespace jsb
 {
+    //TODO: 暂时不支持
+    //TODO: 先调整 ref/out 在脚本中的约定, 从返回值约定改为参数Ref<T>/Out<T>包装约定
+    //TODO: 然后提供此支持
+    public delegate void UnsupportedAtPresent_Callback(out int v);
+
     [JSType]
     public class DelegateTest
     {
+        public UnsupportedAtPresent_Callback unsupported;
         public Action actionFieldRW;
         public readonly Action actionFieldR;
         public Action actionPropG { get; }
