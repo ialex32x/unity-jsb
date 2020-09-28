@@ -256,10 +256,10 @@ namespace QuickJS.Unity
         protected virtual void WriteTSReturn(T method, List<ParameterInfo> returnParameters)
         {
             var returnType = GetReturnType(method);
-            var count = returnParameters.Count;
+            var outParametersCount = returnParameters.Count;
             if (returnType != null && returnType != typeof(void))
             {
-                if (count != 0)
+                if (outParametersCount != 0)
                 {
                     this.cg.tsDeclare.AppendL(": { ");
 
@@ -267,12 +267,12 @@ namespace QuickJS.Unity
                     var returnVarName = BindingManager.GetTSVariable("return");
                     this.cg.tsDeclare.AppendL($"\"{returnVarName}\": {returnTypeTS}");
 
-                    for (var i = 0; i < count; i++)
+                    for (var i = 0; i < outParametersCount; i++)
                     {
                         var rp = returnParameters[i];
                         var name = BindingManager.GetTSVariable(rp.Name);
                         var ts = this.cg.bindingManager.GetTSTypeFullName(rp.ParameterType);
-                        if (i != count - 1)
+                        if (i != outParametersCount - 1)
                         {
                             this.cg.tsDeclare.AppendL($", \"{name}\": {ts}");
                         }
@@ -293,15 +293,15 @@ namespace QuickJS.Unity
             }
             else
             {
-                if (count != 0)
+                if (outParametersCount != 0)
                 {
                     this.cg.tsDeclare.AppendL(": { ");
-                    for (var i = 0; i < count; i++)
+                    for (var i = 0; i < outParametersCount; i++)
                     {
                         var rp = returnParameters[i];
                         var name = rp.Name;
                         var ts = this.cg.bindingManager.GetTSTypeFullName(rp.ParameterType);
-                        if (i != count - 1)
+                        if (i != outParametersCount - 1)
                         {
                             this.cg.tsDeclare.AppendL($"\"{name}\": {ts}, ");
                         }
@@ -315,7 +315,15 @@ namespace QuickJS.Unity
                 }
                 else
                 {
-                    this.cg.tsDeclare.AppendLine();
+                    if (method.IsConstructor)
+                    {
+                        this.cg.tsDeclare.AppendLine();
+                    }
+                    else
+                    {
+                        this.cg.tsDeclare.AppendL(": void");
+                        this.cg.tsDeclare.AppendLine();
+                    }
                 }
             }
         }
@@ -421,15 +429,15 @@ namespace QuickJS.Unity
             }
             else
             {
-                var baseType = typeBindingInfo.type.BaseType;
-                if (baseType != null)
-                {
-                    //TODO: 需要检查 TypeBindingInfo 对此的命名修改
-                    if (baseType.GetMethods().Where(baseMethodInfo => baseMethodInfo.Name == tsMethodRename).Count() != 0)
-                    {
-                        prefix += "// @ts-ignore" + this.cg.tsDeclare.newline + this.cg.tsDeclare.tabString;
-                    }
-                }
+                // var baseType = typeBindingInfo.type.BaseType;
+                // if (baseType != null)
+                // {
+                //     //TODO: 需要检查 TypeBindingInfo 对此的命名修改
+                //     if (baseType.GetMethods().Where(baseMethodInfo => baseMethodInfo.Name == tsMethodRename).Count() != 0)
+                //     {
+                //         prefix += "// @ts-ignore" + this.cg.tsDeclare.newline + this.cg.tsDeclare.tabString;
+                //     }
+                // }
             }
 
             if (method.IsStatic && !isExtension)
