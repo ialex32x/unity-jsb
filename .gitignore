@@ -78,3 +78,5 @@ WSA*.pfx
 /Assets/WSA*.pfx
 /Assets/WSA*.pfx.meta
 /Scripts/dist
+/External/UIProject/*
+!/External/UIProject/plugins
