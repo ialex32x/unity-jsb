@@ -30,7 +30,10 @@ namespace QuickJS.Unity
             get { return type.IsDefined(typeof(JSOmitAttribute)); }
         }
 
-        public readonly string name; // 绑定代码名
+        public readonly string csBindingName; // 绑定代码名
+
+        //TODO: 模块包装, 生成模块加载代码, 添加模块依赖
+        public readonly string jsModule; // js 模块名
 
         public readonly string jsNamespace; // js 命名空间
 
@@ -142,7 +145,7 @@ namespace QuickJS.Unity
                 }
             }
 
-            this.name = bindingManager.prefs.typeBindingPrefix + (this.jsNamespace + "_" + this.jsName).Replace('.', '_').Replace('+', '_').Replace('<', '_').Replace('>', '_');
+            this.csBindingName = bindingManager.prefs.typeBindingPrefix + (this.jsNamespace + "_" + this.jsName).Replace('.', '_').Replace('+', '_').Replace('<', '_').Replace('>', '_');
             this.constructors = new ConstructorBindingInfo(type);
         }
 
@@ -298,7 +301,7 @@ namespace QuickJS.Unity
                             var op1 = bindingManager.GetExportedType(parameters[1].ParameterType);
                             if (op0 != null && op1 != null)
                             {
-                                var bindingName = methodCSName + "_" + op0.name + "_" + op1.name;
+                                var bindingName = methodCSName + "_" + op0.csBindingName + "_" + op1.csBindingName;
                                 operatorBindingInfo = new OperatorBindingInfo(methodInfo, isExtension, isStatic, bindingName, "*", "*", 2);
                             }
                         }
@@ -310,7 +313,7 @@ namespace QuickJS.Unity
                             var op1 = bindingManager.GetExportedType(parameters[1].ParameterType);
                             if (op0 != null && op1 != null)
                             {
-                                var bindingName = methodCSName + "_" + op0.name + "_" + op1.name;
+                                var bindingName = methodCSName + "_" + op0.csBindingName + "_" + op1.csBindingName;
                                 operatorBindingInfo = new OperatorBindingInfo(methodInfo, isExtension, isStatic, bindingName, "/", "/", 2);
                             }
                         }

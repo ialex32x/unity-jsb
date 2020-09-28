@@ -76,14 +76,14 @@ namespace QuickJS.Unity
                                             }
                                             else
                                             {
-                                                method.AddStatement("{0}.{1}.Bind(register);", this.bindingManager.prefs.ns, type.name);
+                                                method.AddStatement("{0}.{1}.Bind(register);", this.bindingManager.prefs.ns, type.csBindingName);
                                             }
                                         }
                                         using (new EditorOnlyCodeGen(this))
                                         {
                                             foreach (var editorType in editorTypes)
                                             {
-                                                method.AddStatement("{0}.{1}.Bind(register);", this.bindingManager.prefs.ns, editorType.name);
+                                                method.AddStatement("{0}.{1}.Bind(register);", this.bindingManager.prefs.ns, editorType.csBindingName);
                                             }
                                         }
                                         method.AddStatement("{0}.{1}.Bind(register);", this.bindingManager.prefs.ns, CodeGenerator.NameOfDelegates);

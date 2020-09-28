@@ -187,7 +187,7 @@ namespace QuickJS.Unity
             this.typeBindingInfo = typeBindingInfo;
             this.cg.cs.AppendLine("[{0}]", typeof(JSBindingAttribute).Name);
             // this.cg.cs.AppendLine("[UnityEngine.Scripting.Preserve]");
-            this.cg.cs.AppendLine("public class {0} : {1}", typeBindingInfo.name, typeof(Binding.Values).Name);
+            this.cg.cs.AppendLine("public class {0} : {1}", typeBindingInfo.csBindingName, typeof(Binding.Values).Name);
             this.cg.cs.AppendLine("{");
             this.cg.cs.AddTabLevel();
         }
