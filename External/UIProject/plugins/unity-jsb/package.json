@@ -1,0 +1,11 @@
+{
+  "name": "unity-jsb",
+  "displayName": "unity-jsb exporter",
+  "description": "unity-jsb exporter",
+  "version": "1.0",
+  "author": {
+    "name": "ialex32x"
+  },
+  "icon": "",
+  "main": "main.js"
+}
