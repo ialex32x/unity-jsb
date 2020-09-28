@@ -67,6 +67,26 @@ namespace QuickJS.Unity
             get { return type.IsEnum; }
         }
 
+        public static string GetNamingAttribute(MethodInfo info)
+        {
+            var naming = info.GetCustomAttribute(typeof(JSNamingAttribute), false) as JSNamingAttribute;
+            if (naming != null && !string.IsNullOrEmpty(naming.name))
+            {
+                return naming.name;
+            }
+
+            if (info.IsSpecialName)
+            {
+                switch (info.Name)
+                {
+                    case "get_Item": return "$GetValue";
+                    case "set_Item": return "$SetValue";
+                }
+            }
+
+            return info.Name;
+        }
+
         public static string GetNamingAttribute(MemberInfo info)
         {
             var naming = info.GetCustomAttribute(typeof(JSNamingAttribute), false) as JSNamingAttribute;
@@ -203,17 +223,17 @@ namespace QuickJS.Unity
             }
         }
 
-        public void AddMethod(MethodInfo methodInfo)
-        {
-            AddMethod(methodInfo, false, null);
-        }
-
         public static bool IsSupportedOperators(MethodInfo methodInfo)
         {
             return methodInfo.IsSpecialName && methodInfo.Name.StartsWith("op_");
         }
 
-        public void AddMethod(MethodInfo methodInfo, bool isIndexer, string renameRegName)
+        public void AddMethod(MethodInfo methodInfo)
+        {
+            AddMethod(methodInfo, false);
+        }
+
+        public void AddMethod(MethodInfo methodInfo, bool isIndexer)
         {
             if (this.transform != null)
             {
@@ -226,20 +246,21 @@ namespace QuickJS.Unity
 
             var isExtension = BindingManager.IsExtensionMethod(methodInfo);
             var isStatic = methodInfo.IsStatic && !isExtension;
-            var methodName = TypeBindingInfo.GetNamingAttribute(methodInfo);
+            var methodCSName = methodInfo.Name;
+            var methodJSName = TypeBindingInfo.GetNamingAttribute(methodInfo);
             if (IsSupportedOperators(methodInfo))
             {
                 var parameters = methodInfo.GetParameters();
                 var declaringType = methodInfo.DeclaringType;
                 OperatorBindingInfo operatorBindingInfo = null;
-                switch (methodName)
+                switch (methodCSName)
                 {
                     case "op_LessThan":
                         if (parameters.Length == 2)
                         {
                             if (parameters[0].ParameterType == declaringType && parameters[1].ParameterType == declaringType)
                             {
-                                operatorBindingInfo = new OperatorBindingInfo(methodInfo, isExtension, isStatic, methodName, "<", "<", 2);
+                                operatorBindingInfo = new OperatorBindingInfo(methodInfo, isExtension, isStatic, methodCSName, "<", "<", 2);
                             }
                         }
                         break;
@@ -248,7 +269,7 @@ namespace QuickJS.Unity
                         {
                             if (parameters[0].ParameterType == declaringType && parameters[1].ParameterType == declaringType)
                             {
-                                operatorBindingInfo = new OperatorBindingInfo(methodInfo, isExtension, isStatic, methodName, "+", "+", 2);
+                                operatorBindingInfo = new OperatorBindingInfo(methodInfo, isExtension, isStatic, methodCSName, "+", "+", 2);
                             }
                         }
                         break;
@@ -257,7 +278,7 @@ namespace QuickJS.Unity
                         {
                             if (parameters[0].ParameterType == declaringType && parameters[1].ParameterType == declaringType)
                             {
-                                operatorBindingInfo = new OperatorBindingInfo(methodInfo, isExtension, isStatic, methodName, "-", "-", 2);
+                                operatorBindingInfo = new OperatorBindingInfo(methodInfo, isExtension, isStatic, methodCSName, "-", "-", 2);
                             }
                         }
                         break;
@@ -266,7 +287,7 @@ namespace QuickJS.Unity
                         {
                             if (parameters[0].ParameterType == declaringType && parameters[1].ParameterType == declaringType)
                             {
-                                operatorBindingInfo = new OperatorBindingInfo(methodInfo, isExtension, isStatic, methodName, "==", "==", 2);
+                                operatorBindingInfo = new OperatorBindingInfo(methodInfo, isExtension, isStatic, methodCSName, "==", "==", 2);
                             }
                         }
                         break;
@@ -277,7 +298,7 @@ namespace QuickJS.Unity
                             var op1 = bindingManager.GetExportedType(parameters[1].ParameterType);
                             if (op0 != null && op1 != null)
                             {
-                                var bindingName = methodName + "_" + op0.name + "_" + op1.name;
+                                var bindingName = methodCSName + "_" + op0.name + "_" + op1.name;
                                 operatorBindingInfo = new OperatorBindingInfo(methodInfo, isExtension, isStatic, bindingName, "*", "*", 2);
                             }
                         }
@@ -289,14 +310,14 @@ namespace QuickJS.Unity
                             var op1 = bindingManager.GetExportedType(parameters[1].ParameterType);
                             if (op0 != null && op1 != null)
                             {
-                                var bindingName = methodName + "_" + op0.name + "_" + op1.name;
+                                var bindingName = methodCSName + "_" + op0.name + "_" + op1.name;
                                 operatorBindingInfo = new OperatorBindingInfo(methodInfo, isExtension, isStatic, bindingName, "/", "/", 2);
                             }
                         }
                         break;
                     case "op_UnaryNegation":
                         {
-                            operatorBindingInfo = new OperatorBindingInfo(methodInfo, isExtension, isStatic, methodName, "neg", "-", 1);
+                            operatorBindingInfo = new OperatorBindingInfo(methodInfo, isExtension, isStatic, methodCSName, "neg", "-", 1);
                         }
                         break;
                 }
@@ -314,10 +335,10 @@ namespace QuickJS.Unity
 
             var group = isStatic ? staticMethods : methods;
             MethodBindingInfo methodBindingInfo;
-            if (!group.TryGetValue(methodName, out methodBindingInfo))
+            if (!group.TryGetValue(methodCSName, out methodBindingInfo))
             {
-                methodBindingInfo = new MethodBindingInfo(isIndexer, isStatic, methodName, renameRegName ?? methodName);
-                group.Add(methodName, methodBindingInfo);
+                methodBindingInfo = new MethodBindingInfo(isIndexer, isStatic, methodCSName, methodJSName);
+                group.Add(methodCSName, methodBindingInfo);
             }
             if (!methodBindingInfo.Add(methodInfo, isExtension))
             {
@@ -505,7 +526,7 @@ namespace QuickJS.Unity
                             continue;
                         }
 
-                        AddMethod(property.GetMethod, true, "$GetValue");
+                        AddMethod(property.GetMethod, true);
                     }
 
                     if (property.CanWrite && property.SetMethod != null && property.SetMethod.IsPublic)
@@ -516,7 +537,7 @@ namespace QuickJS.Unity
                             continue;
                         }
 
-                        AddMethod(property.SetMethod, true, "$SetValue");
+                        AddMethod(property.SetMethod, true);
                     }
 
                     // bindingManager.Info("skip indexer property: {0}", property.Name);

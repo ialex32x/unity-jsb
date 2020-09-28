@@ -41,7 +41,7 @@ namespace QuickJS.Unity
             {
                 using (new PInvokeGuardCodeGen(cg, typeof(Native.JSCFunctionMagic)))
                 {
-                    using (new BindingConstructorDeclareCodeGen(cg, this.typeBindingInfo.constructors.name))
+                    using (new BindingConstructorDeclareCodeGen(cg, this.typeBindingInfo.constructors.csBindName))
                     {
                         using (new TryCatchGuradCodeGen(cg))
                         {
@@ -58,11 +58,11 @@ namespace QuickJS.Unity
             {
                 var methodBindingInfo = kv.Value;
 
-                if (transform == null || !transform.IsRedirectedMethod(methodBindingInfo.regName))
+                if (transform == null || !transform.IsRedirectedMethod(methodBindingInfo.jsName))
                 {
                     using (new PInvokeGuardCodeGen(cg))
                     {
-                        using (new BindingFuncDeclareCodeGen(cg, methodBindingInfo.name))
+                        using (new BindingFuncDeclareCodeGen(cg, methodBindingInfo.csBindName))
                         {
                             using (new TryCatchGuradCodeGen(cg))
                             {
@@ -87,7 +87,7 @@ namespace QuickJS.Unity
             foreach (var kv in this.typeBindingInfo.staticMethods)
             {
                 var methodBindingInfo = kv.Value;
-                if (transform == null || !transform.IsRedirectedMethod(methodBindingInfo.regName))
+                if (transform == null || !transform.IsRedirectedMethod(methodBindingInfo.jsName))
                 {
                     if (methodBindingInfo._cfunc != null)
                     {
@@ -96,7 +96,7 @@ namespace QuickJS.Unity
 
                     using (new PInvokeGuardCodeGen(cg))
                     {
-                        using (new BindingFuncDeclareCodeGen(cg, methodBindingInfo.name))
+                        using (new BindingFuncDeclareCodeGen(cg, methodBindingInfo.csBindName))
                         {
                             using (new TryCatchGuradCodeGen(cg))
                             {
@@ -115,11 +115,11 @@ namespace QuickJS.Unity
 
             foreach (var operatorBindingInfo in this.typeBindingInfo.operators)
             {
-                if (transform == null || !transform.IsRedirectedMethod(operatorBindingInfo.regName))
+                if (transform == null || !transform.IsRedirectedMethod(operatorBindingInfo.jsName))
                 {
                     using (new PInvokeGuardCodeGen(cg))
                     {
-                        using (new BindingFuncDeclareCodeGen(cg, operatorBindingInfo.name))
+                        using (new BindingFuncDeclareCodeGen(cg, operatorBindingInfo.csBindName))
                         {
                             using (new TryCatchGuradCodeGen(cg))
                             {
@@ -309,7 +309,7 @@ namespace QuickJS.Unity
             {
                 using (new RegFuncNamespaceCodeGen(cg, typeBindingInfo))
                 {
-                    var constructor = typeBindingInfo.constructors.available ? typeBindingInfo.constructors.name : "JSApi.class_private_ctor";
+                    var constructor = typeBindingInfo.constructors.available ? typeBindingInfo.constructors.csBindName : "JSApi.class_private_ctor";
                     if (!typeBindingInfo.constructors.available && !typeBindingInfo.type.IsAbstract)
                     {
                         if (typeBindingInfo.type.IsSubclassOf(typeof(Component)))
@@ -331,8 +331,8 @@ namespace QuickJS.Unity
                     // 运算符
                     foreach (var operatorBindingInfo in typeBindingInfo.operators)
                     {
-                        var regName = operatorBindingInfo.regName;
-                        var funcName = operatorBindingInfo.name;
+                        var regName = operatorBindingInfo.jsName;
+                        var funcName = operatorBindingInfo.csBindName;
                         var parameters = operatorBindingInfo.methodInfo.GetParameters();
                         var declaringType = operatorBindingInfo.methodInfo.DeclaringType;
                         string redirect;
@@ -366,8 +366,8 @@ namespace QuickJS.Unity
                     // 非静态方法
                     foreach (var kv in typeBindingInfo.methods)
                     {
-                        var regName = kv.Value.regName;
-                        var funcName = kv.Value.name;
+                        var regName = kv.Value.jsName;
+                        var funcName = kv.Value.csBindName;
                         string redirect;
                         if (this.typeBindingInfo.transform != null && this.typeBindingInfo.transform.TryRedirectMethod(regName, out redirect))
                         {
@@ -388,7 +388,7 @@ namespace QuickJS.Unity
                     foreach (var kv in typeBindingInfo.staticMethods)
                     {
                         var methodBindingInfo = kv.Value;
-                        var regName = methodBindingInfo.regName;
+                        var regName = methodBindingInfo.jsName;
                         
                         if (methodBindingInfo._cfunc != null)
                         {
@@ -419,7 +419,7 @@ namespace QuickJS.Unity
                         }
                         else
                         {
-                            var funcName = methodBindingInfo.name;
+                            var funcName = methodBindingInfo.csBindName;
                             string redirect;
                             if (this.typeBindingInfo.transform != null && this.typeBindingInfo.transform.TryRedirectMethod(regName, out redirect))
                             {

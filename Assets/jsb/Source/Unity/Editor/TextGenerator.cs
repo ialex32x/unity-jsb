@@ -52,6 +52,19 @@ namespace QuickJS.Unity
 
         public int size { get { return sb.Length; } }
 
+        public string tabString
+        {
+            get
+            {
+                var s = "";
+                for (var i = 0; i < tabLevel; i++)
+                {
+                    s += tab;
+                }
+                return s;
+            }
+        }
+
         public TextGenerator(string newline, string tab)
         {
             this.newline = newline;
@@ -185,7 +198,7 @@ namespace QuickJS.Unity
             {
                 return;
             }
-            
+
             AppendTab();
             sb.AppendFormat(text, arg1, arg2, arg3);
             sb.Append(newline);
@@ -197,7 +210,7 @@ namespace QuickJS.Unity
             {
                 return;
             }
-            
+
             AppendTab();
             sb.AppendFormat(text, args);
             sb.Append(newline);
@@ -209,7 +222,7 @@ namespace QuickJS.Unity
             {
                 return;
             }
-            
+
             sb.Append(text);
             sb.Append(newline);
         }
@@ -220,7 +233,7 @@ namespace QuickJS.Unity
             {
                 return;
             }
-            
+
             sb.AppendFormat(text, arg1);
             sb.Append(newline);
         }
@@ -231,7 +244,7 @@ namespace QuickJS.Unity
             {
                 return;
             }
-            
+
             sb.AppendFormat(text, arg1, arg2);
             sb.Append(newline);
         }
@@ -242,7 +255,7 @@ namespace QuickJS.Unity
             {
                 return;
             }
-            
+
             sb.AppendFormat(text, arg1, arg2, arg3);
             sb.Append(newline);
         }
@@ -253,7 +266,7 @@ namespace QuickJS.Unity
             {
                 return;
             }
-            
+
             sb.AppendFormat(text, args);
             sb.Append(newline);
         }
@@ -264,7 +277,7 @@ namespace QuickJS.Unity
             {
                 return;
             }
-            
+
             AppendTab();
             sb.Append(text);
         }
@@ -275,7 +288,7 @@ namespace QuickJS.Unity
             {
                 return;
             }
-            
+
             AppendTab();
             sb.AppendFormat(text, arg1);
         }
@@ -286,7 +299,7 @@ namespace QuickJS.Unity
             {
                 return;
             }
-            
+
             AppendTab();
             sb.AppendFormat(text, arg1, arg2);
         }
@@ -297,7 +310,7 @@ namespace QuickJS.Unity
             {
                 return;
             }
-            
+
             AppendTab();
             sb.AppendFormat(text, arg1, arg2, arg3);
         }
@@ -308,7 +321,7 @@ namespace QuickJS.Unity
             {
                 return;
             }
-            
+
             AppendTab();
             sb.AppendFormat(text, args);
         }
@@ -319,7 +332,7 @@ namespace QuickJS.Unity
             {
                 return;
             }
-            
+
             sb.Append(text);
         }
 
@@ -329,7 +342,7 @@ namespace QuickJS.Unity
             {
                 return;
             }
-            
+
             sb.AppendFormat(text, arg1);
         }
 
@@ -339,7 +352,7 @@ namespace QuickJS.Unity
             {
                 return;
             }
-            
+
             sb.AppendFormat(text, arg1, arg2);
         }
 
@@ -349,7 +362,7 @@ namespace QuickJS.Unity
             {
                 return;
             }
-            
+
             sb.AppendFormat(text, arg1, arg2, arg3);
         }
 
@@ -359,7 +372,7 @@ namespace QuickJS.Unity
             {
                 return;
             }
-            
+
             sb.AppendFormat(text, args);
         }
 

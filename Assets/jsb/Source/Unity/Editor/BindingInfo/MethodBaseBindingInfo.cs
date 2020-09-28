@@ -13,8 +13,8 @@ namespace QuickJS.Unity
     public abstract class MethodBaseBindingInfo<T>
         where T : MethodBase
     {
-        public string name { get; set; } // 绑定代码名
-        public string regName { get; set; } // 导出名
+        public string csBindName { get; set; } // 绑定代码名
+        public string jsName { get; set; } // 导出名
 
         private int _count = 0;
 
@@ -93,32 +93,32 @@ namespace QuickJS.Unity
     {
         public bool isIndexer;
 
-        public MethodBindingInfo(bool isIndexer, bool bStatic, string bindName, string regName)
+        public MethodBindingInfo(bool isIndexer, bool bStatic, string csName, string jsName)
         {
             this.isIndexer = isIndexer;
-            this.name = (bStatic ? "BindStatic_" : "Bind_") + bindName;
-            this.regName = regName;
+            this.csBindName = (bStatic ? "BindStatic_" : "Bind_") + csName;
+            this.jsName = jsName;
         }
     }
 
     public class OperatorBindingInfo : MethodBaseBindingInfo<MethodInfo>
     {
         public int length; // 参数数
-        public string bindName;
+        public string csName;
         public string cs_op; // 绑定代码中的运算符
         public MethodInfo methodInfo;
         public bool isExtension;
 
         // regName: js 中的重载运算符
-        public OperatorBindingInfo(MethodInfo methodInfo, bool isExtension, bool bStatic, string bindName, string regName, string cs_op, int length)
+        public OperatorBindingInfo(MethodInfo methodInfo, bool isExtension, bool bStatic, string csName, string jsName, string cs_op, int length)
         {
             this.methodInfo = methodInfo;
             this.isExtension = isExtension;
             this.length = length;
-            this.bindName = bindName;
-            this.regName = regName;
+            this.csName = csName;
+            this.jsName = jsName;
             this.cs_op = cs_op;
-            this.name = (bStatic ? "BindStatic_" : "Bind_") + bindName;
+            this.csBindName = (bStatic ? "BindStatic_" : "Bind_") + csName;
 
             this.Add(methodInfo, isExtension); //NOTE: 旧代码, 待更替
         }
@@ -145,8 +145,8 @@ namespace QuickJS.Unity
         public ConstructorBindingInfo(Type decalringType)
         {
             this.decalringType = decalringType;
-            this.name = "BindConstructor";
-            this.regName = "constructor";
+            this.csBindName = "BindConstructor";
+            this.jsName = "constructor";
         }
     }
 

@@ -408,7 +408,7 @@ namespace QuickJS.Unity
             string tsMethodRename;
             if (!this.cg.bindingManager.GetTSMethodRename(method, out tsMethodRename))
             {
-                tsMethodRename = bindingInfo.regName;
+                tsMethodRename = bindingInfo.jsName;
             }
             var isRaw = method.IsDefined(typeof(JSCFunctionAttribute));
             //TODO: 需要处理参数类型归并问题, 因为如果类型没有导入 ts 中, 可能会在声明中出现相同参数列表的定义
@@ -427,7 +427,7 @@ namespace QuickJS.Unity
                     //TODO: 需要检查 TypeBindingInfo 对此的命名修改
                     if (baseType.GetMethods().Where(baseMethodInfo => baseMethodInfo.Name == tsMethodRename).Count() != 0)
                     {
-                        prefix += "// @ts-ignore" + this.cg.tsDeclare.newline;
+                        prefix += "// @ts-ignore" + this.cg.tsDeclare.newline + this.cg.tsDeclare.tabString;
                     }
                 }
             }
@@ -677,7 +677,7 @@ namespace QuickJS.Unity
             this.cg.cs.AppendLine("var val = NewBridgeClassObject(ctx, new_target, o, magic);");
             this.cg.cs.AppendLine("return val;");
 
-            this.cg.tsDeclare.AppendLine($"{this.bindingInfo.regName}()");
+            this.cg.tsDeclare.AppendLine($"{this.bindingInfo.jsName}()");
         }
 
         protected override string GetInvokeBinding(string caller, ConstructorInfo method, bool hasParams, bool isExtension, string nargs, ParameterInfo[] parameters)
@@ -756,9 +756,9 @@ namespace QuickJS.Unity
 
         protected override string GetInvokeBinding(string caller, MethodInfo method, bool hasParams, bool isExtension, string nargs, ParameterInfo[] parameters)
         {
-            if (bindingInfo.isIndexer)
+            if (method.IsSpecialName) // if (bindingInfo.isIndexer)
             {
-                if (method.ReturnType == typeof(void))
+                if (method.Name == "set_Item") // if (method.ReturnType == typeof(void))
                 {
                     var last = parameters.Length - 1;
                     var arglist_t = "";
@@ -780,7 +780,7 @@ namespace QuickJS.Unity
                     this.WriteParameterGetter(parameters[last], assignIndex, argname_last);
                     return $"{caller}[{arglist_t}] = {argname_last}"; // setter
                 }
-                else
+                else if (method.Name == "get_Item")
                 {
                     var last = parameters.Length;
                     var arglist_t = "";
