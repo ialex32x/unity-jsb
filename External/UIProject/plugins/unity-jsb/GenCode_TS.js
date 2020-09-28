@@ -26,6 +26,9 @@ function genBinder(writer, codePkgName, classes, classCnt, fuiNamespace, exportC
     writer.endBlock(); //class
     writer.save(exportCodePath + '/' + binderName + '.ts');
 }
+function getSafeVarName(name) {
+    return name.replace("&", "And");
+}
 function genCode(handler) {
     let settings = handler.project.GetSettings("Publish").codeGeneration;
     let codePkgName = handler.ToFilename(handler.pkg.name); //convert chinese to pinyin, remove special chars etc.
@@ -66,7 +69,7 @@ function genCode(handler) {
         let memberCnt = members.Count;
         for (let j = 0; j < memberCnt; j++) {
             let memberInfo = members.get_Item(j);
-            writer.writeln('public %s: %s;', memberInfo.varName, memberInfo.type);
+            writer.writeln('public %s: %s;', getSafeVarName(memberInfo.varName), memberInfo.type);
         }
         writer.writeln('public static URL: string = "ui://%s%s";', handler.pkg.id, classInfo.resId);
         writer.writeln();
@@ -90,38 +93,39 @@ function genCode(handler) {
         writer.startBlock();
         for (let j = 0; j < memberCnt; j++) {
             let memberInfo = members.get_Item(j);
+            var memberVarName = getSafeVarName(memberInfo.varName);
             if (memberInfo.group == 0) {
                 if (memberInfo.type.startsWith(fuiNamespace)) {
                     if (getMemberByName) {
-                        writer.writeln('this.%s = <%s>(this.gRoot.GetChild("%s"));', memberInfo.varName, memberInfo.type, memberInfo.name);
+                        writer.writeln('this.%s = <%s>(this.gRoot.GetChild("%s"));', memberVarName, memberInfo.type, memberInfo.name);
                     }
                     else {
-                        writer.writeln('this.%s = <%s>(this.gRoot.GetChildAt(%s));', memberInfo.varName, memberInfo.type, memberInfo.index);
+                        writer.writeln('this.%s = <%s>(this.gRoot.GetChildAt(%s));', memberVarName, memberInfo.type, memberInfo.index);
                     }
                 }
                 else {
                     if (getMemberByName) {
-                        writer.writeln('this.%s = %s.fromInstance(this.gRoot.GetChild("%s"));', memberInfo.varName, memberInfo.type, memberInfo.name);
+                        writer.writeln('this.%s = %s.fromInstance(this.gRoot.GetChild("%s"));', memberVarName, memberInfo.type, memberInfo.name);
                     }
                     else {
-                        writer.writeln('this.%s = %s.fromInstance(this.gRoot.GetChildAt(%s));', memberInfo.varName, memberInfo.type, memberInfo.index);
+                        writer.writeln('this.%s = %s.fromInstance(this.gRoot.GetChildAt(%s));', memberVarName, memberInfo.type, memberInfo.index);
                     }
                 }
             }
             else if (memberInfo.group == 1) {
                 if (getMemberByName) {
-                    writer.writeln('this.%s = this.gRoot.GetController("%s");', memberInfo.varName, memberInfo.name);
+                    writer.writeln('this.%s = this.gRoot.GetController("%s");', memberVarName, memberInfo.name);
                 }
                 else {
-                    writer.writeln('this.%s = this.gRoot.GetControllerAt(%s);', memberInfo.varName, memberInfo.index);
+                    writer.writeln('this.%s = this.gRoot.GetControllerAt(%s);', memberVarName, memberInfo.index);
                 }
             }
             else {
                 if (getMemberByName) {
-                    writer.writeln('this.%s = this.gRoot.GetTransition("%s");', memberInfo.varName, memberInfo.name);
+                    writer.writeln('this.%s = this.gRoot.GetTransition("%s");', memberVarName, memberInfo.name);
                 }
                 else {
-                    writer.writeln('this.%s = this.gRoot.GetTransitionAt(%s);', memberInfo.varName, memberInfo.index);
+                    writer.writeln('this.%s = this.gRoot.GetTransitionAt(%s);', memberVarName, memberInfo.index);
                 }
             }
         }

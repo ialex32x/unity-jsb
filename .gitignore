@@ -40,8 +40,9 @@
 
 /Assets/Generated
 /Assets/Generated.meta
-/Assets/Examples/Resources
-/Assets/Examples/Resources.meta
+/Assets/Examples/Resources/*
+!/Assets/Examples/Resources/UI
+!/Assets/Examples/Resources/UI.meta
 /Assets/Examples/Scripts/dist
 /Assets/Examples/Scripts/dist.meta
 

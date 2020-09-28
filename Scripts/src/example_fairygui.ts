@@ -1,5 +1,6 @@
-import Main from "./fairygui/BundleUsage/Main";
+import BundleUsageMain from "./fairygui/BundleUsage/Main";
 import CooldownMain from "./fairygui/Cooldown/Main";
+import BasicsMain from "./fairygui/Basics/Main";
 
 if (module == require.main) {
     let go = new UnityEngine.GameObject("FairyGUI");
@@ -10,18 +11,31 @@ if (module == require.main) {
     scaler.scaleMode = FairyGUI.UIContentScaler.ScaleMode.ScaleWithScreenSize;
     // scaler.screenMatchMode = FairyGUI.UIContentScaler.ScreenMatchMode.MatchWidthOrHeight;
 
-    FairyGUI.UIPackage.AddPackage("UI/BundleUsage");
-    var mainView = Main.createInstance();
+    if (false) {
+        FairyGUI.UIPackage.AddPackage("UI/BundleUsage");
+        let mainView = BundleUsageMain.createInstance();
+        mainView.gRoot.fairyBatching = true;
+        mainView.gRoot.SetSize(FairyGUI.GRoot.inst.width, FairyGUI.GRoot.inst.height);
+        mainView.gRoot.AddRelation(FairyGUI.GRoot.inst, FairyGUI.RelationType.Size);
+        FairyGUI.GRoot.inst.AddChild(mainView.gRoot);
+        mainView.t0.Play();
+        mainView.theLabel.text = "Hello, Unity-jsb";
+    }
 
-    mainView.gRoot.fairyBatching = true;
-    mainView.gRoot.SetSize(FairyGUI.GRoot.inst.width, FairyGUI.GRoot.inst.height);
-    mainView.gRoot.AddRelation(FairyGUI.GRoot.inst, FairyGUI.RelationType.Size);
-    FairyGUI.GRoot.inst.AddChild(mainView.gRoot);
-    mainView.t0.Play();
-    mainView.theLabel.text = "Hello, Unity-jsb";
-    
+    if (true) {
+        FairyGUI.UIPackage.AddPackage("UI/Basics");
+        let mainView = BasicsMain.createInstance();
+        mainView.gRoot.fairyBatching = true;
+        mainView.gRoot.SetSize(FairyGUI.GRoot.inst.width, FairyGUI.GRoot.inst.height);
+        mainView.gRoot.AddRelation(FairyGUI.GRoot.inst, FairyGUI.RelationType.Size);
+        FairyGUI.GRoot.inst.AddChild(mainView.gRoot);
+        mainView.btn_Button.onClick.Add(evt => {
+            console.log(evt.type);
+        })
+    }
+
     // FairyGUI.UIPackage.AddPackage("UI/Cooldown");
-    // var mainView = CooldownMain.createInstance();
+    // let mainView = CooldownMain.createInstance();
     // FairyGUI.GRoot.inst.AddChild(mainView.gRoot);
     // mainView.b1.gRoot.text = "A";
 
