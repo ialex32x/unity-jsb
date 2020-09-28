@@ -1,4 +1,8 @@
 "use strict";
+/*
+开发过程中可以使用 Default FileSystem 正常依赖 node_modules 中的库时
+当需要发布到 Resources/Assetbundle 时, 这种情况下需要使用 webpack 等打包工具将脚本依赖全部打包, 即可在最终环境中使用第三方库
+*/
 Object.defineProperty(exports, "__esModule", { value: true });
 const aw = require("../protogen/pb.bundle");
 /*
