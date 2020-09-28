@@ -26,6 +26,7 @@ Extra 为可选附加模块, 提供不同的特定功能, 不需要的直接删�
 * DOMCompatibleLayer (experimental)
 * UdpSocket (未实现)
 * SQLite (未实现)
+* FairyGUI 接入示例 (with FairyGUI Editor plugin)
 
 # 特性示例
 > 推荐使用 typescript 编写脚本, unity-jsb 对导出的 C# 类型自动生成了对应的 d.ts 声明, 以提供强类型辅助. 示例代码均使用 typescript. 
