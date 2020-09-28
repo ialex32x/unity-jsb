@@ -10,5 +10,10 @@ namespace jsb
         {
             return System.Net.Dns.GetHostEntryAsync(host);
         }
+
+        public static async System.Threading.Tasks.Task SimpleTest(int ms)
+        {
+            await System.Threading.Tasks.Task.Delay(ms);
+        }
     }
 }
