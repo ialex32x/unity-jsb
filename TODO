@@ -1,4 +1,8 @@
 
+[ ] types in module (and lazy binding for types)
+[ ] 导出泛型声明 (generic dummy interface + concrete class)
+[ ] 导出接口声明 (interface)
+
 [ ] 重写 ref/out 操作
 [ ] 子类中存在不同签名的同名方法时 (非虚)  时, 输出 ts-ignore
 
@@ -7,4 +11,4 @@
     [ ] 通过 BindingManager 辅助得到 export types
     [ ] 生成 d.ts
 
-> 专门定义一个委托的 JS 类型映射
+[ ] 移除 csharp 端的 EventDispatcher (并未实现)
