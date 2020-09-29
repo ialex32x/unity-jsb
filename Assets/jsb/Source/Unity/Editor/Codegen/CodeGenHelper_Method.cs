@@ -90,7 +90,6 @@ namespace QuickJS.Unity
             return res;
         }
 
-        // parametersByRef: 可修改参数将被加入此列表
         // hasParams: 是否包含变参 (最后一个参数将按数组处理)
         public List<string> AppendGetParameters(bool hasParams, string nargs, ParameterInfo[] parameters)
         {
@@ -118,24 +117,18 @@ namespace QuickJS.Unity
                     var argElementIndex = i == 0 ? nargs : nargs + " - " + i;
                     this.cg.cs.AppendLine($"{argType} arg{i} = null;");
                     this.cg.cs.AppendLine($"if ({argElementIndex} > 0)");
-                    this.cg.cs.AppendLine("{");
-                    this.cg.cs.AddTabLevel();
+                    using (this.cg.cs.CodeBlockScope())
                     {
                         this.cg.cs.AppendLine($"arg{i} = new {argElementType}[{argElementIndex}];");
                         this.cg.cs.AppendLine($"for (var i = {i}; i < {nargs}; i++)");
-                        this.cg.cs.AppendLine("{");
-                        this.cg.cs.AddTabLevel();
+                        using (this.cg.cs.CodeBlockScope())
                         {
                             var argElementOffset = i == 0 ? "" : " - " + i;
                             var argName = $"arg{i}[i{argElementOffset}]";
                             var argGetter = this.cg.bindingManager.GetScriptObjectGetter(parameter.ParameterType.GetElementType(), "ctx", "argv[i]", argName);
                             this.cg.cs.AppendLine("{0};", argGetter);
                         }
-                        this.cg.cs.DecTabLevel();
-                        this.cg.cs.AppendLine("}");
                     }
-                    this.cg.cs.DecTabLevel();
-                    this.cg.cs.AppendLine("}");
                 }
                 else
                 {
@@ -762,51 +755,61 @@ namespace QuickJS.Unity
             return method.ReturnType;
         }
 
+        private string WriteSetterBinding(string caller, ParameterInfo[] parameters)
+        {
+            var last = parameters.Length - 1;
+            var arglist_t = "";
+            var assignIndex = 0;
+            for (var i = 0; i < last; i++)
+            {
+                var argname = $"arg{i}";
+                if (this.WriteParameterGetter(parameters[i], assignIndex, argname))
+                {
+                    assignIndex++;
+                }
+                arglist_t += argname;
+                if (i != last - 1)
+                {
+                    arglist_t += ", ";
+                }
+            }
+            var argname_last = $"arg{last}";
+            this.WriteParameterGetter(parameters[last], assignIndex, argname_last);
+            return $"{caller}[{arglist_t}] = {argname_last}"; // setter
+        }
+
+        private string WriteGetterBinding(string caller, ParameterInfo[] parameters)
+        {
+            var last = parameters.Length;
+            var arglist_t = "";
+            var assignIndex = 0;
+            for (var i = 0; i < last; i++)
+            {
+                var argname = $"arg{i}";
+                if (this.WriteParameterGetter(parameters[i], assignIndex, argname))
+                {
+                    assignIndex++;
+                }
+                arglist_t += argname;
+                if (i != last - 1)
+                {
+                    arglist_t += ", ";
+                }
+            }
+            return $"{caller}[{arglist_t}]"; // getter
+        }
+
         protected override string GetInvokeBinding(string caller, MethodInfo method, bool hasParams, bool isExtension, string nargs, ParameterInfo[] parameters)
         {
             if (method.IsSpecialName) // if (bindingInfo.isIndexer)
             {
                 if (method.Name == "set_Item") // if (method.ReturnType == typeof(void))
                 {
-                    var last = parameters.Length - 1;
-                    var arglist_t = "";
-                    var assignIndex = 0;
-                    for (var i = 0; i < last; i++)
-                    {
-                        var argname = $"arg{i}";
-                        if (this.WriteParameterGetter(parameters[i], assignIndex, argname))
-                        {
-                            assignIndex++;
-                        }
-                        arglist_t += argname;
-                        if (i != last - 1)
-                        {
-                            arglist_t += ", ";
-                        }
-                    }
-                    var argname_last = $"arg{last}";
-                    this.WriteParameterGetter(parameters[last], assignIndex, argname_last);
-                    return $"{caller}[{arglist_t}] = {argname_last}"; // setter
+                    return WriteSetterBinding(caller, parameters); // setter
                 }
                 else if (method.Name == "get_Item")
                 {
-                    var last = parameters.Length;
-                    var arglist_t = "";
-                    var assignIndex = 0;
-                    for (var i = 0; i < last; i++)
-                    {
-                        var argname = $"arg{i}";
-                        if (this.WriteParameterGetter(parameters[i], assignIndex, argname))
-                        {
-                            assignIndex++;
-                        }
-                        arglist_t += argname;
-                        if (i != last - 1)
-                        {
-                            arglist_t += ", ";
-                        }
-                    }
-                    return $"{caller}[{arglist_t}]"; // getter
+                    return WriteGetterBinding(caller, parameters);
                 }
             }
 
@@ -815,10 +818,12 @@ namespace QuickJS.Unity
             var arglistSig = Concat(arglist);
             var transform = cg.bindingManager.GetTypeTransform(method.DeclaringType);
 
+            // 在生成调用前插入代码 
             if (transform == null || !transform.OnBinding(BindingPoints.METHOD_BINDING_BEFORE_INVOKE, method, cg))
             {
             }
 
+            // 扩展方法调用实际静态类方法
             if (isExtension)
             {
                 var methodDeclType = this.cg.bindingManager.GetCSTypeFullName(method.DeclaringType);
@@ -830,6 +835,7 @@ namespace QuickJS.Unity
                 return $"{methodDeclType}.{method.Name}({caller}{arglistSig})";
             }
 
+            // 处理运算符方式调用
             if (method.IsSpecialName)
             {
                 switch (method.Name)
@@ -853,6 +859,7 @@ namespace QuickJS.Unity
                 }
             }
 
+            // 普通成员调用
             return $"{caller}.{method.Name}({arglistSig})";
         }
 
