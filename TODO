@@ -10,8 +10,8 @@
     ☐ 不生成绑定代码的情况下使用反射模式执行
         ☐ 通过 BindingManager 辅助得到 export types
         ☐ 生成 d.ts
-    ☐ 移除 csharp 端的 EventDispatcher (并未实现)
-
+        
 已完成:
     ✔ 重写 ref/out 操作 @done(20-09-29 13:52)
     ✔ 可以通过 ref/out 额外指定 type 信息辅助重载匹配 @done(20-09-29 13:54)
+    ✔ 移除 csharp 端的 EventDispatcher (并未实现) @done(20-09-29 14:06)
