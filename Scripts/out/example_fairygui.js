@@ -26,9 +26,15 @@ if (module == require.main) {
         mainView.gRoot.SetSize(FairyGUI.GRoot.inst.width, FairyGUI.GRoot.inst.height);
         mainView.gRoot.AddRelation(FairyGUI.GRoot.inst, FairyGUI.RelationType.Size);
         FairyGUI.GRoot.inst.AddChild(mainView.gRoot);
-        mainView.btn_Button.onClick.Add(evt => {
+        let fn = evt => {
             console.log(evt.type);
-        });
+        };
+        console.log("添加按钮回调");
+        mainView.btn_Button.onClick.Add(fn);
+        setTimeout(() => {
+            console.log("移除按钮回调");
+            mainView.btn_Button.onClick.Remove(fn);
+        }, 30000);
     }
     // FairyGUI.UIPackage.AddPackage("UI/Cooldown");
     // let mainView = CooldownMain.createInstance();
