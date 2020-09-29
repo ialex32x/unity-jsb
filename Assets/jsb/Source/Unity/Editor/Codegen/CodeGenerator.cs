@@ -144,37 +144,37 @@ namespace QuickJS.Unity
                                 this.bindingManager.OnPostGenerateDelegate(bindingInfo);
                             }
 
-                            this.tsDeclare.AppendLine("declare namespace {0} {{", NamespaceOfInternalScriptTypes);
-                            this.tsDeclare.AddTabLevel();
-                            // this.jsSource.AppendLine($"// dummy code");
-                            foreach (var spec in specs)
-                            {
-                                var argtypelist = "";
-                                var argdecllist = "";
-                                var argvarlist = "";
-                                for (var i = 0; i < spec.Key; i++)
-                                {
-                                    argtypelist += $", T{i + 1}";
-                                    argdecllist += $"arg{i + 1}: T{i + 1}";
-                                    argvarlist += $"arg{i + 1}";
-                                    if (i != spec.Key - 1)
-                                    {
-                                        argdecllist += ", ";
-                                        argvarlist += ", ";
-                                    }
-                                }
-                                this.tsDeclare.AppendLine($"class Delegate{spec.Key}<R{argtypelist}> extends jsb.Dispatcher {{");
-                                this.tsDeclare.AddTabLevel();
-                                {
-                                    this.tsDeclare.AppendLine($"on(caller: any, fn: ({argdecllist}) => R): Delegate{spec.Key}<R{argtypelist}>");
-                                    this.tsDeclare.AppendLine($"off(caller: any, fn: ({argdecllist}) => R): void");
-                                    this.tsDeclare.AppendLine($"dispatch({argdecllist}): R");
-                                }
-                                this.tsDeclare.DecTabLevel();
-                                this.tsDeclare.AppendLine("}");
-                            }
-                            this.tsDeclare.DecTabLevel();
-                            this.tsDeclare.AppendLine("}");
+                            // 提供委托与 Dispatcher 的桥接 (废弃)
+                            // this.tsDeclare.AppendLine("declare namespace {0} {{", NamespaceOfInternalScriptTypes);
+                            // this.tsDeclare.AddTabLevel();
+                            // foreach (var spec in specs)
+                            // {
+                            //     var argtypelist = "";
+                            //     var argdecllist = "";
+                            //     var argvarlist = "";
+                            //     for (var i = 0; i < spec.Key; i++)
+                            //     {
+                            //         argtypelist += $", T{i + 1}";
+                            //         argdecllist += $"arg{i + 1}: T{i + 1}";
+                            //         argvarlist += $"arg{i + 1}";
+                            //         if (i != spec.Key - 1)
+                            //         {
+                            //             argdecllist += ", ";
+                            //             argvarlist += ", ";
+                            //         }
+                            //     }
+                            //     this.tsDeclare.AppendLine($"class Delegate{spec.Key}<R{argtypelist}> extends jsb.Dispatcher {{");
+                            //     this.tsDeclare.AddTabLevel();
+                            //     {
+                            //         this.tsDeclare.AppendLine($"on(caller: any, fn: ({argdecllist}) => R): Delegate{spec.Key}<R{argtypelist}>");
+                            //         this.tsDeclare.AppendLine($"off(caller: any, fn: ({argdecllist}) => R): void");
+                            //         this.tsDeclare.AppendLine($"dispatch({argdecllist}): R");
+                            //     }
+                            //     this.tsDeclare.DecTabLevel();
+                            //     this.tsDeclare.AppendLine("}");
+                            // }
+                            // this.tsDeclare.DecTabLevel();
+                            // this.tsDeclare.AppendLine("}");
                         }
                     }
                 }

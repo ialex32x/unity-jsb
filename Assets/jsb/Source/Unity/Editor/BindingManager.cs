@@ -727,7 +727,8 @@ namespace QuickJS.Unity
                     var ret = GetTSTypeFullName(delegateBindingInfo.returnType);
                     var t_arglist = (nargs > 0 ? ", " : "") + GetTSArglistTypes(delegateBindingInfo.parameters, false);
                     var v_arglist = GetTSArglistTypes(delegateBindingInfo.parameters, true);
-                    return $"{CodeGenerator.NamespaceOfInternalScriptTypes}.Delegate{nargs}<{ret}{t_arglist}> | (({v_arglist}) => {ret})";
+                    // return $"{CodeGenerator.NamespaceOfInternalScriptTypes}.Delegate{nargs}<{ret}{t_arglist}> | (({v_arglist}) => {ret})";
+                    return $"({v_arglist}) => {ret}";
                 }
             }
             if (type.IsGenericType)
