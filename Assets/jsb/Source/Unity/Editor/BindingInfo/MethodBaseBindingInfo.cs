@@ -91,11 +91,8 @@ namespace QuickJS.Unity
 
     public class MethodBindingInfo : MethodBaseBindingInfo<MethodInfo>
     {
-        public bool isIndexer;
-
-        public MethodBindingInfo(bool isIndexer, bool bStatic, string csName, string jsName)
+        public MethodBindingInfo(bool bStatic, string csName, string jsName)
         {
-            this.isIndexer = isIndexer;
             this.csBindName = (bStatic ? "BindStatic_" : "Bind_") + csName;
             this.jsName = jsName;
         }

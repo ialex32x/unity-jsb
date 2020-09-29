@@ -755,7 +755,7 @@ namespace QuickJS.Unity
     // 生成成员方法绑定代码
     public class MethodCodeGen : MethodBaseCodeGen<MethodInfo>
     {
-        protected MethodBindingInfo bindingInfo;
+        protected MethodBindingInfo methodBindingInfo;
 
         protected override Type GetReturnType(MethodInfo method)
         {
@@ -859,8 +859,8 @@ namespace QuickJS.Unity
         public MethodCodeGen(CodeGenerator cg, MethodBindingInfo bindingInfo)
         : base(cg)
         {
-            this.bindingInfo = bindingInfo;
-            WriteAllVariants(this.bindingInfo);
+            this.methodBindingInfo = bindingInfo;
+            WriteAllVariants(this.methodBindingInfo);
             // WriteTSAllVariants(this.bindingInfo);
         }
     }

@@ -233,11 +233,6 @@ namespace QuickJS.Unity
 
         public void AddMethod(MethodInfo methodInfo)
         {
-            AddMethod(methodInfo, false);
-        }
-
-        public void AddMethod(MethodInfo methodInfo, bool isIndexer)
-        {
             if (this.transform != null)
             {
                 if (this.transform.IsBlocked(methodInfo))
@@ -340,7 +335,7 @@ namespace QuickJS.Unity
             MethodBindingInfo methodBindingInfo;
             if (!group.TryGetValue(methodCSName, out methodBindingInfo))
             {
-                methodBindingInfo = new MethodBindingInfo(isIndexer, isStatic, methodCSName, methodJSName);
+                methodBindingInfo = new MethodBindingInfo(isStatic, methodCSName, methodJSName);
                 group.Add(methodCSName, methodBindingInfo);
             }
             if (!methodBindingInfo.Add(methodInfo, isExtension))
@@ -529,7 +524,7 @@ namespace QuickJS.Unity
                             continue;
                         }
 
-                        AddMethod(property.GetMethod, true);
+                        AddMethod(property.GetMethod);
                     }
 
                     if (property.CanWrite && property.SetMethod != null && property.SetMethod.IsPublic)
@@ -540,7 +535,7 @@ namespace QuickJS.Unity
                             continue;
                         }
 
-                        AddMethod(property.SetMethod, true);
+                        AddMethod(property.SetMethod);
                     }
 
                     // bindingManager.Info("skip indexer property: {0}", property.Name);

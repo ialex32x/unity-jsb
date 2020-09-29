@@ -209,6 +209,18 @@ namespace QuickJS.Unity
             return this;
         }
 
+        public TypeTransform BlockMember(Func<MemberInfo, bool> filter)
+        {
+            foreach (var memberInfo in _type.GetMembers())
+            {
+                if (filter(memberInfo))
+                {
+                    _memberBlacklist.Add(memberInfo.Name);
+                }
+            }
+            return this;
+        }
+
         // 指定的方法是否被屏蔽
         public bool IsBlocked(MethodBase method)
         {
