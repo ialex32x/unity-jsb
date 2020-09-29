@@ -134,19 +134,17 @@ declare namespace jsb {
     /**
      * 封装 C# ref 传参约定
      */
-    interface Ref<T> {
-        target?: T
+    interface Ref<T = any> {
+        type?: { new(): T } | Function
+        value?: T
     }
 
     /**
      * 封装 C# out 传参约定
      */
-    interface Out<T> {
-        target?: T
-    }
-
-    interface TypeHint {
-        type?: any
+    interface Out<T = any> {
+        type?: { new(): T } | Function
+        value?: T
     }
 
     /**

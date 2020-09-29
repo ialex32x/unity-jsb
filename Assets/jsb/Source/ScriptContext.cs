@@ -256,6 +256,28 @@ namespace QuickJS
             return JSApi.JS_DupValue(_ctx, _numberConstructor);
         }
 
+        public bool CheckNumberType(JSValue jsValue)
+        {
+            //TODO: 是否成立? 否则需要使用 jsapi equals
+            if (jsValue == _numberConstructor)
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        public bool CheckStringType(JSValue jsValue)
+        {
+            //TODO: 是否成立? 否则需要使用 jsapi equals
+            if (jsValue == _stringConstructor)
+            {
+                return true;
+            }
+
+            return false;
+        }
+
         ///<summary>
         /// 获取 operator.create (增加引用计数)
         ///</summary>

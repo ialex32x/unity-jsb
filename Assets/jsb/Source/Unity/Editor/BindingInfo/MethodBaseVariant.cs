@@ -33,15 +33,59 @@ namespace QuickJS.Unity
             this.argc = argc;
         }
 
+        public bool CheckMethodEquality(ParameterInfo[] a, int aIndex, ParameterInfo[] b, int bIndex)
+        {
+            var aLen = a.Length - aIndex;
+            var bLen = b.Length - bIndex;
+            if (aLen != bLen)
+            {
+                return false;
+            }
+
+            while (aIndex < a.Length && bIndex < b.Length)
+            {
+                var aInfo = a[aIndex++];
+                var bInfo = b[bIndex++];
+                if (aInfo.ParameterType != bInfo.ParameterType || aInfo.IsOut != bInfo.IsOut)
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        public bool CheckMethodEquality(T a, T b)
+        {
+            return CheckMethodEquality(
+                a.GetParameters(), BindingManager.IsExtensionMethod(a) ? 1 : 0,
+                b.GetParameters(), BindingManager.IsExtensionMethod(b) ? 1 : 0
+            );
+        }
+
         public void Add(T methodInfo, bool isVararg)
         {
             //TODO: method 按照参数的具体程度排序以提高 match_type 的有效命中率
             if (isVararg)
             {
+                foreach (var entry in this.varargMethods)
+                {
+                    if (CheckMethodEquality(entry, methodInfo))
+                    {
+                        return;
+                    }
+                }
                 this.varargMethods.Add(methodInfo);
             }
             else
             {
+                foreach (var entry in this.plainMethods)
+                {
+                    if (CheckMethodEquality(entry, methodInfo))
+                    {
+                        return;
+                    }
+                }
                 this.plainMethods.Add(methodInfo);
             }
         }

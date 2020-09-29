@@ -30,6 +30,12 @@ public class NoNamespaceClass : NoNamespaceBase
         z = y;
     }
 
+    public static void TestOut(out string x, int y, out string z)
+    {
+        x = y.ToString();
+        z = y.ToString();
+    }
+
     public static void TestRefOut(ref int g, out int x, int y, out int z)
     {
         x = y * g;

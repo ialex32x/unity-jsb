@@ -10,6 +10,26 @@ namespace QuickJS.Binding
     // 处理类型匹配
     public partial class Values
     {
+        // guess real type in Ref<T> / Out<T>
+        public static bool js_match_type_hint(JSContext ctx, JSValue jsValue, Type type)
+        {
+            if (jsValue.IsNullish())
+            {
+                return false;
+            }
+            
+            var context = ScriptEngine.GetContext(ctx);
+            var jsHintType = JSApi.JS_GetProperty(ctx, jsValue, context.GetAtom("type"));
+            if (jsHintType.IsNullish())
+            {
+                return true;
+            }
+
+            var rs = js_match_type(ctx, jsHintType, type);
+            JSApi.JS_FreeValue(ctx, jsHintType);
+            return rs;
+        }
+
         public static bool js_match_type(JSContext ctx, JSValue jsValue, Type type)
         {
             if (type == null)
@@ -57,6 +77,23 @@ namespace QuickJS.Binding
                                 // Debug.Log($"get type from exported registry {o}:{type_id} expected:{type}");
                                 return o == type;
                             }
+                            break;
+                        }
+                    default: // plain js object?
+                        {
+                            var context = ScriptEngine.GetContext(ctx);
+                            if (type.IsValueType)
+                            {
+                                if (type.IsPrimitive || type.IsEnum)
+                                {
+                                    return context.CheckNumberType(jsValue);
+                                }
+                            }
+                            else if (type == typeof(string))
+                            {
+                                return context.CheckStringType(jsValue);
+                            }
+
                             break;
                         }
                 }

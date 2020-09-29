@@ -45,32 +45,35 @@ namespace QuickJS.Unity
         }
 
         // 生成定参部分 type 列表 (首参前也会补",")
-        public string GetFixedMatchTypes(T method)
+        public string GetFixedMatchTypes(T method, bool isVararg)
         {
             var snippet = "";
             var parameters = method.GetParameters();
             var isExtension = BindingManager.IsExtensionMethod(method);
-            var i = isExtension ? 1 : 0;
-            var length = parameters.Length;
-            for (; i < length; i++)
+            var pIndex = isExtension ? 1 : 0;
+            var length = isVararg ? parameters.Length - 1 : parameters.Length;
+            var argIndex = 0;
+
+            for (; pIndex < length; pIndex++)
             {
-                var parameter = parameters[i];
-                if (parameter.IsDefined(typeof(ParamArrayAttribute), false))
-                {
-                    break;
-                }
-                snippet += ", ";
+                var parameter = parameters[pIndex];
+                var typename = this.cg.bindingManager.GetCSTypeFullName(parameter.ParameterType);
+
                 if (parameter.ParameterType.IsByRef)
                 {
-                    //TODO: 检查 ref/out 参数有效性 (null undefined 或者 符合 Ref/Out 约定)
-                    snippet += "null";
+                    snippet += $"js_match_type_hint(ctx, argv[{argIndex}], typeof({typename}))";
                 }
                 else
                 {
-                    var typename = this.cg.bindingManager.GetCSTypeFullName(parameter.ParameterType);
-                    snippet += $"typeof({typename})";
+                    snippet += $"js_match_type(ctx, argv[{argIndex}], typeof({typename}))";
                 }
+                if (pIndex != length - 1)
+                {
+                    snippet += " && ";
+                }
+                argIndex++;
             }
+
             return snippet;
         }
 
@@ -188,19 +191,20 @@ namespace QuickJS.Unity
                 return true;
             }
 
-            return false;
+            return true;
         }
 
         // 输出所有变体绑定
         // hasOverrides: 是否需要处理重载
-        protected void WriteAllVariants(MethodBaseBindingInfo<T> bindingInfo) // SortedDictionary<int, MethodBaseVariant<T>> variants)
+        protected void WriteAllVariants(MethodBaseBindingInfo<T> methodBindingInfo) // SortedDictionary<int, MethodBaseVariant<T>> variants)
         {
-            var variants = bindingInfo.variants;
-            var hasOverrides = bindingInfo.count > 1;
-            if (hasOverrides)
+            var variants = methodBindingInfo.variants;
+            var hasOverrides = methodBindingInfo.count > 1;
+            if (true)
+            // if (hasOverrides)
             {
                 // 需要处理重载
-                GenMethodVariants(bindingInfo, variants);
+                GenMethodVariants(methodBindingInfo, variants);
             }
             else
             {
@@ -214,14 +218,12 @@ namespace QuickJS.Unity
                     if (variant.isVararg)
                     {
                         var method = variant.varargMethods[0];
-                        // Debug.Log($"varargMethods {method}");
-                        WriteCSMethodBinding(bindingInfo, method, argc, true);
+                        WriteCSMethodBinding(methodBindingInfo, method, argc, true);
                     }
                     else
                     {
                         var method = variant.plainMethods[0];
-                        // Debug.Log($"plainMethods {method}");
-                        WriteCSMethodBinding(bindingInfo, method, argc, false);
+                        WriteCSMethodBinding(methodBindingInfo, method, argc, false);
                     }
                 }
             }
@@ -324,64 +326,77 @@ namespace QuickJS.Unity
         protected void GenMethodVariants(MethodBaseBindingInfo<T> bindingInfo, SortedDictionary<int, MethodBaseVariant<T>> variants)
         {
             var argc = cg.AppendGetArgCount(true);
-            cg.cs.AppendLine("do");
-            cg.cs.AppendLine("{");
-            cg.cs.AddTabLevel();
+            using (cg.cs.DoWhileBlockScope(bindingInfo.count > 1))
             {
                 foreach (var variantKV in variants)
                 {
-                    var args = variantKV.Key;
+                    var expectedArgCount = variantKV.Key;
                     var variant = variantKV.Value;
-                    //variant.count > 1
-                    var gecheck = args > 0 && variant.isVararg; // 最后一组分支且存在变参时才需要判断 >= 
+                    var gecheck = expectedArgCount > 0 && variant.isVararg; // 最后一组分支且存在变参时才需要判断 >= 
+
                     if (gecheck)
                     {
-                        cg.cs.AppendLine("if (argc >= {0})", args);
+                        cg.cs.AppendLine("if (argc >= {0})", expectedArgCount);
                         cg.cs.AppendLine("{");
                         cg.cs.AddTabLevel();
                     }
+
                     // 处理定参
                     if (variant.plainMethods.Count > 0)
                     {
-                        cg.cs.AppendLine("if (argc == {0})", args);
-                        cg.cs.AppendLine("{");
-                        cg.cs.AddTabLevel();
-                        if (variant.plainMethods.Count > 1)
+                        cg.cs.AppendLine("if (argc == {0})", expectedArgCount);
+                        using (cg.cs.CodeBlockScope())
                         {
-                            foreach (var method in variant.plainMethods)
+                            if (variant.plainMethods.Count > 1)
                             {
-                                cg.cs.AppendLine($"if (js_match_types(ctx, argv{GetFixedMatchTypes(method)}))");
-                                cg.cs.AppendLine("{");
-                                cg.cs.AddTabLevel();
-                                this.WriteCSMethodBinding(bindingInfo, method, argc, false);
-                                cg.cs.DecTabLevel();
-                                cg.cs.AppendLine("}");
+                                foreach (var method in variant.plainMethods)
+                                {
+                                    var fixedMatchers = GetFixedMatchTypes(method, false);
+                                    cg.cs.AppendLine($"if ({fixedMatchers})");
+                                    using (cg.cs.CodeBlockScope())
+                                    {
+                                        this.WriteCSMethodBinding(bindingInfo, method, argc, false);
+                                    }
+                                }
+                                
+                                if (bindingInfo.count > 1)
+                                {
+                                    cg.cs.AppendLine("break;");
+                                }
                             }
-                            cg.cs.AppendLine("break;");
+                            else
+                            {
+                                // 只有一个定参方法时, 不再判定类型匹配
+                                var method = variant.plainMethods[0];
+                                this.WriteCSMethodBinding(bindingInfo, method, argc, false);
+                            }
                         }
-                        else
-                        {
-                            // 只有一个定参方法时, 不再判定类型匹配
-                            var method = variant.plainMethods[0];
-                            this.WriteCSMethodBinding(bindingInfo, method, argc, false);
-                        }
-                        cg.cs.DecTabLevel();
-                        cg.cs.AppendLine("}");
                     }
+
                     // 处理变参
                     if (variant.varargMethods.Count > 0)
                     {
                         foreach (var method in variant.varargMethods)
                         {
-                            cg.cs.AppendLine($"if (js_match_types(ctx, argv{GetFixedMatchTypes(method)})");
-                            cg.cs.AppendLine($" && js_match_param_types(ctx, {args}, argv, {GetParamArrayMatchType(method)}))");
-                            cg.cs.AppendLine("{");
-                            cg.cs.AddTabLevel();
-                            this.WriteCSMethodBinding(bindingInfo, method, argc, true);
-                            cg.cs.DecTabLevel();
-                            cg.cs.AppendLine("}");
+                            var fixedMatchers = GetFixedMatchTypes(method, true);
+                            var variantMatchers = GetParamArrayMatchType(method);
+
+                            if (fixedMatchers.Length > 0)
+                            {
+                                cg.cs.AppendLine($"if ({fixedMatchers} && js_match_param_types(ctx, {expectedArgCount}, argv, {variantMatchers}))");
+                            }
+                            else
+                            {
+                                cg.cs.AppendLine($"if (js_match_param_types(ctx, {expectedArgCount}, argv, {variantMatchers}))");
+                            }
+
+                            using (cg.cs.CodeBlockScope())
+                            {
+                                this.WriteCSMethodBinding(bindingInfo, method, argc, true);
+                            }
                         }
                     }
+
                     if (gecheck)
                     {
                         cg.cs.DecTabLevel();
@@ -389,8 +404,6 @@ namespace QuickJS.Unity
                     }
                 }
             }
-            cg.cs.DecTabLevel();
-            cg.cs.AppendLine("} while(false);");
             var error = this.cg.bindingManager.GetThrowError("no matched method variant");
             cg.cs.AppendLine($"return {error};");
         }
@@ -453,34 +466,34 @@ namespace QuickJS.Unity
                     ArrayUtility.RemoveAt(ref parameters, 0);
                 }
 
-                // 剔除 out 参数
-                // 提出 JSContext, JSRuntime, ScriptContext, ScriptRuntime
                 for (int i = 0, len = parameters.Length; i < len;)
                 {
                     var parameter = parameters[i];
                     var parameterType = parameter.ParameterType;
                     if (parameterType == typeof(Native.JSContext) || parameterType == typeof(Native.JSRuntime))
                     {
+                        // 剔除 JSContext, JSRuntime
                         ArrayUtility.RemoveAt(ref parameters, i);
                         len--;
                     }
                     else if (parameterType == typeof(ScriptContext) || parameterType == typeof(ScriptRuntime))
                     {
+                        // 剔除 ScriptContext, ScriptRuntime
                         ArrayUtility.RemoveAt(ref parameters, i);
                         len--;
                     }
-                    else if (parameter.IsOut)
-                    {
-                        ArrayUtility.RemoveAt(ref parameters, i);
-                        len--;
-                        refParameters.Add(parameter);
-                    }
+                    // else if (parameter.IsOut)
+                    // {
+                    //     ArrayUtility.RemoveAt(ref parameters, i);
+                    //     len--;
+                    //     refParameters.Add(parameter);
+                    // }
                     else
                     {
-                        if (parameterType.IsByRef)
-                        {
-                            refParameters.Add(parameter);
-                        }
+                        // if (parameterType.IsByRef)
+                        // {
+                        //     refParameters.Add(parameter);
+                        // }
                         i++;
                     }
                 }
@@ -504,6 +517,7 @@ namespace QuickJS.Unity
                         var parameterVarName = BindingManager.GetTSVariable(parameter);
                         this.cg.tsDeclare.AppendL($"{parameter_prefix}{parameterVarName}: {parameterTS}");
                     }
+
                     if (i != parameters.Length - 1)
                     {
                         this.cg.tsDeclare.AppendL(", ");
@@ -525,7 +539,9 @@ namespace QuickJS.Unity
 
         protected virtual void EndInvokeBinding() { }
 
-        protected void SplitParamters(ParameterInfo[] parameters, int index, List<ParameterInfo> in_params, List<ParameterInfo> out_params)
+        protected virtual void OnBeforeExceptionReturn() { }
+
+        protected void SplitParamters(ParameterInfo[] parameters, int index, List<ParameterInfo> out_params)
         {
             for (int i = index, len = parameters.Length; i < len; i++)
             {
@@ -534,10 +550,6 @@ namespace QuickJS.Unity
                 if (p.IsOut || p.ParameterType.IsByRef)
                 {
                     out_params.Add(p);
-                }
-                else
-                {
-                    in_params.Add(p);
                 }
             }
         }
@@ -566,10 +578,6 @@ namespace QuickJS.Unity
             var isExtension = BindingManager.IsExtensionMethod(method);
             // var isRaw = method.IsDefined(typeof(JSCFunctionAttribute));
             var parameters = method.GetParameters();
-            var in_params = new List<ParameterInfo>();
-            var out_params = new List<ParameterInfo>();
-
-            SplitParamters(parameters, isExtension ? 1 : 0, in_params, out_params);
             var caller = this.cg.AppendGetThisCS(method);
             var returnType = GetReturnType(method);
 
@@ -580,18 +588,9 @@ namespace QuickJS.Unity
                 cg.cs.AppendLine($"{this.GetInvokeBinding(caller, method, isVararg, isExtension, argc, parameters)};");
                 this.EndInvokeBinding();
 
-                if (out_params.Count > 0)
-                {
-                    var backVars = _WriteBackParametersByRef(isExtension, out_params, null);
-
-                    WriteRebindThis(method, caller);
-                    cg.cs.AppendLine("return {0};", backVars);
-                }
-                else
-                {
-                    WriteRebindThis(method, caller);
-                    InvokeVoidReturn();
-                }
+                _WriteBackParameters(isExtension, parameters);
+                WriteRebindThis(method, caller);
+                InvokeVoidReturn();
             }
             else
             {
@@ -602,62 +601,52 @@ namespace QuickJS.Unity
 
                 var retPusher = cg.AppendMethodReturnValuePusher(method, returnType, retVar);
 
-                if (out_params.Count > 0)
-                {
-                    var retJsVar = "ret_js";
-                    cg.cs.AppendLine("var {0} = {1};", retJsVar, retPusher);
-                    cg.cs.AppendLine("if (JSApi.JS_IsException({0}))", retJsVar);
-                    using (cg.cs.CodeBlockScope())
-                    {
-                        cg.cs.AppendLine("return {0};", retJsVar);
-                    }
-
-                    var backVars = _WriteBackParametersByRef(isExtension, out_params, retJsVar);
-                    cg.cs.AppendLine("return {0};", backVars);
-                }
-                else
-                {
-                    cg.cs.AppendLine("return {0};", retPusher);
-                }
+                _WriteBackParameters(isExtension, parameters);
+                cg.cs.AppendLine("return {0};", retPusher);
             }
         }
 
         // 回填 ref/out 参数
         // 扩展方法参数索引需要偏移
-        protected string _WriteBackParametersByRef(bool isExtension, List<ParameterInfo> parametersByRef, string retJsVar)
+        protected void _WriteBackParameters(bool isExtension, ParameterInfo[] parameters)
         {
-            var retVar = "mult_ret";
-            cg.cs.AppendLine("var context = ScriptEngine.GetContext(ctx);");
-            cg.cs.AppendLine("var {0} = JSApi.JS_NewObject(ctx);", retVar);
-
-            if (!string.IsNullOrEmpty(retJsVar))
+            var pIndex = isExtension ? 1 : 0;
+            var oIndex = 0;
+            var pBase = pIndex;
+            var needContext = true;
+            for (; pIndex < parameters.Length; pIndex++)
             {
-                var retJsVarName = BindingManager.GetTSVariable("return");
-                cg.cs.AppendLine("JSApi.JS_SetProperty(ctx, {0}, context.GetAtom(\"{1}\"), {2});", retVar, retJsVarName, retJsVar);
-            }
+                var parameter = parameters[pIndex];
+                var pType = parameter.ParameterType;
 
-            for (var i = 0; i < parametersByRef.Count; i++)
-            {
-                var parameter = parametersByRef[i];
-                var pname = BindingManager.GetTSVariable(parameter);
-                var position = isExtension ? parameter.Position - 1 : parameter.Position;
-                var argname = $"arg{position}";
-                var pusher = cg.AppendValuePusher(parameter.ParameterType, argname);
+                if (!pType.IsByRef || !parameter.IsOut
+                 || pType == typeof(Native.JSContext) || pType == typeof(Native.JSRuntime)
+                 || pType == typeof(ScriptContext) || pType == typeof(ScriptRuntime))
+                {
+                    continue;
+                }
+                var baseIndex = pIndex - pBase;
+                var pusher = cg.AppendValuePusher(parameter.ParameterType, $"arg{baseIndex}");
 
-                cg.cs.AppendLine("var out{0} = {1};", i, pusher);
-                cg.cs.AppendLine("if (JSApi.JS_IsException(out{0}))", i);
+                cg.cs.AppendLine("var out{0} = {1};", oIndex, pusher);
+                cg.cs.AppendLine("if (JSApi.JS_IsException(out{0}))", oIndex);
                 using (cg.cs.CodeBlockScope())
                 {
-                    for (var j = 0; j < i; j++)
-                    {
-                        cg.cs.AppendLine("JSApi.JS_FreeValue(ctx, out{0});", j);
-                    }
-                    cg.cs.AppendLine("JSApi.JS_FreeValue(ctx, {0});", retVar);
-                    cg.cs.AppendLine("return out{0};", i);
+                    // for (var j = 0; j < oIndex; j++)
+                    // {
+                    //     cg.cs.AppendLine("JSApi.JS_FreeValue(ctx, out{0});", j);
+                    // }
+                    OnBeforeExceptionReturn();
+                    cg.cs.AppendLine("return out{0};", oIndex);
                 }
-                cg.cs.AppendLine("JSApi.JS_SetProperty(ctx, {0}, context.GetAtom(\"{1}\"), out{2});", retVar, pname, i);
+                if (needContext)
+                {
+                    cg.cs.AppendLine("var context = ScriptEngine.GetContext(ctx);");
+                    needContext = false;
+                }
+                cg.cs.AppendLine("JSApi.JS_SetProperty(ctx, argv[{0}], context.GetAtom(\"value\"), out{1});", baseIndex, oIndex);
+                oIndex++;
             }
-            return retVar;
         }
     }
 
@@ -701,6 +690,11 @@ namespace QuickJS.Unity
         protected override void InvokeVoidReturn()
         {
             this.cg.cs.AppendLine("return val;");
+        }
+
+        protected override void OnBeforeExceptionReturn()
+        {
+            this.cg.cs.AppendLine("JSApi.JS_FreeValue(ctx, val);");
         }
 
         public ConstructorCodeGen(CodeGenerator cg, TypeBindingInfo typeBindingInfo)

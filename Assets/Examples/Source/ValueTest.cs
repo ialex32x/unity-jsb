@@ -22,5 +22,17 @@ namespace jsb
         {
             return v;
         }
+
+        public static bool CheckArgs(int a, out float b, ref string c)
+        {
+            b = 1f;
+            return true;
+        }
+
+        public static bool CheckArgs(int a, out float b, ref UnityEngine.GameObject c)
+        {
+            b = 1f;
+            return true;
+        }
     }
 }

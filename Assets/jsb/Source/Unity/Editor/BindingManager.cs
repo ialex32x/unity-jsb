@@ -672,12 +672,12 @@ namespace QuickJS.Unity
             }
             if (type.IsByRef)
             {
-                // if (isOut)
-                // {
-                //     return $"jsb.Out<{GetTSTypeFullName(type.GetElementType())}>";
-                // }
-                // return $"jsb.Ref<{GetTSTypeFullName(type.GetElementType())}>";
-                return GetTSTypeFullName(type.GetElementType());
+                if (isOut)
+                {
+                    return $"jsb.Out<{GetTSTypeFullName(type.GetElementType())}>";
+                }
+                return $"jsb.Ref<{GetTSTypeFullName(type.GetElementType())}>";
+                // return GetTSTypeFullName(type.GetElementType());
             }
             List<string> names;
             if (_tsTypeNameMap.TryGetValue(type, out names))

@@ -26,6 +26,33 @@ namespace QuickJS.Unity
             }
         }
 
+        public class DoWhileBlock : IDisposable
+        {
+            private bool _valid;
+            private TextGenerator _generator;
+
+            public DoWhileBlock(TextGenerator generator, bool valid)
+            {
+                _valid = valid;
+                _generator = generator;
+                if (_valid)
+                {
+                    _generator.AppendLine("do");
+                    _generator.AppendLine("{");
+                    _generator.AddTabLevel();
+                }
+            }
+
+            public void Dispose()
+            {
+                if (_valid)
+                {
+                    _generator.DecTabLevel();
+                    _generator.AppendLine("} while(false);");
+                }
+            }
+        }
+
         public class CodeBlock : IDisposable
         {
             private TextGenerator _generator;
@@ -80,6 +107,11 @@ namespace QuickJS.Unity
         public CodeBlock CodeBlockScope()
         {
             return new CodeBlock(this);
+        }
+
+        public DoWhileBlock DoWhileBlockScope(bool valid = true)
+        {
+            return new DoWhileBlock(this, valid);
         }
 
         public IndentBlock IndentBlockScope()
