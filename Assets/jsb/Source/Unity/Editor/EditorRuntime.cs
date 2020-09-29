@@ -104,7 +104,7 @@ namespace QuickJS.Unity
 
         public void OnCreate(ScriptRuntime runtime)
         {
-            runtime.AddSearchPath("Assets/Examples/Scripts/out/editor");
+            runtime.AddSearchPath("Scripts/out/editor");
             runtime.AddSearchPath("node_modules");
         }
 
