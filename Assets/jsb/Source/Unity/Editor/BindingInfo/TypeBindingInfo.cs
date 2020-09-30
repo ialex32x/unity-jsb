@@ -279,6 +279,16 @@ namespace QuickJS.Unity
                 return;
             }
 
+            // if (type.IsConstructedGenericType)
+            // {
+            //     var gTransform = bindingManager.GetTypeTransform(type.GetGenericTypeDefinition());
+            //     if (gTransform != null && gTransform.IsBlocked(methodInfo.??))
+            //     {
+            //         bindingManager.Info("skip blocked method in generic definition: {0}", methodInfo.Name);
+            //         return;
+            //     }
+            // }
+
             var isExtension = BindingManager.IsExtensionMethod(methodInfo);
             var isStatic = methodInfo.IsStatic && !isExtension;
             var methodCSName = methodInfo.Name;

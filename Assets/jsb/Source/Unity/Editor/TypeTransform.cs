@@ -3,6 +3,7 @@ using System.IO;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Text.RegularExpressions;
+using System.Linq;
 
 namespace QuickJS.Unity
 {
@@ -199,6 +200,11 @@ namespace QuickJS.Unity
         public bool IsBlocked(MethodBase method)
         {
             return _blockedMethods.Contains(method);
+        }
+
+        public bool IsBlocked(int token)
+        {
+            return _blockedMethods.Any(i => i.MetadataToken == token);
         }
 
         // 屏蔽指定签名的构造方法

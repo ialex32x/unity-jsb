@@ -26,6 +26,7 @@ namespace QuickJS.Extra
             bindingManager.AddExportedType(typeof(FairyGUI.ListLayoutType));
             bindingManager.AddExportedType(typeof(FairyGUI.CustomEase));
             bindingManager.AddExportedType(typeof(FairyGUI.GPathPoint));
+            bindingManager.AddExportedType(typeof(FairyGUI.GPathPoint.CurveType));
             bindingManager.AddExportedType(typeof(FairyGUI.NTexture));
             bindingManager.AddExportedType(typeof(FairyGUI.Utils.ByteBuffer));
             bindingManager.AddExportedType(typeof(FairyGUI.OverflowType));
@@ -61,7 +62,12 @@ namespace QuickJS.Extra
             bindingManager.AddExportedType(typeof(FairyGUI.Stage));
             bindingManager.AddExportedType(typeof(FairyGUI.Controller));
             bindingManager.AddExportedType(typeof(FairyGUI.GObject));
+            bindingManager.AddExportedType(typeof(FairyGUI.NGraphics));
+            bindingManager.AddExportedType(typeof(FairyGUI.IFilter));
+            bindingManager.AddExportedType(typeof(FairyGUI.IKeyboard));
+            // bindingManager.AddExportedType(typeof(FairyGUI.UpdateContext));
             bindingManager.AddExportedType(typeof(FairyGUI.GGraph));
+            bindingManager.AddExportedType(typeof(FairyGUI.Shape));
             bindingManager.AddExportedType(typeof(FairyGUI.GGroup));
             bindingManager.AddExportedType(typeof(FairyGUI.GImage));
             bindingManager.AddExportedType(typeof(FairyGUI.GLoader));
@@ -108,9 +114,14 @@ namespace QuickJS.Extra
             bindingManager.AddExportedType(typeof(FairyGUI.MaterialManager));
             bindingManager.AddExportedType(typeof(FairyGUI.Margin));
             bindingManager.AddExportedType(typeof(FairyGUI.Utils.XML));
+            bindingManager.AddExportedType(typeof(FairyGUI.TextFormat));
+            bindingManager.AddExportedType(typeof(FairyGUI.TextFormat.SpecialStyle));
 
             bindingManager.AddExportedType(typeof(UnityEngine.AudioClip));
+            bindingManager.AddExportedType(typeof(UnityEngine.AudioClipLoadType));
+            bindingManager.AddExportedType(typeof(UnityEngine.AudioDataLoadState));
             bindingManager.AddExportedType(typeof(UnityEngine.AssetBundle));
+            bindingManager.AddExportedType(typeof(UnityEngine.Sprite));
             bindingManager.AddExportedType(typeof(UnityEngine.Texture));
             bindingManager.AddExportedType(typeof(UnityEngine.Texture2D));
             bindingManager.AddExportedType(typeof(UnityEngine.Material));
@@ -121,9 +132,11 @@ namespace QuickJS.Extra
             bindingManager.AddExportedType(typeof(System.Collections.Generic.IList<FairyGUI.GObject>));
             bindingManager.AddExportedType(typeof(System.Collections.Generic.List<FairyGUI.PackageItem>));
             bindingManager.AddExportedType(typeof(System.Collections.Generic.List<FairyGUI.UIPackage>));
+            bindingManager.AddExportedType(typeof(System.Collections.Generic.List<FairyGUI.GTreeNode>));
             bindingManager.AddExportedType(typeof(System.Collections.Generic.List<int>));
             bindingManager.AddExportedType(typeof(System.Collections.Generic.List<string>));
             bindingManager.AddExportedType(typeof(System.Collections.Generic.IEnumerable<FairyGUI.GPathPoint>));
+            // bindingManager.AddExportedType(typeof(System.Collections.Generic.Dictionary<string, string>));
         }
     }
 }
