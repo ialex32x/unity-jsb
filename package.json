@@ -29,7 +29,7 @@
         "xlsx": "^0.16.6"
     },
     "scripts": {
-        "pack-res": "gulp", 
+        "pack-res": "gulp",
         "watch": "webpack --watch",
         "dev": "webpack-dev-server --open",
         "publish": "webpack",
