@@ -16,6 +16,7 @@ namespace QuickJS.Extra
         {
             bindingManager.AddExportedType(typeof(FairyGUI.ProgressTitleType));
             bindingManager.AddExportedType(typeof(FairyGUI.PackageItemType));
+            bindingManager.AddExportedType(typeof(FairyGUI.DestroyMethod));
             bindingManager.AddExportedType(typeof(FairyGUI.ObjectType));
             bindingManager.AddExportedType(typeof(FairyGUI.RelationType));
             bindingManager.AddExportedType(typeof(FairyGUI.GroupLayoutType));
@@ -31,6 +32,7 @@ namespace QuickJS.Extra
             bindingManager.AddExportedType(typeof(FairyGUI.FillType));
             bindingManager.AddExportedType(typeof(FairyGUI.PixelHitTestData));
             bindingManager.AddExportedType(typeof(FairyGUI.BitmapFont));
+            bindingManager.AddExportedType(typeof(FairyGUI.BitmapFont.BMGlyph));
             bindingManager.AddExportedType(typeof(FairyGUI.TransitionActionType));
             bindingManager.AddExportedType(typeof(FairyGUI.AutoSizeType));
             bindingManager.AddExportedType(typeof(FairyGUI.TweenPropType));
@@ -103,9 +105,19 @@ namespace QuickJS.Extra
             bindingManager.AddExportedType(typeof(FairyGUI.TweenValue));
             bindingManager.AddExportedType(typeof(FairyGUI.PackageItem));
             bindingManager.AddExportedType(typeof(FairyGUI.UIObjectFactory));
+            bindingManager.AddExportedType(typeof(FairyGUI.MaterialManager));
+            bindingManager.AddExportedType(typeof(FairyGUI.Margin));
             bindingManager.AddExportedType(typeof(FairyGUI.Utils.XML));
+
             bindingManager.AddExportedType(typeof(UnityEngine.AudioClip));
             bindingManager.AddExportedType(typeof(UnityEngine.AssetBundle));
+            bindingManager.AddExportedType(typeof(UnityEngine.Texture));
+            bindingManager.AddExportedType(typeof(UnityEngine.Texture2D));
+            bindingManager.AddExportedType(typeof(UnityEngine.Material));
+            bindingManager.AddExportedType(typeof(UnityEngine.RenderMode));
+            bindingManager.AddExportedType(typeof(UnityEngine.EventModifiers));
+            bindingManager.AddExportedType(typeof(UnityEngine.KeyCode));
+
             bindingManager.AddExportedType(typeof(System.Collections.Generic.IList<FairyGUI.GObject>));
             bindingManager.AddExportedType(typeof(System.Collections.Generic.List<FairyGUI.PackageItem>));
             bindingManager.AddExportedType(typeof(System.Collections.Generic.List<FairyGUI.UIPackage>));
