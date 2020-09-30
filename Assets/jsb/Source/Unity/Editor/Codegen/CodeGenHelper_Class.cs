@@ -24,15 +24,30 @@ namespace QuickJS.Unity
             var extends = string.IsNullOrEmpty(super) ? "" : $" extends {super}";
             var implements = string.IsNullOrEmpty(interfaces) ? "" : $" implements {interfaces}";
             var regName = this.typeBindingInfo.jsName;
-            if (typeBindingInfo.type.IsAbstract)
-            {
-                prefix += "abstract ";
-            }
+            var clsType = "";
+
             if (typeBindingInfo.isEditorRuntime)
             {
                 this.cg.tsDeclare.AppendLine("@jsb.EditorRuntime");
             }
-            this.cg.tsDeclare.AppendLine($"{prefix}class {regName}{extends}{implements} {{");
+
+            if (typeBindingInfo.type.IsAbstract)
+            {
+                if (typeBindingInfo.type.IsInterface)
+                {
+                    clsType = "interface";
+                }
+                else
+                {
+                    clsType = "abstract class";
+                }
+            }
+            else
+            {
+                clsType = "class";
+            }
+
+            this.cg.tsDeclare.AppendLine($"{prefix}{clsType} {regName}{extends}{implements} {{");
             this.cg.tsDeclare.AddTabLevel();
 
             // 生成函数体
@@ -389,7 +404,7 @@ namespace QuickJS.Unity
                     {
                         var methodBindingInfo = kv.Value;
                         var regName = methodBindingInfo.jsName;
-                        
+
                         if (methodBindingInfo._cfunc != null)
                         {
                             var attr = (JSCFunctionAttribute)methodBindingInfo._cfunc.GetCustomAttribute(typeof(JSCFunctionAttribute));
