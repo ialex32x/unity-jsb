@@ -20,7 +20,6 @@ namespace QuickJS.Unity
         private List<string> _explicitAssemblies = new List<string>(); // 仅导出指定需要导出的类型
 
         private HashSet<Type> _blacklist;
-        private HashSet<Type> _whitelist;
         private List<string> _typePrefixBlacklist;
         private Dictionary<Type, TypeBindingInfo> _exportedTypes = new Dictionary<Type, TypeBindingInfo>();
         private List<TypeBindingInfo> _collectedTypes = new List<TypeBindingInfo>(); // 已经完成导出的类型 
@@ -104,9 +103,6 @@ namespace QuickJS.Unity
             _blacklist = new HashSet<Type>(new Type[]
             {
                 typeof(AOT.MonoPInvokeCallbackAttribute),
-            });
-            _whitelist = new HashSet<Type>(new Type[]
-            {
             });
 
             SetAssemblyBlocked("ExCSS.Unity");
@@ -425,11 +421,6 @@ namespace QuickJS.Unity
         //NOTE: editor mscorlib 与 runtime 存在差异, 需要手工 block 差异
         public TypeTransform AddExportedType(Type type, bool importBaseType = false)
         {
-            if (type.IsGenericTypeDefinition)
-            {
-                _whitelist.Add(type);
-                return null;
-            }
             var typeTransform = TransformType(type);
             if (!_exportedTypes.ContainsKey(type))
             {
@@ -1143,10 +1134,6 @@ namespace QuickJS.Unity
         // 是否显式要求导出
         public bool IsExportingExplicit(Type type)
         {
-            if (_whitelist.Contains(type))
-            {
-                return true;
-            }
             if (type.IsDefined(typeof(JSTypeAttribute), false))
             {
                 return true;

@@ -199,9 +199,8 @@ namespace QuickJS.Unity
         protected void WriteAllVariants(MethodBaseBindingInfo<T> methodBindingInfo) // SortedDictionary<int, MethodBaseVariant<T>> variants)
         {
             var variants = methodBindingInfo.variants;
-            var hasOverrides = methodBindingInfo.count > 1;
-            if (true)
-            // if (hasOverrides)
+
+            if (cg.bindingManager.prefs.strictCodegen || /*hasOverrides*/ methodBindingInfo.count > 1)
             {
                 // 需要处理重载
                 GenMethodVariants(methodBindingInfo, variants);
@@ -358,7 +357,7 @@ namespace QuickJS.Unity
                                         this.WriteCSMethodBinding(bindingInfo, method, argc, false);
                                     }
                                 }
-                                
+
                                 if (bindingInfo.count > 1)
                                 {
                                     cg.cs.AppendLine("break;");

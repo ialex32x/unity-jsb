@@ -24,6 +24,11 @@ namespace QuickJS.Unity
         public bool optToString = true; // 自动转换为 toString()
         public bool singleTSD = true; // 输出到单个 d.ts 声明文件中
 
+        /// <summary>
+        /// 生成更严格的绑定代码
+        /// </summary>
+        public bool strictCodegen = true; 
+
         // 生成类型绑定代码类型前缀
         public string typeBindingPrefix = "QuickJS_";
 
