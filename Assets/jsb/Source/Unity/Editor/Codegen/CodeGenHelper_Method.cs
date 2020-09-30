@@ -196,7 +196,7 @@ namespace QuickJS.Unity
 
         // 输出所有变体绑定
         // hasOverrides: 是否需要处理重载
-        protected void WriteAllVariants(MethodBaseBindingInfo<T> methodBindingInfo) // SortedDictionary<int, MethodBaseVariant<T>> variants)
+        protected void WriteCSAllVariants(MethodBaseBindingInfo<T> methodBindingInfo) // SortedDictionary<int, MethodBaseVariant<T>> variants)
         {
             var variants = methodBindingInfo.variants;
 
@@ -418,11 +418,13 @@ namespace QuickJS.Unity
                 this.cg.tsDeclare.AppendLine(tsMethodDeclaration);
                 return refParameters;
             }
+
             string tsMethodRename;
             if (!this.cg.bindingManager.GetTSMethodRename(method, out tsMethodRename))
             {
                 tsMethodRename = bindingInfo.jsName;
             }
+            
             var isRaw = method.IsDefined(typeof(JSCFunctionAttribute));
             //TODO: 需要处理参数类型归并问题, 因为如果类型没有导入 ts 中, 可能会在声明中出现相同参数列表的定义
             //      在 MethodVariant 中创建每个方法对应的TS类型名参数列表, 完全相同的不再输出
@@ -703,7 +705,7 @@ namespace QuickJS.Unity
             this.bindingInfo = typeBindingInfo.constructors;
             if (this.bindingInfo.count > 0)
             {
-                WriteAllVariants(this.bindingInfo);
+                WriteCSAllVariants(this.bindingInfo);
                 WriteTSAllVariants(typeBindingInfo, this.bindingInfo);
             }
             else
@@ -860,7 +862,7 @@ namespace QuickJS.Unity
         : base(cg)
         {
             this.methodBindingInfo = bindingInfo;
-            WriteAllVariants(this.methodBindingInfo);
+            WriteCSAllVariants(this.methodBindingInfo);
             // WriteTSAllVariants(this.bindingInfo);
         }
     }

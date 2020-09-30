@@ -49,7 +49,7 @@ namespace QuickJS.Unity
             : base(cg)
         {
             this.bindingInfo = bindingInfo;
-            WriteAllVariants(this.bindingInfo);
+            WriteCSAllVariants(this.bindingInfo);
             // WriteTSAllVariants(this.bindingInfo);
         }
     }

@@ -719,6 +719,7 @@ namespace QuickJS.Unity
             {
                 return "void";
             }
+
             if (type.IsByRef)
             {
                 if (isOut)
@@ -728,19 +729,23 @@ namespace QuickJS.Unity
                 return $"jsb.Ref<{GetTSTypeFullName(type.GetElementType())}>";
                 // return GetTSTypeFullName(type.GetElementType());
             }
+
             List<string> names;
             if (_tsTypeNameMap.TryGetValue(type, out names))
             {
                 return names.Count > 1 ? $"({String.Join(" | ", names)})" : names[0];
             }
+
             if (type == typeof(Array))
             {
                 return "System.Array<any>";
             }
+
             if (type == typeof(ScriptPromise))
             {
                 return "Promise<void>";
             }
+
             if (type.IsSubclassOf(typeof(ScriptPromise)))
             {
                 if (type.IsGenericType)
@@ -750,6 +755,7 @@ namespace QuickJS.Unity
                 }
                 return "Promise<any>";
             }
+
             if (type.IsArray)
             {
                 // if (type.GetElementType() == typeof(byte))
@@ -762,11 +768,13 @@ namespace QuickJS.Unity
                 // return "System.Array";
                 return "System.Array<" + tsFullName + ">";
             }
+
             var info = GetExportedType(type);
             if (info != null)
             {
                 return info.jsFullName;
             }
+
             if (type.BaseType == typeof(MulticastDelegate))
             {
                 var delegateBindingInfo = GetDelegateBindingInfo(type);
@@ -780,6 +788,7 @@ namespace QuickJS.Unity
                     return $"({v_arglist}) => {ret}";
                 }
             }
+
             if (type.IsGenericType)
             {
                 if (type.GetGenericTypeDefinition() == typeof(Nullable<>))
@@ -789,6 +798,14 @@ namespace QuickJS.Unity
                     return $"jsb.Nullable<{gArgsTS}>";
                 }
             }
+            else
+            {
+                if (type.IsGenericParameter)
+                {
+                    return type.Name;
+                }
+            }
+
             return "any";
         }
 

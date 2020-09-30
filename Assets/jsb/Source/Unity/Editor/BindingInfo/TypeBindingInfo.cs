@@ -141,10 +141,28 @@ namespace QuickJS.Unity
 
                 if (type.IsGenericType)
                 {
-                    this.jsName = naming.Substring(0, naming.IndexOf('`'));
-                    foreach (var gp in type.GetGenericArguments())
+                    if (type.IsGenericTypeDefinition)
                     {
-                        this.jsName += "_" + gp.Name;
+                        this.jsName = naming.Substring(0, naming.IndexOf('`'));
+                        this.jsName += "<";
+                        var gArgs = type.GetGenericArguments();
+                        for (var i = 0; i < gArgs.Length; i++)
+                        {
+                            this.jsName += gArgs[i].Name;
+                            if (i != gArgs.Length - 1)
+                            {
+                                this.jsName += ", ";
+                            }
+                        }
+                        this.jsName += ">";
+                    }
+                    else
+                    {
+                        this.jsName = naming.Substring(0, naming.IndexOf('`'));
+                        foreach (var gp in type.GetGenericArguments())
+                        {
+                            this.jsName += "_" + gp.Name;
+                        }
                     }
                 }
                 else
