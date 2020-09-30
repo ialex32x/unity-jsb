@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.7.2)
+cmake_minimum_required(VERSION 3.16)
 
 # before project definition
 
@@ -6,6 +6,8 @@ if (APPLE)
     if (NOT IOS)
         # -DCMAKE_OSX_DEPLOYMENT_TARGET:STRING=10.13
         set(CMAKE_OSX_DEPLOYMENT_TARGET "10.13" CACHE STRING "Minimum OS X deployment version")
+        set(CMAKE_XCODE_ATTRIBUTE_ONLY_ACTIVE_ARCH "NO")
+        # set(CMAKE_XCODE_ATTRIBUTE_ARCHS "x84_64")
     endif ()
 endif ()
 
@@ -87,6 +89,8 @@ endif ()
 if (APPLE) 
     if (IOS)
         set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fembed-bitcode")
+        set(IOS_PLATFORM OS64)
+        set(ENABLE_BITCODE 1)
         add_library(quickjs STATIC ${QJS_SRCS})
         set_xcode_property (quickjs IPHONEOS_DEPLOYMENT_TARGET "8.0" "all")
     else ()

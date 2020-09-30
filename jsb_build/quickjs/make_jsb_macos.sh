@@ -9,5 +9,5 @@ echo building...
 cmake --build macos_release --config Release
 mkdir -p ../../prebuilt/Plugins/quickjs.bundle/Contents/MacOS/
 pwd
-cp ./macos_release/Release/libquickjs.bundle/Contents/MacOS/libquickjs ../../prebuilt/Plugins/quickjs.bundle/Contents/MacOS/quickjs
+cp ./macos_release/Release/quickjs.bundle/Contents/MacOS/quickjs ../../prebuilt/Plugins/quickjs.bundle/Contents/MacOS/
 cd ..

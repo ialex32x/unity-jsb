@@ -14,4 +14,4 @@
 # cp ../prebuilt/Plugins/iOS/libquickjs.a ../../Assets/jsb/Plugins/iOS/
 
 # macos
-# cp ../../prebuilt/Plugins/quickjs.bundle/Contents/MacOS/quickjs ../../Assets/jsb/Plugins/quickjs.bundle/Contents/MacOS/
+cp ../prebuilt/Plugins/quickjs.bundle/Contents/MacOS/quickjs ../../Assets/jsb/Plugins/quickjs.bundle/Contents/MacOS/
