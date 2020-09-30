@@ -111,6 +111,7 @@ namespace QuickJS.Extra
             bindingManager.AddExportedType(typeof(System.Collections.Generic.List<FairyGUI.UIPackage>));
             bindingManager.AddExportedType(typeof(System.Collections.Generic.List<int>));
             bindingManager.AddExportedType(typeof(System.Collections.Generic.List<string>));
+            bindingManager.AddExportedType(typeof(System.Collections.Generic.IEnumerable<FairyGUI.GPathPoint>));
         }
     }
 }

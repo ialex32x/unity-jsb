@@ -45,7 +45,8 @@ namespace QuickJS.Unity
 
         public readonly string jsNamespace; // js 命名空间
 
-        public readonly string jsName; // js注册名
+        public readonly string jsTypeName; // 不带泛型部分的js注册名
+        public readonly string jsName; // js注册名 (带平面化的泛型部分)
 
         public List<OperatorBindingInfo> operators = new List<OperatorBindingInfo>();
 
@@ -61,6 +62,12 @@ namespace QuickJS.Unity
         public Assembly Assembly
         {
             get { return type.Assembly; }
+        }
+
+        // full name without generic parameters
+        public string jsFullTypeName
+        {
+            get { return string.IsNullOrEmpty(jsNamespace) ? jsTypeName : jsNamespace + "." + jsTypeName; }
         }
 
         public string jsFullName
@@ -120,6 +127,7 @@ namespace QuickJS.Unity
             {
                 this.jsNamespace = naming.Substring(0, indexOfTypeName);
                 this.jsName = naming.Substring(indexOfTypeName + 1);
+                this.jsTypeName = this.jsName;
             }
             else
             {
@@ -144,8 +152,11 @@ namespace QuickJS.Unity
                     if (type.IsGenericTypeDefinition)
                     {
                         this.jsName = naming.Substring(0, naming.IndexOf('`'));
+                        this.jsTypeName = this.jsName;
+
                         this.jsName += "<";
                         var gArgs = type.GetGenericArguments();
+
                         for (var i = 0; i < gArgs.Length; i++)
                         {
                             this.jsName += gArgs[i].Name;
@@ -159,6 +170,8 @@ namespace QuickJS.Unity
                     else
                     {
                         this.jsName = naming.Substring(0, naming.IndexOf('`'));
+                        this.jsTypeName = this.jsName;
+
                         foreach (var gp in type.GetGenericArguments())
                         {
                             this.jsName += "_" + gp.Name;
@@ -168,6 +181,7 @@ namespace QuickJS.Unity
                 else
                 {
                     this.jsName = naming;
+                    this.jsTypeName = this.jsName;
                 }
             }
 

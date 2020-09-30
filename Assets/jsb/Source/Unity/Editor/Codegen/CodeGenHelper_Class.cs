@@ -20,11 +20,11 @@ namespace QuickJS.Unity
             var transform = this.typeBindingInfo.transform;
             var prefix = string.IsNullOrEmpty(this.typeBindingInfo.jsNamespace) ? "declare " : "";
             var super = this.cg.bindingManager.GetTSSuperName(this.typeBindingInfo);
-            var interfaces = this.cg.bindingManager.GetTSInterfacesName(this.typeBindingInfo);
+            var interfaces = this.cg.bindingManager.GetTSInterfacesName(this.typeBindingInfo.type);
             var extends = "";
-            var implements = string.IsNullOrEmpty(interfaces) ? "" : $" implements {interfaces}";
-            var regName = this.typeBindingInfo.jsName;
-            var clsType = "";
+            var implements = "";
+            var jsClassName = this.typeBindingInfo.jsName;
+            var jsClassType = "";
 
             if (typeBindingInfo.isEditorRuntime)
             {
@@ -34,15 +34,15 @@ namespace QuickJS.Unity
 
             if (typeBindingInfo.type.IsInterface || typeBindingInfo.type.IsGenericTypeDefinition)
             {
-                clsType = "interface";
+                jsClassType = "interface";
             }
             else if (typeBindingInfo.type.IsAbstract)
             {
-                clsType = "abstract class";
+                jsClassType = "abstract class";
             }
             else
             {
-                clsType = "class";
+                jsClassType = "class";
             }
 
             if (!string.IsNullOrEmpty(super) && !typeBindingInfo.type.IsGenericTypeDefinition)
@@ -50,7 +50,19 @@ namespace QuickJS.Unity
                 extends = $" extends {super}";
             }
 
-            this.cg.tsDeclare.AppendLine($"{prefix}{clsType} {regName}{extends}{implements} {{");
+            if (!string.IsNullOrEmpty(interfaces))
+            {
+                if (jsClassType == "interface")
+                {
+                    implements = $" extends {interfaces}";
+                }
+                else
+                {
+                    implements = $" implements {interfaces}";
+                }
+            }
+
+            this.cg.tsDeclare.AppendLine($"{prefix}{jsClassType} {jsClassName}{extends}{implements} {{");
             this.cg.tsDeclare.AddTabLevel();
 
             // 生成函数体

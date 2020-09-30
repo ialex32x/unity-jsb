@@ -772,6 +772,11 @@ namespace QuickJS.Unity
             var info = GetExportedType(type);
             if (info != null)
             {
+                var gDef = GetTSGenericTypeDefinition(type);
+                if (!string.IsNullOrEmpty(gDef))
+                {
+                    return gDef;
+                }
                 return info.jsFullName;
             }
 
@@ -1023,23 +1028,65 @@ namespace QuickJS.Unity
                 }
                 super = super.BaseType;
             }
+
             return "";
         }
 
         // 获取实现的接口的ts声明
-        public string GetTSInterfacesName(TypeBindingInfo typeBindingInfo)
+        public string GetTSInterfacesName(Type type)
         {
-            var interfaces = typeBindingInfo.type.GetInterfaces();
+            var interfaces = type.GetInterfaces();
             var str = "";
+
             foreach (var @interface in interfaces)
             {
                 var interfaceBindingInfo = GetExportedType(@interface);
                 if (interfaceBindingInfo != null)
                 {
-                    // Debug.Log($"{typeBindingInfo.type.Name} implements {@interface.Name}");
+                    // Debug.Log($"{type.Name} implements {@interface.Name}");
                     str += GetTSTypeFullName(interfaceBindingInfo.type) + ", ";
                 }
             }
+
+            var gStr = GetTSGenericTypeDefinition(type);
+            if (gStr.Length > 0)
+            {
+                str += gStr + ", ";
+            }
+
+            if (str.Length > 0)
+            {
+                str = str.Substring(0, str.Length - 2);
+            }
+            return str;
+        }
+
+        // 如果 type 是一个具体泛型类, 则返回 Sample<String> 形式的字符串表示
+        public string GetTSGenericTypeDefinition(Type type)
+        {
+            var str = "";
+
+            if (type.IsGenericType && !type.IsGenericTypeDefinition)
+            {
+                var gType = type.GetGenericTypeDefinition();
+                var gTypeInfo = GetExportedType(gType);
+                if (gTypeInfo != null)
+                {
+                    var templateArgs = "";
+                    var tArgs = type.GetGenericArguments();
+                    for (var i = 0; i < tArgs.Length; i++)
+                    {
+                        templateArgs += GetTSTypeFullName(tArgs[i]);
+                        if (i != tArgs.Length - 1)
+                        {
+                            templateArgs += ", ";
+                        }
+                    }
+                    var templateName = $"{gTypeInfo.jsFullTypeName}<{templateArgs}>";
+                    str += templateName + ", ";
+                }
+            }
+
             if (str.Length > 0)
             {
                 str = str.Substring(0, str.Length - 2);
