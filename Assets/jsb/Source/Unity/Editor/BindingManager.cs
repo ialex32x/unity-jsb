@@ -1819,14 +1819,6 @@ namespace QuickJS.Unity
             var extraExt = prefs.extraExt;
             // var extraExt = "";
 
-            if (!Directory.Exists(csOutDir))
-            {
-                Directory.CreateDirectory(csOutDir);
-            }
-            if (!Directory.Exists(tsOutDir))
-            {
-                Directory.CreateDirectory(tsOutDir);
-            }
             var cancel = false;
             var current = 0;
             var total = _exportedTypes.Count;

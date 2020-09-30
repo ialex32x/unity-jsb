@@ -82,7 +82,7 @@ namespace QuickJS.Unity
                                                 }
                                             }
                                         }
-                                        
+
                                         using (new EditorOnlyCodeGen(this))
                                         {
                                             foreach (var editorType in editorTypes)
@@ -254,6 +254,11 @@ namespace QuickJS.Unity
                     var csName = filename + ".cs" + tx;
                     var csPath = Path.Combine(csOutDir, csName);
                     this.bindingManager.AddOutputFile(csOutDir, csPath);
+
+                    if (!Directory.Exists(csOutDir))
+                    {
+                        Directory.CreateDirectory(csOutDir);
+                    }
                     WriteAllText(csPath, this.cs.ToString());
                 }
             }
@@ -274,6 +279,11 @@ namespace QuickJS.Unity
                         var tsName = "jsb.autogen.d.ts" + tx;
                         var tsPath = Path.Combine(tsOutDir, tsName);
                         this.bindingManager.AddOutputFile(tsOutDir, tsPath);
+                        
+                        if (!Directory.Exists(tsOutDir))
+                        {
+                            Directory.CreateDirectory(tsOutDir);
+                        }
                         WriteAllText(tsPath, this.tsDeclare.ToString());
                     }
                 }
@@ -295,6 +305,11 @@ namespace QuickJS.Unity
                         var tsName = filename + ".d.ts" + tx;
                         var tsPath = Path.Combine(tsOutDir, tsName);
                         this.bindingManager.AddOutputFile(tsOutDir, tsPath);
+
+                        if (!Directory.Exists(tsOutDir))
+                        {
+                            Directory.CreateDirectory(tsOutDir);
+                        }
                         WriteAllText(tsPath, this.tsDeclare.ToString());
                     }
                 }

@@ -132,7 +132,7 @@ namespace QuickJS.Unity
                 {
                     if (EditorUtility.DisplayDialog("Generate", "Generate all binding code?", "ok", "cancel"))
                     {
-                        Defer(() => UnityHelper.GenerateBindings());
+                        Defer(() => UnityHelper.GenerateBindingsAndTypeDefinition());
                     }
                 }
                 GUI.color = color;

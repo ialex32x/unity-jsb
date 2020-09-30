@@ -39,8 +39,8 @@ namespace QuickJS.Unity
     public static class UnityHelper
     {
         #region All Menu Items
-        [MenuItem("JS Bridge/Generate Bindings with d.ts")]
-        public static void GenerateBindings()
+        [MenuItem("JS Bridge/Generate Bindings And Type Definition")]
+        public static void GenerateBindingsAndTypeDefinition()
         {
             var bm = new BindingManager(Prefs.Load());
             bm.Collect();
@@ -50,8 +50,8 @@ namespace QuickJS.Unity
             AssetDatabase.Refresh();
         }
 
-        [MenuItem("JS Bridge/Generate Bindings without d.ts")]
-        public static void GenerateBindingsWithoutTSD()
+        [MenuItem("JS Bridge/Generate Type Definition")]
+        public static void GenerateTypeDefinition()
         {
             var bm = new BindingManager(Prefs.Load());
             bm.Collect();
