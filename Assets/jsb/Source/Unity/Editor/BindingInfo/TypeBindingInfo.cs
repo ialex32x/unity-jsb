@@ -17,6 +17,14 @@ namespace QuickJS.Unity
 
         public TypeBindingFlags bindingFlags { get { return transform.bindingFlags; } }
 
+        /// <summary>
+        /// 是否生成绑定代码
+        /// </summary>
+        public bool genBindingCode => (bindingFlags & TypeBindingFlags.BindingCode) != 0;
+
+        /// <summary>
+        /// 是否只生成于编辑器运行时
+        /// </summary>
         public bool isEditorRuntime => transform.isEditorRuntime;
 
         // 父类类型
@@ -70,7 +78,7 @@ namespace QuickJS.Unity
             get { return type.IsEnum; }
         }
 
-        public static string GetNamingAttribute(MethodInfo info)
+        public string GetNamingAttribute(MethodInfo info)
         {
             var naming = info.GetCustomAttribute(typeof(JSNamingAttribute), false) as JSNamingAttribute;
             if (naming != null && !string.IsNullOrEmpty(naming.name))
@@ -87,7 +95,7 @@ namespace QuickJS.Unity
                 }
             }
 
-            return info.Name;
+            return bindingManager.ApplyNameRule(transform.GetNameRule(info), info.Name);
         }
 
         public static string GetNamingAttribute(MemberInfo info)
@@ -106,7 +114,7 @@ namespace QuickJS.Unity
             this.bindingManager = bindingManager;
             this.type = type;
             this.transform = typeTransform;
-            var naming = this.transform?.GetTypeNaming() ?? GetNamingAttribute(type);
+            var naming = this.transform.GetTypeNaming() ?? GetNamingAttribute(type);
             var indexOfTypeName = naming.LastIndexOf('.');
             if (indexOfTypeName >= 0) // 内部类
             {
@@ -233,19 +241,16 @@ namespace QuickJS.Unity
 
         public void AddMethod(MethodInfo methodInfo)
         {
-            if (this.transform != null)
+            if (this.transform.IsBlocked(methodInfo))
             {
-                if (this.transform.IsBlocked(methodInfo))
-                {
-                    bindingManager.Info("skip blocked method: {0}", methodInfo.Name);
-                    return;
-                }
+                bindingManager.Info("skip blocked method: {0}", methodInfo.Name);
+                return;
             }
 
             var isExtension = BindingManager.IsExtensionMethod(methodInfo);
             var isStatic = methodInfo.IsStatic && !isExtension;
             var methodCSName = methodInfo.Name;
-            var methodJSName = TypeBindingInfo.GetNamingAttribute(methodInfo);
+            var methodJSName = GetNamingAttribute(methodInfo);
             if (IsSupportedOperators(methodInfo))
             {
                 var parameters = methodInfo.GetParameters();
@@ -359,13 +364,10 @@ namespace QuickJS.Unity
 
         public void AddConstructor(ConstructorInfo constructorInfo)
         {
-            if (this.transform != null)
+            if (this.transform.IsBlocked(constructorInfo))
             {
-                if (this.transform.IsBlocked(constructorInfo))
-                {
-                    bindingManager.Info("skip blocked constructor: {0}", constructorInfo.Name);
-                    return;
-                }
+                bindingManager.Info("skip blocked constructor: {0}", constructorInfo.Name);
+                return;
             }
 
             if (!constructors.Add(constructorInfo, false))
@@ -408,19 +410,16 @@ namespace QuickJS.Unity
                     continue;
                 }
 
-                if (transform != null)
+                if (transform.IsMemberBlocked(field.Name))
                 {
-                    if (transform.IsMemberBlocked(field.Name))
-                    {
-                        bindingManager.Info("skip blocked field: {0}", field.Name);
-                        continue;
-                    }
+                    bindingManager.Info("skip blocked field: {0}", field.Name);
+                    continue;
+                }
 
-                    if (transform.Filter(field))
-                    {
-                        bindingManager.Info("skip filtered field: {0}", field.Name);
-                        continue;
-                    }
+                if (transform.Filter(field))
+                {
+                    bindingManager.Info("skip filtered field: {0}", field.Name);
+                    continue;
                 }
 
                 AddField(field);
@@ -453,19 +452,16 @@ namespace QuickJS.Unity
                     continue;
                 }
 
-                if (transform != null)
+                if (transform.IsMemberBlocked(evt.Name))
                 {
-                    if (transform.IsMemberBlocked(evt.Name))
-                    {
-                        bindingManager.Info("skip blocked event: {0}", evt.Name);
-                        continue;
-                    }
+                    bindingManager.Info("skip blocked event: {0}", evt.Name);
+                    continue;
+                }
 
-                    if (transform.Filter(evt))
-                    {
-                        bindingManager.Info("skip filtered event: {0}", evt.Name);
-                        continue;
-                    }
+                if (transform.Filter(evt))
+                {
+                    bindingManager.Info("skip filtered event: {0}", evt.Name);
+                    continue;
                 }
 
                 AddEvent(evt);
@@ -498,19 +494,16 @@ namespace QuickJS.Unity
                     continue;
                 }
 
-                if (transform != null)
+                if (transform.IsMemberBlocked(property.Name))
                 {
-                    if (transform.IsMemberBlocked(property.Name))
-                    {
-                        bindingManager.Info("skip blocked property: {0}", property.Name);
-                        continue;
-                    }
+                    bindingManager.Info("skip blocked property: {0}", property.Name);
+                    continue;
+                }
 
-                    if (transform.Filter(property))
-                    {
-                        bindingManager.Info("skip filtered property: {0}", property.Name);
-                        continue;
-                    }
+                if (transform.Filter(property))
+                {
+                    bindingManager.Info("skip filtered property: {0}", property.Name);
+                    continue;
                 }
 
                 //NOTE: 索引访问
@@ -574,13 +567,10 @@ namespace QuickJS.Unity
                         continue;
                     }
 
-                    if (transform != null)
+                    if (transform.Filter(constructor))
                     {
-                        if (transform.Filter(constructor))
-                        {
-                            bindingManager.Info("skip filtered constructor: {0}", constructor.Name);
-                            continue;
-                        }
+                        bindingManager.Info("skip filtered constructor: {0}", constructor.Name);
+                        continue;
                     }
 
                     AddConstructor(constructor);
@@ -628,19 +618,16 @@ namespace QuickJS.Unity
                     continue;
                 }
 
-                if (transform != null)
+                if (transform.IsMemberBlocked(method.Name))
                 {
-                    if (transform.IsMemberBlocked(method.Name))
-                    {
-                        bindingManager.Info("skip blocked method: {0}", method.Name);
-                        continue;
-                    }
+                    bindingManager.Info("skip blocked method: {0}", method.Name);
+                    continue;
+                }
 
-                    if (transform.Filter(method))
-                    {
-                        bindingManager.Info("skip filtered method: {0}", method.Name);
-                        continue;
-                    }
+                if (transform.Filter(method))
+                {
+                    bindingManager.Info("skip filtered method: {0}", method.Name);
+                    continue;
                 }
 
                 if (BindingManager.IsExtensionMethod(method))

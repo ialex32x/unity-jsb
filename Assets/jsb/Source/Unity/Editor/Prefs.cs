@@ -19,15 +19,26 @@ namespace QuickJS.Unity
         // 静态绑定代码的生成目录
         public string outDir = "Assets/Generated/${platform}";
         public string typescriptDir = "Assets/Generated/Typings";
+
+        /// <summary>
+        /// 代码生成调试开关, 生成的代码将完全在注释中, 方便反复生成对比查问题
+        /// </summary>
         public bool debugCodegen = false;
 
-        public bool optToString = true; // 自动转换为 toString()
-        public bool singleTSD = true; // 输出到单个 d.ts 声明文件中
+        /// <summary>
+        /// 是否将 C# ToString() 自动转换为 toString()
+        /// </summary>
+        public bool optToString = true;
+
+        /// <summary>
+        /// 是否输出到单个 d.ts 声明文件中
+        /// </summary>
+        public bool singleTSD = true;
 
         /// <summary>
         /// 生成更严格的绑定代码
         /// </summary>
-        public bool strictCodegen = true; 
+        public bool strictCodegen = true;
 
         // 生成类型绑定代码类型前缀
         public string typeBindingPrefix = "QuickJS_";

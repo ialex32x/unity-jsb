@@ -70,15 +70,19 @@ namespace QuickJS.Unity
                                         var editorTypes = new List<TypeBindingInfo>();
                                         foreach (var type in orderedTypes)
                                         {
-                                            if (type.isEditorRuntime)
+                                            if (type.genBindingCode)
                                             {
-                                                editorTypes.Add(type);
-                                            }
-                                            else
-                                            {
-                                                method.AddStatement("{0}.{1}.Bind(register);", this.bindingManager.prefs.ns, type.csBindingName);
+                                                if (type.isEditorRuntime)
+                                                {
+                                                    editorTypes.Add(type);
+                                                }
+                                                else
+                                                {
+                                                    method.AddStatement("{0}.{1}.Bind(register);", this.bindingManager.prefs.ns, type.csBindingName);
+                                                }
                                             }
                                         }
+                                        
                                         using (new EditorOnlyCodeGen(this))
                                         {
                                             foreach (var editorType in editorTypes)

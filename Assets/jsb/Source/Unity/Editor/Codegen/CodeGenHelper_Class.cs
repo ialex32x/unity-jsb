@@ -389,14 +389,7 @@ namespace QuickJS.Unity
                             funcName = redirect;
                         }
 
-                        if (typeBindingInfo.bindingManager.prefs.optToString && regName == "ToString")
-                        {
-                            cg.cs.AppendLine("cls.AddMethod(false, \"{0}\", {1});", "toString", funcName);
-                        }
-                        else
-                        {
-                            cg.cs.AppendLine("cls.AddMethod(false, \"{0}\", {1});", regName, funcName);
-                        }
+                        cg.cs.AppendLine("cls.AddMethod(false, \"{0}\", {1});", regName, funcName);
                     }
 
                     // 静态方法

@@ -15,6 +15,20 @@ namespace QuickJS.Unity
             return method.IsDefined(typeof(System.Runtime.CompilerServices.ExtensionAttribute), false);
         }
 
+        public static bool ContainsGenericParameters(MethodBase method)
+        {
+            var parameters = method.GetParameters();
+            for (int i = 0, size = parameters.Length; i < size; i++)
+            {
+                var parameterType = parameters[i].ParameterType;
+                if (parameterType.IsGenericTypeDefinition || parameterType.IsGenericParameter)
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
         // 是否包含指针参数
         public static bool ContainsPointer(MethodBase method)
         {

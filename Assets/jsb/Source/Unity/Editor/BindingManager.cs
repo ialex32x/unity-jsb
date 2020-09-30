@@ -42,6 +42,11 @@ namespace QuickJS.Unity
         // 自定义的处理流程
         private List<IBindingProcess> _bindingProcess = new List<IBindingProcess>();
 
+        // ruleName: text => text
+        private Dictionary<string, Func<string, string>> _nameRules = new Dictionary<string, Func<string, string>>();
+        // text => text
+        private Dictionary<string, string> _globalNameRules = new Dictionary<string, string>();
+
         static BindingManager()
         {
             AddTSKeywords(
@@ -105,6 +110,12 @@ namespace QuickJS.Unity
                 typeof(AOT.MonoPInvokeCallbackAttribute),
             });
 
+            if (prefs.optToString)
+            {
+                AddGlobalNameRule("ToString", "toString");
+            }
+
+            AddNameRule("js", t => char.ToLower(t[0]) + t.Substring(1));
             SetAssemblyBlocked("ExCSS.Unity");
             AddTypePrefixBlacklist("System.SpanExtensions");
 
@@ -297,6 +308,42 @@ namespace QuickJS.Unity
             Initialize();
         }
 
+        public void AddGlobalNameRule(string name, string mapping)
+        {
+            if (!string.IsNullOrEmpty(name))
+            {
+                _globalNameRules[name] = mapping;
+            }
+        }
+
+        public void AddNameRule(string name, Func<string, string> fn)
+        {
+            if (!string.IsNullOrEmpty(name))
+            {
+                _nameRules[name] = fn;
+            }
+        }
+
+        public string ApplyNameRule(string name, string text)
+        {
+            if (!string.IsNullOrEmpty(text) && !string.IsNullOrEmpty(name))
+            {
+                Func<string, string> tfn;
+                if (_nameRules.TryGetValue(name, out tfn))
+                {
+                    return tfn(text);
+                }
+            }
+
+            string mapping;
+            if (_globalNameRules.TryGetValue(text, out mapping))
+            {
+                return mapping;
+            }
+
+            return text;
+        }
+
         public void SetTypeBlocked(Type type)
         {
             _blacklist.Add(type);
@@ -449,6 +496,12 @@ namespace QuickJS.Unity
                         }
                     }
                 }
+
+                // 尝试以 typescript interface 形式导出泛型定义
+                if (type.IsConstructedGenericType)
+                {
+                    AddExportedType(type.GetGenericTypeDefinition(), false);
+                }
             }
             return typeTransform;
         }
@@ -559,7 +612,7 @@ namespace QuickJS.Unity
                 return true;
             }
             var tt = GetTypeTransform(type);
-            return (tt != null && tt.isEditorRuntime) 
+            return (tt != null && tt.isEditorRuntime)
                 || IsTypeEditorRuntime(type.DeclaringType) // check outter class for nested class
             ;
         }
@@ -594,6 +647,11 @@ namespace QuickJS.Unity
                 if (ContainsPointer(invoke))
                 {
                     log.AppendLine("skip unsafe (pointer) delegate: [{0}] {1}", delegateType, invoke);
+                    return;
+                }
+                if (ContainsGenericParameters(invoke))
+                {
+                    log.AppendLine("skip generic delegate: [{0}] {1}", delegateType, invoke);
                     return;
                 }
                 if (ContainsByRefParameters(invoke))
@@ -1057,6 +1115,10 @@ namespace QuickJS.Unity
                     return name;
                 }
             }
+            if (type.IsGenericParameter)
+            {
+                return type.Name;
+            }
             var fullname = type.FullName.Replace('+', '.');
             if (fullname.Contains("`"))
             {
@@ -1088,10 +1150,10 @@ namespace QuickJS.Unity
             {
                 return true;
             }
-            if (type.IsGenericType && !type.IsConstructedGenericType)
-            {
-                return true;
-            }
+            // if (type.IsGenericType && !type.IsConstructedGenericType)
+            // {
+            //     return true;
+            // }
             if (type.Name.Contains("<"))
             {
                 return true;

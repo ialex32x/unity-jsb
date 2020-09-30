@@ -52,11 +52,17 @@ namespace QuickJS.Unity
         private Func<EventInfo, bool> _filterEventInfo;
         private Func<MethodInfo, bool> _filterMethodInfo;
 
+        private Dictionary<MemberInfo, string> _memberNameRules = new Dictionary<MemberInfo, string>();
+
         public bool isEditorRuntime { get { return (bindingFlags & TypeBindingFlags.UnityEditorRuntime) != 0; } }
 
         public TypeTransform(Type type)
         {
             _type = type;
+            if (_type.IsGenericTypeDefinition)
+            {
+                bindingFlags = TypeBindingFlags.Default & ~TypeBindingFlags.BindingCode;
+            }
         }
 
         public TypeTransform EditorRuntime()
@@ -99,55 +105,23 @@ namespace QuickJS.Unity
             return t(info);
         }
 
-        // public void OnFilter(Func<ConstructorInfo, bool> callback)
-        // {
-        //     _filterConstructorInfo = callback;
-        // }
+        public string GetNameRule(MemberInfo info)
+        {
+            string rule;
+            return _memberNameRules.TryGetValue(info, out rule) ? rule : null;
+        }
 
-        // public void OnFilter(Func<PropertyInfo, bool> callback)
-        // {
-        //     _filterPropertyInfo = callback;
-        // }
-
-        // public void OnFilter(Func<FieldInfo, bool> callback)
-        // {
-        //     _filterFieldInfo = callback;
-        // }
-
-        // public void OnFilter(Func<EventInfo, bool> callback)
-        // {
-        //     _filterEventInfo = callback;
-        // }
-
-        // public void OnFilter(Func<MethodInfo, bool> callback)
-        // {
-        //     _filterMethodInfo = callback;
-        // }
-
-        // public bool Filter(ConstructorInfo info)
-        // {
-        //     return _filterConstructorInfo(info);
-        // }
-
-        // public bool Filter(PropertyInfo info)
-        // {
-        //     return _filterPropertyInfo(info);
-        // }
-
-        // public bool Filter(FieldInfo info)
-        // {
-        //     return _filterFieldInfo(info);
-        // }
-
-        // public bool Filter(EventInfo info)
-        // {
-        //     return _filterEventInfo(info);
-        // }
-
-        // public bool Filter(MethodInfo info)
-        // {
-        //     return _filterMethodInfo(info);
-        // }
+        public void SetNameRule(Func<MemberInfo, string> callback)
+        {
+            foreach (var m in _type.GetMembers())
+            {
+                var r = callback(m);
+                if (r != null)
+                {
+                    _memberNameRules[m] = r;
+                }
+            }
+        }
 
         public void AddExtensionMethod(MethodInfo method)
         {

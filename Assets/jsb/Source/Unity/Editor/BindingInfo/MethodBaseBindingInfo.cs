@@ -9,7 +9,7 @@ namespace QuickJS.Unity
     using UnityEngine;
     using UnityEditor;
 
-    
+
     public abstract class MethodBaseBindingInfo<T>
         where T : MethodBase
     {
