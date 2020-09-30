@@ -130,6 +130,11 @@ namespace QuickJS.Unity
         {
             get
             {
+                if (decalringType.IsGenericTypeDefinition)
+                {
+                    return false;
+                }
+                
                 if (decalringType.IsValueType && !decalringType.IsPrimitive && !decalringType.IsAbstract)
                 {
                     return true; // default constructor for struct

@@ -21,7 +21,7 @@ namespace QuickJS.Unity
             var prefix = string.IsNullOrEmpty(this.typeBindingInfo.jsNamespace) ? "declare " : "";
             var super = this.cg.bindingManager.GetTSSuperName(this.typeBindingInfo);
             var interfaces = this.cg.bindingManager.GetTSInterfacesName(this.typeBindingInfo);
-            var extends = string.IsNullOrEmpty(super) ? "" : $" extends {super}";
+            var extends = "";
             var implements = string.IsNullOrEmpty(interfaces) ? "" : $" implements {interfaces}";
             var regName = this.typeBindingInfo.jsName;
             var clsType = "";
@@ -31,20 +31,23 @@ namespace QuickJS.Unity
                 this.cg.tsDeclare.AppendLine("@jsb.EditorRuntime");
             }
 
-            if (typeBindingInfo.type.IsAbstract)
+
+            if (typeBindingInfo.type.IsInterface || typeBindingInfo.type.IsGenericTypeDefinition)
             {
-                if (typeBindingInfo.type.IsInterface)
-                {
-                    clsType = "interface";
-                }
-                else
-                {
-                    clsType = "abstract class";
-                }
+                clsType = "interface";
+            }
+            else if (typeBindingInfo.type.IsAbstract)
+            {
+                clsType = "abstract class";
             }
             else
             {
                 clsType = "class";
+            }
+
+            if (!string.IsNullOrEmpty(super) && !typeBindingInfo.type.IsGenericTypeDefinition)
+            {
+                extends = $" extends {super}";
             }
 
             this.cg.tsDeclare.AppendLine($"{prefix}{clsType} {regName}{extends}{implements} {{");
@@ -99,55 +102,61 @@ namespace QuickJS.Unity
             // {
             // }
             // 静态成员方法
-            foreach (var kv in this.typeBindingInfo.staticMethods)
+            if (!typeBindingInfo.type.IsGenericTypeDefinition)
             {
-                var methodBindingInfo = kv.Value;
-                if (transform == null || !transform.IsRedirectedMethod(methodBindingInfo.jsName))
+                foreach (var kv in this.typeBindingInfo.staticMethods)
                 {
-                    if (methodBindingInfo._cfunc != null)
+                    var methodBindingInfo = kv.Value;
+                    if (transform == null || !transform.IsRedirectedMethod(methodBindingInfo.jsName))
                     {
-                        continue;
-                    }
-
-                    using (new PInvokeGuardCodeGen(cg))
-                    {
-                        using (new BindingFuncDeclareCodeGen(cg, methodBindingInfo.csBindName))
+                        if (methodBindingInfo._cfunc != null)
                         {
-                            using (new TryCatchGuradCodeGen(cg))
+                            continue;
+                        }
+
+                        using (new PInvokeGuardCodeGen(cg))
+                        {
+                            using (new BindingFuncDeclareCodeGen(cg, methodBindingInfo.csBindName))
                             {
-                                using (new MethodCodeGen(cg, methodBindingInfo))
+                                using (new TryCatchGuradCodeGen(cg))
                                 {
+                                    using (new MethodCodeGen(cg, methodBindingInfo))
+                                    {
+                                    }
                                 }
                             }
                         }
                     }
-                }
 
-                using (new TSMethodCodeGen(cg, typeBindingInfo, methodBindingInfo))
-                {
+                    using (new TSMethodCodeGen(cg, typeBindingInfo, methodBindingInfo))
+                    {
+                    }
                 }
             }
 
-            foreach (var operatorBindingInfo in this.typeBindingInfo.operators)
+            if (!typeBindingInfo.type.IsGenericTypeDefinition)
             {
-                if (transform == null || !transform.IsRedirectedMethod(operatorBindingInfo.jsName))
+                foreach (var operatorBindingInfo in this.typeBindingInfo.operators)
                 {
-                    using (new PInvokeGuardCodeGen(cg))
+                    if (transform == null || !transform.IsRedirectedMethod(operatorBindingInfo.jsName))
                     {
-                        using (new BindingFuncDeclareCodeGen(cg, operatorBindingInfo.csBindName))
+                        using (new PInvokeGuardCodeGen(cg))
                         {
-                            using (new TryCatchGuradCodeGen(cg))
+                            using (new BindingFuncDeclareCodeGen(cg, operatorBindingInfo.csBindName))
                             {
-                                using (new OperatorCodeGen(cg, operatorBindingInfo))
+                                using (new TryCatchGuradCodeGen(cg))
                                 {
+                                    using (new OperatorCodeGen(cg, operatorBindingInfo))
+                                    {
+                                    }
                                 }
                             }
                         }
                     }
-                }
 
-                using (new TSOperatorCodeGen(cg, typeBindingInfo, operatorBindingInfo))
-                {
+                    using (new TSOperatorCodeGen(cg, typeBindingInfo, operatorBindingInfo))
+                    {
+                    }
                 }
             }
 
@@ -325,6 +334,7 @@ namespace QuickJS.Unity
                 using (new RegFuncNamespaceCodeGen(cg, typeBindingInfo))
                 {
                     var constructor = typeBindingInfo.constructors.available ? typeBindingInfo.constructors.csBindName : "JSApi.class_private_ctor";
+
                     if (!typeBindingInfo.constructors.available && !typeBindingInfo.type.IsAbstract)
                     {
                         if (typeBindingInfo.type.IsSubclassOf(typeof(Component)))
@@ -335,9 +345,13 @@ namespace QuickJS.Unity
                         }
                         else
                         {
-                            cg.tsDeclare.AppendLine("protected constructor()");
+                            if (!typeBindingInfo.type.IsGenericTypeDefinition)
+                            {
+                                cg.tsDeclare.AppendLine("protected constructor()");
+                            }
                         }
                     }
+
                     cg.cs.AppendLine("var cls = ns.CreateClass(\"{0}\", typeof({1}), {2});",
                         typeBindingInfo.jsName,
                         this.cg.bindingManager.GetCSTypeFullName(typeBindingInfo.type),
