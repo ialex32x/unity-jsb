@@ -213,6 +213,18 @@ namespace QuickJS.Unity
             SetTypeBlocked(typeof(UnityEngine.UI.ILayoutGroup));
             SetTypeBlocked(typeof(UnityEngine.UI.ILayoutSelfController));
 
+            TransformType(typeof(UnityEngine.Events.UnityEvent<>))
+                .Rename("UnityEvent1<T0>");
+
+            TransformType(typeof(UnityEngine.Events.UnityEvent<,>))
+                .Rename("UnityEvent2<T0, T1>");
+
+            TransformType(typeof(UnityEngine.Events.UnityEvent<,,>))
+                .Rename("UnityEvent3<T0, T1, T2>");
+
+            TransformType(typeof(UnityEngine.Events.UnityEvent<,,,>))
+                .Rename("UnityEvent4<T0, T1, T2, T3>");
+
             TransformType(typeof(UnityEngine.UI.PositionAsUV1))
                 .SetMemberBlocked("ModifyMesh");
             TransformType(typeof(UnityEngine.UI.Shadow))
@@ -1708,7 +1720,8 @@ namespace QuickJS.Unity
 
                     log.AppendLine("info: {0}", assembly);
                     log.AppendLine("location: {0}", assembly.Location);
-                    log.AppendLine("types {0}", types.Length);
+                    log.AppendLine("types: {0}", types.Length);
+                    log.AddTabLevel();
                     foreach (var type in types)
                     {
                         var hotfixTag = type.GetCustomAttribute(typeof(JSHotfixAttribute)) as JSHotfixAttribute;
@@ -1717,11 +1730,13 @@ namespace QuickJS.Unity
                             TransformType(type).SetHotfix(hotfixTag);
                             AddHotfixType(type);
                         }
+
                         if (IsExportingBlocked(type))
                         {
                             log.AppendLine("blocked: {0}", type.FullName);
                             continue;
                         }
+
                         if (implicitExport || IsExportingExplicit(type))
                         {
                             log.AppendLine("export: {0}", type.FullName);
@@ -1732,9 +1747,11 @@ namespace QuickJS.Unity
                         TryExportTypeMembers(type);
                         log.AppendLine("skip: {0}", type.FullName);
                     }
+                    log.DecTabLevel();
                 }
                 catch (Exception exception)
                 {
+                    Debug.LogErrorFormat("{0}", exception);
                     log.AppendLine(exception.ToString());
                 }
                 log.DecTabLevel();

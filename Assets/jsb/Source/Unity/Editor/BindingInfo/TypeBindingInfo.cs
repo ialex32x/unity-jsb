@@ -147,7 +147,7 @@ namespace QuickJS.Unity
                     this.jsNamespace = type.Namespace ?? "";
                 }
 
-                if (type.IsGenericType)
+                if (type.IsGenericType && naming.Contains("`"))
                 {
                     if (type.IsGenericTypeDefinition)
                     {
@@ -291,6 +291,13 @@ namespace QuickJS.Unity
 
             var isExtension = BindingManager.IsExtensionMethod(methodInfo);
             var isStatic = methodInfo.IsStatic && !isExtension;
+
+            if (isStatic && type.IsGenericTypeDefinition)
+            {
+                bindingManager.Info("skip static method in generic type definition: {0}", methodInfo.Name);
+                return;
+            }
+
             var methodCSName = methodInfo.Name;
             var methodJSName = GetNamingAttribute(methodInfo);
             if (IsSupportedOperators(methodInfo))
@@ -434,6 +441,12 @@ namespace QuickJS.Unity
                     continue;
                 }
 
+                if (field.IsStatic && type.IsGenericTypeDefinition)
+                {
+                    bindingManager.Info("skip static field in generic type definition: {0}", field.Name);
+                    return;
+                }
+                
                 if (field.FieldType.IsPointer)
                 {
                     bindingManager.Info("skip pointer field: {0}", field.Name);
@@ -476,6 +489,12 @@ namespace QuickJS.Unity
                     continue;
                 }
 
+                if ((evt.AddMethod?.IsStatic == true || evt.RemoveMethod?.IsStatic == true) && type.IsGenericTypeDefinition)
+                {
+                    bindingManager.Info("skip static event in generic type definition: {0}", evt.Name);
+                    return;
+                }
+                
                 if (evt.EventHandlerType.IsPointer)
                 {
                     bindingManager.Info("skip pointer event: {0}", evt.Name);
@@ -524,6 +543,12 @@ namespace QuickJS.Unity
                     continue;
                 }
 
+                if ((property.GetMethod?.IsStatic == true || property.SetMethod?.IsStatic == true) && type.IsGenericTypeDefinition)
+                {
+                    bindingManager.Info("skip static property in generic type definition: {0}", property.Name);
+                    return;
+                }
+                
                 if (property.IsDefined(typeof(JSOmitAttribute), false))
                 {
                     bindingManager.Info("skip omitted property: {0}", property.Name);
