@@ -564,12 +564,10 @@ namespace QuickJS.Unity
                             AddExportedType(baseType);
                         }
                     }
-                    else if (!baseType.IsGenericType)
+                    
+                    if (importBaseType)
                     {
-                        if (importBaseType)
-                        {
-                            AddExportedType(baseType, importBaseType);
-                        }
+                        AddExportedType(baseType, importBaseType);
                     }
                 }
 

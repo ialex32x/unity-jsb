@@ -1,6 +1,7 @@
 
 进行: 
     ✔ 导出接口声明 (interface) @done(20-09-30 17:23)
+    ☐ 修复 UnityEvent<> 的 d.ts 输出
 
 一般:
     ☐ types in module (and lazy binding for types)
