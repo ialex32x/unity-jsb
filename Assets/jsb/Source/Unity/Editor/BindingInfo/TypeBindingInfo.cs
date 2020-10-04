@@ -147,42 +147,48 @@ namespace QuickJS.Unity
                     this.jsNamespace = type.Namespace ?? "";
                 }
 
-                if (type.IsGenericType && naming.Contains("`"))
+                do
                 {
-                    if (type.IsGenericTypeDefinition)
+                    if (type.IsGenericType)
                     {
-                        this.jsName = naming.Substring(0, naming.IndexOf('`'));
-                        this.jsTypeName = this.jsName;
-
-                        this.jsName += "<";
-                        var gArgs = type.GetGenericArguments();
-
-                        for (var i = 0; i < gArgs.Length; i++)
+                        if (type.IsGenericTypeDefinition)
                         {
-                            this.jsName += gArgs[i].Name;
-                            if (i != gArgs.Length - 1)
+                            this.jsName = naming.Contains("`") ? naming.Substring(0, naming.IndexOf('`')) : naming;
+                            this.jsTypeName = this.jsName;
+
+                            if (!naming.Contains("<"))
                             {
-                                this.jsName += ", ";
-                            }
-                        }
-                        this.jsName += ">";
-                    }
-                    else
-                    {
-                        this.jsName = naming.Substring(0, naming.IndexOf('`'));
-                        this.jsTypeName = this.jsName;
+                                this.jsName += "<";
+                                var gArgs = type.GetGenericArguments();
 
-                        foreach (var gp in type.GetGenericArguments())
+                                for (var i = 0; i < gArgs.Length; i++)
+                                {
+                                    this.jsName += gArgs[i].Name;
+                                    if (i != gArgs.Length - 1)
+                                    {
+                                        this.jsName += ", ";
+                                    }
+                                }
+                                this.jsName += ">";
+                            }
+                            break;
+                        }
+                        else
                         {
-                            this.jsName += "_" + gp.Name;
+                            this.jsName = naming.Contains("`") ? naming.Substring(0, naming.IndexOf('`')) : naming;
+                            this.jsTypeName = this.jsName;
+
+                            foreach (var gp in type.GetGenericArguments())
+                            {
+                                this.jsName += "_" + gp.Name;
+                            }
+                            break;
                         }
                     }
-                }
-                else
-                {
+
                     this.jsName = naming;
                     this.jsTypeName = this.jsName;
-                }
+                } while (false);
             }
 
             this.csBindingName = bindingManager.prefs.typeBindingPrefix + (this.jsNamespace + "_" + this.jsName).Replace('.', '_').Replace('+', '_').Replace('<', '_').Replace('>', '_');
@@ -446,7 +452,7 @@ namespace QuickJS.Unity
                     bindingManager.Info("skip static field in generic type definition: {0}", field.Name);
                     return;
                 }
-                
+
                 if (field.FieldType.IsPointer)
                 {
                     bindingManager.Info("skip pointer field: {0}", field.Name);
@@ -494,7 +500,7 @@ namespace QuickJS.Unity
                     bindingManager.Info("skip static event in generic type definition: {0}", evt.Name);
                     return;
                 }
-                
+
                 if (evt.EventHandlerType.IsPointer)
                 {
                     bindingManager.Info("skip pointer event: {0}", evt.Name);
@@ -548,7 +554,7 @@ namespace QuickJS.Unity
                     bindingManager.Info("skip static property in generic type definition: {0}", property.Name);
                     return;
                 }
-                
+
                 if (property.IsDefined(typeof(JSOmitAttribute), false))
                 {
                     bindingManager.Info("skip omitted property: {0}", property.Name);

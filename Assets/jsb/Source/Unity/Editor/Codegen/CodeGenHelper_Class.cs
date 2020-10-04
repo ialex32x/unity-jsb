@@ -21,7 +21,6 @@ namespace QuickJS.Unity
             var prefix = string.IsNullOrEmpty(this.typeBindingInfo.jsNamespace) ? "declare " : "";
             var super = this.cg.bindingManager.GetTSSuperName(this.typeBindingInfo);
             var interfaces = this.cg.bindingManager.GetTSInterfacesName(this.typeBindingInfo.type);
-            var extends = "";
             var implements = "";
             var jsClassName = this.typeBindingInfo.jsName;
             var jsClassType = "";
@@ -32,37 +31,43 @@ namespace QuickJS.Unity
             }
 
 
-            if (typeBindingInfo.type.IsInterface || typeBindingInfo.type.IsGenericTypeDefinition)
+            if (typeBindingInfo.type.IsInterface)
             {
                 jsClassType = "interface";
-            }
-            else if (typeBindingInfo.type.IsAbstract)
-            {
-                jsClassType = "abstract class";
-            }
-            else
-            {
-                jsClassType = "class";
-            }
 
-            if (!string.IsNullOrEmpty(super) && !typeBindingInfo.type.IsGenericTypeDefinition)
-            {
-                extends = $" extends {super}";
-            }
-
-            if (!string.IsNullOrEmpty(interfaces))
-            {
-                if (jsClassType == "interface")
+                if (string.IsNullOrEmpty(interfaces))
                 {
-                    implements = $" extends {interfaces}";
+                    if (!string.IsNullOrEmpty(super))
+                    {
+                        implements += $" extends {super}"; // something wrong 
+                    }
                 }
                 else
                 {
-                    implements = $" implements {interfaces}";
+                    implements += $" extends {interfaces}";
+
+                    if (!string.IsNullOrEmpty(super))
+                    {
+                        implements += $", {super}"; // something wrong 
+                    }
+                }
+            }
+            else
+            {
+                jsClassType = typeBindingInfo.type.IsAbstract ? "abstract class" : "class";
+
+                if (!string.IsNullOrEmpty(super))
+                {
+                    implements += $" extends {super}";
+                }
+
+                if (!string.IsNullOrEmpty(interfaces))
+                {
+                    implements += $" implements {interfaces}";
                 }
             }
 
-            this.cg.tsDeclare.AppendLine($"{prefix}{jsClassType} {jsClassName}{extends}{implements} {{");
+            this.cg.tsDeclare.AppendLine($"{prefix}{jsClassType} {jsClassName}{implements} {{");
             this.cg.tsDeclare.AddTabLevel();
 
             // 生成函数体

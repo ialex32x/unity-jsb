@@ -167,6 +167,7 @@ namespace QuickJS.Unity
             // fix d.ts, some C# classes use explicit implemented interface method
             SetTypeBlocked(typeof(UnityEngine.ILogHandler));
             SetTypeBlocked(typeof(UnityEngine.ISerializationCallbackReceiver));
+            SetTypeBlocked(typeof(UnityEngine.Playables.ScriptPlayable<>));
 
             TransformType(typeof(object))
             // .RenameTSMethod("$Equals", "Equals", typeof(object))
@@ -214,16 +215,16 @@ namespace QuickJS.Unity
             SetTypeBlocked(typeof(UnityEngine.UI.ILayoutSelfController));
 
             TransformType(typeof(UnityEngine.Events.UnityEvent<>))
-                .Rename("UnityEvent1<T0>");
+                .Rename("UnityEvent1");
 
             TransformType(typeof(UnityEngine.Events.UnityEvent<,>))
-                .Rename("UnityEvent2<T0, T1>");
+                .Rename("UnityEvent2");
 
             TransformType(typeof(UnityEngine.Events.UnityEvent<,,>))
-                .Rename("UnityEvent3<T0, T1, T2>");
+                .Rename("UnityEvent3");
 
             TransformType(typeof(UnityEngine.Events.UnityEvent<,,,>))
-                .Rename("UnityEvent4<T0, T1, T2, T3>");
+                .Rename("UnityEvent4");
 
             TransformType(typeof(UnityEngine.UI.PositionAsUV1))
                 .SetMemberBlocked("ModifyMesh");
@@ -564,7 +565,7 @@ namespace QuickJS.Unity
                             AddExportedType(baseType);
                         }
                     }
-                    
+
                     if (importBaseType)
                     {
                         AddExportedType(baseType, importBaseType);
@@ -1100,6 +1101,7 @@ namespace QuickJS.Unity
                 {
                     return GetTSTypeFullName(superBindingInfo.type);
                 }
+
                 super = super.BaseType;
             }
 
@@ -1156,8 +1158,8 @@ namespace QuickJS.Unity
                             templateArgs += ", ";
                         }
                     }
-                    var templateName = $"{gTypeInfo.jsFullTypeName}<{templateArgs}>";
-                    str += templateName + ", ";
+
+                    str += string.Format("{0}<{1}>, ", gTypeInfo.jsFullTypeName, templateArgs);
                 }
             }
 
