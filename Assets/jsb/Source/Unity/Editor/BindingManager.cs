@@ -1290,30 +1290,37 @@ namespace QuickJS.Unity
             {
                 return true;
             }
+
             // if (type.IsGenericType && !type.IsConstructedGenericType)
             // {
             //     return true;
             // }
+
             if (type.Name.Contains("<"))
             {
                 return true;
             }
+
             if (type.IsDefined(typeof(JSBindingAttribute), false))
             {
                 return true;
             }
+
             if (type.BaseType == typeof(Attribute))
             {
                 return true;
             }
+
             if (type.BaseType == typeof(MulticastDelegate))
             {
                 return true;
             }
+
             if (type.IsPointer)
             {
                 return true;
             }
+
             var encloser = type;
             while (encloser != null)
             {
@@ -1323,6 +1330,7 @@ namespace QuickJS.Unity
                 }
                 encloser = encloser.DeclaringType;
             }
+
             for (int i = 0, size = _typePrefixBlacklist.Count; i < size; i++)
             {
                 if (type.FullName.StartsWith(_typePrefixBlacklist[i]))
@@ -1330,6 +1338,7 @@ namespace QuickJS.Unity
                     return true;
                 }
             }
+
             return false;
         }
 
@@ -1737,10 +1746,17 @@ namespace QuickJS.Unity
                             continue;
                         }
 
-                        if (implicitExport || IsExportingExplicit(type))
+                        if (implicitExport)
                         {
-                            log.AppendLine("export: {0}", type.FullName);
-                            this.AddExportedType(type);
+                            log.AppendLine("export (implicit): {0}", type.FullName);
+                            this.AddExportedType(type, true);
+                            continue;
+                        }
+
+                        if (IsExportingExplicit(type))
+                        {
+                            log.AppendLine("export (explicit): {0}", type.FullName);
+                            this.AddExportedType(type, true);
                             continue;
                         }
 
