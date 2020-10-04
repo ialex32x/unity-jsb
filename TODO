@@ -1,7 +1,8 @@
 
 进行: 
     ✔ 导出接口声明 (interface) @done(20-09-30 17:23)
-    ☐ 修复 UnityEvent<> 的 d.ts 输出
+    ✔ 修复 UnityEvent<> 的 d.ts 输出 @done(20-10-04 12:25)
+    ☐ jsb.autogen.d.ts 按大小或行数自动分割
 
 一般:
     ☐ types in module (and lazy binding for types)
