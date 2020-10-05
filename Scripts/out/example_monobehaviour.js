@@ -1,6 +1,5 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.MySubClass = exports.MyClass = void 0;
 class MyClass extends UnityEngine.MonoBehaviour {
     constructor() {
         super(...arguments);
