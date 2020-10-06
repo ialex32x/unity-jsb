@@ -90,9 +90,10 @@ namespace QuickJS.Unity
             return this;
         }
 
-        public void OnFilter<T>(Func<T, bool> callback)
+        public TypeTransform OnFilter<T>(Func<T, bool> callback)
         {
             _filters[typeof(T)] = callback;
+            return this;
         }
 
         public bool Filter<T>(T info)
