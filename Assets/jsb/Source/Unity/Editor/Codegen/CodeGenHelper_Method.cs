@@ -67,10 +67,12 @@ namespace QuickJS.Unity
                 {
                     snippet += $"js_match_type(ctx, argv[{argIndex}], typeof({typename}))";
                 }
+
                 if (pIndex != length - 1)
                 {
                     snippet += " && ";
                 }
+
                 argIndex++;
             }
 
@@ -199,8 +201,9 @@ namespace QuickJS.Unity
         protected void WriteCSAllVariants(MethodBaseBindingInfo<T> methodBindingInfo) // SortedDictionary<int, MethodBaseVariant<T>> variants)
         {
             var variants = methodBindingInfo.variants;
+            var prefs = cg.bindingManager.prefs;
 
-            if (cg.bindingManager.prefs.strictCodegen || /*hasOverrides*/ methodBindingInfo.count > 1)
+            if (prefs.alwaysCheckArgc || /*hasOverrides*/ methodBindingInfo.count > 1)
             {
                 // 需要处理重载
                 GenMethodVariants(methodBindingInfo, variants);
@@ -322,10 +325,10 @@ namespace QuickJS.Unity
             }
         }
 
-        protected void GenMethodVariants(MethodBaseBindingInfo<T> bindingInfo, SortedDictionary<int, MethodBaseVariant<T>> variants)
+        protected void GenMethodVariants(MethodBaseBindingInfo<T> methodBindingInfo, SortedDictionary<int, MethodBaseVariant<T>> variants)
         {
             var argc = cg.AppendGetArgCount(true);
-            using (cg.cs.DoWhileBlockScope(bindingInfo.count > 1))
+            using (cg.cs.DoWhileBlockScope(methodBindingInfo.count > 1))
             {
                 foreach (var variantKV in variants)
                 {
@@ -346,19 +349,27 @@ namespace QuickJS.Unity
                         cg.cs.AppendLine("if (argc == {0})", expectedArgCount);
                         using (cg.cs.CodeBlockScope())
                         {
-                            if (variant.plainMethods.Count > 1)
+                            var prefs = cg.bindingManager.prefs;
+                            if (prefs.alwaysCheckArgType || variant.plainMethods.Count > 1)
                             {
                                 foreach (var method in variant.plainMethods)
                                 {
                                     var fixedMatchers = GetFixedMatchTypes(method, false);
-                                    cg.cs.AppendLine($"if ({fixedMatchers})");
-                                    using (cg.cs.CodeBlockScope())
+                                    if (fixedMatchers.Length != 0)
                                     {
-                                        this.WriteCSMethodBinding(bindingInfo, method, argc, false);
+                                        cg.cs.AppendLine($"if ({fixedMatchers})");
+                                        using (cg.cs.CodeBlockScope())
+                                        {
+                                            this.WriteCSMethodBinding(methodBindingInfo, method, argc, false);
+                                        }
+                                    }
+                                    else
+                                    {
+                                        this.WriteCSMethodBinding(methodBindingInfo, method, argc, false);
                                     }
                                 }
 
-                                if (bindingInfo.count > 1)
+                                if (methodBindingInfo.count > 1 && expectedArgCount != 0)
                                 {
                                     cg.cs.AppendLine("break;");
                                 }
@@ -367,7 +378,7 @@ namespace QuickJS.Unity
                             {
                                 // 只有一个定参方法时, 不再判定类型匹配
                                 var method = variant.plainMethods[0];
-                                this.WriteCSMethodBinding(bindingInfo, method, argc, false);
+                                this.WriteCSMethodBinding(methodBindingInfo, method, argc, false);
                             }
                         }
                     }
@@ -391,7 +402,7 @@ namespace QuickJS.Unity
 
                             using (cg.cs.CodeBlockScope())
                             {
-                                this.WriteCSMethodBinding(bindingInfo, method, argc, true);
+                                this.WriteCSMethodBinding(methodBindingInfo, method, argc, true);
                             }
                         }
                     }
@@ -424,7 +435,7 @@ namespace QuickJS.Unity
             {
                 tsMethodRename = bindingInfo.jsName;
             }
-            
+
             var isRaw = method.IsDefined(typeof(JSCFunctionAttribute));
             //TODO: 需要处理参数类型归并问题, 因为如果类型没有导入 ts 中, 可能会在声明中出现相同参数列表的定义
             //      在 MethodVariant 中创建每个方法对应的TS类型名参数列表, 完全相同的不再输出

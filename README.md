@@ -113,7 +113,7 @@ testAsyncFunc();
 ## 运算符重载
 > 可以直接支持 Vector3 * Vector3, Vector3 * float 等写法.
 >
-> 需要特别注意的是, JS 中没有值类型概念, Vector3 是按引用赋值的, 切记!
+> 需要特别注意的是, JS 中没有 C# struct值类型对应概念, Vector3 是按引用赋值的, 切记!
 
 ```ts
 {

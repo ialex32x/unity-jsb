@@ -36,9 +36,14 @@ namespace QuickJS.Unity
         public bool singleTSD = true;
 
         /// <summary>
-        /// 生成更严格的绑定代码
+        /// 即使只有唯一匹配的方法/函数, 也进行类型检查 
         /// </summary>
-        public bool strictCodegen = true;
+        public bool alwaysCheckArgType = false;
+
+        /// <summary>
+        /// 即使只有唯一匹配的方法/函数, 也进行参数数量检查 
+        /// </summary>
+        public bool alwaysCheckArgc = true;
 
         // 生成类型绑定代码类型前缀
         public string typeBindingPrefix = "QuickJS_";
