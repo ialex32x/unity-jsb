@@ -23,6 +23,7 @@
 其他:
     ☐ MVVM
     ☐ JS Behaviour Inspector Enhancement
+    ☐ for dotnet core
     
 次要:
     ☐ 子类中存在不同签名的同名方法时 (非虚)  时, 输出 ts-ignore
