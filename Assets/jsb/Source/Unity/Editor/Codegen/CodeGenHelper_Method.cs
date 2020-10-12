@@ -156,6 +156,7 @@ namespace QuickJS.Unity
         {
             var ptype = parameter.ParameterType;
             var argType = this.cg.bindingManager.GetCSTypeFullName(ptype);
+
             this.cg.cs.AppendLine($"{argType} {argname};");
             // 非 out 参数才需要取值
             if (!parameter.IsOut || !parameter.ParameterType.IsByRef)
@@ -184,11 +185,40 @@ namespace QuickJS.Unity
                     return false;
                 }
 
-                var getter = this.cg.bindingManager.GetScriptObjectGetter(ptype, "ctx", $"argv[{index}]", argname);
+                var isRefWrapper = parameter.ParameterType.IsByRef && !parameter.IsOut;
+
+                // process ref parameter get
+                string getVal;
+                string refValVar = null;
+                if (isRefWrapper)
+                {
+                    refValVar = $"refVal{index}";
+                    this.cg.cs.AppendLine("var {0} = js_read_wrap(ctx, argv[{1}]);", refValVar, index);
+                    getVal = refValVar;
+
+                    this.cg.cs.AppendLine("if ({0}.IsException())", refValVar);
+                    using (this.cg.cs.CodeBlockScope())
+                    {
+                        this.cg.cs.AppendLine("return {0};", refValVar);
+                    }
+                }
+                else
+                {
+                    getVal = $"argv[{index}]";
+                }
+                var getter = this.cg.bindingManager.GetScriptObjectGetter(ptype, "ctx", getVal, argname);
                 this.cg.cs.AppendLine("if (!{0})", getter);
                 using (this.cg.cs.CodeBlockScope())
                 {
+                    if (isRefWrapper)
+                    {
+                        this.cg.cs.AppendLine("JSApi.JS_FreeValue(ctx, {0});", refValVar);
+                    }
                     this.cg.cs.AppendLine("throw new ParameterException(typeof({0}), {1});", argType, index);
+                }
+                if (isRefWrapper)
+                {
+                    this.cg.cs.AppendLine("JSApi.JS_FreeValue(ctx, {0});", refValVar);
                 }
                 return true;
             }

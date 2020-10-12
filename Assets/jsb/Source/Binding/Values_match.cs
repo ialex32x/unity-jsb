@@ -10,6 +10,30 @@ namespace QuickJS.Binding
     // 处理类型匹配
     public partial class Values
     {
+        public static bool js_read_wrap(JSContext ctx, JSValue jsValue, out JSValue realValue)
+        {
+            if (jsValue.IsNullish())
+            {
+                realValue = JSApi.JS_UNDEFINED;
+                return false;
+            }
+
+            var context = ScriptEngine.GetContext(ctx);
+            realValue = JSApi.JS_GetProperty(ctx, jsValue, context.GetAtom("value"));
+            return !realValue.IsException();
+        }
+
+        public static JSValue js_read_wrap(JSContext ctx, JSValue jsValue)
+        {
+            if (jsValue.IsNullish())
+            {
+                return JSApi.JS_UNDEFINED;
+            }
+
+            var context = ScriptEngine.GetContext(ctx);
+            return JSApi.JS_GetProperty(ctx, jsValue, context.GetAtom("value"));
+        }
+
         // guess real type in Ref<T> / Out<T>
         public static bool js_match_type_hint(JSContext ctx, JSValue jsValue, Type type)
         {
@@ -17,7 +41,7 @@ namespace QuickJS.Binding
             {
                 return false;
             }
-            
+
             var context = ScriptEngine.GetContext(ctx);
             var jsHintType = JSApi.JS_GetProperty(ctx, jsValue, context.GetAtom("type"));
             if (jsHintType.IsNullish())
@@ -220,9 +244,20 @@ namespace QuickJS.Binding
             for (int i = 0, size = parameterInfos.Length; i < size; i++)
             {
                 var parameterInfo = parameterInfos[i];
-                if (!js_match_type(ctx, argv[i], parameterInfo.ParameterType))
+                var pType = parameterInfo.ParameterType;
+                if (pType.IsByRef)
                 {
-                    return false;
+                    if (!js_match_type_hint(ctx, argv[i], pType))
+                    {
+                        return false;
+                    }
+                }
+                else
+                {
+                    if (!js_match_type(ctx, argv[i], pType))
+                    {
+                        return false;
+                    }
                 }
             }
 
