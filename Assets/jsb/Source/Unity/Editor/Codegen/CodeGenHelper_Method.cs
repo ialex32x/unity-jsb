@@ -661,12 +661,13 @@ namespace QuickJS.Unity
                 var parameter = parameters[pIndex];
                 var pType = parameter.ParameterType;
 
-                if (!pType.IsByRef || !parameter.IsOut
+                if (!pType.IsByRef
                  || pType == typeof(Native.JSContext) || pType == typeof(Native.JSRuntime)
                  || pType == typeof(ScriptContext) || pType == typeof(ScriptRuntime))
                 {
                     continue;
                 }
+
                 var baseIndex = pIndex - pBase;
                 var pusher = cg.AppendValuePusher(parameter.ParameterType, $"arg{baseIndex}");
 
@@ -681,11 +682,13 @@ namespace QuickJS.Unity
                     OnBeforeExceptionReturn();
                     cg.cs.AppendLine("return out{0};", oIndex);
                 }
+
                 if (needContext)
                 {
                     cg.cs.AppendLine("var context = ScriptEngine.GetContext(ctx);");
                     needContext = false;
                 }
+
                 cg.cs.AppendLine("JSApi.JS_SetProperty(ctx, argv[{0}], context.GetAtom(\"value\"), out{1});", baseIndex, oIndex);
                 oIndex++;
             }
