@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.DataBinding = exports.Subscribers = exports.Subscriber = void 0;
 class Subscriber {
     constructor(model, key) {
         this._model = model;

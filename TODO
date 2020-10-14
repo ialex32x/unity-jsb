@@ -1,6 +1,8 @@
 
 必要:
     ✔ 修正 ref 参数传参 (codegen for in/out) @done(20-10-12 10:21)
+    ✔ 支持继承 EditorWindow (JSEditorWindow 功能) @done(20-10-14 17:20)
+    ☐ 完善 JSEditorWindow 功能
     ☐ 反射模式支持运算符重载
     ☐ 不生成绑定代码的情况下使用反射模式执行 (只生成 d.ts, 以及一个 type list)
         ☐ 通过 BindingManager 辅助得到 export types

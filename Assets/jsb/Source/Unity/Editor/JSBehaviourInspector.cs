@@ -4,12 +4,12 @@ namespace QuickJS.Unity
     using UnityEditor;
     using Native;
 
-    [CustomEditor(typeof(ScriptBridge))]
-    public class ScriptBridgeInspector : Editor
+    [CustomEditor(typeof(JSBehaviour))]
+    public class JSBehaviourInspector : Editor
     {
         public override void OnInspectorGUI()
         {
-            var inst = target as ScriptBridge;
+            var inst = target as JSBehaviour;
 
             EditorGUILayout.TextField("Script Type", inst.scriptTypeName);
             inst.ForEachProperty((ctx, atom, prop) =>

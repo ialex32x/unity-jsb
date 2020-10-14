@@ -1,12 +1,14 @@
+#if UNITY_EDITOR
 using System;
-using System.Collections.Generic;
+using System.Reflection;
 
 namespace QuickJS.Unity
 {
     using Native;
     using UnityEngine;
+    using UnityEditor;
 
-    public class ScriptBridge : MonoBehaviour
+    public class JSEditorWindow : EditorWindow
     {
         private string _scriptTypeName;
 
@@ -16,20 +18,12 @@ namespace QuickJS.Unity
         }
 
         private bool _released;
+        private bool _destroyed;
         private JSContext _ctx;
         private JSValue _this_obj;
 
         private bool _updateValid;
         private JSValue _updateFunc;
-
-        private bool _lateUpdateValid;
-        private JSValue _lateUpdateFunc;
-
-        private bool _fixedUpdateValid;
-        private JSValue _fixedUpdateFunc;
-
-        private bool _startValid;
-        private JSValue _startFunc;
 
         private bool _onEnableValid;
         private JSValue _onEnableFunc;
@@ -37,17 +31,11 @@ namespace QuickJS.Unity
         private bool _onDisableValid;
         private JSValue _onDisableFunc;
 
-        private bool _onApplicationFocusValid;
-        private JSValue _onApplicationFocusFunc;
-
-        private bool _onApplicationPauseValid;
-        private JSValue _onApplicationPauseFunc;
-
-        private bool _onApplicationQuitValid;
-        private JSValue _onApplicationQuitFunc;
-
         private bool _onDestroyValid;
         private JSValue _onDestroyFunc;
+
+        private bool _onGUIValid;
+        private JSValue _onGUIFunc;
 
         public int IsInstanceOf(JSValue ctor)
         {
@@ -126,38 +114,23 @@ namespace QuickJS.Unity
             _updateFunc = JSApi.JS_GetProperty(ctx, this_obj, context.GetAtom("Update"));
             _updateValid = JSApi.JS_IsFunction(ctx, _updateFunc) == 1;
 
-            _lateUpdateFunc = JSApi.JS_GetProperty(ctx, this_obj, context.GetAtom("LateUpdate"));
-            _lateUpdateValid = JSApi.JS_IsFunction(ctx, _lateUpdateFunc) == 1;
-
-            _fixedUpdateFunc = JSApi.JS_GetProperty(ctx, this_obj, context.GetAtom("FixedUpdate"));
-            _fixedUpdateValid = JSApi.JS_IsFunction(ctx, _fixedUpdateFunc) == 1;
-
-            _startFunc = JSApi.JS_GetProperty(ctx, this_obj, context.GetAtom("Start"));
-            _startValid = JSApi.JS_IsFunction(ctx, _startFunc) == 1;
-
             _onEnableFunc = JSApi.JS_GetProperty(ctx, this_obj, context.GetAtom("OnEnable"));
             _onEnableValid = JSApi.JS_IsFunction(ctx, _onEnableFunc) == 1;
 
             _onDisableFunc = JSApi.JS_GetProperty(ctx, this_obj, context.GetAtom("OnDisable"));
             _onDisableValid = JSApi.JS_IsFunction(ctx, _onDisableFunc) == 1;
 
-            _onApplicationFocusFunc = JSApi.JS_GetProperty(ctx, this_obj, context.GetAtom("OnApplicationFocus"));
-            _onApplicationFocusValid = JSApi.JS_IsFunction(ctx, _onApplicationFocusFunc) == 1;
-
-            _onApplicationPauseFunc = JSApi.JS_GetProperty(ctx, this_obj, context.GetAtom("OnApplicationPause"));
-            _onApplicationPauseValid = JSApi.JS_IsFunction(ctx, _onApplicationPauseFunc) == 1;
-
-            _onApplicationQuitFunc = JSApi.JS_GetProperty(ctx, this_obj, context.GetAtom("OnApplicationQuit"));
-            _onApplicationQuitValid = JSApi.JS_IsFunction(ctx, _onApplicationQuitFunc) == 1;
-
             _onDestroyFunc = JSApi.JS_GetProperty(ctx, this_obj, context.GetAtom("OnDestroy"));
             _onDestroyValid = JSApi.JS_IsFunction(ctx, _onDestroyFunc) == 1;
+
+            _onGUIFunc = JSApi.JS_GetProperty(ctx, this_obj, context.GetAtom("OnGUI"));
+            _onGUIValid = JSApi.JS_IsFunction(ctx, _onGUIFunc) == 1;
 
             var awake_obj = JSApi.JS_GetProperty(ctx, this_obj, context.GetAtom("Awake"));
 
             Call(awake_obj);
             JSApi.JS_FreeValue(_ctx, awake_obj);
-            if (enabled && _onEnableValid)
+            if (_onEnableValid)
             {
                 Call(_onEnableFunc);
             }
@@ -187,28 +160,34 @@ namespace QuickJS.Unity
             {
                 return;
             }
+
             _released = true;
             JSApi.JS_FreeValue(_ctx, _updateFunc);
             _updateValid = false;
-            JSApi.JS_FreeValue(_ctx, _lateUpdateFunc);
-            _lateUpdateValid = false;
-            JSApi.JS_FreeValue(_ctx, _fixedUpdateFunc);
-            _fixedUpdateValid = false;
-            JSApi.JS_FreeValue(_ctx, _startFunc);
-            _startValid = false;
             JSApi.JS_FreeValue(_ctx, _onEnableFunc);
             _onEnableValid = false;
             JSApi.JS_FreeValue(_ctx, _onDisableFunc);
             _onDisableValid = false;
-            JSApi.JS_FreeValue(_ctx, _onApplicationFocusFunc);
-            _onApplicationFocusValid = false;
-            JSApi.JS_FreeValue(_ctx, _onApplicationPauseFunc);
-            _onApplicationPauseValid = false;
-            JSApi.JS_FreeValue(_ctx, _onApplicationQuitFunc);
-            _onApplicationQuitValid = false;
             JSApi.JS_FreeValue(_ctx, _onDestroyFunc);
             _onDestroyValid = false;
+            JSApi.JS_FreeValue(_ctx, _onGUIFunc);
+            _onGUIValid = false;
             JSApi.JS_FreeValue(_ctx, _this_obj);
+
+            var context = ScriptEngine.GetContext(_ctx);
+            if (context != null)
+            {
+                context.OnDestroy -= OnContextDestroy;
+            }
+
+            if (!_destroyed)
+            {
+                try
+                {
+                    Close();
+                }
+                catch (Exception) { }
+            }
         }
 
         void Update()
@@ -216,45 +195,6 @@ namespace QuickJS.Unity
             if (_updateValid)
             {
                 var rval = JSApi.JS_Call(_ctx, _updateFunc, _this_obj);
-                if (rval.IsException())
-                {
-                    _ctx.print_exception();
-                }
-                JSApi.JS_FreeValue(_ctx, rval);
-            }
-        }
-
-        void LateUpdate()
-        {
-            if (_lateUpdateValid)
-            {
-                var rval = JSApi.JS_Call(_ctx, _lateUpdateFunc, _this_obj);
-                if (rval.IsException())
-                {
-                    _ctx.print_exception();
-                }
-                JSApi.JS_FreeValue(_ctx, rval);
-            }
-        }
-
-        void FixedUpdate()
-        {
-            if (_fixedUpdateValid)
-            {
-                var rval = JSApi.JS_Call(_ctx, _fixedUpdateFunc, _this_obj);
-                if (rval.IsException())
-                {
-                    _ctx.print_exception();
-                }
-                JSApi.JS_FreeValue(_ctx, rval);
-            }
-        }
-
-        void Start()
-        {
-            if (_startValid)
-            {
-                var rval = JSApi.JS_Call(_ctx, _startFunc, _this_obj);
                 if (rval.IsException())
                 {
                     _ctx.print_exception();
@@ -295,47 +235,13 @@ namespace QuickJS.Unity
 #endif
         }
 
-        void OnApplicationFocus()
-        {
-            if (_onApplicationFocusValid)
-            {
-                var rval = JSApi.JS_Call(_ctx, _onApplicationFocusFunc, _this_obj);
-                if (rval.IsException())
-                {
-                    _ctx.print_exception();
-                }
-                JSApi.JS_FreeValue(_ctx, rval);
-            }
-        }
-
-        void OnApplicationPause()
-        {
-            if (_onApplicationPauseValid)
-            {
-                var rval = JSApi.JS_Call(_ctx, _onApplicationPauseFunc, _this_obj);
-                if (rval.IsException())
-                {
-                    _ctx.print_exception();
-                }
-                JSApi.JS_FreeValue(_ctx, rval);
-            }
-        }
-
-        void OnApplicationQuit()
-        {
-            if (_onApplicationQuitValid)
-            {
-                var rval = JSApi.JS_Call(_ctx, _onApplicationQuitFunc, _this_obj);
-                if (rval.IsException())
-                {
-                    _ctx.print_exception();
-                }
-                JSApi.JS_FreeValue(_ctx, rval);
-            }
-        }
-
         void OnDestroy()
         {
+            if (_destroyed)
+            {
+                return;
+            }
+
             if (_onDestroyValid)
             {
                 var rval = JSApi.JS_Call(_ctx, _onDestroyFunc, _this_obj);
@@ -345,7 +251,22 @@ namespace QuickJS.Unity
                 }
                 JSApi.JS_FreeValue(_ctx, rval);
             }
+            _destroyed = true;
             Release();
+        }
+
+        void OnGUI()
+        {
+            if (_onGUIValid)
+            {
+                var rval = JSApi.JS_Call(_ctx, _onGUIFunc, _this_obj);
+                if (rval.IsException())
+                {
+                    _ctx.print_exception();
+                }
+                JSApi.JS_FreeValue(_ctx, rval);
+            }
         }
     }
 }
+#endif

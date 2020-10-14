@@ -21,6 +21,11 @@ namespace QuickJS.Unity
         public string typescriptDir = "Assets/Generated/Typings";
 
         /// <summary>
+        /// 默认启用编辑器脚本执行相关功能 (JSEditorWindow 等)
+        /// </summary>
+        public bool editorScripting = true;
+
+        /// <summary>
         /// 代码生成调试开关, 生成的代码将完全在注释中, 方便反复生成对比查问题
         /// </summary>
         public bool debugCodegen = false;

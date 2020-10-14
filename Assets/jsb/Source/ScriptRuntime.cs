@@ -226,7 +226,10 @@ namespace QuickJS
             listener.OnCreate(this);
 
             var register = new TypeRegister(this, _mainContext);
-            register.RegisterType(typeof(Unity.ScriptBridge));
+            register.RegisterType(typeof(Unity.JSBehaviour));
+#if UNITY_EDITOR
+            register.RegisterType(typeof(Unity.JSEditorWindow));
+#endif
             // await Task.Run(() => runner.OnBind(this, register));
             if (bindAll != null)
             {

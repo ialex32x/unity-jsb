@@ -653,6 +653,7 @@ namespace QuickJS.Unity
 
             CollectMethods(type.GetMethods(bindingFlags), false);
             CollectMethods(bindingManager.GetTypeTransform(type).extensionMethods, true);
+            CollectMethods(bindingManager.GetTypeTransform(type).staticMethods, false);
         }
 
         private void CollectMethods(IEnumerable<MethodInfo> methods, bool asExtensionAnyway)

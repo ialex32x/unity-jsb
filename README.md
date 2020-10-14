@@ -10,6 +10,7 @@
 * JS异步函数与 Unity 协程/ C# Tasking 的结合 (limited support)
 * 支持运算符重载 +, -, *, /, ==, -(负)
 * 支持 JS 字节码 (QuickJS)
+* extends MonoBehaviour / EditorWindow in scripts
 * [初步] 支持 JS Worker (limited support)
 * [初步] 支持未导出的C#类型的 JS 交互
 * [初步] 支持 C# 代码热更 (hotfix, limited support)
@@ -85,6 +86,30 @@ comp.play();
 
 let comp_bySuperClass = gameObject.GetComponent(MyClass);
 comp_bySuperClass.test();
+```
+
+## 支持编辑器脚本
+> 目前实现了在脚本中继承 EditorWindow (功能还在完善中).
+
+```ts
+const GUILayout = UnityEngine.GUILayout;
+
+// @jsb.Shortcut("Window/JS/MyEditorWindow")
+export class MyEditorWindow extends UnityEditor.EditorWindow {
+    Awake() {
+        console.log("MyEditorWindow.Awake");
+    }
+
+    OnEnable() {
+        this.titleContent = new UnityEngine.GUIContent("Blablabla");
+    }
+
+    OnGUI() {
+        if (GUILayout.Button("I am Javascript")) {
+            console.log("Thanks");
+        }
+    }
+}
 ```
 
 ## 异步调用

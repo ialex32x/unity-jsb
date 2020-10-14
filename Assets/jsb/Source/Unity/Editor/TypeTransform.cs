@@ -27,6 +27,9 @@ namespace QuickJS.Unity
         // 扩展方法
         public readonly List<MethodInfo> extensionMethods = new List<MethodInfo>();
 
+        // 附加的静态方法
+        public readonly List<MethodInfo> staticMethods = new List<MethodInfo>();
+
         // 按名字屏蔽导出
         private HashSet<string> _memberBlacklist = new HashSet<string>();
 
@@ -125,6 +128,7 @@ namespace QuickJS.Unity
             }
         }
 
+        #region Extension Method Management
         public TypeTransform AddExtensionMethod<T>(Action<T> method, string tsDecl = null)
         {
             return AddExtensionMethod(method.GetMethodInfo(), tsDecl);
@@ -166,6 +170,51 @@ namespace QuickJS.Unity
 
             return this;
         }
+        #endregion
+
+        #region Extended Static Method Management
+        public TypeTransform AddStaticMethod<T>(Action<T> method, string tsDecl = null)
+        {
+            return AddStaticMethod(method.GetMethodInfo(), tsDecl);
+        }
+
+        public TypeTransform AddStaticMethod<T1, T2>(Action<T1, T2> method, string tsDecl = null)
+        {
+            return AddStaticMethod(method.GetMethodInfo(), tsDecl);
+        }
+
+        public TypeTransform AddStaticMethod<T1, T2, T3>(Action<T1, T2, T3> method, string tsDecl = null)
+        {
+            return AddStaticMethod(method.GetMethodInfo(), tsDecl);
+        }
+
+        public TypeTransform AddStaticMethod<TResult>(Func<TResult> method, string tsDecl = null)
+        {
+            return AddStaticMethod(method.GetMethodInfo(), tsDecl);
+        }
+
+        public TypeTransform AddStaticMethod<T1, TResult>(Func<T1, TResult> method, string tsDecl = null)
+        {
+            return AddStaticMethod(method.GetMethodInfo(), tsDecl);
+        }
+
+        public TypeTransform AddStaticMethod<T1, T2, TResult>(Func<T1, T2, TResult> method, string tsDecl = null)
+        {
+            return AddStaticMethod(method.GetMethodInfo(), tsDecl);
+        }
+
+        public TypeTransform AddStaticMethod(MethodInfo method, string tsDecl = null)
+        {
+            if (!staticMethods.Contains(method))
+            {
+                staticMethods.Add(method);
+
+                AddTSMethodDeclaration(tsDecl, method);
+            }
+
+            return this;
+        }
+        #endregion
 
         public JSHotfixAttribute GetHotfix()
         {

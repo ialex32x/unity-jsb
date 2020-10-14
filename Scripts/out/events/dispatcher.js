@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.EventDispatcher = exports.Dispatcher = exports.Handler = void 0;
 class Handler {
     constructor(caller, fn) {
         this.caller = caller;
