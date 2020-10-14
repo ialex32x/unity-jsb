@@ -125,12 +125,46 @@ namespace QuickJS.Unity
             }
         }
 
-        public void AddExtensionMethod(MethodInfo method)
+        public TypeTransform AddExtensionMethod<T>(Action<T> method, string tsDecl = null)
+        {
+            return AddExtensionMethod(method.GetMethodInfo(), tsDecl);
+        }
+
+        public TypeTransform AddExtensionMethod<T1, T2>(Action<T1, T2> method, string tsDecl = null)
+        {
+            return AddExtensionMethod(method.GetMethodInfo(), tsDecl);
+        }
+
+        public TypeTransform AddExtensionMethod<T1, T2, T3>(Action<T1, T2, T3> method, string tsDecl = null)
+        {
+            return AddExtensionMethod(method.GetMethodInfo(), tsDecl);
+        }
+
+        public TypeTransform AddExtensionMethod<TResult>(Func<TResult> method, string tsDecl = null)
+        {
+            return AddExtensionMethod(method.GetMethodInfo(), tsDecl);
+        }
+
+        public TypeTransform AddExtensionMethod<T1, TResult>(Func<T1, TResult> method, string tsDecl = null)
+        {
+            return AddExtensionMethod(method.GetMethodInfo(), tsDecl);
+        }
+
+        public TypeTransform AddExtensionMethod<T1, T2, TResult>(Func<T1, T2, TResult> method, string tsDecl = null)
+        {
+            return AddExtensionMethod(method.GetMethodInfo(), tsDecl);
+        }
+
+        public TypeTransform AddExtensionMethod(MethodInfo method, string tsDecl = null)
         {
             if (!extensionMethods.Contains(method))
             {
                 extensionMethods.Add(method);
+
+                AddTSMethodDeclaration(tsDecl, method);
             }
+
+            return this;
         }
 
         public JSHotfixAttribute GetHotfix()
@@ -250,6 +284,15 @@ namespace QuickJS.Unity
         public TypeTransform AddTSMethodDeclaration(string spec, string name, params Type[] parameters)
         {
             var method = _type.GetMethod(name, parameters);
+            if (method != null)
+            {
+                _tsMethodDeclarations[method] = spec;
+            }
+            return this;
+        }
+
+        public TypeTransform AddTSMethodDeclaration(string spec, MethodBase method)
+        {
             if (method != null)
             {
                 _tsMethodDeclarations[method] = spec;

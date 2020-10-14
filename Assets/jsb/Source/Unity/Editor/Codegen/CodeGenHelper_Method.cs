@@ -45,11 +45,10 @@ namespace QuickJS.Unity
         }
 
         // 生成定参部分 type 列表 (首参前也会补",")
-        public string GetFixedMatchTypes(T method, bool isVararg)
+        public string GetFixedMatchTypes(T method, bool isVararg, bool isExtension)
         {
             var snippet = "";
             var parameters = method.GetParameters();
-            var isExtension = BindingManager.IsExtensionMethod(method);
             var pIndex = isExtension ? 1 : 0;
             var length = isVararg ? parameters.Length - 1 : parameters.Length;
             var argIndex = 0;
@@ -250,12 +249,12 @@ namespace QuickJS.Unity
                     if (variant.isVararg)
                     {
                         var method = variant.varargMethods[0];
-                        WriteCSMethodBinding(methodBindingInfo, method, argc, true);
+                        WriteCSMethodBinding(methodBindingInfo, method.method, argc, true, method.isExtension);
                     }
                     else
                     {
                         var method = variant.plainMethods[0];
-                        WriteCSMethodBinding(methodBindingInfo, method, argc, false);
+                        WriteCSMethodBinding(methodBindingInfo, method.method, argc, false, method.isExtension);
                     }
                 }
             }
@@ -270,11 +269,11 @@ namespace QuickJS.Unity
             {
                 foreach (var method in variantKV.Value.plainMethods)
                 {
-                    WriteTSDeclaration(typeBindingInfo, method, bindingInfo);
+                    WriteTSDeclaration(typeBindingInfo, method.method, bindingInfo, method.isExtension);
                 }
                 foreach (var method in variantKV.Value.varargMethods)
                 {
-                    WriteTSDeclaration(typeBindingInfo, method, bindingInfo);
+                    WriteTSDeclaration(typeBindingInfo, method.method, bindingInfo, method.isExtension);
                 }
             }
         }
@@ -384,18 +383,18 @@ namespace QuickJS.Unity
                             {
                                 foreach (var method in variant.plainMethods)
                                 {
-                                    var fixedMatchers = GetFixedMatchTypes(method, false);
+                                    var fixedMatchers = GetFixedMatchTypes(method.method, false, method.isExtension);
                                     if (fixedMatchers.Length != 0)
                                     {
                                         cg.cs.AppendLine($"if ({fixedMatchers})");
                                         using (cg.cs.CodeBlockScope())
                                         {
-                                            this.WriteCSMethodBinding(methodBindingInfo, method, argc, false);
+                                            this.WriteCSMethodBinding(methodBindingInfo, method.method, argc, false, method.isExtension);
                                         }
                                     }
                                     else
                                     {
-                                        this.WriteCSMethodBinding(methodBindingInfo, method, argc, false);
+                                        this.WriteCSMethodBinding(methodBindingInfo, method.method, argc, false, method.isExtension);
                                     }
                                 }
 
@@ -408,7 +407,7 @@ namespace QuickJS.Unity
                             {
                                 // 只有一个定参方法时, 不再判定类型匹配
                                 var method = variant.plainMethods[0];
-                                this.WriteCSMethodBinding(methodBindingInfo, method, argc, false);
+                                this.WriteCSMethodBinding(methodBindingInfo, method.method, argc, false, method.isExtension);
                             }
                         }
                     }
@@ -418,8 +417,8 @@ namespace QuickJS.Unity
                     {
                         foreach (var method in variant.varargMethods)
                         {
-                            var fixedMatchers = GetFixedMatchTypes(method, true);
-                            var variantMatchers = GetParamArrayMatchType(method);
+                            var fixedMatchers = GetFixedMatchTypes(method.method, true, method.isExtension);
+                            var variantMatchers = GetParamArrayMatchType(method.method);
 
                             if (fixedMatchers.Length > 0)
                             {
@@ -432,7 +431,7 @@ namespace QuickJS.Unity
 
                             using (cg.cs.CodeBlockScope())
                             {
-                                this.WriteCSMethodBinding(methodBindingInfo, method, argc, true);
+                                this.WriteCSMethodBinding(methodBindingInfo, method.method, argc, true, method.isExtension);
                             }
                         }
                     }
@@ -448,13 +447,14 @@ namespace QuickJS.Unity
             cg.cs.AppendLine($"return {error};");
         }
 
-        protected List<ParameterInfo> WriteTSDeclaration(TypeBindingInfo typeBindingInfo, T method, MethodBaseBindingInfo<T> bindingInfo)
+        protected List<ParameterInfo> WriteTSDeclaration(TypeBindingInfo typeBindingInfo, T method, MethodBaseBindingInfo<T> bindingInfo, bool isExtension)
         {
-            var isExtension = BindingManager.IsExtensionMethod(method);
             var refParameters = new List<ParameterInfo>();
             string tsMethodDeclaration;
             this.cg.AppendJSDoc(method);
-            if (this.cg.bindingManager.GetTSMethodDeclaration(method, out tsMethodDeclaration))
+            
+            if (typeBindingInfo.transform.GetTSMethodDeclaration(method, out tsMethodDeclaration)
+             || this.cg.bindingManager.GetTSMethodDeclaration(method, out tsMethodDeclaration))
             {
                 this.cg.tsDeclare.AppendLine(tsMethodDeclaration);
                 return refParameters;
@@ -608,7 +608,7 @@ namespace QuickJS.Unity
         }
 
         // 写入绑定代码
-        protected void WriteCSMethodBinding(MethodBaseBindingInfo<T> bindingInfo, T method, string argc, bool isVararg)
+        protected void WriteCSMethodBinding(MethodBaseBindingInfo<T> bindingInfo, T method, string argc, bool isVararg, bool isExtension)
         {
             // 是否接管 cs 绑定代码生成
             var transform = cg.bindingManager.GetTypeTransform(method.DeclaringType);
@@ -617,10 +617,9 @@ namespace QuickJS.Unity
                 return;
             }
 
-            var isExtension = BindingManager.IsExtensionMethod(method);
             // var isRaw = method.IsDefined(typeof(JSCFunctionAttribute));
             var parameters = method.GetParameters();
-            var caller = this.cg.AppendGetThisCS(method);
+            var caller = this.cg.AppendGetThisCS(method, isExtension);
             var returnType = GetReturnType(method);
 
             if (returnType == null || returnType == typeof(void))

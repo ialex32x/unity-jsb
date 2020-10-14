@@ -28,12 +28,6 @@ namespace jsb.Editor
 
             bindingManager.AddExportedType(typeof(TWrapper<int>));
             bindingManager.AddExportedType(typeof(TWrapper<Vector3>));
-
-#if UNITY_EDITOR 
-            // [test] editor only
-            bindingManager.AddExportedType(typeof(UnityEditor.EditorApplication)).EditorRuntime();
-            bindingManager.AddExportedType(typeof(UnityEditor.EditorWindow)).EditorRuntime();
-#endif
         }
     }
 }

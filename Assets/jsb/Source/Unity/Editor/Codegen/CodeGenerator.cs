@@ -386,13 +386,13 @@ namespace QuickJS.Unity
             return caller;
         }
 
-        public string AppendGetThisCS(MethodBase method)
+        public string AppendGetThisCS(MethodBase method, bool asExtensionAnyway)
         {
             if (method.IsConstructor)
             {
                 return null;
             }
-            if (BindingManager.IsExtensionMethod(method))
+            if (asExtensionAnyway)
             {
                 var parameters = method.GetParameters();
                 return AppendGetThisCS(false, parameters[0].ParameterType);

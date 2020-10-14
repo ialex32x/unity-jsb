@@ -126,7 +126,7 @@ namespace QuickJS.Native
         public const int JS_READ_OBJ_SAB = 1 << 2; /* allow SharedArrayBuffer */
         public const int JS_READ_OBJ_REFERENCE = 1 << 3; /* allow object references */
 
-        public static JSValue[] EmptyValues = new JSValue[0];
+        public static readonly JSValue[] EmptyValues = new JSValue[0];
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool JS_VALUE_HAS_REF_COUNT(JSValue v)

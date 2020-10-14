@@ -277,7 +277,7 @@ namespace QuickJS.Unity
             return methodInfo.IsSpecialName && methodInfo.Name.StartsWith("op_");
         }
 
-        public void AddMethod(MethodInfo methodInfo)
+        public void AddMethod(MethodInfo methodInfo, bool asExtensionAnyway)
         {
             if (this.transform.IsBlocked(methodInfo))
             {
@@ -295,7 +295,7 @@ namespace QuickJS.Unity
             //     }
             // }
 
-            var isExtension = BindingManager.IsExtensionMethod(methodInfo);
+            var isExtension = asExtensionAnyway || BindingManager.IsExtensionMethod(methodInfo);
             var isStatic = methodInfo.IsStatic && !isExtension;
 
             if (isStatic && type.IsGenericTypeDefinition)
@@ -398,6 +398,7 @@ namespace QuickJS.Unity
                 methodBindingInfo = new MethodBindingInfo(isStatic, methodCSName, methodJSName);
                 group.Add(methodCSName, methodBindingInfo);
             }
+
             if (!methodBindingInfo.Add(methodInfo, isExtension))
             {
                 bindingManager.Info("fail to add method: {0}", methodInfo.Name);
@@ -590,7 +591,7 @@ namespace QuickJS.Unity
                             continue;
                         }
 
-                        AddMethod(property.GetMethod);
+                        AddMethod(property.GetMethod, false);
                     }
 
                     if (property.CanWrite && property.SetMethod != null && property.SetMethod.IsPublic)
@@ -601,7 +602,7 @@ namespace QuickJS.Unity
                             continue;
                         }
 
-                        AddMethod(property.SetMethod);
+                        AddMethod(property.SetMethod, false);
                     }
 
                     // bindingManager.Info("skip indexer property: {0}", property.Name);
@@ -650,11 +651,11 @@ namespace QuickJS.Unity
                 }
             }
 
-            CollectMethods(type.GetMethods(bindingFlags));
-            CollectMethods(bindingManager.GetTypeTransform(type).extensionMethods);
+            CollectMethods(type.GetMethods(bindingFlags), false);
+            CollectMethods(bindingManager.GetTypeTransform(type).extensionMethods, true);
         }
 
-        private void CollectMethods(IEnumerable<MethodInfo> methods)
+        private void CollectMethods(IEnumerable<MethodInfo> methods, bool asExtensionAnyway)
         {
             foreach (var method in methods)
             {
@@ -703,18 +704,18 @@ namespace QuickJS.Unity
                     continue;
                 }
 
-                if (BindingManager.IsExtensionMethod(method))
+                if (asExtensionAnyway || BindingManager.IsExtensionMethod(method))
                 {
                     var targetType = method.GetParameters()[0].ParameterType;
                     var targetInfo = bindingManager.GetExportedType(targetType);
                     if (targetInfo != null)
                     {
-                        targetInfo.AddMethod(method);
+                        targetInfo.AddMethod(method, true);
                         continue;
                     }
                 }
 
-                AddMethod(method);
+                AddMethod(method, false);
             }
         }
     }

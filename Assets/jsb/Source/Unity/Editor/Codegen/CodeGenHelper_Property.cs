@@ -19,7 +19,7 @@ namespace QuickJS.Unity
             this.cg = cg;
             this.bindingInfo = bindingInfo;
 
-            var caller = this.cg.AppendGetThisCS(bindingInfo.propertyInfo.GetMethod);
+            var caller = this.cg.AppendGetThisCS(bindingInfo.propertyInfo.GetMethod, false);
 
             this.cg.cs.AppendLine("var ret = {0}.{1};", caller, bindingInfo.propertyInfo.Name);
             var pusher = this.cg.AppendValuePusher(bindingInfo.propertyInfo.PropertyType, "ret");
@@ -36,15 +36,15 @@ namespace QuickJS.Unity
         protected CodeGenerator cg;
         protected PropertyBindingInfo bindingInfo;
 
-        public PropertySetterCodeGen(CodeGenerator cg, PropertyBindingInfo bindingInfo)
+        public PropertySetterCodeGen(CodeGenerator cg, PropertyBindingInfo propertyBindingInfo)
         {
             this.cg = cg;
-            this.bindingInfo = bindingInfo;
+            this.bindingInfo = propertyBindingInfo;
 
-            var method = bindingInfo.propertyInfo.SetMethod;
+            var method = propertyBindingInfo.propertyInfo.SetMethod;
             var propertyInfo = this.bindingInfo.propertyInfo;
             var declaringType = propertyInfo.DeclaringType;
-            var caller = this.cg.AppendGetThisCS(method);
+            var caller = this.cg.AppendGetThisCS(method, false);
             var propertyType = this.cg.bindingManager.GetCSTypeFullName(propertyInfo.PropertyType);
             this.cg.cs.AppendLine("{0} value;", propertyType);
             var getter = this.cg.bindingManager.GetScriptObjectGetter(propertyInfo.PropertyType, "ctx", "arg_val", "value");

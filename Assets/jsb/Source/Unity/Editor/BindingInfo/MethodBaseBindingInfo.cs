@@ -84,7 +84,7 @@ namespace QuickJS.Unity
             }
 
             _count++;
-            variant.Add(method, isVararg);
+            variant.Add(method, isVararg, isExtension);
             return true;
         }
     }
