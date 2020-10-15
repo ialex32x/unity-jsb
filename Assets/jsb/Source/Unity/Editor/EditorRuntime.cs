@@ -10,7 +10,7 @@ namespace QuickJS.Unity
     using QuickJS.Binding;
     using QuickJS.Native;
 
-    // [InitializeOnLoad]
+    [InitializeOnLoad]
     public class EditorRuntime : IScriptRuntimeListener
     {
         private enum RunMode
@@ -24,11 +24,10 @@ namespace QuickJS.Unity
 #pragma warning restore 0649
         private ScriptRuntime _runtime;
         private RunMode _runMode;
-        private long _tick;
+        private int _tick;
 
         static EditorRuntime()
         {
-            Debug.LogWarningFormat("init");
             _instance = new EditorRuntime();
         }
 
@@ -72,10 +71,13 @@ namespace QuickJS.Unity
             {
                 return;
             }
-            _tick = Environment.TickCount;
 
-            _runtime = ScriptEngine.CreateRuntime(true);
-            _runtime.Initialize(this);
+            if (_runtime == null)
+            {
+                _tick = Environment.TickCount;
+                _runtime = ScriptEngine.CreateRuntime(true);
+                _runtime.Initialize(this);
+            }
         }
 
         private void OnPlayModeStateChanged(PlayModeStateChange mode)
@@ -97,14 +99,23 @@ namespace QuickJS.Unity
                     return;
                 }
                 var tick = Environment.TickCount;
-                _runtime.Update((int)(tick - _tick));
+                if (tick < _tick)
+                {
+                    var a = int.MaxValue - _tick;
+                    var b = tick - int.MinValue;
+                    _runtime.Update(a + b);
+                }
+                else
+                {
+                    _runtime.Update(tick - _tick);
+                }
                 _tick = tick;
             }
         }
 
         public void OnCreate(ScriptRuntime runtime)
         {
-            runtime.AddSearchPath("Scripts/out/editor");
+            runtime.AddSearchPath("Scripts/out");
             runtime.AddSearchPath("node_modules");
         }
 
@@ -123,7 +134,7 @@ namespace QuickJS.Unity
         {
             if (!runtime.isWorker)
             {
-                _runtime.EvalMain("main.js");
+                _runtime.EvalMain("editor/main");
             }
         }
 
@@ -141,12 +152,7 @@ namespace QuickJS.Unity
         {
             if (_instance._runtime != null)
             {
-                var ret = _instance._runtime.GetMainContext().EvalSource<string>(code, "eval");
-                var logger = _instance._runtime.GetLogger();
-                if (logger != null)
-                {
-                    logger.Write(LogLevel.Info, ret);
-                }
+                _instance._runtime.GetMainContext().EvalSource(code, "eval");
             }
         }
     }
