@@ -1,5 +1,7 @@
 
 const GUILayout = UnityEngine.GUILayout;
+const EditorGUILayout = UnityEditor.EditorGUILayout;
+const MessageType = UnityEditor.MessageType;
 
 // @jsb.Shortcut("Window/JS/MyEditorWindow")
 export class MyEditorWindow extends UnityEditor.EditorWindow {
@@ -12,6 +14,7 @@ export class MyEditorWindow extends UnityEditor.EditorWindow {
     }
 
     OnGUI() {
+        EditorGUILayout.HelpBox("Hello", MessageType.Info);
         if (GUILayout.Button("I am Javascript")) {
             console.log("Thanks");
         }
