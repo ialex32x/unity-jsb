@@ -20,7 +20,42 @@ declare function postMessage(data: any): void;
 //  */
 // declare function enableStacktrace(enabled: boolean): void
 
+declare class jsb {
+    /**
+     * [NotImplemented][未实现] 获取所有 ScriptRuntime 信息
+     */
+    static get runtimes(): jsb.RuntimeInfo[];
+
+    /**
+     * [NotImplemented][未实现] 从其他 ScriptRuntime 接收消息
+     */
+    static get onmessage(): (id: number, data: any) => void;
+    static set onmessage(cb: (id: number, data: any) => void);
+    
+    /**
+     * [NotImplemented][未实现] 向指定 ScriptRuntime 发送消息
+     */
+    static postMessage(id: number, data: any): void;
+}
+
 declare namespace jsb {
+
+    interface RuntimeInfo {
+        /**
+         * 运行时唯一ID
+         */
+        id: number;
+
+        /**
+         * 是否是工作者线程
+         */
+        isWorker: boolean;
+
+        /**
+         * 是否是编辑器运行时
+         */
+        isEditor: boolean;
+    }
 
     /**
      * 仅用于声明
