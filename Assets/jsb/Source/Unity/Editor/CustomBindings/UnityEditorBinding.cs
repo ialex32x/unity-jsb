@@ -21,13 +21,43 @@ namespace jsb.Editor
                 return;
             }
 
-            bindingManager.AddExportedType(typeof(GUI));
-            bindingManager.AddExportedType(typeof(GUILayout));
+            bindingManager.AddExportedType(typeof(GUI)).SetAllConstructorsBlocked();
+            bindingManager.AddExportedType(typeof(GUIUtility)).SetAllConstructorsBlocked();
+            bindingManager.AddExportedType(typeof(GUILayout)).SetAllConstructorsBlocked();
+            bindingManager.AddExportedType(typeof(GUILayoutOption));
+            bindingManager.AddExportedType(typeof(GUIContent));
+            bindingManager.AddExportedType(typeof(GUISkin));
+            bindingManager.AddExportedType(typeof(GUIStyle));
+            bindingManager.AddExportedType(typeof(ScaleMode));
+            bindingManager.AddExportedType(typeof(FocusType));
+            bindingManager.AddExportedType(typeof(RectInt));
+            bindingManager.AddExportedType(typeof(Bounds));
+            bindingManager.AddExportedType(typeof(BoundsInt));
+            bindingManager.AddExportedType(typeof(Gradient));
+            bindingManager.AddExportedType(typeof(AnimationCurve));
+            bindingManager.AddExportedType(typeof(Event));
+            bindingManager.AddExportedType(typeof(Coroutine));
+            bindingManager.AddExportedType(typeof(System.Collections.IEnumerator));
+            bindingManager.AddExportedType(typeof(System.Collections.Generic.IEnumerable<string>));
 
-            bindingManager.AddExportedType(typeof(GUIContent)).EditorRuntime();
-            bindingManager.AddExportedType(typeof(EditorGUI)).EditorRuntime();
-            bindingManager.AddExportedType(typeof(EditorGUILayout)).EditorRuntime();
-            bindingManager.AddExportedType(typeof(EditorApplication)).EditorRuntime();
+            bindingManager.AddExportedType(typeof(MessageType)).EditorRuntime();
+            bindingManager.AddExportedType(typeof(Hash128)).EditorRuntime();
+            bindingManager.AddExportedType(typeof(ImportAssetOptions)).EditorRuntime();
+            bindingManager.AddExportedType(typeof(ScriptingRuntimeVersion)).EditorRuntime();
+            bindingManager.AddExportedType(typeof(MouseCursor)).EditorRuntime();
+            bindingManager.AddExportedType(typeof(PauseState)).EditorRuntime();
+            bindingManager.AddExportedType(typeof(PlayModeStateChange)).EditorRuntime();
+            bindingManager.AddExportedType(typeof(ExportPackageOptions)).EditorRuntime();
+            bindingManager.AddExportedType(typeof(ForceReserializeAssetsOptions)).EditorRuntime();
+            bindingManager.AddExportedType(typeof(StatusQueryOptions)).EditorRuntime();
+            bindingManager.AddExportedType(typeof(SerializedObject)).EditorRuntime();
+            bindingManager.AddExportedType(typeof(SerializedProperty)).EditorRuntime();
+            bindingManager.AddExportedType(typeof(SerializedPropertyType)).EditorRuntime();
+            bindingManager.AddExportedType(typeof(AssetDatabase)).EditorRuntime().SetAllConstructorsBlocked();
+            bindingManager.AddExportedType(typeof(EditorGUI)).EditorRuntime().SetAllConstructorsBlocked();
+            bindingManager.AddExportedType(typeof(EditorGUIUtility)).EditorRuntime().SetAllConstructorsBlocked();
+            bindingManager.AddExportedType(typeof(EditorGUILayout)).EditorRuntime().SetAllConstructorsBlocked();
+            bindingManager.AddExportedType(typeof(EditorApplication)).EditorRuntime().SetAllConstructorsBlocked();
             bindingManager.AddExportedType(typeof(EditorWindow)).EditorRuntime()
                 .SetMemberBlocked("GetWindowWithRect")
                 //TODO: 此方法需要接管, 待处理, 暂时屏蔽

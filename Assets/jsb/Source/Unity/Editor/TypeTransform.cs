@@ -291,7 +291,22 @@ namespace QuickJS.Unity
             return _blockedMethods.Any(i => i.MetadataToken == token);
         }
 
-        // 屏蔽指定签名的构造方法
+        /// <summary>
+        /// 屏蔽所有构造函数
+        /// </summary>
+        public TypeTransform SetAllConstructorsBlocked()
+        {
+            foreach (var ctor in _type.GetConstructors())
+            {
+                _blockedMethods.Add(ctor);
+            }
+
+            return this;
+        }
+
+        /// <summary>
+        /// 屏蔽指定签名的构造方法
+        /// </summary>
         public TypeTransform SetConstructorBlocked(params Type[] parameters)
         {
             var method = _type.GetConstructor(parameters);
@@ -302,7 +317,9 @@ namespace QuickJS.Unity
             return this;
         }
 
-        // 屏蔽指定名字与签名的方法
+        /// <summary>
+        /// 屏蔽指定名字与签名的方法
+        /// </summary>
         public TypeTransform SetMethodBlocked(string name, params Type[] parameters)
         {
             var method = _type.GetMethod(name, parameters);
@@ -313,6 +330,9 @@ namespace QuickJS.Unity
             return this;
         }
 
+        /// <summary>
+        /// 改写返回值的 push 方法
+        /// </summary>
         public TypeTransform SetMethodReturnPusher(string pusher, string name, params Type[] parameters)
         {
             var method = _type.GetMethod(name, parameters);
