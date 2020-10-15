@@ -139,32 +139,36 @@ namespace QuickJS
                     JSContext ctx = context;
                     var globalObject = context.GetGlobalObject();
                     var onmessage = JSApi.JS_GetPropertyStr(context, globalObject, "onmessage");
+                    var callable = JSApi.JS_IsFunction(ctx, onmessage) == 1;
 
                     for (int i = 0, count = list.Count; i < count; i++)
                     {
                         var byteBuffer = list[i];
 
-                        unsafe
+                        if (callable)
                         {
-                            JSValue data;
-                            fixed (byte* buf = byteBuffer.data)
+                            unsafe
                             {
-                                data = JSApi.JS_ReadObject(ctx, buf, byteBuffer.readableBytes, 0);
-                            }
-
-                            if (data.IsException())
-                            {
-                                var exceptionString = ctx.GetExceptionString();
-                                if (logger != null)
+                                JSValue data;
+                                fixed (byte* buf = byteBuffer.data)
                                 {
-                                    logger.Write(LogLevel.Error, exceptionString);
+                                    data = JSApi.JS_ReadObject(ctx, buf, byteBuffer.readableBytes, 0);
                                 }
-                            }
-                            else
-                            {
-                                var argv = stackalloc JSValue[1] { data };
-                                var rval = JSApi.JS_Call(ctx, onmessage, globalObject, 1, argv);
-                                JSApi.JS_FreeValue(ctx, rval);
+
+                                if (data.IsException())
+                                {
+                                    var exceptionString = ctx.GetExceptionString();
+                                    if (logger != null)
+                                    {
+                                        logger.Write(LogLevel.Error, exceptionString);
+                                    }
+                                }
+                                else
+                                {
+                                    var argv = stackalloc JSValue[1] { data };
+                                    var rval = JSApi.JS_Call(ctx, onmessage, globalObject, 1, argv);
+                                    JSApi.JS_FreeValue(ctx, rval);
+                                }
                             }
                         }
                         byteBuffer.Release();
