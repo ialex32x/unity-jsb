@@ -11,9 +11,12 @@ namespace QuickJS
         protected /*readonly*/ JSValue _jsValue;
 
         // 一个 JSValue (function) 可能会被用于映射多个委托对象
-        // managed to managed object cycle reference, it's safe without weakreference
+        // it's safe without weakreference for cycle references between managed objects
         private List<Delegate> _matches = new List<Delegate>();
 
+        /// <summary>
+        /// 获取委托包装所在的 JSContext. 在已经释放的 ScriptDelegate 上访问此属性会抛出 NullReferenceException.
+        /// </summary>
         public JSContext ctx
         {
             get { return _context; }
