@@ -18,5 +18,9 @@ export class MyEditorWindow extends UnityEditor.EditorWindow {
         if (GUILayout.Button("I am Javascript")) {
             console.log("Thanks");
         }
+
+        if (GUILayout.Button("CreateWindow")) {
+            UnityEditor.EditorWindow.CreateWindow(MyEditorWindow);
+        }
     }
 }

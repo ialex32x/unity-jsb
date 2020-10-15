@@ -203,6 +203,11 @@ namespace QuickJS.Unity
             return AddStaticMethod(method.GetMethodInfo(), tsDecl);
         }
 
+        public TypeTransform AddStaticMethod(Native.JSCFunction method, string tsDecl = null)
+        {
+            return AddStaticMethod(method.GetMethodInfo(), tsDecl);
+        }
+
         public TypeTransform AddStaticMethod(MethodInfo method, string tsDecl = null)
         {
             if (!staticMethods.Contains(method))

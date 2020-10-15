@@ -435,25 +435,34 @@ namespace QuickJS.Unity
                             var methodDeclType = this.cg.bindingManager.GetCSTypeFullName(methodBindingInfo._cfunc.DeclaringType);
                             var isStatic = attr.isStatic ? "true" : "false";
                             cg.cs.AppendLine("cls.AddRawMethod({0}, \"{1}\", {2}.{3});", isStatic, regName, methodDeclType, methodBindingInfo._cfunc.Name);
-                            foreach (var defEntry in attr.difinitions)
+                            if (attr.difinitions != null)
                             {
-                                string tsMethodRename;
-                                var prefix = attr.isStatic ? "static" : "";
-                                if (defEntry.StartsWith("("))
+                                foreach (var defEntry in attr.difinitions)
                                 {
-                                    if (this.cg.bindingManager.GetTSMethodRename(methodBindingInfo._cfunc, out tsMethodRename))
+                                    string tsMethodRename;
+                                    var prefix = attr.isStatic ? "static " : "";
+
+                                    // 附带的签名没有带命名时, 自动加上
+                                    if (defEntry.StartsWith("(") || defEntry.StartsWith("<"))
                                     {
-                                        this.cg.tsDeclare.AppendLine($"{prefix}{tsMethodRename}{defEntry}");
+                                        if (this.cg.bindingManager.GetTSMethodRename(methodBindingInfo._cfunc, out tsMethodRename))
+                                        {
+                                            this.cg.tsDeclare.AppendLine($"{prefix}{tsMethodRename}{defEntry}");
+                                        }
+                                        else
+                                        {
+                                            this.cg.tsDeclare.AppendLine($"{prefix}{regName}{defEntry}");
+                                        }
                                     }
                                     else
                                     {
-                                        this.cg.tsDeclare.AppendLine($"{prefix}{regName}{defEntry}");
+                                        this.cg.tsDeclare.AppendLine($"{prefix}{defEntry}");
                                     }
                                 }
-                                else
-                                {
-                                    this.cg.tsDeclare.AppendLine($"{prefix}{defEntry}");
-                                }
+                            }
+                            else
+                            {
+                                this.cg.tsDeclare.AppendLine("(...uncertain: any[]): any /* uncertain */");
                             }
                         }
                         else

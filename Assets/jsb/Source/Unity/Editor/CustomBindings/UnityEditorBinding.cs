@@ -3,6 +3,7 @@ using System.Reflection;
 
 namespace jsb.Editor
 {
+    using QuickJS.Native;
     using QuickJS.Unity;
     using UnityEngine;
     using UnityEditor;
@@ -92,13 +93,8 @@ namespace jsb.Editor
                     }
                     return false;
                 }, "GetWindow", typeof(Type))
+                .AddStaticMethod(EditorWindowFix.CreateWindow)
             ;
-
-            if (!IsAvailable(typeof(EditorWindow).GetMethod("CreateWindow")))
-            {
-                bindingManager.TransformType(typeof(EditorWindow))
-                    .AddExtensionMethod<EditorWindow, Type, EditorWindow>(EditorWindowFix.CreateWindow, "CreateWindow<T extends UnityEditor.EditorWindow>(type: { new(): T }): T");
-            }
         }
     }
 }

@@ -11,10 +11,71 @@ namespace QuickJS.Unity
     public class EditorWindowFix
     {
         // as extended method
-        public static EditorWindow CreateWindow(EditorWindow editorWindow, Type t)
+        // public static T CreateWindow<T>(string title, params Type[] desiredDockNextTo) where T : EditorWindow
+        // public static T CreateWindow<T>(params Type[] desiredDockNextTo) where T : EditorWindow
+        [JSCFunction(true,
+            "<T extends UnityEditor.EditorWindow>(type: { new(): T }, ...desiredDockNextTo: any[]): T",
+            "<T extends UnityEditor.EditorWindow>(type: { new(): T }, title: string, ...desiredDockNextTo: any[]): T")]
+        public static JSValue CreateWindow(JSContext ctx, JSValue this_obj, int argc, JSValue[] argv)
         {
-            //TODO: 提供新版本提供的 CreateWindow 接口的兼容实现, Not Implemented 
-            return default(EditorWindow);
+            if (argc == 0 || JSApi.JS_IsConstructor(ctx, argv[0]) != 1)
+            {
+                throw new ParameterException("type", typeof(Type), 0);
+            }
+
+            if (argc > 1)
+            {
+                var firstAsTitle = argv[1].IsString() || argv[1].IsNullish();
+                var title = firstAsTitle ? JSApi.GetString(ctx, argv[1]) : null;
+                var firstArgIndex = firstAsTitle ? 2 : 1;
+
+                return _new_js_editor_window(ctx, argv[0], false, title, argv, firstArgIndex);
+            }
+
+            return _new_js_editor_window(ctx, argv[0], false, null, null, 0);
+        }
+
+        private static bool __dock(JSValue[] desiredDockNextTo)
+        {
+            var ContainerWindow = typeof(EditorWindow).Assembly.GetType("UnityEditor.ContainerWindow");
+            var ContainerWindow_windows = ContainerWindow.GetProperty("windows", BindingFlags.Public | BindingFlags.Static);
+            var ContainerWindow_rootView = ContainerWindow.GetProperty("rootView", BindingFlags.Public);
+
+            var View = typeof(EditorWindow).Assembly.GetType("UnityEditor.View");
+            var View_allChildren = View.GetProperty("allChildren", BindingFlags.Public);
+
+            // foreach (var desired in desiredDockNextTo)
+            for (var dIndex = 0; dIndex < desiredDockNextTo.Length; dIndex++)
+            {
+                var desired = desiredDockNextTo[dIndex];
+                // ContainerWindow[]
+                var windows = (Array)ContainerWindow_windows.GetMethod.Invoke(null, null);
+                for (var wIndex = 0; wIndex < windows.Length; wIndex++)
+                {
+                    var containerWindow = windows.GetValue(wIndex);
+                    var rootView = ContainerWindow_rootView.GetMethod.Invoke(containerWindow, null);
+                    // View[]
+                    var allChildren = (Array)View_allChildren.GetMethod.Invoke(rootView, null);
+                    for (var vIndex = 0; vIndex < allChildren.Length; vIndex++)
+                    {
+                        var view = allChildren.GetValue(vIndex);
+                        var dockArea = view; //  as DockArea
+
+                        // DockArea.m_Panes: internal List<EditorWindow> 
+                        if (!((UnityEngine.Object)dockArea == null))
+                        {
+                            //TODO: 区分 JSEditorWindow 与 C# EditorWindow
+                            // if (dockArea.m_Panes.Any((EditorWindow pane) => pane.GetType() == desired))
+                            // {
+                            //     dockArea.AddTab(val);
+                            //     return true;
+                            // }
+                        }
+                    }
+                }
+            }
+
+            return false;
         }
 
         // inject: GetWindow(Type)
@@ -48,35 +109,7 @@ namespace QuickJS.Unity
             var editorWindow = _get_js_editor_window(array, ctor);
             if (!editorWindow)
             {
-                editorWindow = ScriptableObject.CreateInstance<JSEditorWindow>();
-                var cache = ScriptEngine.GetObjectCache(ctx);
-                var object_id = cache.AddObject(editorWindow, false);
-                var val = JSApi.jsb_construct_bridge_object(ctx, ctor, object_id);
-                if (val.IsException())
-                {
-                    cache.RemoveObject(object_id);
-                }
-                else
-                {
-                    cache.AddJSValue(editorWindow, val);
-                    editorWindow.SetBridge(ctx, val, ctor);
-                    // JSApi.JSB_SetBridgeType(ctx, val, type_id);
-                }
-
-                if (title != null)
-                {
-                    editorWindow.titleContent = new GUIContent(title);
-                }
-                if (utility)
-                {
-                    editorWindow.ShowUtility();
-                }
-                else
-                {
-                    editorWindow.Show();
-                }
-
-                return val;
+                return _new_js_editor_window(ctx, ctor, utility, title, null, 0);
             }
             else if (focus)
             {
@@ -85,6 +118,40 @@ namespace QuickJS.Unity
             }
 
             return editorWindow.CloneValue();
+        }
+
+        private static JSValue _new_js_editor_window(JSContext ctx, JSValue ctor, bool utility, string title, JSValue[] desiredDockNextTo, int desiredDockNextToOffset)
+        {
+            var editorWindow = ScriptableObject.CreateInstance<JSEditorWindow>();
+            var cache = ScriptEngine.GetObjectCache(ctx);
+            var object_id = cache.AddObject(editorWindow, false);
+            var val = JSApi.jsb_construct_bridge_object(ctx, ctor, object_id);
+            if (val.IsException())
+            {
+                cache.RemoveObject(object_id);
+            }
+            else
+            {
+                cache.AddJSValue(editorWindow, val);
+                editorWindow.SetBridge(ctx, val, ctor);
+                // JSApi.JSB_SetBridgeType(ctx, val, type_id);
+            }
+
+            if (title != null)
+            {
+                editorWindow.titleContent = new GUIContent(title);
+            }
+
+            if (utility)
+            {
+                editorWindow.ShowUtility();
+            }
+            else
+            {
+                editorWindow.Show();
+            }
+
+            return val;
         }
 
         private static JSEditorWindow _get_js_editor_window(Object[] array, JSValue ctor)

@@ -8,3 +8,5 @@ setTimeout(function () {
 }, 3000);
 
 // UnityEditor.EditorWindow.GetWindow(MyEditorWindow).Show();
+
+// UnityEditor.EditorWindow.GetWindow(require("my_editor_window").MyEditorWindow).Show()
