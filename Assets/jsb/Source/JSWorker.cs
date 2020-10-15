@@ -120,9 +120,6 @@ namespace QuickJS
             var tick = Environment.TickCount;
             var list = new List<IO.ByteBuffer>();
             var context = _runtime.GetMainContext();
-            var globalObject = context.GetGlobalObject();
-            var onmessage = JSApi.JS_GetPropertyStr(context, globalObject, "onmessage");
-            JSContext ctx = context;
             var logger = _runtime.GetLogger();
 
             while (_runtime.isRunning)
@@ -139,6 +136,10 @@ namespace QuickJS
                 }
                 else
                 {
+                    JSContext ctx = context;
+                    var globalObject = context.GetGlobalObject();
+                    var onmessage = JSApi.JS_GetPropertyStr(context, globalObject, "onmessage");
+
                     for (int i = 0, count = list.Count; i < count; i++)
                     {
                         var byteBuffer = list[i];
@@ -168,18 +169,23 @@ namespace QuickJS
                         }
                         byteBuffer.Release();
                     }
+                    JSApi.JS_FreeValue(ctx, onmessage);
+                    JSApi.JS_FreeValue(ctx, globalObject);
                     list.Clear();
                 }
 
                 var now = Environment.TickCount;
-                var dt = now - tick;
+                if (now < tick)
+                {
+                    _runtime.Update((now - int.MinValue) + (int.MaxValue - tick));
+                }
+                else
+                {
+                    _runtime.Update(now - tick);
+                }
                 tick = now;
-
-                _runtime.Update(dt);
             }
 
-            JSApi.JS_FreeValue(ctx, onmessage);
-            JSApi.JS_FreeValue(ctx, globalObject);
             _runtime.Destroy();
         }
 

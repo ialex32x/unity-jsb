@@ -101,9 +101,7 @@ namespace QuickJS.Unity
                 var tick = Environment.TickCount;
                 if (tick < _tick)
                 {
-                    var a = int.MaxValue - _tick;
-                    var b = tick - int.MinValue;
-                    _runtime.Update(a + b);
+                    _runtime.Update((tick - int.MinValue) + (int.MaxValue - _tick));
                 }
                 else
                 {
