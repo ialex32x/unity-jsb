@@ -155,5 +155,10 @@ namespace QuickJS.Unity
                 _instance._runtime.GetMainContext().EvalSource(code, "eval");
             }
         }
+
+        public static void ShowWindow(string module, string typename)
+        {
+            Eval($"UnityEditor.EditorWindow.GetWindow(require('{module}').{typename}).Show()");
+        }
     }
 }
