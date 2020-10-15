@@ -45,6 +45,11 @@ namespace jsb.Editor
             bindingManager.AddExportedType(typeof(Hash128)).EditorRuntime();
             bindingManager.AddExportedType(typeof(ImportAssetOptions)).EditorRuntime();
             bindingManager.AddExportedType(typeof(ScriptingRuntimeVersion)).EditorRuntime();
+            bindingManager.AddExportedType(typeof(AssetImporter)).EditorRuntime();
+            bindingManager.AddExportedType(typeof(ModelImporter)).EditorRuntime();
+            bindingManager.AddExportedType(typeof(AudioImporter)).EditorRuntime();
+            bindingManager.AddExportedType(typeof(VideoClipImporter)).EditorRuntime();
+            bindingManager.AddExportedType(typeof(TextureImporter)).EditorRuntime();
             bindingManager.AddExportedType(typeof(MouseCursor)).EditorRuntime();
             bindingManager.AddExportedType(typeof(PauseState)).EditorRuntime();
             bindingManager.AddExportedType(typeof(PlayModeStateChange)).EditorRuntime();
