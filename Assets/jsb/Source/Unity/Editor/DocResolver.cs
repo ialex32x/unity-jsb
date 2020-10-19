@@ -26,55 +26,6 @@ namespace QuickJS.Unity
         private Dictionary<string, DocBody> _fdocs = new Dictionary<string, DocBody>();
         private Dictionary<string, DocBody> _mdocs = new Dictionary<string, DocBody>();
 
-        private static Dictionary<Assembly, DocResolver> _resolvers = new Dictionary<Assembly, DocResolver>();
-
-        public static DocResolver GetResolver(Assembly assembly)
-        {
-            DocResolver resolver;
-            if (!_resolvers.TryGetValue(assembly, out resolver))
-            {
-                resolver = _resolvers[assembly] = new DocResolver();
-                resolver.Load(assembly);
-            }
-            return resolver;
-        }
-
-        public static DocBody GetDocBody(Type type)
-        {
-            return GetResolver(type.Assembly)._GetDocBody(type);
-        }
-
-        public static DocBody GetDocBody<T>(T methodBase)
-        where T : MethodBase
-        {
-            return GetResolver(methodBase.DeclaringType.Assembly)._GetDocBody(methodBase);
-        }
-
-        public static DocBody GetDocBody(FieldInfo fieldInfo)
-        {
-            return GetResolver(fieldInfo.DeclaringType.Assembly)._GetDocBody(fieldInfo);
-        }
-
-        public static DocBody GetDocBody(PropertyInfo propertyInfo)
-        {
-            return GetResolver(propertyInfo.DeclaringType.Assembly)._GetDocBody(propertyInfo);
-        }
-
-        public void Load(Assembly assembly)
-        {
-            try
-            {
-                var location = assembly.Location;
-                var ext = Path.GetExtension(location);
-                var xlocation = location.Substring(0, location.Length - ext.Length) + ".xml";
-                ParseXml(xlocation);
-            }
-            catch (Exception exception)
-            {
-                Debug.LogWarningFormat("fail to read doc xml ({0}): {1}", assembly, exception);
-            }
-        }
-
         public DocBody GetFieldDocBody(string path)
         {
             DocBody body;
@@ -82,7 +33,7 @@ namespace QuickJS.Unity
             return body;
         }
 
-        private DocBody _GetDocBody(Type type)
+        public DocBody GetDocBody(Type type)
         {
             if (type.IsGenericType || type.IsGenericTypeDefinition || !type.IsPublic)
             {
@@ -94,7 +45,7 @@ namespace QuickJS.Unity
             return body;
         }
 
-        private DocBody _GetDocBody<T>(T methodBase)
+        public DocBody GetDocBody<T>(T methodBase)
         where T : MethodBase
         {
             if (methodBase.IsGenericMethod || !methodBase.IsPublic || methodBase.ContainsGenericParameters)
@@ -118,7 +69,7 @@ namespace QuickJS.Unity
             return body;
         }
 
-        private DocBody _GetDocBody(FieldInfo fieldInfo)
+        public DocBody GetDocBody(FieldInfo fieldInfo)
         {
             if (!fieldInfo.IsPublic)
             {
@@ -131,7 +82,7 @@ namespace QuickJS.Unity
             return body;
         }
 
-        private DocBody _GetDocBody(PropertyInfo propertyInfo)
+        public DocBody GetDocBody(PropertyInfo propertyInfo)
         {
             if (propertyInfo.GetMethod == null || !propertyInfo.GetMethod.IsPublic)
             {
@@ -169,14 +120,17 @@ namespace QuickJS.Unity
             while (reader.Read())
             {
                 var type = reader.NodeType;
+
                 if (type == XmlNodeType.EndElement && reader.Name == elementName)
                 {
                     break;
                 }
+
                 if (type == XmlNodeType.Element && reader.Name == "summary")
                 {
                     body.summary = ReadTextBlock(reader, body, "summary");
                 }
+
                 if (type == XmlNodeType.Element && reader.Name == "param")
                 {
                     var pname = reader.GetAttribute("name");
@@ -186,6 +140,7 @@ namespace QuickJS.Unity
                         body.parameters[pname] = ptext;
                     }
                 }
+
                 if (type == XmlNodeType.Element && reader.Name == "returns")
                 {
                     body.returns = ReadSingleTextBlock(reader, body, "returns");
@@ -196,6 +151,7 @@ namespace QuickJS.Unity
         private string[] ReadTextBlock(XmlReader reader, DocBody body, string elementName)
         {
             var lines = new List<string>();
+
             if (!reader.IsEmptyElement)
             {
                 while (reader.Read())
@@ -205,12 +161,25 @@ namespace QuickJS.Unity
                     {
                         break;
                     }
+
                     if (type == XmlNodeType.Element && reader.Name == "para")
                     {
                         lines.Add(ReadElementContentAsString(reader, body, "para"));
                     }
+                    else if (type == XmlNodeType.Text || type == XmlNodeType.CDATA)
+                    {
+                        foreach (var line in reader.Value.Split('\n'))
+                        {
+                            var trim = line.Trim();
+                            if (trim.Length > 0)
+                            {
+                                lines.Add(trim);
+                            }
+                        }
+                    }
                 }
             }
+
             return lines.ToArray();
         }
 
@@ -258,12 +227,13 @@ namespace QuickJS.Unity
             return _sb.ToString();
         }
 
-        public void ParseXml(string filename)
+        public bool ParseXml(string filename)
         {
             if (!File.Exists(filename))
             {
-                return;
+                return false;
             }
+
             // Debug.LogFormat("read doc: {0}", filename);
             using (var fs = File.OpenRead(filename))
             {
@@ -293,6 +263,8 @@ namespace QuickJS.Unity
                     }
                 }
             }
+
+            return true;
         }
     }
 }

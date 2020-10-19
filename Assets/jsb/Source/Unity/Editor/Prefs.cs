@@ -19,6 +19,7 @@ namespace QuickJS.Unity
         // 静态绑定代码的生成目录
         public string outDir = "Assets/Generated/${platform}";
         public string typescriptDir = "Assets/Generated/Typings";
+        public string xmlDocDir = "Assets/Generated/Docs";
 
         /// <summary>
         /// 默认启用编辑器脚本执行相关功能 (JSEditorWindow 等)

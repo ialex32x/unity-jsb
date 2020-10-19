@@ -279,7 +279,7 @@ namespace QuickJS.Unity
                         var tsName = "jsb.autogen.d.ts" + tx;
                         var tsPath = Path.Combine(tsOutDir, tsName);
                         this.bindingManager.AddOutputFile(tsOutDir, tsPath);
-                        
+
                         if (!Directory.Exists(tsOutDir))
                         {
                             Directory.CreateDirectory(tsOutDir);
@@ -438,7 +438,7 @@ namespace QuickJS.Unity
         {
             if (bindingManager.prefs.doc)
             {
-                var doc = DocResolver.GetDocBody(type);
+                var doc = this.GetDocBody(type);
                 if (doc != null)
                 {
                     AppendJSDoc(doc);
@@ -456,7 +456,7 @@ namespace QuickJS.Unity
         {
             if (bindingManager.prefs.doc)
             {
-                var doc = DocResolver.GetDocBody(propertyInfo);
+                var doc = this.GetDocBody(propertyInfo);
                 if (doc != null)
                 {
                     AppendJSDoc(doc);
@@ -474,7 +474,7 @@ namespace QuickJS.Unity
         {
             if (bindingManager.prefs.doc)
             {
-                var doc = DocResolver.GetDocBody(fieldInfo);
+                var doc = this.GetDocBody(fieldInfo);
                 if (doc != null)
                 {
                     AppendJSDoc(doc);
@@ -492,7 +492,7 @@ namespace QuickJS.Unity
         {
             if (bindingManager.prefs.doc)
             {
-                var resolver = DocResolver.GetResolver(type.Assembly);
+                var resolver = this.GetResolver(type.Assembly);
                 var doc = resolver.GetFieldDocBody(type.FullName + "." + Enum.GetName(type, value));
                 if (doc != null)
                 {
@@ -507,7 +507,7 @@ namespace QuickJS.Unity
         {
             if (bindingManager.prefs.doc)
             {
-                var doc = DocResolver.GetDocBody(methodInfo);
+                var doc = this.GetDocBody(methodInfo);
                 if (doc != null)
                 {
                     AppendJSDoc(doc);
@@ -523,7 +523,7 @@ namespace QuickJS.Unity
 
         public void AppendJSDoc(DocResolver.DocBody body)
         {
-            if (body.summary.Length > 1)
+            if (body.summary != null && body.summary.Length > 1)
             {
                 this.tsDeclare.AppendLine("/**");
                 foreach (var line in body.summary)
@@ -533,12 +533,13 @@ namespace QuickJS.Unity
             }
             else
             {
-                if (body.summary.Length == 0 || string.IsNullOrEmpty(body.summary[0]))
+                if (body.summary == null || body.summary.Length == 0 || string.IsNullOrEmpty(body.summary[0]))
                 {
                     if (body.parameters.Count == 0 && string.IsNullOrEmpty(body.returns))
                     {
                         return;
                     }
+                    
                     this.tsDeclare.AppendLine("/**");
                 }
                 else
@@ -546,16 +547,22 @@ namespace QuickJS.Unity
                     this.tsDeclare.AppendLine("/** {0}", body.summary[0]);
                 }
             }
-            foreach (var kv in body.parameters)
+
+            if (body.parameters != null)
             {
-                var pname = kv.Key;
-                var ptext = kv.Value;
-                this.tsDeclare.AppendLine($" * @param {pname} {ptext}");
+                foreach (var kv in body.parameters)
+                {
+                    var pname = kv.Key;
+                    var ptext = kv.Value;
+                    this.tsDeclare.AppendLine($" * @param {pname} {ptext}");
+                }
             }
+
             if (!string.IsNullOrEmpty(body.returns))
             {
                 this.tsDeclare.AppendLine($" * @returns {body.returns}");
             }
+
             this.tsDeclare.AppendLine(" */");
         }
 
