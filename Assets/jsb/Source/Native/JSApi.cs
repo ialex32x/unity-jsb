@@ -377,6 +377,9 @@ namespace QuickJS.Native
         [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern JSValue JSB_NewInt64(JSContext ctx, int64_t val);
 
+        [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern JSValue JS_NewBigInt64(JSContext ctx, int64_t v);
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static JSValue JS_NewBool(JSContext ctx, bool val)
         {
@@ -714,6 +717,13 @@ namespace QuickJS.Native
 
         [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern int JS_ToInt64(JSContext ctx, out int64_t pres, JSValueConst val);
+
+        [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern int JS_ToInt64Ext(JSContext ctx, out int64_t pres, JSValueConst val);
+
+        [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern int JS_ToBigInt64(JSContext ctx, out int64_t pres, JSValueConst val);
+        
         [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern int JS_ToIndex(JSContext ctx, out uint64_t plen, JSValueConst val);
         [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
