@@ -410,6 +410,7 @@ namespace QuickJS
                     value = value,
                     callback = _FreeValueAndDelegationAction,
                 };
+
                 lock (_pendingActions)
                 {
                     _pendingActions.Enqueue(act);
@@ -435,6 +436,7 @@ namespace QuickJS
                     value = value,
                     callback = _FreeValueAndScriptValueAction,
                 };
+
                 lock (_pendingActions)
                 {
                     _pendingActions.Enqueue(act);
@@ -553,20 +555,30 @@ namespace QuickJS
             }
         }
 
-        public void EnqueueAction(JSActionCallback callback, object args)
+        public bool EnqueueAction(JSActionCallback callback, object args)
         {
             lock (_pendingActions)
             {
+                if (!_isValid)
+                {
+                    return false;
+                }
                 _pendingActions.Enqueue(new JSAction() { callback = callback, args = args });
             }
+            return true;
         }
 
-        public void EnqueueAction(JSAction action)
+        public bool EnqueueAction(JSAction action)
         {
             lock (_pendingActions)
             {
+                if (!_isValid)
+                {
+                    return false;
+                }
                 _pendingActions.Enqueue(action);
             }
+            return true;
         }
 
         public void EvalFile(string fileName)

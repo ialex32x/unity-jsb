@@ -283,7 +283,7 @@ namespace QuickJS
                 buffer.WriteBytes(dataStore, psize);
                 JSApi.js_free(ctx, dataStore);
 
-                this._parentRuntime.EnqueueAction(new JSAction()
+                var succ = this._parentRuntime.EnqueueAction(new JSAction()
                 {
                     args = new JSWorkerArgs()
                     {
@@ -292,6 +292,11 @@ namespace QuickJS
                     },
                     callback = _PostMessage,
                 });
+
+                if (!succ)
+                {
+                    buffer.Release();
+                }
                 return JSApi.JS_UNDEFINED;
             }
             catch (Exception exception)
