@@ -52,7 +52,7 @@ namespace QuickJS.Extra.WebSockets
          */
 
         LWS_WRITE_CLIENT_IGNORE_XOR_MASK = 0x80
-        /**< client packet payload goes out on wire unmunged
+        /* client packet payload goes out on wire unmunged
          * only useful for security tests since normal servers cannot
          * decode the content if used */
     };

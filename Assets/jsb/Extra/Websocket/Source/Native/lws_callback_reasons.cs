@@ -690,7 +690,7 @@ namespace QuickJS.Extra.WebSockets
         /****** add new things just above ---^ ******/
 
         LWS_CALLBACK_USER = 1000,
-        /**<  user code can use any including above without fear of clashes */
+        /*  user code can use any including above without fear of clashes */
     }
 }
 #endif
