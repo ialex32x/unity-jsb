@@ -15,7 +15,7 @@ namespace QuickJS
             public bool isEditorRuntime;
         }
 
-        public const uint VERSION = 0x723 + 1;
+        public const uint VERSION = 0x723 + 2;
 
         private static int _freeSlot = -1;
         private static List<ScriptRuntimeRef> _runtimeRefs = new List<ScriptRuntimeRef>();

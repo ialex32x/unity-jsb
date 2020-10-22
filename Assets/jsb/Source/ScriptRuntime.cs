@@ -225,7 +225,7 @@ namespace QuickJS
             _typeDB = new TypeDB(this, _mainContext);
             listener.OnCreate(this);
 
-            var register = new TypeRegister(this, _mainContext);
+            var register = new TypeRegister(this, _mainContext, _mainContext.GetGlobalObject());
             register.RegisterType(typeof(Unity.JSBehaviour));
 #if UNITY_EDITOR
             register.RegisterType(typeof(Unity.JSEditorWindow));

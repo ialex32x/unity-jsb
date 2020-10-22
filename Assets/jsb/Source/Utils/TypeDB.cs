@@ -41,7 +41,7 @@ namespace QuickJS.Utils
                 return dynamicType;
             }
 
-            var register = new TypeRegister(_runtime, _context);
+            var register = new TypeRegister(_runtime, _context, _context.GetGlobalObject());
 
             dynamicType = new DynamicType(type, privateAccess);
             dynamicType.Bind(register);

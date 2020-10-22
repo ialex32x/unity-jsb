@@ -9,6 +9,7 @@ namespace QuickJS.Binding
     public class TypeRegister
     {
         private ScriptContext _context;
+        private JSValue _thisObject;
 
         private TypeDB _db;
 
@@ -39,13 +40,14 @@ namespace QuickJS.Binding
             return _atoms.GetAtom(name);
         }
 
-        public TypeRegister(ScriptRuntime runtime, ScriptContext context)
+        public TypeRegister(ScriptRuntime runtime, ScriptContext context, JSValue thisObject)
         {
             var ctx = (JSContext)context;
 
             _context = context;
             _atoms = new AtomCache(_context);
             _db = runtime.GetTypeDB();
+            _thisObject = thisObject;
         }
 
         public TypeDB GetTypeDB()
@@ -56,18 +58,21 @@ namespace QuickJS.Binding
         // 无命名空间, 直接外围对象作为容器 (通常是global)
         public NamespaceDecl CreateNamespace() // [parent]
         {
-            return new NamespaceDecl(this, _context.GetGlobalObject());
+            return new NamespaceDecl(this, JSApi.JS_DupValue(_context, _thisObject));
         }
 
         private JSValue _AutoProperty(string name)
         {
-            var globalObject = _context.GetGlobalObject();
+            var thisObject = JSApi.JS_DupValue(_context, _thisObject);
             var nameAtom = GetAtom(name);
-            var ns = JSApi.JSB_NewPropertyObject(_context, globalObject, nameAtom, JSPropFlags.JS_PROP_C_W_E);
-            JSApi.JS_FreeValue(_context, globalObject);
+            var ns = JSApi.JSB_NewPropertyObject(_context, thisObject, nameAtom, JSPropFlags.JS_PROP_C_W_E);
+            JSApi.JS_FreeValue(_context, thisObject);
             return ns;
         }
 
+        /// <summary>
+        /// 创建 thisObject 的指定属性并返回 (thisObject 自身减引用).
+        /// </summary>
         private JSValue _AutoProperty(JSValue thisObject, string name)
         {
             var nameAtom = GetAtom(name);
@@ -94,7 +99,7 @@ namespace QuickJS.Binding
         // return [parent, el]
         public NamespaceDecl CreateNamespace(params string[] els) // [parent]
         {
-            var ns = _context.GetGlobalObject();
+            var ns = JSApi.JS_DupValue(_context, _thisObject);
             for (int i = 0, size = els.Length; i < size; i++)
             {
                 var el = els[i];
@@ -296,6 +301,8 @@ namespace QuickJS.Binding
                 }
             }
             _pendingTypes.Clear();
+            JSApi.JS_FreeValue(ctx, _thisObject);
+            _thisObject = JSApi.JS_UNDEFINED;
         }
     }
 }
