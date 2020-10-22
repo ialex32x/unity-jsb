@@ -54,8 +54,15 @@ namespace QuickJS.Unity
         // 生成类型绑定代码类型前缀
         public string typeBindingPrefix = "QuickJS_";
 
-        // 生成的绑定类所在命名空间
+        /// <summary>
+        /// 生成的绑定类所在命名空间 (in C#)
+        /// </summary>
         public string ns = "jsb";
+
+        /// <summary>
+        /// 生成绑定类所在的 JS Module 名 (不支持多层)
+        /// </summary>
+        public string jsModuleName = "jsc";
 
         public List<string> cleanupDir = new List<string>(new string[]
         {
