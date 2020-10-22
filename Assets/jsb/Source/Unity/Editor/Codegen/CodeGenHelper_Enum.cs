@@ -15,7 +15,7 @@ namespace QuickJS.Unity
         : base(cg, type)
         {
             this.cg.AppendJSDoc(type.type);
-            var prefix = string.IsNullOrEmpty(typeBindingInfo.jsNamespace) ? "declare " : "";
+            var prefix = this.typeBindingInfo.topLevel ? "declare " : "";
             this.cg.tsDeclare.AppendLine("{0}enum {1} {{", prefix, typeBindingInfo.jsName);
             this.cg.tsDeclare.AddTabLevel();
         }

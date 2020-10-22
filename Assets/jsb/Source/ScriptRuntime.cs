@@ -110,6 +110,27 @@ namespace QuickJS
             return moduleResolver;
         }
 
+        public void AddStaticModuleLoader(string module_id, Action<TypeRegister> loader)
+        {
+            // 兼容非模块结构
+            if (string.IsNullOrEmpty(module_id))
+            {
+                var register = new TypeRegister(this, _mainContext, _mainContext.GetGlobalObject());
+                loader(register);
+                register.Finish();
+                return;
+            }
+
+            var mr = FindModuleResolver<StaticModuleResolver>();
+            mr.AddStaticModuleLoader(module_id, (c, m, e) => 
+            {
+                var rt = c.GetRuntime();
+                var register = new TypeRegister(rt, c, JSApi.JS_DupValue(c, e));
+                loader(register);
+                register.Finish();
+            });
+        }
+
         public T FindModuleResolver<T>()
         {
             for (int i = 0, count = _moduleResolvers.Count; i < count; i++)
@@ -223,18 +244,18 @@ namespace QuickJS
             _objectCache = new ObjectCache(_logger);
             _timerManager = new TimerManager(_logger);
             _typeDB = new TypeDB(this, _mainContext);
+            _typeDB.AddType(typeof(Unity.JSBehaviour), JSApi.JS_UNDEFINED);
+#if UNITY_EDITOR
+            _typeDB.AddType(typeof(Unity.JSEditorWindow), JSApi.JS_UNDEFINED);
+#endif
             listener.OnCreate(this);
 
-            var register = new TypeRegister(this, _mainContext, _mainContext.GetGlobalObject());
-            register.RegisterType(typeof(Unity.JSBehaviour));
-#if UNITY_EDITOR
-            register.RegisterType(typeof(Unity.JSEditorWindow));
-#endif
             // await Task.Run(() => runner.OnBind(this, register));
             if (bindAll != null)
             {
-                bindAll.Invoke(null, new object[] { register });
+                bindAll.Invoke(null, new object[] { this });
             }
+            var register = new TypeRegister(this, _mainContext, _mainContext.GetGlobalObject());
             listener.OnBind(this, register);
             if (!_isWorker)
             {

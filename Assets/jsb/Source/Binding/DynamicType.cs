@@ -129,7 +129,7 @@ namespace QuickJS.Binding
 
             if (proto.IsNullish())
             {
-                _type_id = register.RegisterType(_type);
+                _type_id = db.AddType(_type, JSApi.JS_UNDEFINED);
 
                 #region BindConstructors(register, flags, type_id);
                 var constructors = _type.GetConstructors(flags);

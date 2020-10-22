@@ -61,8 +61,9 @@ namespace QuickJS.Unity
 
         /// <summary>
         /// 生成绑定类所在的 JS Module 名 (不支持多层)
+        /// !!!此功能未完成!!!
         /// </summary>
-        public string jsModuleName = "jsc";
+        public string jsModuleName = "";
 
         public List<string> cleanupDir = new List<string>(new string[]
         {

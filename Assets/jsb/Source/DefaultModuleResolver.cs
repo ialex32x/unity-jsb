@@ -288,9 +288,20 @@ namespace QuickJS
 
     public class StaticModuleResolver : IModuleResolver
     {
-        private Dictionary<string, Func<ScriptContext, JSValue>> _loader = new Dictionary<string, Func<ScriptContext, JSValue>>();
+        public delegate void ModuleLoader(ScriptContext context, JSValue module_obj, JSValue exports_obj);
+
+        private Dictionary<string, ModuleLoader> _loader = new Dictionary<string, ModuleLoader>();
 
         public StaticModuleResolver AddStaticModuleLoader(string module_id, Func<ScriptContext, JSValue> loader)
+        {
+            return AddStaticModuleLoader(module_id, (context, m, e) =>
+            {
+                var v = loader(context);
+                JSApi.JS_SetPropertyStr(context, m, "exports", v);
+            });
+        }
+
+        public StaticModuleResolver AddStaticModuleLoader(string module_id, ModuleLoader loader)
         {
             _loader.Add(module_id, loader);
             return this;
@@ -309,13 +320,16 @@ namespace QuickJS
 
         public JSValue LoadModule(ScriptContext context, string resolved_id)
         {
-            Func<ScriptContext, JSValue> loader;
+            ModuleLoader loader;
             if (_loader.TryGetValue(resolved_id, out loader))
             {
-                var exports_obj = loader(context);
+                var exports_obj = JSApi.JS_NewObject(context);
                 var module_obj = context._new_commonjs_module(resolved_id, exports_obj, true);
+
+                loader(context, module_obj, exports_obj);
+                
+                JSApi.JS_FreeValue(context, exports_obj);
                 JSApi.JS_FreeValue(context, module_obj);
-                return exports_obj;
             }
 
             return JSApi.JS_ThrowInternalError(context, "invalid static module loader");

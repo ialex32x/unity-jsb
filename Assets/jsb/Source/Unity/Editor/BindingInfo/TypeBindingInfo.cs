@@ -38,6 +38,11 @@ namespace QuickJS.Unity
             get { return type.IsDefined(typeof(JSOmitAttribute)); }
         }
 
+        public bool topLevel
+        {
+            get { return string.IsNullOrEmpty(jsNamespace) && string.IsNullOrEmpty(bindingManager.prefs.jsModuleName); }
+        }
+
         public readonly string csBindingName; // 绑定代码名
 
         //TODO: 模块包装, 生成模块加载代码, 添加模块依赖

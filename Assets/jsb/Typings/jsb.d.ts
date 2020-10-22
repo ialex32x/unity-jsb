@@ -1,24 +1,12 @@
 
+// export as namespace jsb;
+
 /**
  * 打印日志
  */
 declare function print(...args: any[]): void;
 
 declare function postMessage(data: any): void;
-
-// declare function require(id: string): any;
-
-// /**
-//  * 执行指定脚本 （类似eval）
-//  * @param source 脚本源码
-//  * @param filename 为此脚本指定命名 
-//  */
-// declare function dostring(source: string, filename?: string): void
-
-// /**
-//  * 是否开启 print 函数的 stacktrace 输出 (默认关闭)
-//  */
-// declare function enableStacktrace(enabled: boolean): void
 
 declare class jsb {
     /**
@@ -39,6 +27,29 @@ declare class jsb {
 }
 
 declare namespace jsb {
+    type byte = number;
+    type Nullable<T> = T;
+
+    /**
+     * 标记一个类型仅编辑器环境可用 (该修饰器并不存在实际定义, 仅用于标记, 不要在代码中使用)
+     */
+    function EditorRuntime(target: any);
+    
+    /**
+    * 封装 C# ref 传参约定
+    */
+    interface Ref<T = any> {
+        type?: { new(): T } | Function
+        value?: T
+    }
+    
+    /**
+    * 封装 C# out 传参约定
+    */
+    interface Out<T = any> {
+        type?: { new(): T } | Function
+        value?: T
+    }
 
     interface RuntimeInfo {
         /**
@@ -58,16 +69,6 @@ declare namespace jsb {
     }
 
     /**
-     * 仅用于声明
-     */
-    type byte = number;
-
-    /**
-     * 可空类型返回值 (仅用于声明)
-     */
-    type Nullable<T> = T;
-
-    /**
      * 执行指定脚本 (慎用, 与 webpack 等工具的结合性可能不太好)
      */
     function DoFile(filename: string): void
@@ -84,11 +85,6 @@ declare namespace jsb {
      * 将指定路径添加到 duktape 加载脚本的搜索目录列表
      */
     function AddSearchPath(path: string): void
-
-    /**
-     * 标记一个类型仅编辑器环境可用 (该修饰器并不存在实际定义, 仅用于标记, 不要在代码中使用)
-     */
-    function EditorRuntime(target: any);
 
     /**
      * 替换C#代码执行 (未完成此功能)
@@ -117,8 +113,7 @@ declare namespace jsb {
     /**
      * duck type
      */
-    interface Task<T> {
-    }
+    interface Task<T> {}
 
     // @ts-ignore
     // function Yield(instruction: UnityEngine.YieldInstruction): Promise<UnityEngine.YieldInstruction>;
@@ -149,38 +144,14 @@ declare namespace jsb {
     /**
      * 将 C# 数组转换为 JS ArrayBuffer
      */
-    function ToArrayBuffer(o: System.Array<jsb.byte>): ArrayBuffer;
+    function ToArrayBuffer(o: System.Array<byte>): ArrayBuffer;
 
     /**
      * 将 JS ArrayBuffer 转换为 C# Array
      */
-    function ToBytes(o: ArrayBuffer | Uint8Array): System.Array<jsb.byte>;
+    function ToBytes(o: ArrayBuffer | Uint8Array): System.Array<byte>;
 
     function Import(type: string, privateAccess?: boolean): FunctionConstructor;
-
-    /**
-     * 封装 C# event 调用约定
-     */
-    interface event<T> {
-        on(fn: T): void
-        off(fn: T): void
-    }
-
-    /**
-     * 封装 C# ref 传参约定
-     */
-    interface Ref<T = any> {
-        type?: { new(): T } | Function
-        value?: T
-    }
-
-    /**
-     * 封装 C# out 传参约定
-     */
-    interface Out<T = any> {
-        type?: { new(): T } | Function
-        value?: T
-    }
 
     // /**
     //  * 监听者

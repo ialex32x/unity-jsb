@@ -18,7 +18,7 @@ namespace QuickJS.Unity
         {
             this.cg.AppendJSDoc(this.typeBindingInfo.type);
             var transform = this.typeBindingInfo.transform;
-            var prefix = string.IsNullOrEmpty(this.typeBindingInfo.jsNamespace) ? "declare " : "";
+            var prefix = this.typeBindingInfo.topLevel ? "declare " : "";
             var super = this.cg.bindingManager.GetTSSuperName(this.typeBindingInfo);
             var interfaces = this.cg.bindingManager.GetTSInterfacesName(this.typeBindingInfo.type);
             var implements = "";
@@ -27,7 +27,7 @@ namespace QuickJS.Unity
 
             if (typeBindingInfo.isEditorRuntime)
             {
-                this.cg.tsDeclare.AppendLine("@jsb.EditorRuntime");
+                this.cg.tsDeclare.AppendLine($"@{this.cg.bindingManager.GetDefaultTypePrefix()}EditorRuntime");
             }
 
 

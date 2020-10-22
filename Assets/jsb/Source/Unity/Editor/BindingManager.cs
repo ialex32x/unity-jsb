@@ -321,7 +321,7 @@ namespace QuickJS.Unity
             ;
 
             AddTSTypeNameMap(typeof(sbyte), "number");
-            AddTSTypeNameMap(typeof(byte), "jsb.byte");
+            AddTSTypeNameMap(typeof(byte), $"{GetDefaultTypePrefix()}byte");
             AddTSTypeNameMap(typeof(int), "number");
             AddTSTypeNameMap(typeof(uint), "number");
             AddTSTypeNameMap(typeof(short), "number");
@@ -788,6 +788,11 @@ namespace QuickJS.Unity
             return GetTSTypeFullName(type, false, true);
         }
 
+        public string GetDefaultTypePrefix()
+        {
+            return "jsb.";
+        }
+
         public string GetTSTypeFullName(Type type, bool isOut, bool isReturn)
         {
             if (type == null || type == typeof(void))
@@ -799,9 +804,9 @@ namespace QuickJS.Unity
             {
                 if (isOut)
                 {
-                    return $"jsb.Out<{GetTSTypeFullName(type.GetElementType())}>";
+                    return $"{GetDefaultTypePrefix()}Out<{GetTSTypeFullName(type.GetElementType())}>";
                 }
-                return $"jsb.Ref<{GetTSTypeFullName(type.GetElementType())}>";
+                return $"{GetDefaultTypePrefix()}Ref<{GetTSTypeFullName(type.GetElementType())}>";
                 // return GetTSTypeFullName(type.GetElementType());
             }
 
@@ -875,7 +880,7 @@ namespace QuickJS.Unity
                 {
                     var gArgs = type.GetGenericArguments();
                     var gArgsTS = GetTSTypeFullName(gArgs[0]);
-                    return $"jsb.Nullable<{gArgsTS}>";
+                    return $"{GetDefaultTypePrefix()}Nullable<{gArgsTS}>";
                 }
             }
             else
@@ -1855,6 +1860,8 @@ namespace QuickJS.Unity
             var cancel = false;
             var current = 0;
             var total = _exportedTypes.Count;
+
+            cg.Begin();
             foreach (var typeKV in _exportedTypes)
             {
                 var typeBindingInfo = typeKV.Value;
@@ -1921,6 +1928,7 @@ namespace QuickJS.Unity
                     Debug.LogError(exception.StackTrace);
                 }
             }
+            cg.End();
 
             if (!cancel)
             {

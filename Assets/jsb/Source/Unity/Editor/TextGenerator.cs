@@ -55,10 +55,12 @@ namespace QuickJS.Unity
 
         public class CodeBlock : IDisposable
         {
+            private string _tail;
             private TextGenerator _generator;
 
-            public CodeBlock(TextGenerator generator)
+            public CodeBlock(TextGenerator generator, string tail)
             {
+                _tail = tail;
                 _generator = generator;
                 _generator.AppendLine("{");
                 _generator.AddTabLevel();
@@ -67,7 +69,7 @@ namespace QuickJS.Unity
             public void Dispose()
             {
                 _generator.DecTabLevel();
-                _generator.AppendLine("}");
+                _generator.AppendLine("}" + _tail);
             }
         }
 
@@ -106,7 +108,12 @@ namespace QuickJS.Unity
 
         public CodeBlock CodeBlockScope()
         {
-            return new CodeBlock(this);
+            return new CodeBlock(this, string.Empty);
+        }
+
+        public CodeBlock TailCallCodeBlockScope()
+        {
+            return new CodeBlock(this, ");");
         }
 
         public DoWhileBlock DoWhileBlockScope(bool valid = true)

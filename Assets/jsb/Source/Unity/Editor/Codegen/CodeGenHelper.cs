@@ -95,7 +95,14 @@ namespace QuickJS.Unity
             if (!string.IsNullOrEmpty(tsNamespace))
             {
                 tsNamespaceWrite = true;
-                this.cg.tsDeclare.AppendLine("declare namespace {0} {{", tsNamespace);
+                if (string.IsNullOrEmpty(cg.bindingManager.prefs.jsModuleName))
+                {
+                    this.cg.tsDeclare.AppendLine("declare namespace {0} {{", tsNamespace);
+                }
+                else
+                {
+                    this.cg.tsDeclare.AppendLine("namespace {0} {{", tsNamespace);
+                }
                 this.cg.tsDeclare.AddTabLevel();
             }
         }

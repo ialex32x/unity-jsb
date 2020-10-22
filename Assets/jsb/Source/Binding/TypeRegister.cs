@@ -25,6 +25,11 @@ namespace QuickJS.Binding
             return register._context;
         }
 
+        public ScriptRuntime GetRuntime()
+        {
+            return _context.GetRuntime();
+        }
+
         public ScriptContext GetContext()
         {
             return _context;
@@ -181,11 +186,6 @@ namespace QuickJS.Binding
         {
             _pendingTypes.Add(type);
             return _db.AddType(type, proto);
-        }
-
-        public int RegisterType(Type type)
-        {
-            return _db.AddType(type, JSApi.JS_UNDEFINED);
         }
 
         private void SubmitOperators()

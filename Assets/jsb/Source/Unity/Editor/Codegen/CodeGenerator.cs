@@ -19,6 +19,8 @@ namespace QuickJS.Unity
         public const string NamespaceOfInternalScriptTypes = "QuickJS.Internal";
         public const string NameOfBuffer = "ArrayBuffer";
 
+        private bool _emitSharedTS = true;
+        private string _prefixJSBDecl = "jsb.";
         public BindingManager bindingManager;
         public TextGenerator cs;
         public TextGenerator tsDeclare;
@@ -65,32 +67,36 @@ namespace QuickJS.Unity
 
                                 using (new PreservedCodeGen(this))
                                 {
-                                    using (var method = new PlainMethodCodeGen(this, "private static void BindAll(TypeRegister register)"))
+                                    using (var method = new PlainMethodCodeGen(this, "private static void BindAll(ScriptRuntime runtime)"))
                                     {
-                                        var editorTypes = new List<TypeBindingInfo>();
-                                        foreach (var type in orderedTypes)
+                                        this.cs.AppendLine($"runtime.AddStaticModuleLoader(\"{this.bindingManager.prefs.jsModuleName}\", register => ");
+                                        using (this.cs.TailCallCodeBlockScope())
                                         {
-                                            if (type.genBindingCode)
+                                            var editorTypes = new List<TypeBindingInfo>();
+                                            foreach (var type in orderedTypes)
                                             {
-                                                if (type.isEditorRuntime)
+                                                if (type.genBindingCode)
                                                 {
-                                                    editorTypes.Add(type);
-                                                }
-                                                else
-                                                {
-                                                    method.AddStatement("{0}.{1}.Bind(register);", this.bindingManager.prefs.ns, type.csBindingName);
+                                                    if (type.isEditorRuntime)
+                                                    {
+                                                        editorTypes.Add(type);
+                                                    }
+                                                    else
+                                                    {
+                                                        method.AddStatement("{0}.{1}.Bind(register);", this.bindingManager.prefs.ns, type.csBindingName);
+                                                    }
                                                 }
                                             }
-                                        }
 
-                                        using (new EditorOnlyCodeGen(this))
-                                        {
-                                            foreach (var editorType in editorTypes)
+                                            using (new EditorOnlyCodeGen(this))
                                             {
-                                                method.AddStatement("{0}.{1}.Bind(register);", this.bindingManager.prefs.ns, editorType.csBindingName);
+                                                foreach (var editorType in editorTypes)
+                                                {
+                                                    method.AddStatement("{0}.{1}.Bind(register);", this.bindingManager.prefs.ns, editorType.csBindingName);
+                                                }
                                             }
+                                            method.AddStatement("{0}.{1}.Bind(register);", this.bindingManager.prefs.ns, CodeGenerator.NameOfDelegates);
                                         }
-                                        method.AddStatement("{0}.{1}.Bind(register);", this.bindingManager.prefs.ns, CodeGenerator.NameOfDelegates);
                                     }
                                 }
                             }
@@ -105,6 +111,11 @@ namespace QuickJS.Unity
         {
             this.cs.enabled = (typeBindingFlags & TypeBindingFlags.BindingCode) != 0;
             this.tsDeclare.enabled = (typeBindingFlags & TypeBindingFlags.TypeDefinition) != 0;
+
+            if (!bindingManager.prefs.singleTSD)
+            {
+                WriteTSDModuleBegin(this.bindingManager.prefs.jsModuleName);
+            }
 
             using (new PlatformCodeGen(this, TypeBindingFlags.Default))
             {
@@ -147,41 +158,81 @@ namespace QuickJS.Unity
                                 }
                                 this.bindingManager.OnPostGenerateDelegate(bindingInfo);
                             }
-
-                            // 提供委托与 Dispatcher 的桥接 (废弃)
-                            // this.tsDeclare.AppendLine("declare namespace {0} {{", NamespaceOfInternalScriptTypes);
-                            // this.tsDeclare.AddTabLevel();
-                            // foreach (var spec in specs)
-                            // {
-                            //     var argtypelist = "";
-                            //     var argdecllist = "";
-                            //     var argvarlist = "";
-                            //     for (var i = 0; i < spec.Key; i++)
-                            //     {
-                            //         argtypelist += $", T{i + 1}";
-                            //         argdecllist += $"arg{i + 1}: T{i + 1}";
-                            //         argvarlist += $"arg{i + 1}";
-                            //         if (i != spec.Key - 1)
-                            //         {
-                            //             argdecllist += ", ";
-                            //             argvarlist += ", ";
-                            //         }
-                            //     }
-                            //     this.tsDeclare.AppendLine($"class Delegate{spec.Key}<R{argtypelist}> extends jsb.Dispatcher {{");
-                            //     this.tsDeclare.AddTabLevel();
-                            //     {
-                            //         this.tsDeclare.AppendLine($"on(caller: any, fn: ({argdecllist}) => R): Delegate{spec.Key}<R{argtypelist}>");
-                            //         this.tsDeclare.AppendLine($"off(caller: any, fn: ({argdecllist}) => R): void");
-                            //         this.tsDeclare.AppendLine($"dispatch({argdecllist}): R");
-                            //     }
-                            //     this.tsDeclare.DecTabLevel();
-                            //     this.tsDeclare.AppendLine("}");
-                            // }
-                            // this.tsDeclare.DecTabLevel();
-                            // this.tsDeclare.AppendLine("}");
                         }
                     }
                 }
+            }
+            
+            if (!bindingManager.prefs.singleTSD)
+            {
+                WriteTSDModuleEnd(this.bindingManager.prefs.jsModuleName);
+            }
+        }
+
+        public void Begin()
+        {
+            if (bindingManager.prefs.singleTSD)
+            {
+                WriteTSDModuleBegin(this.bindingManager.prefs.jsModuleName);
+            }
+        }
+
+        public void End()
+        {
+            if (bindingManager.prefs.singleTSD)
+            {
+                WriteTSDModuleEnd(this.bindingManager.prefs.jsModuleName);
+            }
+        }
+
+        public void WriteTSDModuleBegin(string name)
+        {
+            if (!string.IsNullOrEmpty(name))
+            {
+                this.tsDeclare.AppendLine($"declare module \"{name}\" {{");
+                this.tsDeclare.AddTabLevel();
+
+                if (_emitSharedTS)
+                {
+                    _emitSharedTS = false;
+                    _prefixJSBDecl = "";
+                    this.tsDeclare.AppendLine("type byte = number;");
+                    this.tsDeclare.AppendLine("type Nullable<T> = T;");
+                    
+                    this.tsDeclare.AppendLine("/**");
+                    this.tsDeclare.AppendLine(" * 标记一个类型仅编辑器环境可用 (该修饰器并不存在实际定义, 仅用于标记, 不要在代码中使用)");
+                    this.tsDeclare.AppendLine(" */");
+                    this.tsDeclare.AppendLine("function EditorRuntime(target: any);");
+
+                    this.tsDeclare.AppendLine("/**");
+                    this.tsDeclare.AppendLine("* 封装 C# ref 传参约定");
+                    this.tsDeclare.AppendLine("*/");
+                    this.tsDeclare.AppendLine("interface Ref<T = any> {");
+                    this.tsDeclare.AddTabLevel();
+                    this.tsDeclare.AppendLine("type?: { new(): T } | Function");
+                    this.tsDeclare.AppendLine("value?: T");
+                    this.tsDeclare.DecTabLevel();
+                    this.tsDeclare.AppendLine("}");
+
+                    this.tsDeclare.AppendLine("/**");
+                    this.tsDeclare.AppendLine("* 封装 C# out 传参约定");
+                    this.tsDeclare.AppendLine("*/");
+                    this.tsDeclare.AppendLine("interface Out<T = any> {");
+                    this.tsDeclare.AddTabLevel();
+                    this.tsDeclare.AppendLine("type?: { new(): T } | Function");
+                    this.tsDeclare.AppendLine("value?: T");
+                    this.tsDeclare.DecTabLevel();
+                    this.tsDeclare.AppendLine("}");
+                }
+            }
+        }
+
+        public void WriteTSDModuleEnd(string name)
+        {
+            if (!string.IsNullOrEmpty(name))
+            {
+                this.tsDeclare.DecTabLevel();
+                this.tsDeclare.AppendLine("}");
             }
         }
 
@@ -270,13 +321,14 @@ namespace QuickJS.Unity
 
         public void WriteTSD(string tsOutDir, string tx)
         {
+            var mod = string.IsNullOrEmpty(bindingManager.prefs.jsModuleName) ? "jsb.autogen" : bindingManager.prefs.jsModuleName;
             try
             {
                 if (bindingManager.prefs.singleTSD)
                 {
                     if (this.tsDeclare.enabled && this.tsDeclare.size > 0)
                     {
-                        var tsName = "jsb.autogen.d.ts" + tx;
+                        var tsName = mod + ".d.ts" + tx;
                         var tsPath = Path.Combine(tsOutDir, tsName);
                         this.bindingManager.AddOutputFile(tsOutDir, tsPath);
 
@@ -290,7 +342,7 @@ namespace QuickJS.Unity
             }
             catch (Exception exception)
             {
-                this.bindingManager.Error("write typescript declaration file failed [{0}]: {1}", "jsb.autogen", exception.Message);
+                this.bindingManager.Error("write typescript declaration file failed [{0}]: {1}", mod, exception.Message);
             }
         }
 
