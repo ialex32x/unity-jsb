@@ -49,6 +49,11 @@ namespace QuickJS.Unity
         private bool _onDestroyValid;
         private JSValue _onDestroyFunc;
 
+#if UNITY_EDITOR
+        private bool _onDrawGizmosValid;
+        private JSValue _onDrawGizmosFunc;
+#endif
+
         public int IsInstanceOf(JSValue ctor)
         {
             if (_released)
@@ -144,6 +149,11 @@ namespace QuickJS.Unity
             _onApplicationFocusFunc = JSApi.JS_GetProperty(ctx, this_obj, context.GetAtom("OnApplicationFocus"));
             _onApplicationFocusValid = JSApi.JS_IsFunction(ctx, _onApplicationFocusFunc) == 1;
 
+#if UNITY_EDITOR
+            _onDrawGizmosFunc = JSApi.JS_GetProperty(ctx, this_obj, context.GetAtom("OnDrawGizmos"));
+            _onDrawGizmosValid = JSApi.JS_IsFunction(ctx, _onDrawGizmosFunc) == 1;
+#endif
+
             _onApplicationPauseFunc = JSApi.JS_GetProperty(ctx, this_obj, context.GetAtom("OnApplicationPause"));
             _onApplicationPauseValid = JSApi.JS_IsFunction(ctx, _onApplicationPauseFunc) == 1;
 
@@ -202,6 +212,10 @@ namespace QuickJS.Unity
             _onDisableValid = false;
             JSApi.JS_FreeValue(_ctx, _onApplicationFocusFunc);
             _onApplicationFocusValid = false;
+#if UNITY_EDITOR
+            JSApi.JS_FreeValue(_ctx, _onDrawGizmosFunc);
+            _onDrawGizmosValid = false;
+#endif
             JSApi.JS_FreeValue(_ctx, _onApplicationPauseFunc);
             _onApplicationPauseValid = false;
             JSApi.JS_FreeValue(_ctx, _onApplicationQuitFunc);
@@ -300,6 +314,21 @@ namespace QuickJS.Unity
             }
 #endif
         }
+
+#if UNITY_EDITOR
+        void OnDrawGizmos()
+        {
+            if (_onDrawGizmosValid)
+            {
+                var rval = JSApi.JS_Call(_ctx, _onDrawGizmosFunc, _this_obj);
+                if (rval.IsException())
+                {
+                    _ctx.print_exception();
+                }
+                JSApi.JS_FreeValue(_ctx, rval);
+            }
+        }
+#endif
 
         void OnApplicationFocus()
         {
