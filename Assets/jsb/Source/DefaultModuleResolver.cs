@@ -62,9 +62,9 @@ namespace QuickJS
             public string main;
         }
 
-        private JsonConverter _jsonConv; // for package.json parsing
+        private IJsonConverter _jsonConv; // for package.json parsing
 
-        public SourceModuleResolver(JsonConverter jsonConv)
+        public SourceModuleResolver(IJsonConverter jsonConv)
         {
             _jsonConv = jsonConv;
         }
@@ -98,7 +98,7 @@ namespace QuickJS
                 return true;
             }
 
-            if (pathResolver.ResolvePath(fileSystem, PathUtils.Combine(fileName, "package.json"), out searchPath, out resolvedFileName))
+            if (_jsonConv != null && pathResolver.ResolvePath(fileSystem, PathUtils.Combine(fileName, "package.json"), out searchPath, out resolvedFileName))
             {
                 var packageData = fileSystem.ReadAllText(resolvedFileName);
                 if (packageData != null)
