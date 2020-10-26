@@ -78,6 +78,16 @@ namespace QuickJS.Binding
                     return JSApi.JS_IsFunction(ctx, jsValue) == 1;
                 }
 
+                var context = ScriptEngine.GetContext(ctx);
+                var type_id = JSApi.JSB_GetBridgeType(ctx, jsValue, context.GetAtom(Values.KeyForCSharpTypeID));
+                if (type_id >= 0)
+                {
+                    var types = context.GetTypeDB();
+                    var o = types.GetType(type_id);
+                    // Debug.Log($"get type from exported registry {o}:{type_id} expected:{type}");
+                    return o == type;
+                }
+
                 var header = JSApi.jsb_get_payload_header(jsValue);
                 switch (header.type_id)
                 {
@@ -92,20 +102,10 @@ namespace QuickJS.Binding
                         }
                     case BridgeObjectType.ValueType:
                         {
-                            var context = ScriptEngine.GetContext(ctx);
-                            var type_id = JSApi.JSB_GetBridgeType(ctx, jsValue, context.GetAtom(Values.KeyForCSharpTypeID));
-                            if (type_id >= 0)
-                            {
-                                var types = context.GetTypeDB();
-                                var o = types.GetType(type_id);
-                                // Debug.Log($"get type from exported registry {o}:{type_id} expected:{type}");
-                                return o == type;
-                            }
                             break;
                         }
                     default: // plain js object?
                         {
-                            var context = ScriptEngine.GetContext(ctx);
                             if (type.IsValueType)
                             {
                                 if (type.IsPrimitive || type.IsEnum)
