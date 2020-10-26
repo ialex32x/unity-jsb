@@ -45,7 +45,7 @@ namespace QuickJS.Extra
                 var srcProp = JSApi.JS_GetProperty(ctx, argv[0], context.GetAtom("src"));
                 var srcValue = JSApi.GetString(ctx, srcProp);
                 JSApi.JS_FreeValue(ctx, srcProp);
-                var co = context.GetCoroutineManager();
+                var co = context.GetAsyncManager();
                 if (co != null)
                 {
                     co.EvalSourceAsync(context, srcValue);

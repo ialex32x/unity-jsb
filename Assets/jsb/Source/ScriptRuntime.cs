@@ -47,7 +47,7 @@ namespace QuickJS
         private TimerManager _timerManager;
         private IO.IByteBufferAllocator _byteBufferAllocator;
         private Utils.AutoReleasePool _autorelease;
-        private UnityEngine.GameObject _container;
+        private IAsyncManager _asyncManager;
 
         private bool _isValid; // destroy 调用后立即 = false
         private bool _isRunning;
@@ -72,20 +72,9 @@ namespace QuickJS
             _mainThreadId = Thread.CurrentThread.ManagedThreadId;
         }
 
-        public ICoroutineManager CreateCoroutineManager()
+        public IAsyncManager GetAsyncManager()
         {
-            if (_container == null && _isValid)
-            {
-                _container = new UnityEngine.GameObject("JSRuntimeContainer");
-                _container.hideFlags = UnityEngine.HideFlags.HideInHierarchy;
-                UnityEngine.Object.DontDestroyOnLoad(_container);
-            }
-            if (_container != null)
-            {
-                return _container.AddComponent<Unity.DefaultCoroutineManager>();
-            }
-
-            return null;
+            return _asyncManager;
         }
 
         public IFileSystem GetFileSystem()
@@ -183,7 +172,7 @@ namespace QuickJS
             return JSApi.JS_ThrowInternalError(context, "module can not be resolved");
         }
 
-        public void Initialize(IFileSystem fileSystem, IPathResolver resolver, IScriptRuntimeListener listener, IScriptLogger logger, IO.IByteBufferAllocator byteBufferAllocator)
+        public void Initialize(IFileSystem fileSystem, IPathResolver resolver, IScriptRuntimeListener listener, IAsyncManager asyncManager, IScriptLogger logger, IO.IByteBufferAllocator byteBufferAllocator)
         {
             if (logger == null)
             {
@@ -225,6 +214,8 @@ namespace QuickJS
                 }
             }
 
+            asyncManager.Initialize(_mainThreadId);
+
             _isValid = true;
             _isRunning = true;
             // _rwlock = new ReaderWriterLockSlim();
@@ -237,6 +228,7 @@ namespace QuickJS
 
             _listener = listener;
             _pathResolver = resolver;
+            _asyncManager = asyncManager;
             _byteBufferAllocator = byteBufferAllocator;
             _autorelease = new Utils.AutoReleasePool();
             _fileSystem = fileSystem;
@@ -277,7 +269,7 @@ namespace QuickJS
             var runtime = ScriptEngine.CreateRuntime();
 
             runtime._isWorker = true;
-            runtime.Initialize(_fileSystem, _pathResolver, _listener, _logger, new IO.ByteBufferPooledAllocator());
+            runtime.Initialize(_fileSystem, _pathResolver, _listener, _asyncManager, _logger, new IO.ByteBufferPooledAllocator());
             return runtime;
         }
 
@@ -777,13 +769,10 @@ namespace QuickJS
             // _rwlock.ExitWriteLock();
 
 
-            if (_container != null)
+            if (_asyncManager != null)
             {
-                if (_mainThreadId == Thread.CurrentThread.ManagedThreadId)
-                {
-                    UnityEngine.Object.DestroyImmediate(_container);
-                }
-                _container = null;
+                _asyncManager.Destroy();
+                _asyncManager = null;
             }
 
             JSApi.JS_FreeRuntime(_rt);

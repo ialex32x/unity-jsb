@@ -381,7 +381,7 @@ namespace QuickJS
             if (Values.js_get_cached_object(ctx, argv[0], out awaitObject))
             {
                 var context = ScriptEngine.GetContext(ctx);
-                var co = context.GetCoroutineManager();
+                var co = context.GetAsyncManager();
                 if (co != null)
                 {
                     return co.Yield(context, awaitObject);

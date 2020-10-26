@@ -36,6 +36,7 @@ namespace jsb
 
             _mConsole = new MiniConsole(scrollRect, text, 100);
             _rt = ScriptEngine.CreateRuntime();
+            var asyncManager = new DefaultAsyncManager();
             var fileResolver = new PathResolver();
             fileResolver.AddSearchPath("node_modules");
 
@@ -64,7 +65,7 @@ namespace jsb
             }
             _mConsole.Write(LogLevel.Info, "Init");
             _rt.AddModuleResolvers();
-            _rt.Initialize(fileSystem, fileResolver, this, _mConsole, new ByteBufferPooledAllocator());
+            _rt.Initialize(fileSystem, fileResolver, this, asyncManager, _mConsole, new ByteBufferPooledAllocator());
         }
 
         void Update()

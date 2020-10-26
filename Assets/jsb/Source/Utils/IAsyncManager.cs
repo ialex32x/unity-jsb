@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.IO;
 using System.Collections;
 using System.Collections.Generic;
@@ -8,8 +8,10 @@ using QuickJS.Native;
 
 namespace QuickJS.Utils
 {
-    public interface ICoroutineManager
+    public interface IAsyncManager
     {
+        void Initialize(int mainThreadId);
+
         // [experimental] 最终可能从 CoroutineManager 中剥离
         void EvalSourceAsync(ScriptContext context, string src);
 

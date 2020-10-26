@@ -24,7 +24,6 @@ namespace QuickJS
 
         private JSValue _moduleCache; // commonjs module cache
         private JSValue _require; // require function object 
-        private ICoroutineManager _coroutines;
         private bool _isValid;
         private Regex _stRegex;
 
@@ -107,16 +106,9 @@ namespace QuickJS
             return _isValid;
         }
 
-        public ICoroutineManager GetCoroutineManager()
+        public IAsyncManager GetAsyncManager()
         {
-            if (_isValid)
-            {
-                if (_coroutines == null)
-                {
-                    _coroutines = _runtime.CreateCoroutineManager();
-                }
-            }
-            return _coroutines;
+            return _isValid ? _runtime.GetAsyncManager() : null;
         }
 
         public TimerManager GetTimerManager()
@@ -190,13 +182,6 @@ namespace QuickJS
             JSApi.JS_FreeContext(_ctx);
             var id = _contextId;
             _contextId = -1;
-
-            if (_coroutines != null)
-            {
-                _coroutines.Destroy();
-                _coroutines = null;
-            }
-
             _ctx = JSContext.Null;
             try
             {

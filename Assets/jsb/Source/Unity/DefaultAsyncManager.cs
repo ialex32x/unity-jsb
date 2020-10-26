@@ -2,6 +2,7 @@
 using System.IO;
 using System.Collections;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Net;
 
@@ -11,12 +12,25 @@ namespace QuickJS.Unity
     using Native;
     using Utils;
 
-    public class DefaultCoroutineManager : MonoBehaviour, ICoroutineManager
+    public class DefaultAsyncManager : IAsyncManager
     {
+        private int _mainThreadId;
+        private UnityCoroutineContext _mb = null;
+
         public class JSSourceArgs
         {
             public string source;
             public string src;
+        }
+
+        public DefaultAsyncManager()
+        {
+
+        }
+
+        public void Initialize(int mainThreadId)
+        {
+            _mainThreadId = mainThreadId;
         }
 
         public async void EvalSourceAsync(ScriptContext context, string src)
@@ -53,37 +67,86 @@ namespace QuickJS.Unity
             runtime.GetMainContext().EvalSource(args.source, args.src);
         }
 
+        private void GetUnityContext()
+        {
+            if (_mb == null && _mainThreadId == Thread.CurrentThread.ManagedThreadId)
+            {
+                var container = new UnityEngine.GameObject("JSRuntimeContainer");
+                container.hideFlags = UnityEngine.HideFlags.HideInHierarchy;
+                UnityEngine.Object.DontDestroyOnLoad(container);
+                _mb = container.AddComponent<UnityCoroutineContext>();
+            }
+        }
+
         public void Destroy()
         {
-            UnityEngine.Object.DestroyImmediate(this);
+            if (_mb != null)
+            {
+                UnityEngine.Object.DestroyImmediate(_mb.gameObject);
+                _mb = null;
+            }
         }
 
         // return promise
         public JSValue Yield(ScriptContext context, object awaitObject)
         {
-            var resolving_funcs = new[] { JSApi.JS_UNDEFINED, JSApi.JS_UNDEFINED };
-            var promise = JSApi.JS_NewPromiseCapability(context, resolving_funcs);
-
             if (awaitObject is System.Threading.Tasks.Task)
             {
+                var resolving_funcs = new[] { JSApi.JS_UNDEFINED, JSApi.JS_UNDEFINED };
+                var promise = JSApi.JS_NewPromiseCapability(context, resolving_funcs);
+
                 _Pending(awaitObject as System.Threading.Tasks.Task, context, resolving_funcs);
+                return promise;
             }
             else if (awaitObject is IEnumerator)
             {
-                StartCoroutine(_Pending(awaitObject as IEnumerator, context, resolving_funcs));
+                //TODO: 合并 IEnumerator 和 YieldInstruction 写法
+                GetUnityContext();
+
+                if (_mb == null)
+                {
+                    return JSApi.JS_ThrowInternalError(context, "no MonoBehaviour for Coroutines");
+                }
+
+                if (_mainThreadId != Thread.CurrentThread.ManagedThreadId)
+                {
+                    return JSApi.JS_ThrowInternalError(context, "not supported on background thread");
+                }
+
+                var resolving_funcs = new[] { JSApi.JS_UNDEFINED, JSApi.JS_UNDEFINED };
+                var promise = JSApi.JS_NewPromiseCapability(context, resolving_funcs);
+
+                _mb.StartCoroutine(_Pending(awaitObject as IEnumerator, context, resolving_funcs));
+                return promise;
             }
             else
             {
-                StartCoroutine(_Pending(awaitObject as YieldInstruction, context, resolving_funcs));
+                GetUnityContext();
+                
+                if (_mb == null)
+                {
+                    return JSApi.JS_ThrowInternalError(context, "no MonoBehaviour for Coroutines");
+                }
+
+                if (_mainThreadId != Thread.CurrentThread.ManagedThreadId)
+                {
+                    return JSApi.JS_ThrowInternalError(context, "not supported on background thread");
+                }
+
+                var resolving_funcs = new[] { JSApi.JS_UNDEFINED, JSApi.JS_UNDEFINED };
+                var promise = JSApi.JS_NewPromiseCapability(context, resolving_funcs);
+
+                _mb.StartCoroutine(_Pending(awaitObject as YieldInstruction, context, resolving_funcs));
+                return promise;
             }
 
-            return promise;
         }
 
         private async void _Pending(Task task, ScriptContext context, JSValue[] resolving_funcs)
         {
             var safeRelease = new SafeRelease(context).Append(resolving_funcs);
 
+            //TODO: 修改任务等待
             await task;
 
             if (!context.IsValid())

@@ -18,9 +18,10 @@ namespace QuickJS.Unity
             var logger = new DefaultLogger();
             var fileResolver = new PathResolver();
             var fileSystem = new DefaultFileSystem(logger);
+            var asyncManager = new DefaultAsyncManager();
 
             runtime.AddModuleResolvers();
-            runtime.Initialize(fileSystem, fileResolver, listener, logger, new ByteBufferPooledAllocator());
+            runtime.Initialize(fileSystem, fileResolver, listener, asyncManager, logger, new ByteBufferPooledAllocator());
         }
     }
 }
