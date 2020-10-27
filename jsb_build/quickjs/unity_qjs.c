@@ -353,7 +353,7 @@ JS_BOOL jsb_get_floats(JSValue val, int n, float *v0)
         float *ptr = (float *)&(sv->data[0]);
         for (int i = 0; i < n; ++i)
         {
-            *(v0 + i) = ptr[0];
+            *(v0 + i) = ptr[i];
         }
         return TRUE;
     }
@@ -467,7 +467,7 @@ JS_BOOL jsb_get_ints(JSValue val, int n, int *v0)
         int *ptr = (int *)&(sv->data[0]);
         for (int i = 0; i < n; ++i)
         {
-            *(v0 + i) = ptr[0];
+            *(v0 + i) = ptr[i];
         }
         return TRUE;
     }
@@ -605,7 +605,7 @@ JS_BOOL jsb_get_bytes(JSValue val, int n, byte *v0)
         byte *ptr = (byte *)&(sv->data[0]);
         for (int i = 0; i < n; ++i)
         {
-            *(v0 + i) = ptr[0];
+            *(v0 + i) = ptr[i];
         }
         return TRUE;
     }
