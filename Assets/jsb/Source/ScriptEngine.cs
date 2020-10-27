@@ -144,9 +144,9 @@ namespace QuickJS
 
         public static ScriptRuntime CreateRuntime(bool isEditorRuntime)
         {
-            if (JSApi.IsValid())
+            if (!JSApi.IsValid())
             {
-                throw new InvalidOperationException("quickjs library is not matched");
+                throw new InvalidOperationException("quickjs library is not matched, you need to rebuild it for current platform");
             }
 
             _rwlock.EnterWriteLock();
