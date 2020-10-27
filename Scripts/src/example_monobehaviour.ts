@@ -21,6 +21,14 @@ export class MyClass extends UnityEngine.MonoBehaviour {
         console.log("MyClass.OnDestroy", this._tick++);
     }
 
+    Update() {
+        if (UnityEngine.Input.GetMouseButtonUp(0)){
+            let ray = UnityEngine.Camera.main.ScreenPointToRay(UnityEngine.Input.mousePosition);
+            let point = ray.origin;
+            console.log(point.x, point.y, point.z);
+        }
+    }
+
     async test() {
         console.log("MyClass.test (will be destroied after 5 secs.", this.transform);
         await jsb.Yield(new UnityEngine.WaitForSeconds(5));
