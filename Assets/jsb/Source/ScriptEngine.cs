@@ -144,6 +144,11 @@ namespace QuickJS
 
         public static ScriptRuntime CreateRuntime(bool isEditorRuntime)
         {
+            if (JSApi.IsValid())
+            {
+                throw new InvalidOperationException("quickjs library is not matched");
+            }
+
             _rwlock.EnterWriteLock();
             ScriptRuntimeRef freeEntry;
             int slotIndex;

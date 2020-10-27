@@ -87,7 +87,7 @@ namespace QuickJS.Native
 
     public partial class JSApi
     {
-        const int CS_JSB_VERSION = 0x1;
+        const int CS_JSB_VERSION = 0x2;
         public static readonly int SO_JSB_VERSION;
 
 #if (UNITY_IPHONE || UNITY_WEBGL) && !UNITY_EDITOR

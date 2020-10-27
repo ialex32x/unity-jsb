@@ -664,5 +664,5 @@ int JSB_Init()
         JS_NewClassID(&js_bridge_class_id);
         JS_NewClassID(&js_class_id_begin);
     }
-    return 0x1; // version tag for unity_qjs.c
+    return 0x2; // version tag for unity_qjs.c
 }
