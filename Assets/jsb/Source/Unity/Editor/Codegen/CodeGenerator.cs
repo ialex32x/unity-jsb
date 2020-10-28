@@ -69,7 +69,8 @@ namespace QuickJS.Unity
                                 {
                                     using (var method = new PlainMethodCodeGen(this, "private static void BindAll(ScriptRuntime runtime)"))
                                     {
-                                        this.cs.AppendLine($"runtime.AddStaticModuleLoader(\"{this.bindingManager.prefs.jsModuleName}\", register => ");
+                                        //TODO: 根据命名空间进行分配
+                                        this.cs.AppendLine($"runtime.AddStaticModuleLoader(\"xxx\", register => ");
                                         using (this.cs.TailCallCodeBlockScope())
                                         {
                                             var editorTypes = new List<TypeBindingInfo>();
@@ -111,11 +112,6 @@ namespace QuickJS.Unity
         {
             this.cs.enabled = (typeBindingFlags & TypeBindingFlags.BindingCode) != 0;
             this.tsDeclare.enabled = (typeBindingFlags & TypeBindingFlags.TypeDefinition) != 0;
-
-            if (!bindingManager.prefs.singleTSD)
-            {
-                WriteTSDModuleBegin(this.bindingManager.prefs.jsModuleName);
-            }
 
             using (new PlatformCodeGen(this, TypeBindingFlags.Default))
             {
@@ -162,27 +158,16 @@ namespace QuickJS.Unity
                     }
                 }
             }
-            
-            if (!bindingManager.prefs.singleTSD)
-            {
-                WriteTSDModuleEnd(this.bindingManager.prefs.jsModuleName);
-            }
         }
 
         public void Begin()
         {
-            if (bindingManager.prefs.singleTSD)
-            {
-                WriteTSDModuleBegin(this.bindingManager.prefs.jsModuleName);
-            }
+            
         }
 
         public void End()
         {
-            if (bindingManager.prefs.singleTSD)
-            {
-                WriteTSDModuleEnd(this.bindingManager.prefs.jsModuleName);
-            }
+            
         }
 
         public void WriteTSDModuleBegin(string name)
@@ -273,7 +258,7 @@ namespace QuickJS.Unity
             }
         }
 
-        private void WriteAllText(string path, string contents)
+        private void WriteAllText(string path, TextGenerator gen)
         {
             // if (File.Exists(path))
             // {
@@ -283,6 +268,7 @@ namespace QuickJS.Unity
             //         return;
             //     }
             // }
+            var contents = gen.Submit();
             File.WriteAllText(path, contents);
             this.bindingManager.Info($"output file: {path} ({contents.Length})");
         }
@@ -310,7 +296,7 @@ namespace QuickJS.Unity
                     {
                         Directory.CreateDirectory(csOutDir);
                     }
-                    WriteAllText(csPath, this.cs.ToString());
+                    WriteAllText(csPath, this.cs);
                 }
             }
             catch (Exception exception)
@@ -321,7 +307,7 @@ namespace QuickJS.Unity
 
         public void WriteTSD(string tsOutDir, string tx)
         {
-            var mod = string.IsNullOrEmpty(bindingManager.prefs.jsModuleName) ? "jsb.autogen" : bindingManager.prefs.jsModuleName;
+            var mod = "jsb.autogen";
             try
             {
                 if (bindingManager.prefs.singleTSD)
@@ -336,7 +322,7 @@ namespace QuickJS.Unity
                         {
                             Directory.CreateDirectory(tsOutDir);
                         }
-                        WriteAllText(tsPath, this.tsDeclare.ToString());
+                        WriteAllText(tsPath, this.tsDeclare);
                     }
                 }
             }
@@ -362,7 +348,7 @@ namespace QuickJS.Unity
                         {
                             Directory.CreateDirectory(tsOutDir);
                         }
-                        WriteAllText(tsPath, this.tsDeclare.ToString());
+                        WriteAllText(tsPath, this.tsDeclare);
                     }
                 }
             }

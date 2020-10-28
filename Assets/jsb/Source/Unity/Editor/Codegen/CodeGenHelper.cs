@@ -67,44 +67,26 @@ namespace QuickJS.Unity
         protected CodeGenerator cg;
         protected string csNamespace;
         protected string tsNamespace;
-        protected bool tsNamespaceWrite;
 
         public NamespaceCodeGen(CodeGenerator cg, string csNamespace)
+        : this(cg, csNamespace, "")
         {
-            this.cg = cg;
-            this.csNamespace = csNamespace;
-            if (!string.IsNullOrEmpty(csNamespace))
-            {
-                this.cg.cs.AppendLine("namespace {0} {{", csNamespace);
-                this.cg.cs.AddTabLevel();
-            }
-            this.AddUsingStatements();
         }
 
         public NamespaceCodeGen(CodeGenerator cg, string csNamespace, string tsNamespace)
         {
             this.cg = cg;
             this.csNamespace = csNamespace;
-            this.tsNamespace = tsNamespace;
+            this.tsNamespace = string.IsNullOrEmpty(tsNamespace) ? "global" : tsNamespace;
             if (!string.IsNullOrEmpty(csNamespace))
             {
                 this.cg.cs.AppendLine("namespace {0} {{", csNamespace);
                 this.cg.cs.AddTabLevel();
             }
+
             this.AddUsingStatements();
-            if (!string.IsNullOrEmpty(tsNamespace))
-            {
-                tsNamespaceWrite = true;
-                if (string.IsNullOrEmpty(cg.bindingManager.prefs.jsModuleName))
-                {
-                    this.cg.tsDeclare.AppendLine("declare namespace {0} {{", tsNamespace);
-                }
-                else
-                {
-                    this.cg.tsDeclare.AppendLine("namespace {0} {{", tsNamespace);
-                }
-                this.cg.tsDeclare.AddTabLevel();
-            }
+            this.cg.tsDeclare.AppendLine($"declare module \"{this.tsNamespace}\" {{");
+            this.cg.tsDeclare.AddTabLevel();
         }
 
         private void AddUsingStatements()
@@ -121,11 +103,9 @@ namespace QuickJS.Unity
                 this.cg.cs.DecTabLevel();
                 this.cg.cs.AppendLine("}");
             }
-            if (tsNamespaceWrite)
-            {
-                this.cg.tsDeclare.DecTabLevel();
-                this.cg.tsDeclare.AppendLine("}");
-            }
+
+            this.cg.tsDeclare.DecTabLevel();
+            this.cg.tsDeclare.AppendLine("}");
         }
     }
 
