@@ -48,8 +48,16 @@ namespace QuickJS.Unity
         //TODO: 模块包装, 生成模块加载代码, 添加模块依赖
         public readonly string jsModule; // js 模块名
         public readonly string jsNamespace; // js 命名空间
-        public readonly string jsTypeName; // 不带泛型部分的js注册名
-        public readonly string jsName; // js注册名 (带平面化的泛型部分)
+
+        ///<summary>
+        /// 不带泛型部分的js注册名
+        ///</summary>
+        public readonly string jsTypeName; 
+
+        /// <summary>
+        /// js注册名 (带平面化的泛型部分)
+        /// </summary>
+        public readonly string jsName; 
 
         public List<OperatorBindingInfo> operators = new List<OperatorBindingInfo>();
 
@@ -125,8 +133,31 @@ namespace QuickJS.Unity
             if (indexOfTypeName >= 0)
             {
                 // 指定的命名中已经携带了"."
-                this.jsNamespace = naming.Substring(0, indexOfTypeName);
-                this.jsName = naming.Substring(indexOfTypeName + 1);
+                var indexOfInnerTypeName = naming.IndexOf('+');
+                if (indexOfInnerTypeName >= 0)
+                {
+                    this.jsModule = naming.Substring(0, indexOfInnerTypeName);
+                    var rightName = naming.Substring(indexOfInnerTypeName + 1);
+                    var lastIndexOfInnerTypeName = rightName.LastIndexOf('+');
+                    if (lastIndexOfInnerTypeName >= 0)
+                    {
+                        this.jsNamespace = rightName.Substring(0, lastIndexOfInnerTypeName);
+                        this.jsName = rightName.Substring(lastIndexOfInnerTypeName + 1);
+                    }
+                    else
+                    {
+                        this.jsNamespace = "";
+                        this.jsName = rightName;
+                    }
+                }
+                else
+                {
+                    //TODO: 原 namespace 变成 module
+                    this.jsModule = "";
+                    this.jsNamespace = naming.Substring(0, indexOfTypeName);
+                    this.jsName = naming.Substring(indexOfTypeName + 1);
+                }
+
                 this.jsTypeName = this.jsName;
             }
             else
