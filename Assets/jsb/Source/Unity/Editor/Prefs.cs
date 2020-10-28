@@ -29,7 +29,7 @@ namespace QuickJS.Unity
         /// <summary>
         /// 代码生成调试开关, 生成的代码将完全在注释中, 方便反复生成对比查问题
         /// </summary>
-        public bool debugCodegen = false;
+        public bool debugCodegen = true;
 
         /// <summary>
         /// 是否将 C# ToString() 自动转换为 toString()
@@ -58,12 +58,6 @@ namespace QuickJS.Unity
         /// 生成的绑定类所在命名空间 (in C#)
         /// </summary>
         public string ns = "jsb";
-
-        /// <summary>
-        /// 生成绑定类所在的 JS Module 名 (不支持多层)
-        /// !!!此功能未完成!!!
-        /// </summary>
-        public string jsModuleName = "";
 
         public List<string> cleanupDir = new List<string>(new string[]
         {

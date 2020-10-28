@@ -89,38 +89,37 @@ namespace QuickJS
     {
     }
 
-    // 强制转换为 JS Array
-    [AttributeUsage(AttributeTargets.Parameter
-                  | AttributeTargets.ReturnValue,
-                    AllowMultiple = false)]
-    public class JSArrayAttribute : Attribute
-    {
-    }
+    // // 强制转换为 JS Array
+    // [AttributeUsage(AttributeTargets.Parameter
+    //               | AttributeTargets.ReturnValue,
+    //                 AllowMultiple = false)]
+    // public class JSArrayAttribute : Attribute
+    // {
+    // }
 
-    // 在JS中指定名称
-    [AttributeUsage(AttributeTargets.Class
-                  | AttributeTargets.Struct
-                  | AttributeTargets.Enum
-                  | AttributeTargets.Field
-                  | AttributeTargets.Method
-                  | AttributeTargets.Property,
-                    AllowMultiple = false)]
-    public class JSNamingAttribute : Attribute
-    {
-        public string name { get; set; }
+    // // 在JS中指定名称
+    // [AttributeUsage(AttributeTargets.Class
+    //               | AttributeTargets.Struct
+    //               | AttributeTargets.Enum
+    //               | AttributeTargets.Field
+    //               | AttributeTargets.Method
+    //               | AttributeTargets.Property,
+    //                 AllowMultiple = false)]
+    // public class JSNamingAttribute : Attribute
+    // {
+    //     public string name { get; set; }
+    //     public JSNamingAttribute(string name)
+    //     {
+    //         this.name = name;
+    //     }
+    // }
 
-        public JSNamingAttribute(string name)
-        {
-            this.name = name;
-        }
-    }
-
-    // 用于标记 struct 非静态方法, 表明该方法调用将修改 struct 自身 (在 js 中产生一次 rebind)
-    [AttributeUsage(AttributeTargets.Method,
-                    AllowMultiple = false)]
-    public class JSMutableAttribute : Attribute
-    {
-    }
+    // // 用于标记 struct 非静态方法, 表明该方法调用将修改 struct 自身 (在 js 中产生一次 rebind)
+    // [AttributeUsage(AttributeTargets.Method,
+    //                 AllowMultiple = false)]
+    // public class JSMutableAttribute : Attribute
+    // {
+    // }
 
     [AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
     public class JSDelegateAttribute : Attribute

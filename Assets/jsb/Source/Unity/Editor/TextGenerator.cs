@@ -76,8 +76,10 @@ namespace QuickJS.Unity
         public bool enabled = true;
         public readonly string newline;
         private string tab;
-        private StringBuilder sb = new StringBuilder();
         private int tabLevel;
+
+        private TextGenerator _parent;
+        private StringBuilder sb = new StringBuilder();
 
         public int size { get { return sb.Length; } }
 
@@ -101,9 +103,28 @@ namespace QuickJS.Unity
             this.tabLevel = 0;
         }
 
-        public override string ToString()
+        public TextGenerator(TextGenerator parent)
         {
-            return sb.ToString();
+            _parent = parent;
+            this.enabled = parent.enabled;
+            this.newline = parent.newline;
+            this.tab = parent.tab;
+            this.tabLevel = parent.tabLevel;
+        }
+
+        public TextGenerator CreateChild()
+        {
+            return new TextGenerator(this);
+        }
+
+        public string Submit()
+        {
+            var text = sb.ToString();
+            if (_parent != null)
+            {
+                _parent.AppendL(text);
+            }
+            return text;
         }
 
         public CodeBlock CodeBlockScope()
