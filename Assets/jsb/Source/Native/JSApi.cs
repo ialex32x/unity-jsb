@@ -856,6 +856,11 @@ namespace QuickJS.Native
         #region unity base
 
         [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern JSAtom JSB_ATOM_Proxy();
+
+        public static readonly JSAtom JS_ATOM_Proxy = JSB_ATOM_Proxy();
+
+        [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern JSAtom JSB_ATOM_constructor();
 
         public static readonly JSAtom JS_ATOM_constructor = JSB_ATOM_constructor();

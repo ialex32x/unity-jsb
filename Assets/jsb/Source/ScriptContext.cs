@@ -29,6 +29,7 @@ namespace QuickJS
 
         private JSValue _globalObject;
         private JSValue _operatorCreate;
+        private JSValue _proxyConstructor;
         private JSValue _numberConstructor;
         private JSValue _stringConstructor;
         private JSValue _functionConstructor;
@@ -50,6 +51,7 @@ namespace QuickJS
 
             _globalObject = JSApi.JS_GetGlobalObject(_ctx);
             _numberConstructor = JSApi.JS_GetProperty(_ctx, _globalObject, JSApi.JS_ATOM_Number);
+            _proxyConstructor = JSApi.JS_GetProperty(_ctx, _globalObject, JSApi.JS_ATOM_Proxy);
             _stringConstructor = JSApi.JS_GetProperty(_ctx, _globalObject, JSApi.JS_ATOM_String);
             _functionConstructor = JSApi.JS_GetProperty(_ctx, _globalObject, JSApi.JS_ATOM_Function);
             _operatorCreate = JSApi.JS_UNDEFINED;
@@ -171,6 +173,7 @@ namespace QuickJS
             _stringCache.Destroy();
             _atoms.Clear();
 
+            JSApi.JS_FreeValue(_ctx, _proxyConstructor);
             JSApi.JS_FreeValue(_ctx, _numberConstructor);
             JSApi.JS_FreeValue(_ctx, _stringConstructor);
             JSApi.JS_FreeValue(_ctx, _functionConstructor);
@@ -239,6 +242,11 @@ namespace QuickJS
         public JSValue GetNumberConstructor()
         {
             return JSApi.JS_DupValue(_ctx, _numberConstructor);
+        }
+
+        public JSValue GetProxyConstructor()
+        {
+            return JSApi.JS_DupValue(_ctx, _proxyConstructor);
         }
 
         public bool CheckNumberType(JSValue jsValue)
