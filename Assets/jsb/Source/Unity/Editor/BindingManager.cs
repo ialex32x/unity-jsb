@@ -1096,7 +1096,7 @@ namespace QuickJS.Unity
         }
 
         // 获取父类的ts声明 (沿继承链上溯直到存在导出)
-        public string GetTSSuperName(TypeBindingInfo typeBindingInfo)
+        public TypeBindingInfo GetTSSuperTypeBindingInfo(TypeBindingInfo typeBindingInfo)
         {
             var super = typeBindingInfo.super;
             while (super != null)
@@ -1104,13 +1104,13 @@ namespace QuickJS.Unity
                 var superBindingInfo = GetExportedType(super);
                 if (superBindingInfo != null)
                 {
-                    return GetTSTypeFullName(superBindingInfo.type);
+                    return superBindingInfo;
                 }
 
                 super = super.BaseType;
             }
 
-            return "";
+            return null;
         }
 
         // 获取实现的接口的ts声明

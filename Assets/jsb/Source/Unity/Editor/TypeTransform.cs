@@ -20,7 +20,7 @@ namespace QuickJS.Unity
     {
         private Type _type;
         private JSHotfixAttribute _hotfix;
-        private TSFullName _typeNaming;
+        private string _typeNaming;
 
         public TypeBindingFlags bindingFlags = TypeBindingFlags.Default;
 
@@ -67,8 +67,6 @@ namespace QuickJS.Unity
             {
                 bindingFlags = TypeBindingFlags.Default & ~TypeBindingFlags.BindingCode;
             }
-            _typeNaming.module = type.Namespace ?? "";
-            _typeNaming.name = type.Name;
         }
 
         public TypeTransform EditorRuntime()
@@ -241,12 +239,12 @@ namespace QuickJS.Unity
             }
         }
 
-        public TSFullName GetTypeNaming()
+        public string GetTypeNaming()
         {
             return _typeNaming;
         }
 
-        public TypeTransform Rename(TSFullName name)
+        public TypeTransform Rename(string name)
         {
             _typeNaming = name;
             return this;

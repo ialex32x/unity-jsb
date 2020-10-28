@@ -40,7 +40,7 @@ namespace QuickJS.Unity
 
         public bool topLevel
         {
-            get { return string.IsNullOrEmpty(jsNamespace) && string.IsNullOrEmpty(bindingManager.prefs.jsModuleName); }
+            get { return string.IsNullOrEmpty(jsNamespace); }
         }
 
         public readonly string csBindingName; // 绑定代码名
@@ -92,12 +92,6 @@ namespace QuickJS.Unity
 
         public string GetNamingAttribute(MethodInfo info)
         {
-            var naming = info.GetCustomAttribute(typeof(JSNamingAttribute), false) as JSNamingAttribute;
-            if (naming != null && !string.IsNullOrEmpty(naming.name))
-            {
-                return naming.name;
-            }
-
             if (info.IsSpecialName)
             {
                 switch (info.Name)
@@ -112,12 +106,6 @@ namespace QuickJS.Unity
 
         public static string GetNamingAttribute(MemberInfo info)
         {
-            var naming = info.GetCustomAttribute(typeof(JSNamingAttribute), false) as JSNamingAttribute;
-            if (naming != null && !string.IsNullOrEmpty(naming.name))
-            {
-                return naming.name;
-            }
-
             return info.Name;
         }
 
