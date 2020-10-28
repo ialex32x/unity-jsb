@@ -47,9 +47,7 @@ namespace QuickJS.Unity
 
         //TODO: 模块包装, 生成模块加载代码, 添加模块依赖
         public readonly string jsModule; // js 模块名
-
         public readonly string jsNamespace; // js 命名空间
-
         public readonly string jsTypeName; // 不带泛型部分的js注册名
         public readonly string jsName; // js注册名 (带平面化的泛型部分)
 
@@ -64,30 +62,36 @@ namespace QuickJS.Unity
         public Dictionary<string, DelegateBindingInfo> delegates = new Dictionary<string, DelegateBindingInfo>();
         public ConstructorBindingInfo constructors;
 
-        public Assembly Assembly
-        {
-            get { return type.Assembly; }
-        }
+        /// <summary>
+        /// 等价于 type.Assembly
+        /// </summary>
+        public Assembly Assembly => type.Assembly;
 
-        // full name without generic parameters
-        public string jsFullTypeName
-        {
-            get { return string.IsNullOrEmpty(jsNamespace) ? jsTypeName : jsNamespace + "." + jsTypeName; }
-        }
+        /// <summary>
+        /// 等价于 type.FullName
+        /// </summary>
+        public string FullName => type.FullName;
 
+        /// <summary>
+        /// 等价于 type.IsEnum
+        /// </summary>
+        public bool IsEnum => type.IsEnum;
+
+        /// <summary>
+        /// 当前类型的完整JS类型名 (如果是具化泛型类, 则为扁平化的具化泛型类名称)
+        /// </summary>
         public string jsFullName
         {
             get { return string.IsNullOrEmpty(jsNamespace) ? jsName : jsNamespace + "." + jsName; }
         }
 
-        public string FullName
+        /// <summary>
+        /// 构造一个指定泛型参数的JS完整类型名
+        /// </summary>
+        public string MakeGenericJSFullTypeName(string templateArgs)
         {
-            get { return type.FullName; }
-        }
-
-        public bool IsEnum
-        {
-            get { return type.IsEnum; }
+            var name = string.IsNullOrEmpty(jsNamespace) ? jsTypeName : jsNamespace + "." + jsTypeName;
+            return string.Format("{0}<{1}>, ", name, templateArgs);
         }
 
         public string GetNamingAttribute(MethodInfo info)
@@ -114,8 +118,10 @@ namespace QuickJS.Unity
             this.bindingManager = bindingManager;
             this.type = type;
             this.transform = typeTransform;
+            
             var naming = this.transform.GetTypeNaming() ?? GetNamingAttribute(type);
             var indexOfTypeName = naming.LastIndexOf('.');
+
             if (indexOfTypeName >= 0) // 内部类
             {
                 this.jsNamespace = naming.Substring(0, indexOfTypeName);

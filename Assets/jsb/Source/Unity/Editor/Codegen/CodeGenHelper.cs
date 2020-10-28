@@ -14,12 +14,12 @@ namespace QuickJS.Unity
     {
         protected CodeGenerator cg;
 
-        public TopLevelCodeGen(CodeGenerator cg, TypeBindingInfo type)
+        public TopLevelCodeGen(CodeGenerator cg, TypeBindingInfo typeBindingInfo)
         {
             this.cg = cg;
             this.AppendCommonHead();
-            this.cg.cs.AppendLine("// Assembly: {0}", type.Assembly.GetName());
-            this.cg.cs.AppendLine("// Type: {0}", type.FullName);
+            this.cg.cs.AppendLine("// Assembly: {0}", typeBindingInfo.Assembly.GetName());
+            this.cg.cs.AppendLine("// Type: {0}", typeBindingInfo.FullName);
             this.AppendCommon();
 
             // this.cg.typescript.AppendLine("// {0} {1}", Environment.UserName, this.cg.bindingManager.dateTime);

@@ -1164,7 +1164,7 @@ namespace QuickJS.Unity
                         }
                     }
 
-                    str += string.Format("{0}<{1}>, ", gTypeInfo.jsFullTypeName, templateArgs);
+                    str += gTypeInfo.MakeGenericJSFullTypeName(templateArgs);
                 }
             }
 
