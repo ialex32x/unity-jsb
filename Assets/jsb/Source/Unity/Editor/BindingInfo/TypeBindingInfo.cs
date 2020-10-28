@@ -118,18 +118,20 @@ namespace QuickJS.Unity
             this.bindingManager = bindingManager;
             this.type = type;
             this.transform = typeTransform;
-            
+
             var naming = this.transform.GetTypeNaming() ?? GetNamingAttribute(type);
             var indexOfTypeName = naming.LastIndexOf('.');
 
-            if (indexOfTypeName >= 0) // 内部类
+            if (indexOfTypeName >= 0)
             {
+                // 指定的命名中已经携带了"."
                 this.jsNamespace = naming.Substring(0, indexOfTypeName);
                 this.jsName = naming.Substring(indexOfTypeName + 1);
                 this.jsTypeName = this.jsName;
             }
             else
             {
+                // 内部类
                 if (type.DeclaringType != null)
                 {
                     if (string.IsNullOrEmpty(type.Namespace))
