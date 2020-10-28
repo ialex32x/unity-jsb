@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Collections.Generic;
 using System.Text;
 using System.IO;
@@ -77,16 +78,19 @@ namespace QuickJS.Unity
         {
             this.cg = cg;
             this.csNamespace = csNamespace;
-            this.tsNamespace = string.IsNullOrEmpty(tsNamespace) ? "global" : tsNamespace;
+            this.tsNamespace = tsNamespace;
             if (!string.IsNullOrEmpty(csNamespace))
             {
                 this.cg.cs.AppendLine("namespace {0} {{", csNamespace);
                 this.cg.cs.AddTabLevel();
             }
-
             this.AddUsingStatements();
-            this.cg.tsDeclare.AppendLine($"declare module \"{this.tsNamespace}\" {{");
-            this.cg.tsDeclare.AddTabLevel();
+
+            if (!string.IsNullOrEmpty(tsNamespace))
+            {
+                this.cg.tsDeclare.AppendLine($"declare namespace {this.tsNamespace} {{");
+                this.cg.tsDeclare.AddTabLevel();
+            }
         }
 
         private void AddUsingStatements()
@@ -104,8 +108,11 @@ namespace QuickJS.Unity
                 this.cg.cs.AppendLine("}");
             }
 
-            this.cg.tsDeclare.DecTabLevel();
-            this.cg.tsDeclare.AppendLine("}");
+            if (!string.IsNullOrEmpty(tsNamespace))
+            {
+                this.cg.tsDeclare.DecTabLevel();
+                this.cg.tsDeclare.AppendLine("}");
+            }
         }
     }
 
@@ -139,20 +146,9 @@ namespace QuickJS.Unity
             // Debug.LogErrorFormat("{0}: {1}", bindingInfo.type, bindingInfo.Namespace);
             if (!string.IsNullOrEmpty(typeBindingInfo.jsNamespace))
             {
-                var split_ns = typeBindingInfo.jsNamespace.Split('.');
-                var ns_count = split_ns.Length;
-                for (var i = 0; i < ns_count; i++)
-                {
-                    var el_ns = split_ns[i];
-                    if (i == ns_count - 1)
-                    {
-                        this.cg.cs.AppendL("\"{0}\"", el_ns);
-                    }
-                    else
-                    {
-                        this.cg.cs.AppendL("\"{0}\", ", el_ns);
-                    }
-                }
+                var split_ns = from i in typeBindingInfo.jsNamespace.Split('.') select $"\"{i}\"";
+                var join_ns = string.Join(", ", split_ns);
+                this.cg.cs.AppendL(join_ns);
             }
             this.cg.cs.AppendLineL(");");
         }

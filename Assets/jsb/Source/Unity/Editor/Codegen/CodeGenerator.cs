@@ -20,7 +20,10 @@ namespace QuickJS.Unity
         public const string NameOfBuffer = "ArrayBuffer";
 
         private bool _emitSharedTS = true;
-        private string _prefixJSBDecl = "jsb.";
+
+        private string _currentTSModule = "";
+
+        public string currentTSModule => _currentTSModule;
         public BindingManager bindingManager;
         public TextGenerator cs;
         public TextGenerator tsDeclare;
@@ -162,12 +165,12 @@ namespace QuickJS.Unity
 
         public void Begin()
         {
-            
+
         }
 
         public void End()
         {
-            
+
         }
 
         public void WriteTSDModuleBegin(string name)
@@ -180,10 +183,9 @@ namespace QuickJS.Unity
                 if (_emitSharedTS)
                 {
                     _emitSharedTS = false;
-                    _prefixJSBDecl = "";
                     this.tsDeclare.AppendLine("type byte = number;");
                     this.tsDeclare.AppendLine("type Nullable<T> = T;");
-                    
+
                     this.tsDeclare.AppendLine("/**");
                     this.tsDeclare.AppendLine(" * 标记一个类型仅编辑器环境可用 (该修饰器并不存在实际定义, 仅用于标记, 不要在代码中使用)");
                     this.tsDeclare.AppendLine(" */");
@@ -235,6 +237,7 @@ namespace QuickJS.Unity
 
         private void GenerateInternal(TypeBindingInfo typeBindingInfo)
         {
+            _currentTSModule = typeBindingInfo.jsNamespace;
             using (new PlatformCodeGen(this, TypeBindingFlags.Default))
             {
                 using (new TopLevelCodeGen(this, typeBindingInfo))
@@ -256,6 +259,7 @@ namespace QuickJS.Unity
                     }
                 }
             }
+            _currentTSModule = null;
         }
 
         private void WriteAllText(string path, TextGenerator gen)
@@ -577,7 +581,7 @@ namespace QuickJS.Unity
                     {
                         return;
                     }
-                    
+
                     this.tsDeclare.AppendLine("/**");
                 }
                 else
