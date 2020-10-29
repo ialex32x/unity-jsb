@@ -244,7 +244,7 @@ namespace QuickJS.Unity
                 {
                     using (new CSNamespaceCodeGen(this, typeBindingInfo.csNamespace))
                     {
-                        using (new TSModuleCodeGen(this, typeBindingInfo))
+                        using (var tsMod = new TSModuleCodeGen(this, typeBindingInfo))
                         {
                             using (new TSNamespaceCodeGen(this, typeBindingInfo.jsNamespace))
                             {
@@ -256,7 +256,7 @@ namespace QuickJS.Unity
                                 }
                                 else
                                 {
-                                    using (new ClassCodeGen(this, typeBindingInfo))
+                                    using (new ClassCodeGen(this, tsMod, typeBindingInfo))
                                     {
                                     }
                                 }

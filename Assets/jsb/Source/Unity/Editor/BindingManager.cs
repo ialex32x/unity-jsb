@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Linq;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Text.RegularExpressions;
@@ -759,23 +760,28 @@ namespace QuickJS.Unity
         public string GetTSTypeFullName(ParameterInfo parameter)
         {
             var parameterType = parameter.ParameterType;
-            return GetTSTypeFullName(parameterType, parameter.IsOut, false);
+            return GetTSTypeFullName(null, parameterType, parameter.IsOut, false);
         }
 
         // 获取 type 在 typescript 中对应类型名
         public string GetTSTypeFullName(Type type)
         {
-            return GetTSTypeFullName(type, false, false);
+            return GetTSTypeFullName(null, type, false, false);
         }
 
         public string GetTSTypeFullName(TypeBindingInfo typeBindingInfo)
         {
-            return typeBindingInfo != null ? GetTSTypeFullName(typeBindingInfo.type, false, false) : "";
+            return typeBindingInfo != null ? GetTSTypeFullName(null, typeBindingInfo.type, false, false) : "";
+        }
+
+        public string GetTSTypeLocalName(TypeBindingInfo typeBindingInfo, string localAlias)
+        {
+            return typeBindingInfo != null ? GetTSTypeFullName(localAlias, typeBindingInfo.type, false, false) : "";
         }
 
         public string GetTSReturnTypeFullName(Type type)
         {
-            return GetTSTypeFullName(type, false, true);
+            return GetTSTypeFullName(null, type, false, true);
         }
 
         public string GetDefaultTypePrefix()
@@ -783,7 +789,7 @@ namespace QuickJS.Unity
             return "jsb.";
         }
 
-        public string GetTSTypeFullName(Type type, bool isOut, bool isReturn)
+        public string GetTSTypeFullName(string localAlias, Type type, bool isOut, bool isReturn)
         {
             if (type == null || type == typeof(void))
             {
@@ -847,6 +853,11 @@ namespace QuickJS.Unity
                 {
                     return gDef;
                 }
+
+                if (localAlias != null)
+                {
+                    return Concat(".", localAlias, info.jsLocalName);
+                }
                 return info.jsFullName;
             }
 
@@ -882,6 +893,11 @@ namespace QuickJS.Unity
             }
 
             return "any";
+        }
+
+        public static string Concat(string sp, params string[] values)
+        {
+            return string.Join(sp, from value in values where !string.IsNullOrEmpty(value) select value);
         }
 
         public string GetCSNamespace(Type type)

@@ -82,6 +82,8 @@ namespace QuickJS.Unity
         /// </summary>
         public readonly string jsModuleAccess;
 
+        public readonly string jsLocalName;
+
         /// <summary>
         /// 当前类型的完整JS类型名 (如果是具化泛型类, 则为扁平化的具化泛型类名称)
         /// </summary>
@@ -218,21 +220,18 @@ namespace QuickJS.Unity
             if (string.IsNullOrEmpty(this.jsNamespace))
             {
                 this.jsModuleAccess = this.jsPureName;
+                this.jsLocalName = "";
             }
             else
             {
                 var i = this.jsNamespace.IndexOf('.');
                 this.jsModuleAccess = i < 0 ? this.jsNamespace : this.jsNamespace.Substring(0, i);
+                this.jsLocalName = BindingManager.Concat(".", i < 0 ? "" : this.jsNamespace.Substring(i + 1), this.jsName);
             }
 
-            this.jsFullName = Concat(".", jsModule, jsNamespace, jsName);
+            this.jsFullName = BindingManager.Concat(".", jsModule, jsNamespace, jsName);
             this.csBindingName = bindingManager.prefs.typeBindingPrefix + this.jsFullName.Replace('.', '_').Replace('+', '_').Replace('<', '_').Replace('>', '_');
             this.constructors = new ConstructorBindingInfo(type);
-        }
-
-        public string Concat(string sp, params string[] values)
-        {
-            return string.Join(sp, from value in values where !string.IsNullOrEmpty(value) select value);
         }
 
         public void Initialize()
