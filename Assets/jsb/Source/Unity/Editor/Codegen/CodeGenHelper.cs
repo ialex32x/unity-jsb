@@ -105,7 +105,7 @@ namespace QuickJS.Unity
             this.typeBindingInfo = typeBindingInfo;
             this.tsModule = string.IsNullOrEmpty(tsModule) ? "global" : tsModule;
 
-            this.cg.tsDeclare.AppendLine($"declare module \"{tsModule}\" {{");
+            this.cg.tsDeclare.AppendLine($"declare module \"{this.tsModule}\" {{");
             this.cg.tsDeclare.AddTabLevel();
 
             //TODO: generate 'import' statements
