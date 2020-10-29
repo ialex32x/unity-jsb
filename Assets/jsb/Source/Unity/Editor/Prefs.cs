@@ -29,7 +29,7 @@ namespace QuickJS.Unity
         /// <summary>
         /// 代码生成调试开关, 生成的代码将完全在注释中, 方便反复生成对比查问题
         /// </summary>
-        public bool debugCodegen = false;
+        public bool debugCodegen = true;
 
         /// <summary>
         /// 是否将 C# ToString() 自动转换为 toString()

@@ -57,7 +57,7 @@ namespace QuickJS.Unity
             {
                 using (new TopLevelCodeGen(this, CodeGenerator.NameOfBindingList))
                 {
-                    using (new NamespaceCodeGen(this, typeof(Values).Namespace))
+                    using (new CSNamespaceCodeGen(this, typeof(Values).Namespace))
                     {
                         using (new PreservedCodeGen(this))
                         {
@@ -87,7 +87,7 @@ namespace QuickJS.Unity
                                                     }
                                                     else
                                                     {
-                                                        method.AddStatement("{0}.{1}.Bind(register);", this.bindingManager.prefs.ns, type.csBindingName);
+                                                        method.AddStatement("{0}.{1}.Bind(register);", type.csNamespace, type.csBindingName);
                                                     }
                                                 }
                                             }
@@ -96,18 +96,18 @@ namespace QuickJS.Unity
                                             {
                                                 foreach (var editorType in editorTypes)
                                                 {
-                                                    method.AddStatement("{0}.{1}.Bind(register);", this.bindingManager.prefs.ns, editorType.csBindingName);
+                                                    method.AddStatement("{0}.{1}.Bind(register);", editorType.csNamespace, editorType.csBindingName);
                                                 }
                                             }
                                             method.AddStatement("{0}.{1}.Bind(register);", this.bindingManager.prefs.ns, CodeGenerator.NameOfDelegates);
                                         }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
+                                    } // func: BindAll
+                                } // 'preserved' attribute for func: BindAll
+                            } // class 
+                        } // preserved
+                    } // cs-namespace
+                } // toplevel
+            } // platform
         }
 
         // 生成委托绑定
@@ -120,7 +120,7 @@ namespace QuickJS.Unity
             {
                 using (new TopLevelCodeGen(this, CodeGenerator.NameOfDelegates))
                 {
-                    using (new NamespaceCodeGen(this, this.bindingManager.prefs.ns))
+                    using (new CSNamespaceCodeGen(this, this.bindingManager.prefs.ns))
                     {
                         using (new DelegateWrapperCodeGen(this))
                         {
@@ -242,18 +242,24 @@ namespace QuickJS.Unity
             {
                 using (new TopLevelCodeGen(this, typeBindingInfo))
                 {
-                    using (new NamespaceCodeGen(this, this.bindingManager.prefs.ns, typeBindingInfo.jsNamespace))
+                    using (new CSNamespaceCodeGen(this, typeBindingInfo.csNamespace))
                     {
-                        if (typeBindingInfo.IsEnum)
+                        using (new TSModuleCodeGen(this, typeBindingInfo))
                         {
-                            using (new EnumCodeGen(this, typeBindingInfo))
+                            using (new TSNamespaceCodeGen(this, typeBindingInfo.jsNamespace))
                             {
-                            }
-                        }
-                        else
-                        {
-                            using (new ClassCodeGen(this, typeBindingInfo))
-                            {
+                                if (typeBindingInfo.IsEnum)
+                                {
+                                    using (new EnumCodeGen(this, typeBindingInfo))
+                                    {
+                                    }
+                                }
+                                else
+                                {
+                                    using (new ClassCodeGen(this, typeBindingInfo))
+                                    {
+                                    }
+                                }
                             }
                         }
                     }

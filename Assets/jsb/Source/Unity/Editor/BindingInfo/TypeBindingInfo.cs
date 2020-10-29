@@ -15,7 +15,7 @@ namespace QuickJS.Unity
         public readonly Type type;
         public readonly TypeTransform transform;
 
-        public TypeBindingFlags bindingFlags { get { return transform.bindingFlags; } }
+        public TypeBindingFlags bindingFlags => transform.bindingFlags;
 
         /// <summary>
         /// 是否生成绑定代码
@@ -28,47 +28,12 @@ namespace QuickJS.Unity
         public bool isEditorRuntime => transform.isEditorRuntime;
 
         // 父类类型
-        public Type super
-        {
-            get { return type.BaseType; }
-        }
-
-        public bool omit
-        {
-            get { return type.IsDefined(typeof(JSOmitAttribute)); }
-        }
-
-        public bool topLevel
-        {
-            get { return string.IsNullOrEmpty(jsNamespace); }
-        }
-
-        public readonly string csBindingName; // 绑定代码名
-
-        //TODO: 模块包装, 生成模块加载代码, 添加模块依赖
-        public readonly string jsModule; // js 模块名
-        public readonly string jsNamespace; // js 命名空间
-
-        ///<summary>
-        /// 不带泛型部分的js注册名
-        ///</summary>
-        public readonly string jsTypeName; 
+        public Type super => type.BaseType;
 
         /// <summary>
-        /// js注册名 (带平面化的泛型部分)
+        /// 跳过此类型的导出
         /// </summary>
-        public readonly string jsName; 
-
-        public List<OperatorBindingInfo> operators = new List<OperatorBindingInfo>();
-
-        public Dictionary<string, MethodBindingInfo> methods = new Dictionary<string, MethodBindingInfo>();
-        public Dictionary<string, MethodBindingInfo> staticMethods = new Dictionary<string, MethodBindingInfo>();
-
-        public Dictionary<string, PropertyBindingInfo> properties = new Dictionary<string, PropertyBindingInfo>();
-        public Dictionary<string, FieldBindingInfo> fields = new Dictionary<string, FieldBindingInfo>();
-        public Dictionary<string, EventBindingInfo> events = new Dictionary<string, EventBindingInfo>();
-        public Dictionary<string, DelegateBindingInfo> delegates = new Dictionary<string, DelegateBindingInfo>();
-        public ConstructorBindingInfo constructors;
+        public bool omit => type.IsDefined(typeof(JSOmitAttribute));
 
         /// <summary>
         /// 等价于 type.Assembly
@@ -85,6 +50,32 @@ namespace QuickJS.Unity
         /// </summary>
         public bool IsEnum => type.IsEnum;
 
+        public readonly string csBindingName; // 绑定代码名
+
+        public string csNamespace => this.bindingManager.prefs.ns;
+
+        public bool topLevel => string.IsNullOrEmpty(jsModule) && string.IsNullOrEmpty(jsNamespace);
+
+        /// <summary>
+        /// js 模块名
+        /// </summary>
+        public readonly string jsModule;
+
+        /// <summary>
+        /// js 命名空间
+        /// </summary>
+        public readonly string jsNamespace;
+
+        ///<summary>
+        /// 不带泛型部分的js注册名
+        ///</summary>
+        public readonly string jsPureName;
+
+        /// <summary>
+        /// js注册名 (带平面化的泛型部分)
+        /// </summary>
+        public readonly string jsName;
+
         /// <summary>
         /// 当前类型的完整JS类型名 (如果是具化泛型类, 则为扁平化的具化泛型类名称)
         /// </summary>
@@ -93,12 +84,23 @@ namespace QuickJS.Unity
             get { return string.IsNullOrEmpty(jsNamespace) ? jsName : jsNamespace + "." + jsName; }
         }
 
+        public List<OperatorBindingInfo> operators = new List<OperatorBindingInfo>();
+
+        public Dictionary<string, MethodBindingInfo> methods = new Dictionary<string, MethodBindingInfo>();
+        public Dictionary<string, MethodBindingInfo> staticMethods = new Dictionary<string, MethodBindingInfo>();
+
+        public Dictionary<string, PropertyBindingInfo> properties = new Dictionary<string, PropertyBindingInfo>();
+        public Dictionary<string, FieldBindingInfo> fields = new Dictionary<string, FieldBindingInfo>();
+        public Dictionary<string, EventBindingInfo> events = new Dictionary<string, EventBindingInfo>();
+        public Dictionary<string, DelegateBindingInfo> delegates = new Dictionary<string, DelegateBindingInfo>();
+        public ConstructorBindingInfo constructors;
+
         /// <summary>
         /// 构造一个指定泛型参数的JS完整类型名
         /// </summary>
         public string MakeGenericJSFullTypeName(string templateArgs)
         {
-            var name = string.IsNullOrEmpty(jsNamespace) ? jsTypeName : jsNamespace + "." + jsTypeName;
+            var name = string.IsNullOrEmpty(jsNamespace) ? jsPureName : jsNamespace + "." + jsPureName;
             return string.Format("{0}<{1}>, ", name, templateArgs);
         }
 
@@ -152,75 +154,62 @@ namespace QuickJS.Unity
                 }
                 else
                 {
-                    //TODO: 原 namespace 变成 module
-                    this.jsModule = "";
-                    this.jsNamespace = naming.Substring(0, indexOfTypeName);
+                    this.jsModule = naming.Substring(0, indexOfTypeName);
+                    this.jsNamespace = "";
                     this.jsName = naming.Substring(indexOfTypeName + 1);
                 }
 
-                this.jsTypeName = this.jsName;
+                this.jsPureName = this.jsName;
             }
             else
             {
-                // 内部类
-                if (type.DeclaringType != null)
+                this.jsModule = type.Namespace ?? "";
+                this.jsNamespace = "";
+
+                // 处理内部类层级
+                var declaringType = type.DeclaringType;
+                while (declaringType != null)
                 {
-                    if (string.IsNullOrEmpty(type.Namespace))
+                    this.jsNamespace = string.IsNullOrEmpty(this.jsNamespace) ? declaringType.Name : $"{declaringType.Name}.{this.jsNamespace}";
+                    declaringType = declaringType.DeclaringType;
+                }
+
+                if (type.IsGenericType)
+                {
+                    this.jsName = naming.Contains("`") ? naming.Substring(0, naming.IndexOf('`')) : naming;
+                    this.jsPureName = this.jsName;
+
+                    if (type.IsGenericTypeDefinition)
                     {
-                        this.jsNamespace = type.DeclaringType.Name;
+                        if (!naming.Contains("<"))
+                        {
+                            this.jsName += "<";
+                            var gArgs = type.GetGenericArguments();
+
+                            for (var i = 0; i < gArgs.Length; i++)
+                            {
+                                this.jsName += gArgs[i].Name;
+                                if (i != gArgs.Length - 1)
+                                {
+                                    this.jsName += ", ";
+                                }
+                            }
+                            this.jsName += ">";
+                        }
                     }
                     else
                     {
-                        this.jsNamespace = $"{type.Namespace}.{type.DeclaringType.Name}";
+                        foreach (var gp in type.GetGenericArguments())
+                        {
+                            this.jsName += "_" + gp.Name;
+                        }
                     }
                 }
                 else
                 {
-                    this.jsNamespace = type.Namespace ?? "";
-                }
-
-                do
-                {
-                    if (type.IsGenericType)
-                    {
-                        if (type.IsGenericTypeDefinition)
-                        {
-                            this.jsName = naming.Contains("`") ? naming.Substring(0, naming.IndexOf('`')) : naming;
-                            this.jsTypeName = this.jsName;
-
-                            if (!naming.Contains("<"))
-                            {
-                                this.jsName += "<";
-                                var gArgs = type.GetGenericArguments();
-
-                                for (var i = 0; i < gArgs.Length; i++)
-                                {
-                                    this.jsName += gArgs[i].Name;
-                                    if (i != gArgs.Length - 1)
-                                    {
-                                        this.jsName += ", ";
-                                    }
-                                }
-                                this.jsName += ">";
-                            }
-                            break;
-                        }
-                        else
-                        {
-                            this.jsName = naming.Contains("`") ? naming.Substring(0, naming.IndexOf('`')) : naming;
-                            this.jsTypeName = this.jsName;
-
-                            foreach (var gp in type.GetGenericArguments())
-                            {
-                                this.jsName += "_" + gp.Name;
-                            }
-                            break;
-                        }
-                    }
-
                     this.jsName = naming;
-                    this.jsTypeName = this.jsName;
-                } while (false);
+                    this.jsPureName = this.jsName;
+                }
             }
 
             this.csBindingName = bindingManager.prefs.typeBindingPrefix + (this.jsNamespace + "_" + this.jsName).Replace('.', '_').Replace('+', '_').Replace('<', '_').Replace('>', '_');

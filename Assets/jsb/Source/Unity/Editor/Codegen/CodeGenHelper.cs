@@ -63,38 +63,21 @@ namespace QuickJS.Unity
         }
     }
 
-    public class NamespaceCodeGen : IDisposable
+    public class CSNamespaceCodeGen : IDisposable
     {
         protected CodeGenerator cg;
         protected string csNamespace;
-        protected string tsNamespace;
 
-        public NamespaceCodeGen(CodeGenerator cg, string csNamespace)
-        : this(cg, csNamespace, "")
-        {
-        }
-
-        public NamespaceCodeGen(CodeGenerator cg, string csNamespace, string tsNamespace)
+        public CSNamespaceCodeGen(CodeGenerator cg, string csNamespace)
         {
             this.cg = cg;
             this.csNamespace = csNamespace;
-            this.tsNamespace = tsNamespace;
+
             if (!string.IsNullOrEmpty(csNamespace))
             {
                 this.cg.cs.AppendLine("namespace {0} {{", csNamespace);
                 this.cg.cs.AddTabLevel();
             }
-            this.AddUsingStatements();
-
-            if (!string.IsNullOrEmpty(tsNamespace))
-            {
-                this.cg.tsDeclare.AppendLine($"declare namespace {this.tsNamespace} {{");
-                this.cg.tsDeclare.AddTabLevel();
-            }
-        }
-
-        private void AddUsingStatements()
-        {
             this.cg.cs.AppendLine("using QuickJS;");
             this.cg.cs.AppendLine("using QuickJS.Binding;");
             this.cg.cs.AppendLine("using QuickJS.Native;");
@@ -107,7 +90,53 @@ namespace QuickJS.Unity
                 this.cg.cs.DecTabLevel();
                 this.cg.cs.AppendLine("}");
             }
+        }
+    }
 
+    public class TSModuleCodeGen : IDisposable
+    {
+        protected CodeGenerator cg;
+        protected TypeBindingInfo typeBindingInfo;
+        protected string tsModule;
+
+        public TSModuleCodeGen(CodeGenerator cg, TypeBindingInfo typeBindingInfo)
+        {
+            this.cg = cg;
+            this.typeBindingInfo = typeBindingInfo;
+            this.tsModule = string.IsNullOrEmpty(tsModule) ? "global" : tsModule;
+
+            this.cg.tsDeclare.AppendLine($"declare module \"{tsModule}\" {{");
+            this.cg.tsDeclare.AddTabLevel();
+
+            //TODO: generate 'import' statements
+        }
+
+        public void Dispose()
+        {
+            this.cg.tsDeclare.DecTabLevel();
+            this.cg.tsDeclare.AppendLine("}");
+        }
+    }
+
+    public class TSNamespaceCodeGen : IDisposable
+    {
+        protected CodeGenerator cg;
+        protected string tsNamespace;
+
+        public TSNamespaceCodeGen(CodeGenerator cg, string tsNamespace)
+        {
+            this.cg = cg;
+            this.tsNamespace = tsNamespace;
+
+            if (!string.IsNullOrEmpty(tsNamespace))
+            {
+                this.cg.tsDeclare.AppendLine($"namespace {this.tsNamespace} {{");
+                this.cg.tsDeclare.AddTabLevel();
+            }
+        }
+
+        public void Dispose()
+        {
             if (!string.IsNullOrEmpty(tsNamespace))
             {
                 this.cg.tsDeclare.DecTabLevel();
