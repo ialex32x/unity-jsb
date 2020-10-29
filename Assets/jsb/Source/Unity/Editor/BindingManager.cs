@@ -22,6 +22,7 @@ namespace QuickJS.Unity
         private HashSet<Type> _blacklist;
         private List<string> _typePrefixBlacklist;
         private Dictionary<Type, TypeBindingInfo> _exportedTypes = new Dictionary<Type, TypeBindingInfo>();
+        private Dictionary<string, TSModuleBindingInfo> _exportedModules = new Dictionary<string, TSModuleBindingInfo>();
         private List<TypeBindingInfo> _collectedTypes = new List<TypeBindingInfo>(); // 已经完成导出的类型 
         private Dictionary<Type, DelegateBridgeBindingInfo> _exportedDelegates = new Dictionary<Type, DelegateBridgeBindingInfo>();
         private Dictionary<Type, Type> _redirectDelegates = new Dictionary<Type, Type>();
@@ -50,50 +51,11 @@ namespace QuickJS.Unity
         static BindingManager()
         {
             AddTSKeywords(
-                "return",
-                "function",
-                "interface",
-                "class",
-                "let",
-                "break",
-                "as",
-                "any",
-                "switch",
-                "case",
-                "if",
-                "throw",
-                "else",
-                "var",
-                "number",
-                "string",
-                "get",
-                "module",
                 // "type",
-                "instanceof",
-                "typeof",
-                "public",
-                "private",
-                "enum",
-                "export",
-                "finally",
-                "for",
-                "while",
-                "void",
-                "null",
-                "super",
-                "this",
-                "new",
-                "in",
-                "await",
-                "async",
-                "extends",
-                "static",
-                "package",
-                "implements",
-                "interface",
-                "continue",
-                "yield",
-                "const"
+                "return", "function", "interface", "class", "let", "break", "as", "any", "switch", "case", "if", "enum",
+                "throw", "else", "var", "number", "string", "get", "module", "instanceof", "typeof", "public", "private",
+                "while", "void", "null", "super", "this", "new", "in", "await", "async", "extends", "static",
+                "package", "implements", "interface", "continue", "yield", "const", "export", "finally", "for"
             );
         }
 
@@ -103,12 +65,10 @@ namespace QuickJS.Unity
             this.dateTime = DateTime.Now;
             var tab = prefs.tab;
             var newline = prefs.newline;
+
             _typePrefixBlacklist = new List<string>(prefs.typePrefixBlacklist);
+            _blacklist = new HashSet<Type>();
             log = new TextGenerator(newline, tab);
-            _blacklist = new HashSet<Type>(new Type[]
-            {
-                typeof(AOT.MonoPInvokeCallbackAttribute),
-            });
 
             if (prefs.optToString)
             {
@@ -168,6 +128,7 @@ namespace QuickJS.Unity
             SetTypeBlocked(typeof(UnityEngine.ILogHandler));
             SetTypeBlocked(typeof(UnityEngine.ISerializationCallbackReceiver));
             SetTypeBlocked(typeof(UnityEngine.Playables.ScriptPlayable<>));
+            SetTypeBlocked(typeof(AOT.MonoPInvokeCallbackAttribute));
 
             TransformType(typeof(object))
             // .RenameTSMethod("$Equals", "Equals", typeof(object))
@@ -487,10 +448,17 @@ namespace QuickJS.Unity
                     {
                         var ctor = type.GetConstructor(Type.EmptyTypes);
                         var inst = ctor.Invoke(null) as IBindingProcess;
-                        inst.OnInitialize(this);
-                        _bindingProcess.Add(inst);
-                        Debug.Log($"add binding process: {type}");
-                        // _bindingProcess.Add
+                        var procName = inst.GetBindingProcessName();
+                        if (procName == null || !prefs.skipExtras.Contains(procName))
+                        {
+                            inst.OnInitialize(this);
+                            _bindingProcess.Add(inst);
+                            Debug.Log($"add binding process: {type}");
+                        }
+                        else
+                        {
+                            Debug.Log($"skip binding process: {type}");
+                        }
                     }
                 }
                 catch (Exception exception)
@@ -500,7 +468,9 @@ namespace QuickJS.Unity
             }
         }
 
-        // TS: 添加保留字, CS中相关变量名等会自动重命名注册到js中
+        /// <summary>
+        /// TS: 添加保留字, CS中相关变量名等会自动重命名注册到js中
+        /// </summary>
         public static void AddTSKeywords(params string[] keywords)
         {
             foreach (var keyword in keywords)
@@ -509,7 +479,9 @@ namespace QuickJS.Unity
             }
         }
 
-        // 指定类型在 ts 声明中的映射名 (可以指定多项)
+        /// <summary>
+        /// 指定类型在 ts 声明中的映射名 (可以指定多项)
+        /// </summary>
         public void AddTSTypeNameMap(Type type, params string[] names)
         {
             List<string> list;
@@ -520,7 +492,9 @@ namespace QuickJS.Unity
             list.AddRange(names);
         }
 
-        // CS, 添加类型名称映射, 用于简化导出时的常用类型名
+        /// <summary>
+        /// CS, 添加类型名称映射, 用于简化导出时的常用类型名
+        /// </summary>
         public void AddCSTypeNameMap(Type type, string name)
         {
             _csTypeNameMap[type] = name;
@@ -551,6 +525,7 @@ namespace QuickJS.Unity
                 //TODO: 设置导出绑定代码与定义声明选项
                 var typeBindingInfo = new TypeBindingInfo(this, type, typeTransform);
                 _exportedTypes.Add(type, typeBindingInfo);
+                typeBindingInfo.Initialize();
                 log.AppendLine($"AddExportedType: {type} Assembly: {type.Assembly} Location: {type.Assembly.Location}");
 
                 var baseType = type.BaseType;
@@ -579,6 +554,16 @@ namespace QuickJS.Unity
                 }
             }
             return typeTransform;
+        }
+
+        public TSModuleBindingInfo GetExportedModule(string name)
+        {
+            TSModuleBindingInfo module;
+            if (!_exportedModules.TryGetValue(name, out module))
+            {
+                module = _exportedModules[name] = new TSModuleBindingInfo(name);
+            }
+            return module;
         }
 
         public bool RemoveExportedType(Type type)
@@ -781,6 +766,11 @@ namespace QuickJS.Unity
         public string GetTSTypeFullName(Type type)
         {
             return GetTSTypeFullName(type, false, false);
+        }
+
+        public string GetTSTypeFullName(TypeBindingInfo typeBindingInfo)
+        {
+            return typeBindingInfo != null ? GetTSTypeFullName(typeBindingInfo.type, false, false) : "";
         }
 
         public string GetTSReturnTypeFullName(Type type)
@@ -1280,12 +1270,12 @@ namespace QuickJS.Unity
 
         public TypeBindingInfo GetExportedType(Type type)
         {
-            if (type == null)
-            {
-                return null;
-            }
             TypeBindingInfo typeBindingInfo;
-            return _exportedTypes.TryGetValue(type, out typeBindingInfo) ? typeBindingInfo : null;
+            if (type != null && _exportedTypes.TryGetValue(type, out typeBindingInfo))
+            {
+                return typeBindingInfo;
+            }
+            return null;
         }
 
         // 是否在黑名单中屏蔽, 或者已知无需导出的类型

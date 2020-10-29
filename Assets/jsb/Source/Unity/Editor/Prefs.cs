@@ -59,6 +59,11 @@ namespace QuickJS.Unity
         /// </summary>
         public string ns = "jsb";
 
+        public List<string> skipExtras = new List<string>(new string[]
+        {
+            "FairyGUI",
+        });
+
         public List<string> cleanupDir = new List<string>(new string[]
         {
             "Assets/Generated",

@@ -7,6 +7,11 @@ namespace QuickJS.Extra
 
     public class FairyGUICustomBinding : AbstractBindingProcess
     {
+        public override string GetBindingProcessName()
+        {
+            return "FairyGUI";
+        }
+        
         public override void OnPreCollectAssemblies(BindingManager bindingManager)
         {
             bindingManager.AddTypePrefixBlacklist("WebSocketSharp.");

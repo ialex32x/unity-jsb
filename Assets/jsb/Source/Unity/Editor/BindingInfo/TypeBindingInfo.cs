@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Linq;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Runtime.CompilerServices;
@@ -77,12 +78,14 @@ namespace QuickJS.Unity
         public readonly string jsName;
 
         /// <summary>
+        /// js 模块中的顶层访问名 (内部类的顶层访问名为最外层类的类名, 否则就是类名本身 jsPureName)
+        /// </summary>
+        public readonly string jsModuleAccess;
+
+        /// <summary>
         /// 当前类型的完整JS类型名 (如果是具化泛型类, 则为扁平化的具化泛型类名称)
         /// </summary>
-        public string jsFullName
-        {
-            get { return string.IsNullOrEmpty(jsNamespace) ? jsName : jsNamespace + "." + jsName; }
-        }
+        public readonly string jsFullName;
 
         public List<OperatorBindingInfo> operators = new List<OperatorBindingInfo>();
 
@@ -212,8 +215,31 @@ namespace QuickJS.Unity
                 }
             }
 
-            this.csBindingName = bindingManager.prefs.typeBindingPrefix + (this.jsNamespace + "_" + this.jsName).Replace('.', '_').Replace('+', '_').Replace('<', '_').Replace('>', '_');
+            if (string.IsNullOrEmpty(this.jsNamespace))
+            {
+                this.jsModuleAccess = this.jsPureName;
+            }
+            else
+            {
+                var i = this.jsNamespace.IndexOf('.');
+                this.jsModuleAccess = i < 0 ? this.jsNamespace : this.jsNamespace.Substring(0, i);
+            }
+
+            this.jsFullName = Concat(".", jsModule, jsNamespace, jsName);
+            this.csBindingName = bindingManager.prefs.typeBindingPrefix + this.jsFullName.Replace('.', '_').Replace('+', '_').Replace('<', '_').Replace('>', '_');
             this.constructors = new ConstructorBindingInfo(type);
+        }
+
+        public string Concat(string sp, params string[] values)
+        {
+            return string.Join(sp, from value in values where !string.IsNullOrEmpty(value) select value);
+        }
+
+        public void Initialize()
+        {
+            var module = this.bindingManager.GetExportedModule(this.jsModule);
+
+            module.Add(this);
         }
 
         // 将类型名转换成简单字符串 (比如用于文件名)

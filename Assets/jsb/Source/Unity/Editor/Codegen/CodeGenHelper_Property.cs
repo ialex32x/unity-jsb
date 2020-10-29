@@ -22,7 +22,7 @@ namespace QuickJS.Unity
             var caller = this.cg.AppendGetThisCS(bindingInfo.propertyInfo.GetMethod, false);
 
             this.cg.cs.AppendLine("var ret = {0}.{1};", caller, bindingInfo.propertyInfo.Name);
-            var pusher = this.cg.AppendValuePusher(bindingInfo.propertyInfo.PropertyType, "ret");
+            var pusher = this.cg.AppendValuePusher(bindingInfo.propertyType, "ret");
             this.cg.cs.AppendLine("return {0};", pusher);
         }
 

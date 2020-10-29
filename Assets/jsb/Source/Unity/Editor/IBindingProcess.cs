@@ -11,6 +11,8 @@ namespace QuickJS.Unity
     // 继承该接口(或 AbstractBindingProcess)的类将在导出过程中执行指定方法, 可以在特定阶段进行特定操作
     public interface IBindingProcess
     {
+        string GetBindingProcessName();
+
         // 初始化阶段回调, 可以调用 AddTSMethodDeclaration, AddTSKeywords 等进行定制
         void OnInitialize(BindingManager bindingManager);
 

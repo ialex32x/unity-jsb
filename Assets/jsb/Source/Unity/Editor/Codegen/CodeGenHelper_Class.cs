@@ -20,7 +20,7 @@ namespace QuickJS.Unity
             var transform = this.typeBindingInfo.transform;
             var prefix = this.typeBindingInfo.topLevel ? "declare " : "";
             var superBindingInfo = this.cg.bindingManager.GetTSSuperTypeBindingInfo(this.typeBindingInfo);
-            var super = superBindingInfo != null ? this.cg.bindingManager.GetTSTypeFullName(superBindingInfo.type) : "";
+            var super = this.cg.bindingManager.GetTSTypeFullName(superBindingInfo);
             var interfaces = this.cg.bindingManager.GetTSInterfacesName(this.typeBindingInfo.type);
             var implements = "";
             var jsClassName = this.typeBindingInfo.jsName;
@@ -495,7 +495,7 @@ namespace QuickJS.Unity
                             {
                                 tsPropertyPrefix += "readonly ";
                             }
-                            var tsPropertyType = this.cg.bindingManager.GetTSTypeFullName(bindingInfo.propertyInfo.PropertyType);
+                            var tsPropertyType = this.cg.bindingManager.GetTSTypeFullName(bindingInfo.propertyType);
                             cg.AppendJSDoc(bindingInfo.propertyInfo);
                             cg.tsDeclare.AppendLine($"{tsPropertyPrefix}{tsPropertyVar}: {tsPropertyType}");
                         }
@@ -513,7 +513,7 @@ namespace QuickJS.Unity
                             {
                                 tsPropertyPrefix += "readonly ";
                             }
-                            var tsPropertyType = this.cg.bindingManager.GetTSTypeFullName(bindingInfo.propertyInfo.PropertyType);
+                            var tsPropertyType = this.cg.bindingManager.GetTSTypeFullName(bindingInfo.propertyType);
                             cg.AppendJSDoc(bindingInfo.propertyInfo);
                             cg.tsDeclare.AppendLine($"{tsPropertyPrefix}{tsPropertyVar}: {tsPropertyType}");
                         }
@@ -542,7 +542,7 @@ namespace QuickJS.Unity
                         {
                             tsFieldPrefix += "readonly ";
                         }
-                        var tsFieldType = this.cg.bindingManager.GetTSTypeFullName(bindingInfo.fieldInfo.FieldType);
+                        var tsFieldType = this.cg.bindingManager.GetTSTypeFullName(bindingInfo.fieldType);
                         cg.AppendJSDoc(bindingInfo.fieldInfo);
                         cg.tsDeclare.AppendLine($"{tsFieldPrefix}{tsFieldVar}: {tsFieldType}");
                     }
