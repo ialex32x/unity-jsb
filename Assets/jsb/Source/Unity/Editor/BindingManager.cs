@@ -136,40 +136,40 @@ namespace QuickJS.Unity
             ;
 
             TransformType(typeof(string))
-                .AddTSMethodDeclaration("static Equals(a: string | System.Object, b: string | System.Object, comparisonType: any): boolean", "Equals", typeof(string), typeof(string), typeof(StringComparison))
-                .AddTSMethodDeclaration("static Equals(a: string | System.Object, b: string | System.Object): boolean", "Equals", typeof(string), typeof(string))
+                .AddTSMethodDeclaration("static Equals(a: string | Object, b: string | Object, comparisonType: any): boolean", "Equals", typeof(string), typeof(string), typeof(StringComparison))
+                .AddTSMethodDeclaration("static Equals(a: string | Object, b: string | Object): boolean", "Equals", typeof(string), typeof(string))
             ;
 
             TransformType(typeof(Vector3))
-                .SetMethodBlocked("SqrMagnitude", typeof(Vector3))
-                .SetMethodBlocked("Magnitude", typeof(Vector3))
-                .AddTSMethodDeclaration("static Add(a: Vector3, b: Vector3): Vector3")
-                .AddTSMethodDeclaration("static Sub(a: Vector3, b: Vector3): Vector3")
-                .AddTSMethodDeclaration("static Mul(a: Vector3, b: Vector3): Vector3")
-                .AddTSMethodDeclaration("static Div(a: Vector3, b: Vector3): Vector3")
-                .AddTSMethodDeclaration("static Equals(a: Vector3, b: Vector3): boolean")
-                .AddTSMethodDeclaration("Equals(b: Vector3): boolean")
-                .AddTSMethodDeclaration("Inverse(): Vector3")
-                .AddTSMethodDeclaration("Clone(): Vector3")
+                // .SetMethodBlocked("SqrMagnitude", typeof(Vector3))
+                // .SetMethodBlocked("Magnitude", typeof(Vector3))
+                // .AddTSMethodDeclaration("static Add(a: Vector3, b: Vector3): Vector3")
+                // .AddTSMethodDeclaration("static Sub(a: Vector3, b: Vector3): Vector3")
+                // .AddTSMethodDeclaration("static Mul(a: Vector3, b: Vector3): Vector3")
+                // .AddTSMethodDeclaration("static Div(a: Vector3, b: Vector3): Vector3")
+                // .AddTSMethodDeclaration("static Equals(a: Vector3, b: Vector3): boolean")
+                // .AddTSMethodDeclaration("Equals(b: Vector3): boolean")
+                // .AddTSMethodDeclaration("Inverse(): Vector3")
+                // .AddTSMethodDeclaration("Clone(): Vector3")
             ;
 
             TransformType(typeof(Vector2))
-                .SetMethodBlocked("SqrMagnitude")
-                .SetMethodBlocked("SqrMagnitude", typeof(Vector2))
-                .AddTSMethodDeclaration("static Add(a: Vector2, b: Vector2): Vector2")
-                .AddTSMethodDeclaration("static Sub(a: Vector2, b: Vector2): Vector2")
-                .AddTSMethodDeclaration("static Mul(a: Vector2, b: Vector2): Vector2")
-                .AddTSMethodDeclaration("static Div(a: Vector2, b: Vector2): Vector2")
-                .AddTSMethodDeclaration("static Equals(a: Vector2, b: Vector2): boolean")
-                .AddTSMethodDeclaration("Equals(b: Vector2): boolean")
-                .AddTSMethodDeclaration("Inverse(): Vector2")
-                .AddTSMethodDeclaration("Clone(): Vector2")
+                // .SetMethodBlocked("SqrMagnitude")
+                // .SetMethodBlocked("SqrMagnitude", typeof(Vector2))
+                // .AddTSMethodDeclaration("static Add(a: Vector2, b: Vector2): Vector2")
+                // .AddTSMethodDeclaration("static Sub(a: Vector2, b: Vector2): Vector2")
+                // .AddTSMethodDeclaration("static Mul(a: Vector2, b: Vector2): Vector2")
+                // .AddTSMethodDeclaration("static Div(a: Vector2, b: Vector2): Vector2")
+                // .AddTSMethodDeclaration("static Equals(a: Vector2, b: Vector2): boolean")
+                // .AddTSMethodDeclaration("Equals(b: Vector2): boolean")
+                // .AddTSMethodDeclaration("Inverse(): Vector2")
+                // .AddTSMethodDeclaration("Clone(): Vector2")
             ;
 
             TransformType(typeof(Quaternion))
-                .AddTSMethodDeclaration("Clone(): Quaternion")
-                .AddTSMethodDeclaration("static Mul(lhs: Quaternion, rhs: Vector3): Vector3")
-                .AddTSMethodDeclaration("static Mul(lhs: Quaternion, rhs: Quaternion): Quaternion")
+                // .AddTSMethodDeclaration("Clone(): Quaternion")
+                // .AddTSMethodDeclaration("static Mul(lhs: Quaternion, rhs: Vector3): Vector3")
+                // .AddTSMethodDeclaration("static Mul(lhs: Quaternion, rhs: Quaternion): Quaternion")
             ;
             // SetTypeBlocked(typeof(RendererExtensions));
             SetTypeBlocked(typeof(UnityEngine.UI.ILayoutGroup));
@@ -218,14 +218,14 @@ namespace QuickJS.Unity
             ;
 
             TransformType(typeof(Enum))
-                .AddTSMethodDeclaration("static GetValues<T>(enumType: any): System.Array<T>", "GetValue", typeof(Type))
+                .AddTSMethodDeclaration("static GetValues<T>(enumType: any): Array<T>", "GetValue", typeof(Type))
             ;
 
             // TransformType(typeof(Dictionary<,>))
             // ;
 
             TransformType(typeof(Array))
-                .Rename("System.Array<T>")
+                .Rename("Array<T>")
 
                 .SetMethodBlocked("GetValue", typeof(long), typeof(long), typeof(long))
                 .SetMethodBlocked("GetValue", typeof(long), typeof(long))
@@ -250,35 +250,35 @@ namespace QuickJS.Unity
                 .AddTSMethodDeclaration("SetValue(value: T, index: number): T", "SetValue", typeof(object), typeof(int))
                 .AddTSMethodDeclaration("SetValue(value: T, ...index: number[]): T", "SetValue", typeof(object), typeof(int[]))
 
-                .AddTSMethodDeclaration("static BinarySearch<T>(array: System.Array<T>, index: number, length: number, value: System.Object, comparer: any): number", "BinarySearch", typeof(Array), typeof(int), typeof(int), typeof(object), typeof(System.Collections.IComparer))
-                .AddTSMethodDeclaration("static BinarySearch<T>(array: System.Array<T>, index: number, length: number, value: System.Object): number", "BinarySearch", typeof(Array), typeof(int), typeof(int), typeof(object))
-                .AddTSMethodDeclaration("static BinarySearch<T>(array: System.Array<T>, value: System.Object, comparer: any): number", "BinarySearch", typeof(Array), typeof(object), typeof(System.Collections.IComparer))
-                .AddTSMethodDeclaration("static BinarySearch<T>(array: System.Array<T>, value: System.Object): number", "BinarySearch", typeof(Array), typeof(object))
-                .AddTSMethodDeclaration("static IndexOf<T>(array: System.Array<T>, value: System.Object, startIndex: number, count: number): number", "IndexOf", typeof(Array), typeof(object), typeof(int), typeof(int))
-                .AddTSMethodDeclaration("static IndexOf<T>(array: System.Array<T>, value: System.Object, startIndex: number): number", "IndexOf", typeof(Array), typeof(object), typeof(int))
-                .AddTSMethodDeclaration("static IndexOf<T>(array: System.Array<T>, value: System.Object): number", "IndexOf", typeof(Array), typeof(object))
-                .AddTSMethodDeclaration("static LastIndexOf<T>(array: System.Array<T>, value: System.Object, startIndex: number, count: number): number", "LastIndexOf", typeof(Array), typeof(object), typeof(int), typeof(int))
-                .AddTSMethodDeclaration("static LastIndexOf<T>(array: System.Array<T>, value: System.Object, startIndex: number): number", "LastIndexOf", typeof(Array), typeof(object), typeof(int))
-                .AddTSMethodDeclaration("static LastIndexOf<T>(array: System.Array<T>, value: System.Object): number", "LastIndexOf", typeof(Array), typeof(object))
-                .AddTSMethodDeclaration("static Reverse<T>(array: System.Array<T>, index: number, length: number): void", "Reverse", typeof(Array), typeof(int), typeof(int))
-                .AddTSMethodDeclaration("static Reverse<T>(array: System.Array<T>): void", "Reverse", typeof(Array))
-                .AddTSMethodDeclaration("static Sort<T>(keys: System.Array<T>, items: System.Array<T>, index: number, length: number, comparer: any): void", "Sort", typeof(Array), typeof(Array), typeof(int), typeof(int), typeof(System.Collections.IComparer))
-                .AddTSMethodDeclaration("static Sort<T>(array: System.Array<T>, index: number, length: number, comparer: any): void", "Sort", typeof(Array), typeof(int), typeof(int), typeof(System.Collections.IComparer))
-                .AddTSMethodDeclaration("static Sort<T>(keys: System.Array<T>, items: System.Array<T>, index: number, length: number): void", "Sort", typeof(Array), typeof(Array), typeof(int), typeof(int))
-                .AddTSMethodDeclaration("static Sort<T>(array: System.Array<T>, index: number, length: number): void", "Sort", typeof(Array), typeof(int), typeof(int))
-                .AddTSMethodDeclaration("static Sort<T>(keys: System.Array<T>, items: System.Array<T>, comparer: any): void", "Sort", typeof(Array), typeof(Array), typeof(System.Collections.IComparer))
-                .AddTSMethodDeclaration("static Sort<T>(array: System.Array<T>, comparer: any): void", "Sort", typeof(Array), typeof(System.Collections.IComparer))
-                .AddTSMethodDeclaration("static Sort<T>(keys: System.Array<T>, items: System.Array<T>): void", "Sort", typeof(Array), typeof(Array))
-                .AddTSMethodDeclaration("static Sort<T>(array: System.Array<T>): void", "Sort", typeof(Array))
-                .AddTSMethodDeclaration("static CreateInstance<T>(elementType: any, length1: number, length2: number, length3: number): System.Array<T>", "CreateInstance", typeof(Type), typeof(int), typeof(int), typeof(int))
-                .AddTSMethodDeclaration("static CreateInstance<T>(elementType: any, length1: number, length2: number): System.Array<T>", "CreateInstance", typeof(Type), typeof(int), typeof(int))
-                .AddTSMethodDeclaration("static CreateInstance<T>(elementType: any, lengths: System.Array<number>, lowerBounds: System.Array<number>): System.Array<T>", "CreateInstance", typeof(Type), typeof(int[]), typeof(int[]))
-                .AddTSMethodDeclaration("static CreateInstance<T>(elementType: any, length: number): System.Array<T>", "CreateInstance", typeof(Type), typeof(int))
-                .AddTSMethodDeclaration("static CreateInstance<T>(elementType: any, ...lengths: number[]): System.Array<T>", "CreateInstance", typeof(Type), typeof(int[]))
-                .AddTSMethodDeclaration("static Clear<T>(array: System.Array<T>, index: number, length: number): void", "Clear", typeof(Array), typeof(int), typeof(int))
-                .AddTSMethodDeclaration("static Copy<T>(sourceArray: System.Array<T>, sourceIndex: number, destinationArray: System.Array<T>, destinationIndex: number, length: number): void", "Copy", typeof(Array), typeof(int), typeof(Array), typeof(int), typeof(int))
-                .AddTSMethodDeclaration("static Copy<T>(sourceArray: System.Array<T>, destinationArray: System.Array<T>, length: number): void", "Copy", typeof(Array), typeof(Array), typeof(int))
-                .AddTSMethodDeclaration("static ConstrainedCopy<T>(sourceArray: System.Array<T>, sourceIndex: number, destinationArray: System.Array<T>, destinationIndex: number, length: number): void", "ConstrainedCopy", typeof(Array), typeof(int), typeof(Array), typeof(int), typeof(int))
+                .AddTSMethodDeclaration("static BinarySearch<T>(array: Array<T>, index: number, length: number, value: Object, comparer: any): number", "BinarySearch", typeof(Array), typeof(int), typeof(int), typeof(object), typeof(System.Collections.IComparer))
+                .AddTSMethodDeclaration("static BinarySearch<T>(array: Array<T>, index: number, length: number, value: Object): number", "BinarySearch", typeof(Array), typeof(int), typeof(int), typeof(object))
+                .AddTSMethodDeclaration("static BinarySearch<T>(array: Array<T>, value: Object, comparer: any): number", "BinarySearch", typeof(Array), typeof(object), typeof(System.Collections.IComparer))
+                .AddTSMethodDeclaration("static BinarySearch<T>(array: Array<T>, value: Object): number", "BinarySearch", typeof(Array), typeof(object))
+                .AddTSMethodDeclaration("static IndexOf<T>(array: Array<T>, value: Object, startIndex: number, count: number): number", "IndexOf", typeof(Array), typeof(object), typeof(int), typeof(int))
+                .AddTSMethodDeclaration("static IndexOf<T>(array: Array<T>, value: Object, startIndex: number): number", "IndexOf", typeof(Array), typeof(object), typeof(int))
+                .AddTSMethodDeclaration("static IndexOf<T>(array: Array<T>, value: Object): number", "IndexOf", typeof(Array), typeof(object))
+                .AddTSMethodDeclaration("static LastIndexOf<T>(array: Array<T>, value: Object, startIndex: number, count: number): number", "LastIndexOf", typeof(Array), typeof(object), typeof(int), typeof(int))
+                .AddTSMethodDeclaration("static LastIndexOf<T>(array: Array<T>, value: Object, startIndex: number): number", "LastIndexOf", typeof(Array), typeof(object), typeof(int))
+                .AddTSMethodDeclaration("static LastIndexOf<T>(array: Array<T>, value: Object): number", "LastIndexOf", typeof(Array), typeof(object))
+                .AddTSMethodDeclaration("static Reverse<T>(array: Array<T>, index: number, length: number): void", "Reverse", typeof(Array), typeof(int), typeof(int))
+                .AddTSMethodDeclaration("static Reverse<T>(array: Array<T>): void", "Reverse", typeof(Array))
+                .AddTSMethodDeclaration("static Sort<T>(keys: Array<T>, items: Array<T>, index: number, length: number, comparer: any): void", "Sort", typeof(Array), typeof(Array), typeof(int), typeof(int), typeof(System.Collections.IComparer))
+                .AddTSMethodDeclaration("static Sort<T>(array: Array<T>, index: number, length: number, comparer: any): void", "Sort", typeof(Array), typeof(int), typeof(int), typeof(System.Collections.IComparer))
+                .AddTSMethodDeclaration("static Sort<T>(keys: Array<T>, items: Array<T>, index: number, length: number): void", "Sort", typeof(Array), typeof(Array), typeof(int), typeof(int))
+                .AddTSMethodDeclaration("static Sort<T>(array: Array<T>, index: number, length: number): void", "Sort", typeof(Array), typeof(int), typeof(int))
+                .AddTSMethodDeclaration("static Sort<T>(keys: Array<T>, items: Array<T>, comparer: any): void", "Sort", typeof(Array), typeof(Array), typeof(System.Collections.IComparer))
+                .AddTSMethodDeclaration("static Sort<T>(array: Array<T>, comparer: any): void", "Sort", typeof(Array), typeof(System.Collections.IComparer))
+                .AddTSMethodDeclaration("static Sort<T>(keys: Array<T>, items: Array<T>): void", "Sort", typeof(Array), typeof(Array))
+                .AddTSMethodDeclaration("static Sort<T>(array: Array<T>): void", "Sort", typeof(Array))
+                .AddTSMethodDeclaration("static CreateInstance<T>(elementType: any, length1: number, length2: number, length3: number): Array<T>", "CreateInstance", typeof(Type), typeof(int), typeof(int), typeof(int))
+                .AddTSMethodDeclaration("static CreateInstance<T>(elementType: any, length1: number, length2: number): Array<T>", "CreateInstance", typeof(Type), typeof(int), typeof(int))
+                .AddTSMethodDeclaration("static CreateInstance<T>(elementType: any, lengths: Array<number>, lowerBounds: Array<number>): Array<T>", "CreateInstance", typeof(Type), typeof(int[]), typeof(int[]))
+                .AddTSMethodDeclaration("static CreateInstance<T>(elementType: any, length: number): Array<T>", "CreateInstance", typeof(Type), typeof(int))
+                .AddTSMethodDeclaration("static CreateInstance<T>(elementType: any, ...lengths: number[]): Array<T>", "CreateInstance", typeof(Type), typeof(int[]))
+                .AddTSMethodDeclaration("static Clear<T>(array: Array<T>, index: number, length: number): void", "Clear", typeof(Array), typeof(int), typeof(int))
+                .AddTSMethodDeclaration("static Copy<T>(sourceArray: Array<T>, sourceIndex: number, destinationArray: Array<T>, destinationIndex: number, length: number): void", "Copy", typeof(Array), typeof(int), typeof(Array), typeof(int), typeof(int))
+                .AddTSMethodDeclaration("static Copy<T>(sourceArray: Array<T>, destinationArray: Array<T>, length: number): void", "Copy", typeof(Array), typeof(Array), typeof(int))
+                .AddTSMethodDeclaration("static ConstrainedCopy<T>(sourceArray: Array<T>, sourceIndex: number, destinationArray: Array<T>, destinationIndex: number, length: number): void", "ConstrainedCopy", typeof(Array), typeof(int), typeof(Array), typeof(int), typeof(int))
             ;
 
             AddTSTypeNameMap(typeof(sbyte), "number");
@@ -296,10 +296,9 @@ namespace QuickJS.Unity
             AddTSTypeNameMap(typeof(char), "string");
             AddTSTypeNameMap(typeof(void), "void");
             // AddTSTypeNameMap(typeof(ScriptArray), "any[]");
-            AddTSTypeNameMap(typeof(QuickJS.IO.ByteBuffer), "jsb.ByteBuffer");
+            // AddTSTypeNameMap(typeof(QuickJS.IO.ByteBuffer), "jsb.ByteBuffer");
 
             TransformType(typeof(QuickJS.IO.ByteBuffer))
-                .Rename("jsb.ByteBuffer")
                 .SetMemberBlocked("_SetPosition")
                 .SetMethodBlocked("ReadAllBytes", typeof(IntPtr))
                 .SetMethodBlocked("WriteBytes", typeof(IntPtr), typeof(int));
@@ -518,7 +517,6 @@ namespace QuickJS.Unity
             var typeTransform = TransformType(type);
             if (!_exportedTypes.ContainsKey(type))
             {
-                //TODO: 设置导出绑定代码与定义声明选项
                 var typeBindingInfo = new TypeBindingInfo(this, type, typeTransform);
                 _exportedTypes.Add(type, typeBindingInfo);
                 typeBindingInfo.Initialize();

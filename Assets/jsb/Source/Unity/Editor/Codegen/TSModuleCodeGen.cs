@@ -146,7 +146,12 @@ namespace QuickJS.Unity
                 return;
             }
 
-            if (type.IsPrimitive || _noImportTypes.Contains(type))
+            if (type.IsPrimitive)
+            {
+                return;
+            }
+
+            if (_noImportTypes.Contains(type))
             {
                 return;
             }
@@ -173,10 +178,17 @@ namespace QuickJS.Unity
 
             var tsTypeNaming = cg.bindingManager.GetTSTypeNaming(type);
 
-            // 避免引入自身
-            if (tsTypeNaming != null && tsTypeNaming.jsModule != this.typeBindingInfo.tsTypeNaming.jsModule)
+            if (tsTypeNaming != null)
             {
-                AddModuleAlias(tsTypeNaming.jsModule, tsTypeNaming.jsModuleAccess);
+                // 避免引入自身
+                if (tsTypeNaming.jsModule != this.typeBindingInfo.tsTypeNaming.jsModule)
+                {
+                    AddModuleAlias(tsTypeNaming.jsModule, tsTypeNaming.jsModuleAccess);
+                }
+            }
+            else
+            {
+                AddModuleAlias(type.BaseType);
             }
         }
 
@@ -264,7 +276,7 @@ namespace QuickJS.Unity
 
             if (type == typeof(Array))
             {
-                return "System.Array<any>";
+                return "Array<any>";
             }
 
             if (type == typeof(ScriptPromise))
@@ -286,7 +298,7 @@ namespace QuickJS.Unity
             {
                 var elementType = type.GetElementType();
                 var tsFullName = GetTSTypeFullName(elementType);
-                return "System.Array<" + tsFullName + ">";
+                return "Array<" + tsFullName + ">";
             }
 
             var info = this.cg.bindingManager.GetExportedType(type);

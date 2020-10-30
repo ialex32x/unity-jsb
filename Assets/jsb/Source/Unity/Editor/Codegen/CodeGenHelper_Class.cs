@@ -31,7 +31,6 @@ namespace QuickJS.Unity
                 this.cg.tsDeclare.AppendLine($"@{this.cg.bindingManager.GetDefaultTypePrefix()}EditorRuntime");
             }
 
-
             if (typeBindingInfo.type.IsInterface)
             {
                 jsClassType = "interface";
