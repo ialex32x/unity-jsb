@@ -13,19 +13,15 @@ namespace QuickJS.Unity
 
     public class ClassCodeGen : TypeCodeGen
     {
-        private TSModuleCodeGen _tsMod;
-
-        public ClassCodeGen(CodeGenerator cg, TSModuleCodeGen tsMod, TypeBindingInfo typeBindingInfo)
+        public ClassCodeGen(CodeGenerator cg, TypeBindingInfo typeBindingInfo)
         : base(cg, typeBindingInfo)
         {
-            this._tsMod = tsMod;
-
             this.cg.AppendJSDoc(this.typeBindingInfo.type);
             var transform = this.typeBindingInfo.transform;
             var prefix = this.typeBindingInfo.tsTypeNaming.topLevel ? "declare " : "";
             var superBindingInfo = this.cg.bindingManager.GetSuperTypeBindingInfo(this.typeBindingInfo);
-            var super = this._tsMod.GetTSTypeFullName(superBindingInfo?.type);
-            var interfaces = this.cg.bindingManager.GetTSInterfacesName(this.typeBindingInfo.type);
+            var super = this.cg.currentTSModule.GetTSTypeFullName_t(superBindingInfo?.type);
+            var interfaces = this.cg.currentTSModule.GetTSInterfacesName(this.typeBindingInfo.type);
             var implements = "";
             var jsClassName = this.typeBindingInfo.tsTypeNaming.jsName;
             var jsClassType = "";
@@ -488,7 +484,7 @@ namespace QuickJS.Unity
                         var bindingInfo = kv.Value;
                         if (bindingInfo.staticPair.IsValid())
                         {
-                            var tsPropertyVar = BindingManager.GetTSVariable(bindingInfo.regName);
+                            var tsPropertyVar = this.cg.bindingManager.GetTSVariable(bindingInfo.regName);
                             cg.cs.AppendLine("cls.AddProperty(true, \"{0}\", {1}, {2});",
                                 tsPropertyVar,
                                 bindingInfo.staticPair.getterName != null ? bindingInfo.staticPair.getterName : "null",
@@ -499,14 +495,14 @@ namespace QuickJS.Unity
                             {
                                 tsPropertyPrefix += "readonly ";
                             }
-                            var tsPropertyType = this._tsMod.GetTSTypeFullName(bindingInfo.propertyType);
+                            var tsPropertyType = this.cg.currentTSModule.GetTSTypeFullName_t(bindingInfo.propertyType);
                             cg.AppendJSDoc(bindingInfo.propertyInfo);
                             cg.tsDeclare.AppendLine($"{tsPropertyPrefix}{tsPropertyVar}: {tsPropertyType}");
                         }
 
                         if (bindingInfo.instancePair.IsValid())
                         {
-                            var tsPropertyVar = BindingManager.GetTSVariable(bindingInfo.regName);
+                            var tsPropertyVar = this.cg.bindingManager.GetTSVariable(bindingInfo.regName);
                             cg.cs.AppendLine("cls.AddProperty(false, \"{0}\", {1}, {2});",
                                 tsPropertyVar,
                                 bindingInfo.instancePair.getterName != null ? bindingInfo.instancePair.getterName : "null",
@@ -517,7 +513,7 @@ namespace QuickJS.Unity
                             {
                                 tsPropertyPrefix += "readonly ";
                             }
-                            var tsPropertyType = this._tsMod.GetTSTypeFullName(bindingInfo.propertyType);
+                            var tsPropertyType = this.cg.currentTSModule.GetTSTypeFullName_t(bindingInfo.propertyType);
                             cg.AppendJSDoc(bindingInfo.propertyInfo);
                             cg.tsDeclare.AppendLine($"{tsPropertyPrefix}{tsPropertyVar}: {tsPropertyType}");
                         }
@@ -527,7 +523,7 @@ namespace QuickJS.Unity
                     {
                         var bindingInfo = kv.Value;
                         var bStatic = bindingInfo.isStatic;
-                        var tsFieldVar = BindingManager.GetTSVariable(bindingInfo.regName);
+                        var tsFieldVar = this.cg.bindingManager.GetTSVariable(bindingInfo.regName);
                         if (bindingInfo.constantValue != null)
                         {
                             var cv = bindingInfo.constantValue;
@@ -546,7 +542,7 @@ namespace QuickJS.Unity
                         {
                             tsFieldPrefix += "readonly ";
                         }
-                        var tsFieldType = this._tsMod.GetTSTypeFullName(bindingInfo.fieldType);
+                        var tsFieldType = this.cg.currentTSModule.GetTSTypeFullName_t(bindingInfo.fieldType);
                         cg.AppendJSDoc(bindingInfo.fieldInfo);
                         cg.tsDeclare.AppendLine($"{tsFieldPrefix}{tsFieldVar}: {tsFieldType}");
                     }
@@ -555,8 +551,8 @@ namespace QuickJS.Unity
                     {
                         var eventBindingInfo = kv.Value;
                         var bStatic = eventBindingInfo.isStatic;
-                        var tsFieldVar = BindingManager.GetTSVariable(eventBindingInfo.regName);
-                        var tsFieldType = this._tsMod.GetTSTypeFullName(eventBindingInfo.eventInfo.EventHandlerType);
+                        var tsFieldVar = this.cg.bindingManager.GetTSVariable(eventBindingInfo.regName);
+                        var tsFieldType = this.cg.currentTSModule.GetTSTypeFullName_t(eventBindingInfo.eventInfo.EventHandlerType);
                         var tsFieldPrefix = "";
                         if (bStatic)
                         {
@@ -576,8 +572,8 @@ namespace QuickJS.Unity
                     {
                         var delegateBindingInfo = kv.Value;
                         var bStatic = delegateBindingInfo.isStatic;
-                        var tsFieldVar = BindingManager.GetTSVariable(delegateBindingInfo.regName);
-                        var tsFieldType = this._tsMod.GetTSTypeFullName(delegateBindingInfo.delegateType);
+                        var tsFieldVar = this.cg.bindingManager.GetTSVariable(delegateBindingInfo.regName);
+                        var tsFieldType = this.cg.currentTSModule.GetTSTypeFullName_t(delegateBindingInfo.delegateType);
                         var tsFieldPrefix = "";
                         if (bStatic)
                         {

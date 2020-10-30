@@ -45,7 +45,7 @@ namespace QuickJS.Unity
         {
             this.type = type;
 
-            var naming = typeTransform.GetTypeNaming() ?? bindingManager.GetNamingAttribute(type);
+            var naming = typeTransform?.GetTypeNaming() ?? bindingManager.GetNamingAttribute(type);
             var indexOfTypeName = naming.LastIndexOf('.');
 
             if (indexOfTypeName >= 0)

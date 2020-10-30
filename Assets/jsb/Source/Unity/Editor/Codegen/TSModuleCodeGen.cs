@@ -147,12 +147,12 @@ namespace QuickJS.Unity
 
         #region TS 命名辅助
 
-        public string GetTSTypeFullName(Type type)
+        public string GetTSTypeFullName_t(Type type)
         {
-            return GetTSTypeFullName(this.cg.bindingManager.GetTSTypeNaming(type));
+            return GetTSTypeFullName_t(this.cg.bindingManager.GetTSTypeNaming(type));
         }
 
-        public string GetTSTypeFullName(TSTypeNaming tsTypeNaming)
+        public string GetTSTypeFullName_t(TSTypeNaming tsTypeNaming)
         {
             if (tsTypeNaming == null)
             {
@@ -161,7 +161,7 @@ namespace QuickJS.Unity
 
             if (tsTypeNaming.jsModule == this.tsModule)
             {
-                var s = this.cg.bindingManager.GetTSTypeFullName(null, tsTypeNaming.type, false);
+                var s = GetTSTypeFullName(null, tsTypeNaming.type, false);
                 if (s.StartsWith(this.tsModule))
                 {
                     return s.Substring(this.tsModule.Length + 1);
@@ -171,7 +171,7 @@ namespace QuickJS.Unity
             }
 
             var alias = GetAlias(tsTypeNaming.type);
-            return this.cg.bindingManager.GetTSTypeFullName(null, tsTypeNaming.type, false);
+            return GetTSTypeFullName(null, tsTypeNaming.type, false);
         }
 
         public string GetAlias(Type type)
@@ -188,6 +188,200 @@ namespace QuickJS.Unity
             }
 
             return null;
+        }
+
+        // 获取 type 在 typescript 中对应类型名
+        public string GetTSTypeFullName(Type type)
+        {
+            return GetTSTypeFullName(null, type, false);
+        }
+
+        public string GetTSTypeFullName(string localAlias, Type type, bool isOut)
+        {
+            if (type == null || type == typeof(void))
+            {
+                return "void";
+            }
+
+            if (type.IsByRef)
+            {
+                if (isOut)
+                {
+                    return $"{this.cg.bindingManager.GetDefaultTypePrefix()}Out<{GetTSTypeFullName(type.GetElementType())}>";
+                }
+                return $"{this.cg.bindingManager.GetDefaultTypePrefix()}Ref<{GetTSTypeFullName(type.GetElementType())}>";
+                // return GetTSTypeFullName(type.GetElementType());
+            }
+
+            List<string> names;
+            if (this.cg.bindingManager.GetTSTypeNameMap(type, out names))
+            {
+                return names.Count > 1 ? $"({String.Join(" | ", names)})" : names[0];
+            }
+
+            if (type == typeof(Array))
+            {
+                return "System.Array<any>";
+            }
+
+            if (type == typeof(ScriptPromise))
+            {
+                return "Promise<void>";
+            }
+
+            if (type.IsSubclassOf(typeof(ScriptPromise)))
+            {
+                if (type.IsGenericType)
+                {
+                    var gt = type.GetGenericArguments()[0];
+                    return "Promise<" + GetTSTypeFullName(gt) + ">";
+                }
+                return "Promise<any>";
+            }
+
+            if (type.IsArray)
+            {
+                var elementType = type.GetElementType();
+                var tsFullName = GetTSTypeFullName(elementType);
+                return "System.Array<" + tsFullName + ">";
+            }
+
+            var info = this.cg.bindingManager.GetExportedType(type);
+            if (info != null)
+            {
+                var gDef = GetTSGenericTypeDefinition(type);
+                if (!string.IsNullOrEmpty(gDef))
+                {
+                    return gDef;
+                }
+
+                if (localAlias != null)
+                {
+                    return CodeGenUtils.Concat(".", localAlias, info.tsTypeNaming.jsLocalName);
+                }
+                return info.tsTypeNaming.jsFullName;
+            }
+
+            if (type.BaseType == typeof(MulticastDelegate))
+            {
+                var delegateBindingInfo = this.cg.bindingManager.GetDelegateBindingInfo(type);
+                if (delegateBindingInfo != null)
+                {
+                    var nargs = delegateBindingInfo.parameters.Length;
+                    var ret = GetTSTypeFullName(delegateBindingInfo.returnType);
+                    var t_arglist = (nargs > 0 ? ", " : "") + GetTSArglistTypes(delegateBindingInfo.parameters, false);
+                    var v_arglist = GetTSArglistTypes(delegateBindingInfo.parameters, true);
+                    // return $"{CodeGenerator.NamespaceOfInternalScriptTypes}.Delegate{nargs}<{ret}{t_arglist}> | (({v_arglist}) => {ret})";
+                    return $"({v_arglist}) => {ret}";
+                }
+            }
+
+            if (type.IsGenericType)
+            {
+                if (type.GetGenericTypeDefinition() == typeof(Nullable<>))
+                {
+                    var gArgs = type.GetGenericArguments();
+                    var gArgsTS = GetTSTypeFullName(gArgs[0]);
+                    return $"{this.cg.bindingManager.GetDefaultTypePrefix()}Nullable<{gArgsTS}>";
+                }
+            }
+            else
+            {
+                if (type.IsGenericParameter)
+                {
+                    return type.Name;
+                }
+            }
+
+            return "any";
+        }
+
+        // 生成参数对应的字符串形式参数列表定义 (typescript)
+        public string GetTSArglistTypes(ParameterInfo[] parameters, bool withVarName)
+        {
+            var size = parameters.Length;
+            var arglist = "";
+            if (size == 0)
+            {
+                return arglist;
+            }
+            for (var i = 0; i < size; i++)
+            {
+                var parameter = parameters[i];
+                var typename = GetTSTypeFullName(parameter.ParameterType);
+                if (withVarName)
+                {
+                    arglist += this.cg.bindingManager.GetTSVariable(parameter) + ": ";
+                }
+                arglist += typename;
+                if (i != size - 1)
+                {
+                    arglist += ", ";
+                }
+            }
+            return arglist;
+        }
+
+        // 获取实现的接口的ts声明
+        public string GetTSInterfacesName(Type type)
+        {
+            var interfaces = type.GetInterfaces();
+            var str = "";
+
+            foreach (var @interface in interfaces)
+            {
+                var interfaceBindingInfo = this.cg.bindingManager.GetExportedType(@interface);
+                if (interfaceBindingInfo != null)
+                {
+                    // Debug.Log($"{type.Name} implements {@interface.Name}");
+                    str += GetTSTypeFullName(interfaceBindingInfo.type) + ", ";
+                }
+            }
+
+            var gDef = GetTSGenericTypeDefinition(type);
+            if (gDef.Length > 0)
+            {
+                str += gDef + ", ";
+            }
+
+            if (str.Length > 0)
+            {
+                str = str.Substring(0, str.Length - 2);
+            }
+            return str;
+        }
+
+        // 如果 type 是一个具体泛型类, 则返回 Sample<String> 形式的字符串表示
+        public string GetTSGenericTypeDefinition(Type type)
+        {
+            var str = "";
+
+            if (type.IsGenericType && !type.IsGenericTypeDefinition)
+            {
+                var gType = type.GetGenericTypeDefinition();
+                var gTypeInfo = this.cg.bindingManager.GetExportedType(gType);
+                if (gTypeInfo != null)
+                {
+                    var templateArgs = "";
+                    var tArgs = type.GetGenericArguments();
+                    for (var i = 0; i < tArgs.Length; i++)
+                    {
+                        templateArgs += GetTSTypeFullName(tArgs[i]);
+                        if (i != tArgs.Length - 1)
+                        {
+                            templateArgs += ", ";
+                        }
+                    }
+
+                    str += gTypeInfo.tsTypeNaming.MakeGenericJSFullTypeName(templateArgs);
+                }
+            }
+
+            if (str.Length > 0)
+            {
+                str = str.Substring(0, str.Length - 2);
+            }
+            return str;
         }
 
         #endregion

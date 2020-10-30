@@ -289,15 +289,15 @@ namespace QuickJS.Unity
                 {
                     this.cg.tsDeclare.AppendL(": { ");
 
-                    var returnTypeTS = this.cg.bindingManager.GetTSTypeFullName(returnType);
-                    var returnVarName = BindingManager.GetTSVariable("return");
+                    var returnTypeTS = this.cg.currentTSModule.GetTSTypeFullName(returnType);
+                    var returnVarName = this.cg.bindingManager.GetTSVariable("return");
                     this.cg.tsDeclare.AppendL($"\"{returnVarName}\": {returnTypeTS}");
 
                     for (var i = 0; i < outParametersCount; i++)
                     {
                         var rp = returnParameters[i];
-                        var name = BindingManager.GetTSVariable(rp.Name);
-                        var ts = this.cg.bindingManager.GetTSTypeFullName(rp.ParameterType);
+                        var name = this.cg.bindingManager.GetTSVariable(rp.Name);
+                        var ts = this.cg.currentTSModule.GetTSTypeFullName(rp.ParameterType);
                         if (i != outParametersCount - 1)
                         {
                             this.cg.tsDeclare.AppendL($", \"{name}\": {ts}");
@@ -312,7 +312,7 @@ namespace QuickJS.Unity
                 }
                 else
                 {
-                    var returnTypeTS = this.cg.bindingManager.GetTSTypeFullName(returnType);
+                    var returnTypeTS = this.cg.currentTSModule.GetTSTypeFullName(returnType);
                     this.cg.tsDeclare.AppendL($": {returnTypeTS}");
                     this.cg.tsDeclare.AppendLine();
                 }
@@ -326,7 +326,7 @@ namespace QuickJS.Unity
                     {
                         var rp = returnParameters[i];
                         var name = rp.Name;
-                        var ts = this.cg.bindingManager.GetTSTypeFullName(rp.ParameterType);
+                        var ts = this.cg.currentTSModule.GetTSTypeFullName(rp.ParameterType);
                         if (i != outParametersCount - 1)
                         {
                             this.cg.tsDeclare.AppendL($"\"{name}\": {ts}, ");
@@ -549,14 +549,14 @@ namespace QuickJS.Unity
                     if (parameter.IsDefined(typeof(ParamArrayAttribute), false) && i == parameters.Length - 1)
                     {
                         var elementType = parameterType.GetElementType();
-                        var elementTS = this.cg.bindingManager.GetTSTypeFullName(elementType);
-                        var parameterVarName = BindingManager.GetTSVariable(parameter);
+                        var elementTS = this.cg.currentTSModule.GetTSTypeFullName(elementType);
+                        var parameterVarName = this.cg.bindingManager.GetTSVariable(parameter);
                         this.cg.tsDeclare.AppendL($"{parameter_prefix}...{parameterVarName}: {elementTS}[]");
                     }
                     else
                     {
-                        var parameterTS = this.cg.bindingManager.GetTSTypeFullName(null, parameter.ParameterType, parameter.IsOut);
-                        var parameterVarName = BindingManager.GetTSVariable(parameter);
+                        var parameterTS = this.cg.currentTSModule.GetTSTypeFullName(null, parameter.ParameterType, parameter.IsOut);
+                        var parameterVarName = this.cg.bindingManager.GetTSVariable(parameter);
                         this.cg.tsDeclare.AppendL($"{parameter_prefix}{parameterVarName}: {parameterTS}");
                     }
 
@@ -775,7 +775,7 @@ namespace QuickJS.Unity
         //         this.cg.cs.AppendLine("DuktapeDLL.duk_push_this(ctx);");
         //         foreach (var eventBindingInfo in eventBindingInfos)
         //         {
-        //             var tsFieldVar = BindingManager.GetTSVariable(eventBindingInfo.regName);
+        //             var tsFieldVar = this.cg.bindingManager.GetTSVariable(eventBindingInfo.regName);
         //             cg.cs.AppendLine($"duk_add_event(ctx, \"{tsFieldVar}\", {eventBindingInfo.adderName}, {eventBindingInfo.removerName}, -1);");
         //         }
         //         this.cg.cs.AppendLine("DuktapeDLL.duk_pop(ctx);");

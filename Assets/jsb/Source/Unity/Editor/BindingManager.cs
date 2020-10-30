@@ -494,6 +494,11 @@ namespace QuickJS.Unity
             list.AddRange(names);
         }
 
+        public bool GetTSTypeNameMap(Type type, out List<string> list)
+        {
+            return _tsTypeNameMap.TryGetValue(type, out list);
+        }
+
         /// <summary>
         /// CS, 添加类型名称映射, 用于简化导出时的常用类型名
         /// </summary>
@@ -763,138 +768,6 @@ namespace QuickJS.Unity
             return $"jsb.Ref<{name}>";
         }
 
-        // 获取 type 在 typescript 中对应类型名
-        public string GetTSTypeFullName(Type type)
-        {
-            return GetTSTypeFullName(null, type, false);
-        }
-
-        public string GetTSTypeFullName(string localAlias, Type type, bool isOut)
-        {
-            if (type == null || type == typeof(void))
-            {
-                return "void";
-            }
-
-            if (type.IsByRef)
-            {
-                if (isOut)
-                {
-                    return $"{GetDefaultTypePrefix()}Out<{GetTSTypeFullName(type.GetElementType())}>";
-                }
-                return $"{GetDefaultTypePrefix()}Ref<{GetTSTypeFullName(type.GetElementType())}>";
-                // return GetTSTypeFullName(type.GetElementType());
-            }
-
-            List<string> names;
-            if (_tsTypeNameMap.TryGetValue(type, out names))
-            {
-                return names.Count > 1 ? $"({String.Join(" | ", names)})" : names[0];
-            }
-
-            if (type == typeof(Array))
-            {
-                return "System.Array<any>";
-            }
-
-            if (type == typeof(ScriptPromise))
-            {
-                return "Promise<void>";
-            }
-
-            if (type.IsSubclassOf(typeof(ScriptPromise)))
-            {
-                if (type.IsGenericType)
-                {
-                    var gt = type.GetGenericArguments()[0];
-                    return "Promise<" + GetTSTypeFullName(gt) + ">";
-                }
-                return "Promise<any>";
-            }
-
-            if (type.IsArray)
-            {
-                var elementType = type.GetElementType();
-                var tsFullName = GetTSTypeFullName(elementType);
-                return "System.Array<" + tsFullName + ">";
-            }
-
-            var info = GetExportedType(type);
-            if (info != null)
-            {
-                var gDef = GetTSGenericTypeDefinition(type);
-                if (!string.IsNullOrEmpty(gDef))
-                {
-                    return gDef;
-                }
-
-                if (localAlias != null)
-                {
-                    return CodeGenUtils.Concat(".", localAlias, info.tsTypeNaming.jsLocalName);
-                }
-                return info.tsTypeNaming.jsFullName;
-            }
-
-            if (type.BaseType == typeof(MulticastDelegate))
-            {
-                var delegateBindingInfo = GetDelegateBindingInfo(type);
-                if (delegateBindingInfo != null)
-                {
-                    var nargs = delegateBindingInfo.parameters.Length;
-                    var ret = GetTSTypeFullName(delegateBindingInfo.returnType);
-                    var t_arglist = (nargs > 0 ? ", " : "") + GetTSArglistTypes(delegateBindingInfo.parameters, false);
-                    var v_arglist = GetTSArglistTypes(delegateBindingInfo.parameters, true);
-                    // return $"{CodeGenerator.NamespaceOfInternalScriptTypes}.Delegate{nargs}<{ret}{t_arglist}> | (({v_arglist}) => {ret})";
-                    return $"({v_arglist}) => {ret}";
-                }
-            }
-
-            if (type.IsGenericType)
-            {
-                if (type.GetGenericTypeDefinition() == typeof(Nullable<>))
-                {
-                    var gArgs = type.GetGenericArguments();
-                    var gArgsTS = GetTSTypeFullName(gArgs[0]);
-                    return $"{GetDefaultTypePrefix()}Nullable<{gArgsTS}>";
-                }
-            }
-            else
-            {
-                if (type.IsGenericParameter)
-                {
-                    return type.Name;
-                }
-            }
-
-            return "any";
-        }
-
-        // 生成参数对应的字符串形式参数列表定义 (typescript)
-        public string GetTSArglistTypes(ParameterInfo[] parameters, bool withVarName)
-        {
-            var size = parameters.Length;
-            var arglist = "";
-            if (size == 0)
-            {
-                return arglist;
-            }
-            for (var i = 0; i < size; i++)
-            {
-                var parameter = parameters[i];
-                var typename = GetTSTypeFullName(parameter.ParameterType);
-                if (withVarName)
-                {
-                    arglist += GetTSVariable(parameter) + ": ";
-                }
-                arglist += typename;
-                if (i != size - 1)
-                {
-                    arglist += ", ";
-                }
-            }
-            return arglist;
-        }
-
         public string GetCSNamespace(Type type)
         {
             return string.IsNullOrEmpty(type.Namespace) ? "" : (type.Namespace + ".");
@@ -1019,7 +892,7 @@ namespace QuickJS.Unity
             return "js_push_classvalue";
         }
 
-        public static string GetTSVariable(string name)
+        public string GetTSVariable(string name)
         {
             if (_tsKeywords.Contains(name))
             {
@@ -1028,7 +901,7 @@ namespace QuickJS.Unity
             return name;
         }
 
-        public static string GetTSVariable(ParameterInfo parameterInfo)
+        public string GetTSVariable(ParameterInfo parameterInfo)
         {
             var name = parameterInfo.Name;
             return GetTSVariable(name);
@@ -1073,68 +946,6 @@ namespace QuickJS.Unity
             }
 
             return null;
-        }
-
-        // 获取实现的接口的ts声明
-        public string GetTSInterfacesName(Type type)
-        {
-            var interfaces = type.GetInterfaces();
-            var str = "";
-
-            foreach (var @interface in interfaces)
-            {
-                var interfaceBindingInfo = GetExportedType(@interface);
-                if (interfaceBindingInfo != null)
-                {
-                    // Debug.Log($"{type.Name} implements {@interface.Name}");
-                    str += GetTSTypeFullName(interfaceBindingInfo.type) + ", ";
-                }
-            }
-
-            var gDef = GetTSGenericTypeDefinition(type);
-            if (gDef.Length > 0)
-            {
-                str += gDef + ", ";
-            }
-
-            if (str.Length > 0)
-            {
-                str = str.Substring(0, str.Length - 2);
-            }
-            return str;
-        }
-
-        // 如果 type 是一个具体泛型类, 则返回 Sample<String> 形式的字符串表示
-        public string GetTSGenericTypeDefinition(Type type)
-        {
-            var str = "";
-
-            if (type.IsGenericType && !type.IsGenericTypeDefinition)
-            {
-                var gType = type.GetGenericTypeDefinition();
-                var gTypeInfo = GetExportedType(gType);
-                if (gTypeInfo != null)
-                {
-                    var templateArgs = "";
-                    var tArgs = type.GetGenericArguments();
-                    for (var i = 0; i < tArgs.Length; i++)
-                    {
-                        templateArgs += GetTSTypeFullName(tArgs[i]);
-                        if (i != tArgs.Length - 1)
-                        {
-                            templateArgs += ", ";
-                        }
-                    }
-
-                    str += gTypeInfo.tsTypeNaming.MakeGenericJSFullTypeName(templateArgs);
-                }
-            }
-
-            if (str.Length > 0)
-            {
-                str = str.Substring(0, str.Length - 2);
-            }
-            return str;
         }
 
         // 生成参数对应的字符串形式参数列表 (csharp)
@@ -1243,8 +1054,8 @@ namespace QuickJS.Unity
         // 在 TypeTransform 准备完成后才有效
         public TSTypeNaming GetTSTypeNaming(Type type)
         {
-            TSTypeNaming value;
-            if (!_tsTypeNamings.TryGetValue(type, out value))
+            TSTypeNaming value = null;
+            if (type != null && !_tsTypeNamings.TryGetValue(type, out value))
             {
                 value = _tsTypeNamings[type] = new TSTypeNaming(this, type, GetTypeTransform(type));
             }

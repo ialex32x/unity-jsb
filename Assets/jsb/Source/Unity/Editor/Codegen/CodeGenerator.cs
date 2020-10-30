@@ -21,9 +21,9 @@ namespace QuickJS.Unity
 
         private bool _emitSharedTS = true;
 
-        private string _currentTSModule = "";
+        private TSModuleCodeGen _currentTSModule = null;
 
-        public string currentTSModule => _currentTSModule;
+        public TSModuleCodeGen currentTSModule => _currentTSModule;
         public BindingManager bindingManager;
         public TextGenerator cs;
         public TextGenerator tsDeclare;
@@ -237,7 +237,6 @@ namespace QuickJS.Unity
 
         private void GenerateInternal(TypeBindingInfo typeBindingInfo)
         {
-            _currentTSModule = typeBindingInfo.tsTypeNaming.jsNamespace;
             using (new PlatformCodeGen(this, TypeBindingFlags.Default))
             {
                 using (new TopLevelCodeGen(this, typeBindingInfo))
@@ -246,6 +245,7 @@ namespace QuickJS.Unity
                     {
                         using (var tsMod = new TSModuleCodeGen(this, typeBindingInfo))
                         {
+                            _currentTSModule = tsMod;
                             using (new TSNamespaceCodeGen(this, typeBindingInfo.tsTypeNaming.jsNamespace))
                             {
                                 if (typeBindingInfo.IsEnum)
@@ -256,16 +256,16 @@ namespace QuickJS.Unity
                                 }
                                 else
                                 {
-                                    using (new ClassCodeGen(this, tsMod, typeBindingInfo))
+                                    using (new ClassCodeGen(this, typeBindingInfo))
                                     {
                                     }
                                 }
                             }
+                            _currentTSModule = null;
                         }
                     }
                 }
             }
-            _currentTSModule = null;
         }
 
         private void WriteAllText(string path, TextGenerator gen)
