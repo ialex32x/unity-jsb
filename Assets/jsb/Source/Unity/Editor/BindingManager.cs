@@ -23,6 +23,7 @@ namespace QuickJS.Unity
         private HashSet<Type> _blacklist;
         private List<string> _typePrefixBlacklist;
         private Dictionary<Type, TypeBindingInfo> _exportedTypes = new Dictionary<Type, TypeBindingInfo>();
+        private Dictionary<Type, TSTypeNaming> _tsTypeNamings = new Dictionary<Type, TSTypeNaming>();
         private Dictionary<string, TSModuleBindingInfo> _exportedModules = new Dictionary<string, TSModuleBindingInfo>();
         private List<TypeBindingInfo> _collectedTypes = new List<TypeBindingInfo>(); // 已经完成导出的类型 
         private Dictionary<Type, DelegateBridgeBindingInfo> _exportedDelegates = new Dictionary<Type, DelegateBridgeBindingInfo>();
@@ -751,6 +752,11 @@ namespace QuickJS.Unity
             return _exportedTypes.ContainsKey(type);
         }
 
+        public string GetDefaultTypePrefix()
+        {
+            return "jsb.";
+        }
+
         public string GetTSRefWrap(string name)
         {
 
@@ -782,11 +788,6 @@ namespace QuickJS.Unity
         public string GetTSReturnTypeFullName(Type type)
         {
             return GetTSTypeFullName(null, type, false, true);
-        }
-
-        public string GetDefaultTypePrefix()
-        {
-            return "jsb.";
         }
 
         public string GetTSTypeFullName(string localAlias, Type type, bool isOut, bool isReturn)
@@ -834,14 +835,8 @@ namespace QuickJS.Unity
 
             if (type.IsArray)
             {
-                // if (type.GetElementType() == typeof(byte))
-                // {
-                //     return CodeGenerator.NameOfBuffer;
-                // }
                 var elementType = type.GetElementType();
                 var tsFullName = GetTSTypeFullName(elementType);
-                // return tsFullName + "[]";
-                // return "System.Array";
                 return "System.Array<" + tsFullName + ">";
             }
 
@@ -856,9 +851,9 @@ namespace QuickJS.Unity
 
                 if (localAlias != null)
                 {
-                    return Concat(".", localAlias, info.jsLocalName);
+                    return CodeGenUtils.Concat(".", localAlias, info.tsTypeNaming.jsLocalName);
                 }
-                return info.jsFullName;
+                return info.tsTypeNaming.jsFullName;
             }
 
             if (type.BaseType == typeof(MulticastDelegate))
@@ -895,21 +890,6 @@ namespace QuickJS.Unity
             return "any";
         }
 
-        public static string Concat(string sp, params string[] values)
-        {
-            return string.Join(sp, from value in values where !string.IsNullOrEmpty(value) select value);
-        }
-
-        public string GetCSNamespace(Type type)
-        {
-            return GetCSNamespace(type.Namespace);
-        }
-
-        public string GetCSNamespace(string ns)
-        {
-            return string.IsNullOrEmpty(ns) ? "" : (ns + ".");
-        }
-
         // 生成参数对应的字符串形式参数列表定义 (typescript)
         public string GetTSArglistTypes(ParameterInfo[] parameters, bool withVarName)
         {
@@ -923,27 +903,22 @@ namespace QuickJS.Unity
             {
                 var parameter = parameters[i];
                 var typename = GetTSTypeFullName(parameter.ParameterType);
-                // if (parameter.IsOut && parameter.ParameterType.IsByRef)
-                // {
-                //     arglist += "out ";
-                // }
-                // else if (parameter.ParameterType.IsByRef)
-                // {
-                //     arglist += "ref ";
-                // }
                 if (withVarName)
                 {
                     arglist += GetTSVariable(parameter) + ": ";
                 }
                 arglist += typename;
-                // arglist += " ";
-                // arglist += parameter.Name;
                 if (i != size - 1)
                 {
                     arglist += ", ";
                 }
             }
             return arglist;
+        }
+
+        public string GetCSNamespace(Type type)
+        {
+            return string.IsNullOrEmpty(type.Namespace) ? "" : (type.Namespace + ".");
         }
 
         public string GetThrowError(string err)
@@ -1282,6 +1257,37 @@ namespace QuickJS.Unity
                 return name;
             }
             return fullname;
+        }
+
+        // 在 TypeTransform 准备完成后才有效
+        public TSTypeNaming GetTSTypeNaming(Type type)
+        {
+            TSTypeNaming value;
+            if (!_tsTypeNamings.TryGetValue(type, out value))
+            {
+                value = _tsTypeNamings[type] = new TSTypeNaming(this, type, GetTypeTransform(type));
+            }
+
+            return value;
+        }
+
+        public string GetNamingAttribute(TypeTransform transform, MethodInfo info)
+        {
+            if (info.IsSpecialName)
+            {
+                switch (info.Name)
+                {
+                    case "get_Item": return "$GetValue";
+                    case "set_Item": return "$SetValue";
+                }
+            }
+
+            return ApplyNameRule(transform.GetNameRule(info), info.Name);
+        }
+
+        public string GetNamingAttribute(MemberInfo info)
+        {
+            return info.Name;
         }
 
         public TypeBindingInfo GetExportedType(Type type)

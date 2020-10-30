@@ -148,9 +148,9 @@ namespace QuickJS.Unity
             this.cg = cg;
             this.cg.cs.Append("var ns = register.CreateNamespace(");
             // Debug.LogErrorFormat("{0}: {1}", bindingInfo.type, bindingInfo.Namespace);
-            if (!string.IsNullOrEmpty(typeBindingInfo.jsNamespace))
+            if (!string.IsNullOrEmpty(typeBindingInfo.tsTypeNaming.jsNamespace))
             {
-                var split_ns = from i in typeBindingInfo.jsNamespace.Split('.') select $"\"{i}\"";
+                var split_ns = from i in typeBindingInfo.tsTypeNaming.jsNamespace.Split('.') select $"\"{i}\"";
                 var join_ns = string.Join(", ", split_ns);
                 this.cg.cs.AppendL(join_ns);
             }

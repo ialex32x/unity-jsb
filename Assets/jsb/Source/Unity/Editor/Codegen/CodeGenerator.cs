@@ -237,7 +237,7 @@ namespace QuickJS.Unity
 
         private void GenerateInternal(TypeBindingInfo typeBindingInfo)
         {
-            _currentTSModule = typeBindingInfo.jsNamespace;
+            _currentTSModule = typeBindingInfo.tsTypeNaming.jsNamespace;
             using (new PlatformCodeGen(this, TypeBindingFlags.Default))
             {
                 using (new TopLevelCodeGen(this, typeBindingInfo))
@@ -246,7 +246,7 @@ namespace QuickJS.Unity
                     {
                         using (var tsMod = new TSModuleCodeGen(this, typeBindingInfo))
                         {
-                            using (new TSNamespaceCodeGen(this, typeBindingInfo.jsNamespace))
+                            using (new TSNamespaceCodeGen(this, typeBindingInfo.tsTypeNaming.jsNamespace))
                             {
                                 if (typeBindingInfo.IsEnum)
                                 {

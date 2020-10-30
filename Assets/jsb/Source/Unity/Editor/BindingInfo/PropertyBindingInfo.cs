@@ -33,7 +33,7 @@ namespace QuickJS.Unity
 
         public Type propertyType => propertyInfo.PropertyType;
 
-        public PropertyBindingInfo(PropertyInfo propertyInfo)
+        public PropertyBindingInfo(TypeBindingInfo typeBindingInfo, PropertyInfo propertyInfo)
         {
             this.propertyInfo = propertyInfo;
             if (propertyInfo.CanRead && propertyInfo.GetMethod != null && propertyInfo.GetMethod.IsPublic)
@@ -60,7 +60,7 @@ namespace QuickJS.Unity
                 }
             }
 
-            this.regName = TypeBindingInfo.GetNamingAttribute(propertyInfo);
+            this.regName = typeBindingInfo.bindingManager.GetNamingAttribute(propertyInfo);
         }
     }
 

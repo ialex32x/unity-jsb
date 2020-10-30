@@ -15,8 +15,8 @@ namespace QuickJS.Unity
         : base(cg, type)
         {
             this.cg.AppendJSDoc(type.type);
-            var prefix = this.typeBindingInfo.topLevel ? "declare " : "";
-            this.cg.tsDeclare.AppendLine("{0}enum {1} {{", prefix, typeBindingInfo.jsName);
+            var prefix = this.typeBindingInfo.tsTypeNaming.topLevel ? "declare " : "";
+            this.cg.tsDeclare.AppendLine("{0}enum {1} {{", prefix, typeBindingInfo.tsTypeNaming.jsName);
             this.cg.tsDeclare.AddTabLevel();
         }
 
@@ -27,7 +27,7 @@ namespace QuickJS.Unity
                 using (new RegFuncNamespaceCodeGen(cg, typeBindingInfo))
                 {
                     this.cg.cs.AppendLine("var cls = ns.CreateEnum(\"{0}\", typeof({1}));",
-                        typeBindingInfo.jsName,
+                        typeBindingInfo.tsTypeNaming.jsName,
                         this.cg.bindingManager.GetCSTypeFullName(typeBindingInfo.type));
                     var values = new Dictionary<string, object>();
                     foreach (var ev in Enum.GetValues(typeBindingInfo.type))

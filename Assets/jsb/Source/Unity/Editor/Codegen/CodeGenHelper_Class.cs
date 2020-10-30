@@ -22,12 +22,12 @@ namespace QuickJS.Unity
 
             this.cg.AppendJSDoc(this.typeBindingInfo.type);
             var transform = this.typeBindingInfo.transform;
-            var prefix = this.typeBindingInfo.topLevel ? "declare " : "";
+            var prefix = this.typeBindingInfo.tsTypeNaming.topLevel ? "declare " : "";
             var superBindingInfo = this.cg.bindingManager.GetTSSuperTypeBindingInfo(this.typeBindingInfo);
             var super = this._tsMod.GetTSTypeFullName(superBindingInfo);
             var interfaces = this.cg.bindingManager.GetTSInterfacesName(this.typeBindingInfo.type);
             var implements = "";
-            var jsClassName = this.typeBindingInfo.jsName;
+            var jsClassName = this.typeBindingInfo.tsTypeNaming.jsName;
             var jsClassType = "";
 
             if (typeBindingInfo.isEditorRuntime)
@@ -375,7 +375,7 @@ namespace QuickJS.Unity
                     }
 
                     cg.cs.AppendLine("var cls = ns.CreateClass(\"{0}\", typeof({1}), {2});",
-                        typeBindingInfo.jsName,
+                        typeBindingInfo.tsTypeNaming.jsName,
                         this.cg.bindingManager.GetCSTypeFullName(typeBindingInfo.type),
                         constructor);
 

@@ -39,8 +39,8 @@ namespace QuickJS.Unity
         {
             this.cg = cg;
             this.typeBindingInfo = typeBindingInfo;
-            this.tsModule = string.IsNullOrEmpty(typeBindingInfo.jsModule) ? "global" : typeBindingInfo.jsModule;
-            this.moduleBindingInfo = cg.bindingManager.GetExportedModule(typeBindingInfo.jsModule);
+            this.tsModule = string.IsNullOrEmpty(typeBindingInfo.tsTypeNaming.jsModule) ? "global" : typeBindingInfo.tsTypeNaming.jsModule;
+            this.moduleBindingInfo = cg.bindingManager.GetExportedModule(typeBindingInfo.tsTypeNaming.jsModule);
 
             this.cg.tsDeclare.AppendLine($"declare module \"{this.tsModule}\" {{");
             this.cg.tsDeclare.AddTabLevel();
@@ -94,42 +94,6 @@ namespace QuickJS.Unity
             }
         }
 
-        public string GetTSTypeFullName(Type type)
-        {
-            return GetTSTypeFullName(this.cg.bindingManager.GetExportedType(type));
-        }
-
-        public string GetTSTypeFullName(TypeBindingInfo typeBindingInfo)
-        {
-            if (typeBindingInfo == null)
-            {
-                return "";
-            }
-
-            if (typeBindingInfo.jsModule == this.tsModule)
-            {
-                var s = this.cg.bindingManager.GetTSTypeFullName(typeBindingInfo);
-                if (s.StartsWith(this.tsModule))
-                {
-                    return s.Substring(this.tsModule.Length + 1);
-                }
-                // Debug.Log($"{s} ?? {this.tsModule}");
-                return s;
-            }
-
-            ModuleInfo moduleInfo;
-            if (_modules.TryGetValue(typeBindingInfo.jsModule, out moduleInfo))
-            {
-                string alias;
-                if (moduleInfo.alias.TryGetValue(typeBindingInfo.jsModuleAccess, out alias))
-                {
-                    return this.cg.bindingManager.GetTSTypeLocalName(typeBindingInfo, alias);
-                }
-            }
-
-            return this.cg.bindingManager.GetTSTypeFullName(typeBindingInfo);
-        }
-
         private void AddModuleAlias(Type type)
         {
             if (type == null || type.IsPrimitive || type == typeof(string))
@@ -137,12 +101,12 @@ namespace QuickJS.Unity
                 return;
             }
 
-            var typeBindingInfo = cg.bindingManager.GetExportedType(type);
+            var tsTypeNaming = cg.bindingManager.GetTSTypeNaming(type);
 
             // 避免引入自身
-            if (typeBindingInfo != null && typeBindingInfo.jsModule != this.typeBindingInfo.jsModule)
+            if (tsTypeNaming != null && tsTypeNaming.jsModule != this.typeBindingInfo.tsTypeNaming.jsModule)
             {
-                AddModuleAlias(typeBindingInfo.jsModule, typeBindingInfo.jsModuleAccess);
+                AddModuleAlias(tsTypeNaming.jsModule, tsTypeNaming.jsModuleAccess);
             }
         }
 
@@ -180,5 +144,45 @@ namespace QuickJS.Unity
             this.cg.tsDeclare.DecTabLevel();
             this.cg.tsDeclare.AppendLine("}");
         }
+
+        #region TS 命名辅助
+
+        public string GetTSTypeFullName(Type type)
+        {
+            return GetTSTypeFullName(this.cg.bindingManager.GetExportedType(type));
+        }
+
+        public string GetTSTypeFullName(TypeBindingInfo typeBindingInfo)
+        {
+            if (typeBindingInfo == null)
+            {
+                return "";
+            }
+
+            if (typeBindingInfo.tsTypeNaming.jsModule == this.tsModule)
+            {
+                var s = this.cg.bindingManager.GetTSTypeFullName(typeBindingInfo);
+                if (s.StartsWith(this.tsModule))
+                {
+                    return s.Substring(this.tsModule.Length + 1);
+                }
+                // Debug.Log($"{s} ?? {this.tsModule}");
+                return s;
+            }
+
+            ModuleInfo moduleInfo;
+            if (_modules.TryGetValue(typeBindingInfo.tsTypeNaming.jsModule, out moduleInfo))
+            {
+                string alias;
+                if (moduleInfo.alias.TryGetValue(typeBindingInfo.tsTypeNaming.jsModuleAccess, out alias))
+                {
+                    return this.cg.bindingManager.GetTSTypeLocalName(typeBindingInfo, alias);
+                }
+            }
+
+            return this.cg.bindingManager.GetTSTypeFullName(typeBindingInfo);
+        }
+
+        #endregion
     }
 }

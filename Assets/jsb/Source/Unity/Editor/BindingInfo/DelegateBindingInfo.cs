@@ -21,9 +21,9 @@ namespace QuickJS.Unity
         public bool writable; // 可写
         public bool isStatic; // 静态
 
-        public DelegateBindingInfo(Type declaringType, FieldInfo fieldInfo)
+        public DelegateBindingInfo(TypeBindingInfo typeBindingInfo, FieldInfo fieldInfo)
         {
-            this.declaringType = declaringType;
+            this.declaringType = typeBindingInfo.type;
             this.delegateType = fieldInfo.FieldType;
             this.readable = true;
             this.writable = !fieldInfo.IsInitOnly;
@@ -42,12 +42,12 @@ namespace QuickJS.Unity
                 }
             } while (false);
 
-            this.regName = TypeBindingInfo.GetNamingAttribute(fieldInfo);
+            this.regName = typeBindingInfo.bindingManager.GetNamingAttribute(fieldInfo);
         }
 
-        public DelegateBindingInfo(Type declaringType, PropertyInfo propertyInfo)
+        public DelegateBindingInfo(TypeBindingInfo typeBindingInfo, PropertyInfo propertyInfo)
         {
-            this.declaringType = declaringType;
+            this.declaringType = typeBindingInfo.type;
             this.delegateType = propertyInfo.PropertyType;
             this.readable = propertyInfo.GetMethod != null && propertyInfo.GetMethod.IsPublic;
             this.writable = propertyInfo.SetMethod != null && propertyInfo.SetMethod.IsPublic;
@@ -63,7 +63,7 @@ namespace QuickJS.Unity
                 this.name = "BindDelegate_" + propertyInfo.Name;
             }
 
-            this.regName = TypeBindingInfo.GetNamingAttribute(propertyInfo);
+            this.regName = typeBindingInfo.bindingManager.GetNamingAttribute(propertyInfo);
         }
     }
 }

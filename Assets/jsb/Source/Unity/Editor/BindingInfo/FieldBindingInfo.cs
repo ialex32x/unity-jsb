@@ -8,7 +8,7 @@ namespace QuickJS.Unity
 {
     using UnityEngine;
     using UnityEditor;
-    
+
     public class FieldBindingInfo
     {
         public string getterName = null; // 绑定代码名
@@ -23,7 +23,7 @@ namespace QuickJS.Unity
 
         public Type fieldType => fieldInfo.FieldType;
 
-        public FieldBindingInfo(FieldInfo fieldInfo)
+        public FieldBindingInfo(TypeBindingInfo typeBindingInfo, FieldInfo fieldInfo)
         {
             do
             {
@@ -91,7 +91,7 @@ namespace QuickJS.Unity
                 }
             } while (false);
 
-            this.regName = TypeBindingInfo.GetNamingAttribute(fieldInfo);
+            this.regName = typeBindingInfo.bindingManager.GetNamingAttribute(fieldInfo);
             this.fieldInfo = fieldInfo;
         }
     }

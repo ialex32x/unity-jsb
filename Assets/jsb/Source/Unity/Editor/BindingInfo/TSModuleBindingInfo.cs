@@ -23,7 +23,7 @@ namespace QuickJS.Unity
 
         public void Add(TypeBindingInfo typeBindingInfo)
         {
-            var entryName = typeBindingInfo.jsModuleAccess;
+            var entryName = typeBindingInfo.tsTypeNaming.jsModuleAccess;
             List<TypeBindingInfo> list;
             if (!_types.TryGetValue(entryName, out list))
             {

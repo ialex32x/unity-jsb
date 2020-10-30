@@ -22,9 +22,9 @@ namespace QuickJS.Unity
             get { return eventInfo.GetAddMethod().IsStatic; }
         }
 
-        public EventBindingInfo(Type declaringType, EventInfo eventInfo)
+        public EventBindingInfo(TypeBindingInfo typeBindingInfo, EventInfo eventInfo)
         {
-            this.declaringType = declaringType;
+            this.declaringType = typeBindingInfo.type;
             this.eventInfo = eventInfo;
 
             if (this.isStatic)
@@ -36,7 +36,7 @@ namespace QuickJS.Unity
                 this.name = "BindEvent_" + eventInfo.Name;
             }
 
-            this.regName = TypeBindingInfo.GetNamingAttribute(eventInfo);
+            this.regName = typeBindingInfo.bindingManager.GetNamingAttribute(eventInfo);
         }
     }
 }
