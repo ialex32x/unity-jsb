@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Collections.Generic;
 using System.Text;
 using System.Reflection;
@@ -72,35 +73,45 @@ namespace QuickJS.Unity
                                 {
                                     using (var method = new PlainMethodCodeGen(this, "private static void BindAll(ScriptRuntime runtime)"))
                                     {
-                                        //TODO: 根据命名空间进行分配
-                                        this.cs.AppendLine($"runtime.AddStaticModuleLoader(\"xxx\", register => ");
-                                        using (this.cs.TailCallCodeBlockScope())
-                                        {
-                                            var editorTypes = new List<TypeBindingInfo>();
-                                            foreach (var type in orderedTypes)
-                                            {
-                                                if (type.genBindingCode)
-                                                {
-                                                    if (type.isEditorRuntime)
-                                                    {
-                                                        editorTypes.Add(type);
-                                                    }
-                                                    else
-                                                    {
-                                                        method.AddStatement("{0}.{1}.Bind(register);", type.csNamespace, type.csBindingName);
-                                                    }
-                                                }
-                                            }
+                                        var modules = orderedTypes.Where(t => t.genBindingCode).GroupBy(type => type.tsTypeNaming.jsModule);
 
-                                            using (new EditorOnlyCodeGen(this))
+                                        foreach (var module in modules)
+                                        {
+                                            var moduleName = string.IsNullOrEmpty(module.Key) ? "global" : module.Key;
+                                            if (module.Count() > 0)
                                             {
-                                                foreach (var editorType in editorTypes)
+                                                var moduleVar = "module";
+                                                this.cs.AppendLine($"runtime.AddStaticModuleLoader(\"{moduleName}\", {moduleVar} => ");
+                                                using (this.cs.TailCallCodeBlockScope())
                                                 {
-                                                    method.AddStatement("{0}.{1}.Bind(register);", editorType.csNamespace, editorType.csBindingName);
+                                                    var editorTypes = new List<TypeBindingInfo>();
+                                                    foreach (var type in module)
+                                                    {
+                                                        if (type.isEditorRuntime)
+                                                        {
+                                                            editorTypes.Add(type);
+                                                        }
+                                                        else
+                                                        {
+                                                            method.AddModuleEntry(moduleVar, type);
+                                                        }
+                                                    }
+
+                                                    if (editorTypes.Count > 0)
+                                                    {
+                                                        using (new EditorOnlyCodeGen(this))
+                                                        {
+                                                            foreach (var type in editorTypes)
+                                                            {
+                                                                method.AddModuleEntry(moduleVar, type);
+                                                            }
+                                                        }
+                                                    }
                                                 }
                                             }
-                                            method.AddStatement("{0}.{1}.Bind(register);", this.bindingManager.prefs.ns, CodeGenerator.NameOfDelegates);
                                         }
+
+                                        method.AddStatement("{0}.{1}.Bind(register);", this.bindingManager.prefs.ns, CodeGenerator.NameOfDelegates);
                                     } // func: BindAll
                                 } // 'preserved' attribute for func: BindAll
                             } // class 
