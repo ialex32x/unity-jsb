@@ -111,7 +111,7 @@ namespace QuickJS
             }
 
             var mr = FindModuleResolver<StaticModuleResolver>();
-            mr.AddStaticModuleLoader(module_id, (c, m, e) => 
+            mr.AddStaticModuleLoader(module_id, (c, m, e) =>
             {
                 var rt = c.GetRuntime();
                 var register = new TypeRegister(rt, c, JSApi.JS_DupValue(c, e));
@@ -247,24 +247,25 @@ namespace QuickJS
             {
                 bindAll.Invoke(null, new object[] { this });
             }
-            var register = new TypeRegister(this, _mainContext, _mainContext.GetGlobalObject());
-            listener.OnBind(this, register);
-            if (!_isWorker)
             {
-                JSWorker.Bind(register);
+                var register = new TypeRegister(this, _mainContext, _mainContext.GetGlobalObject());
+                listener.OnBind(this, register);
+                if (!_isWorker)
+                {
+                    JSWorker.Bind(register);
+                }
+                TimerManager.Bind(register);
+                register.Finish();
             }
-            TimerManager.Bind(register);
-            register.Finish();
-
             var mr = FindModuleResolver<StaticModuleResolver>();
-            mr.AddStaticModuleLoader("jsb", (c, m, e) => 
+            mr.AddStaticModuleLoader("jsb", (c, m, e) =>
             {
                 var rt = c.GetRuntime();
                 var register = new TypeRegister(rt, c, JSApi.JS_DupValue(c, e));
                 ScriptContext.Bind(register);
                 register.Finish();
             });
-            
+
             listener.OnComplete(this);
         }
 
