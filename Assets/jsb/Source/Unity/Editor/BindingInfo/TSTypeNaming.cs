@@ -7,6 +7,8 @@ namespace QuickJS.Unity
     {
         public bool topLevel => string.IsNullOrEmpty(jsModule) && string.IsNullOrEmpty(jsNamespace);
 
+        public readonly Type type;
+
         /// <summary>
         /// js 模块名
         /// </summary>
@@ -41,6 +43,8 @@ namespace QuickJS.Unity
 
         public TSTypeNaming(BindingManager bindingManager, Type type, TypeTransform typeTransform)
         {
+            this.type = type;
+            
             var naming = typeTransform.GetTypeNaming() ?? bindingManager.GetNamingAttribute(type);
             var indexOfTypeName = naming.LastIndexOf('.');
 

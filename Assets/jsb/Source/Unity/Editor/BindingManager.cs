@@ -775,11 +775,6 @@ namespace QuickJS.Unity
             return GetTSTypeFullName(null, type, false, false);
         }
 
-        public string GetTSTypeFullName(TypeBindingInfo typeBindingInfo)
-        {
-            return typeBindingInfo != null ? GetTSTypeFullName(null, typeBindingInfo.type, false, false) : "";
-        }
-
         public string GetTSTypeLocalName(TypeBindingInfo typeBindingInfo, string localAlias)
         {
             return typeBindingInfo != null ? GetTSTypeFullName(localAlias, typeBindingInfo.type, false, false) : "";
