@@ -161,7 +161,7 @@ namespace QuickJS.Unity
 
             if (typeBindingInfo.tsTypeNaming.jsModule == this.tsModule)
             {
-                var s = this.cg.bindingManager.GetTSTypeLocalName(typeBindingInfo, null);
+                var s = this.cg.bindingManager.GetTSTypeFullName(null, typeBindingInfo.type, false, false);
                 if (s.StartsWith(this.tsModule))
                 {
                     return s.Substring(this.tsModule.Length + 1);
@@ -176,11 +176,11 @@ namespace QuickJS.Unity
                 string alias;
                 if (moduleInfo.alias.TryGetValue(typeBindingInfo.tsTypeNaming.jsModuleAccess, out alias))
                 {
-                    return this.cg.bindingManager.GetTSTypeLocalName(typeBindingInfo, alias);
+                    return this.cg.bindingManager.GetTSTypeFullName(alias, typeBindingInfo.type, false, false);
                 }
             }
 
-            return this.cg.bindingManager.GetTSTypeLocalName(typeBindingInfo, null);
+            return this.cg.bindingManager.GetTSTypeFullName(null, typeBindingInfo.type, false, false);
         }
 
         #endregion
