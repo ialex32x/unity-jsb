@@ -254,8 +254,17 @@ namespace QuickJS
                 JSWorker.Bind(register);
             }
             TimerManager.Bind(register);
-            ScriptContext.Bind(register);
             register.Finish();
+
+            var mr = FindModuleResolver<StaticModuleResolver>();
+            mr.AddStaticModuleLoader("jsb", (c, m, e) => 
+            {
+                var rt = c.GetRuntime();
+                var register = new TypeRegister(rt, c, JSApi.JS_DupValue(c, e));
+                ScriptContext.Bind(register);
+                register.Finish();
+            });
+            
             listener.OnComplete(this);
         }
 

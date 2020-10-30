@@ -329,7 +329,7 @@ namespace QuickJS
 
         public static void Bind(TypeRegister register)
         {
-            var ns_jsb = register.CreateNamespace("jsb");
+            var ns_jsb = register.CreateNamespace();
 
             ns_jsb.AddFunction("DoFile", _DoFile, 1);
             ns_jsb.AddFunction("AddSearchPath", _AddSearchPath, 1);
