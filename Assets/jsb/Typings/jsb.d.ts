@@ -76,6 +76,9 @@ declare module "jsb" {
         function after(type: string, func_name: string, func: Function): void
     }
 
+    /**
+     * [NotImplemented][未实现]
+     */
     class Runtime {
         /**
          * [NotImplemented][未实现] 获取所有 ScriptRuntime 信息
@@ -104,12 +107,24 @@ declare module "jsb" {
      */
     function DoFile(filename: string): void
 
+    /**
+     * 强行执行一次完整垃圾回收
+     */
     function GC(): void
 
+    /**
+     * 即 Thread.Sleep()
+     */
     function Sleep(millisecondsTimeout?: number): void
 
+    /**
+     * 将字符串添加到缓存中, 可以避免在使用此字符串频繁进行 C#/JS 交互时产生字符串构造.
+     */
     function AddCacheString(str: string): string;
 
+    /**
+     * 移除字符串缓存
+     */
     function RemoveCacheString(str: string): boolean;
 
     /**
@@ -153,5 +168,10 @@ declare module "jsb" {
      */
     function ToBytes(o: ArrayBuffer | Uint8Array): SystemArray<jsb.byte>;
 
+    /**
+     * 动态载入指定类型
+     * @param type 完整类型名
+     * @param privateAccess 是否允许访问私有成员
+     */
     function Import(type: string, privateAccess?: boolean): FunctionConstructor;
 }
