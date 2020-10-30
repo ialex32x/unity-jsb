@@ -37,8 +37,8 @@ namespace QuickJS.Unity
             var csType = this.cg.bindingManager.GetCSTypeFullName(typeBindingInfo.type);
             var csNamespace = typeBindingInfo.csNamespace;
             var csBindingName = typeBindingInfo.csBindingName;
-            
-            AddStatement($"{varName}.Add({csType}, {csNamespace}.{csBindingName}.Bind);");
+
+            AddStatement($"{varName}.Add(typeof({csType}), {csNamespace}.{csBindingName}.Bind);");
         }
     }
 }
