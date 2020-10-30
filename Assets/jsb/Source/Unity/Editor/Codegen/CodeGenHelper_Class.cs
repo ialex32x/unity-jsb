@@ -23,8 +23,8 @@ namespace QuickJS.Unity
             this.cg.AppendJSDoc(this.typeBindingInfo.type);
             var transform = this.typeBindingInfo.transform;
             var prefix = this.typeBindingInfo.tsTypeNaming.topLevel ? "declare " : "";
-            var superBindingInfo = this.cg.bindingManager.GetTSSuperTypeBindingInfo(this.typeBindingInfo);
-            var super = this._tsMod.GetTSTypeFullName(superBindingInfo);
+            var superBindingInfo = this.cg.bindingManager.GetSuperTypeBindingInfo(this.typeBindingInfo);
+            var super = this._tsMod.GetTSTypeFullName(superBindingInfo?.type);
             var interfaces = this.cg.bindingManager.GetTSInterfacesName(this.typeBindingInfo.type);
             var implements = "";
             var jsClassName = this.typeBindingInfo.tsTypeNaming.jsName;

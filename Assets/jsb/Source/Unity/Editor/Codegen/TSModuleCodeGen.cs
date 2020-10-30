@@ -149,19 +149,19 @@ namespace QuickJS.Unity
 
         public string GetTSTypeFullName(Type type)
         {
-            return GetTSTypeFullName(this.cg.bindingManager.GetExportedType(type));
+            return GetTSTypeFullName(this.cg.bindingManager.GetTSTypeNaming(type));
         }
 
-        public string GetTSTypeFullName(TypeBindingInfo typeBindingInfo)
+        public string GetTSTypeFullName(TSTypeNaming tsTypeNaming)
         {
-            if (typeBindingInfo == null)
+            if (tsTypeNaming == null)
             {
                 return "";
             }
 
-            if (typeBindingInfo.tsTypeNaming.jsModule == this.tsModule)
+            if (tsTypeNaming.jsModule == this.tsModule)
             {
-                var s = this.cg.bindingManager.GetTSTypeFullName(null, typeBindingInfo.type, false, false);
+                var s = this.cg.bindingManager.GetTSTypeFullName(null, tsTypeNaming.type, false, false);
                 if (s.StartsWith(this.tsModule))
                 {
                     return s.Substring(this.tsModule.Length + 1);
@@ -171,16 +171,16 @@ namespace QuickJS.Unity
             }
 
             ModuleInfo moduleInfo;
-            if (_modules.TryGetValue(typeBindingInfo.tsTypeNaming.jsModule, out moduleInfo))
+            if (_modules.TryGetValue(tsTypeNaming.jsModule, out moduleInfo))
             {
                 string alias;
-                if (moduleInfo.alias.TryGetValue(typeBindingInfo.tsTypeNaming.jsModuleAccess, out alias))
+                if (moduleInfo.alias.TryGetValue(tsTypeNaming.jsModuleAccess, out alias))
                 {
-                    return this.cg.bindingManager.GetTSTypeFullName(alias, typeBindingInfo.type, false, false);
+                    return this.cg.bindingManager.GetTSTypeFullName(alias, tsTypeNaming.type, false, false);
                 }
             }
 
-            return this.cg.bindingManager.GetTSTypeFullName(null, typeBindingInfo.type, false, false);
+            return this.cg.bindingManager.GetTSTypeFullName(null, tsTypeNaming.type, false, false);
         }
 
         #endregion

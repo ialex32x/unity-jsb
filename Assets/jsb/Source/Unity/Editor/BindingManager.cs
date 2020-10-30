@@ -1066,8 +1066,10 @@ namespace QuickJS.Unity
             return name;
         }
 
-        // 获取父类的ts声明 (沿继承链上溯直到存在导出)
-        public TypeBindingInfo GetTSSuperTypeBindingInfo(TypeBindingInfo typeBindingInfo)
+        /// <summary>
+        /// 获取父类的 TypeBindingInfo (沿继承链上溯直到存在导出), 不存在时返回 null
+        /// </summary>
+        public TypeBindingInfo GetSuperTypeBindingInfo(TypeBindingInfo typeBindingInfo)
         {
             var super = typeBindingInfo.super;
             while (super != null)
