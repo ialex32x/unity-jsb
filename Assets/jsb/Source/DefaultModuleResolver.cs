@@ -307,6 +307,12 @@ namespace QuickJS
             return this;
         }
 
+        public StaticModuleResolver AddStaticModule(string module_id, ModuleRegister moduleRegister)
+        {
+            _loader.Add(module_id, loader);
+            return this;
+        }
+
         public bool ResolveModule(IFileSystem fileSystem, IPathResolver pathResolver, string parent_module_id, string module_id, out string resolved_id)
         {
             if (_loader.ContainsKey(module_id))
