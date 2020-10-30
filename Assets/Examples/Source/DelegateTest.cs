@@ -1,7 +1,7 @@
 using QuickJS;
 using System;
 
-namespace jsb
+namespace Example
 {
     //TODO: 暂时不支持
     //TODO: 先调整 ref/out 在脚本中的约定, 从返回值约定改为参数Ref<T>/Out<T>包装约定

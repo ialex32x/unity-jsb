@@ -1,7 +1,7 @@
 ﻿using System;
 using UnityEngine;
 
-namespace jsb
+namespace Example
 {
     public class ExampleScriptsHintAttribute : PropertyAttribute
     {

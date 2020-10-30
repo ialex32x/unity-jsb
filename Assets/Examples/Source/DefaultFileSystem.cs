@@ -7,7 +7,7 @@ using System.Net;
 using System.IO;
 using System.Text;
 
-namespace jsb
+namespace Example
 {
     using UnityEngine;
 

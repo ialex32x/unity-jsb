@@ -2,7 +2,7 @@ using System;
 using System.IO;
 using System.Linq;
 
-namespace jsb.Editor
+namespace Example.Editor
 {
     using UnityEngine;
     using UnityEditor;

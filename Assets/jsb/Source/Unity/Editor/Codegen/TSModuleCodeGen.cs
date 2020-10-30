@@ -46,7 +46,7 @@ namespace QuickJS.Unity
         {
             this.cg = cg;
             this.typeBindingInfo = typeBindingInfo;
-            this.tsModule = string.IsNullOrEmpty(typeBindingInfo.tsTypeNaming.jsModule) ? "global" : typeBindingInfo.tsTypeNaming.jsModule;
+            this.tsModule = string.IsNullOrEmpty(typeBindingInfo.tsTypeNaming.jsModule) ? cg.bindingManager.prefs.defaultJSModule : typeBindingInfo.tsTypeNaming.jsModule;
             this.moduleBindingInfo = cg.bindingManager.GetExportedModule(typeBindingInfo.tsTypeNaming.jsModule);
 
             this.cg.tsDeclare.AppendLine($"declare module \"{this.tsModule}\" {{");

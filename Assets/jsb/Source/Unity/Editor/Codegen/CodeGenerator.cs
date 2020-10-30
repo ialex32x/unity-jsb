@@ -77,7 +77,7 @@ namespace QuickJS.Unity
 
                                         foreach (var module in modules)
                                         {
-                                            var moduleName = string.IsNullOrEmpty(module.Key) ? "global" : module.Key;
+                                            var moduleName = string.IsNullOrEmpty(module.Key) ? this.bindingManager.prefs.defaultJSModule : module.Key;
                                             if (module.Count() > 0)
                                             {
                                                 var moduleVar = "module";

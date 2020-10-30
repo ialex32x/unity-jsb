@@ -6,7 +6,7 @@ using QuickJS.IO;
 using QuickJS.Extra;
 using QuickJS.Unity;
 
-namespace jsb
+namespace Example
 {
     using UnityEngine;
 

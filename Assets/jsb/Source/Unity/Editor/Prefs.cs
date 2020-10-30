@@ -59,10 +59,15 @@ namespace QuickJS.Unity
         /// </summary>
         public string ns = "jsb";
 
+        /// <summary>
+        /// 为没有命名空间的类型, 指定一个模块名
+        /// </summary>
+        public string defaultJSModule = "global";
+
         public List<string> skipExtras = new List<string>(new string[]
         {
             "FairyGUI",
-            "UnityEditor", 
+            "UnityEditor",
             "Example",
         });
 

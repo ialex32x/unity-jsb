@@ -1,6 +1,6 @@
 ﻿using System.Reflection;
 
-namespace jsb.Editor
+namespace Example.Editor
 {
     using QuickJS.Unity;
     using UnityEngine;

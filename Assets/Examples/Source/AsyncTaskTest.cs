@@ -1,7 +1,7 @@
 using QuickJS;
 using System;
 
-namespace jsb
+namespace Example
 {
     [JSType]
     public class AsyncTaskTest
