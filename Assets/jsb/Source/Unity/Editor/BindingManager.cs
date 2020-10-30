@@ -82,8 +82,6 @@ namespace QuickJS.Unity
             AddTypePrefixBlacklist("System.SpanExtensions");
 
             HackGetComponents(TransformType(typeof(GameObject)))
-                .AddTSMethodDeclaration("AddComponent<T extends UnityEngine.Component>(type: { new(): T }): T",
-                    "AddComponent", typeof(Type))
                 .WriteCSMethodBinding((bindPoint, cg, info) =>
                 {
                     if (bindPoint == BindingPoints.METHOD_BINDING_BEFORE_INVOKE)
@@ -297,15 +295,6 @@ namespace QuickJS.Unity
             AddTSTypeNameMap(typeof(string), "string");
             AddTSTypeNameMap(typeof(char), "string");
             AddTSTypeNameMap(typeof(void), "void");
-            AddTSTypeNameMap(typeof(LayerMask), "UnityEngine.LayerMask", "number");
-            AddTSTypeNameMap(typeof(Color), "UnityEngine.Color");
-            AddTSTypeNameMap(typeof(Color32), "UnityEngine.Color32");
-            AddTSTypeNameMap(typeof(Vector2), "UnityEngine.Vector2");
-            AddTSTypeNameMap(typeof(Vector2Int), "UnityEngine.Vector2Int");
-            AddTSTypeNameMap(typeof(Vector3), "UnityEngine.Vector3");
-            AddTSTypeNameMap(typeof(Vector3Int), "UnityEngine.Vector3Int");
-            AddTSTypeNameMap(typeof(Vector4), "UnityEngine.Vector4");
-            AddTSTypeNameMap(typeof(Quaternion), "UnityEngine.Quaternion");
             // AddTSTypeNameMap(typeof(ScriptArray), "any[]");
             AddTSTypeNameMap(typeof(QuickJS.IO.ByteBuffer), "jsb.ByteBuffer");
 
@@ -1052,12 +1041,15 @@ namespace QuickJS.Unity
         }
 
         // 在 TypeTransform 准备完成后才有效
-        public TSTypeNaming GetTSTypeNaming(Type type)
+        public TSTypeNaming GetTSTypeNaming(Type type, bool noBindingRequired = false)
         {
             TSTypeNaming value = null;
             if (type != null && !_tsTypeNamings.TryGetValue(type, out value))
             {
-                value = _tsTypeNamings[type] = new TSTypeNaming(this, type, GetTypeTransform(type));
+                if (noBindingRequired || GetExportedType(type) != null)
+                {
+                    value = _tsTypeNamings[type] = new TSTypeNaming(this, type, GetTypeTransform(type));
+                }
             }
 
             return value;

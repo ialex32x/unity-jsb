@@ -76,7 +76,7 @@ namespace QuickJS.Unity
             this.type = type;
             this.transform = typeTransform;
             this._omit = type.IsDefined(typeof(JSOmitAttribute));
-            this.tsTypeNaming = bindingManager.GetTSTypeNaming(type);
+            this.tsTypeNaming = bindingManager.GetTSTypeNaming(type, true);
             this.csBindingName = bindingManager.prefs.typeBindingPrefix + this.tsTypeNaming.jsFullName.Replace('.', '_').Replace('+', '_').Replace('<', '_').Replace('>', '_');
         }
 

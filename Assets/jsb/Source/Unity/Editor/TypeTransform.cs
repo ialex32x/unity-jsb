@@ -60,6 +60,8 @@ namespace QuickJS.Unity
 
         public bool isEditorRuntime { get { return (bindingFlags & TypeBindingFlags.UnityEditorRuntime) != 0; } }
 
+        public Type type => _type;
+
         public TypeTransform(Type type)
         {
             _type = type;

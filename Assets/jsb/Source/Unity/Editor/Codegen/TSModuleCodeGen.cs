@@ -15,6 +15,13 @@ namespace QuickJS.Unity
         protected CodeGenerator cg;
         protected TypeBindingInfo typeBindingInfo;
 
+        protected static HashSet<Type> _noImportTypes = new HashSet<Type>(new Type[]
+        {
+            typeof(void),
+            typeof(string),
+            typeof(Enum),
+        });
+
         /// <summary>
         /// 当前模块名
         /// </summary>
@@ -45,7 +52,12 @@ namespace QuickJS.Unity
             this.cg.tsDeclare.AppendLine($"declare module \"{this.tsModule}\" {{");
             this.cg.tsDeclare.AddTabLevel();
 
-            //TODO: generate 'import' statements
+            CollectImports();
+            WriteImports();
+        }
+
+        private void CollectImports()
+        {
             AddModuleAlias(typeBindingInfo.super);
             foreach (var entry in typeBindingInfo.fields)
             {
@@ -57,6 +69,39 @@ namespace QuickJS.Unity
                 AddModuleAlias(entry.Value.propertyType);
             }
 
+            foreach (var entry in typeBindingInfo.events)
+            {
+                AddModuleAlias(entry.Value.eventInfo.EventHandlerType);
+            }
+
+            var methods = typeBindingInfo.staticMethods.Select(s => s.Value).Concat(typeBindingInfo.methods.Select(s => s.Value));
+            foreach (var entry in methods)
+            {
+                foreach (var entryVariant in entry.variants)
+                {
+                    foreach (var method in entryVariant.Value.plainMethods)
+                    {
+                        AddModuleAlias(method.method.ReturnType);
+                        foreach (var p in method.method.GetParameters())
+                        {
+                            AddModuleAlias(p.ParameterType);
+                        }
+                    }
+
+                    foreach (var method in entryVariant.Value.varargMethods)
+                    {
+                        AddModuleAlias(method.method.ReturnType);
+                        foreach (var p in method.method.GetParameters())
+                        {
+                            AddModuleAlias(p.ParameterType);
+                        }
+                    }
+                }
+            }
+        }
+
+        private void WriteImports()
+        {
             foreach (var me in _modules)
             {
                 var moduleName = me.Key;
@@ -96,8 +141,33 @@ namespace QuickJS.Unity
 
         private void AddModuleAlias(Type type)
         {
-            if (type == null || type.IsPrimitive || type == typeof(string))
+            if (type == null)
             {
+                return;
+            }
+
+            if (type.IsPrimitive || _noImportTypes.Contains(type))
+            {
+                return;
+            }
+
+            if (type.IsArray || type.IsByRef)
+            {
+                AddModuleAlias(type.GetElementType());
+                return;
+            }
+
+            if (type.BaseType == typeof(MulticastDelegate))
+            {
+                var delegateBindingInfo = this.cg.bindingManager.GetDelegateBindingInfo(type);
+                if (delegateBindingInfo != null)
+                {
+                    AddModuleAlias(delegateBindingInfo.returnType);
+                    foreach (var p in delegateBindingInfo.parameters)
+                    {
+                        AddModuleAlias(p.ParameterType);
+                    }
+                }
                 return;
             }
 
@@ -147,33 +217,6 @@ namespace QuickJS.Unity
 
         #region TS 命名辅助
 
-        public string GetTSTypeFullName_t(Type type)
-        {
-            return GetTSTypeFullName_t(this.cg.bindingManager.GetTSTypeNaming(type));
-        }
-
-        public string GetTSTypeFullName_t(TSTypeNaming tsTypeNaming)
-        {
-            if (tsTypeNaming == null)
-            {
-                return "";
-            }
-
-            if (tsTypeNaming.jsModule == this.tsModule)
-            {
-                var s = GetTSTypeFullName(null, tsTypeNaming.type, false);
-                if (s.StartsWith(this.tsModule))
-                {
-                    return s.Substring(this.tsModule.Length + 1);
-                }
-                // Debug.Log($"{s} ?? {this.tsModule}");
-                return s;
-            }
-
-            var alias = GetAlias(tsTypeNaming.type);
-            return GetTSTypeFullName(null, tsTypeNaming.type, false);
-        }
-
         public string GetAlias(Type type)
         {
             var tsTypeNaming = this.cg.bindingManager.GetTSTypeNaming(type);
@@ -193,10 +236,10 @@ namespace QuickJS.Unity
         // 获取 type 在 typescript 中对应类型名
         public string GetTSTypeFullName(Type type)
         {
-            return GetTSTypeFullName(null, type, false);
+            return GetTSTypeFullName(type, false);
         }
 
-        public string GetTSTypeFullName(string localAlias, Type type, bool isOut)
+        public string GetTSTypeFullName(Type type, bool isOut)
         {
             if (type == null || type == typeof(void))
             {
@@ -255,11 +298,18 @@ namespace QuickJS.Unity
                     return gDef;
                 }
 
+                var tsTypeNaming = info.tsTypeNaming;
+                if (tsTypeNaming.jsModule == this.tsModule)
+                {
+                    return CodeGenUtils.Concat(".", tsTypeNaming.jsModuleAccess, tsTypeNaming.jsLocalName);
+                }
+
+                var localAlias = GetAlias(type);
                 if (localAlias != null)
                 {
-                    return CodeGenUtils.Concat(".", localAlias, info.tsTypeNaming.jsLocalName);
+                    return CodeGenUtils.Concat(".", localAlias, tsTypeNaming.jsLocalName);
                 }
-                return info.tsTypeNaming.jsFullName;
+                return tsTypeNaming.jsFullName;
             }
 
             if (type.BaseType == typeof(MulticastDelegate))

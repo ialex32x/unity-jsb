@@ -5,7 +5,8 @@ namespace QuickJS.Unity
 {
     public class TSTypeNaming
     {
-        public bool topLevel => string.IsNullOrEmpty(jsModule) && string.IsNullOrEmpty(jsNamespace);
+        // public bool topLevel => string.IsNullOrEmpty(jsModule) && string.IsNullOrEmpty(jsNamespace);
+        public bool topLevel => false;
 
         public readonly Type type;
 
@@ -45,7 +46,7 @@ namespace QuickJS.Unity
         {
             this.type = type;
 
-            var naming = typeTransform?.GetTypeNaming() ?? bindingManager.GetNamingAttribute(type);
+            var naming = typeTransform?.GetTypeNaming() ?? type.Name;
             var indexOfTypeName = naming.LastIndexOf('.');
 
             if (indexOfTypeName >= 0)
@@ -138,6 +139,11 @@ namespace QuickJS.Unity
                 var i = this.jsNamespace.IndexOf('.');
                 this.jsModuleAccess = i < 0 ? this.jsNamespace : this.jsNamespace.Substring(0, i);
                 this.jsLocalName = CodeGenUtils.Concat(".", i < 0 ? "" : this.jsNamespace.Substring(i + 1), this.jsName);
+            }
+
+            if (this.jsModuleAccess.EndsWith("[]"))
+            {
+                this.jsModuleAccess = this.jsModuleAccess.Substring(0, this.jsModuleAccess.Length - 2);
             }
 
             this.jsFullName = CodeGenUtils.Concat(".", jsModule, jsNamespace, jsName);

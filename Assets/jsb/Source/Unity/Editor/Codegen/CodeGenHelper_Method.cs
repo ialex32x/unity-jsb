@@ -555,7 +555,7 @@ namespace QuickJS.Unity
                     }
                     else
                     {
-                        var parameterTS = this.cg.currentTSModule.GetTSTypeFullName(null, parameter.ParameterType, parameter.IsOut);
+                        var parameterTS = this.cg.currentTSModule.GetTSTypeFullName(parameter.ParameterType, parameter.IsOut);
                         var parameterVarName = this.cg.bindingManager.GetTSVariable(parameter);
                         this.cg.tsDeclare.AppendL($"{parameter_prefix}{parameterVarName}: {parameterTS}");
                     }

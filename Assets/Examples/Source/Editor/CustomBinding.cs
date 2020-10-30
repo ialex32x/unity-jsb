@@ -7,18 +7,21 @@ namespace jsb.Editor
 
     public class CustomBinding : AbstractBindingProcess
     {
+        public override string GetBindingProcessName()
+        {
+            return "Example";
+        }
+
         public override void OnPreExporting(BindingManager bindingManager)
         {
             bindingManager.AddExportedType(typeof(WaitForSeconds), true);
             bindingManager.AddExportedType(typeof(WaitForEndOfFrame), true);
-            // AddExportedType(typeof(System.Collections.IEnumerator), true);
             bindingManager.AddExportedType(typeof(Time));
             bindingManager.AddExportedType(typeof(Input));
             bindingManager.AddExportedType(typeof(Ray));
             bindingManager.AddExportedType(typeof(Rect));
             bindingManager.AddExportedType(typeof(RaycastHit));
             bindingManager.AddExportedType(typeof(Physics)); // 无法自动处理部分重载
-            // bindingManager.AddExportedType(typeof(System.Net.Dns));
             bindingManager.AddExportedType(typeof(System.Net.IPHostEntry)).SystemRuntime();
 
             bindingManager.AddExportedType(typeof(System.Enum)).SystemRuntime();
