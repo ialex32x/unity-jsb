@@ -763,24 +763,13 @@ namespace QuickJS.Unity
             return $"jsb.Ref<{name}>";
         }
 
-        public string GetTSTypeFullName(ParameterInfo parameter)
-        {
-            var parameterType = parameter.ParameterType;
-            return GetTSTypeFullName(null, parameterType, parameter.IsOut, false);
-        }
-
         // 获取 type 在 typescript 中对应类型名
         public string GetTSTypeFullName(Type type)
         {
-            return GetTSTypeFullName(null, type, false, false);
+            return GetTSTypeFullName(null, type, false);
         }
 
-        public string GetTSReturnTypeFullName(Type type)
-        {
-            return GetTSTypeFullName(null, type, false, true);
-        }
-
-        public string GetTSTypeFullName(string localAlias, Type type, bool isOut, bool isReturn)
+        public string GetTSTypeFullName(string localAlias, Type type, bool isOut)
         {
             if (type == null || type == typeof(void))
             {
@@ -1102,10 +1091,10 @@ namespace QuickJS.Unity
                 }
             }
 
-            var gStr = GetTSGenericTypeDefinition(type);
-            if (gStr.Length > 0)
+            var gDef = GetTSGenericTypeDefinition(type);
+            if (gDef.Length > 0)
             {
-                str += gStr + ", ";
+                str += gDef + ", ";
             }
 
             if (str.Length > 0)
@@ -1137,7 +1126,7 @@ namespace QuickJS.Unity
                         }
                     }
 
-                    str += gTypeInfo.MakeGenericJSFullTypeName(templateArgs);
+                    str += gTypeInfo.tsTypeNaming.MakeGenericJSFullTypeName(templateArgs);
                 }
             }
 

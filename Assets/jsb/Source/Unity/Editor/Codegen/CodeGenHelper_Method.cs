@@ -289,7 +289,7 @@ namespace QuickJS.Unity
                 {
                     this.cg.tsDeclare.AppendL(": { ");
 
-                    var returnTypeTS = this.cg.bindingManager.GetTSReturnTypeFullName(returnType);
+                    var returnTypeTS = this.cg.bindingManager.GetTSTypeFullName(returnType);
                     var returnVarName = BindingManager.GetTSVariable("return");
                     this.cg.tsDeclare.AppendL($"\"{returnVarName}\": {returnTypeTS}");
 
@@ -312,7 +312,7 @@ namespace QuickJS.Unity
                 }
                 else
                 {
-                    var returnTypeTS = this.cg.bindingManager.GetTSReturnTypeFullName(returnType);
+                    var returnTypeTS = this.cg.bindingManager.GetTSTypeFullName(returnType);
                     this.cg.tsDeclare.AppendL($": {returnTypeTS}");
                     this.cg.tsDeclare.AppendLine();
                 }
@@ -555,7 +555,7 @@ namespace QuickJS.Unity
                     }
                     else
                     {
-                        var parameterTS = this.cg.bindingManager.GetTSTypeFullName(parameter);
+                        var parameterTS = this.cg.bindingManager.GetTSTypeFullName(null, parameter.ParameterType, parameter.IsOut);
                         var parameterVarName = BindingManager.GetTSVariable(parameter);
                         this.cg.tsDeclare.AppendL($"{parameter_prefix}{parameterVarName}: {parameterTS}");
                     }

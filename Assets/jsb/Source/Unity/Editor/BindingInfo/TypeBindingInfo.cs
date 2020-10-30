@@ -87,15 +87,6 @@ namespace QuickJS.Unity
             module.Add(this);
         }
 
-        /// <summary>
-        /// 构造一个指定泛型参数的JS完整类型名
-        /// </summary>
-        public string MakeGenericJSFullTypeName(string templateArgs)
-        {
-            var name = string.IsNullOrEmpty(this.tsTypeNaming.jsNamespace) ? this.tsTypeNaming.jsPureName : this.tsTypeNaming.jsNamespace + "." + this.tsTypeNaming.jsPureName;
-            return string.Format("{0}<{1}>, ", name, templateArgs);
-        }
-
         // 将类型名转换成简单字符串 (比如用于文件名)
         public string GetFileName()
         {

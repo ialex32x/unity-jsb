@@ -161,7 +161,7 @@ namespace QuickJS.Unity
 
             if (tsTypeNaming.jsModule == this.tsModule)
             {
-                var s = this.cg.bindingManager.GetTSTypeFullName(null, tsTypeNaming.type, false, false);
+                var s = this.cg.bindingManager.GetTSTypeFullName(null, tsTypeNaming.type, false);
                 if (s.StartsWith(this.tsModule))
                 {
                     return s.Substring(this.tsModule.Length + 1);
@@ -170,17 +170,24 @@ namespace QuickJS.Unity
                 return s;
             }
 
+            var alias = GetAlias(tsTypeNaming.type);
+            return this.cg.bindingManager.GetTSTypeFullName(null, tsTypeNaming.type, false);
+        }
+
+        public string GetAlias(Type type)
+        {
+            var tsTypeNaming = this.cg.bindingManager.GetTSTypeNaming(type);
             ModuleInfo moduleInfo;
             if (_modules.TryGetValue(tsTypeNaming.jsModule, out moduleInfo))
             {
                 string alias;
                 if (moduleInfo.alias.TryGetValue(tsTypeNaming.jsModuleAccess, out alias))
                 {
-                    return this.cg.bindingManager.GetTSTypeFullName(alias, tsTypeNaming.type, false, false);
+                    return alias;
                 }
             }
 
-            return this.cg.bindingManager.GetTSTypeFullName(null, tsTypeNaming.type, false, false);
+            return null;
         }
 
         #endregion

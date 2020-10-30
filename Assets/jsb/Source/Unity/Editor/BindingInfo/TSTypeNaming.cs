@@ -44,7 +44,7 @@ namespace QuickJS.Unity
         public TSTypeNaming(BindingManager bindingManager, Type type, TypeTransform typeTransform)
         {
             this.type = type;
-            
+
             var naming = typeTransform.GetTypeNaming() ?? bindingManager.GetNamingAttribute(type);
             var indexOfTypeName = naming.LastIndexOf('.');
 
@@ -141,6 +141,15 @@ namespace QuickJS.Unity
             }
 
             this.jsFullName = CodeGenUtils.Concat(".", jsModule, jsNamespace, jsName);
+        }
+
+        /// <summary>
+        /// 构造一个指定泛型参数的JS完整类型名
+        /// </summary>
+        public string MakeGenericJSFullTypeName(string templateArgs)
+        {
+            var name = string.IsNullOrEmpty(this.jsNamespace) ? this.jsPureName : this.jsNamespace + "." + this.jsPureName;
+            return string.Format("{0}<{1}>, ", name, templateArgs);
         }
     }
 }
