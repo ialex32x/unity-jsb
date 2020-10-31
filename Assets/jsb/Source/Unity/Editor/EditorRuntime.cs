@@ -28,7 +28,11 @@ namespace QuickJS.Unity
 
         static EditorRuntime()
         {
-            _instance = new EditorRuntime();
+            var prefs = Prefs.Load();
+            if (prefs.editorScripting)
+            {
+                _instance = new EditorRuntime();
+            }
         }
 
         public static EditorRuntime GetInstance()

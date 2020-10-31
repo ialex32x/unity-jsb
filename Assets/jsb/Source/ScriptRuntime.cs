@@ -3,14 +3,16 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.IO;
-using QuickJS.Native;
 using System.Threading;
 using System.Reflection;
-using QuickJS.Binding;
-using QuickJS.Utils;
 
 namespace QuickJS
 {
+    using Native;
+    using Binding;
+    using Utils;
+    using Module;
+
     public partial class ScriptRuntime
     {
         private class ScriptContextRef
@@ -97,27 +99,6 @@ namespace QuickJS
         {
             _moduleResolvers.Add(moduleResolver);
             return moduleResolver;
-        }
-
-        public void AddStaticModuleLoader(string module_id, Action<TypeRegister> loader)
-        {
-            // 兼容非模块结构
-            if (string.IsNullOrEmpty(module_id))
-            {
-                var register = new TypeRegister(this, _mainContext, _mainContext.GetGlobalObject());
-                loader(register);
-                register.Finish();
-                return;
-            }
-
-            var mr = FindModuleResolver<StaticModuleResolver>();
-            mr.AddStaticModuleLoader(module_id, (c, m, e) =>
-            {
-                var rt = c.GetRuntime();
-                var register = new TypeRegister(rt, c, JSApi.JS_DupValue(c, e));
-                loader(register);
-                register.Finish();
-            });
         }
 
         public T FindModuleResolver<T>()
@@ -257,16 +238,23 @@ namespace QuickJS
                 TimerManager.Bind(register);
                 register.Finish();
             }
-            var mr = FindModuleResolver<StaticModuleResolver>();
-            mr.AddStaticModuleLoader("jsb", (c, m, e) =>
-            {
-                var rt = c.GetRuntime();
-                var register = new TypeRegister(rt, c, JSApi.JS_DupValue(c, e));
-                ScriptContext.Bind(register);
-                register.Finish();
-            });
+            FindModuleResolver<StaticModuleResolver>().AddStaticModule("jsb", ScriptContext.Bind);
 
             listener.OnComplete(this);
+        }
+
+        public void AddStaticModule(string module_id, RawModuleBind bind)
+        {
+            FindModuleResolver<StaticModuleResolver>().AddStaticModule(module_id, new RawModuleRegister(bind));
+        }
+
+        public void AddStaticModule(string module_id, Action<ProxyModuleRegister> proxyReg)
+        {
+            var mr = FindModuleResolver<StaticModuleResolver>();
+            var proxy = new ProxyModuleRegister(this);
+
+            proxyReg(proxy);
+            mr.AddStaticModule(module_id, proxy);
         }
 
         public ScriptRuntime CreateWorker()

@@ -81,7 +81,7 @@ namespace QuickJS.Unity
                                             if (module.Count() > 0)
                                             {
                                                 var moduleVar = "module";
-                                                this.cs.AppendLine($"runtime.AddStaticModuleLoader(\"{moduleName}\", {moduleVar} => ");
+                                                this.cs.AppendLine($"runtime.AddStaticModule(\"{moduleName}\", {moduleVar} => ");
                                                 using (this.cs.TailCallCodeBlockScope())
                                                 {
                                                     var editorTypes = new List<TypeBindingInfo>();

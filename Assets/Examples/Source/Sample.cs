@@ -89,12 +89,8 @@ namespace Example
 
         public void OnBind(ScriptRuntime runtime, TypeRegister register)
         {
-            var staticModules = runtime.FindModuleResolver<StaticModuleResolver>();
-            if (staticModules != null)
-            {
-                staticModules.AddStaticModuleLoader("static_test1", context => QuickJS.Native.JSApi.JS_NewInt32(context, 123));
-                staticModules.AddStaticModuleLoader("static_test2", context => QuickJS.Native.JSApi.JS_NewInt32(context, 456));
-            }
+            runtime.AddStaticModule("static_test1", context => QuickJS.Native.JSApi.JS_NewInt32(context, 123));
+            runtime.AddStaticModule("static_test2", context => QuickJS.Native.JSApi.JS_NewInt32(context, 456));
 
             _mConsole.Write(LogLevel.Info, "Bind");
             QuickJS.Extra.WebSocket.Bind(register);

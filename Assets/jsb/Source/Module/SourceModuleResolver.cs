@@ -1,58 +1,10 @@
 using System;
 using System.Collections.Generic;
 
-namespace QuickJS
+namespace QuickJS.Module
 {
     using Utils;
     using Native;
-
-    public abstract class PathBasedModuleResolver : IModuleResolver
-    {
-        public PathBasedModuleResolver()
-        {
-        }
-
-        // 验证模块名可接受
-        protected abstract bool OnValidating(string module_id);
-
-        protected abstract bool OnResolvingFile(IFileSystem fileSystem, IPathResolver pathResolver, string fileName, out string searchPath, out string resolvedFileName);
-
-        public bool ResolveModule(IFileSystem fileSystem, IPathResolver pathResolver, string parent_module_id, string module_id, out string resolved_id)
-        {
-            if (OnValidating(module_id))
-            {
-                var parent_id = parent_module_id;
-                var resolving = module_id;
-
-                // 将相对目录展开
-                if (module_id.StartsWith("./") || module_id.StartsWith("../") || module_id.Contains("/./") ||
-                    module_id.Contains("/../"))
-                {
-                    // 显式相对路径直接从 parent 模块路径拼接
-                    var parent_path = PathUtils.GetDirectoryName(parent_id);
-                    try
-                    {
-                        resolving = PathUtils.ExtractPath(PathUtils.Combine(parent_path, module_id), '/');
-                    }
-                    catch
-                    {
-                        // 不能提升到源代码目录外面
-                        throw new Exception(string.Format("invalid module path (out of sourceRoot): {0}", module_id));
-                    }
-                }
-
-                string searchPath;
-                if (OnResolvingFile(fileSystem, pathResolver, resolving, out searchPath, out resolved_id))
-                {
-                    return true;
-                }
-            }
-            resolved_id = null;
-            return false;
-        }
-
-        public abstract JSValue LoadModule(ScriptContext context, string resolved_id);
-    }
 
     public class SourceModuleResolver : PathBasedModuleResolver
     {
@@ -228,117 +180,6 @@ namespace QuickJS
             var exports_ = JSApi.JS_GetProperty(ctx, module_obj, context.GetAtom("exports"));
             JSApi.JS_FreeValue(ctx, require_argv);
             return exports_;
-        }
-    }
-
-    public class JsonModuleResolver : PathBasedModuleResolver
-    {
-        public JsonModuleResolver()
-        {
-        }
-
-        protected override bool OnValidating(string module_id)
-        {
-            // 必须指明后缀
-            return module_id.EndsWith(".json") || module_id.EndsWith(".jsonc");
-        }
-
-        protected override bool OnResolvingFile(IFileSystem fileSystem, IPathResolver pathResolver, string fileName, out string searchPath, out string resolvedFileName)
-        {
-            if (pathResolver.ResolvePath(fileSystem, fileName, out searchPath, out resolvedFileName))
-            {
-                return true;
-            }
-
-            return false;
-        }
-
-        public override unsafe JSValue LoadModule(ScriptContext context, string resolved_id)
-        {
-            var fileSystem = context.GetRuntime().GetFileSystem();
-            var resolved_id_bytes = Utils.TextUtils.GetNullTerminatedBytes(resolved_id);
-            var dirname = PathUtils.GetDirectoryName(resolved_id);
-            var source = fileSystem.ReadAllBytes(resolved_id);
-            var ctx = (JSContext)context;
-
-            if (source == null)
-            {
-                return JSApi.JS_ThrowInternalError(ctx, "require module load failed");
-            }
-
-            var input_bytes = TextUtils.GetNullTerminatedBytes(source);
-            var input_bom = TextUtils.GetBomSize(source);
-
-            fixed (byte* input_ptr = &input_bytes[input_bom])
-            fixed (byte* filename_ptr = resolved_id_bytes)
-            {
-                var rval = JSApi.JS_ParseJSON(ctx, input_ptr, input_bytes.Length - 1 - input_bom, filename_ptr);
-                if (rval.IsException())
-                {
-                    return rval;
-                }
-
-                var module_obj = context._new_commonjs_module(resolved_id, rval, true);
-                JSApi.JS_FreeValue(ctx, module_obj);
-
-                return rval;
-            }
-        }
-    }
-
-    public class StaticModuleResolver : IModuleResolver
-    {
-        public delegate void ModuleLoader(ScriptContext context, JSValue module_obj, JSValue exports_obj);
-
-        private Dictionary<string, ModuleLoader> _loader = new Dictionary<string, ModuleLoader>();
-
-        public StaticModuleResolver AddStaticModuleLoader(string module_id, Func<ScriptContext, JSValue> loader)
-        {
-            return AddStaticModuleLoader(module_id, (context, m, e) =>
-            {
-                var v = loader(context);
-                JSApi.JS_SetPropertyStr(context, m, "exports", v);
-            });
-        }
-
-        public StaticModuleResolver AddStaticModuleLoader(string module_id, ModuleLoader loader)
-        {
-            _loader.Add(module_id, loader);
-            return this;
-        }
-
-        public StaticModuleResolver AddStaticModule(string module_id, ModuleRegister moduleRegister)
-        {
-            _loader.Add(module_id, loader);
-            return this;
-        }
-
-        public bool ResolveModule(IFileSystem fileSystem, IPathResolver pathResolver, string parent_module_id, string module_id, out string resolved_id)
-        {
-            if (_loader.ContainsKey(module_id))
-            {
-                resolved_id = module_id;
-                return true;
-            }
-            resolved_id = null;
-            return false;
-        }
-
-        public JSValue LoadModule(ScriptContext context, string resolved_id)
-        {
-            ModuleLoader loader;
-            if (_loader.TryGetValue(resolved_id, out loader))
-            {
-                var exports_obj = JSApi.JS_NewObject(context);
-                var module_obj = context._new_commonjs_module(resolved_id, exports_obj, true);
-
-                loader(context, module_obj, exports_obj);
-                
-                JSApi.JS_FreeValue(context, exports_obj);
-                JSApi.JS_FreeValue(context, module_obj);
-            }
-
-            return JSApi.JS_ThrowInternalError(context, "invalid static module loader");
         }
     }
 }

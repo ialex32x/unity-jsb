@@ -1,6 +1,6 @@
 using System;
 
-namespace QuickJS
+namespace QuickJS.Module
 {
     using Native;
     using Utils;

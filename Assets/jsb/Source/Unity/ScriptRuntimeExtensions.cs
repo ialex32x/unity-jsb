@@ -3,6 +3,7 @@ namespace QuickJS.Unity
 {
     using IO;
     using Utils;
+    using Module;
 
     public static class ScriptRuntimeExtensions
     {
