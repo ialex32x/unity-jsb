@@ -9,8 +9,6 @@ namespace QuickJS.Binding
     public class TypeRegister
     {
         private ScriptContext _context;
-        private JSValue _thisObject;
-
         private TypeDB _db;
 
         // 注册过程中产生的 atom, 完成后自动释放 
@@ -19,6 +17,8 @@ namespace QuickJS.Binding
         private List<Type> _pendingTypes = new List<Type>();
         private List<OperatorDecl> _operatorDecls = new List<OperatorDecl>();
         private Dictionary<Type, int> _operatorDeclIndex = new Dictionary<Type, int>();
+
+        private List<ClassDecl> _pendingClasses = new List<ClassDecl>();
 
         public static implicit operator JSContext(TypeRegister register)
         {
@@ -45,73 +45,18 @@ namespace QuickJS.Binding
             return _atoms.GetAtom(name);
         }
 
-        public TypeRegister(ScriptRuntime runtime, ScriptContext context, JSValue thisObject)
+        public TypeRegister(ScriptContext context)
         {
             var ctx = (JSContext)context;
 
             _context = context;
             _atoms = new AtomCache(_context);
-            _db = runtime.GetTypeDB();
-            _thisObject = thisObject;
+            _db = context.GetTypeDB();
         }
 
         public TypeDB GetTypeDB()
         {
             return _db;
-        }
-
-        // 无命名空间, 直接外围对象作为容器 (通常是global)
-        public NamespaceDecl CreateNamespace() // [parent]
-        {
-            return new NamespaceDecl(this, JSApi.JS_DupValue(_context, _thisObject));
-        }
-
-        private JSValue _AutoProperty(string name)
-        {
-            var thisObject = JSApi.JS_DupValue(_context, _thisObject);
-            var nameAtom = GetAtom(name);
-            var ns = JSApi.JSB_NewPropertyObject(_context, thisObject, nameAtom, JSPropFlags.JS_PROP_C_W_E);
-            JSApi.JS_FreeValue(_context, thisObject);
-            return ns;
-        }
-
-        /// <summary>
-        /// 创建 thisObject 的指定属性并返回 (thisObject 自身减引用).
-        /// </summary>
-        private JSValue _AutoProperty(JSValue thisObject, string name)
-        {
-            var nameAtom = GetAtom(name);
-            var ns = JSApi.JSB_NewPropertyObject(_context, thisObject, nameAtom, JSPropFlags.JS_PROP_C_W_E);
-            JSApi.JS_FreeValue(_context, thisObject);
-            return ns;
-        }
-
-        public NamespaceDecl CreateNamespace(string el) // [parent]
-        {
-            return new NamespaceDecl(this, _AutoProperty(el));
-        }
-
-        public NamespaceDecl CreateNamespace(string el1, string el2) // [parent]
-        {
-            return new NamespaceDecl(this, _AutoProperty(_AutoProperty(el1), el2));
-        }
-
-        public NamespaceDecl CreateNamespace(string el1, string el2, string el3) // [parent]
-        {
-            return new NamespaceDecl(this, _AutoProperty(_AutoProperty(_AutoProperty(el1), el2), el3));
-        }
-
-        // return [parent, el]
-        public NamespaceDecl CreateNamespace(params string[] els) // [parent]
-        {
-            var ns = JSApi.JS_DupValue(_context, _thisObject);
-            for (int i = 0, size = els.Length; i < size; i++)
-            {
-                var el = els[i];
-                ns = _AutoProperty(ns, el);
-            }
-
-            return new NamespaceDecl(this, ns);
         }
 
         // 覆盖现有定义
@@ -121,6 +66,7 @@ namespace QuickJS.Binding
             var ctorVal = JSApi.JS_GetProperty(_context, protoVal, JSApi.JS_ATOM_constructor);
             var decl = new ClassDecl(this, ctorVal, protoVal, type);
             JSApi.JS_FreeValue(ctx, ctorVal);
+            _pendingClasses.Add(decl);
             return decl;
         }
 
@@ -129,6 +75,17 @@ namespace QuickJS.Binding
             return CreateClass(JSApi.JS_UNDEFINED, typename, type, ctorFunc);
         }
 
+        public ClassDecl CreateGlobalClass(string typename, Type type, JSCFunctionMagic ctorFunc)
+        {
+            var globalObject = _context.GetGlobalObject();
+            var decl = CreateClass(globalObject, typename, type, ctorFunc);
+            JSApi.JS_FreeValue(_context, globalObject);
+            return decl;
+        }
+
+        /// <summary>
+        /// 在指定的对象上创建类型
+        /// </summary>
         public ClassDecl CreateClass(JSValue nsValue, string typename, Type type, JSCFunctionMagic ctorFunc)
         {
             var nameAtom = GetAtom(typename);
@@ -150,6 +107,34 @@ namespace QuickJS.Binding
             }
             // Debug.LogFormat("define class {0}: {1}", type, protoVal);
             JSApi.JS_FreeValue(ctx, protoVal);
+            _pendingClasses.Add(decl);
+            return decl;
+        }
+
+        public ClassDecl CreateClass(string typename)
+        {
+            return CreateClass(JSApi.JS_UNDEFINED, typename);
+        }
+
+        public ClassDecl CreateClass(JSValue nsValue, string typename)
+        {
+            var nameAtom = GetAtom(typename);
+            JSContext ctx = _context;
+            var protoVal = JSApi.JS_NewObject(ctx);
+            var ctorVal = JSApi.JSB_NewCFunctionMagic(ctx, JSApi.class_private_ctor, nameAtom, 0, JSCFunctionEnum.JS_CFUNC_constructor_magic, 0);
+            var decl = new ClassDecl(this, ctorVal, protoVal, null);
+            JSApi.JS_SetConstructor(ctx, ctorVal, protoVal);
+            if (!nsValue.IsNullish())
+            {
+                JSApi.JS_DefinePropertyValue(ctx, nsValue, nameAtom, ctorVal, JSPropFlags.JS_PROP_ENUMERABLE | JSPropFlags.JS_PROP_CONFIGURABLE);
+            }
+            else
+            {
+                JSApi.JS_FreeValue(ctx, ctorVal);
+            }
+            // Debug.LogFormat("define class {0}: {1}", type, protoVal);
+            JSApi.JS_FreeValue(ctx, protoVal);
+            _pendingClasses.Add(decl);
             return decl;
         }
 
@@ -164,7 +149,7 @@ namespace QuickJS.Binding
             JSContext ctx = _context;
             var protoVal = JSApi.JS_NewObject(ctx);
             var type_id = RegisterType(type, protoVal);
-            var ctorVal = _db.NewDynamicConstructor(nameAtom, dynamicMethod); 
+            var ctorVal = _db.NewDynamicConstructor(nameAtom, dynamicMethod);
             var decl = new ClassDecl(this, ctorVal, protoVal, type);
             JSApi.JS_SetConstructor(ctx, ctorVal, protoVal);
             JSApi.JSB_SetBridgeType(ctx, ctorVal, GetAtom(Values.KeyForCSharpTypeID), type_id);
@@ -178,6 +163,7 @@ namespace QuickJS.Binding
             }
             // Debug.LogFormat("define class {0}: {1}", type, protoVal);
             JSApi.JS_FreeValue(ctx, protoVal);
+            _pendingClasses.Add(decl);
             return decl;
         }
 
@@ -286,6 +272,7 @@ namespace QuickJS.Binding
             SubmitOperators();
             _atoms.Clear();
             var ctx = (JSContext)_context;
+
             for (int i = 0, count = _pendingTypes.Count; i < count; i++)
             {
                 var type = _pendingTypes[i];
@@ -300,9 +287,14 @@ namespace QuickJS.Binding
                     }
                 }
             }
+
+            for (int i = 0, count = _pendingClasses.Count; i < count; i++)
+            {
+                var clazz = _pendingClasses[i];
+                clazz.Close();
+            }
+
             _pendingTypes.Clear();
-            JSApi.JS_FreeValue(ctx, _thisObject);
-            _thisObject = JSApi.JS_UNDEFINED;
         }
     }
 }

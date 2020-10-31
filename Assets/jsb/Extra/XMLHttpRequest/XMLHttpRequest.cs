@@ -492,8 +492,7 @@ namespace QuickJS.Extra
 
         public static void Bind(TypeRegister register)
         {
-            var ns = register.CreateNamespace();
-            var cls = ns.CreateClass("XMLHttpRequest", typeof(XMLHttpRequest), js_constructor);
+            var cls = register.CreateGlobalClass("XMLHttpRequest", typeof(XMLHttpRequest), js_constructor);
             cls.AddMethod(false, "open", js_open, 2);
             cls.AddMethod(false, "send", js_send, 0);
             cls.AddProperty(false, "readyState", js_get_readyState, null);
@@ -502,8 +501,6 @@ namespace QuickJS.Extra
             cls.AddProperty(false, "timeout", js_get_timeout, js_set_timeout);
             cls.AddProperty(false, "onreadystatechange", js_get_onreadystatechange, js_set_onreadystatechange);
             cls.AddProperty(false, "onerror", js_get_onerror, js_set_onerror);
-            cls.Close();
-            ns.Close();
         }
     }
 }

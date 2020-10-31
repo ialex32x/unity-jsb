@@ -403,12 +403,9 @@ namespace QuickJS
 
         public static void Bind(TypeRegister register)
         {
-            var ns = register.CreateNamespace();
-            var cls = ns.CreateClass("Worker", typeof(JSWorker), _js_worker_ctor);
+            var cls = register.CreateGlobalClass("Worker", typeof(JSWorker), _js_worker_ctor);
             cls.AddMethod(false, "postMessage", _js_worker_postMessage, 1);
             cls.AddMethod(false, "terminate", _js_worker_terminate);
-            cls.Close();
-            ns.Close();
         }
     }
 }

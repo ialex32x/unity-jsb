@@ -34,34 +34,40 @@ namespace QuickJS.Binding
     public struct ClassDecl
     {
         private TypeRegister _register;
-        private ScriptContext _ctx;
+        private ScriptContext _context;
         private JSValue _ctor;
         private JSValue _proto;
         private Type _type;
-
-        public JSAtom GetAtom(string name)
-        {
-            return _register.GetAtom(name);
-        }
 
         public ClassDecl(TypeRegister register, JSValue ctorVal, JSValue protoVal, Type type)
         {
             _type = type;
             _register = register;
-            _ctx = _register.GetContext();
-            _ctor = JSApi.JS_DupValue(_ctx, ctorVal);
-            _proto = JSApi.JS_DupValue(_ctx, protoVal);
+            _context = _register.GetContext();
+            _ctor = JSApi.JS_DupValue(_context, ctorVal);
+            _proto = JSApi.JS_DupValue(_context, protoVal);
+        }
+
+        /// <summary>
+        /// 获取 Constructor (增加引用计数)
+        /// </summary>
+        public JSValue GetConstructor()
+        {
+            return JSApi.JS_DupValue(_context, _ctor);
         }
 
         public void Close()
         {
-            var ctx = (JSContext)_ctx;
+            if (_context != null)
+            {
+                var ctx = (JSContext)_context;
 
-            JSApi.JS_FreeValue(ctx, _ctor);
-            JSApi.JS_FreeValue(ctx, _proto);
-            _ctor = JSApi.JS_UNDEFINED;
-            _proto = JSApi.JS_UNDEFINED;
-            _ctx = null;
+                JSApi.JS_FreeValue(ctx, _ctor);
+                JSApi.JS_FreeValue(ctx, _proto);
+                _ctor = JSApi.JS_UNDEFINED;
+                _proto = JSApi.JS_UNDEFINED;
+                _context = null;
+            }
         }
 
         public void AddSelfOperator(string op, JSCFunction func, int length)
@@ -79,37 +85,51 @@ namespace QuickJS.Binding
             _register.RegisterOperator(_type, op, func, length, false, type);
         }
 
+        public void AddFunction(string name, JSCFunctionMagic func, int length, int magic)
+        {
+            AddMethod(true, name, func, length, magic);
+        }
+
         public void AddMethod(bool bStatic, string name, JSCFunctionMagic func, int length, int magic)
         {
             var nameAtom = _register.GetAtom(name);
-            var funcVal = JSApi.JSB_NewCFunctionMagic(_ctx, func, nameAtom, length, JSCFunctionEnum.JS_CFUNC_generic_magic,
-                magic);
-            JSApi.JS_DefinePropertyValue(_ctx, bStatic ? _ctor : _proto, nameAtom, funcVal, JSPropFlags.DEFAULT);
+            var funcVal = JSApi.JSB_NewCFunctionMagic(_context, func, nameAtom, length, JSCFunctionEnum.JS_CFUNC_generic_magic, magic);
+            JSApi.JS_DefinePropertyValue(_context, bStatic ? _ctor : _proto, nameAtom, funcVal, JSPropFlags.DEFAULT);
+        }
+
+        public void AddFunction(string name, JSCFunction func)
+        {
+            AddMethod(true, name, func);
         }
 
         public void AddMethod(bool bStatic, string name, JSCFunction func)
         {
             var nameAtom = _register.GetAtom(name);
-            var funcVal = JSApi.JSB_NewCFunction(_ctx, func, nameAtom, 0, JSCFunctionEnum.JS_CFUNC_generic, 0);
-            JSApi.JS_DefinePropertyValue(_ctx, bStatic ? _ctor : _proto, nameAtom, funcVal, JSPropFlags.DEFAULT);
+            var funcVal = JSApi.JSB_NewCFunction(_context, func, nameAtom, 0, JSCFunctionEnum.JS_CFUNC_generic, 0);
+            JSApi.JS_DefinePropertyValue(_context, bStatic ? _ctor : _proto, nameAtom, funcVal, JSPropFlags.DEFAULT);
+        }
+
+        public void AddFunction(string name, JSCFunction func, int length)
+        {
+            AddMethod(true, name, func, length);
         }
 
         public void AddMethod(bool bStatic, string name, JSCFunction func, int length)
         {
             var nameAtom = _register.GetAtom(name);
-            var funcVal = JSApi.JSB_NewCFunction(_ctx, func, nameAtom, length, JSCFunctionEnum.JS_CFUNC_generic, 0);
-            JSApi.JS_DefinePropertyValue(_ctx, bStatic ? _ctor : _proto, nameAtom, funcVal, JSPropFlags.DEFAULT);
+            var funcVal = JSApi.JSB_NewCFunction(_context, func, nameAtom, length, JSCFunctionEnum.JS_CFUNC_generic, 0);
+            JSApi.JS_DefinePropertyValue(_context, bStatic ? _ctor : _proto, nameAtom, funcVal, JSPropFlags.DEFAULT);
         }
 
         public void AddStaticEvent(string name, JSCFunction adder, JSCFunction remover)
         {
             var nameAtom = _register.GetAtom(name);
-            var op = JSApi.JS_NewObject(_ctx);
-            var adderFunc = JSApi.JSB_NewCFunction(_ctx, adder, _register.GetAtom("on"), 1, JSCFunctionEnum.JS_CFUNC_generic, 0);
-            JSApi.JS_SetProperty(_ctx, op, _register.GetAtom("on"), adderFunc);
-            var removerFunc = JSApi.JSB_NewCFunction(_ctx, remover, _register.GetAtom("off"), 1, JSCFunctionEnum.JS_CFUNC_generic, 0);
-            JSApi.JS_SetProperty(_ctx, op, _register.GetAtom("off"), removerFunc);
-            JSApi.JS_SetProperty(_ctx, _ctor, nameAtom, op);
+            var op = JSApi.JS_NewObject(_context);
+            var adderFunc = JSApi.JSB_NewCFunction(_context, adder, _register.GetAtom("on"), 1, JSCFunctionEnum.JS_CFUNC_generic, 0);
+            JSApi.JS_SetProperty(_context, op, _register.GetAtom("on"), adderFunc);
+            var removerFunc = JSApi.JSB_NewCFunction(_context, remover, _register.GetAtom("off"), 1, JSCFunctionEnum.JS_CFUNC_generic, 0);
+            JSApi.JS_SetProperty(_context, op, _register.GetAtom("off"), removerFunc);
+            JSApi.JS_SetProperty(_context, _ctor, nameAtom, op);
         }
 
         public void AddRawMethod(bool bStatic, string name, JSCFunction method)
@@ -117,7 +137,7 @@ namespace QuickJS.Binding
             var nameAtom = _register.GetAtom(name);
             var db = _register.GetTypeDB();
             var funcVal = db.NewDynamicMethod(nameAtom, method);
-            JSApi.JS_DefinePropertyValue(_ctx, bStatic ? _ctor : _proto, nameAtom, funcVal, JSPropFlags.DEFAULT);
+            JSApi.JS_DefinePropertyValue(_context, bStatic ? _ctor : _proto, nameAtom, funcVal, JSPropFlags.DEFAULT);
         }
 
         public void AddMethod(bool bStatic, string name, IDynamicMethod method)
@@ -125,7 +145,7 @@ namespace QuickJS.Binding
             var nameAtom = _register.GetAtom(name);
             var db = _register.GetTypeDB();
             var funcVal = db.NewDynamicMethod(nameAtom, method);
-            JSApi.JS_DefinePropertyValue(_ctx, bStatic ? _ctor : _proto, nameAtom, funcVal, JSPropFlags.DEFAULT);
+            JSApi.JS_DefinePropertyValue(_context, bStatic ? _ctor : _proto, nameAtom, funcVal, JSPropFlags.DEFAULT);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -141,7 +161,7 @@ namespace QuickJS.Binding
 
         public void AddProperty(bool bStatic, string name, JSGetterCFunction getter, JSSetterCFunction setter)
         {
-            var ctx = (JSContext)_ctx;
+            var ctx = (JSContext)_context;
             var nameAtom = _register.GetAtom(name);
             var getterVal = JSApi.JS_UNDEFINED;
             var setterVal = JSApi.JS_UNDEFINED;
@@ -176,7 +196,7 @@ namespace QuickJS.Binding
 
         public void AddProperty(bool bStatic, string name, IDynamicField field)
         {
-            var ctx = (JSContext)_ctx;
+            var ctx = (JSContext)_context;
             var nameAtom = _register.GetAtom(name);
             var getterVal = JSApi.JS_UNDEFINED;
             var setterVal = JSApi.JS_UNDEFINED;
@@ -199,82 +219,88 @@ namespace QuickJS.Binding
             JSApi.JS_FreeValue(ctx, setterVal);
         }
 
+        public void AddValue(string name, JSValue v)
+        {
+            var nameAtom = _register.GetAtom(name);
+            JSApi.JS_DefinePropertyValue(_context, _ctor, nameAtom, v, JSPropFlags.CONST_VALUE);
+        }
+
         #region 常量 (静态)
         public void AddConstValue(string name, bool v)
         {
-            var val = JSApi.JS_NewBool(_ctx, v);
+            var val = JSApi.JS_NewBool(_context, v);
             var nameAtom = _register.GetAtom(name);
-            JSApi.JS_DefinePropertyValue(_ctx, _ctor, nameAtom, val, JSPropFlags.CONST_VALUE);
+            JSApi.JS_DefinePropertyValue(_context, _ctor, nameAtom, val, JSPropFlags.CONST_VALUE);
         }
 
         public void AddConstValue(string name, char v)
         {
-            var val = JSApi.JS_NewInt32(_ctx, v);
+            var val = JSApi.JS_NewInt32(_context, v);
             var nameAtom = _register.GetAtom(name);
-            JSApi.JS_DefinePropertyValue(_ctx, _ctor, nameAtom, val, JSPropFlags.CONST_VALUE);
+            JSApi.JS_DefinePropertyValue(_context, _ctor, nameAtom, val, JSPropFlags.CONST_VALUE);
         }
 
         public void AddConstValue(string name, byte v)
         {
-            var val = JSApi.JS_NewInt32(_ctx, v);
+            var val = JSApi.JS_NewInt32(_context, v);
             var nameAtom = _register.GetAtom(name);
-            JSApi.JS_DefinePropertyValue(_ctx, _ctor, nameAtom, val, JSPropFlags.CONST_VALUE);
+            JSApi.JS_DefinePropertyValue(_context, _ctor, nameAtom, val, JSPropFlags.CONST_VALUE);
         }
 
         public void AddConstValue(string name, sbyte v)
         {
-            var val = JSApi.JS_NewInt32(_ctx, v);
+            var val = JSApi.JS_NewInt32(_context, v);
             var nameAtom = _register.GetAtom(name);
-            JSApi.JS_DefinePropertyValue(_ctx, _ctor, nameAtom, val, JSPropFlags.CONST_VALUE);
+            JSApi.JS_DefinePropertyValue(_context, _ctor, nameAtom, val, JSPropFlags.CONST_VALUE);
         }
 
         public void AddConstValue(string name, short v)
         {
-            var val = JSApi.JS_NewInt32(_ctx, v);
+            var val = JSApi.JS_NewInt32(_context, v);
             var nameAtom = _register.GetAtom(name);
-            JSApi.JS_DefinePropertyValue(_ctx, _ctor, nameAtom, val, JSPropFlags.CONST_VALUE);
+            JSApi.JS_DefinePropertyValue(_context, _ctor, nameAtom, val, JSPropFlags.CONST_VALUE);
         }
 
         public void AddConstValue(string name, ushort v)
         {
-            var val = JSApi.JS_NewInt32(_ctx, v);
+            var val = JSApi.JS_NewInt32(_context, v);
             var nameAtom = _register.GetAtom(name);
-            JSApi.JS_DefinePropertyValue(_ctx, _ctor, nameAtom, val, JSPropFlags.CONST_VALUE);
+            JSApi.JS_DefinePropertyValue(_context, _ctor, nameAtom, val, JSPropFlags.CONST_VALUE);
         }
 
         public void AddConstValue(string name, int v)
         {
-            var val = JSApi.JS_NewInt32(_ctx, v);
+            var val = JSApi.JS_NewInt32(_context, v);
             var nameAtom = _register.GetAtom(name);
-            JSApi.JS_DefinePropertyValue(_ctx, _ctor, nameAtom, val, JSPropFlags.CONST_VALUE);
+            JSApi.JS_DefinePropertyValue(_context, _ctor, nameAtom, val, JSPropFlags.CONST_VALUE);
         }
 
         public void AddConstValue(string name, uint v)
         {
-            var val = JSApi.JS_NewUint32(_ctx, v);
+            var val = JSApi.JS_NewUint32(_context, v);
             var nameAtom = _register.GetAtom(name);
-            JSApi.JS_DefinePropertyValue(_ctx, _ctor, nameAtom, val, JSPropFlags.CONST_VALUE);
+            JSApi.JS_DefinePropertyValue(_context, _ctor, nameAtom, val, JSPropFlags.CONST_VALUE);
         }
 
         public void AddConstValue(string name, double v)
         {
-            var val = JSApi.JS_NewFloat64(_ctx, v);
+            var val = JSApi.JS_NewFloat64(_context, v);
             var nameAtom = _register.GetAtom(name);
-            JSApi.JS_DefinePropertyValue(_ctx, _ctor, nameAtom, val, JSPropFlags.CONST_VALUE);
+            JSApi.JS_DefinePropertyValue(_context, _ctor, nameAtom, val, JSPropFlags.CONST_VALUE);
         }
 
         public void AddConstValue(string name, float v)
         {
-            var val = JSApi.JS_NewFloat64(_ctx, v);
+            var val = JSApi.JS_NewFloat64(_context, v);
             var nameAtom = _register.GetAtom(name);
-            JSApi.JS_DefinePropertyValue(_ctx, _ctor, nameAtom, val, JSPropFlags.CONST_VALUE);
+            JSApi.JS_DefinePropertyValue(_context, _ctor, nameAtom, val, JSPropFlags.CONST_VALUE);
         }
 
         public void AddConstValue(string name, string v)
         {
-            var val = JSApi.JS_NewString(_ctx, v);
+            var val = JSApi.JS_NewString(_context, v);
             var nameAtom = _register.GetAtom(name);
-            JSApi.JS_DefinePropertyValue(_ctx, _ctor, nameAtom, val, JSPropFlags.CONST_VALUE);
+            JSApi.JS_DefinePropertyValue(_context, _ctor, nameAtom, val, JSPropFlags.CONST_VALUE);
         }
         #endregion
     }

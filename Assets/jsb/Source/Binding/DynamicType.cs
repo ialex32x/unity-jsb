@@ -195,7 +195,6 @@ namespace QuickJS.Binding
 
             // var ns = new NamespaceDecl();
             // typeDB.AddType()
-            cls.Close();
         }
     }
 }

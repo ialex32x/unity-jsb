@@ -7,6 +7,11 @@ namespace QuickJS.Module
     using Native;
     using Binding;
 
+    public delegate JSValue RawModuleBind(ScriptContext context);
+
+    /// <summary>
+    /// 返回值注册为模块对象
+    /// </summary>
     public class RawModuleRegister : IModuleRegister
     {
         private RawModuleBind _bind;

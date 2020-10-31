@@ -32,13 +32,13 @@ namespace QuickJS.Unity
             this.cg.cs.AppendLine(fmt, args);
         }
 
-        public void AddModuleEntry(string varName, TypeBindingInfo typeBindingInfo)
+        public void AddModuleEntry(string runtimeVarName, string moduleVarName, TypeBindingInfo typeBindingInfo)
         {
             var csType = this.cg.bindingManager.GetCSTypeFullName(typeBindingInfo.type);
             var csNamespace = typeBindingInfo.csNamespace;
             var csBindingName = typeBindingInfo.csBindingName;
 
-            AddStatement($"{varName}.Add(typeof({csType}), {csNamespace}.{csBindingName}.Bind);");
+            AddStatement($"{runtimeVarName}.AddTypeReference({moduleVarName}, typeof({csType}), {csNamespace}.{csBindingName}.Bind);");
         }
     }
 }

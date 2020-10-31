@@ -15,6 +15,11 @@ namespace QuickJS.Module
             return AddStaticModule(module_id, new FuncModuleRegister(bind));
         }
 
+        public StaticModuleResolver AddStaticModule(string module_id, RawModuleBind bind)
+        {
+            return AddStaticModule(module_id, new RawModuleRegister(bind));
+        }
+
         public StaticModuleResolver AddStaticModule(string module_id, IModuleRegister moduleRegister)
         {
             _register.Add(module_id, moduleRegister);

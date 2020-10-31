@@ -166,16 +166,14 @@ namespace QuickJS.Utils
 
         public static void Bind(TypeRegister register)
         {
-            var ns = register.CreateNamespace();
-
-            ns.AddFunction("setImmediate", js_set_immediate, 2);
-            ns.AddFunction("setInterval", js_set_interval, 3);
-            ns.AddFunction("setTimeout", js_set_timeout, 3);
-            ns.AddFunction("clearImmediate", js_clear_timer, 1);
-            ns.AddFunction("clearInterval", js_clear_timer, 1);
-            ns.AddFunction("clearTimeout", js_clear_timer, 1);
-
-            ns.Close();
+            var context = register.GetContext();
+            
+            context.AddFunction("setImmediate", js_set_immediate, 2);
+            context.AddFunction("setInterval", js_set_interval, 3);
+            context.AddFunction("setTimeout", js_set_timeout, 3);
+            context.AddFunction("clearImmediate", js_clear_timer, 1);
+            context.AddFunction("clearInterval", js_clear_timer, 1);
+            context.AddFunction("clearTimeout", js_clear_timer, 1);
         }
     }
 }

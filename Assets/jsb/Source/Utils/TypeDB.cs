@@ -41,7 +41,7 @@ namespace QuickJS.Utils
                 return dynamicType;
             }
 
-            var register = new TypeRegister(_runtime, _context, _context.GetGlobalObject());
+            var register = new TypeRegister(_context);
 
             dynamicType = new DynamicType(type, privateAccess);
             dynamicType.Bind(register);
@@ -182,6 +182,8 @@ namespace QuickJS.Utils
 
         public JSValue GetPrototypeOf(Type type)
         {
+            //TODO: check lazy load from module 
+
             JSValue proto;
             if (_prototypes.TryGetValue(type, out proto))
             {

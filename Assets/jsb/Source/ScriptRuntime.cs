@@ -44,6 +44,7 @@ namespace QuickJS
         private IFileSystem _fileSystem;
         private IPathResolver _pathResolver;
         private List<IModuleResolver> _moduleResolvers = new List<IModuleResolver>();
+        private Dictionary<Type, ProxyModuleRegister> _allProxyModuleRegisters = new Dictionary<Type, ProxyModuleRegister>();
         private ObjectCache _objectCache;
         private TypeDB _typeDB;
         private TimerManager _timerManager;
@@ -92,6 +93,12 @@ namespace QuickJS
         public void AddSearchPath(string path)
         {
             _pathResolver.AddSearchPath(path);
+        }
+
+        public void AddTypeReference(ProxyModuleRegister proxy, Type type, ModuleExportsBind bind, params string[] ns)
+        {
+            _allProxyModuleRegisters[type] = proxy;
+            proxy.Add(type, bind, ns);
         }
 
         public T AddModuleResolver<T>(T moduleResolver)
@@ -229,7 +236,7 @@ namespace QuickJS
                 bindAll.Invoke(null, new object[] { this });
             }
             {
-                var register = new TypeRegister(this, _mainContext, _mainContext.GetGlobalObject());
+                var register = new TypeRegister(_mainContext);
                 listener.OnBind(this, register);
                 if (!_isWorker)
                 {
@@ -238,22 +245,27 @@ namespace QuickJS
                 TimerManager.Bind(register);
                 register.Finish();
             }
-            FindModuleResolver<StaticModuleResolver>().AddStaticModule("jsb", ScriptContext.Bind);
+            AddStaticModule("jsb", ScriptContext.Bind);
 
             listener.OnComplete(this);
         }
 
-        public void AddStaticModule(string module_id, RawModuleBind bind)
+        public void AddStaticModule(string module_id, ModuleExportsBind bind)
         {
-            FindModuleResolver<StaticModuleResolver>().AddStaticModule(module_id, new RawModuleRegister(bind));
+            FindModuleResolver<StaticModuleResolver>().AddStaticModule(module_id, bind);
         }
 
-        public void AddStaticModule(string module_id, Action<ProxyModuleRegister> proxyReg)
+        public void AddStaticModule(string module_id, RawModuleBind bind)
+        {
+            FindModuleResolver<StaticModuleResolver>().AddStaticModule(module_id, bind);
+        }
+
+        public void AddStaticModule(string module_id, Action<ScriptRuntime, ProxyModuleRegister> proxyReg)
         {
             var mr = FindModuleResolver<StaticModuleResolver>();
             var proxy = new ProxyModuleRegister(this);
 
-            proxyReg(proxy);
+            proxyReg(this, proxy);
             mr.AddStaticModule(module_id, proxy);
         }
 

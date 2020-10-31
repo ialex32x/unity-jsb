@@ -80,8 +80,9 @@ namespace QuickJS.Unity
                                             var moduleName = string.IsNullOrEmpty(module.Key) ? this.bindingManager.prefs.defaultJSModule : module.Key;
                                             if (module.Count() > 0)
                                             {
-                                                var moduleVar = "module";
-                                                this.cs.AppendLine($"runtime.AddStaticModule(\"{moduleName}\", {moduleVar} => ");
+                                                var runtimeVarName = "rt";
+                                                var moduleVarName = "module";
+                                                this.cs.AppendLine($"runtime.AddStaticModule(\"{moduleName}\", ({runtimeVarName}, {moduleVarName}) => ");
                                                 using (this.cs.TailCallCodeBlockScope())
                                                 {
                                                     var editorTypes = new List<TypeBindingInfo>();
@@ -93,7 +94,7 @@ namespace QuickJS.Unity
                                                         }
                                                         else
                                                         {
-                                                            method.AddModuleEntry(moduleVar, type);
+                                                            method.AddModuleEntry(runtimeVarName, moduleVarName, type);
                                                         }
                                                     }
 
@@ -103,7 +104,7 @@ namespace QuickJS.Unity
                                                         {
                                                             foreach (var type in editorTypes)
                                                             {
-                                                                method.AddModuleEntry(moduleVar, type);
+                                                                method.AddModuleEntry(runtimeVarName, moduleVarName, type);
                                                             }
                                                         }
                                                     }

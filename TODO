@@ -32,3 +32,9 @@
 次要:
     ☐ 子类中存在不同签名的同名方法时 (非虚)  时, 输出 ts-ignore
     ☐ 以更通用且自动化的方式生成可继承的类型
+
+导出类模块化组织-备忘:
+    ☐ TypeRegister: 改为不针对一个特定的 thisObject 进行类型注册. 总是通过 CreateNamespace/CreateClass 产生一个对象. 以解决类型的按需注册.
+    ☐ TypeDB.GetPrototypeOf：处理类型 lazy load
+    ☐ 调整代码生成, 生成模块内 namespace 命名 (分割的)
+    

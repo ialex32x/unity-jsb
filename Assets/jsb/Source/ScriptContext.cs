@@ -327,9 +327,24 @@ namespace QuickJS
             return false;
         }
 
-        public static void Bind(TypeRegister register)
+        /// <summary>
+        /// 添加全局函数
+        /// </summary>
+        public void AddFunction(string name, JSCFunction func, int length)
         {
-            var ns_jsb = register.CreateNamespace();
+            AddFunction(_globalObject, name, func, length);
+        }
+
+        public void AddFunction(JSValue thisObject, string name, JSCFunction func, int length)
+        {
+            var nameAtom = GetAtom(name);
+            var cfun = JSApi.JSB_NewCFunction(_ctx, func, nameAtom, length, JSCFunctionEnum.JS_CFUNC_generic, 0);
+            JSApi.JS_DefinePropertyValue(_ctx, thisObject, nameAtom, cfun, JSPropFlags.JS_PROP_C_W_E);
+        }
+
+        public static ClassDecl Bind(TypeRegister register)
+        {
+            var ns_jsb = register.CreateClass("JSBObject");
 
             ns_jsb.AddFunction("DoFile", _DoFile, 1);
             ns_jsb.AddFunction("AddSearchPath", _AddSearchPath, 1);
@@ -345,15 +360,16 @@ namespace QuickJS
             ns_jsb.AddFunction("RemoveCacheString", _remove_cache_string, 1);
             ns_jsb.AddFunction("Sleep", _sleep, 1);
             {
-                var ns_jsb_hotfix = ns_jsb.CreateNamespace("hotfix");
-                ns_jsb_hotfix.AddFunction("replace_single", hotfix_replace_single, 2);
-                ns_jsb_hotfix.AddFunction("before_single", hotfix_before_single, 2);
-                // ns_jsb_hotfix.AddFunction("replace", hotfix_replace, 2);
-                // ns_jsb_hotfix.AddFunction("before", hotfix_before);
-                // ns_jsb_hotfix.AddFunction("after", hotfix_after);
-                ns_jsb_hotfix.Close();
+                var ns_hotfix = register.CreateClass("JSBHotfix");
+                ns_hotfix.AddFunction("replace_single", hotfix_replace_single, 2);
+                ns_hotfix.AddFunction("before_single", hotfix_before_single, 2);
+                // ns_hotfix.AddFunction("replace", hotfix_replace, 2);
+                // ns_hotfix.AddFunction("before", hotfix_before);
+                // ns_hotfix.AddFunction("after", hotfix_after);
+                
+                ns_jsb.AddValue("hotfix", ns_hotfix.GetConstructor());
             }
-            ns_jsb.Close();
+            return ns_jsb;
         }
 
         public unsafe void EvalMain(byte[] source, string fileName)

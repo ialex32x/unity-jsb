@@ -76,9 +76,12 @@ namespace QuickJS.Extra
 
         public static void Bind(TypeRegister register, Uri uri)
         {
+            //TODO: 临时代码
+            
             var context = register.GetContext();
             JSContext ctx = context;
             var globalObject = context.GetGlobalObject();
+
             var locationObj = JSApi.JS_NewObject(ctx);
             JSApi.JS_SetProperty(ctx, locationObj, register.GetAtom("href"), JSApi.JS_NewString(ctx, uri.ToString()));
             JSApi.JS_SetProperty(ctx, locationObj, register.GetAtom("port"), JSApi.JS_NewInt32(ctx, uri.Port));
@@ -86,8 +89,7 @@ namespace QuickJS.Extra
             JSApi.JS_SetProperty(ctx, locationObj, register.GetAtom("protocol"), JSApi.JS_NewString(ctx, uri.Scheme));
             JSApi.JS_SetProperty(ctx, locationObj, register.GetAtom("search"), JSApi.JS_NewString(ctx, ""));
             JSApi.JS_SetProperty(ctx, locationObj, register.GetAtom("reload"), JSApi.JS_NewCFunction(ctx, js_self_location_reload, "reload", 0));
-                JSApi.JS_SetProperty(ctx, globalObject, register.GetAtom("location"), JSApi.JS_DupValue(ctx, locationObj));
-            
+            JSApi.JS_SetProperty(ctx, globalObject, register.GetAtom("location"), JSApi.JS_DupValue(ctx, locationObj));
             JSApi.JS_SetProperty(ctx, globalObject, register.GetAtom("window"), JSApi.JS_DupValue(ctx, globalObject));
             {
                 var selfObj = JSApi.JS_NewObject(ctx);
@@ -97,15 +99,17 @@ namespace QuickJS.Extra
                 JSApi.JS_SetProperty(ctx, globalObject, register.GetAtom("self"), selfObj);
             }
             JSApi.JS_FreeValue(ctx, locationObj);
-            JSApi.JS_FreeValue(ctx, globalObject);
 
-            //TODO: 临时代码
-            var ns_document = register.CreateNamespace("document");
-            ns_document.AddFunction("createElement", js_document_createElement, 1);
-            var ns_document_head = ns_document.CreateNamespace("head");
-            ns_document_head.AddFunction("appendChild", js_element_appendChild, 1);
-            ns_document_head.Close();
-            ns_document.Close();
+            var ns_document = JSApi.JS_NewObject(ctx);
+            context.AddFunction(ns_document, "createElement", js_document_createElement, 1);
+            {
+                var ns_head = JSApi.JS_NewObject(ctx);
+                context.AddFunction(ns_head, "appendChild", js_element_appendChild, 1);
+                JSApi.JS_SetProperty(ctx, ns_document, register.GetAtom("head"), ns_head);
+            }
+            JSApi.JS_SetProperty(ctx, globalObject, register.GetAtom("document"), ns_document);
+
+            JSApi.JS_FreeValue(ctx, globalObject);
         }
     }
 }

@@ -829,14 +829,11 @@ namespace QuickJS.Extra
 
         public static void Bind(TypeRegister register)
         {
-            var ns = register.CreateNamespace();
-            var cls = ns.CreateClass("WebSocket", typeof(WebSocket), _js_constructor);
+            var cls = register.CreateClass("WebSocket", typeof(WebSocket), _js_constructor);
             cls.AddMethod(false, "close", _js_close);
             cls.AddMethod(false, "send", _js_send);
             cls.AddProperty(false, "readyState", _js_readyState, null);
             cls.AddProperty(false, "bufferedAmount", _js_bufferedAmount, null);
-            cls.Close();
-            ns.Close();
         }
     }
 }
