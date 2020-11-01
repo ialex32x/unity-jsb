@@ -76,7 +76,15 @@ namespace QuickJS.Unity
                     this.jsName = naming.Substring(indexOfTypeName + 1);
                 }
 
-                this.jsPureName = this.jsName;
+                var gArgIndex = this.jsName.IndexOf("<");
+                if (gArgIndex < 0)
+                {
+                    this.jsPureName = this.jsName;
+                }
+                else
+                {
+                    this.jsPureName = this.jsName.Substring(0, gArgIndex);
+                }
             }
             else
             {
@@ -125,7 +133,17 @@ namespace QuickJS.Unity
                 else
                 {
                     this.jsName = naming;
-                    this.jsPureName = this.jsName;
+
+                    //TODO: 整理 jsPureName 的取值流程 (对于泛型中的嵌套的处理等)
+                    var gArgIndex = this.jsName.IndexOf("<");
+                    if (gArgIndex < 0)
+                    {
+                        this.jsPureName = this.jsName;
+                    }
+                    else
+                    {
+                        this.jsPureName = this.jsName.Substring(0, gArgIndex);
+                    }
                 }
             }
 
