@@ -154,7 +154,8 @@ namespace QuickJS.Unity
         /// </summary>
         public string MakeGenericJSFullTypeName(string templateArgs)
         {
-            var name = string.IsNullOrEmpty(this.jsNamespace) ? this.jsPureName : this.jsNamespace + "." + this.jsPureName;
+            var name = CodeGenUtils.Concat(".", this.jsNamespace, this.jsPureName);
+            // var name = string.IsNullOrEmpty(this.jsNamespace) ? this.jsPureName : this.jsNamespace + "." + this.jsPureName;
             return string.Format("{0}<{1}>, ", name, templateArgs);
         }
     }

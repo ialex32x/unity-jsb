@@ -37,8 +37,11 @@ namespace QuickJS.Unity
             var csType = this.cg.bindingManager.GetCSTypeFullName(typeBindingInfo.type);
             var csNamespace = typeBindingInfo.csNamespace;
             var csBindingName = typeBindingInfo.csBindingName;
+            var elements = typeBindingInfo.tsTypeNaming.jsNamespace.Split('.');
+            //TODO: fix Array<T>
+            var jsNamespace = CodeGenUtils.Concat(", ", CodeGenUtils.ConcatAsLiteral(", ", elements), $"\"{typeBindingInfo.tsTypeNaming.jsPureName}\"");
 
-            AddStatement($"{runtimeVarName}.AddTypeReference({moduleVarName}, typeof({csType}), {csNamespace}.{csBindingName}.Bind);");
+            AddStatement($"{runtimeVarName}.AddTypeReference({moduleVarName}, typeof({csType}), {csNamespace}.{csBindingName}.Bind, {jsNamespace});");
         }
     }
 }

@@ -16,5 +16,10 @@ namespace QuickJS.Unity
         {
             return string.Join(sp, from value in values where !string.IsNullOrEmpty(value) select value);
         }
+
+        public static string ConcatAsLiteral(string sp, params string[] values)
+        {
+            return string.Join(sp, from value in values where !string.IsNullOrEmpty(value) select $"\"{value}\"");
+        }
     }
 }
