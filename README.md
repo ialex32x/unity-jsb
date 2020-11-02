@@ -40,7 +40,11 @@ Extra 为可选附加模块, 提供不同的特定功能, 不需要的直接删�
 > 所有响应函数支持 JS 异步函数
 
 ```ts
-class MyClass extends UnityEngine.MonoBehaviour {
+// 导出到 JS 中的 C# 类型的命名空间将作为 JS 的模块名
+// 通过 VSCode 等编辑器, 可以很方便地自动填写 import 语句
+import { MonoBehaviour, WaitForSeconds, Object, GameObject } from "UnityEngine";
+
+class MyClass extends MonoBehaviour {
     protected _tick = 0;
 
     Awake() {
@@ -49,7 +53,7 @@ class MyClass extends UnityEngine.MonoBehaviour {
 
     async OnEnable() {
         console.log("MyClass.OnEnable", this._tick++);
-        await jsb.Yield(new UnityEngine.WaitForSeconds(1));
+        await jsb.Yield(new WaitForSeconds(1));
         console.log("MyClass.OnEnable (delayed)", this._tick++);
     }
 
@@ -63,8 +67,8 @@ class MyClass extends UnityEngine.MonoBehaviour {
 
     async test() {
         console.log("MyClass.test (will be destroied after 5 secs.", this.transform);
-        await jsb.Yield(new UnityEngine.WaitForSeconds(5));
-        UnityEngine.Object.Destroy(this.gameObject);
+        await jsb.Yield(new WaitForSeconds(5));
+        Object.Destroy(this.gameObject);
     }
 }
 
@@ -79,7 +83,7 @@ class MySubClass extends MyClass {
     }
 }
 
-let gameObject = new UnityEngine.GameObject();
+let gameObject = new GameObject();
 let comp = gameObject.AddComponent(MySubClass);
 
 comp.play();
@@ -92,16 +96,17 @@ comp_bySuperClass.test();
 > 目前实现了在脚本中继承 EditorWindow (功能还在完善中).
 
 ```ts
-const GUILayout = UnityEngine.GUILayout;
+import { EditorWindow } from "UnityEditor";
+import { GUILayout, GUIContent } from "UnityEngine";
 
 // @jsb.Shortcut("Window/JS/MyEditorWindow")
-export class MyEditorWindow extends UnityEditor.EditorWindow {
+export class MyEditorWindow extends EditorWindow {
     Awake() {
         console.log("MyEditorWindow.Awake");
     }
 
     OnEnable() {
-        this.titleContent = new UnityEngine.GUIContent("Blablabla");
+        this.titleContent = new GUIContent("Blablabla");
     }
 
     OnGUI() {
@@ -117,9 +122,14 @@ export class MyEditorWindow extends UnityEditor.EditorWindow {
 * 支持JS异步函数直接等待 Unity 协程的等待对象直接结合使用 
 * 支持JS异步函数直接等待 C# Task (但JS环境本身并不支持多线程) 
 ```ts
+import { WaitForSeconds } from "UnityEngine";
+import { IPHostEntry } from "System.Net";
+import { AsyncTaskTest } from "Example";
+import * as jsb from "jsb";
+
 async function testAsyncFunc () {
     console.log("you can await any Unity YieldInstructions");
-    await jsb.Yield(new UnityEngine.WaitForSeconds(1.2));
+    await jsb.Yield(new WaitForSeconds(1.2));
     await jsb.Yield(null);
 
     console.log("setTimeout support")
@@ -128,7 +138,7 @@ async function testAsyncFunc () {
     });
 
     // System.Threading.Tasks.Task<System.Net.IPHostEntry>
-    let result = <System.Net.IPHostEntry> await jsb.Yield(jsb.AsyncTaskTest.GetHostEntryAsync("www.baidu.com"));
+    let result = <IPHostEntry> await jsb.Yield(Example.AsyncTaskTest.GetHostEntryAsync("www.baidu.com"));
     console.log("host entry:", result.HostName);
 }
 
@@ -142,8 +152,8 @@ testAsyncFunc();
 
 ```ts
 {
-    let vec1 = new UnityEngine.Vector3(1, 2, 3);
-    let vec2 = new UnityEngine.Vector3(9, 8, 7);
+    let vec1 = new Vector3(1, 2, 3);
+    let vec2 = new Vector3(9, 8, 7);
     // 此特性目前不是js标准, 带语法提示的编辑器通常会提示错误, 但并不影响执行
     // 不希望看到错误提示的可以添加 hint, 比如 vscode 下添加如下标记即可
     // @ts-ignore
@@ -154,8 +164,8 @@ testAsyncFunc();
     console.log(vec3 == vec4);
 }
 {
-    let vec1 = new UnityEngine.Vector2(1, 2);
-    let vec2 = new UnityEngine.Vector2(9, 8);
+    let vec1 = new Vector2(1, 2);
+    let vec2 = new Vector2(9, 8);
     let vec3 = vec1 + vec2;
     console.log(vec3);
 }
@@ -300,7 +310,7 @@ npm install
 > 待测试
 
 # 状态
-> 完成度 ~80%
+> 完成度 ~85%
 
 # 文档 
 详细说明参见 [Wiki](https://github.com/ialex32x/unity-jsb/wiki)
