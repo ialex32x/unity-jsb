@@ -43,6 +43,7 @@ namespace QuickJS.Module
         {
             if (_exports.IsUndefined())
             {
+                _exports = JSApi.JS_NewObject(register);
                 for (int i = 0, count = _types.Count; i < count; i++)
                 {
                     var reg = _types[i];
@@ -57,6 +58,7 @@ namespace QuickJS.Module
         {
             var ctx = (JSContext)register;
             var name = register.GetAtom(ns[index]);
+
             if (index == ns.Length - 1)
             {
                 JSApi.JS_SetProperty(ctx, thisObject, name, constructor);
@@ -64,11 +66,13 @@ namespace QuickJS.Module
             else
             {
                 var tValue = JSApi.JS_GetProperty(ctx, thisObject, name);
+
                 if (!tValue.IsObject())
                 {
                     tValue = JSApi.JS_NewObject(ctx);
                     JSApi.JS_SetProperty(ctx, thisObject, name, JSApi.JS_DupValue(ctx, tValue));
                 }
+
                 SetExports(register, tValue, constructor, ns, index + 1);
                 JSApi.JS_FreeValue(ctx, tValue);
             }

@@ -66,9 +66,9 @@ namespace QuickJS.Unity
 
         public List<string> skipExtras = new List<string>(new string[]
         {
-            "FairyGUI",
-            "UnityEditor",
-            "Example",
+            // "FairyGUI",
+            // "UnityEditor",
+            // "Example",
         });
 
         public List<string> cleanupDir = new List<string>(new string[]

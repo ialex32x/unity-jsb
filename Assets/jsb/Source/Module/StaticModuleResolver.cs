@@ -68,6 +68,9 @@ namespace QuickJS.Module
                 
                 JSApi.JS_FreeValue(context, exports_obj);
                 JSApi.JS_FreeValue(context, module_obj);
+
+                var exports = context.GetAtom("exports");
+                return JSApi.JS_GetProperty(context, module_obj, exports);
             }
 
             return JSApi.JS_ThrowInternalError(context, "invalid static module loader");
