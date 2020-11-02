@@ -4,8 +4,15 @@
  */
 declare function print(...args: any[]): void;
 
+/**
+ * 向 master runtime 发送消息 (目前 data 通过 JS_WriteObject/ReadObject 进行传输)
+ * !!! 注意: 目前还没有提供跨越 runtime 的托管对象传递, 请不要传递.net托管对象. 
+ */
 declare function postMessage(data: any): void;
 
+/**
+ * jsb 命名空间是一个虚定义, 仅用于提供类型提示, 不要在里面放任何具体类型和函数的声明
+ */
 declare namespace jsb {
     type byte = number;
     type Nullable<T> = T;
@@ -49,6 +56,9 @@ declare namespace jsb {
     interface Task<T> {}
 }
 
+/**
+ * jsb 模块为内部提供的工具支持
+ */
 declare module "jsb" {
     import { Delegate as SystemDelegate, Array as SystemArray } from "System";
 
