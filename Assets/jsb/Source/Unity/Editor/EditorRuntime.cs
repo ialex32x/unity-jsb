@@ -152,15 +152,19 @@ namespace QuickJS.Unity
 
         public static void Eval(string code)
         {
-            if (_instance._runtime != null)
+            if (_instance != null && _instance._runtime != null)
             {
                 _instance._runtime.GetMainContext().EvalSource(code, "eval");
+            }
+            else
+            {
+                Debug.LogError("no running EditorRuntime");
             }
         }
 
         public static void ShowWindow(string module, string typename)
         {
-            Eval($"UnityEditor.EditorWindow.GetWindow(require('{module}').{typename}).Show()");
+            Eval($"require('UnityEditor').EditorWindow.GetWindow(require('{module}').{typename}).Show()");
         }
     }
 }

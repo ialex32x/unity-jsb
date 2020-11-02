@@ -18,6 +18,7 @@ namespace Example.Editor
             bindingManager.AddExportedType(typeof(WaitForEndOfFrame), true);
             bindingManager.AddExportedType(typeof(Time));
             bindingManager.AddExportedType(typeof(Input));
+            bindingManager.AddExportedType(typeof(Debug));
             bindingManager.AddExportedType(typeof(Ray));
             bindingManager.AddExportedType(typeof(Rect));
             bindingManager.AddExportedType(typeof(RaycastHit));

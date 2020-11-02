@@ -14,8 +14,8 @@ namespace QuickJS.Unity
         // public static T CreateWindow<T>(string title, params Type[] desiredDockNextTo) where T : EditorWindow
         // public static T CreateWindow<T>(params Type[] desiredDockNextTo) where T : EditorWindow
         [JSCFunction(true,
-            "<T extends UnityEditor.EditorWindow>(type: { new(): T }, ...desiredDockNextTo: any[]): T",
-            "<T extends UnityEditor.EditorWindow>(type: { new(): T }, title: string, ...desiredDockNextTo: any[]): T")]
+            "<T extends EditorWindow>(type: { new(): T }, ...desiredDockNextTo: any[]): T",
+            "<T extends EditorWindow>(type: { new(): T }, title: string, ...desiredDockNextTo: any[]): T")]
         public static JSValue CreateWindow(JSContext ctx, JSValue this_obj, int argc, JSValue[] argv)
         {
             if (argc == 0 || JSApi.JS_IsConstructor(ctx, argv[0]) != 1)

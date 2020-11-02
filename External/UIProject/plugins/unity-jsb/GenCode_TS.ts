@@ -4,6 +4,7 @@ import CodeWriter from './CodeWriter';
 function genBinder(writer: CodeWriter, codePkgName: string, classes: any, classCnt: number, fuiNamespace: string, exportCodePath: string) {
     let binderName = codePkgName + 'Binder';
 
+    writer.writeln('import * as FairyGUI from "FairyGUI";');
     for (let i: number = 0; i < classCnt; i++) {
         let classInfo = classes.get_Item(i);
         writer.writeln('import %s from "./%s";', classInfo.className, classInfo.className);

@@ -19,7 +19,6 @@ namespace QuickJS.Unity
         {
             typeof(void),
             typeof(string),
-            typeof(Enum),
         });
 
         /// <summary>
@@ -73,6 +72,11 @@ namespace QuickJS.Unity
             foreach (var entry in typeBindingInfo.events)
             {
                 AddModuleAlias(entry.Value.eventInfo.EventHandlerType);
+            }
+
+            foreach (var @delegate in typeBindingInfo.delegates)
+            {
+                AddModuleAlias(@delegate.Value.delegateType);
             }
 
             // 处理构造函数中产生的类型引用
@@ -180,6 +184,12 @@ namespace QuickJS.Unity
                 return;
             }
 
+            if (type == typeof(Enum))
+            {
+                AddModuleAlias("System", "Enum");
+                return;
+            }
+
             //TODO: 检查泛型的类型参数的类型引用
             if (type.IsGenericType && !type.IsGenericTypeDefinition)
             {
@@ -191,6 +201,7 @@ namespace QuickJS.Unity
 
             if (type.IsArray || type.IsByRef)
             {
+                AddModuleAlias("System", "Array");
                 AddModuleAlias(type.GetElementType());
                 return;
             }
@@ -198,6 +209,7 @@ namespace QuickJS.Unity
             if (type.BaseType == typeof(MulticastDelegate))
             {
                 var delegateBindingInfo = this.cg.bindingManager.GetDelegateBindingInfo(type);
+
                 if (delegateBindingInfo != null)
                 {
                     AddModuleAlias(delegateBindingInfo.returnType);
@@ -227,6 +239,13 @@ namespace QuickJS.Unity
 
         private void AddModuleAlias(string moduleName, string accessName)
         {
+            // 手工添加的模块访问需要过滤掉本模块自身 
+            // 例如: AddModuleAlias("System", "Array")
+            if (moduleName == this.tsModule)
+            {
+                return;
+            }
+
             ModuleInfo reg;
             if (!_modules.TryGetValue(moduleName, out reg))
             {

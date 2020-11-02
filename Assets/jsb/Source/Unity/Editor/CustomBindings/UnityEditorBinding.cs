@@ -22,11 +22,6 @@ namespace jsb.Editor
 
         public override void OnPreExporting(BindingManager bindingManager)
         {
-            if (!bindingManager.prefs.editorScripting)
-            {
-                return;
-            }
-
             bindingManager.AddExportedType(typeof(GUI)).SetAllConstructorsBlocked();
             bindingManager.AddExportedType(typeof(GUIUtility)).SetAllConstructorsBlocked();
             bindingManager.AddExportedType(typeof(GUILayout)).SetAllConstructorsBlocked();
@@ -77,7 +72,7 @@ namespace jsb.Editor
                 .SetMethodBlocked("GetWindow", typeof(Type), typeof(bool), typeof(string))
                 //TODO: 此方法需要接管, 待处理, 暂时屏蔽
                 .SetMethodBlocked("GetWindow", typeof(Type), typeof(bool))
-                .AddTSMethodDeclaration("static GetWindow<T extends UnityEditor.EditorWindow>(type: { new(): T }): T", "GetWindow", typeof(Type))
+                .AddTSMethodDeclaration("static GetWindow<T extends EditorWindow>(type: { new(): T }): T", "GetWindow", typeof(Type))
                 .WriteCSConstructorBinding((bindPoint, cg, info) =>
                 {
                     if (bindPoint == BindingPoints.METHOD_BINDING_FULL)

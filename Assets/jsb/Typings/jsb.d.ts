@@ -54,6 +54,11 @@ declare namespace jsb {
      * duck type
      */
     interface Task<T> {}
+
+    /**
+     * 标记一个类型仅编辑器环境可用 (该修饰器并不存在实际定义, 仅用于标记, 不要在代码中使用)
+     */
+    function EditorRuntime(target: any);
 }
 
 /**
@@ -106,11 +111,6 @@ declare module "jsb" {
          */
         static postMessage(id: number, data: any): void;
     }
-    
-    /**
-     * 标记一个类型仅编辑器环境可用 (该修饰器并不存在实际定义, 仅用于标记, 不要在代码中使用)
-     */
-    function EditorRuntime(target: any);
     
     /**
      * 执行指定脚本 (慎用, 与 webpack 等工具的结合性可能不太好)
@@ -171,7 +171,7 @@ declare module "jsb" {
     /**
      * 将 C# 数组转换为 JS ArrayBuffer
      */
-    function ToArrayBuffer(o: SystemArray<jsb.byte>): ArrayBuffer;
+    function ToArrayBuffer(o: SystemArray<jsb.byte> | number[]): ArrayBuffer;
 
     /**
      * 将 JS ArrayBuffer 转换为 C# Array
