@@ -95,7 +95,7 @@ namespace QuickJS.Extra
             bindingManager.AddExportedType(typeof(FairyGUI.GComponent))
                 .AddTSMethodDeclaration("InvalidateBatchingState()");
             bindingManager.AddExportedType(typeof(FairyGUI.GList))
-                .AddTSMethodDeclaration("RemoveChildAt(index: number): FairyGUI.GObject");
+                .AddTSMethodDeclaration("RemoveChildAt(index: number): GObject");
             bindingManager.AddExportedType(typeof(FairyGUI.GRoot));
             bindingManager.AddExportedType(typeof(FairyGUI.GLabel));
             bindingManager.AddExportedType(typeof(FairyGUI.GButton));

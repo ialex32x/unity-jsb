@@ -38,7 +38,7 @@ namespace QuickJS.Unity
             var csNamespace = typeBindingInfo.csNamespace;
             var csBindingName = typeBindingInfo.csBindingName;
             var elements = typeBindingInfo.tsTypeNaming.jsNamespace.Split('.');
-            var jsNamespace = CodeGenUtils.Concat(", ", CodeGenUtils.ConcatAsLiteral(", ", elements), $"\"{typeBindingInfo.tsTypeNaming.jsPureName}\"");
+            var jsNamespace = CodeGenUtils.Concat(", ", CodeGenUtils.ConcatAsLiteral(", ", elements), $"\"{CodeGenUtils.Normalize(typeBindingInfo.tsTypeNaming.jsName)}\"");
 
             AddStatement($"{runtimeVarName}.AddTypeReference({moduleVarName}, typeof({csType}), {csNamespace}.{csBindingName}.Bind, {jsNamespace});");
         }

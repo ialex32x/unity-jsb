@@ -59,6 +59,7 @@ namespace QuickJS.Unity
         private void CollectImports()
         {
             AddModuleAlias(typeBindingInfo.super);
+
             foreach (var entry in typeBindingInfo.fields)
             {
                 AddModuleAlias(entry.Value.fieldType);
@@ -74,7 +75,30 @@ namespace QuickJS.Unity
                 AddModuleAlias(entry.Value.eventInfo.EventHandlerType);
             }
 
-            var methods = typeBindingInfo.staticMethods.Select(s => s.Value).Concat(typeBindingInfo.methods.Select(s => s.Value));
+            // 处理构造函数中产生的类型引用
+            foreach (var entryVariant in typeBindingInfo.constructors.variants)
+            {
+                foreach (var method in entryVariant.Value.plainMethods)
+                {
+                    foreach (var p in method.method.GetParameters())
+                    {
+                        AddModuleAlias(p.ParameterType);
+                    }
+                }
+
+                foreach (var method in entryVariant.Value.varargMethods)
+                {
+                    foreach (var p in method.method.GetParameters())
+                    {
+                        AddModuleAlias(p.ParameterType);
+                    }
+                }
+            }
+
+            // 处理其他方法中产生的类型引用
+            var methods = typeBindingInfo.staticMethods.Select(s => s.Value)
+                .Concat(typeBindingInfo.methods.Select(s => s.Value));
+
             foreach (var entry in methods)
             {
                 foreach (var entryVariant in entry.variants)
@@ -156,6 +180,15 @@ namespace QuickJS.Unity
                 return;
             }
 
+            //TODO: 检查泛型的类型参数的类型引用
+            if (type.IsGenericType && !type.IsGenericTypeDefinition)
+            {
+                foreach (var g in type.GetGenericArguments())
+                {
+                    AddModuleAlias(g);
+                }
+            }
+
             if (type.IsArray || type.IsByRef)
             {
                 AddModuleAlias(type.GetElementType());
@@ -183,7 +216,7 @@ namespace QuickJS.Unity
                 // 避免引入自身
                 if (tsTypeNaming.jsModule != this.typeBindingInfo.tsTypeNaming.jsModule)
                 {
-                    AddModuleAlias(tsTypeNaming.jsModule, tsTypeNaming.jsModuleAccess);
+                    AddModuleAlias(tsTypeNaming.jsModule, tsTypeNaming.jsModuleImportAccess);
                 }
             }
             else

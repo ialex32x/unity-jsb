@@ -35,6 +35,8 @@ namespace QuickJS.Unity
         /// </summary>
         public readonly string jsModuleAccess;
 
+        public readonly string jsModuleImportAccess;
+
         /// <summary>
         /// js 模块中顶层访问名的层数
         /// </summary>
@@ -154,13 +156,15 @@ namespace QuickJS.Unity
 
             if (string.IsNullOrEmpty(this.jsNamespace))
             {
-                this.jsModuleAccess = this.jsPureName;
+                this.jsModuleAccess = this.jsName;
+                this.jsModuleImportAccess = this.jsPureName;
                 this.jsLocalName = "";
             }
             else
             {
                 var i = this.jsNamespace.IndexOf('.');
                 this.jsModuleAccess = i < 0 ? this.jsNamespace : this.jsNamespace.Substring(0, i);
+                this.jsModuleImportAccess = this.jsModuleAccess;
                 this.jsLocalName = CodeGenUtils.Concat(".", i < 0 ? "" : this.jsNamespace.Substring(i + 1), this.jsName);
             }
 

@@ -12,6 +12,12 @@ namespace QuickJS.Unity
 
     public static class CodeGenUtils
     {
+        public static string Normalize(string name)
+        {
+            var gArgIndex = name.IndexOf("<");
+            return gArgIndex < 0 ? name : name.Substring(0, gArgIndex);
+        }
+
         public static string Concat(string sp, params string[] values)
         {
             return string.Join(sp, from value in values where !string.IsNullOrEmpty(value) select value);
