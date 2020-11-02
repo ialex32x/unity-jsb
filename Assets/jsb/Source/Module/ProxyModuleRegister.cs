@@ -33,9 +33,9 @@ namespace QuickJS.Module
         {
             _types.Add(new TypeReg()
             {
-                loaded = false, 
-                ns = ns, 
-                bind = bind, 
+                loaded = false,
+                ns = ns,
+                bind = bind,
             });
         }
 
@@ -48,14 +48,30 @@ namespace QuickJS.Module
                     var reg = _types[i];
                     var clazz = reg.bind(register);
 
-                    SetExports(_exports, clazz.GetConstructor(), reg.ns, 0);
+                    SetExports(register, _exports, clazz.GetConstructor(), reg.ns, 0);
                 }
             }
         }
 
-        private void SetExports(JSValue thisObject, JSValue constructor, string[] ns, int index)
+        private void SetExports(TypeRegister register, JSValue thisObject, JSValue constructor, string[] ns, int index)
         {
-
+            var ctx = (JSContext)register;
+            var name = register.GetAtom(ns[index]);
+            if (index == ns.Length - 1)
+            {
+                JSApi.JS_SetProperty(ctx, thisObject, name, constructor);
+            }
+            else
+            {
+                var tValue = JSApi.JS_GetProperty(ctx, thisObject, name);
+                if (!tValue.IsObject())
+                {
+                    tValue = JSApi.JS_NewObject(ctx);
+                    JSApi.JS_SetProperty(ctx, thisObject, name, JSApi.JS_DupValue(ctx, tValue));
+                }
+                SetExports(register, tValue, constructor, ns, index + 1);
+                JSApi.JS_FreeValue(ctx, tValue);
+            }
         }
 
         public void Load(ScriptContext context, JSValue module_obj, JSValue exports_obj)

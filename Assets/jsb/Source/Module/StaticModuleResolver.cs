@@ -8,7 +8,26 @@ namespace QuickJS.Module
 
     public class StaticModuleResolver : IModuleResolver
     {
-        private Dictionary<string, IModuleRegister> _register = new Dictionary<string, IModuleRegister>();
+        private Dictionary<string, IModuleRegister> _modRegisters = new Dictionary<string, IModuleRegister>();
+
+        /// <summary>
+        /// [临时方案] 直接载入所有绑定类型
+        /// </summary>
+        public void Warmup(ScriptContext context)
+        {
+            var typeRegister = new Binding.TypeRegister(context);
+
+            foreach (var kv in _modRegisters)
+            {
+                var pmr = kv.Value as ProxyModuleRegister;
+                if (pmr != null)
+                {
+                    pmr.LoadTypes(typeRegister);
+                }
+            }
+
+            typeRegister.Finish();
+        }
 
         public StaticModuleResolver AddStaticModule(string module_id, ModuleExportsBind bind)
         {
@@ -22,13 +41,13 @@ namespace QuickJS.Module
 
         public StaticModuleResolver AddStaticModule(string module_id, IModuleRegister moduleRegister)
         {
-            _register.Add(module_id, moduleRegister);
+            _modRegisters.Add(module_id, moduleRegister);
             return this;
         }
 
         public bool ResolveModule(IFileSystem fileSystem, IPathResolver pathResolver, string parent_module_id, string module_id, out string resolved_id)
         {
-            if (_register.ContainsKey(module_id))
+            if (_modRegisters.ContainsKey(module_id))
             {
                 resolved_id = module_id;
                 return true;
@@ -40,7 +59,7 @@ namespace QuickJS.Module
         public JSValue LoadModule(ScriptContext context, string resolved_id)
         {
             IModuleRegister moduleRegister;
-            if (_register.TryGetValue(resolved_id, out moduleRegister))
+            if (_modRegisters.TryGetValue(resolved_id, out moduleRegister))
             {
                 var exports_obj = JSApi.JS_NewObject(context);
                 var module_obj = context._new_commonjs_module(resolved_id, exports_obj, true);

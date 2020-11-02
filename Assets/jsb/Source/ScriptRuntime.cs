@@ -246,6 +246,7 @@ namespace QuickJS
                 register.Finish();
             }
             AddStaticModule("jsb", ScriptContext.Bind);
+            FindModuleResolver<StaticModuleResolver>().Warmup(_mainContext);
 
             listener.OnComplete(this);
         }
