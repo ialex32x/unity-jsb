@@ -1,5 +1,5 @@
 /** This is an automatically generated class by FairyGUI. Please do not modify it. **/
-
+import * as FairyGUI from "FairyGUI";
 import Button1 from "./Button1";
 import Button2 from "./Button2";
 

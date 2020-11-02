@@ -1,12 +1,14 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 print("isMain?", module == require.main);
+const Example_1 = require("Example");
+const jsb_1 = require("jsb");
 // import { fib } from "./fib_module.js";
 const fib_1 = require("./fib");
 console.assert(true, "will not print");
 console.assert(false, "assert!!!");
-print(jsb.DelegateTest);
-print(jsb.DelegateTest.InnerTest.hello);
+print(Example_1.DelegateTest);
+print(Example_1.DelegateTest.InnerTest.hello);
 print("fib:", fib_1.fib(12));
 setTimeout(() => {
     print("[timeout] test");
@@ -31,6 +33,6 @@ print("json:", require("../config/data.json").name);
 // print("Nullish coalescing Operator:", a?.b ?? "ok");
 // const protobuf = require("protobufjs");
 // print("protobufjs:", protobuf);
-jsb.DoFile("dofile_test");
+jsb_1.DoFile("dofile_test");
 global["testGlobalVar"] = "test";
 //# sourceMappingURL=example_main.js.map

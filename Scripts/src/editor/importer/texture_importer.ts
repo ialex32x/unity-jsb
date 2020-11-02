@@ -1,6 +1,9 @@
 
 //TODO: not implemented
 
-export default function (importer : UnityEditor.TextureImporter, tex: UnityEngine.Texture2D) {
+import { TextureImporter } from "UnityEditor";
+import { Texture2D } from "UnityEngine";
+
+export default function (importer : TextureImporter, tex: Texture2D) {
 
 }

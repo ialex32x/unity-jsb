@@ -1,5 +1,5 @@
 /** This is an automatically generated class by FairyGUI. Please do not modify it. **/
-
+import * as FairyGUI from "FairyGUI";
 export default class Demo_Graph {
 	public gRoot: FairyGUI.GComponent
 

@@ -1,3 +1,4 @@
+import { NoNamespaceClass } from "global";
 
 if (module == require.main) {
     let g: jsb.Ref<number> = { value: 1 };

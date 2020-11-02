@@ -1,3 +1,8 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const Example_1 = require("Example");
+const jsb_1 = require("jsb");
+const UnityEngine_1 = require("UnityEngine");
 function delay(secs) {
     return new Promise((resolve, reject) => {
         setTimeout(() => {
@@ -10,15 +15,15 @@ async function test() {
     print("[async] begin");
     await delay(3);
     print("[async] end");
-    let result = await jsb.Yield(jsb.AsyncTaskTest.GetHostEntryAsync("www.baidu.com"));
+    let result = await jsb_1.Yield(Example_1.AsyncTaskTest.GetHostEntryAsync("www.baidu.com"));
     console.log("host entry:", result.HostName);
 }
 async function testUnityYieldInstructions() {
     console.warn("wait for unity YieldInstruction, begin");
-    await jsb.Yield(new UnityEngine.WaitForSeconds(3));
-    console.warn("wait for unity YieldInstruction, end;", UnityEngine.Time.frameCount);
-    await jsb.Yield(null);
-    console.warn("wait for unity YieldInstruction, next frame;", UnityEngine.Time.frameCount);
+    await jsb_1.Yield(new UnityEngine_1.WaitForSeconds(3));
+    console.warn("wait for unity YieldInstruction, end;", UnityEngine_1.Time.frameCount);
+    await jsb_1.Yield(null);
+    console.warn("wait for unity YieldInstruction, next frame;", UnityEngine_1.Time.frameCount);
 }
 test();
 testUnityYieldInstructions();

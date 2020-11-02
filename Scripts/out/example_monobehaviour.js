@@ -1,7 +1,9 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.MySubClass = exports.MyClass = void 0;
-class MyClass extends UnityEngine.MonoBehaviour {
+const UnityEngine_1 = require("UnityEngine");
+const jsb = require("jsb");
+class MyClass extends UnityEngine_1.MonoBehaviour {
     constructor() {
         super(...arguments);
         this.vv = 0;
@@ -12,7 +14,7 @@ class MyClass extends UnityEngine.MonoBehaviour {
     }
     async OnEnable() {
         console.log("MyClass.OnEnable", this._tick++);
-        await jsb.Yield(new UnityEngine.WaitForSeconds(1));
+        await jsb.Yield(new UnityEngine_1.WaitForSeconds(1));
         console.log("MyClass.OnEnable (delayed)", this._tick++);
     }
     OnDisable() {
@@ -22,16 +24,16 @@ class MyClass extends UnityEngine.MonoBehaviour {
         console.log("MyClass.OnDestroy", this._tick++);
     }
     Update() {
-        if (UnityEngine.Input.GetMouseButtonUp(0)) {
-            let ray = UnityEngine.Camera.main.ScreenPointToRay(UnityEngine.Input.mousePosition);
+        if (UnityEngine_1.Input.GetMouseButtonUp(0)) {
+            let ray = UnityEngine_1.Camera.main.ScreenPointToRay(UnityEngine_1.Input.mousePosition);
             let point = ray.origin;
             console.log(point.x, point.y, point.z);
         }
     }
     async test() {
         console.log("MyClass.test (will be destroied after 5 secs.", this.transform);
-        await jsb.Yield(new UnityEngine.WaitForSeconds(5));
-        UnityEngine.Object.Destroy(this.gameObject);
+        await jsb.Yield(new UnityEngine_1.WaitForSeconds(5));
+        UnityEngine_1.Object.Destroy(this.gameObject);
     }
 }
 exports.MyClass = MyClass;
@@ -47,7 +49,7 @@ class MySubClass extends MyClass {
 exports.MySubClass = MySubClass;
 if (module == require.main) {
     print("example_monobehaviour");
-    let gameObject = new UnityEngine.GameObject();
+    let gameObject = new UnityEngine_1.GameObject();
     let comp1 = gameObject.AddComponent(MySubClass);
     let comp2 = gameObject.AddComponent(MyClass);
     comp1.vv = 1;

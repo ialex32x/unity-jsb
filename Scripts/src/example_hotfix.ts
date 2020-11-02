@@ -1,3 +1,4 @@
+import * as jsb from "jsb";
 
 let HotfixTest: any = jsb.Import("HotfixTest");
 

@@ -1,3 +1,6 @@
+import { ValueTest } from "Example";
+import * as jsb from "jsb";
+
 {
     console.log("string cache test:")
     let n = 100000;
@@ -7,7 +10,7 @@
 
     start = Date.now();
     for (let i = 0; i < n; i++) {
-        jsb.ValueTest.Foo(str);
+        ValueTest.Foo(str);
     }
     end = Date.now();
     console.log("time1:", (end - start) / 1000);
@@ -16,7 +19,7 @@
 
     start = Date.now();
     for (let i = 0; i < n; i++) {
-        jsb.ValueTest.Foo(str);
+        ValueTest.Foo(str);
     }
     end = Date.now();
     console.log("time2:", (end - start) / 1000);

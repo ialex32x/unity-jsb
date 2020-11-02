@@ -1,16 +1,14 @@
-
-const GUILayout = UnityEngine.GUILayout;
-const EditorGUILayout = UnityEditor.EditorGUILayout;
-const MessageType = UnityEditor.MessageType;
+import { EditorWindow, EditorGUILayout, MessageType } from "UnityEditor";
+import { GUIContent, GUILayout } from "UnityEngine";
 
 // @jsb.Shortcut("Window/JS/MyEditorWindow")
-export class MyEditorWindow extends UnityEditor.EditorWindow {
+export class MyEditorWindow extends EditorWindow {
     Awake() {
         console.log("MyEditorWindow.Awake");
     }
 
     OnEnable() {
-        this.titleContent = new UnityEngine.GUIContent("Blablabla");
+        this.titleContent = new GUIContent("Blablabla");
     }
 
     OnGUI() {
@@ -20,7 +18,7 @@ export class MyEditorWindow extends UnityEditor.EditorWindow {
         }
 
         if (GUILayout.Button("CreateWindow")) {
-            UnityEditor.EditorWindow.CreateWindow(MyEditorWindow);
+            EditorWindow.CreateWindow(MyEditorWindow);
         }
     }
 }

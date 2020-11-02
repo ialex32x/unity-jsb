@@ -1,13 +1,15 @@
 print("isMain?", module == require.main);
 
+import { DelegateTest } from "Example";
+import { DoFile } from "jsb";
 // import { fib } from "./fib_module.js";
 import { fib } from "./fib";
 
 console.assert(true, "will not print");
 console.assert(false, "assert!!!");
 
-print(jsb.DelegateTest);
-print(jsb.DelegateTest.InnerTest.hello);
+print(DelegateTest);
+print(DelegateTest.InnerTest.hello);
 
 print("fib:", fib(12));
 
@@ -42,6 +44,6 @@ print("json:", require("../config/data.json").name);
 // const protobuf = require("protobufjs");
 // print("protobufjs:", protobuf);
 
-jsb.DoFile("dofile_test");
+DoFile("dofile_test");
 
 global["testGlobalVar"] = "test";

@@ -8,9 +8,12 @@ Object.defineProperty(exports, "__esModule", { value: true });
 //      可以改为 dev, 自行按需调整.
 //      如运行报错, 请先确认是否已安装依赖包 (npm install 即可).
 console.log("please run 'npm install' at first if 'xlsx' module can not be resolved");
+const jsb = require("jsb");
+const System_IO_1 = require("System.IO");
 const xlsx_1 = require("xlsx");
 let filename = "Assets/Examples/Data/test.xlsx";
-if (typeof UnityEngine === "undefined") {
+// @ts-ignore
+if (typeof jsb === "undefined") {
     // 运行在 nodejs 环境
     const fs = require("fs");
     let data = fs.readFileSync(filename);
@@ -20,7 +23,7 @@ if (typeof UnityEngine === "undefined") {
 }
 else {
     // 运行在 Unity 环境
-    let bytes = System.IO.File.ReadAllBytes(filename);
+    let bytes = System_IO_1.File.ReadAllBytes(filename);
     let data = jsb.ToArrayBuffer(bytes);
     let wb = xlsx_1.read(data, { type: "buffer" });
     console.log("read excel:", filename);

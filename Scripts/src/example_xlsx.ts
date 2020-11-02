@@ -10,11 +10,14 @@
 
 console.log("please run 'npm install' at first if 'xlsx' module can not be resolved");
 
+import * as jsb from "jsb";
+import { File } from "System.IO";
 import { read, utils } from "xlsx";
 
 let filename = "Assets/Examples/Data/test.xlsx";
 
-if (typeof UnityEngine === "undefined") {
+// @ts-ignore
+if (typeof jsb === "undefined") {
     // 运行在 nodejs 环境
 
     const fs = require("fs");
@@ -26,7 +29,7 @@ if (typeof UnityEngine === "undefined") {
 } else {
     // 运行在 Unity 环境
 
-    let bytes = System.IO.File.ReadAllBytes(filename);
+    let bytes = File.ReadAllBytes(filename);
     let data = jsb.ToArrayBuffer(bytes);
     let wb = read(data, { type: "buffer" });
 

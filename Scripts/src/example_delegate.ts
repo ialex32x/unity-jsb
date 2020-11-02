@@ -1,6 +1,7 @@
+import { DelegateTest } from "Example";
 
 if (module == require.main) {
-    let actions = new jsb.DelegateTest();
+    let actions = new DelegateTest();
 
     print("测试: 无参数的委托");
     console.log("********** add");
@@ -34,10 +35,10 @@ if (module == require.main) {
     actions.DipatchEvent(123);
 
     print("测试: 静态事件");
-    jsb.DelegateTest.onStaticEvent("add", v => print("测试静态事件1:", v));
+    DelegateTest.onStaticEvent("add", v => print("测试静态事件1:", v));
     function staticEventHandler(v: number) { print("测试静态事件2:", v) }
-    jsb.DelegateTest.onStaticEvent("add", staticEventHandler);
-    jsb.DelegateTest.DipatchStaticEvent(123);
-    jsb.DelegateTest.onStaticEvent("remove", staticEventHandler);
-    jsb.DelegateTest.DipatchStaticEvent(123);
+    DelegateTest.onStaticEvent("add", staticEventHandler);
+    DelegateTest.DipatchStaticEvent(123);
+    DelegateTest.onStaticEvent("remove", staticEventHandler);
+    DelegateTest.DipatchStaticEvent(123);
 }

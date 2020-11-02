@@ -1,5 +1,7 @@
+import { MonoBehaviour, WaitForSeconds, Object, Input, Camera, GameObject } from "UnityEngine";
+import * as jsb from "jsb";
 
-export class MyClass extends UnityEngine.MonoBehaviour {
+export class MyClass extends MonoBehaviour {
     vv = 0;
     protected _tick = 0;
 
@@ -9,7 +11,7 @@ export class MyClass extends UnityEngine.MonoBehaviour {
 
     async OnEnable() {
         console.log("MyClass.OnEnable", this._tick++);
-        await jsb.Yield(new UnityEngine.WaitForSeconds(1));
+        await jsb.Yield(new WaitForSeconds(1));
         console.log("MyClass.OnEnable (delayed)", this._tick++);
     }
 
@@ -22,8 +24,8 @@ export class MyClass extends UnityEngine.MonoBehaviour {
     }
 
     Update() {
-        if (UnityEngine.Input.GetMouseButtonUp(0)){
-            let ray = UnityEngine.Camera.main.ScreenPointToRay(UnityEngine.Input.mousePosition);
+        if (Input.GetMouseButtonUp(0)) {
+            let ray = Camera.main.ScreenPointToRay(Input.mousePosition);
             let point = ray.origin;
             console.log(point.x, point.y, point.z);
         }
@@ -31,8 +33,8 @@ export class MyClass extends UnityEngine.MonoBehaviour {
 
     async test() {
         console.log("MyClass.test (will be destroied after 5 secs.", this.transform);
-        await jsb.Yield(new UnityEngine.WaitForSeconds(5));
-        UnityEngine.Object.Destroy(this.gameObject);
+        await jsb.Yield(new WaitForSeconds(5));
+        Object.Destroy(this.gameObject);
     }
 }
 
@@ -49,7 +51,7 @@ export class MySubClass extends MyClass {
 
 if (module == require.main) {
     print("example_monobehaviour");
-    let gameObject = new UnityEngine.GameObject();
+    let gameObject = new GameObject();
     let comp1 = gameObject.AddComponent(MySubClass);
     let comp2 = gameObject.AddComponent(MyClass);
 

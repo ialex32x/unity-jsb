@@ -1,34 +1,36 @@
 import BundleUsageMain from "./fairygui/BundleUsage/Main";
 import CooldownMain from "./fairygui/Cooldown/Main";
 import BasicsMain from "./fairygui/Basics/Main";
+import { GameObject } from "UnityEngine";
+import { GRoot, RelationType, UIContentScaler, UIPackage } from "FairyGUI";
 
 if (module == require.main) {
-    let go = new UnityEngine.GameObject("FairyGUI");
-    let scaler = go.AddComponent(FairyGUI.UIContentScaler);
+    let go = new GameObject("FairyGUI");
+    let scaler = go.AddComponent(UIContentScaler);
 
     scaler.designResolutionX = 1200;
     scaler.designResolutionY = 800;
-    scaler.scaleMode = FairyGUI.UIContentScaler.ScaleMode.ScaleWithScreenSize;
-    // scaler.screenMatchMode = FairyGUI.UIContentScaler.ScreenMatchMode.MatchWidthOrHeight;
+    scaler.scaleMode = UIContentScaler.ScaleMode.ScaleWithScreenSize;
+    // scaler.screenMatchMode = UIContentScaler.ScreenMatchMode.MatchWidthOrHeight;
 
     if (false) {
-        FairyGUI.UIPackage.AddPackage("UI/BundleUsage");
+        UIPackage.AddPackage("UI/BundleUsage");
         let mainView = BundleUsageMain.createInstance();
         mainView.gRoot.fairyBatching = true;
-        mainView.gRoot.SetSize(FairyGUI.GRoot.inst.width, FairyGUI.GRoot.inst.height);
-        mainView.gRoot.AddRelation(FairyGUI.GRoot.inst, FairyGUI.RelationType.Size);
-        FairyGUI.GRoot.inst.AddChild(mainView.gRoot);
+        mainView.gRoot.SetSize(GRoot.inst.width, GRoot.inst.height);
+        mainView.gRoot.AddRelation(GRoot.inst, RelationType.Size);
+        GRoot.inst.AddChild(mainView.gRoot);
         mainView.t0.Play();
         mainView.theLabel.text = "Hello, Unity-jsb";
     }
 
     if (true) {
-        FairyGUI.UIPackage.AddPackage("UI/Basics");
+        UIPackage.AddPackage("UI/Basics");
         let mainView = BasicsMain.createInstance();
         mainView.gRoot.fairyBatching = true;
-        mainView.gRoot.SetSize(FairyGUI.GRoot.inst.width, FairyGUI.GRoot.inst.height);
-        mainView.gRoot.AddRelation(FairyGUI.GRoot.inst, FairyGUI.RelationType.Size);
-        FairyGUI.GRoot.inst.AddChild(mainView.gRoot);
+        mainView.gRoot.SetSize(GRoot.inst.width, GRoot.inst.height);
+        mainView.gRoot.AddRelation(GRoot.inst, RelationType.Size);
+        GRoot.inst.AddChild(mainView.gRoot);
         let fn = evt => {
             console.log(evt.type);
         };
@@ -40,16 +42,16 @@ if (module == require.main) {
         }, 30000);
     }
 
-    // FairyGUI.UIPackage.AddPackage("UI/Cooldown");
+    // UIPackage.AddPackage("UI/Cooldown");
     // let mainView = CooldownMain.createInstance();
-    // FairyGUI.GRoot.inst.AddChild(mainView.gRoot);
+    // GRoot.inst.AddChild(mainView.gRoot);
     // mainView.b1.gRoot.text = "A";
 
-    // let mainView = FairyGUI.UIPackage.CreateObject("BundleUsage", "Main").asCom;
+    // let mainView = UIPackage.CreateObject("BundleUsage", "Main").asCom;
     // mainView.fairyBatching = true;
-    // mainView.SetSize(FairyGUI.GRoot.inst.width, FairyGUI.GRoot.inst.height);
-    // mainView.AddRelation(FairyGUI.GRoot.inst, FairyGUI.RelationType.Size);
+    // mainView.SetSize(GRoot.inst.width, GRoot.inst.height);
+    // mainView.AddRelation(GRoot.inst, RelationType.Size);
 
-    // FairyGUI.GRoot.inst.AddChild(mainView);
+    // GRoot.inst.AddChild(mainView);
     // mainView.GetTransition("t0").Play();
 }

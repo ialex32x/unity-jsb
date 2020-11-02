@@ -1,6 +1,7 @@
 "use strict";
-/** This is an automatically generated class by FairyGUI. Please do not modify it. **/
 Object.defineProperty(exports, "__esModule", { value: true });
+/** This is an automatically generated class by FairyGUI. Please do not modify it. **/
+const FairyGUI = require("FairyGUI");
 const WindowFrame_1 = require("./WindowFrame");
 class Demo_Label {
     static createInstance() {

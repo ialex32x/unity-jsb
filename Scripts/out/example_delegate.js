@@ -1,5 +1,8 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const Example_1 = require("Example");
 if (module == require.main) {
-    let actions = new jsb.DelegateTest();
+    let actions = new Example_1.DelegateTest();
     print("测试: 无参数的委托");
     console.log("********** add");
     actions.onAction("add", function () {
@@ -26,11 +29,11 @@ if (module == require.main) {
     actions.onEvent("remove", instanceEventHandler);
     actions.DipatchEvent(123);
     print("测试: 静态事件");
-    jsb.DelegateTest.onStaticEvent("add", v => print("测试静态事件1:", v));
+    Example_1.DelegateTest.onStaticEvent("add", v => print("测试静态事件1:", v));
     function staticEventHandler(v) { print("测试静态事件2:", v); }
-    jsb.DelegateTest.onStaticEvent("add", staticEventHandler);
-    jsb.DelegateTest.DipatchStaticEvent(123);
-    jsb.DelegateTest.onStaticEvent("remove", staticEventHandler);
-    jsb.DelegateTest.DipatchStaticEvent(123);
+    Example_1.DelegateTest.onStaticEvent("add", staticEventHandler);
+    Example_1.DelegateTest.DipatchStaticEvent(123);
+    Example_1.DelegateTest.onStaticEvent("remove", staticEventHandler);
+    Example_1.DelegateTest.DipatchStaticEvent(123);
 }
 //# sourceMappingURL=example_delegate.js.map

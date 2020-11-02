@@ -1,3 +1,6 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const jsb = require("jsb");
 let HotfixTest = jsb.Import("HotfixTest");
 try {
     // 反射导入的类型默认收到访问保护 (hotfix 后保护会被迫移除)
