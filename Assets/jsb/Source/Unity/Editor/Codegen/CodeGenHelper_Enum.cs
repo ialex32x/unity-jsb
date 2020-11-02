@@ -24,27 +24,24 @@ namespace QuickJS.Unity
         {
             using (new RegFuncCodeGen(cg))
             {
-                using (new RegFuncNamespaceCodeGen(cg, typeBindingInfo))
+                this.cg.cs.AppendLine("var cls = register.CreateEnum(\"{0}\", typeof({1}));",
+                    typeBindingInfo.tsTypeNaming.jsName,
+                    this.cg.bindingManager.GetCSTypeFullName(typeBindingInfo.type));
+                var values = new Dictionary<string, object>();
+                foreach (var ev in Enum.GetValues(typeBindingInfo.type))
                 {
-                    this.cg.cs.AppendLine("var cls = ns.CreateEnum(\"{0}\", typeof({1}));",
-                        typeBindingInfo.tsTypeNaming.jsName,
-                        this.cg.bindingManager.GetCSTypeFullName(typeBindingInfo.type));
-                    var values = new Dictionary<string, object>();
-                    foreach (var ev in Enum.GetValues(typeBindingInfo.type))
-                    {
-                        values[Enum.GetName(typeBindingInfo.type, ev)] = ev;
-                    }
-                    foreach (var kv in values)
-                    {
-                        var name = kv.Key;
-                        var value = kv.Value;
-                        var pvalue = Convert.ToInt32(value);
-                        this.cg.cs.AppendLine($"cls.AddConstValue(\"{name}\", {pvalue});");
-                        this.cg.AppendEnumJSDoc(typeBindingInfo.type, value);
-                        this.cg.tsDeclare.AppendLine($"{name} = {pvalue},");
-                    }
-                    this.cg.cs.AppendLine("cls.Close();");
+                    values[Enum.GetName(typeBindingInfo.type, ev)] = ev;
                 }
+                foreach (var kv in values)
+                {
+                    var name = kv.Key;
+                    var value = kv.Value;
+                    var pvalue = Convert.ToInt32(value);
+                    this.cg.cs.AppendLine($"cls.AddConstValue(\"{name}\", {pvalue});");
+                    this.cg.AppendEnumJSDoc(typeBindingInfo.type, value);
+                    this.cg.tsDeclare.AppendLine($"{name} = {pvalue},");
+                }
+                this.cg.cs.AppendLine("return cls;");
             }
             base.Dispose();
             this.cg.tsDeclare.DecTabLevel();

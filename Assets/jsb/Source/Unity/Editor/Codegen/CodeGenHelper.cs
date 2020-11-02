@@ -127,7 +127,7 @@ namespace QuickJS.Unity
         public RegFuncCodeGen(CodeGenerator cg)
         {
             this.cg = cg;
-            this.cg.cs.AppendLine("public static void Bind(TypeRegister register)");
+            this.cg.cs.AppendLine("public static ClassDecl Bind(TypeRegister register)");
             this.cg.cs.AppendLine("{");
             this.cg.cs.AddTabLevel();
         }
@@ -139,6 +139,28 @@ namespace QuickJS.Unity
         }
     }
 
+    public class RuntimeRegFuncCodeGen : IDisposable
+    {
+        protected CodeGenerator cg;
+
+        public RuntimeRegFuncCodeGen(CodeGenerator cg)
+        {
+            this.cg = cg;
+            this.cg.cs.AppendLine("public static void Bind(ScriptRuntime runtime)");
+            this.cg.cs.AppendLine("{");
+            this.cg.cs.AddTabLevel();
+        }
+
+        public virtual void Dispose()
+        {
+            this.cg.cs.DecTabLevel();
+            this.cg.cs.AppendLine("}");
+        }
+    }
+
+    /// <summary>
+    /// 不再需要此过程, namespace 在 module register 中进行处理
+    /// </summary>
     public class RegFuncNamespaceCodeGen : IDisposable
     {
         protected CodeGenerator cg;
@@ -147,7 +169,6 @@ namespace QuickJS.Unity
         {
             this.cg = cg;
             this.cg.cs.Append("var ns = register.CreateNamespace(");
-            // Debug.LogErrorFormat("{0}: {1}", bindingInfo.type, bindingInfo.Namespace);
             if (!string.IsNullOrEmpty(typeBindingInfo.tsTypeNaming.jsNamespace))
             {
                 var split_ns = from i in typeBindingInfo.tsTypeNaming.jsNamespace.Split('.') select $"\"{i}\"";

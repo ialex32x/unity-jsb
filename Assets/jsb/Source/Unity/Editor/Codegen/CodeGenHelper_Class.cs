@@ -348,265 +348,262 @@ namespace QuickJS.Unity
         {
             using (new RegFuncCodeGen(cg))
             {
-                using (new RegFuncNamespaceCodeGen(cg, typeBindingInfo))
+                var constructor = typeBindingInfo.constructors.available ? typeBindingInfo.constructors.csBindName : "JSApi.class_private_ctor";
+
+                if (!typeBindingInfo.constructors.available && !typeBindingInfo.type.IsAbstract)
                 {
-                    var constructor = typeBindingInfo.constructors.available ? typeBindingInfo.constructors.csBindName : "JSApi.class_private_ctor";
-
-                    if (!typeBindingInfo.constructors.available && !typeBindingInfo.type.IsAbstract)
+                    if (typeBindingInfo.type.IsSubclassOf(typeof(Component)))
                     {
-                        if (typeBindingInfo.type.IsSubclassOf(typeof(Component)))
+                        // 因为 ts 泛型约束需要 new() 形式, 所以在定义中产生一个 public 定义
+                        // 例如: GetComponent<T extends Component>(type: { new(): T }): T
+                        cg.tsDeclare.AppendLine("/*protected*/ constructor()");
+                    }
+                    else
+                    {
+                        if (!typeBindingInfo.type.IsGenericTypeDefinition)
                         {
-                            // 因为 ts 泛型约束需要 new() 形式, 所以在定义中产生一个 public 定义
-                            // 例如: GetComponent<T extends Component>(type: { new(): T }): T
-                            cg.tsDeclare.AppendLine("/*protected*/ constructor()");
+                            cg.tsDeclare.AppendLine("protected constructor()");
                         }
-                        else
+                    }
+                }
+
+                cg.cs.AppendLine("var cls = register.CreateClass(\"{0}\", typeof({1}), {2});",
+                    typeBindingInfo.tsTypeNaming.jsName,
+                    this.cg.bindingManager.GetCSTypeFullName(typeBindingInfo.type),
+                    constructor);
+
+                // 运算符
+                foreach (var operatorBindingInfo in typeBindingInfo.operators)
+                {
+                    var regName = operatorBindingInfo.jsName;
+                    var funcName = operatorBindingInfo.csBindName;
+                    var parameters = operatorBindingInfo.methodInfo.GetParameters();
+                    var declaringType = operatorBindingInfo.methodInfo.DeclaringType;
+                    string redirect;
+                    if (this.typeBindingInfo.transform != null && this.typeBindingInfo.transform.TryRedirectMethod(regName, out redirect))
+                    {
+                        funcName = redirect;
+                    }
+
+                    do
+                    {
+                        if (parameters.Length == 2)
                         {
-                            if (!typeBindingInfo.type.IsGenericTypeDefinition)
+                            if (parameters[0].ParameterType != declaringType)
                             {
-                                cg.tsDeclare.AppendLine("protected constructor()");
+                                var leftType = typeBindingInfo.bindingManager.GetCSTypeFullName(parameters[0].ParameterType);
+                                cg.cs.AppendLine("cls.AddLeftOperator(\"{0}\", {1}, {2}, typeof({3}));", regName, funcName, operatorBindingInfo.length, leftType);
+                                break;
+                            }
+                            else if (parameters[1].ParameterType != declaringType)
+                            {
+                                var rightType = typeBindingInfo.bindingManager.GetCSTypeFullName(parameters[1].ParameterType);
+                                cg.cs.AppendLine("cls.AddRightOperator(\"{0}\", {1}, {2}, typeof({3}));", regName, funcName, operatorBindingInfo.length, rightType);
+                                break;
                             }
                         }
+
+                        cg.cs.AppendLine("cls.AddSelfOperator(\"{0}\", {1}, {2});", regName, funcName, operatorBindingInfo.length);
+                    } while (false);
+                }
+
+                // 非静态方法
+                foreach (var kv in typeBindingInfo.methods)
+                {
+                    var regName = kv.Value.jsName;
+                    var funcName = kv.Value.csBindName;
+                    string redirect;
+                    if (this.typeBindingInfo.transform != null && this.typeBindingInfo.transform.TryRedirectMethod(regName, out redirect))
+                    {
+                        funcName = redirect;
                     }
 
-                    cg.cs.AppendLine("var cls = ns.CreateClass(\"{0}\", typeof({1}), {2});",
-                        typeBindingInfo.tsTypeNaming.jsName,
-                        this.cg.bindingManager.GetCSTypeFullName(typeBindingInfo.type),
-                        constructor);
+                    cg.cs.AppendLine("cls.AddMethod(false, \"{0}\", {1});", regName, funcName);
+                }
 
-                    // 运算符
-                    foreach (var operatorBindingInfo in typeBindingInfo.operators)
+                // 静态方法
+                foreach (var kv in typeBindingInfo.staticMethods)
+                {
+                    var methodBindingInfo = kv.Value;
+                    var regName = methodBindingInfo.jsName;
+
+                    if (methodBindingInfo._cfunc != null)
                     {
-                        var regName = operatorBindingInfo.jsName;
-                        var funcName = operatorBindingInfo.csBindName;
-                        var parameters = operatorBindingInfo.methodInfo.GetParameters();
-                        var declaringType = operatorBindingInfo.methodInfo.DeclaringType;
-                        string redirect;
-                        if (this.typeBindingInfo.transform != null && this.typeBindingInfo.transform.TryRedirectMethod(regName, out redirect))
+                        var attr = (JSCFunctionAttribute)methodBindingInfo._cfunc.GetCustomAttribute(typeof(JSCFunctionAttribute));
+                        var methodDeclType = this.cg.bindingManager.GetCSTypeFullName(methodBindingInfo._cfunc.DeclaringType);
+                        var isStatic = attr.isStatic ? "true" : "false";
+                        cg.cs.AppendLine("cls.AddRawMethod({0}, \"{1}\", {2}.{3});", isStatic, regName, methodDeclType, methodBindingInfo._cfunc.Name);
+                        if (attr.difinitions != null)
                         {
-                            funcName = redirect;
-                        }
-
-                        do
-                        {
-                            if (parameters.Length == 2)
+                            foreach (var defEntry in attr.difinitions)
                             {
-                                if (parameters[0].ParameterType != declaringType)
+                                string tsMethodRename;
+                                var prefix = attr.isStatic ? "static " : "";
+
+                                // 附带的签名没有带命名时, 自动加上
+                                if (defEntry.StartsWith("(") || defEntry.StartsWith("<"))
                                 {
-                                    var leftType = typeBindingInfo.bindingManager.GetCSTypeFullName(parameters[0].ParameterType);
-                                    cg.cs.AppendLine("cls.AddLeftOperator(\"{0}\", {1}, {2}, typeof({3}));", regName, funcName, operatorBindingInfo.length, leftType);
-                                    break;
-                                }
-                                else if (parameters[1].ParameterType != declaringType)
-                                {
-                                    var rightType = typeBindingInfo.bindingManager.GetCSTypeFullName(parameters[1].ParameterType);
-                                    cg.cs.AppendLine("cls.AddRightOperator(\"{0}\", {1}, {2}, typeof({3}));", regName, funcName, operatorBindingInfo.length, rightType);
-                                    break;
-                                }
-                            }
-
-                            cg.cs.AppendLine("cls.AddSelfOperator(\"{0}\", {1}, {2});", regName, funcName, operatorBindingInfo.length);
-                        } while (false);
-                    }
-
-                    // 非静态方法
-                    foreach (var kv in typeBindingInfo.methods)
-                    {
-                        var regName = kv.Value.jsName;
-                        var funcName = kv.Value.csBindName;
-                        string redirect;
-                        if (this.typeBindingInfo.transform != null && this.typeBindingInfo.transform.TryRedirectMethod(regName, out redirect))
-                        {
-                            funcName = redirect;
-                        }
-
-                        cg.cs.AppendLine("cls.AddMethod(false, \"{0}\", {1});", regName, funcName);
-                    }
-
-                    // 静态方法
-                    foreach (var kv in typeBindingInfo.staticMethods)
-                    {
-                        var methodBindingInfo = kv.Value;
-                        var regName = methodBindingInfo.jsName;
-
-                        if (methodBindingInfo._cfunc != null)
-                        {
-                            var attr = (JSCFunctionAttribute)methodBindingInfo._cfunc.GetCustomAttribute(typeof(JSCFunctionAttribute));
-                            var methodDeclType = this.cg.bindingManager.GetCSTypeFullName(methodBindingInfo._cfunc.DeclaringType);
-                            var isStatic = attr.isStatic ? "true" : "false";
-                            cg.cs.AppendLine("cls.AddRawMethod({0}, \"{1}\", {2}.{3});", isStatic, regName, methodDeclType, methodBindingInfo._cfunc.Name);
-                            if (attr.difinitions != null)
-                            {
-                                foreach (var defEntry in attr.difinitions)
-                                {
-                                    string tsMethodRename;
-                                    var prefix = attr.isStatic ? "static " : "";
-
-                                    // 附带的签名没有带命名时, 自动加上
-                                    if (defEntry.StartsWith("(") || defEntry.StartsWith("<"))
+                                    if (this.cg.bindingManager.GetTSMethodRename(methodBindingInfo._cfunc, out tsMethodRename))
                                     {
-                                        if (this.cg.bindingManager.GetTSMethodRename(methodBindingInfo._cfunc, out tsMethodRename))
-                                        {
-                                            this.cg.tsDeclare.AppendLine($"{prefix}{tsMethodRename}{defEntry}");
-                                        }
-                                        else
-                                        {
-                                            this.cg.tsDeclare.AppendLine($"{prefix}{regName}{defEntry}");
-                                        }
+                                        this.cg.tsDeclare.AppendLine($"{prefix}{tsMethodRename}{defEntry}");
                                     }
                                     else
                                     {
-                                        this.cg.tsDeclare.AppendLine($"{prefix}{defEntry}");
+                                        this.cg.tsDeclare.AppendLine($"{prefix}{regName}{defEntry}");
                                     }
                                 }
-                            }
-                            else
-                            {
-                                this.cg.tsDeclare.AppendLine("(...uncertain: any[]): any /* uncertain */");
+                                else
+                                {
+                                    this.cg.tsDeclare.AppendLine($"{prefix}{defEntry}");
+                                }
                             }
                         }
                         else
                         {
-                            var funcName = methodBindingInfo.csBindName;
-                            string redirect;
-                            if (this.typeBindingInfo.transform != null && this.typeBindingInfo.transform.TryRedirectMethod(regName, out redirect))
-                            {
-                                funcName = redirect;
-                            }
-                            cg.cs.AppendLine("cls.AddMethod(true, \"{0}\", {1});", regName, funcName);
+                            this.cg.tsDeclare.AppendLine("(...uncertain: any[]): any /* uncertain */");
                         }
                     }
-
-                    // 属性
-                    foreach (var kv in typeBindingInfo.properties)
+                    else
                     {
-                        var bindingInfo = kv.Value;
-                        if (bindingInfo.staticPair.IsValid())
+                        var funcName = methodBindingInfo.csBindName;
+                        string redirect;
+                        if (this.typeBindingInfo.transform != null && this.typeBindingInfo.transform.TryRedirectMethod(regName, out redirect))
                         {
-                            var tsPropertyVar = this.cg.bindingManager.GetTSVariable(bindingInfo.regName);
-                            cg.cs.AppendLine("cls.AddProperty(true, \"{0}\", {1}, {2});",
-                                tsPropertyVar,
-                                bindingInfo.staticPair.getterName != null ? bindingInfo.staticPair.getterName : "null",
-                                bindingInfo.staticPair.setterName != null ? bindingInfo.staticPair.setterName : "null");
-
-                            var tsPropertyPrefix = "static ";
-                            if (bindingInfo.staticPair.setterName == null)
-                            {
-                                tsPropertyPrefix += "readonly ";
-                            }
-                            var tsPropertyType = this.cg.currentTSModule.GetTSTypeFullName(bindingInfo.propertyType);
-                            cg.AppendJSDoc(bindingInfo.propertyInfo);
-                            cg.tsDeclare.AppendLine($"{tsPropertyPrefix}{tsPropertyVar}: {tsPropertyType}");
+                            funcName = redirect;
                         }
-
-                        if (bindingInfo.instancePair.IsValid())
-                        {
-                            var tsPropertyVar = this.cg.bindingManager.GetTSVariable(bindingInfo.regName);
-                            cg.cs.AppendLine("cls.AddProperty(false, \"{0}\", {1}, {2});",
-                                tsPropertyVar,
-                                bindingInfo.instancePair.getterName != null ? bindingInfo.instancePair.getterName : "null",
-                                bindingInfo.instancePair.setterName != null ? bindingInfo.instancePair.setterName : "null");
-
-                            var tsPropertyPrefix = "";
-                            if (bindingInfo.instancePair.setterName == null)
-                            {
-                                tsPropertyPrefix += "readonly ";
-                            }
-                            var tsPropertyType = this.cg.currentTSModule.GetTSTypeFullName(bindingInfo.propertyType);
-                            cg.AppendJSDoc(bindingInfo.propertyInfo);
-                            cg.tsDeclare.AppendLine($"{tsPropertyPrefix}{tsPropertyVar}: {tsPropertyType}");
-                        }
+                        cg.cs.AppendLine("cls.AddMethod(true, \"{0}\", {1});", regName, funcName);
                     }
-
-                    foreach (var kv in typeBindingInfo.fields)
-                    {
-                        var bindingInfo = kv.Value;
-                        var bStatic = bindingInfo.isStatic;
-                        var tsFieldVar = this.cg.bindingManager.GetTSVariable(bindingInfo.regName);
-                        if (bindingInfo.constantValue != null)
-                        {
-                            var cv = bindingInfo.constantValue;
-                            cg.cs.AppendLine($"cls.AddConstValue(\"{tsFieldVar}\", {cv});");
-                        }
-                        else
-                        {
-                            cg.cs.AppendLine("cls.AddField({0}, \"{1}\", {2}, {3});",
-                                bStatic ? "true" : "false",
-                                tsFieldVar,
-                                bindingInfo.getterName != null ? bindingInfo.getterName : "null",
-                                bindingInfo.setterName != null ? bindingInfo.setterName : "null");
-                        }
-                        var tsFieldPrefix = bStatic ? "static " : "";
-                        if (bindingInfo.setterName == null)
-                        {
-                            tsFieldPrefix += "readonly ";
-                        }
-                        var tsFieldType = this.cg.currentTSModule.GetTSTypeFullName(bindingInfo.fieldType);
-                        cg.AppendJSDoc(bindingInfo.fieldInfo);
-                        cg.tsDeclare.AppendLine($"{tsFieldPrefix}{tsFieldVar}: {tsFieldType}");
-                    }
-
-                    foreach (var kv in typeBindingInfo.events)
-                    {
-                        var eventBindingInfo = kv.Value;
-                        var bStatic = eventBindingInfo.isStatic;
-                        var tsFieldVar = this.cg.bindingManager.GetTSVariable(eventBindingInfo.regName);
-                        var tsFieldType = this.cg.currentTSModule.GetTSTypeFullName(eventBindingInfo.eventInfo.EventHandlerType);
-                        var tsFieldPrefix = "";
-                        if (bStatic)
-                        {
-                            tsFieldPrefix += "static ";
-                            cg.cs.AppendLine($"cls.AddMethod(true, \"{tsFieldVar}\", {eventBindingInfo.name});");
-                        }
-                        else
-                        {
-                            cg.cs.AppendLine($"cls.AddMethod(false, \"{tsFieldVar}\", {eventBindingInfo.name});");
-                        }
-                        // tsFieldPrefix += "readonly ";
-                        // cg.tsDeclare.AppendLine($"{tsFieldPrefix}{tsFieldVar}: jsb.event<{tsFieldType}>");
-                        cg.tsDeclare.AppendLine($"{tsFieldPrefix}{tsFieldVar}(op: \"add\" | \"remove\", fn: {tsFieldType}): void");
-                    }
-
-                    foreach (var kv in typeBindingInfo.delegates)
-                    {
-                        var delegateBindingInfo = kv.Value;
-                        var bStatic = delegateBindingInfo.isStatic;
-                        var tsFieldVar = this.cg.bindingManager.GetTSVariable(delegateBindingInfo.regName);
-                        var tsFieldType = this.cg.currentTSModule.GetTSTypeFullName(delegateBindingInfo.delegateType);
-                        var tsFieldPrefix = "";
-                        if (bStatic)
-                        {
-                            tsFieldPrefix += "static ";
-                            cg.cs.AppendLine($"cls.AddMethod(true, \"{tsFieldVar}\", {delegateBindingInfo.name});");
-                        }
-                        else
-                        {
-                            cg.cs.AppendLine($"cls.AddMethod(false, \"{tsFieldVar}\", {delegateBindingInfo.name});");
-                        }
-                        // tsFieldPrefix += "readonly ";
-                        // cg.tsDeclare.AppendLine($"{tsFieldPrefix}{tsFieldVar}: jsb.event<{tsFieldType}>");
-
-                        if (delegateBindingInfo.readable)
-                        {
-                            if (delegateBindingInfo.writable)
-                            {
-                                cg.tsDeclare.AppendLine($"{tsFieldPrefix}{tsFieldVar}(op: \"get\"): {tsFieldType}");
-                                cg.tsDeclare.AppendLine($"{tsFieldPrefix}{tsFieldVar}(op: \"add\" | \"remove\" | \"set\", fn?: {tsFieldType}): void");
-                                cg.tsDeclare.AppendLine($"{tsFieldPrefix}{tsFieldVar}(op: \"add\" | \"remove\" | \"set\" | \"get\", fn?: {tsFieldType}): {tsFieldType} | void");
-                            }
-                            else
-                            {
-                                cg.tsDeclare.AppendLine($"{tsFieldPrefix}{tsFieldVar}(op: \"get\"): {tsFieldType}");
-                            }
-                        }
-                        else
-                        {
-                            cg.tsDeclare.AppendLine($"{tsFieldPrefix}{tsFieldVar}(op: \"set\", fn: {tsFieldType})");
-                        }
-                    }
-
-                    cg.cs.AppendLine("cls.Close();");
                 }
+
+                // 属性
+                foreach (var kv in typeBindingInfo.properties)
+                {
+                    var bindingInfo = kv.Value;
+                    if (bindingInfo.staticPair.IsValid())
+                    {
+                        var tsPropertyVar = this.cg.bindingManager.GetTSVariable(bindingInfo.regName);
+                        cg.cs.AppendLine("cls.AddProperty(true, \"{0}\", {1}, {2});",
+                            tsPropertyVar,
+                            bindingInfo.staticPair.getterName != null ? bindingInfo.staticPair.getterName : "null",
+                            bindingInfo.staticPair.setterName != null ? bindingInfo.staticPair.setterName : "null");
+
+                        var tsPropertyPrefix = "static ";
+                        if (bindingInfo.staticPair.setterName == null)
+                        {
+                            tsPropertyPrefix += "readonly ";
+                        }
+                        var tsPropertyType = this.cg.currentTSModule.GetTSTypeFullName(bindingInfo.propertyType);
+                        cg.AppendJSDoc(bindingInfo.propertyInfo);
+                        cg.tsDeclare.AppendLine($"{tsPropertyPrefix}{tsPropertyVar}: {tsPropertyType}");
+                    }
+
+                    if (bindingInfo.instancePair.IsValid())
+                    {
+                        var tsPropertyVar = this.cg.bindingManager.GetTSVariable(bindingInfo.regName);
+                        cg.cs.AppendLine("cls.AddProperty(false, \"{0}\", {1}, {2});",
+                            tsPropertyVar,
+                            bindingInfo.instancePair.getterName != null ? bindingInfo.instancePair.getterName : "null",
+                            bindingInfo.instancePair.setterName != null ? bindingInfo.instancePair.setterName : "null");
+
+                        var tsPropertyPrefix = "";
+                        if (bindingInfo.instancePair.setterName == null)
+                        {
+                            tsPropertyPrefix += "readonly ";
+                        }
+                        var tsPropertyType = this.cg.currentTSModule.GetTSTypeFullName(bindingInfo.propertyType);
+                        cg.AppendJSDoc(bindingInfo.propertyInfo);
+                        cg.tsDeclare.AppendLine($"{tsPropertyPrefix}{tsPropertyVar}: {tsPropertyType}");
+                    }
+                }
+
+                foreach (var kv in typeBindingInfo.fields)
+                {
+                    var bindingInfo = kv.Value;
+                    var bStatic = bindingInfo.isStatic;
+                    var tsFieldVar = this.cg.bindingManager.GetTSVariable(bindingInfo.regName);
+                    if (bindingInfo.constantValue != null)
+                    {
+                        var cv = bindingInfo.constantValue;
+                        cg.cs.AppendLine($"cls.AddConstValue(\"{tsFieldVar}\", {cv});");
+                    }
+                    else
+                    {
+                        cg.cs.AppendLine("cls.AddField({0}, \"{1}\", {2}, {3});",
+                            bStatic ? "true" : "false",
+                            tsFieldVar,
+                            bindingInfo.getterName != null ? bindingInfo.getterName : "null",
+                            bindingInfo.setterName != null ? bindingInfo.setterName : "null");
+                    }
+                    var tsFieldPrefix = bStatic ? "static " : "";
+                    if (bindingInfo.setterName == null)
+                    {
+                        tsFieldPrefix += "readonly ";
+                    }
+                    var tsFieldType = this.cg.currentTSModule.GetTSTypeFullName(bindingInfo.fieldType);
+                    cg.AppendJSDoc(bindingInfo.fieldInfo);
+                    cg.tsDeclare.AppendLine($"{tsFieldPrefix}{tsFieldVar}: {tsFieldType}");
+                }
+
+                foreach (var kv in typeBindingInfo.events)
+                {
+                    var eventBindingInfo = kv.Value;
+                    var bStatic = eventBindingInfo.isStatic;
+                    var tsFieldVar = this.cg.bindingManager.GetTSVariable(eventBindingInfo.regName);
+                    var tsFieldType = this.cg.currentTSModule.GetTSTypeFullName(eventBindingInfo.eventInfo.EventHandlerType);
+                    var tsFieldPrefix = "";
+                    if (bStatic)
+                    {
+                        tsFieldPrefix += "static ";
+                        cg.cs.AppendLine($"cls.AddMethod(true, \"{tsFieldVar}\", {eventBindingInfo.name});");
+                    }
+                    else
+                    {
+                        cg.cs.AppendLine($"cls.AddMethod(false, \"{tsFieldVar}\", {eventBindingInfo.name});");
+                    }
+                    // tsFieldPrefix += "readonly ";
+                    // cg.tsDeclare.AppendLine($"{tsFieldPrefix}{tsFieldVar}: jsb.event<{tsFieldType}>");
+                    cg.tsDeclare.AppendLine($"{tsFieldPrefix}{tsFieldVar}(op: \"add\" | \"remove\", fn: {tsFieldType}): void");
+                }
+
+                foreach (var kv in typeBindingInfo.delegates)
+                {
+                    var delegateBindingInfo = kv.Value;
+                    var bStatic = delegateBindingInfo.isStatic;
+                    var tsFieldVar = this.cg.bindingManager.GetTSVariable(delegateBindingInfo.regName);
+                    var tsFieldType = this.cg.currentTSModule.GetTSTypeFullName(delegateBindingInfo.delegateType);
+                    var tsFieldPrefix = "";
+                    if (bStatic)
+                    {
+                        tsFieldPrefix += "static ";
+                        cg.cs.AppendLine($"cls.AddMethod(true, \"{tsFieldVar}\", {delegateBindingInfo.name});");
+                    }
+                    else
+                    {
+                        cg.cs.AppendLine($"cls.AddMethod(false, \"{tsFieldVar}\", {delegateBindingInfo.name});");
+                    }
+                    // tsFieldPrefix += "readonly ";
+                    // cg.tsDeclare.AppendLine($"{tsFieldPrefix}{tsFieldVar}: jsb.event<{tsFieldType}>");
+
+                    if (delegateBindingInfo.readable)
+                    {
+                        if (delegateBindingInfo.writable)
+                        {
+                            cg.tsDeclare.AppendLine($"{tsFieldPrefix}{tsFieldVar}(op: \"get\"): {tsFieldType}");
+                            cg.tsDeclare.AppendLine($"{tsFieldPrefix}{tsFieldVar}(op: \"add\" | \"remove\" | \"set\", fn?: {tsFieldType}): void");
+                            cg.tsDeclare.AppendLine($"{tsFieldPrefix}{tsFieldVar}(op: \"add\" | \"remove\" | \"set\" | \"get\", fn?: {tsFieldType}): {tsFieldType} | void");
+                        }
+                        else
+                        {
+                            cg.tsDeclare.AppendLine($"{tsFieldPrefix}{tsFieldVar}(op: \"get\"): {tsFieldType}");
+                        }
+                    }
+                    else
+                    {
+                        cg.tsDeclare.AppendLine($"{tsFieldPrefix}{tsFieldVar}(op: \"set\", fn: {tsFieldType})");
+                    }
+                }
+
+                cg.cs.AppendLine("return cls;");
             }
             base.Dispose();
 

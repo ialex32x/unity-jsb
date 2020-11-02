@@ -261,7 +261,7 @@ namespace QuickJS
             FindModuleResolver<StaticModuleResolver>().AddStaticModule(module_id, bind);
         }
 
-        public void AddStaticModule(string module_id, Action<ScriptRuntime, ProxyModuleRegister> proxyReg)
+        public void AddStaticModuleProxy(string module_id, Action<ScriptRuntime, ProxyModuleRegister> proxyReg)
         {
             var mr = FindModuleResolver<StaticModuleResolver>();
             var proxy = new ProxyModuleRegister(this);

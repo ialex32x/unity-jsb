@@ -35,6 +35,11 @@ namespace QuickJS.Unity
         /// </summary>
         public readonly string jsModuleAccess;
 
+        /// <summary>
+        /// js 模块中顶层访问名的层数
+        /// </summary>
+        public readonly int jsDepth;
+
         public readonly string jsLocalName;
 
         /// <summary>
@@ -164,6 +169,7 @@ namespace QuickJS.Unity
                 this.jsModuleAccess = this.jsModuleAccess.Substring(0, this.jsModuleAccess.Length - 2);
             }
 
+            this.jsDepth = this.jsModuleAccess.Split('.').Length;
             this.jsFullName = CodeGenUtils.Concat(".", jsModule, jsNamespace, jsName);
         }
 

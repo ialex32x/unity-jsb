@@ -70,6 +70,11 @@ namespace QuickJS.Binding
             return decl;
         }
 
+        public ClassDecl CreateEnum(string typename, Type type)
+        {
+            return CreateClass(JSApi.JS_UNDEFINED, typename, type, JSApi.class_private_ctor);
+        }
+
         public ClassDecl CreateClass(string typename, Type type, JSCFunctionMagic ctorFunc)
         {
             return CreateClass(JSApi.JS_UNDEFINED, typename, type, ctorFunc);

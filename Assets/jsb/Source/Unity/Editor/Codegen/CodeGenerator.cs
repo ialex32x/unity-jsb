@@ -73,7 +73,10 @@ namespace QuickJS.Unity
                                 {
                                     using (var method = new PlainMethodCodeGen(this, "private static void BindAll(ScriptRuntime runtime)"))
                                     {
-                                        var modules = orderedTypes.Where(t => t.genBindingCode).GroupBy(type => type.tsTypeNaming.jsModule);
+                                        var modules = from t in orderedTypes
+                                                      where t.genBindingCode
+                                                      orderby t.tsTypeNaming.jsDepth
+                                                      group t by t.tsTypeNaming.jsModule;
 
                                         foreach (var module in modules)
                                         {
@@ -82,7 +85,7 @@ namespace QuickJS.Unity
                                             {
                                                 var runtimeVarName = "rt";
                                                 var moduleVarName = "module";
-                                                this.cs.AppendLine($"runtime.AddStaticModule(\"{moduleName}\", ({runtimeVarName}, {moduleVarName}) => ");
+                                                this.cs.AppendLine($"runtime.AddStaticModuleProxy(\"{moduleName}\", ({runtimeVarName}, {moduleVarName}) => ");
                                                 using (this.cs.TailCallCodeBlockScope())
                                                 {
                                                     var editorTypes = new List<TypeBindingInfo>();
@@ -112,7 +115,7 @@ namespace QuickJS.Unity
                                             }
                                         }
 
-                                        method.AddStatement("{0}.{1}.Bind(register);", this.bindingManager.prefs.ns, CodeGenerator.NameOfDelegates);
+                                        method.AddStatement("{0}.{1}.Bind(runtime);", this.bindingManager.prefs.ns, CodeGenerator.NameOfDelegates);
                                     } // func: BindAll
                                 } // 'preserved' attribute for func: BindAll
                             } // class 
