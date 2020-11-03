@@ -109,28 +109,19 @@ namespace QuickJS.Utils
             return index;
         }
 
-        public void Collect(List<TimeHandle> cache)
+        public bool Collect(List<TimeHandle> cache)
         {
-            _slots[_index].Collect(cache);
-            // if (cache.Count > 0)
-            // {
-            //     Debug.LogWarning($"[wheel#{_depth}:{_index}<range:{_timerange}>] collect timers {cache.Count}");
-            // }
-        }
-
-        public bool Tick()
-        {
-            ++_index;
-            if (_depth > 0)
-            {
-                // Debug.Log($"[wheel#{_depth}:{_index}<range:{_timerange}>] tick...");
-            }
+            _slots[_index++].Collect(cache);
             if (_index == _slots.Length)
             {
                 _index = 0;
                 return true;
             }
             return false;
+            // if (cache.Count > 0)
+            // {
+            //     Debug.LogWarning($"[wheel#{_depth}:{_index}<range:{_timerange}>] collect timers {cache.Count}");
+            // }
         }
     }
 
@@ -150,7 +141,7 @@ namespace QuickJS.Utils
         private List<TimeHandle> _tcache2 = new List<TimeHandle>();
         private List<TimeHandle> _recycle = new List<TimeHandle>();
 
-        public Scheduler(IScriptLogger logger, int jiffies = 8, int slots = 160, int depth = 4, int prealloc = 50, int capacity = 500)
+        public Scheduler(IScriptLogger logger, int jiffies = 10, int slots = 120, int depth = 4, int prealloc = 50, int capacity = 500)
         {
             _threadId = Thread.CurrentThread.ManagedThreadId;
             _logger = logger;
@@ -223,6 +214,20 @@ namespace QuickJS.Utils
             return _timeHandles.Count;
         }
 
+        public void ForEach(Action<ulong, int, int, bool> walker)
+        {
+            foreach (var kv in _timeHandles)
+            {
+                var t = kv.Value;
+                if (t.deleted)
+                {
+                    continue;
+                }
+
+                walker(t.id, t.delay, t.deadline, t.once);
+            }
+        }
+
         public void Destroy()
         {
             foreach (var kv in _timeHandles)
@@ -274,24 +279,26 @@ namespace QuickJS.Utils
                 // Debug.Log($"[schedule] dt:{ms} _elapsed:@{_elapsed} _jiffies:{_jiffies}");
                 _timeslice -= _jiffies;
                 _elapsed += _jiffies;
+
                 var wheelIndex = 0;
                 // console.log(`[schedule.wheel#${wheelIndex}] slot ${this._wheels[wheelIndex].index} @${this.elapsed}`)
-                _wheels[wheelIndex].Collect(_tcache1);
-                if (_wheels[wheelIndex].Tick())
+                if (_wheels[wheelIndex].Collect(_tcache1))
                 {
                     wheelIndex++;
                     while (wheelIndex < _wheels.Length)
                     {
                         // Debug.Log($"[schedule.wheel#{wheelIndex}] slot {_wheels[wheelIndex].index} @{_elapsed}");
                         // _tcache2.Clear();
-                        _wheels[wheelIndex].Collect(_tcache2);
+                        var tick = _wheels[wheelIndex].Collect(_tcache2);
+
                         for (int i = 0, size2 = _tcache2.Count; i < size2; ++i)
                         {
                             var timer = _tcache2[i];
                             Rearrange(timer);
                         }
                         _tcache2.Clear();
-                        if (!_wheels[wheelIndex].Tick())
+
+                        if (!tick)
                         {
                             break;
                         }
@@ -299,6 +306,7 @@ namespace QuickJS.Utils
                     }
                 }
             }
+            
             InvokeTimers();
         }
 

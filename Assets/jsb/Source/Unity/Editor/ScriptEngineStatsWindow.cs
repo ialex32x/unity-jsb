@@ -12,6 +12,13 @@ namespace QuickJS.Unity
     {
         private class Snapshot
         {
+            public struct TimerInfo
+            {
+                public ulong id;
+                public int delay;
+                public int deadline;
+                public bool once;
+            }
             public int id;
             public bool alive;
 
@@ -22,14 +29,15 @@ namespace QuickJS.Unity
             public int delegateCount;
             public int scriptValueCount;
             public int scriptPromiseCount;
-            public int activeTimer;
+            public int timeNow;
+            public List<TimerInfo> activeTimers = new List<TimerInfo>();
         }
 
         private Vector2 _sv;
         private int _alive;
         private bool _autoCap = true;
         private float _time;
-        private float _timeCap = 10f;
+        private float _timeCap = 5f;
         private List<Snapshot> _snapshots = new List<Snapshot>();
 
         [MenuItem("JS Bridge/Stats Viewer", false, 5000)]
@@ -42,10 +50,14 @@ namespace QuickJS.Unity
         {
             base.OnEnable();
             titleContent = new GUIContent("ScriptEngine Stats");
+            _time = Time.realtimeSinceStartup;
+            EditorApplication.update += OnUpdate;
+            CaptureAll();
         }
 
         protected override void OnDisable()
         {
+            EditorApplication.update -= OnUpdate;
             base.OnDisable();
         }
 
@@ -106,7 +118,15 @@ namespace QuickJS.Unity
             snapshot.scriptPromiseCount = objectCache.GetScriptPromiseCount();
 
             var timeManager = runtime.GetTimerManager();
-            snapshot.activeTimer = timeManager.GetActiveTimeHandleCount();
+            snapshot.activeTimers.Clear();
+            snapshot.timeNow = timeManager.now;
+            timeManager.ForEach((id, delay, deadline, once) => snapshot.activeTimers.Add(new Snapshot.TimerInfo()
+            {
+                id = id,
+                delay = delay,
+                deadline = deadline,
+                once = once,
+            }));
         }
 
         private void InspectSnapshow(Snapshot snapshot)
@@ -150,25 +170,50 @@ namespace QuickJS.Unity
                 EditorGUILayout.IntField("Delegate Mapping Count", snapshot.delegateCount);
                 EditorGUILayout.IntField("ScriptValue Mapping Count", snapshot.scriptValueCount);
                 EditorGUILayout.IntField("ScriptPromise Mapping Count", snapshot.scriptPromiseCount);
-                EditorGUILayout.IntField("Active Timer", snapshot.activeTimer);
+            });
+
+            Block("Timer", () =>
+            {
+                var count = snapshot.activeTimers.Count;
+                EditorGUILayout.IntField("Active Timer", count);
+                EditorGUILayout.IntField("Now", snapshot.timeNow);
+
+                if (count > 0)
+                {
+                    EditorGUILayout.BeginHorizontal();
+                    EditorGUILayout.LabelField("ID");
+                    EditorGUILayout.LabelField("Delay");
+                    EditorGUILayout.LabelField("Deadline");
+                    EditorGUILayout.EndHorizontal();
+                    for (var i = 0; i < count; i++)
+                    {
+                        var t = snapshot.activeTimers[i];
+                        EditorGUILayout.BeginHorizontal();
+                        EditorGUILayout.TextField(t.id.ToString());
+                        EditorGUILayout.IntField(t.delay);
+                        EditorGUILayout.IntField(t.deadline);
+                        EditorGUILayout.EndHorizontal();
+                    }
+                }
             });
             EditorGUILayout.EndVertical();
         }
 
-        void Update()
+        private void OnUpdate()
         {
             if (_autoCap)
             {
                 var rt = Time.realtimeSinceStartup;
+
                 if (rt - _time > _timeCap)
                 {
                     _time = rt;
-                    _alive = ScriptEngine.ForEachRuntime(runtime => Capture(runtime));
+                    CaptureAll();
                 }
             }
         }
 
-        protected override void OnPaint()
+        private void CaptureAll()
         {
             for (int i = 0, count = _snapshots.Count; i < count; i++)
             {
@@ -176,6 +221,12 @@ namespace QuickJS.Unity
                 snapshot.alive = false;
             }
             _alive = ScriptEngine.ForEachRuntime(runtime => Capture(runtime));
+            Repaint();
+        }
+
+        protected override void OnPaint()
+        {
+            _alive = ScriptEngine.ForEachRuntime(runtime => { });
 
             if (_alive == 0)
             {
@@ -195,7 +246,7 @@ namespace QuickJS.Unity
 
                 if (GUILayout.Button("Capture"))
                 {
-                    _alive = ScriptEngine.ForEachRuntime(runtime => Capture(runtime));
+                    CaptureAll();
                 }
             });
 

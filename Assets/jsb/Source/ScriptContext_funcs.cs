@@ -92,6 +92,13 @@ namespace QuickJS
             return JSApi.JS_UNDEFINED;
         }
 
+        [MonoPInvokeCallback(typeof(JSCFunction))]
+        private static JSValue _now(JSContext ctx, JSValue this_obj, int argc, JSValue[] argv)
+        {
+            var context = ScriptEngine.GetContext(ctx);
+            return JSApi.JS_NewInt32(ctx, context.GetTimerManager().now);
+        }
+
         // private static void _RunGC(ScriptRuntime rt, JSAction value)
         // {
         //     JSApi.JS_RunGC(rt);

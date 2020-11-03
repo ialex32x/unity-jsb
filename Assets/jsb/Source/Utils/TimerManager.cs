@@ -10,7 +10,7 @@ namespace QuickJS.Utils
         private uint _idgen;
         private Dictionary<uint, ulong> _timers = new Dictionary<uint, ulong>();
 
-        public TimerManager(IScriptLogger logger, int jiffies = 8, int slots = 160, int depth = 4, int prealloc = 50, int capacity = 500)
+        public TimerManager(IScriptLogger logger, int jiffies = 10, int slots = 120, int depth = 4, int prealloc = 50, int capacity = 500)
         : base(logger, jiffies, slots, depth, prealloc, capacity)
         {
         }

@@ -123,6 +123,11 @@ declare module "jsb" {
     function GC(): void
 
     /**
+     * setInterval/setTimeout 所用定时管理器的当前时间
+     */
+    function Now(): number
+
+    /**
      * 即 Thread.Sleep()
      */
     function Sleep(millisecondsTimeout?: number): void
