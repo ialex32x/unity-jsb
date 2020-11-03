@@ -102,8 +102,8 @@ namespace QuickJS.Utils
 
         public int Add(int delay, TimeHandle timer)
         {
-            var offset = (int)Math.Floor(((double)delay - _interval + _jiffies - 1) / _interval);
-            var index = Math.Max((_index + offset) % _slots.Length, 0);
+            var offset = (delay - _interval + _jiffies) / _interval;
+            var index = (_index + offset) % _slots.Length;
             _slots[index].Add(timer);
             // Debug.LogWarning($"[wheel#{_depth}:{_index}<range:{_timerange} _interval:{_interval}>] add timer#{timer.id} delay:{delay} to index: {index} offset: {offset}");
             return index;
