@@ -102,7 +102,7 @@ namespace QuickJS.Utils
 
         public int Add(int delay, TimeHandle timer)
         {
-            var offset = Math.Max(1, (delay - _interval + _jiffies - 1) / _interval);
+            var offset = (int)Math.Floor(((double)delay - _interval + _jiffies - 1) / _interval);
             var index = Math.Max((_index + offset) % _slots.Length, 0);
             _slots[index].Add(timer);
             // Debug.LogWarning($"[wheel#{_depth}:{_index}<range:{_timerange} _interval:{_interval}>] add timer#{timer.id} delay:{delay} to index: {index} offset: {offset}");
@@ -268,12 +268,12 @@ namespace QuickJS.Utils
 
         public void Update(int ms)
         {
-            _elapsed += ms;
             _timeslice += ms;
             while (_timeslice >= _jiffies)
             {
                 // Debug.Log($"[schedule] dt:{ms} _elapsed:@{_elapsed} _jiffies:{_jiffies}");
                 _timeslice -= _jiffies;
+                _elapsed += _jiffies;
                 var wheelIndex = 0;
                 // console.log(`[schedule.wheel#${wheelIndex}] slot ${this._wheels[wheelIndex].index} @${this.elapsed}`)
                 _wheels[wheelIndex].Collect(_tcache1);
