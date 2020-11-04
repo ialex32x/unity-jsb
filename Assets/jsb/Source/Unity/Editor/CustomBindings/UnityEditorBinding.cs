@@ -41,6 +41,9 @@ namespace jsb.Editor
             bindingManager.AddExportedType(typeof(System.Collections.IEnumerator));
             bindingManager.AddExportedType(typeof(System.Collections.Generic.IEnumerable<string>));
 
+            bindingManager.AddExportedType(typeof(PrefabAssetType)).EditorRuntime();
+            bindingManager.AddExportedType(typeof(PrefabInstanceStatus)).EditorRuntime();
+            bindingManager.AddExportedType(typeof(UIOrientation)).EditorRuntime();
             bindingManager.AddExportedType(typeof(MessageType)).EditorRuntime();
             bindingManager.AddExportedType(typeof(Hash128)).EditorRuntime();
             bindingManager.AddExportedType(typeof(ImportAssetOptions)).EditorRuntime();
@@ -59,7 +62,24 @@ namespace jsb.Editor
             bindingManager.AddExportedType(typeof(SerializedObject)).EditorRuntime();
             bindingManager.AddExportedType(typeof(SerializedProperty)).EditorRuntime();
             bindingManager.AddExportedType(typeof(SerializedPropertyType)).EditorRuntime();
+            bindingManager.AddExportedType(typeof(BuildPlayerOptions)).EditorRuntime();
+            bindingManager.AddExportedType(typeof(BuildAssetBundleOptions)).EditorRuntime();
+            bindingManager.AddExportedType(typeof(BuildTarget)).EditorRuntime();
+            bindingManager.AddExportedType(typeof(CameraEditor)).EditorRuntime();
+            bindingManager.AddExportedType(typeof(CameraEditorUtils)).EditorRuntime();
+            bindingManager.AddExportedType(typeof(TransformUtils)).EditorRuntime();
+            bindingManager.AddExportedType(typeof(EditorJsonUtility)).EditorRuntime();
+            bindingManager.AddExportedType(typeof(GameObjectUtility)).EditorRuntime();
+            bindingManager.AddExportedType(typeof(MeshUtility)).EditorRuntime().SetAllConstructorsBlocked();
+            bindingManager.AddExportedType(typeof(PrefabUtility)).EditorRuntime().SetAllConstructorsBlocked();
+            bindingManager.AddExportedType(typeof(FileUtil)).EditorRuntime().SetAllConstructorsBlocked();
+            bindingManager.AddExportedType(typeof(UnityEditor.Build.Reporting.BuildReport)).EditorRuntime().SetAllConstructorsBlocked();
+            bindingManager.AddExportedType(typeof(AssetBundleManifest)).EditorRuntime().SetAllConstructorsBlocked();
+            bindingManager.AddExportedType(typeof(BuildPipeline)).EditorRuntime().SetAllConstructorsBlocked();
             bindingManager.AddExportedType(typeof(AssetDatabase)).EditorRuntime().SetAllConstructorsBlocked();
+            bindingManager.AddExportedType(typeof(ShaderUtil)).EditorRuntime().SetAllConstructorsBlocked();
+            bindingManager.AddExportedType(typeof(Editor)).EditorRuntime().SetAllConstructorsBlocked();
+            bindingManager.AddExportedType(typeof(EditorUtility)).EditorRuntime().SetAllConstructorsBlocked();
             bindingManager.AddExportedType(typeof(EditorGUI)).EditorRuntime().SetAllConstructorsBlocked();
             bindingManager.AddExportedType(typeof(EditorGUIUtility)).EditorRuntime().SetAllConstructorsBlocked();
             bindingManager.AddExportedType(typeof(EditorGUILayout)).EditorRuntime().SetAllConstructorsBlocked();
