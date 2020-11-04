@@ -33,6 +33,9 @@
     ☐ 子类中存在不同签名的同名方法时 (非虚)  时, 输出 ts-ignore
     ☐ 以更通用且自动化的方式生成可继承的类型
 
+编辑器支持:
+    ☐ 支持文件变化重载
+
 导出类模块化组织-备忘:
     ✔ TypeRegister: 改为不针对一个特定的 thisObject 进行类型注册. 总是通过 CreateNamespace/CreateClass 产生一个对象. 以解决类型的按需注册. @done(20-11-02 10:24)
     ✔ (暂时不做) TypeDB.GetPrototypeOf：处理类型 lazy load @done(20-11-02 10:24)
