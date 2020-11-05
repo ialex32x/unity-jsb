@@ -97,6 +97,11 @@ namespace QuickJS.Unity
 
         private void Capture(ScriptRuntime runtime)
         {
+            if (!runtime.isValid)
+            {
+                return;
+            }
+            
             var snapshot = GetSnapshot(runtime.id);
             snapshot.alive = true;
             unsafe

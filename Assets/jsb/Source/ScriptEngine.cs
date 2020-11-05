@@ -43,7 +43,7 @@ namespace QuickJS
                 for (int i = 0, len = _runtimeRefs.Count; i < len; ++i)
                 {
                     var slot = _runtimeRefs[i];
-                    if (slot.target != null)
+                    if (slot.target != null && slot.target.isValid)
                     {
                         count++;
                         visitor(slot.target);
@@ -100,7 +100,7 @@ namespace QuickJS
                 if (runtimeRef.isEditorRuntime == isEditorRuntime)
                 {
                     var runtime = runtimeRef.target;
-                    if (runtime != null && !runtime.isWorker && runtime.isRunning)
+                    if (runtime != null && !runtime.isWorker && runtime.isRunning && runtime.isValid)
                     {
                         target = runtime;
                     }
@@ -128,6 +128,7 @@ namespace QuickJS
                 runtime = slot.target;
                 _rwlock.ExitReadLock();
             }
+            
             return runtime;
         }
 

@@ -68,6 +68,8 @@ namespace QuickJS
 
         public bool isRunning { get { return _isRunning; } }
 
+        public bool isValid { get { return _isValid; } }
+
         public ScriptRuntime(int runtimeId)
         {
             _runtimeId = runtimeId;
