@@ -9,6 +9,13 @@ console.assert(true, "will not print");
 console.assert(false, "assert!!!");
 print(Example_1.DelegateTest);
 print(Example_1.DelegateTest.InnerTest.hello);
+try {
+    // @ts-ignore
+    Example_1.DelegateTest.GetArray("error");
+}
+catch (err) {
+    console.error(err);
+}
 print("fib:", fib_1.fib(12));
 setTimeout(() => {
     print("[timeout] test");

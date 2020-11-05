@@ -11,6 +11,13 @@ console.assert(false, "assert!!!");
 print(DelegateTest);
 print(DelegateTest.InnerTest.hello);
 
+try {
+    // @ts-ignore
+    DelegateTest.GetArray("error");
+} catch (err) {
+    console.error(err);
+}
+
 print("fib:", fib(12));
 
 setTimeout(() => {

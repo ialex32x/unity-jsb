@@ -760,11 +760,6 @@ namespace QuickJS.Unity
             return string.IsNullOrEmpty(type.Namespace) ? "" : (type.Namespace + ".");
         }
 
-        public string GetThrowError(string err)
-        {
-            return $"JSApi.JS_ThrowInternalError(ctx, \"{err}\")";
-        }
-
         public string GetScriptObjectGetter(Type type, string ctx, string index, string varname)
         {
             var getter = GetScriptObjectPropertyGetter(type);

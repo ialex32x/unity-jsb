@@ -20,7 +20,7 @@ namespace QuickJS
             {
                 return base.ToString();
             }
-            return string.Format("{0}: {1}", base.ToString(), _memberName);
+            return string.Format("{0}: {1}", Message, _memberName);
         }
     }
 }

@@ -443,8 +443,9 @@ namespace QuickJS.Unity
                     }
                 }
             }
-            var error = this.cg.bindingManager.GetThrowError("no matched method variant");
-            cg.cs.AppendLine($"return {error};");
+            
+            // error = return $"JSApi.JS_ThrowInternalError(ctx, \"{err}\")";
+            cg.cs.AppendLine($"throw new NoSuitableMethodException(\"{methodBindingInfo.jsName}\", {argc});");
         }
 
         protected List<ParameterInfo> WriteTSDeclaration(TypeBindingInfo typeBindingInfo, T method, MethodBaseBindingInfo<T> bindingInfo, bool isExtension)
