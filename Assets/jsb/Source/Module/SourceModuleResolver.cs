@@ -14,7 +14,8 @@ namespace QuickJS.Module
             public string main;
         }
 
-        private IJsonConverter _jsonConv; // for package.json parsing
+        // a json converter for package.json parsing
+        private IJsonConverter _jsonConv; 
 
         public SourceModuleResolver(IJsonConverter jsonConv)
         {

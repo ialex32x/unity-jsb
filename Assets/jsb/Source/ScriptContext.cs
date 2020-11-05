@@ -22,6 +22,8 @@ namespace QuickJS
         private AtomCache _atoms;
         private JSStringCache _stringCache;
 
+        // 保存已加载模块的信息
+        private Dictionary<string, string> _loadedModuleHash;
         private JSValue _moduleCache; // commonjs module cache
         private JSValue _require; // require function object 
         private bool _isValid;
@@ -48,6 +50,7 @@ namespace QuickJS
             _atoms = new AtomCache(_ctx);
             _stringCache = new JSStringCache(_ctx);
             _moduleCache = JSApi.JS_NewObject(_ctx);
+            _loadedModuleHash = new Dictionary<string, string>();
 
             _globalObject = JSApi.JS_GetGlobalObject(_ctx);
             _numberConstructor = JSApi.JS_GetProperty(_ctx, _globalObject, JSApi.JS_ATOM_Number);
@@ -304,6 +307,7 @@ namespace QuickJS
             JSApi.JS_SetProperty(_ctx, module_obj, GetAtom("exports"), JSApi.JS_DupValue(_ctx, exports_obj));
             JSApi.JS_FreeValue(_ctx, prop_val);
 
+            _loadedModuleHash[module_id] = module_id;
             return module_obj;
         }
 
@@ -325,6 +329,23 @@ namespace QuickJS
             value = JSApi.JS_UNDEFINED;
             JSApi.JS_FreeValue(_ctx, mod);
             return false;
+        }
+
+        public string[] GetModuleCacheList()
+        {
+            var keys = new string[_loadedModuleHash.Count];
+            _loadedModuleHash.Keys.CopyTo(keys, 0);
+            return keys;
+        }
+
+        /// <summary>
+        /// 清除模块缓存
+        /// </summary>
+        public void UnloadModuleCache(string module_id)
+        {
+            var prop = GetAtom(module_id);
+            JSApi.JS_SetProperty(_ctx, _moduleCache, prop, JSApi.JS_UNDEFINED);
+            _loadedModuleHash.Remove(module_id);
         }
 
         /// <summary>
@@ -367,7 +388,7 @@ namespace QuickJS
                 // ns_hotfix.AddFunction("replace", hotfix_replace, 2);
                 // ns_hotfix.AddFunction("before", hotfix_before);
                 // ns_hotfix.AddFunction("after", hotfix_after);
-                
+
                 ns_jsb.AddValue("hotfix", ns_hotfix.GetConstructor());
             }
             return ns_jsb;
