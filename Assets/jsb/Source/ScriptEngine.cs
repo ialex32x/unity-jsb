@@ -94,6 +94,7 @@ namespace QuickJS
             ScriptRuntime target = null;
             _rwlock.EnterWriteLock();
             var len = _runtimeRefs.Count;
+            
             for (int i = 0; i < len; ++i)
             {
                 var runtimeRef = _runtimeRefs[i];
@@ -119,23 +120,31 @@ namespace QuickJS
         public static ScriptRuntime GetRuntime(JSRuntime rt)
         {
             ScriptRuntime runtime = null;
-            var id = (int)JSApi.JS_GetRuntimeOpaque(rt);
-            if (id > 0)
+
+            if (rt.IsValid())
             {
-                var index = id - 1;
-                _rwlock.EnterReadLock();
-                var slot = _runtimeRefs[index];
-                runtime = slot.target;
-                _rwlock.ExitReadLock();
+                var id = (int)JSApi.JS_GetRuntimeOpaque(rt);
+                if (id > 0)
+                {
+                    var index = id - 1;
+                    _rwlock.EnterReadLock();
+                    var slot = _runtimeRefs[index];
+                    runtime = slot.target;
+                    _rwlock.ExitReadLock();
+                }
             }
-            
+
             return runtime;
         }
 
         public static ScriptContext GetContext(JSContext ctx)
         {
-            var rt = JSApi.JS_GetRuntime(ctx);
-            return GetRuntime(rt).GetContext(ctx);
+            if (ctx.IsValid())
+            {
+                var rt = JSApi.JS_GetRuntime(ctx);
+                return GetRuntime(rt).GetContext(ctx);
+            }
+            return null;
         }
 
         public static ScriptRuntime CreateRuntime()
