@@ -53,8 +53,6 @@ namespace QuickJS.Unity
 
         public readonly string csBindingName; // 绑定代码名
 
-        public string csNamespace => this.bindingManager.prefs.ns;
-
         public List<OperatorBindingInfo> operators = new List<OperatorBindingInfo>();
 
         public Dictionary<string, MethodBindingInfo> methods = new Dictionary<string, MethodBindingInfo>();

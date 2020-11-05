@@ -20,8 +20,6 @@ namespace QuickJS.Unity
         public const string NamespaceOfInternalScriptTypes = "QuickJS.Internal";
         public const string NameOfBuffer = "ArrayBuffer";
 
-        private bool _emitSharedTS = true;
-
         private TSModuleCodeGen _currentTSModule = null;
 
         public TSModuleCodeGen currentTSModule => _currentTSModule;
@@ -54,9 +52,9 @@ namespace QuickJS.Unity
             this.cs.enabled = (typeBindingFlags & TypeBindingFlags.BindingCode) != 0;
             this.tsDeclare.enabled = (typeBindingFlags & TypeBindingFlags.TypeDefinition) != 0;
 
-            using (new PlatformCodeGen(this, TypeBindingFlags.Default))
+            using (new CSPlatformCodeGen(this, TypeBindingFlags.Default))
             {
-                using (new TopLevelCodeGen(this, CodeGenerator.NameOfBindingList))
+                using (new CSTopLevelCodeGen(this, CodeGenerator.NameOfBindingList))
                 {
                     using (new CSNamespaceCodeGen(this, typeof(Values).Namespace))
                     {
@@ -131,9 +129,9 @@ namespace QuickJS.Unity
             this.cs.enabled = (typeBindingFlags & TypeBindingFlags.BindingCode) != 0;
             this.tsDeclare.enabled = (typeBindingFlags & TypeBindingFlags.TypeDefinition) != 0;
 
-            using (new PlatformCodeGen(this, TypeBindingFlags.Default))
+            using (new CSPlatformCodeGen(this, TypeBindingFlags.Default))
             {
-                using (new TopLevelCodeGen(this, CodeGenerator.NameOfDelegates))
+                using (new CSTopLevelCodeGen(this, CodeGenerator.NameOfDelegates))
                 {
                     using (new CSNamespaceCodeGen(this, this.bindingManager.prefs.ns))
                     {
@@ -180,62 +178,10 @@ namespace QuickJS.Unity
 
         public void Begin()
         {
-
         }
 
         public void End()
         {
-
-        }
-
-        public void WriteTSDModuleBegin(string name)
-        {
-            if (!string.IsNullOrEmpty(name))
-            {
-                this.tsDeclare.AppendLine($"declare module \"{name}\" {{");
-                this.tsDeclare.AddTabLevel();
-
-                if (_emitSharedTS)
-                {
-                    _emitSharedTS = false;
-                    this.tsDeclare.AppendLine("type byte = number;");
-                    this.tsDeclare.AppendLine("type Nullable<T> = T;");
-
-                    this.tsDeclare.AppendLine("/**");
-                    this.tsDeclare.AppendLine(" * 标记一个类型仅编辑器环境可用 (该修饰器并不存在实际定义, 仅用于标记, 不要在代码中使用)");
-                    this.tsDeclare.AppendLine(" */");
-                    this.tsDeclare.AppendLine("function EditorRuntime(target: any);");
-
-                    this.tsDeclare.AppendLine("/**");
-                    this.tsDeclare.AppendLine("* 封装 C# ref 传参约定");
-                    this.tsDeclare.AppendLine("*/");
-                    this.tsDeclare.AppendLine("interface Ref<T = any> {");
-                    this.tsDeclare.AddTabLevel();
-                    this.tsDeclare.AppendLine("type?: { new(): T } | Function");
-                    this.tsDeclare.AppendLine("value?: T");
-                    this.tsDeclare.DecTabLevel();
-                    this.tsDeclare.AppendLine("}");
-
-                    this.tsDeclare.AppendLine("/**");
-                    this.tsDeclare.AppendLine("* 封装 C# out 传参约定");
-                    this.tsDeclare.AppendLine("*/");
-                    this.tsDeclare.AppendLine("interface Out<T = any> {");
-                    this.tsDeclare.AddTabLevel();
-                    this.tsDeclare.AppendLine("type?: { new(): T } | Function");
-                    this.tsDeclare.AppendLine("value?: T");
-                    this.tsDeclare.DecTabLevel();
-                    this.tsDeclare.AppendLine("}");
-                }
-            }
-        }
-
-        public void WriteTSDModuleEnd(string name)
-        {
-            if (!string.IsNullOrEmpty(name))
-            {
-                this.tsDeclare.DecTabLevel();
-                this.tsDeclare.AppendLine("}");
-            }
         }
 
         // 生成类型绑定
@@ -246,40 +192,40 @@ namespace QuickJS.Unity
 
             using (new EditorOnlyCodeGen(this, typeBindingInfo.isEditorRuntime))
             {
-                GenerateInternal(typeBindingInfo);
+                using (new CSPlatformCodeGen(this, TypeBindingFlags.Default))
+                {
+                    using (new CSTopLevelCodeGen(this, typeBindingInfo))
+                    {
+                        using (new CSNamespaceCodeGen(this, this.bindingManager.prefs.ns))
+                        {
+                            GenerateInternal(typeBindingInfo);
+                        }
+                    }
+                }
             }
         }
 
         private void GenerateInternal(TypeBindingInfo typeBindingInfo)
         {
-            using (new PlatformCodeGen(this, TypeBindingFlags.Default))
+            using (var tsMod = new TSModuleCodeGen(this, typeBindingInfo))
             {
-                using (new TopLevelCodeGen(this, typeBindingInfo))
+                _currentTSModule = tsMod;
+                using (new TSNamespaceCodeGen(this, typeBindingInfo.tsTypeNaming.jsNamespace))
                 {
-                    using (new CSNamespaceCodeGen(this, typeBindingInfo.csNamespace))
+                    if (typeBindingInfo.IsEnum)
                     {
-                        using (var tsMod = new TSModuleCodeGen(this, typeBindingInfo))
+                        using (new EnumCodeGen(this, typeBindingInfo))
                         {
-                            _currentTSModule = tsMod;
-                            using (new TSNamespaceCodeGen(this, typeBindingInfo.tsTypeNaming.jsNamespace))
-                            {
-                                if (typeBindingInfo.IsEnum)
-                                {
-                                    using (new EnumCodeGen(this, typeBindingInfo))
-                                    {
-                                    }
-                                }
-                                else
-                                {
-                                    using (new ClassCodeGen(this, typeBindingInfo))
-                                    {
-                                    }
-                                }
-                            }
-                            _currentTSModule = null;
+                        }
+                    }
+                    else
+                    {
+                        using (new ClassCodeGen(this, typeBindingInfo))
+                        {
                         }
                     }
                 }
+                _currentTSModule = null;
             }
         }
 

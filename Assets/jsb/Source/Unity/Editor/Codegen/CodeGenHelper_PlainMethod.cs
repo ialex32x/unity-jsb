@@ -35,7 +35,7 @@ namespace QuickJS.Unity
         public void AddModuleEntry(string runtimeVarName, string moduleVarName, TypeBindingInfo typeBindingInfo)
         {
             var csType = this.cg.bindingManager.GetCSTypeFullName(typeBindingInfo.type);
-            var csNamespace = typeBindingInfo.csNamespace;
+            var csNamespace = this.cg.bindingManager.prefs.ns;
             var csBindingName = typeBindingInfo.csBindingName;
             var elements = typeBindingInfo.tsTypeNaming.jsNamespace.Split('.');
             var jsNamespace = CodeGenUtils.Concat(", ", CodeGenUtils.ConcatAsLiteral(", ", elements), $"\"{CodeGenUtils.Normalize(typeBindingInfo.tsTypeNaming.jsName)}\"");

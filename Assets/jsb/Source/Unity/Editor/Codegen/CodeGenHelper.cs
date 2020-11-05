@@ -10,27 +10,22 @@ namespace QuickJS.Unity
     using UnityEngine;
     using UnityEditor;
 
-    public class TopLevelCodeGen : IDisposable
+    public class CSTopLevelCodeGen : IDisposable
     {
         protected CodeGenerator cg;
 
-        public TopLevelCodeGen(CodeGenerator cg, TypeBindingInfo typeBindingInfo)
+        public CSTopLevelCodeGen(CodeGenerator cg, TypeBindingInfo typeBindingInfo)
         {
             this.cg = cg;
             this.AppendCommonHead();
-            this.cg.cs.AppendLine("// Assembly: {0}", typeBindingInfo.Assembly.GetName());
-            this.cg.cs.AppendLine("// Type: {0}", typeBindingInfo.FullName);
-            this.AppendCommon();
-
             // this.cg.typescript.AppendLine("// {0} {1}", Environment.UserName, this.cg.bindingManager.dateTime);
         }
 
-        public TopLevelCodeGen(CodeGenerator cg, string name)
+        public CSTopLevelCodeGen(CodeGenerator cg, string name)
         {
             this.cg = cg;
             this.AppendCommonHead();
             this.cg.cs.AppendLine("// Special: {0}", name);
-            this.AppendCommon();
         }
 
         private void AppendCommonHead()
@@ -39,6 +34,11 @@ namespace QuickJS.Unity
             {
                 this.cg.cs.AppendLine("/*");
             }
+            
+            this.cg.cs.AppendLine("// Unity: {0}", Application.unityVersion);
+            this.cg.cs.AppendLine("using System;");
+            this.cg.cs.AppendLine("using System.Collections.Generic;");
+            this.cg.cs.AppendLine();
         }
 
         private void AppendCommonTail()
@@ -47,14 +47,6 @@ namespace QuickJS.Unity
             {
                 this.cg.cs.AppendLine("*/");
             }
-        }
-
-        private void AppendCommon()
-        {
-            this.cg.cs.AppendLine("// Unity: {0}", Application.unityVersion);
-            this.cg.cs.AppendLine("using System;");
-            this.cg.cs.AppendLine("using System.Collections.Generic;");
-            this.cg.cs.AppendLine();
         }
 
         public void Dispose()
@@ -78,6 +70,7 @@ namespace QuickJS.Unity
                 this.cg.cs.AppendLine("namespace {0} {{", csNamespace);
                 this.cg.cs.AddTabLevel();
             }
+
             this.cg.cs.AppendLine("using QuickJS;");
             this.cg.cs.AppendLine("using QuickJS.Binding;");
             this.cg.cs.AppendLine("using QuickJS.Native;");
@@ -193,6 +186,8 @@ namespace QuickJS.Unity
         {
             this.cg = cg;
             this.typeBindingInfo = typeBindingInfo;
+            this.cg.cs.AppendLine("// Assembly: {0}", typeBindingInfo.Assembly.GetName());
+            this.cg.cs.AppendLine("// Type: {0}", typeBindingInfo.FullName);
             this.cg.cs.AppendLine("[{0}]", typeof(JSBindingAttribute).Name);
             // this.cg.cs.AppendLine("[UnityEngine.Scripting.Preserve]");
             this.cg.cs.AppendLine("public class {0} : {1}", typeBindingInfo.csBindingName, typeof(Binding.Values).Name);
@@ -391,13 +386,13 @@ namespace QuickJS.Unity
         }
     }
 
-    public class PlatformCodeGen : IDisposable
+    public class CSPlatformCodeGen : IDisposable
     {
         protected CodeGenerator cg;
         protected TypeBindingFlags bf;
         protected string predef;
 
-        public PlatformCodeGen(CodeGenerator cg, TypeBindingFlags bf)
+        public CSPlatformCodeGen(CodeGenerator cg, TypeBindingFlags bf)
         {
             this.cg = cg;
             this.bf = bf;
