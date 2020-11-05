@@ -379,7 +379,7 @@ namespace QuickJS.Unity
                         using (cg.cs.CodeBlockScope())
                         {
                             var prefs = cg.bindingManager.prefs;
-                            if (prefs.alwaysCheckArgType || variant.plainMethods.Count > 1)
+                            if (prefs.alwaysCheckArgType || (variant.plainMethods.Count + variant.varargMethods.Count) > 1)
                             {
                                 foreach (var method in variant.plainMethods)
                                 {
@@ -398,10 +398,10 @@ namespace QuickJS.Unity
                                     }
                                 }
 
-                                if (methodBindingInfo.count > 1 && expectedArgCount != 0)
-                                {
-                                    cg.cs.AppendLine("break;");
-                                }
+                                // if (methodBindingInfo.count > 1 && expectedArgCount != 0)
+                                // {
+                                //     cg.cs.AppendLine("break;");
+                                // }
                             }
                             else
                             {

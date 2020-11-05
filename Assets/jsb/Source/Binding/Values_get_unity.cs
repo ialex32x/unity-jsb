@@ -195,6 +195,29 @@ namespace QuickJS.Binding
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool js_get_structvalue(JSContext ctx, JSValue val, out Rect o)
+        {
+            float x, y, z, w;
+            var ret = JSApi.jsb_get_float_4(val, out x, out y, out z, out w);
+            o = new Rect(x, y, z, w);
+            return ret != 0;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool js_get_structvalue(JSContext ctx, JSValue val, out Rect? o)
+        {
+            if (val.IsNullish())
+            {
+                o = null;
+                return true;
+            }
+            float x, y, z, w;
+            var ret = JSApi.jsb_get_float_4(val, out x, out y, out z, out w);
+            o = new Rect(x, y, z, w);
+            return ret != 0;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool js_get_structvalue(JSContext ctx, JSValue val, out Quaternion o)
         {
             float x, y, z, w;

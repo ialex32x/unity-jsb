@@ -25,6 +25,7 @@ namespace jsb.Editor
             bindingManager.AddExportedType(typeof(GUI)).SetAllConstructorsBlocked();
             bindingManager.AddExportedType(typeof(GUIUtility)).SetAllConstructorsBlocked();
             bindingManager.AddExportedType(typeof(GUILayout)).SetAllConstructorsBlocked();
+            bindingManager.AddExportedType(typeof(GUILayoutUtility)).SetAllConstructorsBlocked();
             bindingManager.AddExportedType(typeof(GUILayoutOption));
             bindingManager.AddExportedType(typeof(GUIContent));
             bindingManager.AddExportedType(typeof(GUISkin));
@@ -37,10 +38,12 @@ namespace jsb.Editor
             bindingManager.AddExportedType(typeof(Gradient));
             bindingManager.AddExportedType(typeof(AnimationCurve));
             bindingManager.AddExportedType(typeof(Event));
+            bindingManager.AddExportedType(typeof(EventType));
             bindingManager.AddExportedType(typeof(Coroutine));
             bindingManager.AddExportedType(typeof(System.Collections.IEnumerator));
             bindingManager.AddExportedType(typeof(System.Collections.Generic.IEnumerable<string>));
 
+            bindingManager.AddExportedType(typeof(GenericMenu)).EditorRuntime();
             bindingManager.AddExportedType(typeof(PrefabAssetType)).EditorRuntime();
             bindingManager.AddExportedType(typeof(PrefabInstanceStatus)).EditorRuntime();
             bindingManager.AddExportedType(typeof(UIOrientation)).EditorRuntime();

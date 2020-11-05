@@ -90,6 +90,16 @@ namespace QuickJS.Binding
             return val;
         }
 
+        public static JSValue NewBridgeClassObject(JSContext ctx, JSValue new_target, Rect o, int type_id)
+        {
+            var val = JSApi.JSB_NewBridgeClassValue(ctx, new_target, sizeof(float) * 4);
+            if (!JSApi.JS_IsException(val))
+            {
+                JSApi.jsb_set_float_4(val, o.x, o.y, o.width, o.height);
+            }
+            return val;
+        }
+
         public static JSValue NewBridgeClassObject(JSContext ctx, JSValue new_target, Quaternion o, int type_id)
         {
             var val = JSApi.JSB_NewBridgeClassValue(ctx, new_target, sizeof(float) * 4);

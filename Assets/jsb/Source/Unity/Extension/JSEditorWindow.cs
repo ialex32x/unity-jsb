@@ -8,7 +8,7 @@ namespace QuickJS.Unity
     using UnityEngine;
     using UnityEditor;
 
-    public class JSEditorWindow : EditorWindow
+    public class JSEditorWindow : EditorWindow, IHasCustomMenu
     {
         private string _scriptTypeName;
 
@@ -36,6 +36,9 @@ namespace QuickJS.Unity
 
         private bool _onGUIValid;
         private JSValue _onGUIFunc;
+
+        private bool _addItemsToMenuValid;
+        private JSValue _addItemsToMenuFunc;
 
         public int IsInstanceOf(JSValue ctor)
         {
@@ -126,6 +129,9 @@ namespace QuickJS.Unity
             _onGUIFunc = JSApi.JS_GetProperty(ctx, this_obj, context.GetAtom("OnGUI"));
             _onGUIValid = JSApi.JS_IsFunction(ctx, _onGUIFunc) == 1;
 
+            _addItemsToMenuFunc = JSApi.JS_GetProperty(ctx, this_obj, context.GetAtom("AddItemsToMenu"));
+            _addItemsToMenuValid = JSApi.JS_IsFunction(ctx, _addItemsToMenuFunc) == 1;
+
             var awake_obj = JSApi.JS_GetProperty(ctx, this_obj, context.GetAtom("Awake"));
 
             Call(awake_obj);
@@ -172,6 +178,8 @@ namespace QuickJS.Unity
             _onDestroyValid = false;
             JSApi.JS_FreeValue(_ctx, _onGUIFunc);
             _onGUIValid = false;
+            JSApi.JS_FreeValue(_ctx, _addItemsToMenuFunc);
+            _addItemsToMenuValid = false;
             JSApi.JS_FreeValue(_ctx, _this_obj);
 
             var context = ScriptEngine.GetContext(_ctx);
@@ -260,6 +268,22 @@ namespace QuickJS.Unity
             if (_onGUIValid)
             {
                 var rval = JSApi.JS_Call(_ctx, _onGUIFunc, _this_obj);
+                if (rval.IsException())
+                {
+                    _ctx.print_exception();
+                }
+                JSApi.JS_FreeValue(_ctx, rval);
+            }
+        }
+
+        public unsafe void AddItemsToMenu(GenericMenu menu)
+        {
+            if (_addItemsToMenuValid)
+            {
+                var argv = stackalloc JSValue[] { Binding.Values.js_push_classvalue(_ctx, menu) };
+                var rval = JSApi.JS_Call(_ctx, _addItemsToMenuFunc, _this_obj, 1, argv);
+
+                JSApi.JS_FreeValue(_ctx, argv[0]);
                 if (rval.IsException())
                 {
                     _ctx.print_exception();
