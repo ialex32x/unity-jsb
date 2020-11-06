@@ -26,7 +26,6 @@ namespace QuickJS.Extra
             _fsw.Changed += OnChanged;
             _fsw.Created += OnCreated;
             _fsw.Deleted += OnDeleted;
-            _fsw.IncludeSubdirectories = true;
             _fsw.EnableRaisingEvents = true;
         }
 
@@ -385,6 +384,92 @@ namespace QuickJS.Extra
             }
         }
 
+        [MonoPInvokeCallback(typeof(JSGetterCFunction))]
+        private static JSValue js_get_includeSubdirectories(JSContext ctx, JSValue this_obj)
+        {
+            try
+            {
+                FSWatcher self;
+                if (!js_get_classvalue(ctx, this_obj, out self))
+                {
+                    throw new ThisBoundException();
+                }
+
+                return JSApi.JS_NewBool(ctx, self._fsw.IncludeSubdirectories);
+            }
+            catch (Exception exception)
+            {
+                return JSApi.ThrowException(ctx, exception);
+            }
+        }
+
+        [MonoPInvokeCallback(typeof(JSSetterCFunction))]
+        private static JSValue js_set_includeSubdirectories(JSContext ctx, JSValue this_obj, JSValue val)
+        {
+            try
+            {
+                FSWatcher self;
+                if (!js_get_classvalue(ctx, this_obj, out self))
+                {
+                    throw new ThisBoundException();
+                }
+                if (!val.IsBoolean())
+                {
+                    throw new InvalidDataException();
+                }
+
+                self._fsw.IncludeSubdirectories = JSApi.JS_ToBool(ctx, val) == 1;
+                return JSApi.JS_UNDEFINED;
+            }
+            catch (Exception exception)
+            {
+                return JSApi.ThrowException(ctx, exception);
+            }
+        }
+
+        [MonoPInvokeCallback(typeof(JSGetterCFunction))]
+        private static JSValue js_get_enableRaisingEvents(JSContext ctx, JSValue this_obj)
+        {
+            try
+            {
+                FSWatcher self;
+                if (!js_get_classvalue(ctx, this_obj, out self))
+                {
+                    throw new ThisBoundException();
+                }
+
+                return JSApi.JS_NewBool(ctx, self._fsw.EnableRaisingEvents);
+            }
+            catch (Exception exception)
+            {
+                return JSApi.ThrowException(ctx, exception);
+            }
+        }
+
+        [MonoPInvokeCallback(typeof(JSSetterCFunction))]
+        private static JSValue js_set_enableRaisingEvents(JSContext ctx, JSValue this_obj, JSValue val)
+        {
+            try
+            {
+                FSWatcher self;
+                if (!js_get_classvalue(ctx, this_obj, out self))
+                {
+                    throw new ThisBoundException();
+                }
+                if (!val.IsBoolean())
+                {
+                    throw new InvalidDataException();
+                }
+
+                self._fsw.EnableRaisingEvents = JSApi.JS_ToBool(ctx, val) == 1;
+                return JSApi.JS_UNDEFINED;
+            }
+            catch (Exception exception)
+            {
+                return JSApi.ThrowException(ctx, exception);
+            }
+        }
+
         #endregion
 
         public static void Bind(TypeRegister register)
@@ -392,6 +477,8 @@ namespace QuickJS.Extra
             var cls = register.CreateGlobalClass("FSWatcher", typeof(FSWatcher), js_constructor);
             cls.AddProperty(false, "path", js_get_path, js_set_path);
             cls.AddProperty(false, "filter", js_get_filter, js_set_filter);
+            cls.AddProperty(false, "enableRaisingEvents", js_get_enableRaisingEvents, js_set_enableRaisingEvents);
+            cls.AddProperty(false, "includeSubdirectories", js_get_includeSubdirectories, js_set_includeSubdirectories);
             cls.AddProperty(false, "oncreate", js_get_oncreate, js_set_oncreate);
             cls.AddProperty(false, "ondelete", js_get_ondelete, js_set_ondelete);
             cls.AddProperty(false, "onchange", js_get_onchange, js_set_onchange);
