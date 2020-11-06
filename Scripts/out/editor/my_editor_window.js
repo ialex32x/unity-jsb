@@ -9,7 +9,7 @@ class MyEditorWindow extends UnityEditor_1.EditorWindow {
         super(...arguments);
         this._parentWindowRect = new UnityEngine_1.Rect(0, 0, 0, 0);
         this._resizeStart = new UnityEngine_1.Rect(0, 0, 0, 0);
-        this._minWindowSize = new UnityEngine_1.Vector2(400, 300);
+        this._minWindowSize = new UnityEngine_1.Vector2(120, 100);
         this._thisWindowRect = new UnityEngine_1.Rect(50, 50, 400, 300);
         this._resizerContent = new UnityEngine_1.GUIContent("* ", "Resize");
         this._isResizing = false;
@@ -33,7 +33,7 @@ class MyEditorWindow extends UnityEditor_1.EditorWindow {
         }
         let mousePosition = UnityEngine_1.Event.current.mousePosition;
         if (this._styleWindowResize == null) {
-            this._styleWindowResize = UnityEngine_1.GUI.skin.GetStyle("WindowResizer");
+            this._styleWindowResize = UnityEngine_1.GUI.skin.box;
         }
         let resizerRect = UnityEngine_1.GUILayoutUtility.GetRect(this._resizerContent, this._styleWindowResize, UnityEngine_1.GUILayout.ExpandWidth(false));
         resizerRect = new UnityEngine_1.Rect(this._thisWindowRect.width - resizerRect.width, this._thisWindowRect.height - resizerRect.height, resizerRect.width, resizerRect.height);
@@ -50,6 +50,7 @@ class MyEditorWindow extends UnityEditor_1.EditorWindow {
             this._isResizing = false;
         }
         else if (this._isResizing) {
+            // console.log("resizing");
             this._thisWindowRect.width = Math.max(this._minWindowSize.x, this._resizeStart.width + (mousePosition.x - this._resizeStart.x));
             this._thisWindowRect.height = Math.max(this._minWindowSize.y, this._resizeStart.height + (mousePosition.y - this._resizeStart.y));
             this._thisWindowRect.xMax = Math.min(this._parentWindowRect.width, this._thisWindowRect.xMax); // modifying xMax affects width, not x

@@ -10,7 +10,7 @@ export class MyEditorWindow extends EditorWindow {
 
     private _parentWindowRect = new Rect(0, 0, 0, 0);
     private _resizeStart = new Rect(0, 0, 0, 0);
-    private _minWindowSize = new Vector2(400, 300);
+    private _minWindowSize = new Vector2(120, 100);
     private _thisWindowRect = new Rect(50, 50, 400, 300);
     private _resizerContent = new GUIContent("* ", "Resize");
     private _isResizing = false;
@@ -38,7 +38,7 @@ export class MyEditorWindow extends EditorWindow {
 
         let mousePosition = Event.current.mousePosition;
         if (this._styleWindowResize == null) {
-            this._styleWindowResize = GUI.skin.GetStyle("WindowResizer");
+            this._styleWindowResize = GUI.skin.box;
         }
 
         let resizerRect = GUILayoutUtility.GetRect(this._resizerContent, this._styleWindowResize, GUILayout.ExpandWidth(false));
@@ -54,6 +54,7 @@ export class MyEditorWindow extends EditorWindow {
             // if the mouse is over some other window we won't get an event, this just kind of circumvents that by checking the button state directly
             this._isResizing = false;
         } else if (this._isResizing) {
+            // console.log("resizing");
             this._thisWindowRect.width = Math.max(this._minWindowSize.x, this._resizeStart.width + (mousePosition.x - this._resizeStart.x));
             this._thisWindowRect.height = Math.max(this._minWindowSize.y, this._resizeStart.height + (mousePosition.y - this._resizeStart.y));
             this._thisWindowRect.xMax = Math.min(this._parentWindowRect.width, this._thisWindowRect.xMax); // modifying xMax affects width, not x
