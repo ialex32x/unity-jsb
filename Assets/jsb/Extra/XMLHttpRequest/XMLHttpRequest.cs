@@ -69,9 +69,7 @@ namespace QuickJS.Extra
             _onreadystatechange = JSApi.JS_UNDEFINED;
             _onerror = JSApi.JS_UNDEFINED;
 
-            var context = ScriptEngine.GetContext(ctx);
-            var runtime = context.GetRuntime();
-
+            var runtime = ScriptEngine.GetRuntime(ctx);
             runtime.OnDestroy += Destroy;
         }
 
@@ -90,6 +88,12 @@ namespace QuickJS.Extra
             _code = 0;
             _jsThis = JSApi.JS_UNDEFINED;
 
+            var runtime = ScriptEngine.GetRuntime(_jsContext);
+            if (runtime != null)
+            {
+                runtime.OnDestroy -= Destroy;
+            }
+
             if (_jsContext.IsValid())
             {
                 JSApi.JS_FreeValue(_jsContext, _onreadystatechange);
@@ -100,6 +104,7 @@ namespace QuickJS.Extra
 
                 _jsContext = JSContext.Null;
             }
+
         }
 
         public void OnJSFinalize()
