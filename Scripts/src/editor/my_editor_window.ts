@@ -16,7 +16,7 @@ export class MyEditorWindow extends EditorWindow {
     private _isResizing = false;
 
     Awake() {
-        console.log("MyEditorWindow.Awake");
+        console.log("MyEditorWindow.Awake!!");
         this._onSceneGui = this.onSceneGui.bind(this);
         this._onMenuTest = this.onMenuTest.bind(this);
         this._onWindowGUI = this.onWindowGUI.bind(this);

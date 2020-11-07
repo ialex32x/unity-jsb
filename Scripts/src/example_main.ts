@@ -54,3 +54,6 @@ print("json:", require("../config/data.json").name);
 DoFile("dofile_test");
 
 global["testGlobalVar"] = "test";
+
+
+Object.keys(require.cache).forEach(k => console.log("require.cache entry:", k));

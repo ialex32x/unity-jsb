@@ -42,4 +42,5 @@ print("json:", require("../config/data.json").name);
 // print("protobufjs:", protobuf);
 jsb_1.DoFile("dofile_test");
 global["testGlobalVar"] = "test";
+Object.keys(require.cache).forEach(k => console.log("require.cache entry:", k));
 //# sourceMappingURL=example_main.js.map
