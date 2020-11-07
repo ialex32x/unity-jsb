@@ -1,10 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const file_watcher_1 = require("./file_watcher");
-console.log("hello, editor");
-setTimeout(function () {
-    console.log("hello, editor after 3 secs");
-}, 3000);
 if (typeof globalThis["__fw"] !== "undefined") {
     globalThis["__fw"].dispose();
     delete globalThis["__fw"];
