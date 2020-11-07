@@ -7,6 +7,8 @@ namespace QuickJS.Utils
     {
         bool Exists(string path);
 
+        string GetFullPath(string path);
+
         /// <summary>
         /// 读取文件内容, 无法读取时返回 null (不应该抛异常)
         /// </summary>
@@ -30,6 +32,11 @@ namespace QuickJS.Utils
         public bool Exists(string path)
         {
             return System.IO.File.Exists(path);
+        }
+
+        public string GetFullPath(string path)
+        {
+            return System.IO.Path.GetFullPath(path);
         }
 
         public byte[] ReadAllBytes(string path)

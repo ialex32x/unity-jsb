@@ -291,21 +291,27 @@ namespace QuickJS
             return JSApi.JS_GetProperty(_ctx, _moduleCache, prop);
         }
 
-        //NOTE: 返回值需要调用者 free
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public JSValue _new_commonjs_module(string module_id, JSValue exports_obj, bool loaded)
         {
-            var module_obj = JSApi.JS_NewObject(_ctx);
-            var prop = GetAtom(module_id);
-            var prop_val = JSApi.JS_AtomToString(_ctx, prop);
+            return _new_commonjs_module(module_id, module_id, exports_obj, loaded);
+        }
 
-            JSApi.JS_SetProperty(_ctx, _moduleCache, prop, JSApi.JS_DupValue(_ctx, module_obj));
-            JSApi.JS_SetProperty(_ctx, module_obj, GetAtom("id"), JSApi.JS_DupValue(_ctx, prop_val));
-            JSApi.JS_SetProperty(_ctx, module_obj, GetAtom("filename"), JSApi.JS_DupValue(_ctx, prop_val));
+        //NOTE: 返回值需要调用者 free
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public JSValue _new_commonjs_module(string module_id, string filename, JSValue exports_obj, bool loaded)
+        {
+            var module_obj = JSApi.JS_NewObject(_ctx);
+            var module_id_atom = GetAtom(module_id);
+            var module_id_obj = JSApi.JS_AtomToString(_ctx, module_id_atom);
+            var filename_atom = GetAtom(filename);
+
+            JSApi.JS_SetProperty(_ctx, _moduleCache, module_id_atom, JSApi.JS_DupValue(_ctx, module_obj));
+            JSApi.JS_SetProperty(_ctx, module_obj, GetAtom("id"), JSApi.JS_DupValue(_ctx, module_id_obj));
+            JSApi.JS_SetProperty(_ctx, module_obj, GetAtom("filename"), JSApi.JS_AtomToString(_ctx, filename_atom));
             JSApi.JS_SetProperty(_ctx, module_obj, GetAtom("cache"), JSApi.JS_DupValue(_ctx, _moduleCache));
             JSApi.JS_SetProperty(_ctx, module_obj, GetAtom("loaded"), JSApi.JS_NewBool(_ctx, loaded));
             JSApi.JS_SetProperty(_ctx, module_obj, GetAtom("exports"), JSApi.JS_DupValue(_ctx, exports_obj));
-            JSApi.JS_FreeValue(_ctx, prop_val);
+            JSApi.JS_FreeValue(_ctx, module_id_obj);
 
             _loadedModuleHash[module_id] = module_id;
             return module_obj;
@@ -396,15 +402,25 @@ namespace QuickJS
 
         public unsafe void EvalMain(byte[] source, string fileName)
         {
-            EvalMain(source, fileName, typeof(void));
+            EvalMain(source, fileName, fileName, typeof(void));
         }
 
         public unsafe T EvalMain<T>(byte[] source, string fileName)
         {
-            return (T)EvalMain(source, fileName, typeof(T));
+            return (T)EvalMain(source, fileName, fileName, typeof(T));
         }
 
-        public unsafe object EvalMain(byte[] source, string fileName, Type expectedReturnType)
+        public unsafe void EvalMain(byte[] source, string fileName, string fullPath)
+        {
+            EvalMain(source, fileName, fullPath, typeof(void));
+        }
+
+        public unsafe T EvalMain<T>(byte[] source, string fileName, string fullPath)
+        {
+            return (T)EvalMain(source, fileName, fullPath, typeof(T));
+        }
+
+        public unsafe object EvalMain(byte[] source, string module_id, string fullPath, Type expectedReturnType)
         {
             var tagValue = ScriptRuntime.TryReadByteCodeTagValue(source);
             if (tagValue == ScriptRuntime.BYTECODE_ES6_MODULE_TAG)
@@ -413,18 +429,20 @@ namespace QuickJS
             }
 
             object csValue = null;
-            var dirname = PathUtils.GetDirectoryName(fileName);
-            var filename_bytes = TextUtils.GetNullTerminatedBytes(fileName);
-            var filename_atom = GetAtom(fileName);
+            var dirname = PathUtils.GetDirectoryName(module_id);
+            var filename_bytes = TextUtils.GetNullTerminatedBytes(module_id);
+            var module_id_atom = GetAtom(module_id);
             var dirname_atom = GetAtom(dirname);
+            var full_path_atom = GetAtom(fullPath);
 
             var exports_obj = JSApi.JS_NewObject(_ctx);
             var require_obj = JSApi.JS_DupValue(_ctx, _require);
-            var module_obj = _new_commonjs_module(".", exports_obj, false);
-            var filename_obj = JSApi.JS_AtomToString(_ctx, filename_atom);
+            var module_obj = _new_commonjs_module(module_id, fullPath, exports_obj, false);
+            var module_id_obj = JSApi.JS_AtomToString(_ctx, module_id_atom);
+            var filename_obj = JSApi.JS_AtomToString(_ctx, full_path_atom);
             var dirname_obj = JSApi.JS_AtomToString(_ctx, dirname_atom);
             var require_argv = new JSValue[5] { exports_obj, require_obj, module_obj, filename_obj, dirname_obj };
-            JSApi.JS_SetProperty(_ctx, require_obj, GetAtom("moduleId"), JSApi.JS_DupValue(_ctx, filename_obj));
+            JSApi.JS_SetProperty(_ctx, require_obj, GetAtom("moduleId"), JSApi.JS_DupValue(_ctx, module_id_obj));
             JSApi.JS_SetProperty(_ctx, require_obj, GetAtom("main"), JSApi.JS_DupValue(_ctx, module_obj));
 
             if (tagValue == ScriptRuntime.BYTECODE_COMMONJS_MODULE_TAG)

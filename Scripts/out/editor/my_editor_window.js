@@ -15,13 +15,13 @@ class MyEditorWindow extends UnityEditor_1.EditorWindow {
         this._isResizing = false;
     }
     Awake() {
-        console.log("MyEditorWindow.Awake!!");
+        console.log("MyEditorWindow.Awake!!!");
         this._onSceneGui = this.onSceneGui.bind(this);
         this._onMenuTest = this.onMenuTest.bind(this);
         this._onWindowGUI = this.onWindowGUI.bind(this);
     }
     OnEnable() {
-        this.titleContent = new UnityEngine_1.GUIContent("Blablabla");
+        this.titleContent = new UnityEngine_1.GUIContent("Blablabla6");
         UnityEditor_1.SceneView.duringSceneGui("add", this._onSceneGui);
     }
     OnDisable() {
@@ -77,7 +77,7 @@ class MyEditorWindow extends UnityEditor_1.EditorWindow {
     OnGUI() {
         UnityEditor_1.EditorGUILayout.HelpBox("Hello", UnityEditor_1.MessageType.Info);
         if (UnityEngine_1.GUILayout.Button("I am Javascript")) {
-            console.log("Thanks");
+            console.log("Thanks!");
         }
         if (UnityEngine_1.GUILayout.Button("CreateWindow")) {
             UnityEditor_1.EditorWindow.CreateWindow(MyEditorWindow);

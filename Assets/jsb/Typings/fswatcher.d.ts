@@ -7,9 +7,9 @@ declare class FSWatcher {
     enableRaisingEvents: boolean;
     includeSubdirectories: boolean;
 
-    oncreate: (name: string) => void;
-    ondelete: (name: string) => void;
-    onchange: (name: string) => void;
+    oncreate: (name: string, fullPath: string) => void;
+    ondelete: (name: string, fullPath: string) => void;
+    onchange: (name: string, fullPath: string) => void;
 
     dispose(): void;
 }

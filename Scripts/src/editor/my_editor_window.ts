@@ -16,14 +16,14 @@ export class MyEditorWindow extends EditorWindow {
     private _isResizing = false;
 
     Awake() {
-        console.log("MyEditorWindow.Awake!!");
+        console.log("MyEditorWindow.Awake!!!");
         this._onSceneGui = this.onSceneGui.bind(this);
         this._onMenuTest = this.onMenuTest.bind(this);
         this._onWindowGUI = this.onWindowGUI.bind(this);
     }
 
     OnEnable() {
-        this.titleContent = new GUIContent("Blablabla");
+        this.titleContent = new GUIContent("Blablabla6");
         SceneView.duringSceneGui("add", this._onSceneGui);
     }
 
@@ -87,7 +87,7 @@ export class MyEditorWindow extends EditorWindow {
     OnGUI() {
         EditorGUILayout.HelpBox("Hello", MessageType.Info);
         if (GUILayout.Button("I am Javascript")) {
-            console.log("Thanks");
+            console.log("Thanks!");
         }
 
         if (GUILayout.Button("CreateWindow")) {

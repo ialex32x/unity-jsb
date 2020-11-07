@@ -24,8 +24,7 @@ namespace QuickJS
         }
 
         [MonoPInvokeCallback(typeof(JSModuleNormalizeFunc))]
-        public static IntPtr module_normalize(JSContext ctx, string module_base_name, string module_name,
-            IntPtr opaque)
+        public static IntPtr module_normalize(JSContext ctx, string module_base_name, string module_name, IntPtr opaque)
         {
             try
             {

@@ -35,26 +35,27 @@ class FileWatcher {
     off(name, caller, fn) {
         this._dispatcher.off(name, caller, fn);
     }
-    oncreate(name) {
-        this.setCacheState(name, EFileState.NEW);
+    oncreate(name, fullPath) {
+        this.setCacheState(name, fullPath, EFileState.NEW);
     }
-    onchange(name) {
-        this.setCacheState(name, EFileState.CHANGE);
+    onchange(name, fullPath) {
+        this.setCacheState(name, fullPath, EFileState.CHANGE);
     }
-    ondelete(name) {
-        this.setCacheState(name, EFileState.DELETE);
+    ondelete(name, fullPath) {
+        this.setCacheState(name, fullPath, EFileState.DELETE);
     }
-    setCacheState(name, state) {
+    setCacheState(name, fullPath, state) {
         if (this._disposed) {
             return;
         }
         this._cache[name] = {
             name: name,
+            fullPath: fullPath,
             state: state,
         };
         if (!this._pending) {
             this._pending = true;
-            setTimeout(() => this.dispatchEvents(), 2000);
+            setTimeout(() => this.dispatchEvents(), 500);
         }
     }
     dispatchEvents() {

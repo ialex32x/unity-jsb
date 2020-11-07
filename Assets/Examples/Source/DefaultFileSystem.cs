@@ -26,6 +26,11 @@ namespace Example
             return asset != null;
         }
 
+        public string GetFullPath(string path)
+        {
+            return path;
+        }
+
         public byte[] ReadAllBytes(string path)
         {
             try
@@ -66,7 +71,6 @@ namespace Example
         private string _url;
         private IScriptLogger _logger;
 
-
         public HttpFileSystem(IScriptLogger logger, string baseUrl)
         {
             _url = baseUrl;
@@ -100,6 +104,11 @@ namespace Example
             }
             var asset = GetRemote(path);
             return asset != null;
+        }
+
+        public string GetFullPath(string path)
+        {
+            return path;
         }
 
         public byte[] ReadAllBytes(string path)

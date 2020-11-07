@@ -59,30 +59,32 @@ namespace QuickJS.Extra
             switch (e.ChangeType)
             {
                 case WatcherChangeTypes.Changed:
-                    Call(_onchange, e.FullPath);
+                    Call(_onchange, e.Name, e.FullPath);
                     break;
                 case WatcherChangeTypes.Created:
-                    Call(_oncreate, e.FullPath);
+                    Call(_oncreate, e.Name, e.FullPath);
                     break;
                 case WatcherChangeTypes.Deleted:
-                    Call(_ondelete, e.FullPath);
+                    Call(_ondelete, e.Name, e.FullPath);
                     break;
             }
         }
 
-        private unsafe void Call(JSValue func, string fullPath)
+        private unsafe void Call(JSValue func, string name, string fullPath)
         {
             if (!_jsContext.IsValid() || JSApi.JS_IsFunction(_jsContext, func) != 1)
             {
                 return;
             }
 
-            var argv = stackalloc JSValue[1]
+            var argv = stackalloc JSValue[2]
             {
+                JSApi.JS_NewString(_jsContext, name),
                 JSApi.JS_NewString(_jsContext, fullPath),
             };
-            var ret = JSApi.JS_Call(_jsContext, func, JSApi.JS_UNDEFINED, 1, argv);
+            var ret = JSApi.JS_Call(_jsContext, func, JSApi.JS_UNDEFINED, 2, argv);
             JSApi.JS_FreeValue(_jsContext, argv[0]);
+            JSApi.JS_FreeValue(_jsContext, argv[1]);
             JSApi.JS_FreeValue(_jsContext, ret);
         }
 

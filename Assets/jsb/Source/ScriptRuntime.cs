@@ -647,7 +647,8 @@ namespace QuickJS
             if (resolvedPath != null)
             {
                 var source = _fileSystem.ReadAllBytes(resolvedPath);
-                return _mainContext.EvalMain(source, resolvedPath, returnType);
+                var fullPath = _fileSystem.GetFullPath(resolvedPath);
+                return _mainContext.EvalMain(source, resolvedPath, fullPath, returnType);
             }
             else
             {

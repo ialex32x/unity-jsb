@@ -8,6 +8,7 @@ export enum EFileState {
 
 export interface FileState {
     name: string
+    fullPath: string
     state: EFileState
 }
 
@@ -46,30 +47,31 @@ export class FileWatcher {
         this._dispatcher.off(name, caller, fn);
     }
 
-    private oncreate(name: string) {
-        this.setCacheState(name, EFileState.NEW);
+    private oncreate(name: string, fullPath: string) {
+        this.setCacheState(name, fullPath, EFileState.NEW);
     }
 
-    private onchange(name: string) {
-        this.setCacheState(name, EFileState.CHANGE);
+    private onchange(name: string, fullPath: string) {
+        this.setCacheState(name, fullPath, EFileState.CHANGE);
     }
 
-    private ondelete(name: string) {
-        this.setCacheState(name, EFileState.DELETE);
+    private ondelete(name: string, fullPath: string) {
+        this.setCacheState(name, fullPath, EFileState.DELETE);
     }
 
-    private setCacheState(name: string, state: EFileState) {
+    private setCacheState(name: string, fullPath: string, state: EFileState) {
         if (this._disposed) {
             return;
         }
 
         this._cache[name] = {
             name: name,
+            fullPath: fullPath,
             state: state,
         };
         if (!this._pending) {
             this._pending = true;
-            setTimeout(() => this.dispatchEvents(), 2000);
+            setTimeout(() => this.dispatchEvents(), 500);
         }
     }
 
