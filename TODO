@@ -1,40 +1,18 @@
 
 必要:
-    ✔ 修正 ref 参数传参 (codegen for in/out) @done(20-10-12 10:21)
-    ✔ 支持继承 EditorWindow (JSEditorWindow 功能) @done(20-10-14 17:20)
-    ☐ JS Behaviour Inspector 支持使用脚本定义编辑器
-    ☐ 完善 JSEditorWindow 功能
+    ☐ 主模块与一般模块共用一致的加载流程
+    ☐ 提供 reload 接口 (清空指定模块, 并使用原 parent 进行重新载入)
     ☐ linux build (for dotnet core)
     ☐ 额外的运行时通讯机制 (jsb.runtimes, jsb.postMessage)
     ☐ 反射模式支持运算符重载
-    ☐ 不生成绑定代码的情况下使用反射模式执行 (只生成 d.ts, 以及一个 type list)
-        ☐ 通过 BindingManager 辅助得到 export types
-
-一般: 
-    ✔ 导出接口声明 (interface) @done(20-09-30 17:23)
-    ✔ 修复 UnityEvent<> 的 d.ts 输出 @done(20-10-04 12:25)
-    ☐ 补充必要的代码注释
-    ☐ jsb.autogen.d.ts 调整
-        ☐ 按大小或行数自动分割
-        ☐ 按模块分隔
-    ✔ types in module (and lazy binding for types) @done(20-11-02 10:26)
-        ✔ 处理互相依赖的问题 @done(20-11-02 10:26)
-    ✔ 导出泛型声明 (generic dummy interface + concrete class) @done(20-09-30 17:23)
-    ✔ 生成 d.ts @done(20-06-01 12:00)
-    ✔ 重写 ref/out 操作 @done(20-09-29 13:52)
-    ✔ 可以通过 ref/out 额外指定 type 信息辅助重载匹配 @done(20-09-29 13:54)
-    ✔ 移除 csharp 端的 EventDispatcher (并未实现) @done(20-09-29 14:06)
-
-其他:
-    ☐ MVVM
-    ☐ for dotnet core
-    
-次要:
-    ☐ 子类中存在不同签名的同名方法时 (非虚)  时, 输出 ts-ignore
-    ☐ 以更通用且自动化的方式生成可继承的类型
+    ✔ 修正 ref 参数传参 (codegen for in/out) @done(20-10-12 10:21)
 
 编辑器支持:
-    ☐ 支持文件变化重载
+    ☐ JS Behaviour Inspector 支持使用脚本定义编辑器
+    ☐ 完善 JSEditorWindow 功能
+    ☐ 支持 JSAssetPostProcessor
+    ✔ 支持文件变化重载 @done(20-11-08 21:15)
+    ✔ 支持继承 EditorWindow (JSEditorWindow 功能) @done(20-10-14 17:20)
 
 导出类模块化组织-备忘:
     ✔ TypeRegister: 改为不针对一个特定的 thisObject 进行类型注册. 总是通过 CreateNamespace/CreateClass 产生一个对象. 以解决类型的按需注册. @done(20-11-02 10:24)
@@ -42,4 +20,28 @@
     ✔ 调整代码生成, 生成模块内 namespace 命名 (分割的) @done(20-11-02 10:25)
     BUGFIX:
         ✔ 泛型类的模块内注册名不正确 (需要使用平面化具体名) @done(20-11-02 15:55)
-        
+
+Codegen:
+    ☐ 子类中存在不同签名的同名方法时 (非虚)  时, 输出 ts-ignore
+    ☐ jsb.autogen.d.ts 调整
+        ☐ 按大小或行数自动分割
+        ☐ 按模块分隔
+    
+其他:
+    ☐ MVVM (databinding)
+    ☐ for dotnet core
+
+次要:
+    ☐ 代码文档注释
+    ☐ 以更通用且自动化的方式生成可继承的类型
+    ☐ 不生成绑定代码的情况下使用反射模式执行 (只生成 d.ts, 以及一个 type list)
+    ☐ 通过 BindingManager 辅助得到 export types
+    ✔ 导出接口声明 (interface) @done(20-09-30 17:23)
+    ✔ 修复 UnityEvent<> 的 d.ts 输出 @done(20-10-04 12:25)
+    ✔ types in module (and lazy binding for types) @done(20-11-02 10:26)
+        ✔ 处理互相依赖的问题 @done(20-11-02 10:26)
+    ✔ 导出泛型声明 (generic dummy interface + concrete class) @done(20-09-30 17:23)
+    ✔ 生成 d.ts @done(20-06-01 12:00)
+    ✔ 重写 ref/out 操作 @done(20-09-29 13:52)
+    ✔ 可以通过 ref/out 额外指定 type 信息辅助重载匹配 @done(20-09-29 13:54)
+    ✔ 移除 csharp 端的 EventDispatcher (并未实现) @done(20-09-29 14:06)
