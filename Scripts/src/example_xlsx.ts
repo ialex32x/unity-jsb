@@ -12,12 +12,12 @@ console.log("please run 'npm install' at first if 'xlsx' module can not be resol
 
 import * as jsb from "jsb";
 import { File } from "System.IO";
-import { read, utils } from "xlsx";
+import * as xlsx from "xlsx";
 
 let filename = "Assets/Examples/Data/test.xlsx";
 let bytes = File.ReadAllBytes(filename);
 let data = jsb.ToArrayBuffer(bytes);
-let wb = read(data, { type: "buffer" });
+let wb = xlsx.read(data, { type: "buffer" });
 
 console.log("read excel:", filename);
 for (var sheetIndex in wb.SheetNames) {
@@ -25,10 +25,10 @@ for (var sheetIndex in wb.SheetNames) {
 
     console.log(`read sheet: ${sheetName}`);
     var sheet = wb.Sheets[sheetName];
-    var range = utils.decode_range(sheet["!ref"]);
+    var range = xlsx.utils.decode_range(sheet["!ref"]);
     for (var row = range.s.r; row <= range.e.r; row++) {
         for (var col = range.s.c; col <= range.e.c; col++) {
-            var cell = sheet[utils.encode_cell({ c: col, r: row })];
+            var cell = sheet[xlsx.utils.encode_cell({ c: col, r: row })];
             if (cell) {
                 console.log(cell.v);
             }

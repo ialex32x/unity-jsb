@@ -10,20 +10,20 @@ Object.defineProperty(exports, "__esModule", { value: true });
 console.log("please run 'npm install' at first if 'xlsx' module can not be resolved");
 const jsb = require("jsb");
 const System_IO_1 = require("System.IO");
-const xlsx_1 = require("xlsx");
+const xlsx = require("xlsx");
 let filename = "Assets/Examples/Data/test.xlsx";
 let bytes = System_IO_1.File.ReadAllBytes(filename);
 let data = jsb.ToArrayBuffer(bytes);
-let wb = xlsx_1.read(data, { type: "buffer" });
+let wb = xlsx.read(data, { type: "buffer" });
 console.log("read excel:", filename);
 for (var sheetIndex in wb.SheetNames) {
     var sheetName = wb.SheetNames[sheetIndex];
     console.log(`read sheet: ${sheetName}`);
     var sheet = wb.Sheets[sheetName];
-    var range = xlsx_1.utils.decode_range(sheet["!ref"]);
+    var range = xlsx.utils.decode_range(sheet["!ref"]);
     for (var row = range.s.r; row <= range.e.r; row++) {
         for (var col = range.s.c; col <= range.e.c; col++) {
-            var cell = sheet[xlsx_1.utils.encode_cell({ c: col, r: row })];
+            var cell = sheet[xlsx.utils.encode_cell({ c: col, r: row })];
             if (cell) {
                 console.log(cell.v);
             }
