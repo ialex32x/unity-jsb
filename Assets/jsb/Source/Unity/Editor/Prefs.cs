@@ -27,6 +27,11 @@ namespace QuickJS.Unity
         public bool editorScripting = true;
 
         /// <summary>
+        /// 编辑器运行时脚本入口
+        /// </summary>
+        public string editorEntryPoint = "editor/main";
+
+        /// <summary>
         /// 代码生成调试开关, 生成的代码将完全在注释中, 方便反复生成对比查问题
         /// </summary>
         public bool debugCodegen = false;

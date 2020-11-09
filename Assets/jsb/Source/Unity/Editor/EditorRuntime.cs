@@ -142,7 +142,11 @@ namespace QuickJS.Unity
         {
             if (!runtime.isWorker)
             {
-                _runtime.EvalMain("editor/main");
+                var prefs = Prefs.Load();
+                if (prefs != null && !string.IsNullOrEmpty(prefs.editorEntryPoint))
+                {
+                    _runtime.EvalMain(prefs.editorEntryPoint);
+                }
             }
         }
 
