@@ -1,0 +1,35 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.OnPostprocessAllAssets = exports.OnPostProcessSprites = exports.OnPostprocessMaterial = exports.OnPostprocessAudio = exports.OnPostprocessModel = exports.OnPostprocessTexture = void 0;
+function OnPostprocessTexture(processor, tex) {
+    console.log("OnPostprocessTexture", processor.assetPath);
+}
+exports.OnPostprocessTexture = OnPostprocessTexture;
+function OnPostprocessModel(processor, model) {
+    console.log("OnPostprocessModel", processor.assetPath);
+}
+exports.OnPostprocessModel = OnPostprocessModel;
+function OnPostprocessAudio(processor, audioClip) {
+    console.log("OnPostprocessAudio", processor.assetPath);
+}
+exports.OnPostprocessAudio = OnPostprocessAudio;
+function OnPostprocessMaterial(processor, material) {
+    console.log("OnPostprocessMaterial", processor.assetPath);
+}
+exports.OnPostprocessMaterial = OnPostprocessMaterial;
+function OnPostProcessSprites(processor, texture, sprites) {
+    console.log("OnPostProcessSprites", processor.assetPath);
+}
+exports.OnPostProcessSprites = OnPostProcessSprites;
+function OnPostprocessAllAssets(importedAssets, deletedAssets, movedAssets, movedFromAssetPaths) {
+    // console.log("OnPostprocessAllAssets.importedAssets:", importedAssets);
+    // for (let i = 0; i < importedAssets.Length; i++) {
+    //     console.log("    .importedAssets:", importedAssets.GetValue(i));
+    // }
+    // console.log("OnPostprocessAllAssets.deletedAssets:", deletedAssets);
+    // for (let i = 0; i < deletedAssets.Length; i++) {
+    //     console.log("    .deletedAssets:", deletedAssets.GetValue(i));
+    // }
+}
+exports.OnPostprocessAllAssets = OnPostprocessAllAssets;
+//# sourceMappingURL=asset_importer.js.map

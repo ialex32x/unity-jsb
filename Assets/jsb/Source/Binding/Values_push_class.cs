@@ -120,6 +120,8 @@ namespace QuickJS.Binding
                 return JSApi.JS_NULL;
             }
 
+            //TODO: 调用 js_push_classvalue 处改为 js_push_var, 然后移除此处 type 判断
+
             var type = o.GetType();
             if (type.IsEnum)
             {

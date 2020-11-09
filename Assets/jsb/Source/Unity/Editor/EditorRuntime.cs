@@ -40,6 +40,11 @@ namespace QuickJS.Unity
             return _instance;
         }
 
+        public static ScriptRuntime GetRuntime()
+        {
+            return _instance?._runtime;
+        }
+
         public EditorRuntime()
         {
             _runMode = RunMode.None;

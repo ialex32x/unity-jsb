@@ -871,7 +871,7 @@ namespace QuickJS.Unity
             {
                 return "js_push_primitive";
             }
-            return "js_push_classvalue";
+            return "js_push_var";
         }
 
         public string GetTSVariable(string name)

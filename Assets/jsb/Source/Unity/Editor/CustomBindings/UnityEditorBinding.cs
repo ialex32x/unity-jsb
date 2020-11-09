@@ -32,6 +32,7 @@ namespace jsb.Editor
             bindingManager.AddExportedType(typeof(GUIStyle));
             bindingManager.AddExportedType(typeof(ScaleMode));
             bindingManager.AddExportedType(typeof(FocusType));
+            bindingManager.AddExportedType(typeof(AudioClip));
             bindingManager.AddExportedType(typeof(RectInt));
             bindingManager.AddExportedType(typeof(Bounds));
             bindingManager.AddExportedType(typeof(BoundsInt));
@@ -51,6 +52,7 @@ namespace jsb.Editor
             bindingManager.AddExportedType(typeof(Hash128)).EditorRuntime();
             bindingManager.AddExportedType(typeof(ImportAssetOptions)).EditorRuntime();
             bindingManager.AddExportedType(typeof(ScriptingRuntimeVersion)).EditorRuntime();
+            bindingManager.AddExportedType(typeof(AssetPostprocessor)).EditorRuntime().SetAllConstructorsBlocked();
             bindingManager.AddExportedType(typeof(AssetImporter)).EditorRuntime();
             bindingManager.AddExportedType(typeof(ModelImporter)).EditorRuntime();
             bindingManager.AddExportedType(typeof(AudioImporter)).EditorRuntime();

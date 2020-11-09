@@ -13,10 +13,25 @@ fw.on("*", this, function (filestate: FileState) {
         let module = require.cache[moduleId];
 
         if (module.filename == filestate.fullPath) {
+            // console.warn("change", module.filename);
             delete require.cache[moduleId];
             return;
         }
     }
+    // console.warn("file-change", filestate.fullPath);
 })
 
 globalThis["__fw"] = fw;
+
+["OnPostprocessTexture", "OnPostprocessModel", "OnPostprocessAudio", "OnPostprocessMaterial", "OnPostprocessAllAssets"].forEach(k => {
+    globalThis[k] = function () {
+        const p = require("./asset_importer")[k];
+        if (p) {
+            try {
+                p(...arguments);
+            } catch (e) {
+                console.error(e);
+            }
+        }
+    }
+});

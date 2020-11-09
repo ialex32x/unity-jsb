@@ -366,6 +366,11 @@ namespace QuickJS
                 {
                     var obj = o.GetValue(i);
                     var elem = Values.js_push_var(ctx, obj);
+                    if (elem.IsException())
+                    {
+                        JSApi.JS_FreeValue(ctx, rval);
+                        return elem;
+                    }
                     JSApi.JS_SetPropertyUint32(ctx, rval, (uint)i, elem);
                 }
             }
