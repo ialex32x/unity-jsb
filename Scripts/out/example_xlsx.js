@@ -20,6 +20,8 @@ for (var sheetIndex in wb.SheetNames) {
     var sheetName = wb.SheetNames[sheetIndex];
     console.log(`read sheet: ${sheetName}`);
     var sheet = wb.Sheets[sheetName];
+    let csv = xlsx.utils.sheet_to_csv(sheet);
+    console.log("to_csv:", csv);
     var range = xlsx.utils.decode_range(sheet["!ref"]);
     for (var row = range.s.r; row <= range.e.r; row++) {
         for (var col = range.s.c; col <= range.e.c; col++) {
