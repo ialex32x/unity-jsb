@@ -10,7 +10,7 @@
 编辑器支持:
     ☐ JS Behaviour Inspector 支持使用脚本定义编辑器
     ☐ 完善 JSEditorWindow 功能
-    ☐ 支持 JSAssetPostProcessor
+    ✔ 支持 JSAssetPostProcessor @done(20-11-09 14:11)
     ✔ 支持文件变化重载 @done(20-11-08 21:15)
     ✔ 支持继承 EditorWindow (JSEditorWindow 功能) @done(20-10-14 17:20)
 
