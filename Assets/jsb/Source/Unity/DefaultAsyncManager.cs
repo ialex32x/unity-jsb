@@ -169,7 +169,7 @@ namespace QuickJS.Unity
             }
 
             var ctx = (JSContext)context;
-            var backVal = Binding.Values.js_push_classvalue(ctx, result);
+            var backVal = Binding.Values.js_push_var(ctx, result);
             if (backVal.IsException())
             {
                 ctx.print_exception();
@@ -251,7 +251,7 @@ namespace QuickJS.Unity
             }
 
             var ctx = (JSContext)context;
-            var backVal = Binding.Values.js_push_classvalue(ctx, enumerator.Current);
+            var backVal = Binding.Values.js_push_var(ctx, enumerator.Current);
             if (backVal.IsException())
             {
                 ctx.print_exception();

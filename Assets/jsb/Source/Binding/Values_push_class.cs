@@ -120,19 +120,6 @@ namespace QuickJS.Binding
                 return JSApi.JS_NULL;
             }
 
-            //TODO: 调用 js_push_classvalue 处改为 js_push_var, 然后移除此处 type 判断
-
-            var type = o.GetType();
-            if (type.IsEnum)
-            {
-                return js_push_primitive(ctx, Convert.ToInt32(o));
-            }
-
-            if (type.BaseType == typeof(MulticastDelegate))
-            {
-                return js_push_delegate(ctx, (Delegate)o);
-            }
-
             return js_push_object(ctx, o);
         }
 
