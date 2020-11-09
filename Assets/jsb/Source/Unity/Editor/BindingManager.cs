@@ -130,47 +130,11 @@ namespace QuickJS.Unity
             SetTypeBlocked(typeof(UnityEngine.Playables.ScriptPlayable<>));
             SetTypeBlocked(typeof(AOT.MonoPInvokeCallbackAttribute));
 
-            TransformType(typeof(object))
-            // .RenameTSMethod("$Equals", "Equals", typeof(object))
-            // .RenameTSMethod("$Equals", "Equals", typeof(object), typeof(object))
-            ;
-
             TransformType(typeof(string))
                 .AddTSMethodDeclaration("static Equals(a: string | Object, b: string | Object, comparisonType: any): boolean", "Equals", typeof(string), typeof(string), typeof(StringComparison))
                 .AddTSMethodDeclaration("static Equals(a: string | Object, b: string | Object): boolean", "Equals", typeof(string), typeof(string))
             ;
 
-            TransformType(typeof(Vector3))
-                // .SetMethodBlocked("SqrMagnitude", typeof(Vector3))
-                // .SetMethodBlocked("Magnitude", typeof(Vector3))
-                // .AddTSMethodDeclaration("static Add(a: Vector3, b: Vector3): Vector3")
-                // .AddTSMethodDeclaration("static Sub(a: Vector3, b: Vector3): Vector3")
-                // .AddTSMethodDeclaration("static Mul(a: Vector3, b: Vector3): Vector3")
-                // .AddTSMethodDeclaration("static Div(a: Vector3, b: Vector3): Vector3")
-                // .AddTSMethodDeclaration("static Equals(a: Vector3, b: Vector3): boolean")
-                // .AddTSMethodDeclaration("Equals(b: Vector3): boolean")
-                // .AddTSMethodDeclaration("Inverse(): Vector3")
-                // .AddTSMethodDeclaration("Clone(): Vector3")
-            ;
-
-            TransformType(typeof(Vector2))
-                // .SetMethodBlocked("SqrMagnitude")
-                // .SetMethodBlocked("SqrMagnitude", typeof(Vector2))
-                // .AddTSMethodDeclaration("static Add(a: Vector2, b: Vector2): Vector2")
-                // .AddTSMethodDeclaration("static Sub(a: Vector2, b: Vector2): Vector2")
-                // .AddTSMethodDeclaration("static Mul(a: Vector2, b: Vector2): Vector2")
-                // .AddTSMethodDeclaration("static Div(a: Vector2, b: Vector2): Vector2")
-                // .AddTSMethodDeclaration("static Equals(a: Vector2, b: Vector2): boolean")
-                // .AddTSMethodDeclaration("Equals(b: Vector2): boolean")
-                // .AddTSMethodDeclaration("Inverse(): Vector2")
-                // .AddTSMethodDeclaration("Clone(): Vector2")
-            ;
-
-            TransformType(typeof(Quaternion))
-                // .AddTSMethodDeclaration("Clone(): Quaternion")
-                // .AddTSMethodDeclaration("static Mul(lhs: Quaternion, rhs: Vector3): Vector3")
-                // .AddTSMethodDeclaration("static Mul(lhs: Quaternion, rhs: Quaternion): Quaternion")
-            ;
             // SetTypeBlocked(typeof(RendererExtensions));
             SetTypeBlocked(typeof(UnityEngine.UI.ILayoutGroup));
             SetTypeBlocked(typeof(UnityEngine.UI.ILayoutSelfController));
@@ -833,45 +797,64 @@ namespace QuickJS.Unity
             {
                 return GetScriptObjectPusher(type.GetElementType(), out op);
             }
+
             op = "";
             string pusher;
             if (_csTypePusherMap.TryGetValue(type, out pusher))
             {
                 return pusher;
             }
-            if (type.BaseType == typeof(MulticastDelegate))
+
+            if (type == typeof(Delegate) || type.BaseType == typeof(MulticastDelegate))
             {
                 return "js_push_delegate";
             }
+
             if (type.IsValueType)
             {
                 if (type.IsPrimitive)
                 {
                     return "js_push_primitive";
                 }
+
                 if (type.IsEnum)
                 {
                     return "js_push_enumvalue";
                 }
+
                 if (type.IsGenericType)
                 {
                     if (type.GetGenericTypeDefinition() == typeof(Nullable<>))
                     {
                         var gArgs = type.GetGenericArguments();
+
                         if (gArgs[0].IsValueType && gArgs[0].IsPrimitive)
                         {
                             return "js_push_primitive";
                         }
                     }
                 }
+
                 op = "ref ";
                 return "js_push_structvalue";
             }
+
             if (type == typeof(string))
             {
                 return "js_push_primitive";
             }
-            return "js_push_var";
+
+            if (type == typeof(object))
+            {
+                return "js_push_var";
+            }
+
+            if (type == typeof(Type))
+            {
+                return "js_push_type";
+            }
+
+            return "js_push_classvalue";
         }
 
         public string GetTSVariable(string name)
