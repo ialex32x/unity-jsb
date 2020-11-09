@@ -70,6 +70,7 @@ namespace jsb.Editor
             bindingManager.AddExportedType(typeof(BuildPlayerOptions)).EditorRuntime();
             bindingManager.AddExportedType(typeof(BuildAssetBundleOptions)).EditorRuntime();
             bindingManager.AddExportedType(typeof(BuildTarget)).EditorRuntime();
+            bindingManager.AddExportedType(typeof(ObjectFactory)).EditorRuntime();
             bindingManager.AddExportedType(typeof(CameraEditor)).EditorRuntime();
             bindingManager.AddExportedType(typeof(CameraEditorUtils)).EditorRuntime();
             bindingManager.AddExportedType(typeof(TransformUtils)).EditorRuntime();
