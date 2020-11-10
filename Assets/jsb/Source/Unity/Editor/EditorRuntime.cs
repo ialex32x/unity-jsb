@@ -128,7 +128,7 @@ namespace QuickJS.Unity
 
         public void OnBind(ScriptRuntime runtime, TypeRegister register)
         {
-            QuickJS.Extra.FSWatcher.Bind(register);
+            FSWatcher.Bind(register);
             // QuickJS.Extra.WebSocket.Bind(register);
             // QuickJS.Extra.XMLHttpRequest.Bind(register);
             // if (!runtime.isWorker)

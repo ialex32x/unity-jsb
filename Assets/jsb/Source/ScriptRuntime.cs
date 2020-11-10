@@ -237,16 +237,16 @@ namespace QuickJS
             {
                 bindAll.Invoke(null, new object[] { this });
             }
+            
+            var register = new TypeRegister(_mainContext);
+            listener.OnBind(this, register);
+            if (!_isWorker)
             {
-                var register = new TypeRegister(_mainContext);
-                listener.OnBind(this, register);
-                if (!_isWorker)
-                {
-                    JSWorker.Bind(register);
-                }
-                TimerManager.Bind(register);
-                register.Finish();
+                JSWorker.Bind(register);
             }
+            TimerManager.Bind(register);
+            register.Finish();
+        
             AddStaticModule("jsb", ScriptContext.Bind);
             FindModuleResolver<StaticModuleResolver>().Warmup(_mainContext);
 

@@ -92,7 +92,7 @@ namespace Example
             runtime.AddStaticModule("static_test1", context => QuickJS.Native.JSApi.JS_NewInt32(context, 123));
             runtime.AddStaticModule("static_test2", context => QuickJS.Native.JSApi.JS_NewInt32(context, 456));
 
-            QuickJS.Extra.FSWatcher.Bind(register);
+            FSWatcher.Bind(register);
             QuickJS.Extra.WebSocket.Bind(register);
             QuickJS.Extra.XMLHttpRequest.Bind(register);
             if (!runtime.isWorker)

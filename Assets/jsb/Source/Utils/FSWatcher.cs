@@ -8,7 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using QuickJS.Utils;
 
-namespace QuickJS.Extra
+namespace QuickJS.Utils
 {
     using UnityEngine;
     using QuickJS;
