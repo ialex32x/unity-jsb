@@ -25,6 +25,7 @@ namespace QuickJS.Unity
         private ScriptRuntime _runtime;
         private RunMode _runMode;
         private int _tick;
+        private bool _ready;
 
         static EditorRuntime()
         {
@@ -42,7 +43,7 @@ namespace QuickJS.Unity
 
         public static ScriptRuntime GetRuntime()
         {
-            return _instance?._runtime;
+            return _instance != null && _instance._ready ?_instance._runtime : null;
         }
 
         public EditorRuntime()
@@ -142,6 +143,7 @@ namespace QuickJS.Unity
         {
             if (!runtime.isWorker)
             {
+                _ready = true;
                 var prefs = Prefs.Load();
                 if (prefs != null && !string.IsNullOrEmpty(prefs.editorEntryPoint))
                 {
