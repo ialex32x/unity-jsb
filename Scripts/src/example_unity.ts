@@ -11,6 +11,9 @@ if (module == require.main) {
     async function destroy() {
         await Yield(new WaitForSeconds(5));
         Object.Destroy(go);
+
+        //! 机制原因, 无法直接利用 Object == 重载, 可以用 op_Implicit 判定 UnityEngine.Object 是否被销毁
+        console.log("after destroy, go == null?", Object.op_Implicit(go));
     }
     destroy();
 

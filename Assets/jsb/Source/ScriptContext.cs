@@ -32,6 +32,7 @@ namespace QuickJS
         private JSValue _globalObject;
         private JSValue _operatorCreate;
         private JSValue _proxyConstructor;
+        private JSValue _objectConstructor;
         private JSValue _numberConstructor;
         private JSValue _stringConstructor;
         private JSValue _functionConstructor;
@@ -53,6 +54,7 @@ namespace QuickJS
             _loadedModuleHash = new Dictionary<string, string>();
 
             _globalObject = JSApi.JS_GetGlobalObject(_ctx);
+            _objectConstructor = JSApi.JS_GetProperty(_ctx, _globalObject, JSApi.JS_ATOM_Object);
             _numberConstructor = JSApi.JS_GetProperty(_ctx, _globalObject, JSApi.JS_ATOM_Number);
             _proxyConstructor = JSApi.JS_GetProperty(_ctx, _globalObject, JSApi.JS_ATOM_Proxy);
             _stringConstructor = JSApi.JS_GetProperty(_ctx, _globalObject, JSApi.JS_ATOM_String);
@@ -177,6 +179,7 @@ namespace QuickJS
             _atoms.Clear();
 
             JSApi.JS_FreeValue(_ctx, _proxyConstructor);
+            JSApi.JS_FreeValue(_ctx, _objectConstructor);
             JSApi.JS_FreeValue(_ctx, _numberConstructor);
             JSApi.JS_FreeValue(_ctx, _stringConstructor);
             JSApi.JS_FreeValue(_ctx, _functionConstructor);
@@ -245,6 +248,11 @@ namespace QuickJS
         public JSValue GetNumberConstructor()
         {
             return JSApi.JS_DupValue(_ctx, _numberConstructor);
+        }
+
+        public JSValue GetObjectConstructor()
+        {
+            return JSApi.JS_DupValue(_ctx, _objectConstructor);
         }
 
         public JSValue GetProxyConstructor()

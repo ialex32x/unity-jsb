@@ -219,6 +219,7 @@ namespace QuickJS.Binding
             {
                 return _context.GetFunctionConstructor();
             }
+
             if (type == typeof(string) || type == typeof(char))
             {
                 return _context.GetStringConstructor();
@@ -250,7 +251,7 @@ namespace QuickJS.Binding
         // left/right operator for type
         public void RegisterOperator(Type type, string op, JSCFunction func, int length, bool left, Type sideType)
         {
-            if (sideType == typeof(string) || (sideType.IsValueType && (sideType.IsPrimitive || sideType.IsEnum)))
+            if (sideType == typeof(string) || sideType == typeof(void) || (sideType.IsValueType && (sideType.IsPrimitive || sideType.IsEnum)))
             {
                 int index;
                 var decl = GetOperatorDecl(type, out index);
