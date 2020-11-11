@@ -21,6 +21,10 @@ namespace QuickJS.Module
             _bind = bind;
         }
 
+        public void Unload()
+        {
+        }
+
         public void Load(ScriptContext context, JSValue module_obj, JSValue exports_obj)
         {
             var v = _bind(context);

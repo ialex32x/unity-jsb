@@ -45,6 +45,19 @@ namespace QuickJS
         }
 
         [MonoPInvokeCallback(typeof(JSCFunction))]
+        private static JSValue _add_module(JSContext ctx, JSValue this_obj, int argc, JSValue[] argv)
+        {
+            if (argc >= 2 && argv[0].IsString() && !argv[1].IsNullish())
+            {
+                var runtime = ScriptEngine.GetRuntime(ctx);
+                var name = JSApi.GetString(ctx, argv[0]);
+                runtime.AddStaticModule(name, argv[1]);
+            }
+
+            return JSApi.JS_UNDEFINED;
+        }
+
+        [MonoPInvokeCallback(typeof(JSCFunction))]
         private static JSValue _add_cache_string(JSContext ctx, JSValue this_obj, int argc, JSValue[] argv)
         {
             if (argc > 0 && argv[0].IsString())

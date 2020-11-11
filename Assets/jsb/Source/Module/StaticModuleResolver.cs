@@ -41,7 +41,12 @@ namespace QuickJS.Module
 
         public StaticModuleResolver AddStaticModule(string module_id, IModuleRegister moduleRegister)
         {
-            _modRegisters.Add(module_id, moduleRegister);
+            IModuleRegister oldRegister;
+            if (_modRegisters.TryGetValue(module_id, out oldRegister))
+            {
+                oldRegister.Unload();
+            }
+            _modRegisters[module_id] = moduleRegister;
             return this;
         }
 
@@ -65,7 +70,7 @@ namespace QuickJS.Module
                 var module_obj = context._new_commonjs_module(resolved_id, exports_obj, true);
 
                 moduleRegister.Load(context, module_obj, exports_obj);
-                
+
                 JSApi.JS_FreeValue(context, exports_obj);
                 JSApi.JS_FreeValue(context, module_obj);
 

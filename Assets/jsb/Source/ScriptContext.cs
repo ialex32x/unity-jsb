@@ -386,6 +386,7 @@ namespace QuickJS
             ns_jsb.AddFunction("AddCacheString", _add_cache_string, 1);
             ns_jsb.AddFunction("RemoveCacheString", _remove_cache_string, 1);
             ns_jsb.AddFunction("Sleep", _sleep, 1);
+            ns_jsb.AddFunction("Module", _add_module, 2);
             ns_jsb.AddFunction("Now", _now, 0);
             {
                 var ns_hotfix = register.CreateClass("JSBHotfix");

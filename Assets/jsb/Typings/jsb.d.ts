@@ -24,7 +24,7 @@ declare namespace jsb {
         type?: { new(): T } | Function
         value?: T
     }
-    
+
     /**
     * 封装 C# out 传参约定
     */
@@ -53,7 +53,7 @@ declare namespace jsb {
     /**
      * duck type
      */
-    interface Task<T> {}
+    interface Task<T> { }
 
     /**
      * 标记一个类型仅编辑器环境可用 (该修饰器并不存在实际定义, 仅用于标记, 不要在代码中使用)
@@ -99,19 +99,19 @@ declare module "jsb" {
          * [NotImplemented][未实现] 获取所有 ScriptRuntime 信息
          */
         static get runtimes(): jsb.RuntimeInfo[];
-    
+
         /**
          * [NotImplemented][未实现] 从其他 ScriptRuntime 接收消息
          */
         static get onmessage(): (id: number, data: any) => void;
         static set onmessage(cb: (id: number, data: any) => void);
-        
+
         /**
          * [NotImplemented][未实现] 向指定 ScriptRuntime 发送消息
          */
         static postMessage(id: number, data: any): void;
     }
-    
+
     /**
      * 执行指定脚本 (慎用, 与 webpack 等工具的结合性可能不太好)
      */
@@ -146,6 +146,11 @@ declare module "jsb" {
      * 将指定路径添加到 duktape 加载脚本的搜索目录列表
      */
     function AddSearchPath(path: string): void
+
+    /**
+     * [UNDOCUMENTED]
+     */
+    function AddModule(module_id: string, e: any): void;
 
     // @ts-ignore
     // function Yield(instruction: UnityEngine.YieldInstruction): Promise<UnityEngine.YieldInstruction>;

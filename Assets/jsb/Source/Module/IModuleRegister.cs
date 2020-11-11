@@ -12,5 +12,6 @@ namespace QuickJS.Module
     public interface IModuleRegister
     {
         void Load(ScriptContext context, JSValue module_obj, JSValue exports_obj);
+        void Unload();
     }
 }

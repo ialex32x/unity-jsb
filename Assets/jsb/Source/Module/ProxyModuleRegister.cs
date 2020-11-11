@@ -19,12 +19,18 @@ namespace QuickJS.Module
             _runtime.OnDestroy += OnDestroy;
         }
 
+        public void Unload()
+        {
+            OnDestroy(_runtime);
+        }
+
         private void OnDestroy(ScriptRuntime runtime)
         {
             if (!_exports.IsUndefined())
             {
                 var exports = _exports;
                 _exports = JSApi.JS_UNDEFINED;
+                _runtime.OnDestroy -= OnDestroy;
                 _runtime.FreeValue(exports);
             }
         }
