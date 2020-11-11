@@ -6,6 +6,8 @@
     ☐ linux build (for dotnet core)
     ☐ 额外的运行时通讯机制 (jsb.runtimes, jsb.postMessage)
     ☐ 反射模式支持运算符重载
+    ☐ 提供选项全局/个别禁用运转换
+    ☐ 提供选项生成随机命名的绑定函数
     ✔ 修正 ref 参数传参 (codegen for in/out) @done(20-10-12 10:21)
 
 编辑器支持:
