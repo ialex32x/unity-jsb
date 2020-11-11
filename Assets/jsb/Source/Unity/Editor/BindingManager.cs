@@ -259,8 +259,6 @@ namespace QuickJS.Unity
             AddTSTypeNameMap(typeof(string), "string");
             AddTSTypeNameMap(typeof(char), "string");
             AddTSTypeNameMap(typeof(void), "void");
-            // AddTSTypeNameMap(typeof(ScriptArray), "any[]");
-            // AddTSTypeNameMap(typeof(QuickJS.IO.ByteBuffer), "jsb.ByteBuffer");
 
             TransformType(typeof(QuickJS.IO.ByteBuffer))
                 .SetMemberBlocked("_SetPosition")
@@ -711,12 +709,6 @@ namespace QuickJS.Unity
         public string GetDefaultTypePrefix()
         {
             return "jsb.";
-        }
-
-        public string GetTSRefWrap(string name)
-        {
-
-            return $"jsb.Ref<{name}>";
         }
 
         public string GetCSNamespace(Type type)

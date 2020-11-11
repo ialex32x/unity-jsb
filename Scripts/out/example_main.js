@@ -2,7 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 print("isMain?", module == require.main);
 const Example_1 = require("Example");
-const jsb_1 = require("jsb");
+const jsb = require("jsb");
 // import { fib } from "./fib_module.js";
 const fib_1 = require("./fib");
 console.assert(true, "will not print");
@@ -14,7 +14,7 @@ try {
     Example_1.DelegateTest.GetArray("error");
 }
 catch (err) {
-    console.error(err);
+    console.warn(err);
 }
 print("fib:", fib_1.fib(12));
 setTimeout(() => {
@@ -40,7 +40,7 @@ print("json:", require("../config/data.json").name);
 // print("Nullish coalescing Operator:", a?.b ?? "ok");
 // const protobuf = require("protobufjs");
 // print("protobufjs:", protobuf);
-jsb_1.DoFile("dofile_test");
+jsb.DoFile("dofile_test");
 global["testGlobalVar"] = "test";
 Object.keys(require.cache).forEach(k => console.log("require.cache entry:", k));
 //# sourceMappingURL=example_main.js.map

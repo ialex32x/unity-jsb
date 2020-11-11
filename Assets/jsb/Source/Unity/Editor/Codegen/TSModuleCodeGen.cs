@@ -34,6 +34,8 @@ namespace QuickJS.Unity
             public Dictionary<string, string> alias = new Dictionary<string, string>();
         }
 
+        protected bool _jsbImport;
+
         // module-name => module-info
         // 引用的模块列表
         protected Dictionary<string, ModuleInfo> _modules = new Dictionary<string, ModuleInfo>();
@@ -57,6 +59,11 @@ namespace QuickJS.Unity
 
         private void CollectImports()
         {
+            if (typeBindingInfo.isEditorRuntime)
+            {
+                _jsbImport = true;
+            }
+
             AddModuleAlias(typeBindingInfo.super);
 
             foreach (var entry in typeBindingInfo.fields)
@@ -130,6 +137,11 @@ namespace QuickJS.Unity
 
         private void WriteImports()
         {
+            if (_jsbImport)
+            {
+                this.cg.tsDeclare.AppendLine($"import * as jsb from \"jsb\";");
+            }
+
             foreach (var me in _modules)
             {
                 var moduleName = me.Key;
@@ -176,6 +188,10 @@ namespace QuickJS.Unity
 
             if (type.IsPrimitive)
             {
+                if (type == typeof(byte))
+                {
+                    _jsbImport = true;
+                }
                 return;
             }
 
@@ -193,6 +209,11 @@ namespace QuickJS.Unity
             //TODO: 检查泛型的类型参数的类型引用
             if (type.IsGenericType && !type.IsGenericTypeDefinition)
             {
+                if (type.GetGenericTypeDefinition() == typeof(Nullable<>))
+                {
+                    _jsbImport = true;
+                }
+
                 foreach (var g in type.GetGenericArguments())
                 {
                     AddModuleAlias(g);
@@ -201,6 +222,7 @@ namespace QuickJS.Unity
 
             if (type.IsArray || type.IsByRef)
             {
+                _jsbImport = true;
                 AddModuleAlias("System", "Array");
                 AddModuleAlias(type.GetElementType());
                 return;

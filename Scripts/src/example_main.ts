@@ -1,7 +1,7 @@
 print("isMain?", module == require.main);
 
 import { DelegateTest } from "Example";
-import { DoFile } from "jsb";
+import * as jsb from "jsb";
 // import { fib } from "./fib_module.js";
 import { fib } from "./fib";
 
@@ -15,7 +15,7 @@ try {
     // @ts-ignore
     DelegateTest.GetArray("error");
 } catch (err) {
-    console.error(err);
+    console.warn(err);
 }
 
 print("fib:", fib(12));
@@ -51,9 +51,8 @@ print("json:", require("../config/data.json").name);
 // const protobuf = require("protobufjs");
 // print("protobufjs:", protobuf);
 
-DoFile("dofile_test");
+jsb.DoFile("dofile_test");
 
 global["testGlobalVar"] = "test";
-
 
 Object.keys(require.cache).forEach(k => console.log("require.cache entry:", k));

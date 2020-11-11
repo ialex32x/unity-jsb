@@ -560,8 +560,6 @@ namespace QuickJS.Unity
                     {
                         cg.cs.AppendLine($"cls.AddMethod(false, \"{tsFieldVar}\", {eventBindingInfo.name});");
                     }
-                    // tsFieldPrefix += "readonly ";
-                    // cg.tsDeclare.AppendLine($"{tsFieldPrefix}{tsFieldVar}: jsb.event<{tsFieldType}>");
                     cg.tsDeclare.AppendLine($"{tsFieldPrefix}{tsFieldVar}(op: \"add\" | \"remove\", fn: {tsFieldType}): void");
                 }
 
@@ -581,9 +579,7 @@ namespace QuickJS.Unity
                     {
                         cg.cs.AppendLine($"cls.AddMethod(false, \"{tsFieldVar}\", {delegateBindingInfo.name});");
                     }
-                    // tsFieldPrefix += "readonly ";
-                    // cg.tsDeclare.AppendLine($"{tsFieldPrefix}{tsFieldVar}: jsb.event<{tsFieldType}>");
-
+                    
                     if (delegateBindingInfo.readable)
                     {
                         if (delegateBindingInfo.writable)

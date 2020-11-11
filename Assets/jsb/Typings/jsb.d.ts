@@ -11,9 +11,11 @@ declare function print(...args: any[]): void;
 declare function postMessage(data: any): void;
 
 /**
- * jsb 命名空间是一个虚定义, 仅用于提供类型提示, 不要在里面放任何具体类型和函数的声明
+ * jsb 模块为内部提供的工具支持
  */
-declare namespace jsb {
+declare module "jsb" {
+    import { Delegate as SystemDelegate, Array as SystemArray } from "System";
+
     type byte = number;
     type Nullable<T> = T;
 
@@ -59,13 +61,6 @@ declare namespace jsb {
      * 标记一个类型仅编辑器环境可用 (该修饰器并不存在实际定义, 仅用于标记, 不要在代码中使用)
      */
     function EditorRuntime(target: any);
-}
-
-/**
- * jsb 模块为内部提供的工具支持
- */
-declare module "jsb" {
-    import { Delegate as SystemDelegate, Array as SystemArray } from "System";
 
     /**
      * 替换C#代码执行 (未完成此功能)
@@ -98,7 +93,7 @@ declare module "jsb" {
         /**
          * [NotImplemented][未实现] 获取所有 ScriptRuntime 信息
          */
-        static get runtimes(): jsb.RuntimeInfo[];
+        static get runtimes(): RuntimeInfo[];
 
         /**
          * [NotImplemented][未实现] 从其他 ScriptRuntime 接收消息
@@ -181,12 +176,12 @@ declare module "jsb" {
     /**
      * 将 C# 数组转换为 JS ArrayBuffer
      */
-    function ToArrayBuffer(o: SystemArray<jsb.byte> | number[]): ArrayBuffer;
+    function ToArrayBuffer(o: SystemArray<byte> | number[]): ArrayBuffer;
 
     /**
      * 将 JS ArrayBuffer 转换为 C# Array
      */
-    function ToBytes(o: ArrayBuffer | Uint8Array): SystemArray<jsb.byte>;
+    function ToBytes(o: ArrayBuffer | Uint8Array): SystemArray<byte>;
 
     /**
      * 动态载入指定类型
