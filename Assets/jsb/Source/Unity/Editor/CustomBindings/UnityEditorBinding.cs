@@ -76,6 +76,7 @@ namespace jsb.Editor
             bindingManager.AddExportedType(typeof(TransformUtils)).EditorRuntime();
             bindingManager.AddExportedType(typeof(EditorJsonUtility)).EditorRuntime();
             bindingManager.AddExportedType(typeof(GameObjectUtility)).EditorRuntime();
+            bindingManager.AddExportedType(typeof(EditorPrefs)).EditorRuntime().SetAllConstructorsBlocked();
             bindingManager.AddExportedType(typeof(Handles)).EditorRuntime().SetAllConstructorsBlocked();
             bindingManager.AddExportedType(typeof(HandleUtility)).EditorRuntime().SetAllConstructorsBlocked();
             bindingManager.AddExportedType(typeof(SceneView)).EditorRuntime().SetAllConstructorsBlocked();
