@@ -445,7 +445,7 @@ namespace QuickJS.Unity
 
         public void AppendJSDoc(Type type)
         {
-            if (bindingManager.prefs.doc)
+            if (bindingManager.prefs.genTypescriptDoc)
             {
                 var doc = this.GetDocBody(type);
                 if (doc != null)
@@ -453,17 +453,18 @@ namespace QuickJS.Unity
                     AppendJSDoc(doc);
                     return;
                 }
-            }
-            var jsdoc = type.GetCustomAttribute(typeof(JSDocAttribute), false) as JSDocAttribute;
-            if (jsdoc != null)
-            {
-                AppendJSDoc(jsdoc.lines);
+
+                var jsdoc = type.GetCustomAttribute(typeof(JSDocAttribute), false) as JSDocAttribute;
+                if (jsdoc != null)
+                {
+                    AppendJSDoc(jsdoc.lines);
+                }
             }
         }
 
         public void AppendJSDoc(PropertyInfo propertyInfo)
         {
-            if (bindingManager.prefs.doc)
+            if (bindingManager.prefs.genTypescriptDoc)
             {
                 var doc = this.GetDocBody(propertyInfo);
                 if (doc != null)
@@ -471,17 +472,18 @@ namespace QuickJS.Unity
                     AppendJSDoc(doc);
                     return;
                 }
-            }
-            var jsdoc = propertyInfo.GetCustomAttribute(typeof(JSDocAttribute), false) as JSDocAttribute;
-            if (jsdoc != null)
-            {
-                AppendJSDoc(jsdoc.lines);
+
+                var jsdoc = propertyInfo.GetCustomAttribute(typeof(JSDocAttribute), false) as JSDocAttribute;
+                if (jsdoc != null)
+                {
+                    AppendJSDoc(jsdoc.lines);
+                }
             }
         }
 
         public void AppendJSDoc(FieldInfo fieldInfo)
         {
-            if (bindingManager.prefs.doc)
+            if (bindingManager.prefs.genTypescriptDoc)
             {
                 var doc = this.GetDocBody(fieldInfo);
                 if (doc != null)
@@ -489,17 +491,18 @@ namespace QuickJS.Unity
                     AppendJSDoc(doc);
                     return;
                 }
-            }
-            var jsdoc = fieldInfo.GetCustomAttribute(typeof(JSDocAttribute), false) as JSDocAttribute;
-            if (jsdoc != null)
-            {
-                AppendJSDoc(jsdoc.lines);
+
+                var jsdoc = fieldInfo.GetCustomAttribute(typeof(JSDocAttribute), false) as JSDocAttribute;
+                if (jsdoc != null)
+                {
+                    AppendJSDoc(jsdoc.lines);
+                }
             }
         }
 
         public void AppendEnumJSDoc(Type type, object value)
         {
-            if (bindingManager.prefs.doc)
+            if (bindingManager.prefs.genTypescriptDoc)
             {
                 var resolver = this.GetResolver(type.Assembly);
                 var doc = resolver.GetFieldDocBody(type.FullName + "." + Enum.GetName(type, value));
@@ -514,7 +517,7 @@ namespace QuickJS.Unity
         public void AppendJSDoc<T>(T methodInfo)
         where T : MethodBase
         {
-            if (bindingManager.prefs.doc)
+            if (bindingManager.prefs.genTypescriptDoc)
             {
                 var doc = this.GetDocBody(methodInfo);
                 if (doc != null)
@@ -522,11 +525,12 @@ namespace QuickJS.Unity
                     AppendJSDoc(doc);
                     return;
                 }
-            }
-            var jsdoc = methodInfo.GetCustomAttribute(typeof(JSDocAttribute), false) as JSDocAttribute;
-            if (jsdoc != null)
-            {
-                AppendJSDoc(jsdoc.lines);
+
+                var jsdoc = methodInfo.GetCustomAttribute(typeof(JSDocAttribute), false) as JSDocAttribute;
+                if (jsdoc != null)
+                {
+                    AppendJSDoc(jsdoc.lines);
+                }
             }
         }
 

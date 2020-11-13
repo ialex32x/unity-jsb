@@ -9,17 +9,32 @@ namespace QuickJS.Unity
     // js-bridge 配置 (editor only)
     public class Prefs
     {
-        public const string PATH = "js-bridge.json";
+        #region Configurable Fields
 
+        /// <summary>
+        /// 代码生成过程的日志输出到文件中
+        /// </summary>
         public string logPath = "Logs/js-bridge.log";
 
-        private bool _dirty;
-        private string _filePath;
-
-        // 静态绑定代码的生成目录
+        /// <summary>
+        /// 静态绑定代码的生成目录
+        /// </summary>
         public string outDir = "Assets/Generated/${platform}";
+
+        /// <summary>
+        /// 绑定代码对应 ts 声明文件生成目录
+        /// </summary>
         public string typescriptDir = "Assets/Generated/Typings";
+
+        /// <summary>
+        /// Assembly-CSharp.dll 对应的 XmlDoc 生成目录
+        /// </summary>
         public string xmlDocDir = "Assets/Generated/Docs";
+
+        /// <summary>
+        /// 是否生成 typescript 声明文件中的文档注释
+        /// </summary>
+        public bool genTypescriptDoc = true;
 
         /// <summary>
         /// 默认启用编辑器脚本执行相关功能 (JSEditorWindow 等)
@@ -75,10 +90,28 @@ namespace QuickJS.Unity
         public string ns = "jsb";
 
         /// <summary>
-        /// 为没有命名空间的类型, 指定一个模块名
+        /// 为没有命名空间的 C# 类型, 指定一个默认模块名
         /// </summary>
         public string defaultJSModule = "global";
 
+        /// <summary>
+        /// 生成文件的额外后缀
+        /// </summary>
+        public string extraExt = "";
+
+        /// <summary>
+        /// 生成代码中的换行符风格 (cr, lf, crlf), 不指定时将使用当前平台默认风格
+        /// </summary>
+        public string newLineStyle = "";
+
+        /// <summary>
+        /// 生成代码中的缩进
+        /// </summary>
+        public string tab = "    ";
+
+        /// <summary>
+        /// 跳过指定的 BindingProcess
+        /// </summary>
         public List<string> skipExtras = new List<string>(new string[]
         {
             // "FairyGUI",
@@ -86,46 +119,13 @@ namespace QuickJS.Unity
             // "Example",
         });
 
+        /// <summary>
+        /// 执行代码生成后对指定的目录进行文件清理 (未在本次生成文件列表中的文件将被删除)
+        /// </summary>
         public List<string> cleanupDir = new List<string>(new string[]
         {
             "Assets/Generated",
         });
-
-        public string procOutDir => ReplacePathVars(outDir);
-        public string procTypescriptDir => ReplacePathVars(typescriptDir);
-
-        public string workspace = ".";
-
-        // 尝试生成 Assembly 对应帮助内容
-        public bool doc = true;
-
-        // // ts 代码的目录 (例如自动生成的 Delegate 泛型, 需要放在 ts 源码目录)
-        // public string tsDir = "Assets/Scripts/Source/duktape";
-        // public string jsDir = "Assets/Scripts/Generated/duktape";
-
-        public string extraExt = ""; // 生成文件的额外后缀
-
-        public string newLineStyle = "";
-
-        public string newline
-        {
-            get
-            {
-                if (newLineStyle == null)
-                {
-                    return Environment.NewLine;
-                }
-                switch (newLineStyle.ToLower())
-                {
-                    case "cr": return "\r";
-                    case "lf": return "\n";
-                    case "crlf": return "\r\n";
-                    default: return Environment.NewLine;
-                }
-            }
-        }
-
-        public string tab = "    ";
 
         // 默认不导出任何类型, 需要指定导出类型列表
         public List<string> explicitAssemblies = new List<string>(new string[]
@@ -134,7 +134,9 @@ namespace QuickJS.Unity
             "Assembly-CSharp",
         });
 
-        // 默认导出所有类型, 过滤黑名单
+        /// <summary>
+        /// 在此列表中指定的指定 Assembly 将默认导出其所包含的所有类型
+        /// </summary>
         public List<string> implicitAssemblies = new List<string>(new string[]
         {
             // "UnityEngine",
@@ -152,7 +154,9 @@ namespace QuickJS.Unity
             // "UnityEngine.UI",
         });
 
-        // type.FullName 前缀满足以下任意一条时不会被导出
+        /// <summary>
+        /// type.FullName 前缀满足以下任意一条时不会被导出
+        /// </summary>
         public List<string> typePrefixBlacklist = new List<string>(new string[]
         {
             "JetBrains.",
@@ -168,6 +172,40 @@ namespace QuickJS.Unity
             "Unity.Burst.",
             "UnityEngine.Assertions.",
         });
+        #endregion
+
+        #region Runtime Methods
+
+        public string procOutDir => UnityHelper.ReplacePathVars(outDir);
+
+        public string procTypescriptDir => UnityHelper.ReplacePathVars(typescriptDir);
+
+        public string path => _filePath;
+        
+        public const string PATH = "js-bridge.json";
+
+        private bool _dirty;
+
+        private string _filePath;
+
+        public string newline
+        {
+            get
+            {
+                if (newLineStyle == null)
+                {
+                    return Environment.NewLine;
+                }
+
+                switch (newLineStyle.ToLower())
+                {
+                    case "cr": return "\r";
+                    case "lf": return "\n";
+                    case "crlf": return "\r\n";
+                    default: return Environment.NewLine;
+                }
+            }
+        }
 
         public Prefs MarkAsDirty()
         {
@@ -209,33 +247,6 @@ namespace QuickJS.Unity
             return defaultPrefs;
         }
 
-        public static string GetPlatform()
-        {
-            var buildTarget = EditorUserBuildSettings.activeBuildTarget;
-            switch (buildTarget)
-            {
-                case BuildTarget.Android: return "Android";
-                case BuildTarget.iOS: return "iOS";
-                case BuildTarget.WSAPlayer: return "WSA"; // not supported
-                case BuildTarget.StandaloneWindows:
-                case BuildTarget.StandaloneWindows64: return "Windows";
-                case BuildTarget.StandaloneOSX: return "OSX";
-                case BuildTarget.StandaloneLinux:
-                case BuildTarget.StandaloneLinux64:
-                case BuildTarget.StandaloneLinuxUniversal: return "Linux";
-                case BuildTarget.Switch: return "Switch";
-                case BuildTarget.PS4: return "PS4";
-                default: return buildTarget.ToString();
-            }
-        }
-
-        public static string ReplacePathVars(string value)
-        {
-            var platform = GetPlatform();
-            value = value.Replace("${platform}", platform);
-            return value;
-        }
-
         public void Save()
         {
             if (_dirty)
@@ -252,5 +263,6 @@ namespace QuickJS.Unity
                 }
             }
         }
+        #endregion
     }
 }

@@ -1730,13 +1730,16 @@ namespace QuickJS.Unity
 
             try
             {
-                var logPath = prefs.logPath;
-                var logDir = Path.GetDirectoryName(logPath);
-                if (!Directory.Exists(logDir))
+                if (!string.IsNullOrEmpty(prefs.logPath))
                 {
-                    Directory.CreateDirectory(logDir);
+                    var logPath = prefs.logPath;
+                    var logDir = Path.GetDirectoryName(logPath);
+                    if (!Directory.Exists(logDir))
+                    {
+                        Directory.CreateDirectory(logDir);
+                    }
+                    File.WriteAllText(logPath, log.Submit());
                 }
-                File.WriteAllText(logPath, log.Submit());
             }
             catch (Exception)
             {

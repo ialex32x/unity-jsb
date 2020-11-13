@@ -29,14 +29,25 @@ namespace QuickJS.Unity
         protected override void OnEnable()
         {
             base.OnEnable();
-            titleContent = new GUIContent("duktape.json");
+            titleContent = new GUIContent("JS Bridge Prefs");
+
             _prefs = Prefs.Load();
             _assemblies = AppDomain.CurrentDomain.GetAssemblies();
         }
 
         protected override void OnPaint()
         {
-            EditorGUILayout.HelpBox("(experimental) Editor for duktape.json", MessageType.Warning);
+            EditorGUILayout.HelpBox("(experimental) Editor for " + _prefs.path, MessageType.Warning);
+            if (GUILayout.Button("Save"))
+            {
+                _prefs.MarkAsDirty();
+            }
+
+            // ShowAssemblies();
+        }
+
+        private void ShowAssemblies()
+        {
             EditorGUILayout.BeginHorizontal();
             Block("Assemblies", () =>
             {

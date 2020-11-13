@@ -87,7 +87,7 @@ namespace QuickJS.Unity
             var kv = new Dictionary<string, List<string>>();
             foreach (var dir in prefs.cleanupDir)
             {
-                var pdir = Prefs.ReplacePathVars(dir);
+                var pdir = ReplacePathVars(dir);
                 kv[pdir] = new List<string>();
             }
             BindingManager.Cleanup(kv, null);
@@ -104,6 +104,33 @@ namespace QuickJS.Unity
         public static void OpenJSConsole()
         {
             EditorWindow.GetWindow<EditorRuntimeConsole>().Show();
+        }
+
+        public static string GetPlatform()
+        {
+            var buildTarget = EditorUserBuildSettings.activeBuildTarget;
+            switch (buildTarget)
+            {
+                case BuildTarget.Android: return "Android";
+                case BuildTarget.iOS: return "iOS";
+                case BuildTarget.WSAPlayer: return "WSA"; // not supported
+                case BuildTarget.StandaloneWindows:
+                case BuildTarget.StandaloneWindows64: return "Windows";
+                case BuildTarget.StandaloneOSX: return "OSX";
+                case BuildTarget.StandaloneLinux:
+                case BuildTarget.StandaloneLinux64:
+                case BuildTarget.StandaloneLinuxUniversal: return "Linux";
+                case BuildTarget.Switch: return "Switch";
+                case BuildTarget.PS4: return "PS4";
+                default: return buildTarget.ToString();
+            }
+        }
+
+        public static string ReplacePathVars(string value)
+        {
+            var platform = GetPlatform();
+            value = value.Replace("${platform}", platform);
+            return value;
         }
 
         public static bool CheckAnyScriptExists()
