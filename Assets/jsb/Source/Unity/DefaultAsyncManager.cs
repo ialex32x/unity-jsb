@@ -17,12 +17,6 @@ namespace QuickJS.Unity
         private int _mainThreadId;
         private UnityCoroutineContext _mb = null;
 
-        public class JSSourceArgs
-        {
-            public string source;
-            public string src;
-        }
-
         public DefaultAsyncManager()
         {
 
@@ -31,40 +25,6 @@ namespace QuickJS.Unity
         public void Initialize(int mainThreadId)
         {
             _mainThreadId = mainThreadId;
-        }
-
-        public async void EvalSourceAsync(ScriptContext context, string src)
-        {
-            var request = WebRequest.CreateHttp(src);
-            request.Method = "GET";
-            var rsp = await request.GetResponseAsync() as HttpWebResponse;
-            var stream = rsp.GetResponseStream();
-            var reader = new StreamReader(stream);
-            var reseponseText = await reader.ReadToEndAsync();
-            if (!context.IsValid())
-            {
-                return;
-            }
-            var runtime = context.GetRuntime();
-
-            if (runtime.IsMainThread())
-            {
-                context.EvalSource(reseponseText, src);
-            }
-            else
-            {
-                runtime.EnqueueAction(new JSAction()
-                {
-                    callback = _EvalSource,
-                    args = new JSSourceArgs() { source = reseponseText, src = src },
-                });
-            }
-        }
-
-        private static void _EvalSource(ScriptRuntime runtime, JSAction value)
-        {
-            var args = (JSSourceArgs)value.args;
-            runtime.GetMainContext().EvalSource(args.source, args.src);
         }
 
         private void GetUnityContext()

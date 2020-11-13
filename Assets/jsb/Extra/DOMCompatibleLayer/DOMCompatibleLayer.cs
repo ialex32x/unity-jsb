@@ -12,9 +12,16 @@ namespace QuickJS.Extra
     using QuickJS.IO;
     using QuickJS.Native;
     using QuickJS.Binding;
+    using QuickJS.Utils;
 
     public class DOMCompatibleLayer : Values, IScriptFinalize
     {
+        public class JSSourceArgs
+        {
+            public string source;
+            public string src;
+        }
+
         public void OnJSFinalize()
         {
             throw new NotImplementedException();
@@ -44,18 +51,42 @@ namespace QuickJS.Extra
                 var context = ScriptEngine.GetContext(ctx);
                 var srcProp = JSApi.JS_GetProperty(ctx, argv[0], context.GetAtom("src"));
                 var srcValue = JSApi.GetString(ctx, srcProp);
+
                 JSApi.JS_FreeValue(ctx, srcProp);
-                var co = context.GetAsyncManager();
-                if (co != null)
-                {
-                    co.EvalSourceAsync(context, srcValue);
-                }
+                _EvalSourceAsync(context, srcValue);
                 return JSApi.JS_UNDEFINED;
             }
             catch (Exception exception)
             {
                 return JSApi.ThrowException(ctx, exception);
             }
+        }
+
+        private static async void _EvalSourceAsync(ScriptContext context, string src)
+        {
+            var request = WebRequest.CreateHttp(src);
+            request.Method = "GET";
+            var rsp = await request.GetResponseAsync() as HttpWebResponse;
+            var stream = rsp.GetResponseStream();
+            var reader = new StreamReader(stream);
+            var reseponseText = await reader.ReadToEndAsync();
+            if (!context.IsValid())
+            {
+                return;
+            }
+            var runtime = context.GetRuntime();
+
+            runtime.EnqueueAction(new JSAction()
+            {
+                callback = _EvalSource,
+                args = new JSSourceArgs() { source = reseponseText, src = src },
+            });
+        }
+
+        private static void _EvalSource(ScriptRuntime runtime, JSAction value)
+        {
+            var args = (JSSourceArgs)value.args;
+            runtime.GetMainContext().EvalSource(args.source, args.src);
         }
 
         [MonoPInvokeCallback(typeof(JSCFunction))]
