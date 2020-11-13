@@ -1008,6 +1008,24 @@ namespace QuickJS.Unity
             return fullname;
         }
 
+        public string GetConstructorBindName()
+        {
+            if (prefs.randomizedBindingCode)
+            {
+                return (char)Random.Range('a', 'z') + Guid.NewGuid().ToString().Replace("-", "");
+            }
+            return "BindConstructor";
+        }
+
+        public string GetBindName(bool bStatic, string csName)
+        {
+            if (prefs.randomizedBindingCode)
+            {
+                return (char)Random.Range('A', 'Z') + Guid.NewGuid().ToString().Replace("-", "");
+            }
+            return (bStatic ? "BindStatic_" : "Bind_") + csName;
+        }
+
         // 在 TypeTransform 准备完成后才有效
         public TSTypeNaming GetTSTypeNaming(Type type, bool noBindingRequired = false)
         {

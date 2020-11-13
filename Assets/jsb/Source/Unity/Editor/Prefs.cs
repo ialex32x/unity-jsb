@@ -61,6 +61,11 @@ namespace QuickJS.Unity
         /// </summary>
         public bool alwaysCheckArgc = true;
 
+        /// <summary>
+        /// [EXPERIMENTAL, UNFINISHED] 生成的代码随机化
+        /// </summary>
+        public bool randomizedBindingCode = false;
+
         // 生成类型绑定代码类型前缀
         public string typeBindingPrefix = "QuickJS_";
 

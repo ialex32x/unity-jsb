@@ -91,9 +91,9 @@ namespace QuickJS.Unity
 
     public class MethodBindingInfo : MethodBaseBindingInfo<MethodInfo>
     {
-        public MethodBindingInfo(bool bStatic, string csName, string jsName)
+        public MethodBindingInfo(BindingManager bindingManager, bool bStatic, string csName, string jsName)
         {
-            this.csBindName = (bStatic ? "BindStatic_" : "Bind_") + csName;
+            this.csBindName = bindingManager.GetBindName(bStatic, csName);
             this.jsName = jsName;
         }
     }
@@ -107,7 +107,7 @@ namespace QuickJS.Unity
         public bool isExtension;
 
         // regName: js 中的重载运算符
-        public OperatorBindingInfo(MethodInfo methodInfo, bool isExtension, bool bStatic, string csName, string jsName, string cs_op, int length)
+        public OperatorBindingInfo(BindingManager bindingManager, MethodInfo methodInfo, bool isExtension, bool bStatic, string csName, string jsName, string cs_op, int length)
         {
             this.methodInfo = methodInfo;
             this.isExtension = isExtension;
@@ -115,7 +115,7 @@ namespace QuickJS.Unity
             this.csName = csName;
             this.jsName = jsName;
             this.cs_op = cs_op;
-            this.csBindName = (bStatic ? "BindStatic_" : "Bind_") + csName;
+            this.csBindName = bindingManager.GetBindName(bStatic, csName);
 
             this.Add(methodInfo, isExtension); //NOTE: 旧代码, 待更替
         }
@@ -144,10 +144,10 @@ namespace QuickJS.Unity
             }
         }
 
-        public ConstructorBindingInfo(Type decalringType)
+        public ConstructorBindingInfo(BindingManager bindingManager, Type decalringType)
         {
             this.decalringType = decalringType;
-            this.csBindName = "BindConstructor";
+            this.csBindName = bindingManager.GetConstructorBindName();
             this.jsName = "constructor";
         }
     }

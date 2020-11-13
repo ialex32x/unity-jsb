@@ -213,7 +213,7 @@ namespace QuickJS.Unity
                         {
                             if (parameters[0].ParameterType == declaringType && parameters[1].ParameterType == declaringType)
                             {
-                                operatorBindingInfo = new OperatorBindingInfo(methodInfo, isExtension, isStatic, methodCSName, "<", "<", 2);
+                                operatorBindingInfo = new OperatorBindingInfo(bindingManager, methodInfo, isExtension, isStatic, methodCSName, "<", "<", 2);
                             }
                         }
                         break;
@@ -222,7 +222,7 @@ namespace QuickJS.Unity
                         {
                             if (parameters[0].ParameterType == declaringType && parameters[1].ParameterType == declaringType)
                             {
-                                operatorBindingInfo = new OperatorBindingInfo(methodInfo, isExtension, isStatic, methodCSName, "+", "+", 2);
+                                operatorBindingInfo = new OperatorBindingInfo(bindingManager, methodInfo, isExtension, isStatic, methodCSName, "+", "+", 2);
                             }
                         }
                         break;
@@ -231,7 +231,7 @@ namespace QuickJS.Unity
                         {
                             if (parameters[0].ParameterType == declaringType && parameters[1].ParameterType == declaringType)
                             {
-                                operatorBindingInfo = new OperatorBindingInfo(methodInfo, isExtension, isStatic, methodCSName, "-", "-", 2);
+                                operatorBindingInfo = new OperatorBindingInfo(bindingManager, methodInfo, isExtension, isStatic, methodCSName, "-", "-", 2);
                             }
                         }
                         break;
@@ -240,7 +240,7 @@ namespace QuickJS.Unity
                         {
                             if (parameters[0].ParameterType == declaringType && parameters[1].ParameterType == declaringType)
                             {
-                                operatorBindingInfo = new OperatorBindingInfo(methodInfo, isExtension, isStatic, methodCSName, "==", "==", 2);
+                                operatorBindingInfo = new OperatorBindingInfo(bindingManager, methodInfo, isExtension, isStatic, methodCSName, "==", "==", 2);
                             }
                         }
                         break;
@@ -252,7 +252,7 @@ namespace QuickJS.Unity
                             if (op0 != null && op1 != null)
                             {
                                 var bindingName = methodCSName + "_" + op0.csBindingName + "_" + op1.csBindingName;
-                                operatorBindingInfo = new OperatorBindingInfo(methodInfo, isExtension, isStatic, bindingName, "*", "*", 2);
+                                operatorBindingInfo = new OperatorBindingInfo(bindingManager, methodInfo, isExtension, isStatic, bindingName, "*", "*", 2);
                             }
                         }
                         break;
@@ -264,13 +264,13 @@ namespace QuickJS.Unity
                             if (op0 != null && op1 != null)
                             {
                                 var bindingName = methodCSName + "_" + op0.csBindingName + "_" + op1.csBindingName;
-                                operatorBindingInfo = new OperatorBindingInfo(methodInfo, isExtension, isStatic, bindingName, "/", "/", 2);
+                                operatorBindingInfo = new OperatorBindingInfo(bindingManager, methodInfo, isExtension, isStatic, bindingName, "/", "/", 2);
                             }
                         }
                         break;
                     case "op_UnaryNegation":
                         {
-                            operatorBindingInfo = new OperatorBindingInfo(methodInfo, isExtension, isStatic, methodCSName, "neg", "-", 1);
+                            operatorBindingInfo = new OperatorBindingInfo(bindingManager, methodInfo, isExtension, isStatic, methodCSName, "neg", "-", 1);
                         }
                         break;
                 }
@@ -290,7 +290,7 @@ namespace QuickJS.Unity
             MethodBindingInfo methodBindingInfo;
             if (!group.TryGetValue(methodCSName, out methodBindingInfo))
             {
-                methodBindingInfo = new MethodBindingInfo(isStatic, methodCSName, methodJSName);
+                methodBindingInfo = new MethodBindingInfo(bindingManager, isStatic, methodCSName, methodJSName);
                 group.Add(methodCSName, methodBindingInfo);
             }
 
@@ -333,7 +333,7 @@ namespace QuickJS.Unity
         // 收集所有 字段,属性,方法
         public void Collect()
         {
-            this.constructors = new ConstructorBindingInfo(type);
+            this.constructors = new ConstructorBindingInfo(bindingManager, type);
 
             var bindingFlags = Binding.DynamicType.PublicFlags;
             var fields = type.GetFields(bindingFlags);
