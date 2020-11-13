@@ -17,6 +17,8 @@ async function test() {
     print("[async] end");
     let result = await jsb_1.Yield(Example_1.AsyncTaskTest.GetHostEntryAsync("www.baidu.com"));
     console.log("host entry:", result.HostName);
+    await jsb_1.Yield(Example_1.AsyncTaskTest.SimpleTest(3000));
+    console.log("after AsyncTaskTest.SimpleTest(1000)");
 }
 async function testUnityYieldInstructions() {
     console.warn("wait for unity YieldInstruction, begin");

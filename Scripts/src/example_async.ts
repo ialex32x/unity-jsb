@@ -18,6 +18,8 @@ async function test() {
     print("[async] end");
     let result = <IPHostEntry>await Yield(AsyncTaskTest.GetHostEntryAsync("www.baidu.com"));
     console.log("host entry:", result.HostName);
+    await Yield(AsyncTaskTest.SimpleTest(3000));
+    console.log("after AsyncTaskTest.SimpleTest(1000)");
 }
 
 async function testUnityYieldInstructions() {

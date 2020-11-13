@@ -3,11 +3,18 @@
 namespace QuickJS.Utils
 {
     using Native;
-    
+
     public class SafeRelease
     {
         private ScriptContext _context;
         private List<JSValue> _values = new List<JSValue>();
+
+        public JSValue this[int index]
+        {
+            get { return _values[index]; }
+        }
+
+        public bool isValid => _context != null;
 
         public SafeRelease(ScriptContext context)
         {
@@ -28,6 +35,11 @@ namespace QuickJS.Utils
             _values.Add(value1);
             _values.Add(value2);
             _context.OnDestroy += OnDestroy;
+        }
+
+        public JSValue[] ToArray()
+        {
+            return _values.ToArray();
         }
 
         public SafeRelease Append(params JSValue[] values)

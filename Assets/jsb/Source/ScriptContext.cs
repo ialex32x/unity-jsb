@@ -110,7 +110,10 @@ namespace QuickJS
 
         public bool IsValid()
         {
-            return _isValid;
+            lock (this)
+            {
+                return _isValid;
+            }
         }
 
         public IAsyncManager GetAsyncManager()
@@ -161,11 +164,14 @@ namespace QuickJS
 
         public void Destroy()
         {
-            if (!_isValid)
+            lock (this)
             {
-                return;
+                if (!_isValid)
+                {
+                    return;
+                }
+                _isValid = false;
             }
-            _isValid = false;
 
             try
             {

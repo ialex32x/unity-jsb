@@ -14,6 +14,18 @@ namespace QuickJS.Unity
 
     public class DefaultAsyncManager : IAsyncManager
     {
+        private class JSTaskCompletionArgs
+        {
+            public System.Threading.Tasks.Task task;
+            public SafeRelease safeRelease;
+
+            public JSTaskCompletionArgs(System.Threading.Tasks.Task task, SafeRelease safeRelease)
+            {
+                this.task = task;
+                this.safeRelease = safeRelease;
+            }
+        }
+
         private int _mainThreadId;
         private UnityCoroutineContext _mb = null;
 
@@ -54,8 +66,14 @@ namespace QuickJS.Unity
             {
                 var resolving_funcs = new[] { JSApi.JS_UNDEFINED, JSApi.JS_UNDEFINED };
                 var promise = JSApi.JS_NewPromiseCapability(context, resolving_funcs);
+                var safeRelease = new SafeRelease(context).Append(resolving_funcs);
+                var task = awaitObject as System.Threading.Tasks.Task;
+                var runtime = context.GetRuntime();
 
-                _Pending(awaitObject as System.Threading.Tasks.Task, context, resolving_funcs);
+                task.GetAwaiter().OnCompleted(() =>
+                {
+                    runtime.EnqueueAction(_OnTaskCompleted, new JSTaskCompletionArgs(task, safeRelease));
+                });
                 return promise;
             }
             else if (awaitObject is IEnumerator)
@@ -82,7 +100,7 @@ namespace QuickJS.Unity
             else
             {
                 GetUnityContext();
-                
+
                 if (_mb == null)
                 {
                     return JSApi.JS_ThrowInternalError(context, "no MonoBehaviour for Coroutines");
@@ -102,20 +120,23 @@ namespace QuickJS.Unity
 
         }
 
-        private async void _Pending(Task task, ScriptContext context, JSValue[] resolving_funcs)
+        private static void _OnTaskCompleted(ScriptRuntime runtime, JSAction action)
         {
-            var safeRelease = new SafeRelease(context).Append(resolving_funcs);
+            var context = runtime.GetMainContext();
+            var logger = runtime.GetLogger();
+            var args = (JSTaskCompletionArgs)action.args;
+            var task = args.task;
+            var safeRelease = args.safeRelease;
 
-            //TODO: 修改任务等待
-            await task;
-
-            if (!context.IsValid())
+            if (!safeRelease.isValid)
             {
+                logger?.Write(LogLevel.Error, "pormise func has already been released");
                 return;
             }
 
             object result = null;
             var taskType = task.GetType();
+
             if (taskType.IsGenericType && taskType.GetGenericTypeDefinition() == typeof(Task<>))
             {
                 try
@@ -124,7 +145,7 @@ namespace QuickJS.Unity
                 }
                 catch (Exception exception)
                 {
-                    context.GetLogger()?.WriteException(exception);
+                    logger?.WriteException(exception);
                 }
             }
 
@@ -138,7 +159,7 @@ namespace QuickJS.Unity
             }
 
             var argv = new[] { backVal };
-            var rval = JSApi.JS_Call(ctx, resolving_funcs[0], JSApi.JS_UNDEFINED, 1, argv);
+            var rval = JSApi.JS_Call(ctx, safeRelease[0], JSApi.JS_UNDEFINED, 1, argv);
             JSApi.JS_FreeValue(ctx, backVal);
             if (rval.IsException())
             {
