@@ -21,6 +21,7 @@ namespace QuickJS.Unity
         private Type _type;
         private JSHotfixAttribute _hotfix;
         private string _typeNaming;
+        private bool _enableOperatorOverloading = true;
 
         public TypeBindingFlags bindingFlags = TypeBindingFlags.Default;
 
@@ -60,6 +61,8 @@ namespace QuickJS.Unity
 
         public bool isEditorRuntime { get { return (bindingFlags & TypeBindingFlags.UnityEditorRuntime) != 0; } }
 
+        public bool enableOperatorOverloading => _enableOperatorOverloading;
+
         public Type type => _type;
 
         public TypeTransform(Type type)
@@ -69,6 +72,12 @@ namespace QuickJS.Unity
             {
                 bindingFlags = TypeBindingFlags.Default & ~TypeBindingFlags.BindingCode;
             }
+        }
+
+        public TypeTransform EnableOperatorOverloading(bool value)
+        {
+            _enableOperatorOverloading = value;
+            return this;
         }
 
         public TypeTransform EditorRuntime()

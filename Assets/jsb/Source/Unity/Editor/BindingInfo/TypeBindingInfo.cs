@@ -162,9 +162,14 @@ namespace QuickJS.Unity
             }
         }
 
-        public static bool IsSupportedOperators(MethodInfo methodInfo)
+        public bool IsSupportedOperators(MethodInfo methodInfo)
         {
             return methodInfo.IsSpecialName && methodInfo.Name.StartsWith("op_");
+        }
+
+        public bool IsOperatorOverloadingEnabled(MethodInfo methodInfo)
+        {
+            return bindingManager.prefs.enableOperatorOverloading && transform.enableOperatorOverloading && IsSupportedOperators(methodInfo);
         }
 
         public void AddMethod(MethodInfo methodInfo, bool asExtensionAnyway)
@@ -196,7 +201,7 @@ namespace QuickJS.Unity
 
             var methodCSName = methodInfo.Name;
             var methodJSName = this.bindingManager.GetNamingAttribute(this.transform, methodInfo);
-            if (IsSupportedOperators(methodInfo))
+            if (IsOperatorOverloadingEnabled(methodInfo))
             {
                 var parameters = methodInfo.GetParameters();
                 var declaringType = methodInfo.DeclaringType;

@@ -27,6 +27,11 @@ namespace QuickJS.Unity
         public bool editorScripting = true;
 
         /// <summary>
+        /// 启用运算符重载转换 (禁用后运算符将以 op_* 的形式导出为函数)
+        /// </summary>
+        public bool enableOperatorOverloading = true;
+
+        /// <summary>
         /// 编辑器运行时脚本入口
         /// </summary>
         public string editorEntryPoint = "editor/main";

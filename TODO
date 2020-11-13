@@ -6,9 +6,11 @@
     ☐ linux build (for dotnet core)
     ☐ 额外的运行时通讯机制 (jsb.runtimes, jsb.postMessage)
     ☐ 反射模式支持运算符重载
-    ☐ 提供选项全局/个别禁用运算符重载转换
     ☐ 提供选项生成随机命名的绑定函数
+    ✔ 提供选项全局/个别禁用运算符重载转换 @done(20-11-13 12:27)
     ✔ 修正 ref 参数传参 (codegen for in/out) @done(20-10-12 10:21)
+    BUGFIX:
+        ☐ 以 toString 形式导出的 ToString 中触发异常将导致调用栈溢出崩溃
 
 编辑器支持:
     ☐ JS Behaviour Inspector 支持使用脚本定义编辑器

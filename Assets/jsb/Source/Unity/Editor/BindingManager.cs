@@ -1475,7 +1475,9 @@ namespace QuickJS.Unity
             AddExportedType(typeof(Quaternion));
             AddExportedType(typeof(Matrix4x4));
             AddExportedType(typeof(PrimitiveType));
-            AddExportedType(typeof(Object));
+            AddExportedType(typeof(Object))
+                .EnableOperatorOverloading(false)
+            ;
             AddExportedType(typeof(GameObject), true);
             AddExportedType(typeof(Camera), true);
             AddExportedType(typeof(Transform), true);
@@ -1716,7 +1718,7 @@ namespace QuickJS.Unity
                 {
                     Directory.CreateDirectory(logDir);
                 }
-                File.WriteAllText(logPath, log.ToString());
+                File.WriteAllText(logPath, log.Submit());
             }
             catch (Exception)
             {
