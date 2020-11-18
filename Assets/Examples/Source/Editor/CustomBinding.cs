@@ -14,6 +14,17 @@ namespace Example.Editor
 
         public override void OnPreExporting(BindingManager bindingManager)
         {
+            // bindingManager.AddExportedType(typeof(System.Threading.Tasks.Task))
+            //     .Rename("ATask")
+            //     .SetMemberBlocked("IsCompletedSuccessfully");
+            // bindingManager.AddExportedType(typeof(System.Threading.Tasks.Task<System.Net.Sockets.Socket>));
+            
+            // bindingManager.AddExportedType(typeof(System.Net.Sockets.Socket));
+            // bindingManager.AddExportedType(typeof(System.Net.Sockets.SocketFlags));
+            // bindingManager.AddExportedType(typeof(System.Net.Sockets.AddressFamily));
+            // bindingManager.AddExportedType(typeof(System.Net.IPAddress));
+            // bindingManager.AddExportedType(typeof(System.Net.IPEndPoint));
+
             bindingManager.AddExportedType(typeof(WaitForSeconds), true);
             bindingManager.AddExportedType(typeof(WaitForEndOfFrame), true);
             bindingManager.AddExportedType(typeof(Time));
@@ -23,7 +34,7 @@ namespace Example.Editor
             bindingManager.AddExportedType(typeof(Ray));
             bindingManager.AddExportedType(typeof(Rect));
             bindingManager.AddExportedType(typeof(RaycastHit));
-            bindingManager.AddExportedType(typeof(Physics)); // 无法自动处理部分重载
+            bindingManager.AddExportedType(typeof(Physics));
             bindingManager.AddExportedType(typeof(System.Net.IPHostEntry)).SystemRuntime();
 
             bindingManager.AddExportedType(typeof(System.Enum)).SystemRuntime();

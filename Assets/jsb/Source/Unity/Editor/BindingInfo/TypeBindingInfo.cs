@@ -51,7 +51,12 @@ namespace QuickJS.Unity
         /// </summary>
         public bool IsEnum => type.IsEnum;
 
-        public readonly string csBindingName; // 绑定代码名
+        private string _csBindingName;
+
+        /// <summary>
+        /// 绑定代码名
+        /// </summary>
+        public string csBindingName => _csBindingName; 
 
         public List<OperatorBindingInfo> operators = new List<OperatorBindingInfo>();
 
@@ -64,7 +69,8 @@ namespace QuickJS.Unity
         public Dictionary<string, DelegateBindingInfo> delegates = new Dictionary<string, DelegateBindingInfo>();
         public ConstructorBindingInfo constructors;
 
-        public readonly TSTypeNaming tsTypeNaming;
+        private TSTypeNaming _tsTypeNaming;
+        public TSTypeNaming tsTypeNaming => _tsTypeNaming;
 
         private bool _omit;
 
@@ -74,12 +80,13 @@ namespace QuickJS.Unity
             this.type = type;
             this.transform = typeTransform;
             this._omit = type.IsDefined(typeof(JSOmitAttribute));
-            this.tsTypeNaming = bindingManager.GetTSTypeNaming(type, true);
-            this.csBindingName = bindingManager.prefs.typeBindingPrefix + this.tsTypeNaming.jsFullName.Replace('.', '_').Replace('+', '_').Replace('<', '_').Replace('>', '_');
         }
 
         public void Initialize()
         {
+            _tsTypeNaming = bindingManager.GetTSTypeNaming(type, true);
+            _csBindingName = bindingManager.prefs.typeBindingPrefix + this.tsTypeNaming.jsFullName.Replace('.', '_').Replace('+', '_').Replace('<', '_').Replace('>', '_');
+
             var module = this.bindingManager.GetExportedModule(this.tsTypeNaming.jsModule);
 
             module.Add(this);

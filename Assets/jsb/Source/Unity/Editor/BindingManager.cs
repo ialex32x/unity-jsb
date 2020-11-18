@@ -481,7 +481,6 @@ namespace QuickJS.Unity
             {
                 var typeBindingInfo = new TypeBindingInfo(this, type, typeTransform);
                 _exportedTypes.Add(type, typeBindingInfo);
-                typeBindingInfo.Initialize();
                 log.AppendLine($"AddExportedType: {type} Assembly: {type.Assembly} Location: {type.Assembly.Location}");
 
                 var baseType = type.BaseType;
@@ -1347,11 +1346,12 @@ namespace QuickJS.Unity
             {
                 CollectHotfix(type);
             }
+
             foreach (var typeBindingInfoKV in _exportedTypes)
             {
                 _CollectType(typeBindingInfoKV.Value.type);
-
             }
+
             OnPostCollectTypes();
             log.DecTabLevel();
         }
@@ -1371,6 +1371,7 @@ namespace QuickJS.Unity
                 return;
             }
 
+            typeBindingInfo.Initialize();
             _collectedTypes.Add(typeBindingInfo);
             log.AppendLine("type: {0}", type);
             log.AddTabLevel();
