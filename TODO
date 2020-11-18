@@ -5,6 +5,8 @@ BUGFIX:
 
 必要:
     ☐ 主模块与一般模块共用一致的加载流程
+    ☐ ES模块与require模块逻辑一致
+    ✔ IScriptFinalize => IDisposable @done(20-11-18 22:00)
     ☐ await Task 改为不依赖 Unity Awaiter, 直接异步等待转同步事件触发
     ☐ 提供 reload 接口 (清空指定模块, 并使用原 parent 进行重新载入)
     ☐ linux build (for dotnet core)

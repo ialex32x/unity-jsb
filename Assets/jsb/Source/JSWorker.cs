@@ -15,7 +15,7 @@ namespace QuickJS
     using QuickJS.Native;
     using QuickJS.Binding;
 
-    public class JSWorker : Values, IScriptFinalize
+    public class JSWorker : Values, IDisposable
     {
         private class JSWorkerArgs
         {
@@ -52,7 +52,7 @@ namespace QuickJS
         }
 
         // 在主线程回调
-        public void OnJSFinalize()
+        public void Dispose()
         {
             Release();
         }

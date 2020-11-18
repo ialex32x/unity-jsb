@@ -14,7 +14,7 @@ namespace QuickJS.Extra
     using QuickJS.Binding;
     using QuickJS.Utils;
 
-    public class DOMCompatibleLayer : Values, IScriptFinalize
+    public class DOMCompatibleLayer : Values, IDisposable
     {
         public class JSSourceArgs
         {
@@ -22,9 +22,10 @@ namespace QuickJS.Extra
             public string src;
         }
 
-        public void OnJSFinalize()
+        // = OnJSFinalize
+        public void Dispose()
         {
-            throw new NotImplementedException();
+            // throw new NotImplementedException();
         }
 
 

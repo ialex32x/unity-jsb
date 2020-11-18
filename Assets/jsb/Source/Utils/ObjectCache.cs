@@ -181,10 +181,10 @@ namespace QuickJS.Utils
                 RemoveJSValue(o);
                 if (finalizer)
                 {
-                    var jsf = o as IScriptFinalize;
+                    var jsf = o as IDisposable;
                     if (jsf != null)
                     {
-                        jsf.OnJSFinalize();
+                        jsf.Dispose();
                     }
                 }
                 return true;

@@ -16,7 +16,7 @@ namespace QuickJS.Utils
     using QuickJS.Native;
     using QuickJS.Binding;
 
-    public class FSWatcher : Values, IScriptFinalize
+    public class FSWatcher : Values, IDisposable
     {
         private FileSystemWatcher _fsw;
 
@@ -142,7 +142,8 @@ namespace QuickJS.Utils
             }
         }
 
-        public void OnJSFinalize()
+        // = OnJSFinalize
+        public void Dispose()
         {
             Destroy();
         }

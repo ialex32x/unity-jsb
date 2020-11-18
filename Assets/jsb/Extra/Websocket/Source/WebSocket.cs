@@ -45,7 +45,7 @@ namespace QuickJS.Extra
         x addEventListener('message', func)
     */
     //TODO: 用 dotnet WebSocket 代替 lws
-    public class WebSocket : Values, IScriptFinalize
+    public class WebSocket : Values, IDisposable
     {
         private enum ReadyState
         {
@@ -610,7 +610,8 @@ namespace QuickJS.Extra
             throw new ArgumentOutOfRangeException("no IPAddress available");
         }
 
-        public void OnJSFinalize()
+        // = OnJSFinalize
+        public void Dispose()
         {
             Destroy();
         }

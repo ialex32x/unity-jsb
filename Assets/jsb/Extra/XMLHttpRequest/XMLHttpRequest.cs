@@ -16,7 +16,7 @@ namespace QuickJS.Extra
     using QuickJS.Native;
     using QuickJS.Binding;
 
-    public class XMLHttpRequest : Values, IScriptFinalize
+    public class XMLHttpRequest : Values, IDisposable
     {
         private class ResponseArgs
         {
@@ -107,7 +107,8 @@ namespace QuickJS.Extra
 
         }
 
-        public void OnJSFinalize()
+        // = OnJSFinalize
+        public void Dispose()
         {
             Destroy();
         }
