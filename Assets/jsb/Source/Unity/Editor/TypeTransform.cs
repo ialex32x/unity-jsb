@@ -176,7 +176,7 @@ namespace QuickJS.Unity
             {
                 extensionMethods.Add(method);
 
-                AddTSMethodDeclaration(tsDecl, method);
+                AddTSMethodDeclaration(method, tsDecl);
             }
 
             return this;
@@ -225,7 +225,7 @@ namespace QuickJS.Unity
             {
                 staticMethods.Add(method);
 
-                AddTSMethodDeclaration(tsDecl, method);
+                AddTSMethodDeclaration(method, tsDecl);
             }
 
             return this;
@@ -376,9 +376,9 @@ namespace QuickJS.Unity
             return this;
         }
 
-        public TypeTransform AddTSMethodDeclaration(string spec, MethodBase method)
+        public TypeTransform AddTSMethodDeclaration(MethodBase method, string spec)
         {
-            if (method != null)
+            if (method != null && spec != null)
             {
                 _tsMethodDeclarations[method] = spec;
             }

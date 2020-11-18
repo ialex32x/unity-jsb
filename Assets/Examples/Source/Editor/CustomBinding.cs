@@ -18,6 +18,7 @@ namespace Example.Editor
             //     .Rename("ATask")
             //     .SetMemberBlocked("IsCompletedSuccessfully");
             // bindingManager.AddExportedType(typeof(System.Threading.Tasks.Task<System.Net.Sockets.Socket>));
+            // bindingManager.AddExportedType(typeof(System.Threading.Tasks.Task<int>));
             
             // bindingManager.AddExportedType(typeof(System.Net.Sockets.Socket));
             // bindingManager.AddExportedType(typeof(System.Net.Sockets.SocketFlags));
