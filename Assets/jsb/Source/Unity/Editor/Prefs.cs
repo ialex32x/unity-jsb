@@ -57,6 +57,11 @@ namespace QuickJS.Unity
         public bool debugCodegen = false;
 
         /// <summary>
+        /// 代码生成过程中记录更详细的日志
+        /// </summary>
+        public bool verboseLog = true;
+
+        /// <summary>
         /// 是否将 C# ToString() 自动转换为 toString()
         /// </summary>
         public bool optToString = true;
