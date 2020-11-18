@@ -271,6 +271,7 @@ namespace QuickJS.Unity
                 {
                     WriteTSDeclaration(typeBindingInfo, method.method, bindingInfo, method.isExtension);
                 }
+
                 foreach (var method in variantKV.Value.varargMethods)
                 {
                     WriteTSDeclaration(typeBindingInfo, method.method, bindingInfo, method.isExtension);
@@ -443,7 +444,7 @@ namespace QuickJS.Unity
                     }
                 }
             }
-            
+
             // error = return $"JSApi.JS_ThrowInternalError(ctx, \"{err}\")";
             cg.cs.AppendLine($"throw new NoSuitableMethodException(\"{methodBindingInfo.jsName}\", {argc});");
         }
@@ -453,7 +454,7 @@ namespace QuickJS.Unity
             var refParameters = new List<ParameterInfo>();
             string tsMethodDeclaration;
             this.cg.AppendJSDoc(method);
-            
+
             if (typeBindingInfo.transform.GetTSMethodDeclaration(method, out tsMethodDeclaration)
              || this.cg.bindingManager.GetTSMethodDeclaration(method, out tsMethodDeclaration))
             {
@@ -495,6 +496,11 @@ namespace QuickJS.Unity
             }
 
             this.cg.tsDeclare.Append($"{prefix}{tsMethodRename}(");
+
+            if (this.cg.bindingManager.prefs.verboseLog)
+            {
+                this.cg.bindingManager.Info($"WriteTSDeclaration: {method.Name} <isExtension: {isExtension}> => {tsMethodRename} {this.cg.tsDeclare.enabled}");
+            }
 
             if (isRaw)
             {
@@ -569,6 +575,7 @@ namespace QuickJS.Unity
                 this.cg.tsDeclare.AppendL($")");
                 WriteTSReturn(method, refParameters);
             }
+
             return refParameters;
         }
 
@@ -611,6 +618,11 @@ namespace QuickJS.Unity
         // 写入绑定代码
         protected void WriteCSMethodBinding(MethodBaseBindingInfo<T> bindingInfo, T method, string argc, bool isVararg, bool isExtension)
         {
+            if (this.cg.bindingManager.prefs.verboseLog)
+            {
+                cg.bindingManager.Info($"WriteCSMethodBinding: {method.Name} {isExtension}");
+            }
+
             // 是否接管 cs 绑定代码生成
             var transform = cg.bindingManager.GetTypeTransform(method.DeclaringType);
             if (transform != null && transform.OnBinding(BindingPoints.METHOD_BINDING_FULL, method, cg))
