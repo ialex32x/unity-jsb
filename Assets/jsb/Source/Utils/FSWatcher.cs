@@ -162,7 +162,7 @@ namespace QuickJS.Utils
                 js_get_primitive(ctx, argv[1], out filter);
             }
             var o = new FSWatcher(path, filter);
-            var val = NewBridgeClassObject(ctx, new_target, o, magic);
+            var val = NewBridgeClassObject(ctx, new_target, o, magic, true);
             o._Transfer(ctx, val);
             return val;
         }

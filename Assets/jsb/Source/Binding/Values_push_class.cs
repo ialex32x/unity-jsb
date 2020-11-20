@@ -106,11 +106,6 @@ namespace QuickJS.Binding
             return db.GetConstructorOf(type);
         }
 
-        // public static JSValue js_push_classvalue(JSContext ctx, Delegate o)
-        // {
-        //     return js_push_delegate(ctx, o);
-        // }
-
         // variant push
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static JSValue js_push_classvalue(JSContext ctx, object o)
@@ -143,7 +138,6 @@ namespace QuickJS.Binding
             JSValue heapptr;
             if (cache.TryGetJSValue(o, out heapptr))
             {
-                // Debug.LogWarningFormat("cache hit push {0}", heapptr);
                 return JSApi.JS_DupValue(ctx, heapptr);
             }
             return NewBridgeObjectBind(ctx, o, true);

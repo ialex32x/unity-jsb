@@ -19,6 +19,11 @@ namespace QuickJS.Unity
         public TypeBindingFlags bindingFlags => transform.bindingFlags;
 
         /// <summary>
+        /// 是否完全由 JS 托管 (JS对象释放时, CS对象即释放)
+        /// </summary>
+        public bool managed => transform.managed;
+
+        /// <summary>
         /// 是否生成绑定代码
         /// </summary>
         public bool genBindingCode => (bindingFlags & TypeBindingFlags.BindingCode) != 0;
@@ -56,7 +61,7 @@ namespace QuickJS.Unity
         /// <summary>
         /// 绑定代码名
         /// </summary>
-        public string csBindingName => _csBindingName; 
+        public string csBindingName => _csBindingName;
 
         public List<OperatorBindingInfo> operators = new List<OperatorBindingInfo>();
 

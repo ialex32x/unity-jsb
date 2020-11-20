@@ -314,7 +314,7 @@ namespace QuickJS
 
             var scriptPath = JSApi.GetString(ctx, argv[0]);
             var worker = new JSWorker();
-            var val = NewBridgeClassObject(ctx, new_target, worker, magic);
+            var val = NewBridgeClassObject(ctx, new_target, worker, magic, true);
             try
             {
                 if (val.IsObject())

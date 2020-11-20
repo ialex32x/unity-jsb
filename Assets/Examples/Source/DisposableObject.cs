@@ -5,7 +5,6 @@ namespace Example
 {
     using UnityEngine;
 
-    [JSType]
     public class DisposableObject : IDisposable
     {
         public DisposableObject()

@@ -10,11 +10,19 @@ namespace QuickJS.Binding
     // 处理特殊操作, 关联本地对象等
     public partial class Values
     {
-        // 用于对由 js 构造产生的 c# 对象产生一个 js 包装对象 
-        public static JSValue NewBridgeClassObject(JSContext ctx, JSValue new_target, object o, int type_id)
+        /// <summary>
+        /// 用于对由 js 构造产生的 c# 对象产生一个 js 包装对象 
+        /// </summary>
+        /// <param name="ctx">JS 环境</param>
+        /// <param name="new_target">构造</param>
+        /// <param name="o">CS 对象</param>
+        /// <param name="type_id">类型索引</param>
+        /// <param name="managed">是否生命周期完全由JS托管, 映射对象释放时, CS对象将被Dispose(如果是IDisposable)</param>
+        /// <returns>映射对象</returns>
+        public static JSValue NewBridgeClassObject(JSContext ctx, JSValue new_target, object o, int type_id, bool managed = false)
         {
             var cache = ScriptEngine.GetObjectCache(ctx);
-            var object_id = cache.AddObject(o, false);
+            var object_id = cache.AddObject(o, managed);
             var val = JSApi.JSB_NewBridgeClassObject(ctx, new_target, object_id);
             if (JSApi.JS_IsException(val))
             {
@@ -28,25 +36,13 @@ namespace QuickJS.Binding
             return val;
         }
 
-        // 用于对由 js 构造产生的 c# 对象产生一个 js 包装对象 (负责自动 Dispose)
-        public static JSValue NewBridgeClassObject(JSContext ctx, JSValue new_target, IDisposable o, int type_id)
-        {
-            var cache = ScriptEngine.GetObjectCache(ctx);
-            var object_id = cache.AddObject(o, true);
-            var val = JSApi.JSB_NewBridgeClassObject(ctx, new_target, object_id);
-            if (JSApi.JS_IsException(val))
-            {
-                cache.RemoveObject(object_id);
-            }
-            else
-            {
-                cache.AddJSValue(o, val);
-            }
-
-            return val;
-        }
-
-        // 用于对 c# 对象产生 js 包装对象 (不负责自动 Dispose)
+        /// <summary>
+        /// 用于对 c# 对象产生 js 包装对象 (不负责自动 Dispose)
+        /// </summary>
+        /// <param name="ctx">JS 环境</param>
+        /// <param name="o">CS 对象</param>
+        /// <param name="makeRef">是否创建 CS->JS 对象映射关系</param>
+        /// <returns>映射对象</returns>
         public static JSValue NewBridgeObjectBind(JSContext ctx, object o, bool makeRef)
         {
             if (o == null)

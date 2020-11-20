@@ -46,6 +46,7 @@ namespace Example.Editor
 
             bindingManager.AddExportedType(typeof(TWrapper<int>));
             bindingManager.AddExportedType(typeof(TWrapper<Vector3>));
+            bindingManager.AddExportedType(typeof(DisposableObject)).Managed();
         }
     }
 }

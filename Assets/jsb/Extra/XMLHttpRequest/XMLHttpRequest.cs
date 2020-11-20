@@ -246,7 +246,7 @@ namespace QuickJS.Extra
         private static JSValue js_constructor(JSContext ctx, JSValue new_target, int argc, JSValue[] argv, int magic)
         {
             var o = new XMLHttpRequest();
-            var val = NewBridgeClassObject(ctx, new_target, o, magic);
+            var val = NewBridgeClassObject(ctx, new_target, o, magic, true);
             o._Transfer(ctx, val);
             return val;
         }
