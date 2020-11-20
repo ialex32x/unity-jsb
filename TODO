@@ -7,7 +7,7 @@ BUGFIX:
     ☐ 主模块与一般模块共用一致的加载流程
     ☐ ES模块与require模块逻辑一致
     ✔ IScriptFinalize => IDisposable @done(20-11-18 22:00)
-    ☐ 提供 jsb.AutoDispose() (对非 js new 的 c# object)
+    ✔ 提供 jsb.SetDisposable(o, disposable) @done(20-11-20 10:08)
     ✔ await Task 改为不依赖 Unity Awaiter, 直接异步等待转同步事件触发 @done(20-11-19 19:54)
     ☐ 提供 reload 接口 (清空指定模块, 并使用原 parent 进行重新载入)
     ☐ linux build (for dotnet core)
@@ -19,6 +19,7 @@ BUGFIX:
     ☐ 完善 JSEditorWindow 功能
 
 Codegen:
+    ✔ 提供导出类型是否 disposable 的选项 @done(20-11-20 10:09)
     ☐ 提供选项自动添加关联类型的导出 (如果是泛型具体类, 且对应基类已经导出, 那么自动导出此泛型具体类)
     ☐ 子类中存在不同签名的同名方法时 (非虚)  时, 输出 ts-ignore
     ☐ 在单一文件中生成 cs 代码

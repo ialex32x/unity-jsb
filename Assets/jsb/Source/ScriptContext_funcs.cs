@@ -420,6 +420,23 @@ namespace QuickJS
         }
 
         [MonoPInvokeCallback(typeof(JSCFunction))]
+        public static JSValue _set_disposable(JSContext ctx, JSValue this_obj, int argc, JSValue[] argv)
+        {
+            if (argc != 2 || !argv[0].IsObject() || !argv[1].IsBoolean())
+            {
+                return JSApi.JS_ThrowInternalError(ctx, "invalid args");
+            }
+
+            bool disposable;
+            if (Values.js_get_primitive(ctx, argv[1], out disposable) && Values.js_set_cached_object_disposable(ctx, argv[0], disposable))
+            {
+                return JSApi.JS_TRUE;
+            }
+
+            return JSApi.JS_FALSE;
+        }
+
+        [MonoPInvokeCallback(typeof(JSCFunction))]
         public static JSValue js_import_type(JSContext ctx, JSValue this_obj, int argc, JSValue[] argv)
         {
             if (argc < 1 || !argv[0].IsString())

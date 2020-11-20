@@ -397,6 +397,7 @@ namespace QuickJS
             ns_jsb.AddFunction("ToDelegate", to_cs_delegate, 1);
             ns_jsb.AddFunction("Import", js_import_type, 2);
             ns_jsb.AddFunction("GC", _gc, 0);
+            ns_jsb.AddFunction("SetDisposable", _set_disposable, 2);
             ns_jsb.AddFunction("AddCacheString", _add_cache_string, 1);
             ns_jsb.AddFunction("RemoveCacheString", _remove_cache_string, 1);
             ns_jsb.AddFunction("Sleep", _sleep, 1);

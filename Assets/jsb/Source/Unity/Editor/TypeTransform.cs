@@ -22,9 +22,9 @@ namespace QuickJS.Unity
         private JSHotfixAttribute _hotfix;
         private string _typeNaming;
         private bool _enableOperatorOverloading = true;
-        private bool _managed;
+        private bool _disposable;
 
-        public bool managed => _managed;
+        public bool disposable => _disposable;
 
         public TypeBindingFlags bindingFlags = TypeBindingFlags.Default;
 
@@ -87,9 +87,9 @@ namespace QuickJS.Unity
         /// 标记此类型完全由 JS 托管 (JS对象释放时, CS对象即释放).
         /// 该设置只针对由 JS 构造产生的此类型对象实例.
         /// </summary>
-        public TypeTransform Managed()
+        public TypeTransform SetDisposable()
         {
-            _managed = true;
+            _disposable = true;
             return this;
         }
 

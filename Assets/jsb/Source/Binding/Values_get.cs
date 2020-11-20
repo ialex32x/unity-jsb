@@ -1226,6 +1226,26 @@ namespace QuickJS.Binding
             return false;
         }
 
+        public static bool js_set_cached_object_disposable(JSContext ctx, JSValue val, bool disposable)
+        {
+            if (val.IsNullish())
+            {
+                return true;
+            }
+
+            var header = JSApi.jsb_get_payload_header(val);
+            switch (header.type_id)
+            {
+                case BridgeObjectType.ObjectRef:
+                    return ScriptEngine.GetObjectCache(ctx).SetObjectDisposable(header.value, disposable);
+                case BridgeObjectType.TypeRef:
+                case BridgeObjectType.ValueType:
+                    return false;
+            }
+
+            return false;
+        }
+
         public static bool js_get_cached_object(JSContext ctx, JSValue val, out object o)
         {
             if (val.IsNullish())

@@ -118,6 +118,14 @@ declare module "jsb" {
     function GC(): void
 
     /**
+     * 标记对象是否由JS管理销毁 (自动调用 Dispose)
+     * @param o CS对象实例
+     * @param disposable 是否托管
+     * @returns 是否设置成功
+     */
+    function SetDisposable(o: any, disposable: boolean): boolean;
+
+    /**
      * setInterval/setTimeout 所用定时管理器的当前时间
      */
     function Now(): number

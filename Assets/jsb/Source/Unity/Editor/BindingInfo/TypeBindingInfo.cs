@@ -21,7 +21,7 @@ namespace QuickJS.Unity
         /// <summary>
         /// 是否完全由 JS 托管 (JS对象释放时, CS对象即释放)
         /// </summary>
-        public bool managed => transform.managed;
+        public bool disposable => transform.disposable;
 
         /// <summary>
         /// 是否生成绑定代码

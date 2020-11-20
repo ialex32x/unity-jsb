@@ -712,7 +712,7 @@ namespace QuickJS.Unity
         private TypeBindingInfo typeBindingInfo;
         private ConstructorBindingInfo bindingInfo;
 
-        private string managed => typeBindingInfo.managed ? "true" : "false";
+        private string disposable => typeBindingInfo.disposable ? "true" : "false";
 
         protected override Type GetReturnType(ConstructorInfo method)
         {
@@ -724,7 +724,7 @@ namespace QuickJS.Unity
         {
             var decalringTypeName = this.cg.bindingManager.GetCSTypeFullName(this.bindingInfo.decalringType);
             this.cg.cs.AppendLine("var o = new {0}();", decalringTypeName);
-            this.cg.cs.AppendLine("var val = NewBridgeClassObject(ctx, new_target, o, magic, {0});", this.managed);
+            this.cg.cs.AppendLine("var val = NewBridgeClassObject(ctx, new_target, o, magic, {0});", this.disposable);
             this.cg.cs.AppendLine("return val;");
 
             this.cg.tsDeclare.AppendLine($"{this.bindingInfo.jsName}()");
@@ -744,7 +744,7 @@ namespace QuickJS.Unity
 
         protected override void EndInvokeBinding()
         {
-            this.cg.cs.AppendLine("var val = NewBridgeClassObject(ctx, new_target, o, magic, {0});", this.managed);
+            this.cg.cs.AppendLine("var val = NewBridgeClassObject(ctx, new_target, o, magic, {0});", this.disposable);
         }
 
         protected override void InvokeVoidReturn()

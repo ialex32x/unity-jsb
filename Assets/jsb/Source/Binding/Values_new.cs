@@ -17,12 +17,12 @@ namespace QuickJS.Binding
         /// <param name="new_target">构造</param>
         /// <param name="o">CS 对象</param>
         /// <param name="type_id">类型索引</param>
-        /// <param name="managed">是否生命周期完全由JS托管, 映射对象释放时, CS对象将被Dispose(如果是IDisposable)</param>
+        /// <param name="disposable">是否生命周期完全由JS托管, 映射对象释放时, CS对象将被Dispose(如果是IDisposable)</param>
         /// <returns>映射对象</returns>
-        public static JSValue NewBridgeClassObject(JSContext ctx, JSValue new_target, object o, int type_id, bool managed = false)
+        public static JSValue NewBridgeClassObject(JSContext ctx, JSValue new_target, object o, int type_id, bool disposable = false)
         {
             var cache = ScriptEngine.GetObjectCache(ctx);
-            var object_id = cache.AddObject(o, managed);
+            var object_id = cache.AddObject(o, disposable);
             var val = JSApi.JSB_NewBridgeClassObject(ctx, new_target, object_id);
             if (JSApi.JS_IsException(val))
             {

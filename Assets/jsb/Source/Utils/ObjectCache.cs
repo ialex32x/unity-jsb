@@ -11,7 +11,7 @@ namespace QuickJS.Utils
         {
             public int next;
             public object target;
-            public bool finalizer;
+            public bool disposable;
         }
 
         private bool _disposed;
@@ -120,7 +120,7 @@ namespace QuickJS.Utils
             return o != null && _rmap.Remove(o);
         }
 
-        public int AddObject(object o, bool finalizer)
+        public int AddObject(object o, bool disposable)
         {
             if (!_disposed && o != null)
             {
@@ -131,7 +131,7 @@ namespace QuickJS.Utils
                     _map.Add(freeEntry);
                     freeEntry.next = -1;
                     freeEntry.target = o;
-                    freeEntry.finalizer = finalizer;
+                    freeEntry.disposable = disposable;
                     return id;
                 }
                 else
@@ -141,11 +141,26 @@ namespace QuickJS.Utils
                     _freeIndex = freeEntry.next;
                     freeEntry.next = -1;
                     freeEntry.target = o;
-                    freeEntry.finalizer = finalizer;
+                    freeEntry.disposable = disposable;
                     return id;
                 }
             }
             return -1;
+        }
+
+        public bool SetObjectDisposable(int id, bool disposable)
+        {
+            if (id >= 0 && id < _map.Count)
+            {
+                var entry = _map[id];
+                if (entry.next == -1)
+                {
+                    entry.disposable = disposable;
+                    return true;
+                }
+            }
+            
+            return false;
         }
 
         public bool TryGetObject(int id, out object o)
@@ -174,12 +189,12 @@ namespace QuickJS.Utils
             if (TryGetObject(id, out o))
             {
                 var entry = _map[id];
-                var finalizer = entry.finalizer;
+                var disposable = entry.disposable;
                 entry.next = _freeIndex;
                 entry.target = null;
                 _freeIndex = id;
                 RemoveJSValue(o);
-                if (finalizer)
+                if (disposable)
                 {
                     var jsf = o as IDisposable;
                     if (jsf != null)
