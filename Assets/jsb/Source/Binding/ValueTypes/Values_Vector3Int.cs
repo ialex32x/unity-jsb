@@ -9,7 +9,7 @@ namespace QuickJS.Binding
 
     public partial class Values
     {
-        public static JSValue NewBridgeClassObject(JSContext ctx, JSValue new_target, Vector3Int o, int type_id)
+        public static JSValue NewBridgeClassObject(JSContext ctx, JSValue new_target, Vector3Int o, int type_id, bool disposable)
         {
             var val = JSApi.JSB_NewBridgeClassValue(ctx, new_target, sizeof(int) * 3);
             if (!JSApi.JS_IsException(val))

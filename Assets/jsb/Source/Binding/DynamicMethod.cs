@@ -166,7 +166,7 @@ namespace QuickJS.Binding
                 }
             }
             var inst = _ctor.Invoke(args);
-            var val = Values.NewBridgeClassObject(ctx, this_obj, inst, _type.id);
+            var val = Values.NewBridgeClassObject(ctx, this_obj, inst, _type.id, false);
             return val;
         }
     }

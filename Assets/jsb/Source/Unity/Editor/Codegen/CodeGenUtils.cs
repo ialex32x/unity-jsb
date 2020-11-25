@@ -12,6 +12,11 @@ namespace QuickJS.Unity
 
     public static class CodeGenUtils
     {
+        public static string ToLiteral(bool v)
+        {
+            return v ? "true" : "false";
+        }
+
         public static string Normalize(string name)
         {
             var gArgIndex = name.IndexOf("<");

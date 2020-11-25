@@ -12,6 +12,7 @@ namespace QuickJS.Binding
     {
         /// <summary>
         /// 用于对由 js 构造产生的 c# 对象产生一个 js 包装对象 
+        /// 注意: 此函数签名发生变化时, 用于优化的所有重载匹配函数需要统一变化
         /// </summary>
         /// <param name="ctx">JS 环境</param>
         /// <param name="new_target">构造</param>
@@ -19,7 +20,7 @@ namespace QuickJS.Binding
         /// <param name="type_id">类型索引</param>
         /// <param name="disposable">是否生命周期完全由JS托管, 映射对象释放时, CS对象将被Dispose(如果是IDisposable)</param>
         /// <returns>映射对象</returns>
-        public static JSValue NewBridgeClassObject(JSContext ctx, JSValue new_target, object o, int type_id, bool disposable = false)
+        public static JSValue NewBridgeClassObject(JSContext ctx, JSValue new_target, object o, int type_id, bool disposable)
         {
             var cache = ScriptEngine.GetObjectCache(ctx);
             var object_id = cache.AddObject(o, disposable);
