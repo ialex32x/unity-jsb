@@ -128,5 +128,19 @@ namespace QuickJS.Native
 
         [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern unsafe JS_BOOL jsb_set_bytes(JSValue val, int n, byte* v0);
+
+        public static unsafe JS_BOOL jsb_get_bytes(JSValue val, out long v0)
+        {
+            long v;
+            var ret = jsb_get_bytes(val, sizeof(long), (byte*)&v);
+            v0 = v;
+            return ret;
+        }
+
+        public static unsafe JS_BOOL jsb_set_bytes(JSValue val, long v0)
+        {
+            long* p = &v0;
+            return JSApi.jsb_set_bytes(val, sizeof(long), (byte*)p);
+        }
     }
 }
