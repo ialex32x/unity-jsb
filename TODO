@@ -41,11 +41,12 @@ Codegen:
 
 次要:
     ☐ 代码文档注释
+    ☐ quickjs Date 只处理了UTC时间
     ☐ 以更通用且自动化的方式生成可继承的类型
     ☐ 不生成绑定代码的情况下使用反射模式执行 (只生成 d.ts, 以及一个 type list)
     ☐ 通过 BindingManager 辅助得到 export types
 
-Archive:
+2020-11-13 v1.1.2:
   ✔ 提供选项生成随机命名的绑定函数 @done(20-11-13 15:02) @project(必要)
   ✔ 提供选项全局/个别禁用运算符重载转换 @done(20-11-13 12:27) @project(必要)
   ✔ 修正 ref 参数传参 (codegen for in/out) @done(20-10-12 10:21) @project(必要)
