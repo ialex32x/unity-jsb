@@ -889,6 +889,10 @@ namespace QuickJS.Unity
             {
                 switch (method.Name)
                 {
+                    case "op_Addition":
+                        return $"{arglist[0]} + {arglist[1]}";
+                    case "op_Subtraction":
+                        return $"{arglist[0]} - {arglist[1]}";
                     case "op_Modulus":
                         return $"{arglist[0]} % {arglist[1]}";
                     case "op_Equality":
