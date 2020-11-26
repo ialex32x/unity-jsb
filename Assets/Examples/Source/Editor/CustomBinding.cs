@@ -38,6 +38,7 @@ namespace Example.Editor
             bindingManager.AddExportedType(typeof(Physics));
             bindingManager.AddExportedType(typeof(System.Net.IPHostEntry)).SystemRuntime();
 
+            bindingManager.AddExportedType(typeof(System.DateTime)).SystemRuntime().EnableOperatorOverloading(false);
             bindingManager.AddExportedType(typeof(System.Enum)).SystemRuntime();
             bindingManager.AddExportedType(typeof(System.IO.File)).SystemRuntime()
                 .SetMemberBlocked("GetAccessControl")

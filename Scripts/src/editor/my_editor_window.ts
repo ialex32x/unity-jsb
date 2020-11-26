@@ -1,5 +1,6 @@
-import { EditorWindow, EditorGUILayout, MessageType, SceneView, Handles, GenericMenu, HandleUtility } from "UnityEditor";
-import { FocusType, GUIContent, GUILayout, GUIUtility, Rect, Event, GUIStyle, GUI, Vector2, GUILayoutUtility, EventType } from "UnityEngine";
+import { DateTime } from "System";
+import { EditorWindow, EditorGUILayout, MessageType, SceneView, Handles, GenericMenu, HandleUtility, EditorApplication } from "UnityEditor";
+import { FocusType, GUIContent, GUILayout, GUIUtility, Rect, Event, GUIStyle, GUI, Vector2, GUILayoutUtility, EventType, Vector3, Quaternion } from "UnityEngine";
 
 // @jsb.Shortcut("Window/JS/MyEditorWindow")
 export class MyEditorWindow extends EditorWindow {
@@ -83,14 +84,42 @@ export class MyEditorWindow extends EditorWindow {
         menu.AddItem(new GUIContent("Test"), false, this._onMenuTest);
     }
 
+    private _lastHour = -1;
+    private _lastSecond = -1;
+
+    Update() {
+        let d = DateTime.Now;
+        if (this._lastSecond != d.Second) {
+            this._lastSecond = d.Second;
+            this._lastHour = d.Hour;
+            this.Repaint();
+        }
+    }
+
     OnGUI() {
         EditorGUILayout.HelpBox("Hello", MessageType.Info);
         if (GUILayout.Button("I am Javascript")) {
-            console.log("Thanks!");
+            console.log("Thanks!", DateTime.Now);
         }
 
         if (GUILayout.Button("CreateWindow")) {
             EditorWindow.CreateWindow(MyEditorWindow);
         }
+
+        let w = this.position.width;
+        let h = this.position.height;
+        let center = new Vector3(w * 0.5, h * 0.5, 0);
+        let rotSecond = Quaternion.Euler(0, 0, 360 * this._lastSecond / 60 + 180);
+        let rotHour = Quaternion.Euler(0, 0, 360 * this._lastHour / 24 + 180);
+        //@ts-ignore
+        Handles.DrawLine(center, center + rotSecond * new Vector3(0, 90, 0));
+        //@ts-ignore
+        Handles.DrawLine(center, center + rotHour * new Vector3(0, 60, 0));
+        Handles.DrawWireDisc(center, Vector3.back, 100);
+
+        EditorGUILayout.BeginHorizontal();
+        EditorGUILayout.IntField(this._lastHour);
+        EditorGUILayout.IntField(this._lastSecond);
+        EditorGUILayout.EndHorizontal();
     }
 }

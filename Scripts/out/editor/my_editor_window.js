@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.MyEditorWindow = void 0;
+const System_1 = require("System");
 const UnityEditor_1 = require("UnityEditor");
 const UnityEngine_1 = require("UnityEngine");
 // @jsb.Shortcut("Window/JS/MyEditorWindow")
@@ -13,6 +14,8 @@ class MyEditorWindow extends UnityEditor_1.EditorWindow {
         this._thisWindowRect = new UnityEngine_1.Rect(50, 50, 400, 300);
         this._resizerContent = new UnityEngine_1.GUIContent("* ", "Resize");
         this._isResizing = false;
+        this._lastHour = -1;
+        this._lastSecond = -1;
     }
     Awake() {
         this._onSceneGui = this.onSceneGui.bind(this);
@@ -73,14 +76,36 @@ class MyEditorWindow extends UnityEditor_1.EditorWindow {
     AddItemsToMenu(menu) {
         menu.AddItem(new UnityEngine_1.GUIContent("Test"), false, this._onMenuTest);
     }
+    Update() {
+        let d = System_1.DateTime.Now;
+        if (this._lastSecond != d.Second) {
+            this._lastSecond = d.Second;
+            this._lastHour = d.Hour;
+            this.Repaint();
+        }
+    }
     OnGUI() {
         UnityEditor_1.EditorGUILayout.HelpBox("Hello", UnityEditor_1.MessageType.Info);
         if (UnityEngine_1.GUILayout.Button("I am Javascript")) {
-            console.log("Thanks!");
+            console.log("Thanks!", System_1.DateTime.Now);
         }
         if (UnityEngine_1.GUILayout.Button("CreateWindow")) {
             UnityEditor_1.EditorWindow.CreateWindow(MyEditorWindow);
         }
+        let w = this.position.width;
+        let h = this.position.height;
+        let center = new UnityEngine_1.Vector3(w * 0.5, h * 0.5, 0);
+        let rotSecond = UnityEngine_1.Quaternion.Euler(0, 0, 360 * this._lastSecond / 60 + 180);
+        let rotHour = UnityEngine_1.Quaternion.Euler(0, 0, 360 * this._lastHour / 24 + 180);
+        //@ts-ignore
+        UnityEditor_1.Handles.DrawLine(center, center + rotSecond * new UnityEngine_1.Vector3(0, 90, 0));
+        //@ts-ignore
+        UnityEditor_1.Handles.DrawLine(center, center + rotHour * new UnityEngine_1.Vector3(0, 60, 0));
+        UnityEditor_1.Handles.DrawWireDisc(center, UnityEngine_1.Vector3.back, 100);
+        UnityEditor_1.EditorGUILayout.BeginHorizontal();
+        UnityEditor_1.EditorGUILayout.IntField(this._lastHour);
+        UnityEditor_1.EditorGUILayout.IntField(this._lastSecond);
+        UnityEditor_1.EditorGUILayout.EndHorizontal();
     }
 }
 exports.MyEditorWindow = MyEditorWindow;
