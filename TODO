@@ -1,5 +1,6 @@
     
 BUGFIX:
+    ☐ JSWorker postMessage/onmessage 传递 JS Object 崩溃
     ✔ 携带特殊参数时, 生成代码的argc数量和索引调整 @done(20-11-26 14:51)
     ☐ 以 toString 形式导出的 ToString 中触发异常将导致调用栈溢出崩溃
     ✔ 修正扩展函数的 d.ts 声明生成 @done(20-11-18 19:07)
@@ -14,6 +15,7 @@ BUGFIX:
     ☐ linux build (for dotnet core)
     ☐ 额外的运行时通讯机制 (jsb.runtimes, jsb.postMessage)
     ☐ 反射模式支持运算符重载
+    ☐ 考虑 Worker 传递消息时 C# 对象的传输 (使用加锁共享池?)
 
 编辑器支持:
     ☐ JS Behaviour Inspector 支持使用脚本定义编辑器
