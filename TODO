@@ -6,6 +6,7 @@ BUGFIX:
     ✔ 修正扩展函数的 d.ts 声明生成 @done(20-11-18 19:07)
 
 必要:
+    ☐ 带 ref/out 参数支持的委托绑定
     ☐ 主模块与一般模块共用一致的加载流程
     ☐ ES模块与require模块逻辑一致
     ✔ IScriptFinalize => IDisposable @done(20-11-18 22:00)
@@ -33,6 +34,9 @@ Codegen:
 其他:
     ☐ MVVM (databinding)
     ☐ for dotnet core
+    ☐ sqlite binding 
+    ☐ code graph
+    ☐ HMR (code hot reload)
 
 次要:
     ☐ 代码文档注释
