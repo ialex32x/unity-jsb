@@ -519,15 +519,9 @@ namespace QuickJS.Unity
                 {
                     var parameter = parameters[i];
                     var parameterType = parameter.ParameterType;
-                    if (parameterType == typeof(Native.JSContext) || parameterType == typeof(Native.JSRuntime))
+                    if (CodeGenUtils.IsSpecialParameterType(parameterType))
                     {
                         // 剔除 JSContext, JSRuntime
-                        ArrayUtility.RemoveAt(ref parameters, i);
-                        len--;
-                    }
-                    else if (parameterType == typeof(ScriptContext) || parameterType == typeof(ScriptRuntime))
-                    {
-                        // 剔除 ScriptContext, ScriptRuntime
                         ArrayUtility.RemoveAt(ref parameters, i);
                         len--;
                     }

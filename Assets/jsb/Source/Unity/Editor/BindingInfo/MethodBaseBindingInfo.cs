@@ -40,14 +40,14 @@ namespace QuickJS.Unity
         {
             var len = parameters.Length;
             var argc = len;
-            // for (var i = 0; i < len; i++)
-            // {
-            //     var p = parameters[i];
-            //     if (p.IsOut)
-            //     {
-            //         argc--;
-            //     }
-            // }
+            for (var i = 0; i < len; i++)
+            {
+                var parameterType = parameters[i].ParameterType;
+                if (CodeGenUtils.IsSpecialParameterType(parameterType))
+                {
+                    argc--;
+                }
+            }
             return argc;
         }
 

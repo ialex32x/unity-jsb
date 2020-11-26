@@ -176,7 +176,7 @@ testAsyncFunc();
 ```ts
 // 支持 ES6 模块 (import)
 // 注: 当使用 typescript 作为书写语言时, 会经过 compilerOptions.module 选项转换为对应版本的模块语句 (比如通常使用 commonjs, 最终 javascript 脚本中将被转化为 require)
-//     目前的主要经历放在 require 的处理流程上, 如果直接在 javascript 中使用 ES6 import 的模块语句, 无法正常导入绑定类 (详见TODO: ES 模块与 require 模块逻辑一致)
+//     目前的主要精力放在 require 的处理流程上, 如果直接在 javascript 中使用 ES6 import 的模块语句, 无法正常导入绑定类 (详见TODO: ES 模块与 require 模块逻辑一致)
 import { fib } from "./fib.js";
 
 // 支持 commonjs 模块 (基础支持) (node.js 'require')

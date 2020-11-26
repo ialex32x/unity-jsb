@@ -1,12 +1,20 @@
+import { Sleep } from "jsb";
 
-
-console.log("in worker");
-
-setInterval(function () {
-    // console.log("worker log");
-    postMessage("message form worker");
-}, 30000)
-
-onmessage = function (data) {
-    console.log("worker get message from master:", data);
+onmessage = function (data: any) {
+    switch (data.method) {
+        case "add": {
+            postMessage({
+                "id": data.id,
+                "result": data.args[0] + data.args[1],
+            });
+            break;
+        }
+        default: {
+            postMessage({
+                "id": data.id, 
+                "result": "unknown method",
+            })
+            break;
+        }
+    }
 }

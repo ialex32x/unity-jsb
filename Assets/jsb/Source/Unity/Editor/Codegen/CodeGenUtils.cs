@@ -12,6 +12,12 @@ namespace QuickJS.Unity
 
     public static class CodeGenUtils
     {
+        public static bool IsSpecialParameterType(Type parameterType)
+        {
+            return parameterType == typeof(Native.JSContext) || parameterType == typeof(Native.JSRuntime) 
+                || parameterType == typeof(ScriptContext) || parameterType == typeof(ScriptRuntime);
+        }
+
         public static string ToLiteral(bool v)
         {
             return v ? "true" : "false";

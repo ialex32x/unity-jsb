@@ -64,7 +64,6 @@ namespace Example
                 _rt.EnableSourceMap();
             }
             _mConsole.Write(LogLevel.Info, "Init");
-            _rt.AddModuleResolvers();
             _rt.Initialize(fileSystem, fileResolver, this, asyncManager, _mConsole, new ByteBufferPooledAllocator());
         }
 
@@ -85,6 +84,7 @@ namespace Example
 
         public void OnCreate(ScriptRuntime runtime)
         {
+            runtime.AddModuleResolvers();
         }
 
         public void OnBind(ScriptRuntime runtime, TypeRegister register)
