@@ -85,12 +85,14 @@ export class MyEditorWindow extends EditorWindow {
     }
 
     private _lastHour = -1;
+    private _lastMinute = -1;
     private _lastSecond = -1;
 
     Update() {
         let d = DateTime.Now;
         if (this._lastSecond != d.Second) {
             this._lastSecond = d.Second;
+            this._lastMinute = d.Minute;
             this._lastHour = d.Hour;
             this.Repaint();
         }
@@ -111,14 +113,18 @@ export class MyEditorWindow extends EditorWindow {
         let center = new Vector3(w * 0.5, h * 0.5, 0);
         let rotSecond = Quaternion.Euler(0, 0, 360 * this._lastSecond / 60 + 180);
         let rotHour = Quaternion.Euler(0, 0, 360 * this._lastHour / 24 + 180);
+        let rotMinute = Quaternion.Euler(0, 0, 360 * this._lastMinute / 60 + 180);
         //@ts-ignore
         Handles.DrawLine(center, center + rotSecond * new Vector3(0, 90, 0));
+        //@ts-ignore
+        Handles.DrawLine(center, center + rotMinute * new Vector3(0, 75, 0));
         //@ts-ignore
         Handles.DrawLine(center, center + rotHour * new Vector3(0, 60, 0));
         Handles.DrawWireDisc(center, Vector3.back, 100);
 
         EditorGUILayout.BeginHorizontal();
         EditorGUILayout.IntField(this._lastHour);
+        EditorGUILayout.IntField(this._lastMinute);
         EditorGUILayout.IntField(this._lastSecond);
         EditorGUILayout.EndHorizontal();
     }
