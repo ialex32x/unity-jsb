@@ -55,8 +55,6 @@ namespace QuickJS.Unity
                     {
                         using (var ret = runtime.GetMainContext().EvalSource<ScriptValue>(_text, "eval"))
                         {
-                            _rvalToString = ret.ToString() ?? "";
-                            _rvalToString += "\n\n";
                             _rvalToString += ret.JSONStringify();
                         }
                     }

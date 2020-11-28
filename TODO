@@ -22,6 +22,7 @@ BUGFIX:
 编辑器支持:
     ☐ JS Behaviour Inspector 支持使用脚本定义编辑器
     ☐ 完善 JSEditorWindow 功能
+    ☐ JSConsole 提供 auto complete 支持
 
 Codegen:
     ✔ 提供导出类型是否 disposable 的选项 @done(20-11-20 10:09)
