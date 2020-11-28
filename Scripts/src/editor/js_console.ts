@@ -1,5 +1,6 @@
 import { EditorGUILayout, EditorWindow } from "UnityEditor";
-import { Event, EventType, GUI, GUIContent, GUILayout, KeyCode } from "UnityEngine";
+import { Event, EventType, GUI, GUIContent, GUILayout, KeyCode, Rect } from "UnityEngine";
+import { AutoCompletionField } from "./auto_completion_field";
 
 export function fillAutoCompletion(scope: any, pattern: string): Array<string> {
     let head = '';
@@ -33,10 +34,26 @@ export function fillAutoCompletion(scope: any, pattern: string): Array<string> {
 }
 
 export class JSConsole extends EditorWindow {
-    private _code: string = "";
-    private _suggestions: Array<string> = [];
-    private _historyIndex = -1;
+    private _searchField = new AutoCompletionField();
     private _history: Array<string> = [];
+
+    Awake() {
+        this._searchField.on("change", this, this.onSearchChange);
+        this._searchField.on("confirm", this, this.onSearchConfirm);
+    }
+
+    private onSearchChange(s: string) {
+        this._searchField.clearResults();
+        fillAutoCompletion(globalThis, s).forEach(element => {
+            if (element != s) {
+                this._searchField.addResult(element);
+            }
+        });
+    }
+
+    private onSearchConfirm(s: string) {
+        console.log("confirm:", s);
+    }
 
     OnEnable() {
         this.titleContent = new GUIContent("Javascript Console");
@@ -44,15 +61,13 @@ export class JSConsole extends EditorWindow {
 
     OnGUI() {
         let evt = Event.current;
-        let code = EditorGUILayout.TextField("Eval", this._code);
 
-        for (let s of this._suggestions) {
-            EditorGUILayout.LabelField(s);
-        }
+        this._searchField.onGUI();
 
         if (evt.type == EventType.KeyUp) {
             switch (evt.keyCode) {
                 case KeyCode.Return: {
+                    let code = this._searchField.searchString;
                     if (code != null && code.length > 0) {
                         try {
                             let rval = eval(code);
@@ -60,37 +75,13 @@ export class JSConsole extends EditorWindow {
                         } catch (e) {
                             console.error(e);
                         }
-                        this._history.push(code);
-                        this._code = code = "";
-                        this.Repaint();
+                        // this._history.push(code);
                     }
                     break;
-                }
-                case KeyCode.UpArrow: {
-                    if (evt.alt && this._history.length > 0) {
-                        if (this._historyIndex == -1) {
-                            this._historyIndex = this._history.length - 1;
-                        } else {
-                            if (this._historyIndex > 0) {
-                                this._historyIndex--;
-                            } else {
-                                this._historyIndex = this._history.length - 1;
-                            }
-                        }
-                        code = this._history[this._historyIndex];
-                        GUI.FocusControl("DUMMY");
-                        this.Repaint();
-                    }
                 }
             }
         }
 
-        if (this._code != code) {
-            this._code = code;
-            this._suggestions = fillAutoCompletion(globalThis, code);
-        }
-
-        GUI.SetNextControlName("DUMMY")
-        GUILayout.Label(`${this._historyIndex}/${this._history.length}`);
+        // GUI.Box(new Rect(0, 50, 300, 100), this._history.join("\n"));
     }
 }

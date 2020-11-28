@@ -44,13 +44,13 @@ export class MyEditorWindow extends EditorWindow {
         let resizerRect = GUILayoutUtility.GetRect(this._resizerContent, this._styleWindowResize, GUILayout.ExpandWidth(false));
 
         resizerRect = new Rect(this._thisWindowRect.width - resizerRect.width, this._thisWindowRect.height - resizerRect.height, resizerRect.width, resizerRect.height);
-        if (Event.current.type == EventType.mouseDown && resizerRect.Contains(mousePosition)) {
+        if (Event.current.type == EventType.MouseDown && resizerRect.Contains(mousePosition)) {
             this._isResizing = true;
             this._resizeStart = new Rect(mousePosition.x, mousePosition.y, this._thisWindowRect.width, this._thisWindowRect.height);
             //Event.current.Use();  // the GUI.Button below will eat the event, and this way it will show its active state
-        } else if (Event.current.type == EventType.mouseUp && this._isResizing) {
+        } else if (Event.current.type == EventType.MouseUp && this._isResizing) {
             this._isResizing = false;
-        } else if (Event.current.type != EventType.mouseDrag && Event.current.isMouse) {
+        } else if (Event.current.type != EventType.MouseDrag && Event.current.isMouse) {
             // if the mouse is over some other window we won't get an event, this just kind of circumvents that by checking the button state directly
             this._isResizing = false;
         } else if (this._isResizing) {

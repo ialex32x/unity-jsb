@@ -7,6 +7,7 @@ BUGFIX:
     ✔ 修正扩展函数的 d.ts 声明生成 @done(20-11-18 19:07)
 
 必要:
+    ☐ @high 模块发生重载时，关联模块也需要重载
     ☐ 带 ref/out 参数支持的委托绑定
     ☐ 主模块与一般模块共用一致的加载流程
     ☐ ES模块与require模块逻辑一致
@@ -22,10 +23,11 @@ BUGFIX:
 编辑器支持:
     ☐ JS Behaviour Inspector 支持使用脚本定义编辑器
     ☐ 完善 JSEditorWindow 功能
-    ☐ JSConsole 提供 auto complete 支持
+    ✔ @high JSConsole 提供 auto complete 支持 @done(20-11-28 22:33)
 
 Codegen:
     ✔ 提供导出类型是否 disposable 的选项 @done(20-11-20 10:09)
+    ✔ EventType 导入大写版本 @done(20-11-28 22:15)
     ☐ 提供选项自动添加关联类型的导出 (如果是泛型具体类, 且对应基类已经导出, 那么自动导出此泛型具体类)
     ☐ 子类中存在不同签名的同名方法时 (非虚)  时, 输出 ts-ignore
     ☐ 在单一文件中生成 cs 代码

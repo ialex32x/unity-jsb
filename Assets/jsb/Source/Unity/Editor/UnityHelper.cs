@@ -100,12 +100,6 @@ namespace QuickJS.Unity
             EditorWindow.GetWindow<PrefsEditor>().Show();
         }
 
-        [MenuItem("JS Bridge/Console ...", false, 5002)]
-        public static void OpenJSConsole()
-        {
-            EditorWindow.GetWindow<EditorRuntimeConsole>().Show();
-        }
-
         [MenuItem("JS Bridge/Javascript Console", false, 5003)]
         public static void ShowMyEditorWindow()
         {
