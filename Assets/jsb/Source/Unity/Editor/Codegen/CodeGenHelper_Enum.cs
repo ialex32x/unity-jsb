@@ -28,9 +28,12 @@ namespace QuickJS.Unity
                     typeBindingInfo.tsTypeNaming.jsName,
                     this.cg.bindingManager.GetCSTypeFullName(typeBindingInfo.type));
                 var values = new Dictionary<string, object>();
-                foreach (var ev in Enum.GetValues(typeBindingInfo.type))
+                foreach (var name in Enum.GetNames(typeBindingInfo.type))
                 {
-                    values[Enum.GetName(typeBindingInfo.type, ev)] = ev;
+                    if (!typeBindingInfo.transform.Filter(name))
+                    {
+                        values[name] = Enum.Parse(typeBindingInfo.type, name);
+                    }
                 }
                 foreach (var kv in values)
                 {

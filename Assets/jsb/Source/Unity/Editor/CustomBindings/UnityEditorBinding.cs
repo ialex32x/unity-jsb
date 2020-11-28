@@ -7,6 +7,7 @@ namespace jsb.Editor
     using QuickJS.Unity;
     using UnityEngine;
     using UnityEditor;
+    using UnityEditor.IMGUI.Controls;
 
     public class UnityEditorBinding : AbstractBindingProcess
     {
@@ -30,6 +31,7 @@ namespace jsb.Editor
             bindingManager.AddExportedType(typeof(GUIContent));
             bindingManager.AddExportedType(typeof(GUISkin));
             bindingManager.AddExportedType(typeof(GUIStyle));
+            bindingManager.AddExportedType(typeof(TextAnchor));
             bindingManager.AddExportedType(typeof(ScaleMode));
             bindingManager.AddExportedType(typeof(FocusType));
             bindingManager.AddExportedType(typeof(AudioClip));
@@ -39,11 +41,13 @@ namespace jsb.Editor
             bindingManager.AddExportedType(typeof(Gradient));
             bindingManager.AddExportedType(typeof(AnimationCurve));
             bindingManager.AddExportedType(typeof(Event));
-            bindingManager.AddExportedType(typeof(EventType));
+            bindingManager.AddExportedType(typeof(EventType)).OnFilter<string>(i => char.IsLower(i[0]));
             bindingManager.AddExportedType(typeof(Coroutine));
             bindingManager.AddExportedType(typeof(System.Collections.IEnumerator));
             bindingManager.AddExportedType(typeof(System.Collections.Generic.IEnumerable<string>));
 
+            bindingManager.AddExportedType(typeof(SearchField)).EditorRuntime();
+            bindingManager.AddExportedType(typeof(EditorStyles)).EditorRuntime();
             bindingManager.AddExportedType(typeof(GenericMenu)).EditorRuntime();
             bindingManager.AddExportedType(typeof(PrefabAssetType)).EditorRuntime();
             bindingManager.AddExportedType(typeof(PrefabInstanceStatus)).EditorRuntime();
