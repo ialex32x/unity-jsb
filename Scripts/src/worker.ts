@@ -1,20 +1,20 @@
 import { Sleep } from "jsb";
 
-onmessage = function (data_t: any) {
-    let data = JSON.parse(data_t);
+onmessage = function (e: any) {
+    let data = e.data;
     switch (data.method) {
         case "add": {
-            postMessage(JSON.stringify({
+            postMessage({
                 "id": data.id,
                 "result": data.args[0] + data.args[1],
-            }));
+            });
             break;
         }
         default: {
-            postMessage(JSON.stringify({
+            postMessage({
                 "id": data.id, 
                 "result": "unknown method",
-            }));
+            });
             break;
         }
     }

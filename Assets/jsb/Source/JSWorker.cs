@@ -155,21 +155,32 @@ namespace QuickJS
                                     data = JSApi.JS_ReadObject(ctx, buf, byteBuffer.readableBytes, JSApi.JS_READ_OBJ_REFERENCE);
                                 }
 
-                                if (data.IsException())
+                                do
                                 {
+                                    if (!data.IsException())
+                                    {
+                                        var evt = JSApi.JS_NewObject(ctx);
+                                        if (!evt.IsException())
+                                        {
+                                            JSApi.JS_SetProperty(ctx, evt, context.GetAtom("data"), data);
+                                            var argv = stackalloc JSValue[1] { evt };
+                                            var rval = JSApi.JS_Call(ctx, onmessage, globalObject, 1, argv);
+                                            JSApi.JS_FreeValue(ctx, rval);
+                                            JSApi.JS_FreeValue(ctx, evt);
+                                            break;
+                                        }
+                                        else
+                                        {
+                                            JSApi.JS_FreeValue(ctx, data);
+                                        }
+                                    }
+
                                     var exceptionString = ctx.GetExceptionString();
                                     if (logger != null)
                                     {
                                         logger.Write(LogLevel.Error, exceptionString);
                                     }
-                                }
-                                else
-                                {
-                                    var argv = stackalloc JSValue[1] { data };
-                                    var rval = JSApi.JS_Call(ctx, onmessage, globalObject, 1, argv);
-                                    JSApi.JS_FreeValue(ctx, rval);
-                                    JSApi.JS_FreeValue(ctx, data);
-                                }
+                                } while (false);
                             }
                         }
                         byteBuffer.Release();
@@ -194,8 +205,10 @@ namespace QuickJS
             _runtime.Destroy();
         }
 
-        // 在主线程回调
-        private static unsafe void _PostMessage(ScriptRuntime runtime, JSAction action)
+        /// <summary>
+        /// master 处理 worker 发送的消息 (在master线程回调)
+        /// </summary>
+        private static unsafe void _MasterOnMessage(ScriptRuntime runtime, JSAction action)
         {
             var args = (JSWorkerArgs)action.args;
             var buffer = args.buffer;
@@ -228,22 +241,33 @@ namespace QuickJS
                                 data = JSApi.JS_ReadObject(ctx, buf, buffer.readableBytes, JSApi.JS_READ_OBJ_REFERENCE);
                             }
 
-                            if (data.IsException())
+                            do
                             {
+                                if (!data.IsException())
+                                {
+                                    var evt = JSApi.JS_NewObject(ctx);
+                                    if (!evt.IsException())
+                                    {
+                                        JSApi.JS_SetProperty(ctx, evt, context.GetAtom("data"), data);
+                                        var argv = stackalloc JSValue[1] { evt };
+                                        var rval = JSApi.JS_Call(ctx, onmessage, worker._self, 1, argv);
+                                        JSApi.JS_FreeValue(ctx, rval);
+                                        JSApi.JS_FreeValue(ctx, evt);
+                                        break;
+                                    }
+                                    else
+                                    {
+                                        JSApi.JS_FreeValue(ctx, data);
+                                    }
+                                }
+
                                 var exceptionString = ctx.GetExceptionString();
                                 var logger = runtime.GetLogger();
                                 if (logger != null)
                                 {
                                     logger.Write(LogLevel.Error, exceptionString);
                                 }
-                            }
-                            else
-                            {
-                                var argv = stackalloc JSValue[1] { data };
-                                var rval = JSApi.JS_Call(ctx, onmessage, worker._self, 1, argv);
-                                JSApi.JS_FreeValue(ctx, rval);
-                                JSApi.JS_FreeValue(ctx, data);
-                            }
+                            } while (false);
                         }
                         else
                         {
@@ -292,7 +316,7 @@ namespace QuickJS
                         worker = this,
                         buffer = buffer,
                     },
-                    callback = _PostMessage,
+                    callback = _MasterOnMessage,
                 });
 
                 if (!succ)
