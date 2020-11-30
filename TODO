@@ -7,6 +7,7 @@ BUGFIX:
 
 必要:
     ☐ @high 模块发生重载时，关联模块也需要重载
+    ☐ @high 修正 Javascript Engine Stats 信息的跨线程访问 (改为异步请求) 
     ☐ 带 ref/out 参数支持的委托绑定
     ☐ 主模块与一般模块共用一致的加载流程
     ☐ ES模块与require模块逻辑一致
@@ -16,7 +17,6 @@ BUGFIX:
     ☐ 反射模式支持运算符重载
     ☐ 多维数组的支持
     ☐ 考虑 Worker 传递消息时 C# 对象的传输 (使用加锁共享池?)
-    ☐ 修正 Javascript Engine Stats 信息的跨线程访问 (改为异步请求)
 
 编辑器支持:
     ☐ JS Behaviour Inspector 支持使用脚本定义编辑器
