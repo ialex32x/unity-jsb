@@ -152,7 +152,7 @@ namespace QuickJS
                                 JSValue data;
                                 fixed (byte* buf = byteBuffer.data)
                                 {
-                                    data = JSApi.JS_ReadObject(ctx, buf, byteBuffer.readableBytes, 0);
+                                    data = JSApi.JS_ReadObject(ctx, buf, byteBuffer.readableBytes, JSApi.JS_READ_OBJ_REFERENCE);
                                 }
 
                                 if (data.IsException())
@@ -168,6 +168,7 @@ namespace QuickJS
                                     var argv = stackalloc JSValue[1] { data };
                                     var rval = JSApi.JS_Call(ctx, onmessage, globalObject, 1, argv);
                                     JSApi.JS_FreeValue(ctx, rval);
+                                    JSApi.JS_FreeValue(ctx, data);
                                 }
                             }
                         }
@@ -224,7 +225,7 @@ namespace QuickJS
                             JSValue data;
                             fixed (byte* buf = buffer.data)
                             {
-                                data = JSApi.JS_ReadObject(ctx, buf, buffer.readableBytes, 0);
+                                data = JSApi.JS_ReadObject(ctx, buf, buffer.readableBytes, JSApi.JS_READ_OBJ_REFERENCE);
                             }
 
                             if (data.IsException())
@@ -241,6 +242,7 @@ namespace QuickJS
                                 var argv = stackalloc JSValue[1] { data };
                                 var rval = JSApi.JS_Call(ctx, onmessage, worker._self, 1, argv);
                                 JSApi.JS_FreeValue(ctx, rval);
+                                JSApi.JS_FreeValue(ctx, data);
                             }
                         }
                         else
@@ -273,7 +275,7 @@ namespace QuickJS
                 }
 
                 size_t psize;
-                var dataStore = JSApi.JS_WriteObject(ctx, out psize, argv[0], 0);
+                var dataStore = JSApi.JS_WriteObject(ctx, out psize, argv[0], JSApi.JS_WRITE_OBJ_REFERENCE);
                 if (dataStore == IntPtr.Zero)
                 {
                     return JSApi.JS_ThrowInternalError(ctx, "fail to write object");
