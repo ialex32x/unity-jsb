@@ -4,7 +4,6 @@ let messageId = 0;
 let messageQueue: { [k: number]: Function } = {};
 
 //TODO: 目前无法传递 C# 对象 (对象引用ID不共享)
-//TODO: 传递 object 崩溃
 
 worker.onmessage = function (e: any) {
     let data = e.data;
