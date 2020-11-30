@@ -18,7 +18,9 @@ BUGFIX:
     ☐ linux build (for dotnet core)
     ☐ 额外的运行时通讯机制 (jsb.runtimes, jsb.postMessage)
     ☐ 反射模式支持运算符重载
+    ☐ 多维数组的支持
     ☐ 考虑 Worker 传递消息时 C# 对象的传输 (使用加锁共享池?)
+    ☐ 修正 Javascript Engine Stats 信息的跨线程访问 (改为异步请求)
 
 编辑器支持:
     ☐ JS Behaviour Inspector 支持使用脚本定义编辑器
