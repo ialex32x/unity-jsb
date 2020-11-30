@@ -101,37 +101,46 @@ namespace QuickJS.Unity
             {
                 return;
             }
-            
+
             var snapshot = GetSnapshot(runtime.id);
             snapshot.alive = true;
-            unsafe
+            runtime.EnqueueAction(OnSnapshotRequest, snapshot);
+        }
+
+        private static void OnSnapshotRequest(ScriptRuntime rt, Utils.JSAction act)
+        {
+            var snapshot = (Snapshot)act.args;
+            lock (snapshot)
             {
-                fixed (Native.JSMemoryUsage* ptr = &snapshot.memoryUsage)
+                unsafe
                 {
-                    Native.JSApi.JS_ComputeMemoryUsage(runtime, ptr);
+                    fixed (Native.JSMemoryUsage* ptr = &snapshot.memoryUsage)
+                    {
+                        Native.JSApi.JS_ComputeMemoryUsage(rt, ptr);
+                    }
                 }
+
+                var typeDB = rt.GetTypeDB();
+                snapshot.exportedTypes = typeDB.Count;
+
+                var objectCache = rt.GetObjectCache();
+                snapshot.managedObjectCount = objectCache.GetManagedObjectCount();
+                snapshot.jSObjectCount = objectCache.GetJSObjectCount();
+                snapshot.delegateCount = objectCache.GetDelegateCount();
+                snapshot.scriptValueCount = objectCache.GetScriptValueCount();
+                snapshot.scriptPromiseCount = objectCache.GetScriptPromiseCount();
+
+                var timeManager = rt.GetTimerManager();
+                snapshot.activeTimers.Clear();
+                snapshot.timeNow = timeManager.now;
+                timeManager.ForEach((id, delay, deadline, once) => snapshot.activeTimers.Add(new Snapshot.TimerInfo()
+                {
+                    id = id,
+                    delay = delay,
+                    deadline = deadline,
+                    once = once,
+                }));
             }
-
-            var typeDB = runtime.GetTypeDB();
-            snapshot.exportedTypes = typeDB.Count;
-
-            var objectCache = runtime.GetObjectCache();
-            snapshot.managedObjectCount = objectCache.GetManagedObjectCount();
-            snapshot.jSObjectCount = objectCache.GetJSObjectCount();
-            snapshot.delegateCount = objectCache.GetDelegateCount();
-            snapshot.scriptValueCount = objectCache.GetScriptValueCount();
-            snapshot.scriptPromiseCount = objectCache.GetScriptPromiseCount();
-
-            var timeManager = runtime.GetTimerManager();
-            snapshot.activeTimers.Clear();
-            snapshot.timeNow = timeManager.now;
-            timeManager.ForEach((id, delay, deadline, once) => snapshot.activeTimers.Add(new Snapshot.TimerInfo()
-            {
-                id = id,
-                delay = delay,
-                deadline = deadline,
-                once = once,
-            }));
         }
 
         private void InspectSnapshow(Snapshot snapshot)
@@ -262,7 +271,10 @@ namespace QuickJS.Unity
                 var snapshot = _snapshots[i];
                 if (snapshot.alive)
                 {
-                    InspectSnapshow(snapshot);
+                    lock (snapshot)
+                    {
+                        InspectSnapshow(snapshot);
+                    }
                 }
             }
             EditorGUILayout.EndHorizontal();

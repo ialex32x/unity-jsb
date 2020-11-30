@@ -7,7 +7,7 @@ BUGFIX:
 
 必要:
     ☐ @high 模块发生重载时，关联模块也需要重载
-    ☐ @high 修正 Javascript Engine Stats 信息的跨线程访问 (改为异步请求) 
+    ✔ @high 修正 Javascript Engine Stats 信息的跨线程访问 (改为异步请求) @done(20-11-30 18:40)
     ☐ 带 ref/out 参数支持的委托绑定
     ☐ 主模块与一般模块共用一致的加载流程
     ☐ ES模块与require模块逻辑一致
