@@ -17,6 +17,11 @@ namespace QuickJS.Native
     using int64_t = Int64;
     using uint64_t = UInt64;
 
+#if UNITY_EDITOR_WIN || UNITY_STANDALONE_WIN
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+#endif
+    public delegate int JSInterruptHandler(JSRuntime rt, IntPtr opaque);
+
     /* is_handled = TRUE means that the rejection is handled */
 #if UNITY_EDITOR_WIN || UNITY_STANDALONE_WIN
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
@@ -721,7 +726,7 @@ namespace QuickJS.Native
 
         [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern int JS_ToBigInt64(JSContext ctx, out int64_t pres, JSValueConst val);
-        
+
         [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern int JS_ToIndex(JSContext ctx, out uint64_t plen, JSValueConst val);
         [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
@@ -1034,6 +1039,15 @@ namespace QuickJS.Native
         [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern unsafe void JS_ComputeMemoryUsage(JSRuntime rt, JSMemoryUsage* s);
 
+        [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
+        private static extern unsafe void JS_SetInterruptHandler(JSRuntime rt, IntPtr cb, IntPtr opaque);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void JS_SetInterruptHandler(JSRuntime rt, JSInterruptHandler cb, IntPtr opaque)
+        {
+            var fn = Marshal.GetFunctionPointerForDelegate(cb);
+            JS_SetInterruptHandler(rt, fn, opaque);
+        }
         #endregion 
     }
 }

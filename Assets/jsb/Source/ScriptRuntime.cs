@@ -211,6 +211,14 @@ namespace QuickJS
             // _rwlock = new ReaderWriterLockSlim();
             _rt = JSApi.JS_NewRuntime();
             JSApi.JS_SetHostPromiseRejectionTracker(_rt, JSApi.PromiseRejectionTracker, IntPtr.Zero);
+#if UNITY_EDITOR
+            JSApi.JS_SetInterruptHandler(_rt, _InterruptHandler, IntPtr.Zero);
+#else
+            if (isWorker)
+            {
+                JSApi.JS_SetInterruptHandler(_rt, _InterruptHandler, IntPtr.Zero);
+            }
+#endif
             JSApi.JS_SetRuntimeOpaque(_rt, (IntPtr)_runtimeId);
             JSApi.JS_SetModuleLoaderFunc(_rt, module_normalize, module_loader, IntPtr.Zero);
             CreateContext();
@@ -237,7 +245,7 @@ namespace QuickJS
             {
                 bindAll.Invoke(null, new object[] { this });
             }
-            
+
             var register = new TypeRegister(_mainContext);
             listener.OnBind(this, register);
             if (!_isWorker)
@@ -246,11 +254,18 @@ namespace QuickJS
             }
             TimerManager.Bind(register);
             register.Finish();
-        
+
             AddStaticModule("jsb", ScriptContext.Bind);
             FindModuleResolver<StaticModuleResolver>().Warmup(_mainContext);
 
             listener.OnComplete(this);
+        }
+
+        [MonoPInvokeCallback(typeof(JSInterruptHandler))]
+        private static unsafe int _InterruptHandler(JSRuntime rt, IntPtr opaque)
+        {
+            var runtime = ScriptEngine.GetRuntime(rt);
+            return runtime != null && runtime._isRunning ? 0 : 1;
         }
 
         public void AddStaticModule(string module_id, ModuleExportsBind bind)
