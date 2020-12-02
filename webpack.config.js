@@ -14,6 +14,10 @@ module.exports = {
         filename: '[name].js',
         path: path.resolve(__dirname, './Scripts/dist')
     },
+    externals: {
+        'jsb': 'commonjs2 jsb', 
+        'Example': 'commonjs2 Example'
+    },
     module: {
         rules: [{
             test: /\.tsx?$/,
