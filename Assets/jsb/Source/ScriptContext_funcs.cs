@@ -215,7 +215,7 @@ namespace QuickJS
             var resolvedPath = runtime.ResolveFilePath("", path);
             if (resolvedPath == null)
             {
-                return JSApi.JS_ThrowInternalError(ctx, "file not found");
+                return JSApi.JS_ThrowInternalError(ctx, "file not found:" + path);
             }
             var source = fileSystem.ReadAllBytes(resolvedPath);
             return ScriptRuntime.EvalSource(ctx, source, resolvedPath, true);

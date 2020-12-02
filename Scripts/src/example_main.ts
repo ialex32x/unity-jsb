@@ -54,6 +54,12 @@ print("json:", require("../config/data.json").name);
 
 jsb.DoFile("dofile_test");
 
+try {
+    jsb.DoFile("not_exists.file");
+} catch (e) {
+    console.warn(e);
+}
+
 global["testGlobalVar"] = "test";
 
 Object.keys(require.cache).forEach(k => console.log("require.cache entry:", k));
