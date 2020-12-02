@@ -10,11 +10,12 @@ console.assert(false, "assert!!!");
 print(Example_1.DelegateTest);
 print(Example_1.DelegateTest.InnerTest.hello);
 try {
+    // 强行传入一个错误类型的参数
     // @ts-ignore
     Example_1.DelegateTest.GetArray("error");
 }
 catch (err) {
-    console.warn(err);
+    console.warn(err + '\n' + err.stack);
 }
 print("fib:", fib_1.fib(12));
 setTimeout(() => {

@@ -92,7 +92,7 @@ namespace QuickJS.Native
 
     public partial class JSApi
     {
-        const int CS_JSB_VERSION = 0x2;
+        const int CS_JSB_VERSION = 0xa;
         public static readonly int SO_JSB_VERSION;
 
 #if (UNITY_IPHONE || UNITY_WEBGL) && !UNITY_EDITOR
@@ -110,6 +110,7 @@ namespace QuickJS.Native
         public const int JS_TAG_MODULE = -3; /* used internally */
         public const int JS_TAG_FUNCTION_BYTECODE = -2; /* used internally */
         public const int JS_TAG_OBJECT = -1;
+
         public const int JS_TAG_INT = 0;
         public const int JS_TAG_BOOL = 1;
         public const int JS_TAG_NULL = 2;
@@ -310,12 +311,26 @@ namespace QuickJS.Native
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static JSValue ThrowException(JSContext ctx, Exception exception)
+        public static unsafe JSValue ThrowException(JSContext ctx, Exception exception)
         {
             // var message = string.Format("{0}\n{1}", exception.ToString(), exception.StackTrace);
             var message = exception.ToString();
-            return JS_ThrowInternalError(ctx, message);
+            if (string.IsNullOrEmpty(message))
+            {
+               return JS_ThrowInternalError(ctx, ""); 
+            }
+
+            // return JS_ThrowInternalError(ctx, message);
+            var bytes = Utils.TextUtils.GetBytes(message);
+            fixed(byte* buf = bytes)
+            {
+                return JSB_ThrowError(ctx, buf, bytes.Length);
+            }
         }
+
+        // lib version >= 0xa
+        [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern unsafe JSValue JSB_ThrowError(JSContext ctx, byte* buf, size_t buf_len);
 
         [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern unsafe JSValue JSB_ThrowRangeError(JSContext ctx, byte* msg);
@@ -358,6 +373,9 @@ namespace QuickJS.Native
 
         [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern unsafe JSValue JS_NewString(JSContext ctx, byte* str);
+
+        [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern unsafe JSValue JS_NewStringLen(JSContext ctx, byte* buf, size_t buf_len);
 
         public static unsafe JSValue JS_NewString(JSContext ctx, string str)
         {

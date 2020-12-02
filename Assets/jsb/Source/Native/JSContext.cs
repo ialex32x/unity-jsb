@@ -52,7 +52,7 @@ namespace QuickJS.Native
                     }
                     else
                     {
-                        logger.Write(logLevel, "[{0}] {1} {2}\n{3}",
+                        logger.Write(logLevel, "[{0}] {1} {2}\nJavascript stack:\n{3}",
                             fileName, title, message, stack);
                     }
                 }
@@ -65,7 +65,7 @@ namespace QuickJS.Native
                     }
                     else
                     {
-                        logger.Write(logLevel, "[{0}:{1}] {2} {3}\n{4}",
+                        logger.Write(logLevel, "[{0}:{1}] {2} {3}\nJavascript stack:\n{4}",
                             fileName, lineNumber, title, message, stack);
                     }
                 }

@@ -34,5 +34,10 @@ namespace Example
             b = 1f;
             return true;
         }
+
+        public static void MakeTrouble()
+        {
+            throw new InvalidOperationException();
+        }
     }
 }

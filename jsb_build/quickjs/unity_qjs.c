@@ -30,7 +30,7 @@ enum
 
 enum
 {
-    JS_ATOM_NULL,
+    __JS_ATOM_NULL = JS_ATOM_NULL,
 #define DEF(name, str) JS_ATOM_##name,
 #include "quickjs-atom.h"
 #undef DEF
@@ -664,5 +664,5 @@ int JSB_Init()
         JS_NewClassID(&js_bridge_class_id);
         JS_NewClassID(&js_class_id_begin);
     }
-    return 0x2; // version tag for unity_qjs.c
+    return 0xa; // version tag for unity_qjs.c
 }
