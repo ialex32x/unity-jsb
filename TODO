@@ -1,13 +1,10 @@
     
 BUGFIX:
     ☐ C# 运算符本身存在重载时，需要生成不同的绑定名
-    ✔ JSWorker postMessage/onmessage 传递 JS Object 崩溃 @done(20-11-30 18:08)
-    ✔ JSWorker 消息传值参数改为 e.data @done(20-11-30 18:21)
     ☐ 以 toString 形式导出的 ToString 中触发异常将导致调用栈溢出崩溃
 
 必要:
     ☐ @high 模块发生重载时，关联模块也需要重载
-    ✔ @high 修正 Javascript Engine Stats 信息的跨线程访问 (改为异步请求) @done(20-11-30 18:40)
     ☐ 带 ref/out 参数支持的委托绑定
     ☐ 主模块与一般模块共用一致的加载流程
     ☐ ES模块与require模块逻辑一致
@@ -17,8 +14,6 @@ BUGFIX:
     ☐ 反射模式支持运算符重载
     ☐ 多维数组的支持
     ☐ 考虑 Worker 传递消息时 C# 对象的传输 (使用加锁共享池?)
-    ✔ Worker terminate 终止 (需要合理处理释放) @done(20-12-01 12:30)
-    ✔ 处理 JSRuntime 死循环 @done(20-12-01 12:30)
 
 编辑器支持:
     ☐ JS Behaviour Inspector 支持使用脚本定义编辑器
@@ -45,6 +40,14 @@ Codegen:
     ☐ 以更通用且自动化的方式生成可继承的类型
     ☐ 不生成绑定代码的情况下使用反射模式执行 (只生成 d.ts, 以及一个 type list)
     ☐ 通过 BindingManager 辅助得到 export types
+
+2020-12-02 v1.2.1:
+    ✔ github workflows @done(20-12-02 20:14)
+    ✔ Worker terminate 终止 (需要合理处理释放) @done(20-12-01 12:30)
+    ✔ 处理 JSRuntime 死循环 @done(20-12-01 12:30)
+    ✔ @high 修正 Javascript Engine Stats 信息的跨线程访问 (改为异步请求) @done(20-11-30 18:40)
+    ✔ JSWorker postMessage/onmessage 传递 JS Object 崩溃 @done(20-11-30 18:08)
+    ✔ JSWorker 消息传值参数改为 e.data @done(20-11-30 18:21)
 
 2020-11-28 v1.2.0:
     ✔ 提供导出类型是否 disposable 的选项 @done(20-11-20 10:09)
