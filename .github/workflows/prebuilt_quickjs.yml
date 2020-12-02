@@ -20,6 +20,8 @@ jobs:
           ndk-version: r15c
       - name: Build
         run: |
+          export ANDROID_NDK=${{ steps.setup-ndk.outputs.ndk-path }}
+          echo $ANDROID_NDK
           cd jsb_build/quickjs
           chmod 744 make_jsb_android.sh
           ./make_jsb_android.sh
@@ -37,6 +39,7 @@ jobs:
       - uses: lukka/get-cmake@v3.19.0
       - name: Build
         run: |
+          sudo apt install mingw-w64
           cd jsb_build/quickjs
           chmod 744 make_jsb_win.sh
           ./make_jsb_win.sh
