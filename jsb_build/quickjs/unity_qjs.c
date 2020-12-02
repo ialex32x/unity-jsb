@@ -664,5 +664,7 @@ int JSB_Init()
         JS_NewClassID(&js_bridge_class_id);
         JS_NewClassID(&js_class_id_begin);
     }
+
+    // 2020-12-02
     return 0xa; // version tag for unity_qjs.c
 }
