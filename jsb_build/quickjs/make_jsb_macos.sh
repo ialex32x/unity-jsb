@@ -3,7 +3,7 @@
 rm -rf ../out/quickjs/macos_release
 mkdir -p ../out/quickjs/macos_release
 cd ../out/quickjs/macos_release
-cmake -DQJS_VERSION=2020-07-05 -DCONFIG_LTO=y -GXcode ../../../quickjs
+cmake -DQJS_VERSION=2020-11-08 -DCONFIG_LTO=y -GXcode ../../../quickjs
 cd ..
 echo building...
 cmake --build macos_release --config Release

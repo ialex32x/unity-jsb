@@ -3,7 +3,7 @@
 rm -rf ../out/quickjs/windows_x64
 mkdir -p ../out/quickjs/windows_x64
 cd ../out/quickjs/windows_x64
-cmake -DQJS_VERSION=2020-07-05 -DCONFIG_LTO=y -DCONFIG_WIN32=y -DCONFIG_WIN32_64=y -G"Unix Makefiles" ../../../quickjs
+cmake -DQJS_VERSION=2020-11-08 -DCONFIG_LTO=y -DCONFIG_WIN32=y -DCONFIG_WIN32_64=y -G"Unix Makefiles" ../../../quickjs
 cd ..
 echo building...
 cmake --build windows_x64 --config Release
@@ -15,7 +15,7 @@ cd ..
 rm -rf ../out/quickjs/windows_x86
 mkdir -p ../out/quickjs/windows_x86
 cd ../out/quickjs/windows_x86
-cmake -DQJS_VERSION=2020-07-05 -DCONFIG_LTO=y -DCONFIG_WIN32=y -G"Unix Makefiles" ../../../quickjs
+cmake -DQJS_VERSION=2020-11-08 -DCONFIG_LTO=y -DCONFIG_WIN32=y -G"Unix Makefiles" ../../../quickjs
 cd ..
 echo building...
 cmake --build windows_x86 --config Release

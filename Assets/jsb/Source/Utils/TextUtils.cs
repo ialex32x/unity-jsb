@@ -75,6 +75,11 @@ namespace QuickJS.Utils
             return outstr.ToString();
         }
 
+        public static byte[] GetBytes(string str)
+        {
+            return Encoding.UTF8.GetBytes(str);
+        }
+
         public static byte[] GetNullTerminatedBytes(string str)
         {
             if (str == null)

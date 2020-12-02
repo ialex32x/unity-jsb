@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.16)
+cmake_minimum_required(VERSION 3.10)
 
 # before project definition
 
@@ -35,7 +35,7 @@ project(unity-jsb)
 
 set(TOP_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 set(OUT_DIR ${TOP_DIR}/build)
-set(QJS_DIR ${TOP_DIR}/quickjs-${QJS_VERSION})
+set(QJS_DIR ${TOP_DIR}/quickjs-latest)
 
 if (CONFIG_WIN32)
     if (CONFIG_WIN32_64)

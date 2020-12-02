@@ -1,6 +1,6 @@
 print("isMain?", module == require.main);
 
-import { DelegateTest } from "Example";
+import { DelegateTest, ValueTest } from "Example";
 import * as jsb from "jsb";
 // import { fib } from "./fib_module.js";
 import { fib } from "./fib";
@@ -12,10 +12,11 @@ print(DelegateTest);
 print(DelegateTest.InnerTest.hello);
 
 try {
+    // 强行传入一个错误类型的参数
     // @ts-ignore
     DelegateTest.GetArray("error");
 } catch (err) {
-    console.warn(err);
+    console.warn(err + '\n' + err.stack);
 }
 
 print("fib:", fib(12));
