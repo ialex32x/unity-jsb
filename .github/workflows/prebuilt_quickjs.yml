@@ -15,12 +15,13 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - uses: lukka/get-cmake@v3.19.0
-      - uses: nttld/setup-ndk@v1
-        with:
-          ndk-version: r15c
       - name: Build
         run: |
-          export ANDROID_NDK=${{ steps.setup-ndk.outputs.ndk-path }}
+          cd ~
+          wget -O android-ndk -q https://dl.google.com/android/repository/android-ndk-r15c-linux-x86_64.zip
+          sudo apt install unzip -y
+          unzip -q android-ndk
+          export ANDROID_NDK=~/android-ndk-r15c
           echo $ANDROID_NDK
           cd jsb_build/quickjs
           chmod 744 make_jsb_android.sh
@@ -33,7 +34,6 @@ jobs:
 
   windows:
     runs-on: ubuntu-latest
-
     steps:
       - uses: actions/checkout@v2
       - uses: lukka/get-cmake@v3.19.0
@@ -51,7 +51,6 @@ jobs:
 
   ios:
     runs-on: macos-10.15
-
     steps:
       - uses: actions/checkout@v2
       - uses: lukka/get-cmake@v3.19.0
@@ -66,7 +65,6 @@ jobs:
           name: prebuilt_quickjs_libs
   osx:
     runs-on: macos-10.15
-
     steps:
       - uses: actions/checkout@v2
       - uses: lukka/get-cmake@v3.19.0
