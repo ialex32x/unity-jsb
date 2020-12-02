@@ -9,6 +9,7 @@ echo building...
 cmake --build windows_x64 --config Release
 mkdir -p ../../prebuilt/Plugins/x64/
 pwd
+ls -l ./windows_x64/
 cp ./windows_x64/libquickjs.dll ../../prebuilt/Plugins/x64/quickjs.dll
 cd ..
 
@@ -20,5 +21,7 @@ cd ..
 echo building...
 cmake --build windows_x86 --config Release
 mkdir -p ../../prebuilt/Plugins/x86/
+pwd
+ls -l ./windows_x86/
 cp ./windows_x86/libquickjs.dll ../../prebuilt/Plugins/x86/quickjs.dll
 cd ..

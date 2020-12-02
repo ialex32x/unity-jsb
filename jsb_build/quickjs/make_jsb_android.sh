@@ -19,6 +19,7 @@ cmake -DQJS_VERSION=2020-11-08 -DCONFIG_LTO=y -DJSB_DEF_LOG2=y -DCMAKE_BUILD_TYP
 cd $BUILD_PATH
 cmake --build Android_v7a_release --config Release
 mkdir -p ../../prebuilt/Plugins/Android/libs/armeabi-v7a/
+ls -l ./Android_v7a_release/
 cp ./Android_v7a_release/libquickjs.so ../../prebuilt/Plugins/Android/libs/armeabi-v7a/
 
 rm -rf $BUILD_PATH/Android_v8a_release
@@ -29,6 +30,7 @@ cmake -DQJS_VERSION=2020-11-08 -DCONFIG_LTO=y -DCMAKE_BUILD_TYPE=RELEASE -DANDRO
 cd $BUILD_PATH
 cmake --build Android_v8a_release --config Release
 mkdir -p ../../prebuilt/Plugins/Android/libs/arm64-v8a/
+ls -l ./Android_v8a_release/
 cp ./Android_v8a_release/libquickjs.so ../../prebuilt/Plugins/Android/libs/arm64-v8a/
 
 rm -rf $BUILD_PATH/Android_x86_release
@@ -39,6 +41,7 @@ cmake -DQJS_VERSION=2020-11-08 -DCONFIG_LTO=y -DJSB_DEF_LOG2=y -DCMAKE_BUILD_TYP
 cd $BUILD_PATH
 cmake --build Android_x86_release --config Release
 mkdir -p ../../prebuilt/Plugins/Android/libs/x86/
+ls -l ./Android_x86_release/
 cp ./Android_x86_release/libquickjs.so ../../prebuilt/Plugins/Android/libs/x86/
 
 cd $BASE_PATH
