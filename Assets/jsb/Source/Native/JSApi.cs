@@ -303,29 +303,22 @@ namespace QuickJS.Native
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static unsafe JSValue JS_ThrowInternalError(JSContext ctx, string message)
         {
-            var bytes = Utils.TextUtils.GetNullTerminatedBytes(message);
-            fixed (byte* msg = bytes)
+            if (string.IsNullOrEmpty(message))
             {
-                return JSB_ThrowInternalError(ctx, msg);
+                return JSB_ThrowInternalError(ctx, (byte*)0);
+            }
+
+            var bytes = Utils.TextUtils.GetBytes(message);
+            fixed (byte* buf = bytes)
+            {
+                return JSB_ThrowError(ctx, buf, bytes.Length);
             }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static unsafe JSValue ThrowException(JSContext ctx, Exception exception)
         {
-            // var message = string.Format("{0}\n{1}", exception.ToString(), exception.StackTrace);
-            var message = exception.ToString();
-            if (string.IsNullOrEmpty(message))
-            {
-                return JS_ThrowInternalError(ctx, "");
-            }
-
-            // return JS_ThrowInternalError(ctx, message);
-            var bytes = Utils.TextUtils.GetBytes(message);
-            fixed (byte* buf = bytes)
-            {
-                return JSB_ThrowError(ctx, buf, bytes.Length);
-            }
+            return JS_ThrowInternalError(ctx, exception.ToString());
         }
 
         // lib version >= 0xa
