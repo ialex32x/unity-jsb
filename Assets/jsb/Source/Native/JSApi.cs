@@ -317,12 +317,12 @@ namespace QuickJS.Native
             var message = exception.ToString();
             if (string.IsNullOrEmpty(message))
             {
-               return JS_ThrowInternalError(ctx, ""); 
+                return JS_ThrowInternalError(ctx, "");
             }
 
             // return JS_ThrowInternalError(ctx, message);
             var bytes = Utils.TextUtils.GetBytes(message);
-            fixed(byte* buf = bytes)
+            fixed (byte* buf = bytes)
             {
                 return JSB_ThrowError(ctx, buf, bytes.Length);
             }
@@ -383,15 +383,21 @@ namespace QuickJS.Native
             {
                 return JS_NULL;
             }
+
             if (str.Length == 0)
             {
                 return JSB_NewEmptyString(ctx);
             }
-            var bytes = Utils.TextUtils.GetNullTerminatedBytes(str);
 
-            fixed (byte* ptr = bytes)
+            // var bytes = Utils.TextUtils.GetNullTerminatedBytes(str);
+            // fixed (byte* ptr = bytes)
+            // {
+            //     return JS_NewString(ctx, ptr);
+            // }
+            var bytes = Utils.TextUtils.GetBytes(str);
+            fixed (byte* buf = bytes)
             {
-                return JS_NewString(ctx, ptr);
+                return JS_NewStringLen(ctx, buf, bytes.Length);
             }
         }
 
