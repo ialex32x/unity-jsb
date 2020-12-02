@@ -1,9 +1,11 @@
 {
     "dependencies": {
+        "lodash": "^4.17.20",
         "protobufjs": "^6.10.0"
     },
     "devDependencies": {
         "@babel/plugin-proposal-optional-chaining": "^7.10.4",
+        "@types/lodash": "^4.14.165",
         "@types/node": "^10.17.27",
         "@types/protobufjs": "^6.0.0",
         "awesome-typescript-loader": "^5.2.1",
