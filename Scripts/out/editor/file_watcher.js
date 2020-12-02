@@ -21,6 +21,18 @@ class FileWatcher {
         this._fsw.includeSubdirectories = true;
         this._fsw.enableRaisingEvents = true;
     }
+    get includeSubdirectories() {
+        return this._fsw.includeSubdirectories;
+    }
+    set includeSubdirectories(v) {
+        this._fsw.includeSubdirectories = v;
+    }
+    get enableRaisingEvents() {
+        return this._fsw.enableRaisingEvents;
+    }
+    set enableRaisingEvents(v) {
+        this._fsw.enableRaisingEvents = v;
+    }
     dispose() {
         if (this._disposed) {
             return;

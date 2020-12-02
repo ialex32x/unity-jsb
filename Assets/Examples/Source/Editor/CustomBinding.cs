@@ -40,6 +40,9 @@ namespace Example.Editor
 
             bindingManager.AddExportedType(typeof(System.DateTime)).SystemRuntime().EnableOperatorOverloading(false);
             bindingManager.AddExportedType(typeof(System.Enum)).SystemRuntime();
+            bindingManager.AddExportedType(typeof(System.IO.FileInfo)).SystemRuntime()
+                .SetMemberBlocked("GetAccessControl")
+                .SetMemberBlocked("SetAccessControl");
             bindingManager.AddExportedType(typeof(System.IO.File)).SystemRuntime()
                 .SetMemberBlocked("GetAccessControl")
                 .SetMemberBlocked("SetAccessControl")

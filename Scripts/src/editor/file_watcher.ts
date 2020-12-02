@@ -20,6 +20,22 @@ export class FileWatcher {
     private _pending = false;
     private _cache: { [name: string]: FileState };
 
+    get includeSubdirectories() {
+        return this._fsw.includeSubdirectories;
+    }
+
+    set includeSubdirectories(v: boolean) {
+        this._fsw.includeSubdirectories = v;
+    }
+
+    get enableRaisingEvents() {
+        return this._fsw.enableRaisingEvents;
+    }
+
+    set enableRaisingEvents(v: boolean) {
+        this._fsw.enableRaisingEvents = v;
+    }
+
     constructor(path: string, filter: string) {
         this._cache = {};
         this._fsw = new FSWatcher(path, filter);
@@ -79,7 +95,7 @@ export class FileWatcher {
         if (this._disposed) {
             return;
         }
-        
+
         this._pending = false;
         let map = this._cache;
         this._cache = {};
