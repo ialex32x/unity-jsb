@@ -1,0 +1,76 @@
+name: prebuilt_quickjs
+
+on: 
+  push:
+    paths: 
+      - jsb_build/quickjs/quickjs-latest/quickjs.c
+      - jsb_build/quickjs/quickjs-latest/quickjs.h
+      - jsb_build/quickjs/unity_qjs.c
+      - jsb_build/quickjs/CMakeLists.txt
+
+jobs:
+  android:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: lukka/get-cmake@v3.19.0
+      - uses: nttld/setup-ndk@v1
+        with:
+          ndk-version: r15c
+      - name: Build
+        run: |
+          cd jsb_build/quickjs
+          chmod 744 make_jsb_android.sh
+          ./make_jsb_android.sh
+      - name: Upload
+        uses: actions/upload-artifact@v2
+        with:
+          path: ./jsb_build/prebuilt/Assets/Plugins/**/*
+          name: prebuilt_quickjs_libs
+
+  windows:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+      - uses: lukka/get-cmake@v3.19.0
+      - name: Build
+        run: |
+          cd jsb_build\quickjs
+          .\make_jsb_win.sh
+      - name: Upload
+        uses: actions/upload-artifact@v2
+        with:
+          path: ./jsb_build/prebuilt/Assets/Plugins/**/*
+          name: prebuilt_quickjs_libs
+
+  ios:
+    runs-on: macos-10.15
+
+    steps:
+      - uses: actions/checkout@v2
+      - uses: lukka/get-cmake@v3.19.0
+      - name: Build
+        run: |
+          cd jsb_build/quickjs
+          sh ./make_jsb_ios.sh
+      - name: Upload
+        uses: actions/upload-artifact@v2
+        with:
+          path: ./jsb_build/prebuilt/Assets/Plugins/**/*
+          name: prebuilt_quickjs_libs
+  osx:
+    runs-on: macos-10.15
+
+    steps:
+      - uses: actions/checkout@v2
+      - uses: lukka/get-cmake@v3.19.0
+      - name: Build
+        run: |
+          cd jsb_build/quickjs
+          sh ./make_jsb_osx.sh
+      - name: Upload
+        uses: actions/upload-artifact@v2
+        with:
+          path: ./jsb_build/prebuilt/Assets/Plugins/**/*
+          name: prebuilt_quickjs_libs
