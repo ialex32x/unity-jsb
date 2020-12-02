@@ -36,8 +36,8 @@ jobs:
       - uses: lukka/get-cmake@v3.19.0
       - name: Build
         run: |
-          cd jsb_build\quickjs
-          .\make_jsb_win.sh
+          cd jsb_build/quickjs
+          ./make_jsb_win.sh
       - name: Upload
         uses: actions/upload-artifact@v2
         with:
@@ -68,7 +68,7 @@ jobs:
       - name: Build
         run: |
           cd jsb_build/quickjs
-          sh ./make_jsb_osx.sh
+          sh ./make_jsb_macos.sh
       - name: Upload
         uses: actions/upload-artifact@v2
         with:
