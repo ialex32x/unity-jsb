@@ -38,6 +38,7 @@ jobs:
       - name: Build
         run: |
           cd jsb_build/quickjs
+          chmod 744 make_jsb_win.sh
           ./make_jsb_win.sh
       - name: Upload
         uses: actions/upload-artifact@v2
