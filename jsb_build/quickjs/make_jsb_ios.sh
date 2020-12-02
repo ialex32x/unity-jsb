@@ -9,5 +9,6 @@ echo building...
 cmake --build ios_release --config Release
 mkdir -p ../../prebuilt/Plugins/iOS/
 pwd
+ls -l ./ios_release/Release-iphoneos/
 cp ./ios_release/Release-iphoneos/libquickjs.a ../../prebuilt/Plugins/iOS/
 cd ..
