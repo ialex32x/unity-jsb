@@ -7,6 +7,7 @@ on:
       - jsb_build/quickjs/quickjs-latest/quickjs.h
       - jsb_build/quickjs/unity_qjs.c
       - jsb_build/quickjs/CMakeLists.txt
+      - .github/workflows/prebuilt_quickjs.yml
 
 jobs:
   android:
