@@ -28,6 +28,9 @@ namespace QuickJS.Unity
 
         public TypeBindingFlags bindingFlags = TypeBindingFlags.Default;
 
+        // 此类型依赖特定的预编译指令
+        public HashSet<string> requiredDefines = new HashSet<string>();
+
         // 扩展方法
         public readonly List<MethodInfo> extensionMethods = new List<MethodInfo>();
 
@@ -62,7 +65,7 @@ namespace QuickJS.Unity
 
         private Dictionary<MemberInfo, string> _memberNameRules = new Dictionary<MemberInfo, string>();
 
-        public bool isEditorRuntime { get { return (bindingFlags & TypeBindingFlags.UnityEditorRuntime) != 0; } }
+        public bool isEditorRuntime { get { return requiredDefines.Contains("UNITY_EDITOR"); } }
 
         public bool enableOperatorOverloading => _enableOperatorOverloading;
 
@@ -75,7 +78,7 @@ namespace QuickJS.Unity
             {
                 bindingFlags = TypeBindingFlags.Default & ~TypeBindingFlags.BindingCode;
             }
-            
+
             if (UnityHelper.IsExplicitEditorDomain(type.Assembly))
             {
                 EditorRuntime();
@@ -100,25 +103,27 @@ namespace QuickJS.Unity
 
         public TypeTransform EditorRuntime()
         {
-            bindingFlags |= TypeBindingFlags.UnityEditorRuntime;
+            return AddRequiredDefines("UNITY_EDITOR");
+        }
+
+        /// <summary>
+        /// 暂时不支持 UNITY_EDITOR 之外的值
+        /// </summary>
+        private TypeTransform AddRequiredDefines(params string[] defines)
+        {
+            foreach (var def in defines)
+            {
+                requiredDefines.Add(def);
+            }
             return this;
         }
 
+        /// <summary>
+        /// 标记此类型不限制于目标平台编译
+        /// </summary>
         public TypeTransform SystemRuntime()
         {
-            bindingFlags &= ~TypeBindingFlags.UnityRuntime;
-            return this;
-        }
-
-        public TypeTransform SetRuntime(TypeBindingFlags bf)
-        {
-            bindingFlags |= bf;
-            return this;
-        }
-
-        public TypeTransform UnsetRuntime(TypeBindingFlags bf)
-        {
-            bindingFlags &= ~bf;
+            bindingFlags &= ~TypeBindingFlags.BuildTargetPlatformOnly;
             return this;
         }
 

@@ -398,7 +398,7 @@ namespace QuickJS.Unity
             this.bf = bf;
             this.predef = string.Empty;
 
-            if ((this.bf & TypeBindingFlags.UnityRuntime) != 0)
+            if ((this.bf & TypeBindingFlags.BuildTargetPlatformOnly) != 0)
             {
                 var buildTarget = EditorUserBuildSettings.activeBuildTarget;
                 switch (buildTarget)
