@@ -7,6 +7,7 @@ namespace QuickJS.Unity
 {
     using UnityEngine;
     using UnityEditor;
+    using System.Reflection;
 
     [Serializable]
     public class TSConfig
@@ -124,6 +125,25 @@ namespace QuickJS.Unity
                 case BuildTarget.PS4: return "PS4";
                 default: return buildTarget.ToString();
             }
+        }
+
+        // 可以明确表明该 Assembly 包含的类型属于 Editor 运行时
+        public static bool IsExplicitEditorDomain(Assembly assembly)
+        {
+            var location = assembly.Location.Replace('\\', '/');
+            var assetsPath = new FileInfo(Application.dataPath);
+            var fullAssetsPath = assetsPath.FullName.Replace('\\', '/');
+
+            if (location.StartsWith(fullAssetsPath, StringComparison.OrdinalIgnoreCase))
+            {
+                var substr = location.Substring(fullAssetsPath.Length).ToLower();
+                if (substr.Contains("/editor/"))
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         public static string ReplacePathVars(string value)

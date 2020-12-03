@@ -75,6 +75,11 @@ namespace QuickJS.Unity
             {
                 bindingFlags = TypeBindingFlags.Default & ~TypeBindingFlags.BindingCode;
             }
+            
+            if (UnityHelper.IsExplicitEditorDomain(type.Assembly))
+            {
+                EditorRuntime();
+            }
         }
 
         public TypeTransform EnableOperatorOverloading(bool value)
