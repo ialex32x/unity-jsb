@@ -54,11 +54,11 @@ namespace QuickJS.Unity
         private Dictionary<string, string> _redirectedMethods = new Dictionary<string, string>();
 
         private Dictionary<Type, Delegate> _filters = new Dictionary<Type, Delegate>();
-        private Func<ConstructorInfo, bool> _filterConstructorInfo;
-        private Func<PropertyInfo, bool> _filterPropertyInfo;
-        private Func<FieldInfo, bool> _filterFieldInfo;
-        private Func<EventInfo, bool> _filterEventInfo;
-        private Func<MethodInfo, bool> _filterMethodInfo;
+        // private Func<ConstructorInfo, bool> _filterConstructorInfo;
+        // private Func<PropertyInfo, bool> _filterPropertyInfo;
+        // private Func<FieldInfo, bool> _filterFieldInfo;
+        // private Func<EventInfo, bool> _filterEventInfo;
+        // private Func<MethodInfo, bool> _filterMethodInfo;
 
         private Dictionary<MemberInfo, string> _memberNameRules = new Dictionary<MemberInfo, string>();
 
@@ -185,7 +185,7 @@ namespace QuickJS.Unity
 
         public TypeTransform AddExtensionMethod(MethodInfo method, string tsDecl = null)
         {
-            if (!extensionMethods.Contains(method))
+            if (!extensionMethods.Contains(method) && !Filter(method))
             {
                 extensionMethods.Add(method);
 
@@ -294,18 +294,6 @@ namespace QuickJS.Unity
         public TypeTransform SetMemberBlocked(string memberName)
         {
             _memberBlacklist.Add(memberName);
-            return this;
-        }
-
-        public TypeTransform BlockMember(Func<MemberInfo, bool> filter)
-        {
-            foreach (var memberInfo in _type.GetMembers())
-            {
-                if (filter(memberInfo))
-                {
-                    _memberBlacklist.Add(memberInfo.Name);
-                }
-            }
             return this;
         }
 
