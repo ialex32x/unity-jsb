@@ -41,6 +41,8 @@ Codegen:
     ☐ 不生成绑定代码的情况下使用反射模式执行 (只生成 d.ts, 以及一个 type list)
     ☐ 通过 BindingManager 辅助得到 export types
     ☐ 在 unity_qjs.c 中提供 fopen/fread/fclose (为了绕过 C# 中对已经在其他程序中打开的独占文件的读取限制)
+    ☐ 增加一个 Assembly 属性记录, 用于辅助设定类型及成员的运行时
+    ☐ 增加运行时平台分类
 
 2020-12-02 v1.2.1:
     ✔ github workflows @done(20-12-02 20:14)
