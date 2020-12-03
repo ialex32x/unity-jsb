@@ -14,6 +14,8 @@ namespace Example.Editor
 
         public override void OnPreExporting(BindingManager bindingManager)
         {
+            // bindingManager.AddTypePrefixBlacklist("SyntaxTree.");
+            
             // bindingManager.AddExportedType(typeof(System.Threading.Tasks.Task))
             //     .Rename("ATask")
             //     .SetMemberBlocked("IsCompletedSuccessfully");
