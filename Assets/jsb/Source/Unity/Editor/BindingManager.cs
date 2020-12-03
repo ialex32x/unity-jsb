@@ -123,6 +123,7 @@ namespace QuickJS.Unity
             {
                 _typePrefixBlacklist.Add("UnityEngine.Android");
             }
+            _typePrefixBlacklist.Add("SyntaxTree.");
 
             // fix d.ts, some C# classes use explicit implemented interface method
             SetTypeBlocked(typeof(UnityEngine.ILogHandler));
