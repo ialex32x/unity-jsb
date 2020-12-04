@@ -598,5 +598,34 @@ namespace QuickJS.Unity
                 this.tsDeclare.AppendLine(" */");
             }
         }
+
+        public void WriteParameterException(Type argType, int argIndex)
+        {
+            var argTypeStr = this.bindingManager.GetCSTypeFullName(argType);
+            WriteParameterException(argTypeStr, argIndex);
+        }
+
+        public void WriteParameterException(string argTypeStr, int argIndex)
+        {
+            this.cs.AppendLine("throw new ParameterException(typeof({0}), {1});", argTypeStr, argIndex);
+        }
+
+        public void WriteParameterException(Type caller, string method, Type argType, int argIndex)
+        {
+            var callerStr = this.bindingManager.GetCSTypeFullName(caller);
+            var argTypeStr = this.bindingManager.GetCSTypeFullName(argType);
+            WriteParameterException(callerStr, method, argTypeStr, argIndex);
+        }
+
+        public void WriteParameterException(Type caller, string method, string argTypeStr, int argIndex)
+        {
+            var callerStr = this.bindingManager.GetCSTypeFullName(caller);
+            WriteParameterException(callerStr, method, argTypeStr, argIndex);
+        }
+
+        public void WriteParameterException(string callerStr, string method, string argTypeStr, int argIndex)
+        {
+            this.cs.AppendLine("throw new ParameterException(typeof({0}), \"{1}\", typeof({2}), {3});", callerStr, method, argTypeStr, argIndex);
+        }
     }
 }

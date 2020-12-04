@@ -36,7 +36,7 @@ namespace QuickJS.Unity
 
         protected override string GetInvokeBinding(string caller, MethodInfo method, bool hasParams, bool isExtension, string nargs, ParameterInfo[] parameters)
         {
-            var arglist = OpArgsConcat(AppendGetParameters(hasParams, nargs, parameters), " " + bindingInfo.cs_op + " ");
+            var arglist = OpArgsConcat(AppendGetParameters(hasParams, nargs, method, parameters), " " + bindingInfo.cs_op + " ");
             var transform = cg.bindingManager.GetTypeTransform(method.DeclaringType);
             if (transform == null || !transform.OnBinding(BindingPoints.METHOD_BINDING_BEFORE_INVOKE, method, cg))
             {

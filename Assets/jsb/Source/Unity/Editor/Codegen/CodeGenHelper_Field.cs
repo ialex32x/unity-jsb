@@ -50,7 +50,7 @@ namespace QuickJS.Unity
             this.cg.cs.AppendLine("if (!{0})", getter);
             using (this.cg.cs.CodeBlockScope())
             {
-                this.cg.cs.AppendLine("throw new ParameterException(typeof({0}), 0);", fieldTypeName);
+                this.cg.WriteParameterException(declaringType, fieldInfo.Name, fieldTypeName, 0);
             }
             this.cg.cs.AppendLine("{0}.{1} = value;", caller, fieldInfo.Name);
             if (declaringType.IsValueType && !fieldInfo.IsStatic)

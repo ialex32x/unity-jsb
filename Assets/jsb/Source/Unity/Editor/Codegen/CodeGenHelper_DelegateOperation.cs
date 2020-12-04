@@ -38,7 +38,7 @@ namespace QuickJS.Unity
                             this.cg.cs.AppendLine("if (!{0})", getter);
                             using (this.cg.cs.CodeBlockScope())
                             {
-                                this.cg.cs.AppendLine("throw new ParameterException(typeof({0}), 1);", eventTypeName);
+                                this.cg.WriteParameterException(bindingInfo.declaringType, bindingInfo.csName, eventTypeName, 1);
                             }
                             this.cg.cs.AppendLine("{0}.{1} += value;", caller, bindingInfo.csName);
                             this.cg.cs.AppendLine("return JSApi.JS_UNDEFINED;");
@@ -51,7 +51,7 @@ namespace QuickJS.Unity
                             this.cg.cs.AppendLine("if (!{0})", getter);
                             using (this.cg.cs.CodeBlockScope())
                             {
-                                this.cg.cs.AppendLine("throw new ParameterException(typeof({0}), 1);", eventTypeName);
+                                this.cg.WriteParameterException(bindingInfo.declaringType, bindingInfo.csName, eventTypeName, 1);
                             }
                             this.cg.cs.AppendLine("{0}.{1} -= value;", caller, bindingInfo.csName);
                             this.cg.cs.AppendLine("return JSApi.JS_UNDEFINED;");
@@ -65,7 +65,7 @@ namespace QuickJS.Unity
                         this.cg.cs.AppendLine("if (!{0})", getter);
                         using (this.cg.cs.CodeBlockScope())
                         {
-                            this.cg.cs.AppendLine("throw new ParameterException(typeof({0}), 1);", eventTypeName);
+                            this.cg.WriteParameterException(bindingInfo.declaringType, bindingInfo.csName, eventTypeName, 1);
                         }
                         this.cg.cs.AppendLine("{0}.{1} = value;", caller, bindingInfo.csName);
                         this.cg.cs.AppendLine("return JSApi.JS_UNDEFINED;");

@@ -95,7 +95,7 @@ namespace QuickJS.Unity
         }
 
         // hasParams: 是否包含变参 (最后一个参数将按数组处理)
-        public List<string> AppendGetParameters(bool hasParams, string nargs, ParameterInfo[] parameters)
+        public List<string> AppendGetParameters(bool hasParams, string nargs, MethodBase methodBase, ParameterInfo[] parameters)
         {
             var arglist = new List<string>();
             var assignIndex = 0;
@@ -136,7 +136,7 @@ namespace QuickJS.Unity
                 }
                 else
                 {
-                    if (WriteParameterGetter(parameter, assignIndex, $"arg{i}"))
+                    if (WriteParameterGetter(methodBase, parameter, assignIndex, $"arg{i}"))
                     {
                         assignIndex++;
                     }
@@ -151,7 +151,7 @@ namespace QuickJS.Unity
         }
 
         // 对参数进行取值, 如果此参数无需取值, 则返回 false
-        protected bool WriteParameterGetter(ParameterInfo parameter, int index, string argname)
+        protected bool WriteParameterGetter(MethodBase methodBase, ParameterInfo parameter, int index, string argname)
         {
             var ptype = parameter.ParameterType;
             var argType = this.cg.bindingManager.GetCSTypeFullName(ptype);
@@ -213,7 +213,7 @@ namespace QuickJS.Unity
                     {
                         this.cg.cs.AppendLine("JSApi.JS_FreeValue(ctx, {0});", refValVar);
                     }
-                    this.cg.cs.AppendLine("throw new ParameterException(typeof({0}), {1});", argType, index);
+                    this.cg.WriteParameterException(methodBase.DeclaringType, methodBase.Name, argType, index);
                 }
                 if (isRefWrapper)
                 {
@@ -726,7 +726,7 @@ namespace QuickJS.Unity
 
         protected override string GetInvokeBinding(string caller, ConstructorInfo method, bool hasParams, bool isExtension, string nargs, ParameterInfo[] parameters)
         {
-            var arglist = Concat(AppendGetParameters(hasParams, nargs, parameters));
+            var arglist = Concat(AppendGetParameters(hasParams, nargs, method, parameters));
             var decalringTypeName = this.cg.bindingManager.GetCSTypeFullName(this.bindingInfo.decalringType);
             // 方法本身有返回值
             var transform = cg.bindingManager.GetTypeTransform(method.DeclaringType);
@@ -804,7 +804,7 @@ namespace QuickJS.Unity
             return method.ReturnType;
         }
 
-        private string WriteSetterBinding(string caller, ParameterInfo[] parameters)
+        private string WriteSetterBinding(string caller, MethodBase method, ParameterInfo[] parameters)
         {
             var last = parameters.Length - 1;
             var arglist_t = "";
@@ -812,7 +812,7 @@ namespace QuickJS.Unity
             for (var i = 0; i < last; i++)
             {
                 var argname = $"arg{i}";
-                if (this.WriteParameterGetter(parameters[i], assignIndex, argname))
+                if (this.WriteParameterGetter(method, parameters[i], assignIndex, argname))
                 {
                     assignIndex++;
                 }
@@ -823,11 +823,11 @@ namespace QuickJS.Unity
                 }
             }
             var argname_last = $"arg{last}";
-            this.WriteParameterGetter(parameters[last], assignIndex, argname_last);
+            this.WriteParameterGetter(method, parameters[last], assignIndex, argname_last);
             return $"{caller}[{arglist_t}] = {argname_last}"; // setter
         }
 
-        private string WriteGetterBinding(string caller, ParameterInfo[] parameters)
+        private string WriteGetterBinding(string caller, MethodBase method, ParameterInfo[] parameters)
         {
             var last = parameters.Length;
             var arglist_t = "";
@@ -835,7 +835,7 @@ namespace QuickJS.Unity
             for (var i = 0; i < last; i++)
             {
                 var argname = $"arg{i}";
-                if (this.WriteParameterGetter(parameters[i], assignIndex, argname))
+                if (this.WriteParameterGetter(method, parameters[i], assignIndex, argname))
                 {
                     assignIndex++;
                 }
@@ -854,16 +854,16 @@ namespace QuickJS.Unity
             {
                 if (method.Name == "set_Item") // if (method.ReturnType == typeof(void))
                 {
-                    return WriteSetterBinding(caller, parameters); // setter
+                    return WriteSetterBinding(caller, method, parameters); // setter
                 }
                 else if (method.Name == "get_Item")
                 {
-                    return WriteGetterBinding(caller, parameters);
+                    return WriteGetterBinding(caller, method, parameters);
                 }
             }
 
             var paramsToGet = isExtension ? parameters.Skip(1).ToArray() : parameters;
-            var arglist = AppendGetParameters(hasParams, nargs, paramsToGet);
+            var arglist = AppendGetParameters(hasParams, nargs, method, paramsToGet);
             var arglistSig = Concat(arglist);
             var transform = cg.bindingManager.GetTypeTransform(method.DeclaringType);
 

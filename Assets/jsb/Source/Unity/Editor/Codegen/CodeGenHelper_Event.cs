@@ -36,7 +36,7 @@ namespace QuickJS.Unity
                     this.cg.cs.AppendLine("if (!{0})", getter);
                     using (this.cg.cs.CodeBlockScope())
                     {
-                        this.cg.cs.AppendLine("throw new ParameterException(typeof({0}), 1);", eventTypeName);
+                        this.cg.WriteParameterException(declaringType, eventInfo.Name, eventTypeName, 1);
                     }
                     this.cg.cs.AppendLine("{0}.{1} += value;", caller, eventInfo.Name);
                     this.cg.cs.AppendLine("break;");
@@ -48,7 +48,7 @@ namespace QuickJS.Unity
                     this.cg.cs.AppendLine("if (!{0})", getter);
                     using (this.cg.cs.CodeBlockScope())
                     {
-                        this.cg.cs.AppendLine("throw new ParameterException(typeof({0}), 1);", eventTypeName);
+                        this.cg.WriteParameterException(declaringType, eventInfo.Name, eventTypeName, 1);
                     }
                     this.cg.cs.AppendLine("{0}.{1} -= value;", caller, eventInfo.Name);
                     this.cg.cs.AppendLine("break;");
