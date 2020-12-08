@@ -14,7 +14,8 @@ BUGFIX:
     ☐ 反射模式支持运算符重载
     ☐ 多维数组的支持
     ☐ 考虑 Worker 传递消息时 C# 对象的传输 (使用加锁共享池?)
-    ☐ 导出的目标代码段对 UNITY_EDITOR 的要求改为更通用的 Defines 集合的要求
+    ☐ JS Worker SAB
+    ✔ 导出的目标代码段对 UNITY_EDITOR 的要求改为更通用的 Defines 集合的要求 @done(20-12-08 13:47)
 
 编辑器支持:
     ☐ JS Behaviour Inspector 支持使用脚本定义编辑器
@@ -42,7 +43,6 @@ Codegen:
     ☐ 不生成绑定代码的情况下使用反射模式执行 (只生成 d.ts, 以及一个 type list)
     ☐ 通过 BindingManager 辅助得到 export types
     ☐ 在 unity_qjs.c 中提供 fopen/fread/fclose (为了绕过 C# 中对已经在其他程序中打开的独占文件的读取限制)
-    ☐ 增加一个 Assembly 属性记录, 用于辅助设定类型及成员的运行时
     ☐ 增加运行时平台分类
 
 2020-12-02 v1.2.1:
