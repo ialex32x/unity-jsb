@@ -90,7 +90,15 @@ namespace QuickJS.Unity
         public void Initialize()
         {
             _tsTypeNaming = bindingManager.GetTSTypeNaming(type, true);
-            _csBindingName = bindingManager.prefs.typeBindingPrefix + this.tsTypeNaming.jsFullName.Replace('.', '_').Replace('+', '_').Replace('<', '_').Replace('>', '_');
+            _csBindingName = bindingManager.prefs.typeBindingPrefix 
+                + this.tsTypeNaming.jsFullName
+                    .Replace('.', '_')
+                    .Replace('+', '_')
+                    .Replace('<', '_')
+                    .Replace('>', '_')
+                    .Replace(' ', '_')
+                    .Replace(',', '_')
+                    .Replace('=', '_');
 
             var module = this.bindingManager.GetExportedModule(this.tsTypeNaming.jsModule);
 

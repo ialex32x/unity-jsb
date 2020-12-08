@@ -39,6 +39,13 @@ namespace Example
         {
             throw new InvalidOperationException();
         }
+
+        public static int[] values1 = new int[6] { 0, 1, 2, 3, 5, 6 };
+
+        public static int[,] values2 = new int[2, 3] {
+            { 0, 1, 2 },
+            { 3, 4, 5 },
+        };
     }
 
     /** 
@@ -47,16 +54,16 @@ namespace Example
      * 详见 CustomBinding.cs 中的示意代码, 以及对应的生成代码
      */
 #if CUSTOM_DEF_FOO && UNITY_EDITOR
-        public class FOO 
-        {
-            public static string value = "FOO";
-        }
+    public class FOO
+    {
+        public static string value = "FOO";
+    }
 #endif
 
 #if CUSTOM_DEF_BAR
-        public class BAR 
-        {
-            public static string value = "BAR";
-        }
+    public class BAR
+    {
+        public static string value = "BAR";
+    }
 #endif
 }

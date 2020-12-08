@@ -29,6 +29,10 @@ try {
 catch (err) {
     console.warn(err);
 }
+// 一维数组的操作
+console.log("ValueTest.values1[2] = ", Example_1.ValueTest.values1.GetValue(2));
+// 多维数组的操作
+console.log("ValueTest.values2[0, 1] = ", Example_1.ValueTest.values2.GetValue(0, 1));
 print("fib:", fib_1.fib(12));
 setTimeout(() => {
     print("[timeout] test");

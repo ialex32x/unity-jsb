@@ -387,7 +387,13 @@ namespace QuickJS.Unity
             {
                 var elementType = type.GetElementType();
                 var tsFullName = GetTSTypeFullName(elementType);
-                return "Array<" + tsFullName + ">";
+                var rank = type.GetArrayRank();
+
+                if (rank == 1)
+                {
+                    return "Array<" + tsFullName + ">";
+                }
+                return "Array<" + tsFullName + ", " + rank + ">";
             }
 
             var info = this.cg.bindingManager.GetExportedType(type);

@@ -190,7 +190,7 @@ namespace QuickJS.Unity
             // ;
 
             TransformType(typeof(Array))
-                .Rename("Array<T>")
+                .Rename("Array<T, RANK = 1>")
 
                 .SetMethodBlocked("GetValue", typeof(long), typeof(long), typeof(long))
                 .SetMethodBlocked("GetValue", typeof(long), typeof(long))
@@ -621,7 +621,7 @@ namespace QuickJS.Unity
         {
             if (type == null || type == typeof(void))
             {
-                return ;
+                return;
             }
 
             defs.UnionWith(TransformType(type).requiredDefines);
@@ -725,10 +725,10 @@ namespace QuickJS.Unity
             {
                 return GetScriptObjectPropertyGetter(type.GetElementType());
             }
-            if (type.IsArray)
+            if (type.IsArray && type.GetArrayRank() == 1)
             {
                 var elementType = type.GetElementType();
-                return GetScriptObjectPropertyGetter(elementType) + "_array"; //TODO: 嵌套数组的问题
+                return GetScriptObjectPropertyGetter(elementType) + "_array";
             }
             if (type.IsValueType)
             {
@@ -971,10 +971,19 @@ namespace QuickJS.Unity
                 purename += ">";
                 return purename;
             }
+
             if (type.IsArray)
             {
-                return GetCSTypeFullName(type.GetElementType(), shortName) + "[]";
+                var rank = type.GetArrayRank();
+                var element = GetCSTypeFullName(type.GetElementType(), shortName);
+
+                if (rank == 1)
+                {
+                    return element + "[]";
+                }
+                return element + "[" + StringRepeat(",", rank - 1) + "]";
             }
+
             if (type.IsByRef)
             {
                 return GetCSTypeFullName(type.GetElementType(), shortName);
@@ -1003,6 +1012,16 @@ namespace QuickJS.Unity
                 return name;
             }
             return fullname;
+        }
+
+        public static string StringRepeat(string s, int repeat)
+        {
+            var sb = new System.Text.StringBuilder(s.Length * repeat);
+            for (var i = 0; i < repeat; i++)
+            {
+                sb.Append(s);
+            }
+            return sb.ToString();
         }
 
         public string GetConstructorBindName()
