@@ -12,7 +12,7 @@ BUGFIX:
     ☐ linux build (for dotnet core)
     ☐ 额外的运行时通讯机制 (jsb.runtimes, jsb.postMessage)
     ☐ 反射模式支持运算符重载
-    ☐ 多维数组的支持
+    ✔ 多维数组的支持 @done(20-12-08 14:46)
     ☐ 考虑 Worker 传递消息时 C# 对象的传输 (使用加锁共享池?)
     ☐ JS Worker SAB
     ✔ 导出的目标代码段对 UNITY_EDITOR 的要求改为更通用的 Defines 集合的要求 @done(20-12-08 13:47)
