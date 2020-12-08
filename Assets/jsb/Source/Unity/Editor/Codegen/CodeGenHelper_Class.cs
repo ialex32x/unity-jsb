@@ -26,9 +26,10 @@ namespace QuickJS.Unity
             var jsClassName = this.typeBindingInfo.tsTypeNaming.jsName;
             var jsClassType = "";
 
-            if (typeBindingInfo.isEditorRuntime)
+            if (typeBindingInfo.requiredDefines.Count != 0)
             {
-                this.cg.tsDeclare.AppendLine($"@{this.cg.bindingManager.GetDefaultTypePrefix()}EditorRuntime");
+                var defs = string.Join(", ", from def in typeBindingInfo.requiredDefines select $"\"{def}\"");
+                this.cg.tsDeclare.AppendLine($"@{this.cg.bindingManager.GetDefaultTypePrefix()}RequiredDefines({defs})");
             }
 
             if (typeBindingInfo.type.IsInterface)
@@ -579,7 +580,7 @@ namespace QuickJS.Unity
                     {
                         cg.cs.AppendLine($"cls.AddMethod(false, \"{tsFieldVar}\", {delegateBindingInfo.name});");
                     }
-                    
+
                     if (delegateBindingInfo.readable)
                     {
                         if (delegateBindingInfo.writable)

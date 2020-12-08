@@ -40,4 +40,23 @@ namespace Example
             throw new InvalidOperationException();
         }
     }
+
+    /** 
+     * 可以通过 .AddRequiredDefines(...) 为导出的绑定代码添加条件编译
+     * 以便在编译条件发生变化时无需重新生成绑定代码
+     * 详见 CustomBinding.cs 中的示意代码, 以及对应的生成代码
+     */
+#if CUSTOM_DEF_FOO && UNITY_EDITOR
+        public class FOO 
+        {
+            public static string value = "FOO";
+        }
+#endif
+
+#if CUSTOM_DEF_BAR
+        public class BAR 
+        {
+            public static string value = "BAR";
+        }
+#endif
 }

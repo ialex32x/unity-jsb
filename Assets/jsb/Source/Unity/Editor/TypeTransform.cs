@@ -65,6 +65,9 @@ namespace QuickJS.Unity
 
         private Dictionary<MemberInfo, string> _memberNameRules = new Dictionary<MemberInfo, string>();
 
+        /// <summary>
+        /// 是否需要 UNITY_EDITOR 条件
+        /// </summary>
         public bool isEditorRuntime { get { return requiredDefines.Contains("UNITY_EDITOR"); } }
 
         public bool enableOperatorOverloading => _enableOperatorOverloading;
@@ -79,7 +82,7 @@ namespace QuickJS.Unity
                 bindingFlags = TypeBindingFlags.Default & ~TypeBindingFlags.BindingCode;
             }
 
-            if (UnityHelper.IsExplicitEditorDomain(type.Assembly))
+            if (UnityHelper.IsExplicitEditorType(type))
             {
                 EditorRuntime();
             }
@@ -107,9 +110,9 @@ namespace QuickJS.Unity
         }
 
         /// <summary>
-        /// 暂时不支持 UNITY_EDITOR 之外的值
+        /// 
         /// </summary>
-        private TypeTransform AddRequiredDefines(params string[] defines)
+        public TypeTransform AddRequiredDefines(params string[] defines)
         {
             foreach (var def in defines)
             {

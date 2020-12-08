@@ -127,7 +127,22 @@ namespace QuickJS.Unity
             }
         }
 
-        // 可以明确表明该 Assembly 包含的类型属于 Editor 运行时
+        /// <summary>
+        /// 可以明确表明该 Type 属于 Editor 运行时
+        /// </summary>
+        public static bool IsExplicitEditorType(Type type)
+        {
+            if (type.Namespace != null && type.Namespace.StartsWith("UnityEditor"))
+            {
+                return true;
+            }
+            
+            return IsExplicitEditorDomain(type.Assembly);
+        }
+
+        /// <summary>
+        /// 可以明确表明该 Assembly 包含的类型属于 Editor 运行时
+        /// </summary>
         public static bool IsExplicitEditorDomain(Assembly assembly)
         {
             var location = assembly.Location.Replace('\\', '/');

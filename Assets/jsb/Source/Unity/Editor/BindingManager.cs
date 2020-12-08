@@ -617,33 +617,26 @@ namespace QuickJS.Unity
             return true;
         }
 
-        public bool IsTypeEditorRuntime(Type type)
+        public void CollectTypeRequiredDefines(HashSet<string> defs, Type type)
         {
             if (type == null || type == typeof(void))
             {
-                return false;
+                return ;
             }
-            if (type.Namespace != null && type.Namespace.StartsWith("UnityEditor"))
-            {
-                return true;
-            }
-            var tt = GetTypeTransform(type);
-            return (tt != null && tt.isEditorRuntime)
-                || IsTypeEditorRuntime(type.DeclaringType) // check outter class for nested class
-            ;
+
+            defs.UnionWith(TransformType(type).requiredDefines);
+
+            // check outter class for nested class
+            CollectTypeRequiredDefines(defs, type.DeclaringType);
         }
 
-        public bool IsTypeEditorRuntime(ParameterInfo[] parameters)
+        public void CollectTypeRequiredDefines(HashSet<string> defs, ParameterInfo[] parameters)
         {
             for (int i = 0, count = parameters.Length; i < count; i++)
             {
                 var parameter = parameters[i];
-                if (IsTypeEditorRuntime(parameter.ParameterType))
-                {
-                    return true;
-                }
+                CollectTypeRequiredDefines(defs, parameter.ParameterType);
             }
-            return false;
         }
 
         // 收集所有 delegate 类型
@@ -675,25 +668,29 @@ namespace QuickJS.Unity
                     log.AppendLine("skip ByRef delegate (unsupported yet): [{0}] {1}", delegateType, invoke);
                     return;
                 }
-                var isEditorRuntime = IsTypeEditorRuntime(delegateType) || IsTypeEditorRuntime(returnType) || IsTypeEditorRuntime(parameters);
+                var requiredDefines = new HashSet<string>();
+                CollectTypeRequiredDefines(requiredDefines, delegateType);
+                CollectTypeRequiredDefines(requiredDefines, returnType);
+                CollectTypeRequiredDefines(requiredDefines, parameters);
+                var defs = string.Join(" && ", from def in requiredDefines select def);
 
                 // 是否存在等价 delegate
                 foreach (var kv in _exportedDelegates)
                 {
                     var regDelegateType = kv.Key;
                     var regDelegateBinding = kv.Value;
-                    if (regDelegateBinding.Equals(returnType, parameters, isEditorRuntime))
+                    if (regDelegateBinding.Equals(returnType, parameters, defs))
                     {
-                        log.AppendLine("skip delegate: {0} && {1} editor: {2}", regDelegateBinding, delegateType, isEditorRuntime);
+                        log.AppendLine("skip delegate: {0} && {1} required defines: {2}", regDelegateBinding, delegateType, defs);
                         regDelegateBinding.types.Add(delegateType);
                         _redirectDelegates[delegateType] = regDelegateType;
                         return;
                     }
                 }
-                var delegateBindingInfo = new DelegateBridgeBindingInfo(returnType, parameters, isEditorRuntime);
+                var delegateBindingInfo = new DelegateBridgeBindingInfo(returnType, parameters, defs);
                 delegateBindingInfo.types.Add(delegateType);
                 _exportedDelegates.Add(delegateType, delegateBindingInfo);
-                log.AppendLine("add delegate: {0} editor: {1}", delegateType, isEditorRuntime);
+                log.AppendLine("add delegate: {0} required defines: {1}", delegateType, defs);
                 for (var i = 0; i < parameters.Length; i++)
                 {
                     CollectDelegate(parameters[i].ParameterType);

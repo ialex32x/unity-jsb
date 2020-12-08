@@ -15,13 +15,13 @@ namespace Example.Editor
         public override void OnPreExporting(BindingManager bindingManager)
         {
             // bindingManager.AddTypePrefixBlacklist("SyntaxTree.");
-            
+
             // bindingManager.AddExportedType(typeof(System.Threading.Tasks.Task))
             //     .Rename("ATask")
             //     .SetMemberBlocked("IsCompletedSuccessfully");
             // bindingManager.AddExportedType(typeof(System.Threading.Tasks.Task<System.Net.Sockets.Socket>));
             // bindingManager.AddExportedType(typeof(System.Threading.Tasks.Task<int>));
-            
+
             // bindingManager.AddExportedType(typeof(System.Net.Sockets.Socket));
             // bindingManager.AddExportedType(typeof(System.Net.Sockets.SocketFlags));
             // bindingManager.AddExportedType(typeof(System.Net.Sockets.AddressFamily));
@@ -53,6 +53,13 @@ namespace Example.Editor
             bindingManager.AddExportedType(typeof(TWrapper<int>));
             bindingManager.AddExportedType(typeof(TWrapper<Vector3>));
             bindingManager.AddExportedType(typeof(DisposableObject)).SetDisposable();
+
+            #if CUSTOM_DEF_FOO
+            bindingManager.AddExportedType(typeof(FOO)).AddRequiredDefines("CUSTOM_DEF_FOO", "UNITY_EDITOR");
+            #endif
+            #if CUSTOM_DEF_BAR
+            bindingManager.AddExportedType(typeof(BAR)).AddRequiredDefines("CUSTOM_DEF_BAR");
+            #endif
         }
     }
 }

@@ -52,75 +52,84 @@ namespace QuickJS.Unity
             this.cs.enabled = (typeBindingFlags & TypeBindingFlags.BindingCode) != 0;
             this.tsDeclare.enabled = (typeBindingFlags & TypeBindingFlags.TypeDefinition) != 0;
 
-            using (new CSPlatformCodeGen(this, TypeBindingFlags.Default))
+            using (new CSDebugCodeGen(this))
             {
-                using (new CSTopLevelCodeGen(this, CodeGenerator.NameOfBindingList))
+                using (new CSPlatformCodeGen(this, TypeBindingFlags.Default))
                 {
-                    using (new CSNamespaceCodeGen(this, typeof(Values).Namespace))
+                    using (new CSTopLevelCodeGen(this, CodeGenerator.NameOfBindingList))
                     {
-                        using (new PreservedCodeGen(this))
+                        using (new CSNamespaceCodeGen(this, typeof(Values).Namespace))
                         {
-                            using (new PlainClassCodeGen(this, typeof(Values).Name))
+                            using (new PreservedCodeGen(this))
                             {
-                                using (new PreservedCodeGen(this))
+                                using (new PlainClassCodeGen(this, typeof(Values).Name))
                                 {
-                                    this.cs.AppendLine("public const uint CodeGenVersion = {0};", ScriptEngine.VERSION);
-                                }
-
-                                using (new PreservedCodeGen(this))
-                                {
-                                    using (var method = new PlainMethodCodeGen(this, "private static void BindAll(ScriptRuntime runtime)"))
+                                    using (new PreservedCodeGen(this))
                                     {
-                                        var modules = from t in orderedTypes
-                                                      where t.genBindingCode
-                                                      orderby t.tsTypeNaming.jsDepth
-                                                      group t by t.tsTypeNaming.jsModule;
+                                        this.cs.AppendLine("public const uint CodeGenVersion = {0};", ScriptEngine.VERSION);
+                                    }
 
-                                        foreach (var module in modules)
+                                    using (new PreservedCodeGen(this))
+                                    {
+                                        using (var method = new PlainMethodCodeGen(this, "private static void BindAll(ScriptRuntime runtime)"))
                                         {
-                                            var moduleName = string.IsNullOrEmpty(module.Key) ? this.bindingManager.prefs.defaultJSModule : module.Key;
-                                            if (module.Count() > 0)
-                                            {
-                                                var runtimeVarName = "rt";
-                                                var moduleVarName = "module";
-                                                this.cs.AppendLine($"runtime.AddStaticModuleProxy(\"{moduleName}\", ({runtimeVarName}, {moduleVarName}) => ");
-                                                using (this.cs.TailCallCodeBlockScope())
-                                                {
-                                                    var editorTypes = new List<TypeBindingInfo>();
-                                                    foreach (var type in module)
-                                                    {
-                                                        if (type.isEditorRuntime)
-                                                        {
-                                                            editorTypes.Add(type);
-                                                        }
-                                                        else
-                                                        {
-                                                            method.AddModuleEntry(runtimeVarName, moduleVarName, type);
-                                                        }
-                                                    }
+                                            var modules = from t in orderedTypes
+                                                          where t.genBindingCode
+                                                          orderby t.tsTypeNaming.jsDepth
+                                                          group t by t.tsTypeNaming.jsModule;
 
-                                                    if (editorTypes.Count > 0)
+                                            foreach (var module in modules)
+                                            {
+                                                var moduleName = string.IsNullOrEmpty(module.Key) ? this.bindingManager.prefs.defaultJSModule : module.Key;
+                                                if (module.Count() > 0)
+                                                {
+                                                    var runtimeVarName = "rt";
+                                                    var moduleVarName = "module";
+                                                    this.cs.AppendLine($"runtime.AddStaticModuleProxy(\"{moduleName}\", ({runtimeVarName}, {moduleVarName}) => ");
+                                                    using (this.cs.TailCallCodeBlockScope())
                                                     {
-                                                        using (new EditorOnlyCodeGen(this))
+                                                        var editorTypesMap = new Dictionary<string, List<TypeBindingInfo>>();
+                                                        foreach (var type in module)
                                                         {
-                                                            foreach (var type in editorTypes)
+                                                            if (type.requiredDefines.Count != 0)
+                                                            {
+                                                                var defs = string.Join(" && ", from def in type.requiredDefines select def);
+                                                                List<TypeBindingInfo> list;
+                                                                if (!editorTypesMap.TryGetValue(defs, out list))
+                                                                {
+                                                                    editorTypesMap[defs] = list = new List<TypeBindingInfo>();
+                                                                }
+                                                                list.Add(type);
+                                                            }
+                                                            else
                                                             {
                                                                 method.AddModuleEntry(runtimeVarName, moduleVarName, type);
+                                                            }
+                                                        }
+
+                                                        foreach (var editorTypes in editorTypesMap)
+                                                        {
+                                                            using (new EditorOnlyCodeGen(this, editorTypes.Key))
+                                                            {
+                                                                foreach (var type in editorTypes.Value)
+                                                                {
+                                                                    method.AddModuleEntry(runtimeVarName, moduleVarName, type);
+                                                                }
                                                             }
                                                         }
                                                     }
                                                 }
                                             }
-                                        }
 
-                                        method.AddStatement("{0}.{1}.Bind(runtime);", this.bindingManager.prefs.ns, CodeGenerator.NameOfDelegates);
-                                    } // func: BindAll
-                                } // 'preserved' attribute for func: BindAll
-                            } // class 
-                        } // preserved
-                    } // cs-namespace
-                } // toplevel
-            } // platform
+                                            method.AddStatement("{0}.{1}.Bind(runtime);", this.bindingManager.prefs.ns, CodeGenerator.NameOfDelegates);
+                                        } // func: BindAll
+                                    } // 'preserved' attribute for func: BindAll
+                                } // class 
+                            } // preserved
+                        } // cs-namespace
+                    } // toplevel
+                } // platform
+            } // debug
         }
 
         // 生成委托绑定
@@ -129,46 +138,45 @@ namespace QuickJS.Unity
             this.cs.enabled = (typeBindingFlags & TypeBindingFlags.BindingCode) != 0;
             this.tsDeclare.enabled = (typeBindingFlags & TypeBindingFlags.TypeDefinition) != 0;
 
-            using (new CSPlatformCodeGen(this, TypeBindingFlags.Default))
+            using (new CSDebugCodeGen(this))
             {
-                using (new CSTopLevelCodeGen(this, CodeGenerator.NameOfDelegates))
+                using (new CSPlatformCodeGen(this, TypeBindingFlags.Default))
                 {
-                    using (new CSNamespaceCodeGen(this, this.bindingManager.prefs.ns))
+                    using (new CSTopLevelCodeGen(this, CodeGenerator.NameOfDelegates))
                     {
-                        using (new DelegateWrapperCodeGen(this))
+                        using (new CSNamespaceCodeGen(this, this.bindingManager.prefs.ns))
                         {
-                            for (var i = 0; i < exportedHotfixDelegates.Count; i++)
+                            using (new DelegateWrapperCodeGen(this))
                             {
-                                var bindingInfo = exportedHotfixDelegates[i];
+                                for (var i = 0; i < exportedHotfixDelegates.Count; i++)
+                                {
+                                    var hotfixDelegateBindingInfo = exportedHotfixDelegates[i];
 
-                                using (new PreservedCodeGen(this))
-                                {
-                                    using (new HotfixDelegateCodeGen(this, bindingInfo, i))
-                                    {
-                                    }
-                                }
-                            }
-
-                            SortedList<int, int> specs = new SortedList<int, int>();
-                            for (var i = 0; i < delegateBindingInfos.Length; i++)
-                            {
-                                var bindingInfo = delegateBindingInfos[i];
-                                var nargs = bindingInfo.parameters.Length;
-                                if (!specs.ContainsKey(nargs))
-                                {
-                                    specs.Add(nargs, 0);
-                                }
-                                this.bindingManager.OnPreGenerateDelegate(bindingInfo);
-                                using (new EditorOnlyCodeGen(this, bindingInfo.isEditorRuntime))
-                                {
                                     using (new PreservedCodeGen(this))
                                     {
-                                        using (new DelegateCodeGen(this, bindingInfo, i))
+                                        using (new HotfixDelegateCodeGen(this, hotfixDelegateBindingInfo, i))
                                         {
                                         }
                                     }
                                 }
-                                this.bindingManager.OnPostGenerateDelegate(bindingInfo);
+
+                                for (var i = 0; i < delegateBindingInfos.Length; i++)
+                                {
+                                    var delegateBindingInfo = delegateBindingInfos[i];
+                                    var nargs = delegateBindingInfo.parameters.Length;
+
+                                    this.bindingManager.OnPreGenerateDelegate(delegateBindingInfo);
+                                    using (new EditorOnlyCodeGen(this, delegateBindingInfo.requiredDefines))
+                                    {
+                                        using (new PreservedCodeGen(this))
+                                        {
+                                            using (new DelegateCodeGen(this, delegateBindingInfo, i))
+                                            {
+                                            }
+                                        }
+                                    }
+                                    this.bindingManager.OnPostGenerateDelegate(delegateBindingInfo);
+                                }
                             }
                         }
                     }
@@ -189,16 +197,20 @@ namespace QuickJS.Unity
         {
             this.cs.enabled = (typeBindingInfo.bindingFlags & TypeBindingFlags.BindingCode) != 0 && (typeBindingFlags & TypeBindingFlags.BindingCode) != 0;
             this.tsDeclare.enabled = (typeBindingInfo.bindingFlags & TypeBindingFlags.TypeDefinition) != 0 && (typeBindingFlags & TypeBindingFlags.TypeDefinition) != 0;
+            var defs = string.Join(" && ", from def in typeBindingInfo.requiredDefines select def);
 
-            using (new EditorOnlyCodeGen(this, typeBindingInfo.isEditorRuntime))
+            using (new CSDebugCodeGen(this))
             {
-                using (new CSPlatformCodeGen(this, TypeBindingFlags.Default))
+                using (new EditorOnlyCodeGen(this, defs))
                 {
-                    using (new CSTopLevelCodeGen(this, typeBindingInfo))
+                    using (new CSPlatformCodeGen(this, TypeBindingFlags.Default))
                     {
-                        using (new CSNamespaceCodeGen(this, this.bindingManager.prefs.ns))
+                        using (new CSTopLevelCodeGen(this, typeBindingInfo))
                         {
-                            GenerateInternal(typeBindingInfo);
+                            using (new CSNamespaceCodeGen(this, this.bindingManager.prefs.ns))
+                            {
+                                GenerateInternal(typeBindingInfo);
+                            }
                         }
                     }
                 }

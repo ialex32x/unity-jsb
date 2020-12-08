@@ -59,7 +59,7 @@ namespace QuickJS.Unity
 
         private void CollectImports()
         {
-            if (typeBindingInfo.isEditorRuntime)
+            if (typeBindingInfo.requiredDefines.Count != 0)
             {
                 _jsbImport = true;
             }
@@ -228,12 +228,27 @@ namespace QuickJS.Unity
                 return;
             }
 
+            if (!_jsbImport)
+            {
+                var defs = new HashSet<string>();
+                this.cg.bindingManager.CollectTypeRequiredDefines(defs, type);
+                this.cg.bindingManager.CollectTypeRequiredDefines(defs, type.DeclaringType);
+                if (defs.Count != 0)
+                {
+                    _jsbImport = true;
+                }
+            }
+
             if (type.BaseType == typeof(MulticastDelegate))
             {
                 var delegateBindingInfo = this.cg.bindingManager.GetDelegateBindingInfo(type);
 
                 if (delegateBindingInfo != null)
                 {
+                    if (!_jsbImport && !string.IsNullOrEmpty(delegateBindingInfo.requiredDefines))
+                    {
+                        _jsbImport = true;
+                    }
                     AddModuleAlias(delegateBindingInfo.returnType);
                     foreach (var p in delegateBindingInfo.parameters)
                     {

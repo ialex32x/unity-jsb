@@ -29,9 +29,9 @@ namespace QuickJS.Unity
         public bool genBindingCode => (bindingFlags & TypeBindingFlags.BindingCode) != 0;
 
         /// <summary>
-        /// 是否只生成于编辑器运行时
+        /// 所需编译选项的列表
         /// </summary>
-        public bool isEditorRuntime => transform.isEditorRuntime;
+        public HashSet<string> requiredDefines => transform.requiredDefines;
 
         // 父类类型
         public Type super => type.BaseType;

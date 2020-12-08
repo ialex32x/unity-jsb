@@ -14,21 +14,22 @@ namespace QuickJS.Unity
         public HashSet<Type> types = new HashSet<Type>();
         public Type returnType;
         public ParameterInfo[] parameters;
-        public bool isEditorRuntime;
+        public string requiredDefines;
 
-        public DelegateBridgeBindingInfo(Type returnType, ParameterInfo[] parameters, bool isEditorRuntime)
+        public DelegateBridgeBindingInfo(Type returnType, ParameterInfo[] parameters, string requiredDefines)
         {
             this.returnType = returnType;
             this.parameters = parameters;
-            this.isEditorRuntime = isEditorRuntime;
+            this.requiredDefines = requiredDefines;
         }
 
-        public bool Equals(Type returnType, ParameterInfo[] parameters, bool isEditorRuntime)
+        public bool Equals(Type returnType, ParameterInfo[] parameters, string requiredDefines)
         {
-            if (this.isEditorRuntime != isEditorRuntime)
+            if (this.requiredDefines != requiredDefines)
             {
                 return false;
             }
+            
             if (returnType != this.returnType || parameters.Length != this.parameters.Length)
             {
                 return false;
@@ -49,6 +50,5 @@ namespace QuickJS.Unity
 
             return true;
         }
-
     }
 }

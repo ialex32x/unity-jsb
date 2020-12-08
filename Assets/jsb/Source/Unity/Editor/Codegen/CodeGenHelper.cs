@@ -10,6 +10,28 @@ namespace QuickJS.Unity
     using UnityEngine;
     using UnityEditor;
 
+    public class CSDebugCodeGen : IDisposable
+    {
+        protected CodeGenerator cg;
+
+        public CSDebugCodeGen(CodeGenerator cg)
+        {
+            this.cg = cg;
+            if (cg.bindingManager.prefs.debugCodegen)
+            {
+                this.cg.cs.AppendLine("/*");
+            }
+        }
+
+        public void Dispose()
+        {
+            if (cg.bindingManager.prefs.debugCodegen)
+            {
+                this.cg.cs.AppendLine("*/");
+            }
+        }
+    }
+
     public class CSTopLevelCodeGen : IDisposable
     {
         protected CodeGenerator cg;
@@ -30,11 +52,6 @@ namespace QuickJS.Unity
 
         private void AppendCommonHead()
         {
-            if (cg.bindingManager.prefs.debugCodegen)
-            {
-                this.cg.cs.AppendLine("/*");
-            }
-            
             this.cg.cs.AppendLine("// Unity: {0}", Application.unityVersion);
             this.cg.cs.AppendLine("using System;");
             this.cg.cs.AppendLine("using System.Collections.Generic;");
@@ -43,10 +60,6 @@ namespace QuickJS.Unity
 
         private void AppendCommonTail()
         {
-            if (cg.bindingManager.prefs.debugCodegen)
-            {
-                this.cg.cs.AppendLine("*/");
-            }
         }
 
         public void Dispose()
@@ -364,22 +377,26 @@ namespace QuickJS.Unity
     public class EditorOnlyCodeGen : IDisposable
     {
         protected CodeGenerator cg;
-        protected bool isEditorOnly;
+        protected string requiredDefines;
 
-        public EditorOnlyCodeGen(CodeGenerator cg, bool isEditorOnly = true)
+        public EditorOnlyCodeGen(CodeGenerator cg, string requiredDefines)
         {
             this.cg = cg;
-            this.isEditorOnly = isEditorOnly;
-            if (isEditorOnly)
+            this.requiredDefines = requiredDefines;
+            if (!string.IsNullOrEmpty(requiredDefines))
             {
-                cg.cs.AppendLineL("#if UNITY_EDITOR");
+                cg.cs.AppendLineL("#if {0}", requiredDefines);
             }
         }
 
+        public EditorOnlyCodeGen(CodeGenerator cg, bool isEditorRuntime = true)
+        : this(cg, isEditorRuntime ? "UNITY_EDITOR" : null)
+        {
+        }
 
         public void Dispose()
         {
-            if (isEditorOnly)
+            if (!string.IsNullOrEmpty(requiredDefines))
             {
                 cg.cs.AppendLineL("#endif");
             }

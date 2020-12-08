@@ -58,9 +58,9 @@ declare module "jsb" {
     interface Task<T> { }
 
     /**
-     * 标记一个类型仅编辑器环境可用 (该修饰器并不存在实际定义, 仅用于标记, 不要在代码中使用)
+     * 标记一个类型仅在特定编译选项下存在 (该修饰器并不存在实际定义, 仅用于标记, 不要在代码中使用)
      */
-    function EditorRuntime(target: any);
+    function RequiredDefines(...targets: string[]);
 
     /**
      * 替换C#代码执行 (未完成此功能)
