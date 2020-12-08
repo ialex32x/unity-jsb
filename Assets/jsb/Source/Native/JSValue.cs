@@ -130,6 +130,7 @@ namespace QuickJS.Native
                     return a.tag == JSApi.JS_TAG_FLOAT64 ? a.u.float64 == b.u.float64 : a.u.int32 == b.u.int32;
                 }
 
+                // 注意: 引用类型的 JSValue 的基于指针地址判断, 没有经过 js_*_compare 的真实比较语义, 但通常情况下这足够了
                 return a.u.ptr == b.u.ptr;
             }
             return false;
