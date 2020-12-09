@@ -14,6 +14,7 @@ BUGFIX:
     ☐ 考虑 Worker 传递消息时 C# 对象的传输 (使用加锁共享池?)
     ☐ JS Worker SAB
     ☐ types lazy load (代替 warmup)
+    ☐ V8 backend (windows) 
     ✔ 导出的目标代码段对 UNITY_EDITOR 的要求改为更通用的 Defines 集合的要求 @done(20-12-08 13:47)
 
 编辑器支持:
