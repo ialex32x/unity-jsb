@@ -10,7 +10,7 @@
 * JS异步函数与 Unity 协程/ C# Tasking 的结合 (limited support)
 * 支持运算符重载 +, -, *, /, ==, -(负)
 * 支持 JS 字节码 (QuickJS)
-* extends MonoBehaviour / EditorWindow in scripts
+* extends MonoBehaviour/EditorWindow/Editor in scripts
 * [初步] 支持 JS Worker (limited support)
 * [初步] 支持未导出的C#类型的 JS 交互
 * [初步] 支持 C# 代码热更 (hotfix, limited support)
@@ -44,6 +44,8 @@ Extra 为可选附加模块, 提供不同的特定功能, 不需要的直接删�
 // 通过 VSCode 等编辑器, 可以很方便地自动填写 import 语句
 import { MonoBehaviour, WaitForSeconds, Object, GameObject } from "UnityEngine";
 
+// 通过 @Inspector 可以指定由脚本实现的编辑器 (script implemented custom editor extends UnityEngine.Editor)
+// 详见 example_monobehaviour.ts 例子
 class MyClass extends MonoBehaviour {
     protected _tick = 0;
 
