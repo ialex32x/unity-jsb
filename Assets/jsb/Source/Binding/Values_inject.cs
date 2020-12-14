@@ -9,21 +9,6 @@ namespace QuickJS.Binding
 
     public partial class Values
     {
-        // inject MonoBehaviour.Constructor
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        protected static JSValue _js_mono_behaviour_constructor(JSContext ctx, JSValue new_target)
-        {
-            var proto = JSApi.JS_GetProperty(ctx, new_target, JSApi.JS_ATOM_prototype);
-            if (!proto.IsException())
-            {
-                var val = JSApi.JS_NewObjectProtoClass(ctx, proto, JSApi.JSB_GetBridgeClassID());
-                JSApi.JS_FreeValue(ctx, proto);
-                return val;
-            }
-
-            return proto;
-        }
-
         // inject GameObject.AddComponent(Type);
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         protected static JSValue _js_game_object_add_component(JSContext ctx, JSValue ctor, GameObject gameObject, Type type)

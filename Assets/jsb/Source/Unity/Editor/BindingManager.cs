@@ -103,16 +103,7 @@ namespace QuickJS.Unity
             ;
 
             TransformType(typeof(MonoBehaviour))
-                .WriteCSConstructorBinding((bindPoint, cg, info) =>
-                {
-                    if (bindPoint == BindingPoints.METHOD_BINDING_FULL)
-                    {
-                        cg.cs.AppendLine("return _js_mono_behaviour_constructor(ctx, new_target);");
-                        return true;
-                    }
-
-                    return false;
-                });
+                .WriteCrossBindingConstructor();
 
             var buildTarget = EditorUserBuildSettings.activeBuildTarget;
             if (buildTarget != BuildTarget.iOS)

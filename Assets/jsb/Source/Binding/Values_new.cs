@@ -11,6 +11,29 @@ namespace QuickJS.Binding
     public partial class Values
     {
         /// <summary>
+        /// 用于脚本中继承 C# 类型时取代常规构造流程
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        protected static JSValue _js_crossbind_constructor(JSContext ctx, JSValue new_target)
+        {
+            var proto = JSApi.JS_GetProperty(ctx, new_target, JSApi.JS_ATOM_prototype);
+            if (!proto.IsException())
+            {
+                var val = JSApi.JS_NewObjectProtoClass(ctx, proto, JSApi.JSB_GetBridgeClassID());
+                JSApi.JS_FreeValue(ctx, proto);
+                return val;
+            }
+
+            return proto;
+        }
+
+        [Obsolete("use _js_crossbind_constructor instead (please regenerate the binding code")]
+        protected static JSValue _js_mono_behaviour_constructor(JSContext ctx, JSValue new_target)
+        {
+            return _js_crossbind_constructor(ctx, new_target);
+        }
+
+        /// <summary>
         /// 用于对由 js 构造产生的 c# 对象产生一个 js 包装对象 
         /// 注意: 此函数签名发生变化时, 用于优化的所有重载匹配函数需要统一变化
         /// </summary>

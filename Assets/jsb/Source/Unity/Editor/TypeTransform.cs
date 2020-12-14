@@ -425,6 +425,20 @@ namespace QuickJS.Unity
             return this;
         }
 
+        public TypeTransform WriteCrossBindingConstructor(params Type[] parameters)
+        {
+            return WriteCSConstructorBinding((bindPoint, cg, info) =>
+            {
+                if (bindPoint == BindingPoints.METHOD_BINDING_FULL)
+                {
+                    cg.cs.AppendLine("return _js_crossbind_constructor(ctx, new_target);");
+                    return true;
+                }
+
+                return false;
+            }, parameters);
+        }
+
         public TypeTransform WriteCSMethodBinding(Func<string, CodeGenerator, object, bool> writer, string methodName, params Type[] parameters)
         {
             var method = _type.GetMethod(methodName, parameters);
