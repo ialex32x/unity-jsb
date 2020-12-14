@@ -18,7 +18,7 @@ BUGFIX:
     ✔ 导出的目标代码段对 UNITY_EDITOR 的要求改为更通用的 Defines 集合的要求 @done(20-12-08 13:47)
 
 编辑器支持:
-    ☐ JS Behaviour Inspector 支持使用脚本定义编辑器
+    ✔ JS Behaviour Inspector 支持使用脚本定义编辑器 @done(20-12-14 19:45)
     ☐ 完善 JSEditorWindow 功能
 
 Codegen:
