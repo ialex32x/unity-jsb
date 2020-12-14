@@ -27,7 +27,7 @@ namespace QuickJS.Binding
             return proto;
         }
 
-        [Obsolete("use _js_crossbind_constructor instead (please regenerate the binding code")]
+        [Obsolete("use _js_crossbind_constructor instead (please regenerate the binding code)")]
         protected static JSValue _js_mono_behaviour_constructor(JSContext ctx, JSValue new_target)
         {
             return _js_crossbind_constructor(ctx, new_target);
