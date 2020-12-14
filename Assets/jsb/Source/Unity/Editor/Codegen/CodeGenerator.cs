@@ -163,7 +163,7 @@ namespace QuickJS.Unity
                                 for (var i = 0; i < delegateBindingInfos.Length; i++)
                                 {
                                     var delegateBindingInfo = delegateBindingInfos[i];
-                                    var nargs = delegateBindingInfo.parameters.Length;
+                                    // var nargs = delegateBindingInfo.parameters.Length;
 
                                     this.bindingManager.OnPreGenerateDelegate(delegateBindingInfo);
                                     using (new EditorOnlyCodeGen(this, delegateBindingInfo.requiredDefines))
@@ -339,6 +339,82 @@ namespace QuickJS.Unity
             {
                 this.bindingManager.Error("write typescript declaration file failed [{0}]: {1}", filename, exception.Message);
             }
+        }
+
+        // 对参数进行取值, 如果此参数无需取值, 则返回 false
+        // methodBase: (optional) 提供辅助异常信息
+        public bool WriteParameterGetter(ParameterInfo parameter, int index, string argname, MethodBase methodBase)
+        {
+            var ptype = parameter.ParameterType;
+            var argType = this.bindingManager.GetCSTypeFullName(ptype);
+
+            this.cs.AppendLine($"{argType} {argname};");
+            // 非 out 参数才需要取值
+            if (!parameter.IsOut || !parameter.ParameterType.IsByRef)
+            {
+                if (ptype == typeof(Native.JSContext))
+                {
+                    this.cs.AppendLine("{0} = ctx;", argname);
+                    return false;
+                }
+
+                if (ptype == typeof(ScriptContext))
+                {
+                    this.cs.AppendLine("{0} = {1}.GetContext(ctx);", argname, nameof(ScriptEngine));
+                    return false;
+                }
+
+                if (ptype == typeof(Native.JSRuntime))
+                {
+                    this.cs.AppendLine("{0} = JSApi.JS_GetRuntime(ctx);", argname);
+                    return false;
+                }
+
+                if (ptype == typeof(ScriptRuntime))
+                {
+                    this.cs.AppendLine("{0} = {1}.GetRuntime(ctx);", argname, nameof(ScriptEngine));
+                    return false;
+                }
+
+                var isRefWrapper = parameter.ParameterType.IsByRef && !parameter.IsOut;
+
+                // process ref parameter get
+                string getVal;
+                string refValVar = null;
+                if (isRefWrapper)
+                {
+                    refValVar = $"refVal{index}";
+                    this.cs.AppendLine("var {0} = js_read_wrap(ctx, argv[{1}]);", refValVar, index);
+                    getVal = refValVar;
+
+                    this.cs.AppendLine("if ({0}.IsException())", refValVar);
+                    using (this.cs.CodeBlockScope())
+                    {
+                        this.cs.AppendLine("return {0};", refValVar);
+                    }
+                }
+                else
+                {
+                    getVal = $"argv[{index}]";
+                }
+                var getter = this.bindingManager.GetScriptObjectGetter(ptype, "ctx", getVal, argname);
+                this.cs.AppendLine("if (!{0})", getter);
+                using (this.cs.CodeBlockScope())
+                {
+                    if (isRefWrapper)
+                    {
+                        this.cs.AppendLine("JSApi.JS_FreeValue(ctx, {0});", refValVar);
+                    }
+                    this.WriteParameterException(methodBase, argType, index);
+                }
+                if (isRefWrapper)
+                {
+                    this.cs.AppendLine("JSApi.JS_FreeValue(ctx, {0});", refValVar);
+                }
+                return true;
+            }
+
+            return true;
         }
 
         // type: csharp 方法本身返回值的类型
@@ -608,6 +684,23 @@ namespace QuickJS.Unity
                     this.tsDeclare.AppendLine("/** {0}", lines[0]);
                 }
                 this.tsDeclare.AppendLine(" */");
+            }
+        }
+
+        public void WriteParameterException(MethodBase methodBase, Type argType, int argIndex)
+        {
+            WriteParameterException(methodBase.DeclaringType, methodBase.Name, argType, argIndex);
+        }
+
+        public void WriteParameterException(MethodBase methodBase, string argTypeStr, int argIndex)
+        {
+            if (methodBase != null)
+            {
+                WriteParameterException(methodBase.DeclaringType, methodBase.Name, argTypeStr, argIndex);
+            }
+            else
+            {
+                WriteParameterException("?", "?", argTypeStr, argIndex);
             }
         }
 

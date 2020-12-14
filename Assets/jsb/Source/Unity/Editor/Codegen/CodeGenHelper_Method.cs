@@ -136,7 +136,7 @@ namespace QuickJS.Unity
                 }
                 else
                 {
-                    if (WriteParameterGetter(methodBase, parameter, assignIndex, $"arg{i}"))
+                    if (this.cg.WriteParameterGetter(parameter, assignIndex, $"arg{i}", methodBase))
                     {
                         assignIndex++;
                     }
@@ -148,81 +148,6 @@ namespace QuickJS.Unity
         protected virtual void InvokeVoidReturn()
         {
             cg.cs.AppendLine("return JSApi.JS_UNDEFINED;");
-        }
-
-        // 对参数进行取值, 如果此参数无需取值, 则返回 false
-        protected bool WriteParameterGetter(MethodBase methodBase, ParameterInfo parameter, int index, string argname)
-        {
-            var ptype = parameter.ParameterType;
-            var argType = this.cg.bindingManager.GetCSTypeFullName(ptype);
-
-            this.cg.cs.AppendLine($"{argType} {argname};");
-            // 非 out 参数才需要取值
-            if (!parameter.IsOut || !parameter.ParameterType.IsByRef)
-            {
-                if (ptype == typeof(Native.JSContext))
-                {
-                    this.cg.cs.AppendLine("{0} = ctx;", argname);
-                    return false;
-                }
-
-                if (ptype == typeof(ScriptContext))
-                {
-                    this.cg.cs.AppendLine("{0} = {1}.GetContext(ctx);", argname, nameof(ScriptEngine));
-                    return false;
-                }
-
-                if (ptype == typeof(Native.JSRuntime))
-                {
-                    this.cg.cs.AppendLine("{0} = JSApi.JS_GetRuntime(ctx);", argname);
-                    return false;
-                }
-
-                if (ptype == typeof(ScriptRuntime))
-                {
-                    this.cg.cs.AppendLine("{0} = {1}.GetRuntime(ctx);", argname, nameof(ScriptEngine));
-                    return false;
-                }
-
-                var isRefWrapper = parameter.ParameterType.IsByRef && !parameter.IsOut;
-
-                // process ref parameter get
-                string getVal;
-                string refValVar = null;
-                if (isRefWrapper)
-                {
-                    refValVar = $"refVal{index}";
-                    this.cg.cs.AppendLine("var {0} = js_read_wrap(ctx, argv[{1}]);", refValVar, index);
-                    getVal = refValVar;
-
-                    this.cg.cs.AppendLine("if ({0}.IsException())", refValVar);
-                    using (this.cg.cs.CodeBlockScope())
-                    {
-                        this.cg.cs.AppendLine("return {0};", refValVar);
-                    }
-                }
-                else
-                {
-                    getVal = $"argv[{index}]";
-                }
-                var getter = this.cg.bindingManager.GetScriptObjectGetter(ptype, "ctx", getVal, argname);
-                this.cg.cs.AppendLine("if (!{0})", getter);
-                using (this.cg.cs.CodeBlockScope())
-                {
-                    if (isRefWrapper)
-                    {
-                        this.cg.cs.AppendLine("JSApi.JS_FreeValue(ctx, {0});", refValVar);
-                    }
-                    this.cg.WriteParameterException(methodBase.DeclaringType, methodBase.Name, argType, index);
-                }
-                if (isRefWrapper)
-                {
-                    this.cg.cs.AppendLine("JSApi.JS_FreeValue(ctx, {0});", refValVar);
-                }
-                return true;
-            }
-
-            return true;
         }
 
         // 输出所有变体绑定
@@ -812,7 +737,7 @@ namespace QuickJS.Unity
             for (var i = 0; i < last; i++)
             {
                 var argname = $"arg{i}";
-                if (this.WriteParameterGetter(method, parameters[i], assignIndex, argname))
+                if (this.cg.WriteParameterGetter(parameters[i], assignIndex, argname, method))
                 {
                     assignIndex++;
                 }
@@ -823,7 +748,7 @@ namespace QuickJS.Unity
                 }
             }
             var argname_last = $"arg{last}";
-            this.WriteParameterGetter(method, parameters[last], assignIndex, argname_last);
+            this.cg.WriteParameterGetter(parameters[last], assignIndex, argname_last, method);
             return $"{caller}[{arglist_t}] = {argname_last}"; // setter
         }
 
@@ -835,7 +760,7 @@ namespace QuickJS.Unity
             for (var i = 0; i < last; i++)
             {
                 var argname = $"arg{i}";
-                if (this.WriteParameterGetter(method, parameters[i], assignIndex, argname))
+                if (this.cg.WriteParameterGetter(parameters[i], assignIndex, argname, method))
                 {
                     assignIndex++;
                 }
