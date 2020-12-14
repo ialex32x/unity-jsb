@@ -1,4 +1,4 @@
-﻿
+﻿#if UNITY_EDITOR
 namespace QuickJS.Unity
 {
     using UnityEditor;
@@ -63,3 +63,4 @@ namespace QuickJS.Unity
         }
     }
 }
+#endif

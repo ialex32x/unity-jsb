@@ -237,6 +237,7 @@ namespace QuickJS
             _typeDB.AddType(typeof(Unity.JSBehaviour), JSApi.JS_UNDEFINED);
 #if UNITY_EDITOR
             _typeDB.AddType(typeof(Unity.JSEditorWindow), JSApi.JS_UNDEFINED);
+            _typeDB.AddType(typeof(Unity.JSBehaviourInspector), JSApi.JS_UNDEFINED);
 #endif
             listener.OnCreate(this);
 
