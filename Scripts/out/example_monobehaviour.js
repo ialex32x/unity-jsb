@@ -1,9 +1,16 @@
 "use strict";
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.MySubClass = exports.MyClass = void 0;
 const UnityEngine_1 = require("UnityEngine");
 const jsb = require("jsb");
-class MyClass extends UnityEngine_1.MonoBehaviour {
+const inspector_1 = require("./editor/decorators/inspector");
+let MyClass = class MyClass extends UnityEngine_1.MonoBehaviour {
     constructor() {
         super(...arguments);
         this.vv = 0;
@@ -30,12 +37,18 @@ class MyClass extends UnityEngine_1.MonoBehaviour {
             console.log(point.x, point.y, point.z);
         }
     }
+    speak(text) {
+        console.log(text);
+    }
     async test() {
         console.log("MyClass.test (will be destroied after 5 secs.", this.transform);
         await jsb.Yield(new UnityEngine_1.WaitForSeconds(5));
         UnityEngine_1.Object.Destroy(this.gameObject);
     }
-}
+};
+MyClass = __decorate([
+    inspector_1.Inspector("editor/inspector/my_class_inspector", "MyClassInspector")
+], MyClass);
 exports.MyClass = MyClass;
 class MySubClass extends MyClass {
     Awake() {

@@ -1,6 +1,8 @@
 import { MonoBehaviour, WaitForSeconds, Object, Input, Camera, GameObject } from "UnityEngine";
 import * as jsb from "jsb";
+import { Inspector } from "./editor/decorators/inspector";
 
+@Inspector("editor/inspector/my_class_inspector", "MyClassInspector")
 export class MyClass extends MonoBehaviour {
     vv = 0;
     protected _tick = 0;
@@ -29,6 +31,10 @@ export class MyClass extends MonoBehaviour {
             let point = ray.origin;
             console.log(point.x, point.y, point.z);
         }
+    }
+
+    speak(text: string) {
+        console.log(text);
     }
 
     async test() {

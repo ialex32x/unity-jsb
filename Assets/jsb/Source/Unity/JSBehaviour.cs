@@ -15,6 +15,9 @@ namespace QuickJS.Unity
             get { return _scriptTypeName; }
         }
 
+        // unsafe
+        public JSContext ctx { get { return _ctx; } }
+
         private bool _released;
         private JSContext _ctx;
         private JSValue _this_obj;
@@ -70,6 +73,11 @@ namespace QuickJS.Unity
                 return JSApi.JS_UNDEFINED;
             }
             return JSApi.JS_DupValue(_ctx, _this_obj);
+        }
+
+        public JSValue GetProperty(string key)
+        {
+            return JSApi.JS_GetPropertyStr(_ctx, _this_obj, key);
         }
 
         public unsafe void ForEachProperty(Action<JSContext, JSAtom, JSValue> callback)

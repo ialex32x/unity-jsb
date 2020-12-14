@@ -1,0 +1,1 @@
+{"version":3,"file":"inspector.js","sourceRoot":"","sources":["../../../src/editor/decorators/inspector.ts"],"names":[],"mappings":";;;AACA,SAAgB,SAAS,CAAC,IAAY,EAAE,SAAiB;IACrD,OAAO,UAAU,MAAW;QACxB,SAAS;QACT,MAAM,CAAC,SAAS,CAAC,UAAU,GAAG,OAAO,CAAC,IAAI,CAAC,CAAC,SAAS,CAAC,CAAC;QACvD,OAAO,MAAM,CAAC;IAClB,CAAC,CAAA;AACL,CAAC;AAND,8BAMC"}

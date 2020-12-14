@@ -92,12 +92,22 @@ namespace jsb.Editor
             bindingManager.AddExportedType(typeof(BuildPipeline)).EditorRuntime().SetAllConstructorsBlocked();
             bindingManager.AddExportedType(typeof(AssetDatabase)).EditorRuntime().SetAllConstructorsBlocked();
             bindingManager.AddExportedType(typeof(ShaderUtil)).EditorRuntime().SetAllConstructorsBlocked();
-            bindingManager.AddExportedType(typeof(Editor)).EditorRuntime().SetAllConstructorsBlocked();
             bindingManager.AddExportedType(typeof(EditorUtility)).EditorRuntime().SetAllConstructorsBlocked();
             bindingManager.AddExportedType(typeof(EditorGUI)).EditorRuntime().SetAllConstructorsBlocked();
             bindingManager.AddExportedType(typeof(EditorGUIUtility)).EditorRuntime().SetAllConstructorsBlocked();
             bindingManager.AddExportedType(typeof(EditorGUILayout)).EditorRuntime().SetAllConstructorsBlocked();
             bindingManager.AddExportedType(typeof(EditorApplication)).EditorRuntime().SetAllConstructorsBlocked();
+            bindingManager.AddExportedType(typeof(Editor)).EditorRuntime()
+                .WriteCSConstructorBinding((bindPoint, cg, info) =>
+                {
+                    if (bindPoint == BindingPoints.METHOD_BINDING_FULL)
+                    {
+                        cg.cs.AppendLine("return _js_mono_behaviour_constructor(ctx, new_target);");
+                        return true;
+                    }
+
+                    return false;
+                });
             bindingManager.AddExportedType(typeof(EditorWindow)).EditorRuntime()
                 .SetMemberBlocked("GetWindowWithRect")
                 //TODO: 此方法需要接管, 待处理, 暂时屏蔽
