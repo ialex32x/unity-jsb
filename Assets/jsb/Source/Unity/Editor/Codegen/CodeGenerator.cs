@@ -345,12 +345,22 @@ namespace QuickJS.Unity
         // methodBase: (optional) 提供辅助异常信息
         public bool WriteParameterGetter(ParameterInfo parameter, int index, string argname, MethodBase methodBase)
         {
-            var ptype = parameter.ParameterType;
-            var argType = this.bindingManager.GetCSTypeFullName(ptype);
-
-            this.cs.AppendLine($"{argType} {argname};");
             // 非 out 参数才需要取值
-            if (!parameter.IsOut || !parameter.ParameterType.IsByRef)
+            var argAssign = !parameter.IsOut || !parameter.ParameterType.IsByRef;
+            return WriteParameterGetter(parameter, index, true, argname, argAssign, methodBase);
+        }
+
+        public bool WriteParameterGetter(ParameterInfo parameter, int index, bool argDecl, string argname, bool argAssign, MethodBase methodBase)
+        {
+            var ptype = parameter.ParameterType;
+            var argTypeStr = this.bindingManager.GetCSTypeFullName(parameter.ParameterType);
+
+            if (argDecl)
+            {
+                this.cs.AppendLine($"{argTypeStr} {argname};");
+            }
+
+            if (argAssign)
             {
                 if (ptype == typeof(Native.JSContext))
                 {
@@ -405,7 +415,7 @@ namespace QuickJS.Unity
                     {
                         this.cs.AppendLine("JSApi.JS_FreeValue(ctx, {0});", refValVar);
                     }
-                    this.WriteParameterException(methodBase, argType, index);
+                    this.WriteParameterException(methodBase, argTypeStr, index);
                 }
                 if (isRefWrapper)
                 {

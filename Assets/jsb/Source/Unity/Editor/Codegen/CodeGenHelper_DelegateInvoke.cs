@@ -111,50 +111,49 @@ namespace QuickJS.Unity
         protected void _WriteBackParameters(ParameterInfo[] parameters)
         {
             //TODO: 支持 ref/out, 并替换 ref/out 实现, 反向回填, 从 jsvalue 取值并回写给ref/out参数
+            // var pIndex = 0;
+            // var oIndex = 0;
+            // var pBase = pIndex;
+            // var needContext = true;
+            // for (; pIndex < parameters.Length; pIndex++)
+            // {
+            //     var parameter = parameters[pIndex];
+            //     var pType = parameter.ParameterType;
 
-            var pIndex = 0;
-            var oIndex = 0;
-            var pBase = pIndex;
-            var needContext = true;
-            for (; pIndex < parameters.Length; pIndex++)
-            {
-                var parameter = parameters[pIndex];
-                var pType = parameter.ParameterType;
+            //     if (!pType.IsByRef
+            //      || pType == typeof(Native.JSContext) || pType == typeof(Native.JSRuntime)
+            //      || pType == typeof(ScriptContext) || pType == typeof(ScriptRuntime))
+            //     {
+            //         continue;
+            //     }
 
-                if (!pType.IsByRef
-                 || pType == typeof(Native.JSContext) || pType == typeof(Native.JSRuntime)
-                 || pType == typeof(ScriptContext) || pType == typeof(ScriptRuntime))
-                {
-                    continue;
-                }
+            //     var baseIndex = pIndex - pBase;
 
-                var baseIndex = pIndex - pBase;
+            //     this.cg.WriteParameterGetter(parameter, pIndex, false, parameter.Name, true, null);
+            //     // var pusher = cg.AppendValuePusher(parameter.ParameterType, $"arg{baseIndex}");
 
-                this.cg.WriteParameterGetter(parameter, pIndex, parameter.Name, null);
-                // var pusher = cg.AppendValuePusher(parameter.ParameterType, $"arg{baseIndex}");
+            //     // cg.cs.AppendLine("var out{0} = {1};", oIndex, pusher);
+            //     // cg.cs.AppendLine("{0} = {1};", parameter.Name, );
+            //     // cg.cs.AppendLine("if (JSApi.JS_IsException(out{0}))", oIndex);
+            //     // using (cg.cs.CodeBlockScope())
+            //     // {
+            //     //     // for (var j = 0; j < oIndex; j++)
+            //     //     // {
+            //     //     //     cg.cs.AppendLine("JSApi.JS_FreeValue(ctx, out{0});", j);
+            //     //     // }
+            //     //     OnBeforeExceptionReturn();
+            //     //     cg.cs.AppendLine("return out{0};", oIndex);
+            //     // }
 
-                // cg.cs.AppendLine("var out{0} = {1};", oIndex, pusher);
-                // cg.cs.AppendLine("{0} = {1};", parameter.Name, );
-                // cg.cs.AppendLine("if (JSApi.JS_IsException(out{0}))", oIndex);
-                // using (cg.cs.CodeBlockScope())
-                // {
-                //     // for (var j = 0; j < oIndex; j++)
-                //     // {
-                //     //     cg.cs.AppendLine("JSApi.JS_FreeValue(ctx, out{0});", j);
-                //     // }
-                //     OnBeforeExceptionReturn();
-                //     cg.cs.AppendLine("return out{0};", oIndex);
-                // }
+            //     // if (needContext)
+            //     // {
+            //     //     cg.cs.AppendLine("var context = ScriptEngine.GetContext(ctx);");
+            //     //     needContext = false;
+            //     // }
 
-                // if (needContext)
-                // {
-                //     cg.cs.AppendLine("var context = ScriptEngine.GetContext(ctx);");
-                //     needContext = false;
-                // }
-
-                // cg.cs.AppendLine("JSApi.JS_SetProperty(ctx, argv[{0}], context.GetAtom(\"value\"), out{1});", baseIndex, oIndex);
-                oIndex++;
-            }
+            //     // cg.cs.AppendLine("JSApi.JS_SetProperty(ctx, argv[{0}], context.GetAtom(\"value\"), out{1});", baseIndex, oIndex);
+            //     oIndex++;
+            // }
         }
 
         private void CheckReturnValue()
