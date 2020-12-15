@@ -465,7 +465,7 @@ namespace QuickJS.Unity
             for (var i = 0; i < size; i++)
             {
                 var parameter = parameters[i];
-                var typename = GetTSTypeFullName(parameter.ParameterType);
+                var typename = GetTSTypeFullName(parameter.ParameterType, parameter.IsOut);
                 if (withVarName)
                 {
                     arglist += this.cg.bindingManager.GetTSVariable(parameter) + ": ";
