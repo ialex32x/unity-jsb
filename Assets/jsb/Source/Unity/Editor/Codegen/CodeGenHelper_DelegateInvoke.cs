@@ -51,23 +51,39 @@ namespace QuickJS.Unity
 
             if (nargs > 0)
             {
+                var getContext = false;
                 this.cg.cs.AppendLine("var argv = stackalloc JSValue[{0}];", nargs);
                 for (var i = 0; i < nargs; i++)
                 {
                     var parameter = inputParameters[i];
-                    var pusher = this.cg.AppendValuePusher(parameter.ParameterType, parameter.Name);
-                    this.cg.cs.AppendLine("argv[{0}] = {1};", i, pusher);
-                    this.cg.cs.AppendLine("if (argv[{0}].IsException())", i);
-                    this.cg.cs.AppendLine("{");
-                    this.cg.cs.AddTabLevel();
-                    for (var j = 0; j < i; j++)
+                    if (parameter.ParameterType.IsByRef)
                     {
-                        this.cg.cs.AppendLine("JSApi.JS_FreeValue(ctx, argv[{0}]);", j);
+                        if (parameter.IsOut)
+                        {
+                            var pusher = "JSApi.JS_NewObject(ctx)";
+                            this.cg.cs.AppendLine("argv[{0}] = {1};", i, pusher);
+                            CheckParameterException(i);
+                        }
+                        else
+                        {
+                            var pusher = "JSApi.JS_NewObject(ctx)";
+                            var value_pusher = this.cg.AppendValuePusher(parameter.ParameterType, parameter.Name);
+                            this.cg.cs.AppendLine("argv[{0}] = {1};", i, pusher);
+                            CheckParameterException(i);
+                            if (!getContext)
+                            {
+                                getContext = true;
+                                cg.cs.AppendLine("var context = ScriptEngine.GetContext(ctx);");
+                            }
+                            cg.cs.AppendLine("JSApi.JS_SetProperty(ctx, argv[{0}], context.GetAtom(\"value\"), {1});", i, value_pusher);
+                        }
                     }
-
-                    this.cg.cs.AppendLine("throw new Exception(ctx.GetExceptionString());");
-                    this.cg.cs.DecTabLevel();
-                    this.cg.cs.AppendLine("}");
+                    else
+                    {
+                        var pusher = this.cg.AppendValuePusher(parameter.ParameterType, parameter.Name);
+                        this.cg.cs.AppendLine("argv[{0}] = {1};", i, pusher);
+                        CheckParameterException(i);
+                    }
                 }
                 this.cg.cs.AppendLine("var rval = fn.Invoke(ctx, {0}, argv);", nargs);
             }
@@ -76,16 +92,17 @@ namespace QuickJS.Unity
                 this.cg.cs.AppendLine("var rval = fn.Invoke(ctx);");
             }
 
-            _WriteBackParameters(inputParameters);
+            CheckReturnValue(nargs);
+            _WriteBackParameters(nargs, inputParameters);
 
             if (delegateBindingInfo.returnType != typeof(void))
             {
                 this.cg.cs.AppendLine($"{this.cg.bindingManager.GetCSTypeFullName(delegateBindingInfo.returnType)} {retName};");
                 var getter = this.cg.bindingManager.GetScriptObjectGetter(delegateBindingInfo.returnType, "ctx", "rval", retName);
-                this.cg.cs.AppendLine("var succ = {0};", getter);
 
+                this.cg.cs.AppendLine("var succ = {0};", getter);
+                FreeRVal();
                 FreeArgs(nargs);
-                CheckReturnValue();
 
                 this.cg.cs.AppendLine("if (succ)");
                 this.cg.cs.AppendLine("{");
@@ -102,68 +119,79 @@ namespace QuickJS.Unity
             }
             else
             {
-                FreeArgs(nargs);
-                CheckReturnValue();
+                FreeRVal();
             }
         }
 
-        // 回填 ref/out 参数
-        protected void _WriteBackParameters(ParameterInfo[] parameters)
+        protected void CheckParameterException(int argIndex)
         {
-            //TODO: 支持 ref/out, 并替换 ref/out 实现, 反向回填, 从 jsvalue 取值并回写给ref/out参数
-            // var pIndex = 0;
-            // var oIndex = 0;
-            // var pBase = pIndex;
-            // var needContext = true;
-            // for (; pIndex < parameters.Length; pIndex++)
-            // {
-            //     var parameter = parameters[pIndex];
-            //     var pType = parameter.ParameterType;
+            this.cg.cs.AppendLine("if (argv[{0}].IsException())", argIndex);
+            this.cg.cs.AppendLine("{");
+            this.cg.cs.AddTabLevel();
+            for (var j = 0; j < argIndex; j++)
+            {
+                this.cg.cs.AppendLine("JSApi.JS_FreeValue(ctx, argv[{0}]);", j);
+            }
 
-            //     if (!pType.IsByRef
-            //      || pType == typeof(Native.JSContext) || pType == typeof(Native.JSRuntime)
-            //      || pType == typeof(ScriptContext) || pType == typeof(ScriptRuntime))
-            //     {
-            //         continue;
-            //     }
-
-            //     var baseIndex = pIndex - pBase;
-
-            //     this.cg.WriteParameterGetter(parameter, pIndex, false, parameter.Name, true, null);
-            //     // var pusher = cg.AppendValuePusher(parameter.ParameterType, $"arg{baseIndex}");
-
-            //     // cg.cs.AppendLine("var out{0} = {1};", oIndex, pusher);
-            //     // cg.cs.AppendLine("{0} = {1};", parameter.Name, );
-            //     // cg.cs.AppendLine("if (JSApi.JS_IsException(out{0}))", oIndex);
-            //     // using (cg.cs.CodeBlockScope())
-            //     // {
-            //     //     // for (var j = 0; j < oIndex; j++)
-            //     //     // {
-            //     //     //     cg.cs.AppendLine("JSApi.JS_FreeValue(ctx, out{0});", j);
-            //     //     // }
-            //     //     OnBeforeExceptionReturn();
-            //     //     cg.cs.AppendLine("return out{0};", oIndex);
-            //     // }
-
-            //     // if (needContext)
-            //     // {
-            //     //     cg.cs.AppendLine("var context = ScriptEngine.GetContext(ctx);");
-            //     //     needContext = false;
-            //     // }
-
-            //     // cg.cs.AppendLine("JSApi.JS_SetProperty(ctx, argv[{0}], context.GetAtom(\"value\"), out{1});", baseIndex, oIndex);
-            //     oIndex++;
-            // }
+            this.cg.cs.AppendLine("throw new Exception(ctx.GetExceptionString());");
+            this.cg.cs.DecTabLevel();
+            this.cg.cs.AppendLine("}");
         }
 
-        private void CheckReturnValue()
+        // 回填 ref/out 参数
+        protected void _WriteBackParameters(int nargs, ParameterInfo[] parameters)
+        {
+            for (int pIndex = 0, pCount = parameters.Length; pIndex < pCount; pIndex++)
+            {
+                var parameter = parameters[pIndex];
+                var pType = parameter.ParameterType;
+
+                if (!pType.IsByRef
+                 || pType == typeof(Native.JSContext) || pType == typeof(Native.JSRuntime)
+                 || pType == typeof(ScriptContext) || pType == typeof(ScriptRuntime))
+                {
+                    continue;
+                }
+
+                var refValVar = $"refVal{pIndex}";
+                this.cg.cs.AppendLine("var {0} = js_read_wrap(ctx, argv[{1}]);", refValVar, pIndex);
+
+                this.cg.cs.AppendLine("if ({0}.IsException())", refValVar);
+                using (this.cg.cs.CodeBlockScope())
+                {
+                    FreeRVal();
+                    FreeArgs(nargs);
+                    this.cg.cs.AppendLine("throw new Exception(ctx.GetExceptionString());");
+                }
+
+                var getter = this.cg.bindingManager.GetScriptObjectGetter(pType, "ctx", refValVar, parameter.Name);
+                this.cg.cs.AppendLine("if (!{0})", getter);
+                using (this.cg.cs.CodeBlockScope())
+                {
+                    var argTypeStr = this.cg.bindingManager.GetCSTypeFullName(parameter.ParameterType);
+
+                    FreeRVal();
+                    FreeArgs(nargs);
+                    this.cg.cs.AppendLine("JSApi.JS_FreeValue(ctx, {0});", refValVar);
+                    this.cg.WriteParameterException(CodeGenerator.NameOfDelegates, this.delegateBindingInfo.types.ToArray()[0].Name, argTypeStr, pIndex);
+                }
+                this.cg.cs.AppendLine("JSApi.JS_FreeValue(ctx, {0});", refValVar);
+            }
+        }
+
+        private void CheckReturnValue(int nargs)
         {
             this.cg.cs.AppendLine("if (rval.IsException())");
             this.cg.cs.AppendLine("{");
             this.cg.cs.AddTabLevel();
+            FreeArgs(nargs);
             this.cg.cs.AppendLine("throw new Exception(ctx.GetExceptionString());");
             this.cg.cs.DecTabLevel();
             this.cg.cs.AppendLine("}");
+        }
+
+        private void FreeRVal()
+        {
             this.cg.cs.AppendLine("JSApi.JS_FreeValue(ctx, rval);");
         }
 

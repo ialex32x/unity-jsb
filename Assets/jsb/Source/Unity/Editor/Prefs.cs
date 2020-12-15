@@ -57,6 +57,11 @@ namespace QuickJS.Unity
         public bool debugCodegen = false;
 
         /// <summary>
+        /// 忽略带 ref/out 参数的 delegate 绑定
+        /// </summary>
+        public bool skipDelegateWithByRefParams = false;
+
+        /// <summary>
         /// 代码生成过程中记录更详细的日志
         /// </summary>
         public bool verboseLog = true;

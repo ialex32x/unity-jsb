@@ -586,7 +586,7 @@ namespace QuickJS.Unity
             var pIndex = isExtension ? 1 : 0;
             var oIndex = 0;
             var pBase = pIndex;
-            var needContext = true;
+            var getContext = false;
             for (; pIndex < parameters.Length; pIndex++)
             {
                 var parameter = parameters[pIndex];
@@ -614,10 +614,10 @@ namespace QuickJS.Unity
                     cg.cs.AppendLine("return out{0};", oIndex);
                 }
 
-                if (needContext)
+                if (!getContext)
                 {
                     cg.cs.AppendLine("var context = ScriptEngine.GetContext(ctx);");
-                    needContext = false;
+                    getContext = true;
                 }
 
                 cg.cs.AppendLine("JSApi.JS_SetProperty(ctx, argv[{0}], context.GetAtom(\"value\"), out{1});", baseIndex, oIndex);

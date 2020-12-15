@@ -3,15 +3,24 @@ using System;
 
 namespace Example
 {
-    //TODO: 暂时不支持
-    //TODO: 先调整 ref/out 在脚本中的约定, 从返回值约定改为参数Ref<T>/Out<T>包装约定
-    //TODO: 然后提供此支持
-    public delegate void UnsupportedAtPresent_Callback(out int v);
+    public delegate int WithByRefParametersCallback(int b, ref int a, out int v);
 
     [JSType]
     public class DelegateTest
     {
-        public UnsupportedAtPresent_Callback unsupported;
+        public WithByRefParametersCallback complexCall;
+        public void TestComplexCall()
+        {
+            if (complexCall != null)
+            {
+                int b = 1;
+                int a = 2;
+                int v;
+                int r = complexCall(b, ref a, out v);
+                UnityEngine.Debug.Log($"TestComplexCall: b={b} a={a} v={v} r={r}");
+            }
+        }
+
         public Action actionFieldRW;
         public readonly Action actionFieldR;
         public Action actionPropG { get; }

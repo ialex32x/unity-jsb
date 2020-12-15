@@ -3,6 +3,13 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const Example_1 = require("Example");
 if (module == require.main) {
     let actions = new Example_1.DelegateTest();
+    print("测试: 带 ref/out 的委托");
+    actions.complexCall("add", (b, a, v) => {
+        a.value += b;
+        v.value = 999;
+        return 789;
+    });
+    actions.TestComplexCall();
     print("测试: 无参数的委托");
     console.log("********** add");
     actions.onAction("add", function () {

@@ -654,7 +654,7 @@ namespace QuickJS.Unity
                     log.AppendLine("skip generic delegate: [{0}] {1}", delegateType, invoke);
                     return;
                 }
-                if (ContainsByRefParameters(invoke))
+                if (prefs.skipDelegateWithByRefParams && ContainsByRefParameters(invoke))
                 {
                     log.AppendLine("skip ByRef delegate (unsupported yet): [{0}] {1}", delegateType, invoke);
                     return;
