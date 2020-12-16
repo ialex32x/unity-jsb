@@ -11,6 +11,7 @@ export class MyClassInspector extends Editor {
         let p = <MyClass>this.target;
 
         EditorGUILayout.HelpBox("WHY ARE YOU SO SERIOUS?", MessageType.Info);
+        EditorGUILayout.ObjectField("Object", p.gameObject, Object, true);
         EditorGUILayout.IntField("vv", p.vv);
         if (GUILayout.Button("test")) {
             p.speak("hello");

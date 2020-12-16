@@ -10,6 +10,7 @@ class MyClassInspector extends UnityEditor_1.Editor {
     OnInspectorGUI() {
         let p = this.target;
         UnityEditor_1.EditorGUILayout.HelpBox("WHY ARE YOU SO SERIOUS?", UnityEditor_1.MessageType.Info);
+        UnityEditor_1.EditorGUILayout.ObjectField("Object", p.gameObject, UnityEngine_1.Object, true);
         UnityEditor_1.EditorGUILayout.IntField("vv", p.vv);
         if (UnityEngine_1.GUILayout.Button("test")) {
             p.speak("hello");
