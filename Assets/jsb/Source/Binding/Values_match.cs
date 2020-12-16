@@ -85,7 +85,7 @@ namespace QuickJS.Binding
                     var types = context.GetTypeDB();
                     var o = types.GetType(type_id);
                     // Debug.Log($"get type from exported registry {o}:{type_id} expected:{type}");
-                    return o.IsSubclassOf(type);
+                    return o == type || o.IsSubclassOf(type);
                 }
 
                 var header = JSApi.jsb_get_payload_header(jsValue);
