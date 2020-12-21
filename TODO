@@ -24,6 +24,7 @@ BUGFIX:
 
 Codegen:
     ☐ 提供选项自动添加关联类型的导出 (如果是泛型具体类, 且对应基类已经导出, 那么自动导出此泛型具体类)
+    ✔ 生成所有导出类的JS模块列表 (可用于 webpack.config 中直接载入并作为 externals 配置项) (Prefs.jsModulePackInfo) @done(20-12-21 22:04)
     ☐ 子类中存在不同签名的同名方法时 (非虚)  时, 输出 ts-ignore
     ☐ 在单一文件中生成 cs 代码
     ☐ jsb.autogen.d.ts 调整

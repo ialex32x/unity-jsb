@@ -1,0 +1,19 @@
+{
+    "modules": {
+        "UnityEngine": "commonjs2 UnityEngine",
+        "System.Collections": "commonjs2 System.Collections",
+        "System.Collections.Generic": "commonjs2 System.Collections.Generic",
+        "UnityEditor.IMGUI.Controls": "commonjs2 UnityEditor.IMGUI.Controls",
+        "UnityEditor": "commonjs2 UnityEditor",
+        "UnityEditor.Build.Reporting": "commonjs2 UnityEditor.Build.Reporting",
+        "FairyGUI": "commonjs2 FairyGUI",
+        "FairyGUI.Utils": "commonjs2 FairyGUI.Utils",
+        "System": "commonjs2 System",
+        "System.Net": "commonjs2 System.Net",
+        "System.IO": "commonjs2 System.IO",
+        "global": "commonjs2 global",
+        "Example": "commonjs2 Example",
+        "Example.New.World": "commonjs2 Example.New.World",
+        "QuickJS.IO": "commonjs2 QuickJS.IO"
+    }
+}

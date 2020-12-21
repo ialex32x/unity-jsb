@@ -51,6 +51,7 @@ namespace QuickJS.Unity
         {
             this.cs.enabled = (typeBindingFlags & TypeBindingFlags.BindingCode) != 0;
             this.tsDeclare.enabled = (typeBindingFlags & TypeBindingFlags.TypeDefinition) != 0;
+            var jsmEntries = new List<string>();
 
             using (new CSDebugCodeGen(this))
             {
@@ -86,6 +87,8 @@ namespace QuickJS.Unity
                                                     var runtimeVarName = "rt";
                                                     var moduleVarName = "module";
                                                     this.cs.AppendLine($"runtime.AddStaticModuleProxy(\"{moduleName}\", ({runtimeVarName}, {moduleVarName}) => ");
+                                                    jsmEntries.Add(moduleName); 
+
                                                     using (this.cs.TailCallCodeBlockScope())
                                                     {
                                                         var editorTypesMap = new Dictionary<string, List<TypeBindingInfo>>();
@@ -130,6 +133,31 @@ namespace QuickJS.Unity
                     } // toplevel
                 } // platform
             } // debug
+
+            if (!string.IsNullOrEmpty(this.bindingManager.prefs.jsModulePackInfoPath))
+            {
+                var tab = this.bindingManager.prefs.tab;
+                var newline = this.bindingManager.prefs.newline;
+                var jsm = new TextGenerator(newline, tab);
+                jsm.AppendLine("{");
+                jsm.AddTabLevel();
+                jsm.AppendLine("\"modules\": {");
+                jsm.AddTabLevel();
+                for (var i = 0; i < jsmEntries.Count; i++)
+                {
+                    var moduleName = jsmEntries[i];
+                    var entry = $"\"{moduleName}\": \"commonjs2 {moduleName}\"";
+                    jsm.AppendLine(i != jsmEntries.Count - 1 ? $"{entry}," : entry);
+                }
+                jsm.DecTabLevel();
+                jsm.AppendLine("}");
+                jsm.DecTabLevel();
+                jsm.AppendLine("}");
+                if (jsm.enabled && jsm.size > 0)
+                {
+                    WriteAllText(this.bindingManager.prefs.jsModulePackInfoPath, jsm);
+                }
+            }
         }
 
         // 生成委托绑定

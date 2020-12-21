@@ -32,6 +32,11 @@ namespace QuickJS.Unity
         public string xmlDocDir = "Assets/Generated/Docs";
 
         /// <summary>
+        /// 生成绑定代码时输出一份 JS 模块列表信息
+        /// </summary>
+        public string jsModulePackInfoPath = "jsb-modules.json";
+
+        /// <summary>
         /// 是否生成 typescript 声明文件中的文档注释
         /// </summary>
         public bool genTypescriptDoc = true;

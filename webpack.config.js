@@ -4,6 +4,17 @@ const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 const webpack = require('webpack');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
+const fs = require('fs');
+
+const jsbm = JSON.parse(fs.readFileSync('jsb-modules.json'));
+jsbm.modules['jsb'] = 'commonjs2 jsb';
+
+// jsbm.modules = {
+//     'jsb': 'commonjs2 jsb', 
+//     'Example': 'commonjs2 Example', 
+//     'UnityEngine': 'commonjs2 UnityEngine', 
+//     'System.IO': 'commonjs2 System.IO'
+// };
 
 module.exports = {
     entry: {
@@ -14,12 +25,7 @@ module.exports = {
         filename: '[name].js',
         path: path.resolve(__dirname, './Scripts/dist')
     },
-    externals: {
-        'jsb': 'commonjs2 jsb', 
-        'Example': 'commonjs2 Example', 
-        'UnityEngine': 'commonjs2 UnityEngine', 
-        'System.IO': 'commonjs2 System.IO'
-    },
+    externals: jsbm.modules,
     module: {
         rules: [{
             test: /\.tsx?$/,
