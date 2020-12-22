@@ -832,6 +832,12 @@ namespace QuickJS.Unity
                         return $"{arglist[0]} > {arglist[1]}";
                     case "op_GreaterThanOrEqual":
                         return $"{arglist[0]} >= {arglist[1]}";
+                    case "op_Division":
+                        return $"{arglist[0]} / {arglist[1]}";
+                    case "op_Multiply":
+                        return $"{arglist[0]} * {arglist[1]}";
+                    case "op_UnaryNegation":
+                        return $"-{arglist[0]}";
                     case "op_Explicit":
                     case "op_Implicit":
                         var implicitTypeName = this.cg.bindingManager.GetCSTypeFullName(GetReturnType(method));
