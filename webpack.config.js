@@ -7,14 +7,11 @@ const HtmlWebpackPlugin = require('html-webpack-plugin');
 const fs = require('fs');
 
 const jsbm = JSON.parse(fs.readFileSync('jsb-modules.json'));
-jsbm.modules['jsb'] = 'commonjs2 jsb';
-
-// jsbm.modules = {
-//     'jsb': 'commonjs2 jsb', 
-//     'Example': 'commonjs2 Example', 
-//     'UnityEngine': 'commonjs2 UnityEngine', 
-//     'System.IO': 'commonjs2 System.IO'
-// };
+let external_modules = {};
+for (let m of jsbm.modules) {
+    external_modules[m] = `commonjs2 ${m}`;
+}
+external_modules['jsb'] = 'commonjs2 jsb';
 
 module.exports = {
     entry: {
