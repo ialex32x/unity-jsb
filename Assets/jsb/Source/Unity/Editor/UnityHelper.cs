@@ -43,7 +43,7 @@ namespace QuickJS.Unity
         [MenuItem("JS Bridge/Generate Bindings And Type Definition")]
         public static void GenerateBindingsAndTypeDefinition()
         {
-            var bm = new BindingManager(Prefs.Load());
+            var bm = new BindingManager(Prefs.Load(), new DefaultBindingCallback());
             bm.Collect();
             bm.Generate(TypeBindingFlags.Default);
             bm.Cleanup();
@@ -54,7 +54,7 @@ namespace QuickJS.Unity
         [MenuItem("JS Bridge/Generate Type Definition")]
         public static void GenerateTypeDefinition()
         {
-            var bm = new BindingManager(Prefs.Load());
+            var bm = new BindingManager(Prefs.Load(), new DefaultBindingCallback());
             bm.Collect();
             bm.Generate(TypeBindingFlags.TypeDefinition);
             bm.Cleanup();

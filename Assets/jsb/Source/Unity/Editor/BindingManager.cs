@@ -45,6 +45,8 @@ namespace QuickJS.Unity
         // 自定义的处理流程
         private List<IBindingProcess> _bindingProcess = new List<IBindingProcess>();
 
+        private IBindingCallback _callback;
+
         // ruleName: text => text
         private Dictionary<string, Func<string, string>> _nameRules = new Dictionary<string, Func<string, string>>();
         // text => text
@@ -61,13 +63,14 @@ namespace QuickJS.Unity
             );
         }
 
-        public BindingManager(Prefs prefs)
+        public BindingManager(Prefs prefs, IBindingCallback callback)
         {
             this.prefs = prefs;
             this.dateTime = DateTime.Now;
             var tab = prefs.tab;
             var newline = prefs.newline;
 
+            _callback = callback;
             _typePrefixBlacklist = new List<string>(prefs.typePrefixBlacklist);
             _blacklist = new HashSet<Type>();
             log = new TextGenerator(newline, tab);
@@ -1473,7 +1476,9 @@ namespace QuickJS.Unity
             }
         }
 
-        // 导出一些必要的基本类型 (预实现的辅助功能需要用到, DuktapeJS)
+        /// <summary>
+        /// 导出一些必要的基本类型
+        /// </summary>
         private void ExportBuiltins()
         {
             AddExportedType(typeof(byte)).SystemRuntime();
@@ -1661,10 +1666,7 @@ namespace QuickJS.Unity
                 try
                 {
                     current++;
-                    cancel = EditorUtility.DisplayCancelableProgressBar(
-                        "Generating",
-                        $"{current}/{total}: {typeBindingInfo.FullName}",
-                        (float)current / total);
+                    cancel = _callback.OnTypeGenerating(typeBindingInfo, current, total);
                     if (cancel)
                     {
                         Warn("operation canceled");
@@ -1753,7 +1755,8 @@ namespace QuickJS.Unity
             catch (Exception)
             {
             }
-            EditorUtility.ClearProgressBar();
+
+            _callback.OnGenerateFinish();
         }
 
         public void Report()
