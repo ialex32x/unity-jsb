@@ -81,3 +81,4 @@ WSA*.pfx
 /Scripts/dist
 /External/UIProject/*
 !/External/UIProject/plugins
+jsb-modules.json
