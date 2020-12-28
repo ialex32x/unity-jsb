@@ -22,7 +22,7 @@ module.exports = {
         filename: '[name].js',
         path: path.resolve(__dirname, './Scripts/dist')
     },
-    externals: jsbm.modules,
+    externals: external_modules,
     module: {
         rules: [{
             test: /\.tsx?$/,
