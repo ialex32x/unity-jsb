@@ -79,12 +79,12 @@ namespace QuickJS.Binding
                 }
 
                 var context = ScriptEngine.GetContext(ctx);
-                var type_id = JSApi.JSB_GetBridgeType(ctx, jsValue, context.GetAtom(Values.KeyForCSharpTypeID));
+                var type_id = JSApi.JSB_GetBridgeType(ctx, jsValue, context.GetAtom(Values.KeyForCSharpTypeID)); // 通常来自 prototype
                 if (type_id >= 0)
                 {
                     var types = context.GetTypeDB();
                     var o = types.GetType(type_id);
-                    // Debug.Log($"get type from exported registry {o}:{type_id} expected:{type}");
+                    // UnityEngine.Debug.Log($"get type from exported registry {o}:{type_id} expected:{type}");
                     return o != null && (o == type || o.IsSubclassOf(type));
                 }
 

@@ -158,6 +158,7 @@ namespace QuickJS.Binding
             var decl = new ClassDecl(this, ctorVal, protoVal, type);
             JSApi.JS_SetConstructor(ctx, ctorVal, protoVal);
             JSApi.JSB_SetBridgeType(ctx, ctorVal, GetAtom(Values.KeyForCSharpTypeID), type_id);
+            JSApi.JSB_SetBridgeType(ctx, protoVal, GetAtom(Values.KeyForCSharpTypeID), type_id);
             if (!nsValue.IsNullish())
             {
                 JSApi.JS_DefinePropertyValue(ctx, nsValue, nameAtom, ctorVal, JSPropFlags.JS_PROP_ENUMERABLE | JSPropFlags.JS_PROP_CONFIGURABLE);

@@ -136,6 +136,7 @@ namespace QuickJS.Binding
             if (proto.IsNullish())
             {
                 _type_id = db.AddType(_type, JSApi.JS_UNDEFINED);
+                // UnityEngine.Debug.Log($"add dynamic type {_type}: {_type_id}");
 
                 #region BindConstructors(register, flags, type_id);
                 var constructors = _type.GetConstructors(flags);
