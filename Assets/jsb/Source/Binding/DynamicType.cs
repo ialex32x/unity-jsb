@@ -87,6 +87,8 @@ namespace QuickJS.Binding
 
                 if (methodInfo.IsSpecialName)
                 {
+                    var enableOperatorOverloading = false;
+
                     //TODO: 反射方式的运算符重载注册
                     if (name.StartsWith("op_"))
                     {
@@ -106,7 +108,11 @@ namespace QuickJS.Binding
                                 break;
                         }
                     }
-                    continue;
+
+                    if (enableOperatorOverloading)
+                    {
+                        continue;
+                    }
                 }
 
                 var map = methodInfo.IsStatic ? staticMap : instMap;
