@@ -18,6 +18,8 @@ namespace QuickJS.Unity
 
         public TypeBindingFlags bindingFlags => transform.bindingFlags;
 
+        public bool crossbind => transform.crossbind;
+
         /// <summary>
         /// 是否完全由 JS 托管 (JS对象释放时, CS对象即释放)
         /// </summary>

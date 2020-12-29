@@ -14,7 +14,7 @@ namespace QuickJS.Binding
         /// 用于脚本中继承 C# 类型时取代常规构造流程
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        protected static JSValue _js_crossbind_constructor(JSContext ctx, JSValue new_target)
+        public static JSValue _js_crossbind_constructor(JSContext ctx, JSValue new_target)
         {
             var proto = JSApi.JS_GetProperty(ctx, new_target, JSApi.JS_ATOM_prototype);
             if (!proto.IsException())

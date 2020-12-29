@@ -14,7 +14,7 @@ namespace QuickJS.Unity
         {
         }
 
-        public void AddTypeReference(string moduleName, Type type, string[] elements, string jsName)
+        public void AddTypeReference(string moduleName, TypeBindingInfo typeBindingInfo, string[] elements, string jsName)
         {
         }
 

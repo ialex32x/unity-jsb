@@ -22,7 +22,10 @@ namespace QuickJS.Unity
         private JSHotfixAttribute _hotfix;
         private string _typeNaming;
         private bool _enableOperatorOverloading = true;
+        private bool _crossbind = false;
         private bool _disposable;
+
+        public bool crossbind => _crossbind;
 
         public bool disposable => _disposable;
 
@@ -427,6 +430,7 @@ namespace QuickJS.Unity
 
         public TypeTransform WriteCrossBindingConstructor(params Type[] parameters)
         {
+            _crossbind = true;
             return WriteCSConstructorBinding((bindPoint, cg, info) =>
             {
                 if (bindPoint == BindingPoints.METHOD_BINDING_FULL)

@@ -42,7 +42,7 @@ namespace QuickJS.Unity
             var jsNamespace = CodeGenUtils.Concat(", ", CodeGenUtils.ConcatAsLiteral(", ", elements), $"\"{jsNameNormalized}\"");
 
             AddStatement($"{runtimeVarName}.AddTypeReference({moduleVarName}, typeof({csType}), {csNamespace}.{csBindingName}.Bind, {jsNamespace});");
-            this.cg.bindingManager.callback.AddTypeReference(moduleName, typeBindingInfo.type, elements, jsNameNormalized);
+            this.cg.bindingManager.callback.AddTypeReference(moduleName, typeBindingInfo, elements, jsNameNormalized);
         }
     }
 }

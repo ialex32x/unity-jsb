@@ -44,6 +44,12 @@ namespace QuickJS.Binding
                 return js_get_cached_object(ctx, val, out o);
             }
 
+            //TODO: 在期望类型非常宽泛的情况下(比如 object), 怎么合理自适应处理
+            if (val.IsString() && type.IsAssignableFrom(typeof(string)))
+            {
+                return js_value_cast_string(ctx, val, out o);
+            }
+
             o = null;
             return false;
         }

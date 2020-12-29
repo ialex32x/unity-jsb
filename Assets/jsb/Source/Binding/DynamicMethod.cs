@@ -125,11 +125,13 @@ namespace QuickJS.Binding
     {
         private DynamicType _type;
         private ConstructorInfo _ctor;
+        private bool _crossbind;
 
-        public DynamicConstructor(DynamicType type, ConstructorInfo ctor)
+        public DynamicConstructor(DynamicType type, ConstructorInfo ctor, bool crossbind)
         {
             _type = type;
             _ctor = ctor;
+            _crossbind = crossbind;
         }
 
         public override ParameterInfo[] GetParameters()
@@ -165,6 +167,13 @@ namespace QuickJS.Binding
                     return JSApi.JS_ThrowInternalError(ctx, "failed to cast val");
                 }
             }
+
+            if (_crossbind)
+            {
+                UnityEngine.Debug.LogFormat($"_js_crossbind_constructor {_type}");
+                return Values._js_crossbind_constructor(ctx, this_obj);
+            }
+
             var inst = _ctor.Invoke(args);
             var val = Values.NewBridgeClassObject(ctx, this_obj, inst, _type.id, false);
             return val;

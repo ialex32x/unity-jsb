@@ -24,11 +24,14 @@ namespace QuickJS.Unity
             _moduleReg = new Module.ProxyModuleRegister(_runtime);
         }
 
-        public void AddTypeReference(string moduleName, Type type, string[] elements, string jsName)
+        public void AddTypeReference(string moduleName, TypeBindingInfo typeBindingInfo, string[] elements, string jsName)
         {
             var typeDB = _runtime.GetTypeDB();
             var ns = CodeGenUtils.NormalizeEx(elements, jsName);
-            _runtime.AddTypeReference(_moduleReg, type, typeDB.GetDynamicTypeBind(type), ns);
+            var type = typeBindingInfo.type;
+            var crossbind = typeBindingInfo.crossbind;
+
+            _runtime.AddTypeReference(_moduleReg, type, typeDB.GetDynamicTypeBind(type, crossbind), ns);
         }
 
         public void EndStaticModule(string moduleName)

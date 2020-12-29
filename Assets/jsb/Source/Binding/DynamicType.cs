@@ -125,7 +125,7 @@ namespace QuickJS.Binding
             }
         }
 
-        public ClassDecl Bind(TypeRegister register)
+        public ClassDecl Bind(TypeRegister register, bool crossbind = false)
         {
             ClassDecl cls;
             var db = register.GetTypeDB();
@@ -146,14 +146,14 @@ namespace QuickJS.Binding
                     var count = constructors.Length;
                     if (count == 1)
                     {
-                        dynamicConstructor = new DynamicConstructor(this, constructors[0]);
+                        dynamicConstructor = new DynamicConstructor(this, constructors[0], crossbind);
                     }
                     else
                     {
                         var overloads = new DynamicMethods("constructor", count);
                         for (var i = 0; i < count; i++)
                         {
-                            var overload = new DynamicConstructor(this, constructors[i]);
+                            var overload = new DynamicConstructor(this, constructors[i], crossbind);
                             overloads.Add(overload);
                         }
                         dynamicConstructor = overloads;
