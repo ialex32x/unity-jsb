@@ -10,6 +10,18 @@ namespace QuickJS.Unity
 
     public class DefaultBindingCallback : IBindingCallback
     {
+        public void BeginStaticModule(string moduleName)
+        {
+        }
+
+        public void AddTypeReference(string moduleName, Type type, string[] elements, string jsName)
+        {
+        }
+
+        public void EndStaticModule(string moduleName)
+        {
+        }
+
         public bool OnTypeGenerating(TypeBindingInfo typeBindingInfo, int current, int total)
         {
             return EditorUtility.DisplayCancelableProgressBar(

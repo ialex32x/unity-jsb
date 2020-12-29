@@ -29,14 +29,27 @@ namespace QuickJS.Unity
             return gArgIndex < 0 ? name : name.Substring(0, gArgIndex);
         }
 
+        public static string[] NormalizeEx(string[] values, string additional)
+        {
+            var list = new List<string>(values.Length + 1);
+            list.AddRange(values);
+            list.Add(additional);
+            return Normalize(list.ToArray());
+        }
+
+        public static string[] Normalize(params string[] values)
+        {
+            return (from value in values where !string.IsNullOrEmpty(value) select value).ToArray();
+        }
+
         public static string Concat(string sp, params string[] values)
         {
-            return string.Join(sp, from value in values where !string.IsNullOrEmpty(value) select value);
+            return string.Join(sp, Normalize(values));
         }
 
         public static string ConcatAsLiteral(string sp, params string[] values)
         {
-            return string.Join(sp, from value in values where !string.IsNullOrEmpty(value) select $"\"{value}\"");
+            return string.Join(sp, from value in Normalize(values) select $"\"{value}\"");
         }
     }
 }

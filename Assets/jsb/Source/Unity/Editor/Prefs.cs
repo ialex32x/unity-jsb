@@ -47,6 +47,11 @@ namespace QuickJS.Unity
         public bool editorScripting = true;
 
         /// <summary>
+        /// 在没有生成绑定代码的情况下, 是否支持反射绑定
+        /// </summary>
+        public bool reflectBinding = false;
+
+        /// <summary>
         /// 启用运算符重载转换 (禁用后运算符将以 op_* 的形式导出为函数)
         /// </summary>
         public bool enableOperatorOverloading = true;
@@ -196,7 +201,7 @@ namespace QuickJS.Unity
         public string procTypescriptDir => UnityHelper.ReplacePathVars(typescriptDir);
 
         public string path => _filePath;
-        
+
         public const string PATH = "js-bridge.json";
 
         private bool _dirty;

@@ -62,9 +62,14 @@ namespace QuickJS.Unity
             AssetDatabase.Refresh();
         }
 
-        public static void InvokeRuntimeBinding(ScriptRuntime runtime)
+        public static bool IsReflectBindingSupported()
         {
-            var bm = new BindingManager(Prefs.Load(), new RuntimeBindingCallback(runtime));
+            return Prefs.Load().reflectBinding;
+        }
+
+        public static void InvokeReflectBinding(ScriptRuntime runtime)
+        {
+            var bm = new BindingManager(Prefs.Load(), new ReflectBindingCallback(runtime));
             bm.Collect();
             bm.Generate(TypeBindingFlags.None);
             bm.Report();

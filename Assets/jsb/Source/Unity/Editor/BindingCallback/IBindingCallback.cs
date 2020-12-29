@@ -10,6 +10,10 @@ namespace QuickJS.Unity
 
     public interface IBindingCallback
     {
+        void BeginStaticModule(string moduleName);
+        void AddTypeReference(string moduleName, Type type, string[] elements, string jsName);
+        void EndStaticModule(string moduleName);
+
         bool OnTypeGenerating(TypeBindingInfo typeBindingInfo, int current, int total);
         void OnGenerateFinish();
     }

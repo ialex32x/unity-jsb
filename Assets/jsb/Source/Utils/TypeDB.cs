@@ -66,6 +66,17 @@ namespace QuickJS.Utils
             return dynamicType;
         }
 
+        public Module.ModuleExportsBind GetDynamicTypeBind(Type type)
+        {
+            return register =>
+            {
+                var dynamicType = new DynamicType(type, false);
+                var cls = dynamicType.Bind(register);
+                _dynamicTypes[type] = dynamicType;
+                return cls;
+            };
+        }
+
         public void AddDelegate(Type type, MethodInfo method)
         {
             _delegates[type] = method;

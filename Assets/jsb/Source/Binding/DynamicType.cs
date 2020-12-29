@@ -119,7 +119,7 @@ namespace QuickJS.Binding
             }
         }
 
-        public void Bind(TypeRegister register)
+        public ClassDecl Bind(TypeRegister register)
         {
             ClassDecl cls;
             var db = register.GetTypeDB();
@@ -195,6 +195,7 @@ namespace QuickJS.Binding
 
             // var ns = new NamespaceDecl();
             // typeDB.AddType()
+            return cls;
         }
     }
 }

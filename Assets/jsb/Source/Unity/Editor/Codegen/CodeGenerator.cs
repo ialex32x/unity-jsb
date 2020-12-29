@@ -89,6 +89,7 @@ namespace QuickJS.Unity
                                                     var runtimeVarName = "rt";
                                                     var moduleVarName = "module";
                                                     this.cs.AppendLine($"runtime.AddStaticModuleProxy(\"{moduleName}\", ({runtimeVarName}, {moduleVarName}) => ");
+                                                    this.bindingManager.callback.BeginStaticModule(moduleName);
                                                     this.bindResult.modules.Add(moduleName);
 
                                                     using (this.cs.TailCallCodeBlockScope())
@@ -108,7 +109,7 @@ namespace QuickJS.Unity
                                                             }
                                                             else
                                                             {
-                                                                method.AddModuleEntry(runtimeVarName, moduleVarName, type);
+                                                                method.AddModuleEntry(moduleName, runtimeVarName, moduleVarName, type);
                                                             }
                                                         }
 
@@ -118,11 +119,12 @@ namespace QuickJS.Unity
                                                             {
                                                                 foreach (var type in editorTypes.Value)
                                                                 {
-                                                                    method.AddModuleEntry(runtimeVarName, moduleVarName, type);
+                                                                    method.AddModuleEntry(moduleName, runtimeVarName, moduleVarName, type);
                                                                 }
                                                             }
                                                         }
                                                     }
+                                                    this.bindingManager.callback.EndStaticModule(moduleName);
                                                 }
                                             }
 
