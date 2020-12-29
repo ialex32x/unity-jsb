@@ -6,12 +6,13 @@ BUGFIX:
     ✔ 修正重载匹配 (js_match_type 子类也可通过判定) @done(20-12-16 10:10)
 
 必要:
+    ✔ 不生成绑定代码的情况下使用反射模式执行 (只生成 d.ts) (仍待完善) @done(20-12-29 15:30)
+    ☐ 反射模式下支持脚本扩展特定类型 (MonoBehaviour, Editor 等)
     ✔ 带 ref/out 参数支持的委托绑定 @done(20-12-15 20:12)
     ☐ 主模块与一般模块共用一致的加载流程
     ☐ ES模块与require模块逻辑一致
     ☐ linux build (for dotnet core)
     ☐ 额外的运行时通讯机制 (jsb.runtimes, jsb.postMessage)
-    ☐ 反射模式支持运算符重载
     ✔ 多维数组的支持 @done(20-12-08 14:46)
     ☐ 考虑 Worker 传递消息时 C# 对象的传输 (使用加锁共享池?)
     ☐ JS Worker SAB
@@ -43,12 +44,12 @@ Codegen:
     ☐ 代码文档注释
     ☐ quickjs Date 只处理了UTC时间
     ☐ 以更通用且自动化的方式生成可继承的类型
-    ☐ 不生成绑定代码的情况下使用反射模式执行 (只生成 d.ts, 以及一个 type list)
-    ☐ 通过 BindingManager 辅助得到 export types
+    ☐ 反射模式支持运算符重载 (考虑接入v8, 可能取消运算符重载的导入)
+    ✔ [取消] 通过 BindingManager 辅助得到 export types (此功能已通过反射调用直接介入运行时) @done(20-12-29 15:32)
     ☐ 在 unity_qjs.c 中提供 fopen/fread/fclose (为了绕过 C# 中对已经在其他程序中打开的独占文件的读取限制)
     ✔ [取消] 增加运行时平台分类 @done(20-12-08 15:25)
     ☐ [可能不合理] 提供 reload 接口 (清空指定模块, 并使用原 parent 进行重新载入)
-    ☐ [可能不合理] 模块发生重载时，关联模块也需要重载
+    ☐ [可能不合理] 模块发生重载时, 关联模块也需要重载
 
 2020-12-02 v1.2.1:
     ✔ github workflows @done(20-12-02 20:14)
