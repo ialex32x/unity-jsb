@@ -159,7 +159,7 @@ namespace QuickJS
                 }
             }
 
-            return JSApi.JS_ThrowInternalError(context, "module can not be resolved");
+            return JSApi.JS_ThrowInternalError(context, $"module can not be resolved ({module_id})");
         }
 
         public void Initialize(IFileSystem fileSystem, IPathResolver resolver, IScriptRuntimeListener listener, IAsyncManager asyncManager, IScriptLogger logger, IO.IByteBufferAllocator byteBufferAllocator)
@@ -187,19 +187,21 @@ namespace QuickJS
                 {
                     throw new Exception("generate binding code before run");
                 }
-
-                var codeGenVersionField = typeof(Values).GetField("CodeGenVersion");
-                if (codeGenVersionField == null || !codeGenVersionField.IsStatic || !codeGenVersionField.IsLiteral || codeGenVersionField.FieldType != typeof(uint))
+                else
                 {
-                    throw new Exception("binding code version mismatch");
-                }
-
-                var codeGenVersion = (uint)codeGenVersionField.GetValue(null);
-                if (codeGenVersion != ScriptEngine.VERSION)
-                {
-                    if (logger != null)
+                    var codeGenVersionField = typeof(Values).GetField("CodeGenVersion");
+                    if (codeGenVersionField == null || !codeGenVersionField.IsStatic || !codeGenVersionField.IsLiteral || codeGenVersionField.FieldType != typeof(uint))
                     {
-                        logger.Write(LogLevel.Warn, "CodeGenVersion: {0} != {1}", codeGenVersion, ScriptEngine.VERSION);
+                        throw new Exception("binding code version mismatch");
+                    }
+
+                    var codeGenVersion = (uint)codeGenVersionField.GetValue(null);
+                    if (codeGenVersion != ScriptEngine.VERSION)
+                    {
+                        if (logger != null)
+                        {
+                            logger.Write(LogLevel.Warn, "CodeGenVersion: {0} != {1}", codeGenVersion, ScriptEngine.VERSION);
+                        }
                     }
                 }
             }

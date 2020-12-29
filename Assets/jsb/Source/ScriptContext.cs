@@ -567,7 +567,7 @@ namespace QuickJS
             if (JSApi.JS_IsException(jsValue))
             {
                 var ex = _ctx.GetExceptionString();
-                throw new JSException(ex);
+                throw new JSException(ex, fileName);
             }
             object retObject;
             Values.js_get_var(_ctx, jsValue, returnType, out retObject);
