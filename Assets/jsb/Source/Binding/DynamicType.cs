@@ -64,7 +64,7 @@ namespace QuickJS.Binding
                 }
                 else
                 {
-                    var overloads = new DynamicMethods(count);
+                    var overloads = new DynamicMethods(methodName, count);
                     for (var i = 0; i < count; i++)
                     {
                         var methodInfo = methodInfos[i];
@@ -149,7 +149,7 @@ namespace QuickJS.Binding
                     }
                     else
                     {
-                        var overloads = new DynamicMethods(count);
+                        var overloads = new DynamicMethods("constructor", count);
                         for (var i = 0; i < count; i++)
                         {
                             var overload = new DynamicConstructor(this, constructors[i]);
