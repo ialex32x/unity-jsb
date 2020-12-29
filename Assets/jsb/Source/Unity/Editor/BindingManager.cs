@@ -52,6 +52,8 @@ namespace QuickJS.Unity
         // text => text
         private Dictionary<string, string> _globalNameRules = new Dictionary<string, string>();
 
+        public IBindingCallback callback => _callback;
+
         static BindingManager()
         {
             AddTSKeywords(

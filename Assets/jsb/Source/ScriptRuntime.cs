@@ -185,7 +185,31 @@ namespace QuickJS
                 bindAll = typeof(Values).GetMethod("BindAll", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static);
                 if (bindAll == null)
                 {
+#if UNITY_EDITOR
+                    var throwError = true;
+                    foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
+                    {
+                        var UnityHelper = assembly.GetType("QuickJS.Unity.UnityHelper");
+                        if (UnityHelper != null)
+                        {
+                            var InvokeRuntimeBinding = UnityHelper.GetMethod("InvokeRuntimeBinding");
+                            if (InvokeRuntimeBinding != null)
+                            {
+                                InvokeRuntimeBinding.Invoke(null, new object[] { this });
+                                throwError = false;
+                                break;
+                            }
+                            UnityEngine.Debug.Log(assembly.FullName);
+                        }
+                    }
+
+                    if (throwError)
+                    {
+                        throw new Exception("generate binding code before run");
+                    }
+#else 
                     throw new Exception("generate binding code before run");
+#endif
                 }
                 else
                 {

@@ -62,6 +62,14 @@ namespace QuickJS.Unity
             AssetDatabase.Refresh();
         }
 
+        public static void InvokeRuntimeBinding(ScriptRuntime runtime)
+        {
+            var bm = new BindingManager(Prefs.Load(), new RuntimeBindingCallback(runtime));
+            bm.Collect();
+            bm.Generate(TypeBindingFlags.None);
+            bm.Report();
+        }
+
         // [MenuItem("JS Bridge/Compile TypeScript")]
         public static void CompileScripts()
         {
