@@ -164,11 +164,6 @@ namespace QuickJS
 
         public void Initialize(IFileSystem fileSystem, IPathResolver resolver, IScriptRuntimeListener listener, IAsyncManager asyncManager, IScriptLogger logger, IO.IByteBufferAllocator byteBufferAllocator)
         {
-            if (logger == null)
-            {
-                throw new NullReferenceException(nameof(logger));
-            }
-
             if (fileSystem == null)
             {
                 throw new NullReferenceException(nameof(fileSystem));
@@ -199,7 +194,6 @@ namespace QuickJS
                                 throwError = false;
                                 break;
                             }
-                            UnityEngine.Debug.Log(assembly.FullName);
                         }
                     }
 
