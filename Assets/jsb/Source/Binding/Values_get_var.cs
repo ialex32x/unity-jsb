@@ -44,12 +44,6 @@ namespace QuickJS.Binding
                 return js_get_cached_object(ctx, val, out o);
             }
 
-            //TODO: 在期望类型非常宽泛的情况下(比如 object), 怎么合理自适应处理
-            if (val.IsString() && type.IsAssignableFrom(typeof(string)))
-            {
-                return js_value_cast_string(ctx, val, out o);
-            }
-
             o = null;
             return false;
         }
@@ -71,8 +65,36 @@ namespace QuickJS.Binding
             _JSCastMap[typeof(float)] = js_value_cast_float;
             _JSCastMap[typeof(double)] = js_value_cast_double;
             _JSCastMap[typeof(string)] = js_value_cast_string;
+            _JSCastMap[typeof(object)] = js_value_cast_object;
             _JSCastMap[typeof(Type)] = js_value_cast_type;
             _JSCastMap[typeof(ScriptValue)] = js_value_cast_script_value;
+        }
+
+        private static bool js_value_cast_object(JSContext ctx, JSValue val, out object o)
+        {
+            if (val.IsNullish())
+            {
+                o = null;
+                return true;
+            }
+
+            if (val.IsString())
+            {
+                return js_value_cast_string(ctx, val, out o);
+            }
+
+            if (val.IsBoolean())
+            {
+                return js_value_cast_bool(ctx, val, out o);
+            }
+
+            if (val.IsNumber())
+            {
+                return js_value_cast_double(ctx, val, out o);
+            }
+
+            o = null; 
+            return false;
         }
 
         private static bool js_value_cast_void(JSContext ctx, JSValue val, out object o)
