@@ -11,8 +11,6 @@ namespace QuickJS.Binding
 
     public abstract class DynamicMethodBase : IDynamicMethod
     {
-        // private MethodBase _methodBase;
-
         public abstract ParameterInfo[] GetParameters();
 
         public abstract bool CheckArgs(JSContext ctx, int argc, JSValue[] argv);
@@ -25,10 +23,17 @@ namespace QuickJS.Binding
         private DynamicType _type;
         private MethodInfo _methodInfo;
 
+        protected Func<JSContext, object, JSValue> _rvalPusher;
+
         public DynamicMethod(DynamicType type, MethodInfo methodInfo)
         {
             _type = type;
             _methodInfo = methodInfo;
+        }
+
+        public void ReplaceRValPusher(Func<JSContext, object, JSValue> rvalPusher)
+        {
+            _rvalPusher = rvalPusher;
         }
 
         public override ParameterInfo[] GetParameters()
@@ -72,9 +77,15 @@ namespace QuickJS.Binding
                     return JSApi.JS_ThrowInternalError(ctx, "failed to cast val");
                 }
             }
+
             if (_methodInfo.ReturnType != typeof(void))
             {
                 var ret = _methodInfo.Invoke(self, args);
+                
+                if (_rvalPusher != null)
+                {
+                    return _rvalPusher(ctx, ret);
+                }
                 return Values.js_push_var(ctx, ret);
             }
             else
