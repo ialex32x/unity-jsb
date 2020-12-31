@@ -23,7 +23,7 @@ namespace QuickJS.Binding
         private DynamicType _type;
         private MethodInfo _methodInfo;
 
-        protected Func<JSContext, object, JSValue> _rvalPusher;
+        protected Values.CSValueCast _rvalPusher;
 
         public DynamicMethod(DynamicType type, MethodInfo methodInfo)
         {
@@ -31,7 +31,7 @@ namespace QuickJS.Binding
             _methodInfo = methodInfo;
         }
 
-        public void ReplaceRValPusher(Func<JSContext, object, JSValue> rvalPusher)
+        public void ReplaceRValPusher(Values.CSValueCast rvalPusher)
         {
             _rvalPusher = rvalPusher;
         }
