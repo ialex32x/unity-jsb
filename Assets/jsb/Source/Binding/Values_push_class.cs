@@ -40,21 +40,28 @@ namespace QuickJS.Binding
             return js_push_object(ctx, (object)o);
         }
 
-        // 用于显示要求转为 js array (将与 cs array 实例无关联)
+        /// <summary>
+        /// 用于显式要求转为 JS Array (返回值与 CS Array 实例没有生命周期关联)
+        /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static unsafe JSValue js_push_classvalue_array<T>(JSContext ctx, T[] o)
+        public static unsafe JSValue js_push_classvalue_array(JSContext ctx, object o)
         {
             if (o == null)
             {
                 return JSApi.JS_UNDEFINED;
             }
-            var length = o.Length;
+            if (!(o is Array))
+            {
+                return JSApi.ThrowException(ctx, new InvalidCastException($"fail to cast type to Array"));
+            }
+            var arr = (Array)o;
+            var length = arr.Length;
             var rval = JSApi.JS_NewArray(ctx);
             try
             {
                 for (var i = 0; i < length; i++)
                 {
-                    var obj = o[i];
+                    var obj = arr.GetValue(i);
                     var elem = Values.js_push_object(ctx, obj);
                     JSApi.JS_SetPropertyUint32(ctx, rval, (uint)i, elem);
                 }
