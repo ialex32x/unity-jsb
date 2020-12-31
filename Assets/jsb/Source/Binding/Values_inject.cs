@@ -11,7 +11,7 @@ namespace QuickJS.Binding
     {
         // inject GameObject.AddComponent(Type);
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        protected static JSValue _js_game_object_add_component(JSContext ctx, JSValue ctor, GameObject gameObject, Type type)
+        public static JSValue _js_game_object_add_component(JSContext ctx, JSValue ctor, GameObject gameObject, Type type)
         {
             if (JSApi.JS_IsConstructor(ctx, ctor) == 1)
             {
