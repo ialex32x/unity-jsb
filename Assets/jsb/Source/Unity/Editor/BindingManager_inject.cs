@@ -12,38 +12,35 @@ namespace QuickJS.Unity
     {
         private static TypeTransform HackGetComponents(TypeTransform typeTransform)
         {
-            var moduleNameWithDot = "";
-            // var moduleNameWithDot = "UnityEngine.";
-
             if (typeTransform.type == typeof(GameObject))
             {
-                typeTransform.AddTSMethodDeclaration($"AddComponent<T extends {moduleNameWithDot}Component>(type: {{ new(): T }}): T",
+                typeTransform.AddTSMethodDeclaration($"AddComponent<T extends Component>(type: {{ new(): T }}): T",
                      "AddComponent", typeof(Type));
             }
 
-            typeTransform.AddTSMethodDeclaration($"GetComponent<T extends {moduleNameWithDot}Component>(type: {{ new(): T }}): T",
+            typeTransform.AddTSMethodDeclaration($"GetComponent<T extends Component>(type: {{ new(): T }}): T",
                     "GetComponent", typeof(Type))
-                .AddTSMethodDeclaration($"GetComponentInChildren<T extends {moduleNameWithDot}Component>(type: {{ new(): T }}, includeInactive: boolean): T",
+                .AddTSMethodDeclaration($"GetComponentInChildren<T extends Component>(type: {{ new(): T }}, includeInactive: boolean): T",
                     "GetComponentInChildren", typeof(Type), typeof(bool))
-                .AddTSMethodDeclaration($"GetComponentInChildren<T extends {moduleNameWithDot}Component>(type: {{ new(): T }}): T",
+                .AddTSMethodDeclaration($"GetComponentInChildren<T extends Component>(type: {{ new(): T }}): T",
                     "GetComponentInChildren", typeof(Type))
-                .AddTSMethodDeclaration($"GetComponentInParent<T extends {moduleNameWithDot}Component>(type: {{ new(): T }}): T",
+                .AddTSMethodDeclaration($"GetComponentInParent<T extends Component>(type: {{ new(): T }}): T",
                     "GetComponentInParent", typeof(Type))
-                // .AddTSMethodDeclaration($"GetComponents<T extends {moduleNameWithDot}Component>(type: {{ new(): T }}, results: any): void", 
+                // .AddTSMethodDeclaration($"GetComponents<T extends Component>(type: {{ new(): T }}, results: any): void", 
                 //     "GetComponents", typeof(Type))
-                .AddTSMethodDeclaration($"GetComponents<T extends {moduleNameWithDot}Component>(type: {{ new(): T }}): T[]",
+                .AddTSMethodDeclaration($"GetComponents<T extends Component>(type: {{ new(): T }}): T[]",
                     "GetComponents", typeof(Type))
                 .SetMethodReturnPusher("js_push_classvalue_array", "GetComponents", typeof(Type))
-                .AddTSMethodDeclaration($"GetComponentsInChildren<T extends {moduleNameWithDot}Component>(type: {{ new(): T }}, includeInactive: boolean): T[]",
+                .AddTSMethodDeclaration($"GetComponentsInChildren<T extends Component>(type: {{ new(): T }}, includeInactive: boolean): T[]",
                     "GetComponentsInChildren", typeof(Type), typeof(bool))
                 .SetMethodReturnPusher("js_push_classvalue_array", "GetComponentsInChildren", typeof(Type), typeof(bool))
-                .AddTSMethodDeclaration($"GetComponentsInChildren<T extends {moduleNameWithDot}Component>(type: {{ new(): T }}): T[]",
+                .AddTSMethodDeclaration($"GetComponentsInChildren<T extends Component>(type: {{ new(): T }}): T[]",
                     "GetComponentsInChildren", typeof(Type))
                 .SetMethodReturnPusher("js_push_classvalue_array", "GetComponentsInChildren", typeof(Type))
-                .AddTSMethodDeclaration($"GetComponentsInParent<T extends {moduleNameWithDot}Component>(type: {{ new(): T }}, includeInactive: boolean): T[]",
+                .AddTSMethodDeclaration($"GetComponentsInParent<T extends Component>(type: {{ new(): T }}, includeInactive: boolean): T[]",
                     "GetComponentsInParent", typeof(Type), typeof(bool))
                 .SetMethodReturnPusher("js_push_classvalue_array", "GetComponentsInParent", typeof(Type), typeof(bool))
-                .AddTSMethodDeclaration($"GetComponentsInParent<T extends {moduleNameWithDot}Component>(type: {{ new(): T }}): T[]",
+                .AddTSMethodDeclaration($"GetComponentsInParent<T extends Component>(type: {{ new(): T }}): T[]",
                     "GetComponentsInParent", typeof(Type))
                 .SetMethodReturnPusher("js_push_classvalue_array", "GetComponentsInParent", typeof(Type))
                 .WriteCSMethodBinding((bindPoint, cg, info) =>
