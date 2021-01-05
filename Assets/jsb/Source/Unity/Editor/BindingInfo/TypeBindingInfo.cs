@@ -18,6 +18,9 @@ namespace QuickJS.Unity
 
         public TypeBindingFlags bindingFlags => transform.bindingFlags;
 
+        /// <summary>
+        /// 是否可以在脚本中继承此类型
+        /// </summary>
         public bool crossbind => transform.crossbind;
 
         /// <summary>
@@ -92,7 +95,7 @@ namespace QuickJS.Unity
         public void Initialize()
         {
             _tsTypeNaming = bindingManager.GetTSTypeNaming(type, true);
-            _csBindingName = bindingManager.prefs.typeBindingPrefix 
+            _csBindingName = bindingManager.prefs.typeBindingPrefix
                 + this.tsTypeNaming.jsFullName
                     .Replace('.', '_')
                     .Replace('+', '_')
@@ -640,7 +643,7 @@ namespace QuickJS.Unity
         }
 
         /// <summary>
-        /// 按照 TypeBindingInfo 的记录, 进行动态类型的成员绑定
+        /// 按照 TypeBindingInfo 的记录, 进行动态类型的成员绑定.
         /// </summary>
         public Binding.ClassDecl DoReflectBind(Binding.TypeRegister register)
         {
@@ -650,6 +653,29 @@ namespace QuickJS.Unity
             Binding.ClassDecl cls;
             //TODO: fill in ClassDecl content
             var dynamicConstructor = default(Binding.IDynamicMethod);
+
+            if (crossbind)
+            {
+                dynamicConstructor = new Binding.DynamicCrossBindConstructor();
+            }
+            else
+            {
+                if (constructors.count > 0)
+                {
+                    foreach (var variant in constructors.variants)
+                    {
+                        foreach (var methodBind in variant.Value.plainMethods)
+                        {
+                            dynamicConstructor = new Binding.DynamicConstructor(dynamicType, methodBind.method);
+                        }
+                    }
+                }
+                else
+                {
+                    // struct 默认无参构造
+                    dynamicConstructor = new Binding.DynamicDefaultConstructor(dynamicType);
+                }
+            }
 
             cls = register.CreateClass(type.Name, type, dynamicConstructor);
             return cls;

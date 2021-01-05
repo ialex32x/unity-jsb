@@ -81,7 +81,7 @@ namespace QuickJS.Binding
             if (_methodInfo.ReturnType != typeof(void))
             {
                 var ret = _methodInfo.Invoke(self, args);
-                
+
                 if (_rvalPusher != null)
                 {
                     return _rvalPusher(ctx, ret);
@@ -104,7 +104,7 @@ namespace QuickJS.Binding
         {
             _delegate = d;
         }
-        
+
         public JSValue Invoke(JSContext ctx, JSValue this_obj, int argc, JSValue[] argv)
         {
             var self = _delegate.Target;
@@ -132,17 +132,64 @@ namespace QuickJS.Binding
         }
     }
 
+    public class DynamicCrossBindConstructor : DynamicMethodBase
+    {
+        public DynamicCrossBindConstructor()
+        {
+        }
+
+        public override ParameterInfo[] GetParameters()
+        {
+            return new ParameterInfo[0];
+        }
+
+        public override bool CheckArgs(JSContext ctx, int argc, JSValue[] argv)
+        {
+            return true;
+        }
+
+        public override JSValue Invoke(JSContext ctx, JSValue this_obj, int argc, JSValue[] argv)
+        {
+            return Values._js_crossbind_constructor(ctx, this_obj);
+        }
+    }
+
+    public class DynamicDefaultConstructor : DynamicMethodBase
+    {
+        private DynamicType _type;
+
+        public DynamicDefaultConstructor(DynamicType type)
+        {
+            _type = type;
+        }
+
+        public override ParameterInfo[] GetParameters()
+        {
+            return new ParameterInfo[0];
+        }
+
+        public override bool CheckArgs(JSContext ctx, int argc, JSValue[] argv)
+        {
+            return true;
+        }
+
+        public override JSValue Invoke(JSContext ctx, JSValue this_obj, int argc, JSValue[] argv)
+        {
+            var inst = Activator.CreateInstance(_type.type);
+            var val = Values.NewBridgeClassObject(ctx, this_obj, inst, _type.id, false);
+            return val;
+        }
+    }
+
     public class DynamicConstructor : DynamicMethodBase
     {
         private DynamicType _type;
         private ConstructorInfo _ctor;
-        private bool _crossbind;
 
-        public DynamicConstructor(DynamicType type, ConstructorInfo ctor, bool crossbind)
+        public DynamicConstructor(DynamicType type, ConstructorInfo ctor)
         {
             _type = type;
             _ctor = ctor;
-            _crossbind = crossbind;
         }
 
         public override ParameterInfo[] GetParameters()
@@ -177,12 +224,6 @@ namespace QuickJS.Binding
                 {
                     return JSApi.JS_ThrowInternalError(ctx, "failed to cast val");
                 }
-            }
-
-            if (_crossbind)
-            {
-                UnityEngine.Debug.LogFormat($"_js_crossbind_constructor {_type}");
-                return Values._js_crossbind_constructor(ctx, this_obj);
             }
 
             var inst = _ctor.Invoke(args);

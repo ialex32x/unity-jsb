@@ -139,30 +139,35 @@ namespace QuickJS.Binding
             if (proto.IsNullish())
             {
                 _type_id = db.AddType(_type, JSApi.JS_UNDEFINED);
-                // UnityEngine.Debug.Log($"add dynamic type {_type}: {_type_id}");
 
-                #region BindConstructors(register, flags, type_id);
-                var constructors = _type.GetConstructors(flags);
                 var dynamicConstructor = default(IDynamicMethod);
-                if (constructors.Length > 0)
+
+                if (crossbind)
                 {
-                    var count = constructors.Length;
-                    if (count == 1)
+                    dynamicConstructor = new DynamicCrossBindConstructor();
+                }
+                else
+                {
+                    var constructors = _type.GetConstructors(flags);
+                    if (constructors.Length > 0)
                     {
-                        dynamicConstructor = new DynamicConstructor(this, constructors[0], crossbind);
-                    }
-                    else
-                    {
-                        var overloads = new DynamicMethods("constructor", count);
-                        for (var i = 0; i < count; i++)
+                        var count = constructors.Length;
+                        if (count == 1)
                         {
-                            var overload = new DynamicConstructor(this, constructors[i], crossbind);
-                            overloads.Add(overload);
+                            dynamicConstructor = new DynamicConstructor(this, constructors[0]);
                         }
-                        dynamicConstructor = overloads;
+                        else
+                        {
+                            var overloads = new DynamicMethods("constructor", count);
+                            for (var i = 0; i < count; i++)
+                            {
+                                var overload = new DynamicConstructor(this, constructors[i]);
+                                overloads.Add(overload);
+                            }
+                            dynamicConstructor = overloads;
+                        }
                     }
                 }
-                #endregion
 
                 cls = register.CreateClass(_type.Name, _type, dynamicConstructor);
             }
@@ -202,7 +207,7 @@ namespace QuickJS.Binding
                 cls.AddField(anyMethod.IsStatic, propertyInfo.Name, dynamicProperty);
             }
             #endregion
-            
+
             return cls;
         }
     }
