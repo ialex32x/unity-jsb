@@ -682,19 +682,35 @@ namespace QuickJS.Unity
             }
             cls = register.CreateClass(type.Name, type, dynamicConstructor);
 
-            //TODO: reflectbind, 处理 method
+            //TODO: reflectbind, 处理 static method
             foreach (var pair in staticMethods)
             {
                 var methodBindingInfo = pair.Value;
+                var methodJSName = methodBindingInfo.jsName;
+                var methodGroup = new Binding.DynamicMethods(methodJSName, 0);
 
                 foreach (var variantKV in methodBindingInfo.variants)
                 {
                     var expectedArgCount = variantKV.Key;
                     var variant = variantKV.Value;
 
-                    // variant.plainMethods
-                    // variant.varargMethods
+                    foreach (var mb in variant.plainMethods)
+                    {
+                        var dynamicMethod = new Binding.DynamicMethod(dynamicType, mb.method);
+
+                        methodGroup.Add(dynamicMethod);
+                    }
+
+                    foreach (var mb in variant.varargMethods)
+                    {
+                        //TODO: [maybe] use a speficied dynamic method class for vararg method
+                        var dynamicMethod = new Binding.DynamicMethod(dynamicType, mb.method);
+
+                        methodGroup.Add(dynamicMethod);
+                    }
                 }
+
+                cls.AddMethod(true, methodBindingInfo.jsName, methodGroup);
             }
 
             foreach (var pair in methods)
