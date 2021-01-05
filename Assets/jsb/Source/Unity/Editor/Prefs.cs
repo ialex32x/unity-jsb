@@ -47,7 +47,8 @@ namespace QuickJS.Unity
         public bool editorScripting = true;
 
         /// <summary>
-        /// 在没有生成绑定代码的情况下, 是否支持反射绑定
+        /// [编辑器环境] 在没有生成绑定代码的情况下, 是否支持反射绑定 (以便在开发期无需生成绑定代码)
+        /// (此功能未完成)
         /// </summary>
         public bool reflectBinding = false;
 
