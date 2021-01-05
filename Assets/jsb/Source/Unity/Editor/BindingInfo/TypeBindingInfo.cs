@@ -682,6 +682,7 @@ namespace QuickJS.Unity
             }
             cls = register.CreateClass(type.Name, type, dynamicConstructor);
 
+            //TODO: reflectbind, 处理 method
             foreach (var pair in staticMethods)
             {
                 var methodBindingInfo = pair.Value;
@@ -716,14 +717,16 @@ namespace QuickJS.Unity
                 var isStatic = fieldBindingInfo.isStatic;
                 var tsPropertyVar = this.bindingManager.GetTSVariable(fieldBindingInfo.regName);
                 var dynamicField = new Binding.DynamicField(dynamicType, fieldBindingInfo.fieldInfo);
-                
+
                 cls.AddField(isStatic, fieldBindingInfo.regName, dynamicField);
             }
 
+            //TODO: reflectbind, 处理 event
             foreach (var pair in events)
             {
             }
 
+            //TODO: reflectbind, 处理 delegate
             foreach (var pair in delegates)
             {
             }
