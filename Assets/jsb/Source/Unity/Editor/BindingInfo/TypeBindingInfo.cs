@@ -638,5 +638,21 @@ namespace QuickJS.Unity
                 AddMethod(method, false);
             }
         }
+
+        /// <summary>
+        /// 按照 TypeBindingInfo 的记录, 进行动态类型的成员绑定
+        /// </summary>
+        public Binding.ClassDecl DoReflectBind(Binding.TypeRegister register)
+        {
+            var typeDB = register.GetTypeDB();
+            var dynamicType = typeDB.CreateFreeDynamicType(type);
+
+            Binding.ClassDecl cls;
+            //TODO: fill in ClassDecl content
+            var dynamicConstructor = default(Binding.IDynamicMethod);
+
+            cls = register.CreateClass(type.Name, type, dynamicConstructor);
+            return cls;
+        }
     }
 }

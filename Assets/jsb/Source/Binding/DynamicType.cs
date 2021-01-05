@@ -125,6 +125,9 @@ namespace QuickJS.Binding
             }
         }
 
+        /// <summary>
+        /// 通过反射枚举所有成员并注册绑定 (此方法用于运行时在脚本中使用静态绑定的类型, 需提前保证类型未被剔除).
+        /// </summary>
         public ClassDecl Bind(TypeRegister register, bool crossbind = false)
         {
             ClassDecl cls;

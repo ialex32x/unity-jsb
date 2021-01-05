@@ -26,12 +26,10 @@ namespace QuickJS.Unity
 
         public void AddTypeReference(string moduleName, TypeBindingInfo typeBindingInfo, string[] elements, string jsName)
         {
-            var typeDB = _runtime.GetTypeDB();
             var ns = CodeGenUtils.NormalizeEx(elements, jsName);
             var type = typeBindingInfo.type;
-            var crossbind = typeBindingInfo.crossbind;
 
-            _runtime.AddTypeReference(_moduleReg, type, typeDB.GetDynamicTypeBind(type, crossbind), ns);
+            _runtime.AddTypeReference(_moduleReg, type, register => typeBindingInfo.DoReflectBind(register), ns);
         }
 
         public void EndStaticModule(string moduleName)

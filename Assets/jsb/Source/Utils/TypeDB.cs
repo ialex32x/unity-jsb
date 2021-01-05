@@ -51,8 +51,25 @@ namespace QuickJS.Utils
             return dynamicType;
         }
 
-        //TODO: 用于在动态类型注册过程中产生的关联类型注册
-        public DynamicType RegisterDynamicType(TypeRegister register, Type type)
+        // //TODO: 用于在动态类型注册过程中产生的关联类型注册
+        // public DynamicType RegisterDynamicType(TypeRegister register, Type type)
+        // {
+        //     DynamicType dynamicType;
+        //     if (_dynamicTypes.TryGetValue(type, out dynamicType))
+        //     {
+        //         return dynamicType;
+        //     }
+
+        //     dynamicType = new DynamicType(type, false);
+        //     dynamicType.Bind(register);
+        //     _dynamicTypes[type] = dynamicType;
+        //     return dynamicType;
+        // }
+
+        /// <summary>
+        /// 创建一个动态绑定类型对象 (不自动执行任何绑定)
+        /// </summary>
+        public DynamicType CreateFreeDynamicType(Type type)
         {
             DynamicType dynamicType;
             if (_dynamicTypes.TryGetValue(type, out dynamicType))
@@ -61,21 +78,20 @@ namespace QuickJS.Utils
             }
 
             dynamicType = new DynamicType(type, false);
-            dynamicType.Bind(register);
             _dynamicTypes[type] = dynamicType;
             return dynamicType;
         }
 
-        public Module.ModuleExportsBind GetDynamicTypeBind(Type type, bool crossbind)
-        {
-            return register =>
-            {
-                var dynamicType = new DynamicType(type, false);
-                var cls = dynamicType.Bind(register, crossbind);
-                _dynamicTypes[type] = dynamicType;
-                return cls;
-            };
-        }
+        // public Module.ModuleExportsBind GetDynamicTypeBind(Type type, bool crossbind)
+        // {
+        //     return register =>
+        //     {
+        //         var dynamicType = new DynamicType(type, false);
+        //         var cls = dynamicType.Bind(register, crossbind);
+        //         _dynamicTypes[type] = dynamicType;
+        //         return cls;
+        //     };
+        // }
 
         public void AddDelegate(Type type, MethodInfo method)
         {
