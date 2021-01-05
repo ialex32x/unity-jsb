@@ -193,7 +193,7 @@ namespace QuickJS.Unity
                 var propertyBindingInfo = kv.Value;
 
                 // 静态
-                if (propertyBindingInfo.staticPair.IsValid())
+                if (propertyBindingInfo.isStatic)
                 {
                     // 可读属性
                     if (propertyBindingInfo.staticPair.getterName != null)
@@ -229,10 +229,9 @@ namespace QuickJS.Unity
                         }
                     }
                 }
-
-                // 非静态
-                if (propertyBindingInfo.instancePair.IsValid())
+                else // if (propertyBindingInfo.instancePair.IsValid())
                 {
+                    // 非静态
                     // 可读属性
                     if (propertyBindingInfo.instancePair.getterName != null)
                     {
@@ -479,40 +478,40 @@ namespace QuickJS.Unity
                 // 属性
                 foreach (var kv in typeBindingInfo.properties)
                 {
-                    var bindingInfo = kv.Value;
-                    if (bindingInfo.staticPair.IsValid())
+                    var propertyBindingInfo = kv.Value;
+                    if (propertyBindingInfo.staticPair.IsValid())
                     {
-                        var tsPropertyVar = this.cg.bindingManager.GetTSVariable(bindingInfo.regName);
+                        var tsPropertyVar = this.cg.bindingManager.GetTSVariable(propertyBindingInfo.regName);
                         cg.cs.AppendLine("cls.AddProperty(true, \"{0}\", {1}, {2});",
                             tsPropertyVar,
-                            bindingInfo.staticPair.getterName != null ? bindingInfo.staticPair.getterName : "null",
-                            bindingInfo.staticPair.setterName != null ? bindingInfo.staticPair.setterName : "null");
+                            propertyBindingInfo.staticPair.getterName != null ? propertyBindingInfo.staticPair.getterName : "null",
+                            propertyBindingInfo.staticPair.setterName != null ? propertyBindingInfo.staticPair.setterName : "null");
 
                         var tsPropertyPrefix = "static ";
-                        if (bindingInfo.staticPair.setterName == null)
+                        if (propertyBindingInfo.staticPair.setterName == null)
                         {
                             tsPropertyPrefix += "readonly ";
                         }
-                        var tsPropertyType = this.cg.currentTSModule.GetTSTypeFullName(bindingInfo.propertyType);
-                        cg.AppendJSDoc(bindingInfo.propertyInfo);
+                        var tsPropertyType = this.cg.currentTSModule.GetTSTypeFullName(propertyBindingInfo.propertyType);
+                        cg.AppendJSDoc(propertyBindingInfo.propertyInfo);
                         cg.tsDeclare.AppendLine($"{tsPropertyPrefix}{tsPropertyVar}: {tsPropertyType}");
                     }
 
-                    if (bindingInfo.instancePair.IsValid())
+                    if (propertyBindingInfo.instancePair.IsValid())
                     {
-                        var tsPropertyVar = this.cg.bindingManager.GetTSVariable(bindingInfo.regName);
+                        var tsPropertyVar = this.cg.bindingManager.GetTSVariable(propertyBindingInfo.regName);
                         cg.cs.AppendLine("cls.AddProperty(false, \"{0}\", {1}, {2});",
                             tsPropertyVar,
-                            bindingInfo.instancePair.getterName != null ? bindingInfo.instancePair.getterName : "null",
-                            bindingInfo.instancePair.setterName != null ? bindingInfo.instancePair.setterName : "null");
+                            propertyBindingInfo.instancePair.getterName != null ? propertyBindingInfo.instancePair.getterName : "null",
+                            propertyBindingInfo.instancePair.setterName != null ? propertyBindingInfo.instancePair.setterName : "null");
 
                         var tsPropertyPrefix = "";
-                        if (bindingInfo.instancePair.setterName == null)
+                        if (propertyBindingInfo.instancePair.setterName == null)
                         {
                             tsPropertyPrefix += "readonly ";
                         }
-                        var tsPropertyType = this.cg.currentTSModule.GetTSTypeFullName(bindingInfo.propertyType);
-                        cg.AppendJSDoc(bindingInfo.propertyInfo);
+                        var tsPropertyType = this.cg.currentTSModule.GetTSTypeFullName(propertyBindingInfo.propertyType);
+                        cg.AppendJSDoc(propertyBindingInfo.propertyInfo);
                         cg.tsDeclare.AppendLine($"{tsPropertyPrefix}{tsPropertyVar}: {tsPropertyType}");
                     }
                 }

@@ -680,8 +680,54 @@ namespace QuickJS.Unity
                     dynamicConstructor = new Binding.DynamicDefaultConstructor(dynamicType);
                 }
             }
-
             cls = register.CreateClass(type.Name, type, dynamicConstructor);
+
+            foreach (var pair in staticMethods)
+            {
+                var methodBindingInfo = pair.Value;
+
+                foreach (var variantKV in methodBindingInfo.variants)
+                {
+                    var expectedArgCount = variantKV.Key;
+                    var variant = variantKV.Value;
+
+                    // variant.plainMethods
+                    // variant.varargMethods
+                }
+            }
+
+            foreach (var pair in methods)
+            {
+            }
+
+            foreach (var pair in properties)
+            {
+                var propertyBindingInfo = pair.Value;
+                var isStatic = propertyBindingInfo.isStatic;
+                var tsPropertyVar = this.bindingManager.GetTSVariable(propertyBindingInfo.regName);
+                var dynamicProperty = new Binding.DynamicProperty(dynamicType, propertyBindingInfo.propertyInfo);
+
+                cls.AddField(isStatic, propertyBindingInfo.regName, dynamicProperty);
+            }
+
+            foreach (var pair in fields)
+            {
+                var fieldBindingInfo = pair.Value;
+                var isStatic = fieldBindingInfo.isStatic;
+                var tsPropertyVar = this.bindingManager.GetTSVariable(fieldBindingInfo.regName);
+                var dynamicField = new Binding.DynamicField(dynamicType, fieldBindingInfo.fieldInfo);
+                
+                cls.AddField(isStatic, fieldBindingInfo.regName, dynamicField);
+            }
+
+            foreach (var pair in events)
+            {
+            }
+
+            foreach (var pair in delegates)
+            {
+            }
+
             return cls;
         }
     }

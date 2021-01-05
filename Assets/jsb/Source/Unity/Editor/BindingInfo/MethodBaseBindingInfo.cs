@@ -26,10 +26,7 @@ namespace QuickJS.Unity
         // 必须为静态函数, 且函数签名完全匹配 JSCFunction
         public MethodBase _cfunc;
 
-        public int count
-        {
-            get { return _count; }
-        }
+        public int count => _count;
 
         public static bool IsVarargMethod(ParameterInfo[] parameters)
         {

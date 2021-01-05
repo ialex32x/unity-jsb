@@ -31,6 +31,8 @@ namespace QuickJS.Unity
         public string regName; // js 注册名
         public PropertyInfo propertyInfo;
 
+        public bool isStatic => staticPair.IsValid();
+
         public Type propertyType => propertyInfo.PropertyType;
 
         public PropertyBindingInfo(TypeBindingInfo typeBindingInfo, PropertyInfo propertyInfo)
