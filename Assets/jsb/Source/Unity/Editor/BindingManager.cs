@@ -347,17 +347,6 @@ namespace QuickJS.Unity
             return false;
         }
 
-        public bool GetTSMethodRename(MethodBase method, out string code)
-        {
-            var transform = GetTypeTransform(method.DeclaringType);
-            if (transform != null)
-            {
-                return transform.GetTSMethodRename(method, out code);
-            }
-            code = null;
-            return false;
-        }
-
         public TypeTransform GetTypeTransform(Type type)
         {
             TypeTransform transform;

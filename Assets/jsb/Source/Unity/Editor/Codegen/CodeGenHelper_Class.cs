@@ -437,20 +437,12 @@ namespace QuickJS.Unity
                         {
                             foreach (var defEntry in attr.difinitions)
                             {
-                                string tsMethodRename;
                                 var prefix = attr.isStatic ? "static " : "";
 
                                 // 附带的签名没有带命名时, 自动加上
                                 if (defEntry.StartsWith("(") || defEntry.StartsWith("<"))
                                 {
-                                    if (this.cg.bindingManager.GetTSMethodRename(methodBindingInfo._cfunc, out tsMethodRename))
-                                    {
-                                        this.cg.tsDeclare.AppendLine($"{prefix}{tsMethodRename}{defEntry}");
-                                    }
-                                    else
-                                    {
-                                        this.cg.tsDeclare.AppendLine($"{prefix}{regName}{defEntry}");
-                                    }
+                                    this.cg.tsDeclare.AppendLine($"{prefix}{regName}{defEntry}");
                                 }
                                 else
                                 {
