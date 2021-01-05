@@ -199,9 +199,7 @@ namespace QuickJS.Binding
                 cls.AddField(anyMethod.IsStatic, propertyInfo.Name, dynamicProperty);
             }
             #endregion
-
-            // var ns = new NamespaceDecl();
-            // typeDB.AddType()
+            
             return cls;
         }
     }
