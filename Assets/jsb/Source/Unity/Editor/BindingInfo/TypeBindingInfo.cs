@@ -662,13 +662,17 @@ namespace QuickJS.Unity
             {
                 if (constructors.count > 0)
                 {
+                    var dynamicCtorGroup = new Binding.DynamicMethods("constructor", 1);
                     foreach (var variant in constructors.variants)
                     {
                         foreach (var methodBind in variant.Value.plainMethods)
                         {
-                            dynamicConstructor = new Binding.DynamicConstructor(dynamicType, methodBind.method);
+                            var dynamicCtor = new Binding.DynamicConstructor(dynamicType, methodBind.method);
+
+                            dynamicCtorGroup.Add(dynamicCtor);
                         }
                     }
+                    dynamicConstructor = dynamicCtorGroup;
                 }
                 else
                 {
