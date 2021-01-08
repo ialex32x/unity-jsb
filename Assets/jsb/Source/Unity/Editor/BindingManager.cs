@@ -1282,6 +1282,7 @@ namespace QuickJS.Unity
                     this.Error($"process failed [{bp}][OnPreGenerateDelegate]: {exception}");
                 }
             }
+            callback.OnPreGenerateDelegate(bindingInfo);
         }
 
         public void OnPostGenerateDelegate(DelegateBridgeBindingInfo bindingInfo)
@@ -1298,6 +1299,7 @@ namespace QuickJS.Unity
                     this.Error($"process failed [{bp}][OnPostGenerateDelegate]: {exception}");
                 }
             }
+            callback.OnPostGenerateDelegate(bindingInfo);
         }
 
         private void OnCleanup()

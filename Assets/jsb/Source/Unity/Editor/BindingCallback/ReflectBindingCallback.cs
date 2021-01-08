@@ -37,6 +37,19 @@ namespace QuickJS.Unity
             _runtime.AddStaticModule(moduleName, _moduleReg);
         }
 
+        public void OnPreGenerateDelegate(DelegateBridgeBindingInfo bindingInfo)
+        {
+            foreach (var delegateType in bindingInfo.types)
+            {
+                //TODO: 如何通过 delegateType 产生对应的 MethodInfo
+            }
+
+        }
+
+        public void OnPostGenerateDelegate(DelegateBridgeBindingInfo bindingInfo)
+        {
+        }
+
         public bool OnTypeGenerating(TypeBindingInfo typeBindingInfo, int current, int total)
         {
             return false;

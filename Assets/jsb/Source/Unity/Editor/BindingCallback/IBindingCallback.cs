@@ -14,6 +14,9 @@ namespace QuickJS.Unity
         void AddTypeReference(string moduleName, TypeBindingInfo typeBindingInfo, string[] elements, string jsName);
         void EndStaticModule(string moduleName);
 
+        void OnPreGenerateDelegate(DelegateBridgeBindingInfo bindingInfo);
+        void OnPostGenerateDelegate(DelegateBridgeBindingInfo bindingInfo);
+
         bool OnTypeGenerating(TypeBindingInfo typeBindingInfo, int current, int total);
         void OnGenerateFinish();
     }

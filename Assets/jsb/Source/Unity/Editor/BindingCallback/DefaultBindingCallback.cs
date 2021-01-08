@@ -22,6 +22,14 @@ namespace QuickJS.Unity
         {
         }
 
+        public void OnPreGenerateDelegate(DelegateBridgeBindingInfo bindingInfo)
+        {
+        }
+
+        public void OnPostGenerateDelegate(DelegateBridgeBindingInfo bindingInfo)
+        {
+        }
+
         public bool OnTypeGenerating(TypeBindingInfo typeBindingInfo, int current, int total)
         {
             return EditorUtility.DisplayCancelableProgressBar(

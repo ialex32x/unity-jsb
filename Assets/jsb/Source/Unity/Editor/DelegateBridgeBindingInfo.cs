@@ -11,7 +11,9 @@ namespace QuickJS.Unity
 
     public class DelegateBridgeBindingInfo
     {
+        // set of delegate types
         public HashSet<Type> types = new HashSet<Type>();
+        
         public Type returnType;
         public ParameterInfo[] parameters;
         public string requiredDefines;
