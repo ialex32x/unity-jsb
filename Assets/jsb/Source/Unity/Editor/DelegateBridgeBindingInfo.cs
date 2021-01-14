@@ -13,6 +13,9 @@ namespace QuickJS.Unity
     {
         // set of delegate types
         public HashSet<Type> types = new HashSet<Type>();
+
+        // 反射生成的 MethodInfo, 用于 reflectbind 模式下注册委托映射
+        public MethodInfo reflect;
         
         public Type returnType;
         public ParameterInfo[] parameters;

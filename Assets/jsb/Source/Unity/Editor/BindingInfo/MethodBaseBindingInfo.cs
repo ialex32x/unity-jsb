@@ -28,26 +28,6 @@ namespace QuickJS.Unity
 
         public int count => _count;
 
-        public static bool IsVarargMethod(ParameterInfo[] parameters)
-        {
-            return parameters.Length > 0 && parameters[parameters.Length - 1].IsDefined(typeof(ParamArrayAttribute), false);
-        }
-
-        public static int GetTSParameterCount(ParameterInfo[] parameters)
-        {
-            var len = parameters.Length;
-            var argc = len;
-            for (var i = 0; i < len; i++)
-            {
-                var parameterType = parameters[i].ParameterType;
-                if (CodeGenUtils.IsSpecialParameterType(parameterType))
-                {
-                    argc--;
-                }
-            }
-            return argc;
-        }
-
         public bool Add(T method, bool isExtension)
         {
             if (method.IsDefined(typeof(JSCFunctionAttribute)))
@@ -61,8 +41,8 @@ namespace QuickJS.Unity
             }
 
             var parameters = method.GetParameters();
-            var nargs = GetTSParameterCount(parameters);
-            var isVararg = IsVarargMethod(parameters);
+            var nargs = BindingManager.GetTSParameterCount(parameters);
+            var isVararg = BindingManager.IsVarargMethod(parameters);
             MethodBaseVariant<T> variant;
             if (isVararg)
             {

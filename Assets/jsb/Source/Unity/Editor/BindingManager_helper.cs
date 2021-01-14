@@ -10,6 +10,26 @@ namespace QuickJS.Unity
 
     public partial class BindingManager
     {
+        public static bool IsVarargMethod(ParameterInfo[] parameters)
+        {
+            return parameters.Length > 0 && parameters[parameters.Length - 1].IsDefined(typeof(ParamArrayAttribute), false);
+        }
+
+        public static int GetTSParameterCount(ParameterInfo[] parameters)
+        {
+            var len = parameters.Length;
+            var argc = len;
+            for (var i = 0; i < len; i++)
+            {
+                var parameterType = parameters[i].ParameterType;
+                if (CodeGenUtils.IsSpecialParameterType(parameterType))
+                {
+                    argc--;
+                }
+            }
+            return argc;
+        }
+
         public static bool IsExtensionMethod(MethodBase method)
         {
             return method.IsDefined(typeof(System.Runtime.CompilerServices.ExtensionAttribute), false);
@@ -45,9 +65,8 @@ namespace QuickJS.Unity
         }
 
         // 是否包含按引用传参 (ref/out)
-        public static bool ContainsByRefParameters(MethodBase method)
+        public static bool ContainsByRefParameters(ParameterInfo[] parameters)
         {
-            var parameters = method.GetParameters();
             for (int i = 0, size = parameters.Length; i < size; i++)
             {
                 var parameterType = parameters[i].ParameterType;
@@ -57,6 +76,11 @@ namespace QuickJS.Unity
                 }
             }
             return false;
+        }
+
+        public static bool ContainsByRefParameters(MethodBase method)
+        {
+            return ContainsByRefParameters(method.GetParameters());
         }
 
         public static bool IsGenericMethod(MethodBase method)

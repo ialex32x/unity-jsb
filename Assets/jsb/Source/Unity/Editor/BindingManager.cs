@@ -42,6 +42,9 @@ namespace QuickJS.Unity
         private Dictionary<string, string> _csTypeNameMapS = new Dictionary<string, string>();
         private static HashSet<string> _tsKeywords = new HashSet<string>();
 
+        private Dictionary<int, MethodInfo> _reflectActions = new Dictionary<int, MethodInfo>();
+        private Dictionary<int, MethodInfo> _reflectFuncs = new Dictionary<int, MethodInfo>();
+
         // 自定义的处理流程
         private List<IBindingProcess> _bindingProcess = new List<IBindingProcess>();
 
@@ -82,6 +85,7 @@ namespace QuickJS.Unity
                 AddGlobalNameRule("ToString", "toString");
             }
 
+            CollectDelegateReflectMethods();
             AddNameRule("js", t => char.ToLower(t[0]) + t.Substring(1));
             SetAssemblyBlocked("ExCSS.Unity");
             AddTypePrefixBlacklist("System.SpanExtensions");
@@ -668,6 +672,7 @@ namespace QuickJS.Unity
                     {
                         log.AppendLine("skip delegate: {0} && {1} required defines: {2}", regDelegateBinding, delegateType, defs);
                         regDelegateBinding.types.Add(delegateType);
+                        regDelegateBinding.reflect = GetReflect(returnType, parameters);
                         _redirectDelegates[delegateType] = regDelegateType;
                         return;
                     }
@@ -681,6 +686,52 @@ namespace QuickJS.Unity
                     CollectDelegate(parameters[i].ParameterType);
                 }
             }
+        }
+
+        private void CollectDelegateReflectMethods()
+        {
+            var methods = typeof(DelegateReflectBindMethods).GetMethods();
+            foreach (var method in methods)
+            {
+                if (method.ReturnType == typeof(void))
+                {
+                    _reflectActions[method.GetParameters().Length] = method;
+                }
+                else
+                {
+                    _reflectFuncs[method.GetParameters().Length] = method;
+                }
+            }
+        }
+        
+        public MethodInfo GetReflect(Type returnType, ParameterInfo[] parameters)
+        {
+            // skip unsupported types
+            if (BindingManager.ContainsByRefParameters(parameters) || BindingManager.IsVarargMethod(parameters))
+            {
+                return null;
+            }
+
+            var argc = parameters.Length;
+            MethodInfo genMethod = null;
+            
+            if (returnType == typeof(void))
+            {
+                if (_reflectActions.TryGetValue(argc, out genMethod))
+                {
+                    var types = (from p in parameters select p.ParameterType).ToArray();
+                    return genMethod.MakeGenericMethod(types);
+                }
+            }
+            else
+            {
+                if (_reflectFuncs.TryGetValue(argc, out genMethod))
+                {
+                    var types = (from p in parameters select p.ParameterType).Append(returnType).ToArray();
+                    return genMethod.MakeGenericMethod(types);
+                }
+            }
+            return null;
         }
 
         public bool IsExported(Type type)
