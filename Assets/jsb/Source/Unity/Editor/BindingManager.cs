@@ -693,17 +693,22 @@ namespace QuickJS.Unity
             var methods = typeof(DelegateReflectBindMethods).GetMethods();
             foreach (var method in methods)
             {
-                if (method.ReturnType == typeof(void))
+                var parameters = method.GetParameters();
+
+                if (parameters.Length > 0 && parameters[0].ParameterType == typeof(ScriptDelegate))
                 {
-                    _reflectActions[method.GetParameters().Length] = method;
-                }
-                else
-                {
-                    _reflectFuncs[method.GetParameters().Length] = method;
+                    if (method.ReturnType == typeof(void))
+                    {
+                        _reflectActions[parameters.Length - 1] = method;
+                    }
+                    else
+                    {
+                        _reflectFuncs[parameters.Length - 1] = method;
+                    }
                 }
             }
         }
-        
+
         public MethodInfo GetReflect(Type returnType, ParameterInfo[] parameters)
         {
             // skip unsupported types
@@ -714,11 +719,15 @@ namespace QuickJS.Unity
 
             var argc = parameters.Length;
             MethodInfo genMethod = null;
-            
+
             if (returnType == typeof(void))
             {
                 if (_reflectActions.TryGetValue(argc, out genMethod))
                 {
+                    if (argc == 0)
+                    {
+                        return genMethod;
+                    }
                     var types = (from p in parameters select p.ParameterType).ToArray();
                     return genMethod.MakeGenericMethod(types);
                 }
@@ -727,6 +736,10 @@ namespace QuickJS.Unity
             {
                 if (_reflectFuncs.TryGetValue(argc, out genMethod))
                 {
+                    if (argc == 0)
+                    {
+                        return genMethod;
+                    }
                     var types = (from p in parameters select p.ParameterType).Append(returnType).ToArray();
                     return genMethod.MakeGenericMethod(types);
                 }
