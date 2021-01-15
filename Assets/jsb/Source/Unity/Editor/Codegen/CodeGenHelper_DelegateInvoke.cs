@@ -120,6 +120,7 @@ namespace QuickJS.Unity
             else
             {
                 FreeRVal();
+                FreeArgs(nargs);
             }
         }
 
