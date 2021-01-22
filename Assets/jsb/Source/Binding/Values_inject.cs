@@ -44,13 +44,13 @@ namespace QuickJS.Binding
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        protected static JSValue _js_game_object_get_component(JSContext ctx, JSValue ctor, Component component, Type type)
+        public static JSValue _js_game_object_get_component(JSContext ctx, JSValue ctor, Component component, Type type)
         {
             return _js_game_object_get_component(ctx, ctor, component.gameObject, type);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        protected static JSValue _js_game_object_get_component(JSContext ctx, JSValue ctor, GameObject gameObject, Type type)
+        public static JSValue _js_game_object_get_component(JSContext ctx, JSValue ctor, GameObject gameObject, Type type)
         {
             if (JSApi.JS_IsConstructor(ctx, ctor) == 1)
             {
@@ -169,13 +169,13 @@ namespace QuickJS.Binding
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        protected static JSValue _js_game_object_get_component_in_children(JSContext ctx, JSValue ctor, Component component, Type type, bool includeInactive)
+        public static JSValue _js_game_object_get_component_in_children(JSContext ctx, JSValue ctor, Component component, Type type, bool includeInactive)
         {
             return _js_game_object_get_component_in_children(ctx, ctor, component.gameObject, type, includeInactive);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        protected static JSValue _js_game_object_get_component_in_children(JSContext ctx, JSValue ctor, GameObject gameObject, Type type, bool includeInactive)
+        public static JSValue _js_game_object_get_component_in_children(JSContext ctx, JSValue ctor, GameObject gameObject, Type type, bool includeInactive)
         {
             if (JSApi.JS_IsConstructor(ctx, ctor) == 1)
             {
@@ -199,13 +199,13 @@ namespace QuickJS.Binding
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        protected static JSValue _js_game_object_get_component_in_parent(JSContext ctx, JSValue ctor, Component component, Type type, bool includeInactive)
+        public static JSValue _js_game_object_get_component_in_parent(JSContext ctx, JSValue ctor, Component component, Type type, bool includeInactive)
         {
             return _js_game_object_get_component_in_parent(ctx, ctor, component.gameObject, type, includeInactive);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        protected static JSValue _js_game_object_get_component_in_parent(JSContext ctx, JSValue ctor, GameObject gameObject, Type type, bool includeInactive)
+        public static JSValue _js_game_object_get_component_in_parent(JSContext ctx, JSValue ctor, GameObject gameObject, Type type, bool includeInactive)
         {
             if (JSApi.JS_IsConstructor(ctx, ctor) == 1)
             {
@@ -229,13 +229,13 @@ namespace QuickJS.Binding
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        protected static JSValue _js_game_object_get_components(JSContext ctx, JSValue ctor, Component component, Type type)
+        public static JSValue _js_game_object_get_components(JSContext ctx, JSValue ctor, Component component, Type type)
         {
             return _js_game_object_get_components(ctx, ctor, component.gameObject, type);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        protected static JSValue _js_game_object_get_components(JSContext ctx, JSValue ctor, GameObject gameObject, Type type)
+        public static JSValue _js_game_object_get_components(JSContext ctx, JSValue ctor, GameObject gameObject, Type type)
         {
             if (JSApi.JS_IsConstructor(ctx, ctor) == 1)
             {
@@ -272,13 +272,13 @@ namespace QuickJS.Binding
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        protected static JSValue _js_game_object_get_components(JSContext ctx, JSValue ctor, Component component, Type type, List<Component> results)
+        public static JSValue _js_game_object_get_components(JSContext ctx, JSValue ctor, Component component, Type type, List<Component> results)
         {
             return _js_game_object_get_components(ctx, ctor, component.gameObject, type, results);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        protected static JSValue _js_game_object_get_components(JSContext ctx, JSValue ctor, GameObject gameObject, Type type, List<Component> results)
+        public static JSValue _js_game_object_get_components(JSContext ctx, JSValue ctor, GameObject gameObject, Type type, List<Component> results)
         {
             if (JSApi.JS_IsConstructor(ctx, ctor) == 1)
             {
@@ -312,13 +312,13 @@ namespace QuickJS.Binding
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        protected static JSValue _js_game_object_get_components_in_children(JSContext ctx, JSValue ctor, Component component, Type type, bool includeInactive)
+        public static JSValue _js_game_object_get_components_in_children(JSContext ctx, JSValue ctor, Component component, Type type, bool includeInactive)
         {
             return _js_game_object_get_components_in_children(ctx, ctor, component.gameObject, type, includeInactive);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        protected static JSValue _js_game_object_get_components_in_children(JSContext ctx, JSValue ctor, GameObject gameObject, Type type, bool includeInactive)
+        public static JSValue _js_game_object_get_components_in_children(JSContext ctx, JSValue ctor, GameObject gameObject, Type type, bool includeInactive)
         {
             if (JSApi.JS_IsConstructor(ctx, ctor) == 1)
             {
@@ -355,13 +355,13 @@ namespace QuickJS.Binding
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        protected static JSValue _js_game_object_get_components_in_parent(JSContext ctx, JSValue ctor, Component component, Type type, bool includeInactive)
+        public static JSValue _js_game_object_get_components_in_parent(JSContext ctx, JSValue ctor, Component component, Type type, bool includeInactive)
         {
             return _js_game_object_get_components_in_parent(ctx, ctor, component.gameObject, type, includeInactive);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        protected static JSValue _js_game_object_get_components_in_parent(JSContext ctx, JSValue ctor, GameObject gameObject, Type type, bool includeInactive)
+        public static JSValue _js_game_object_get_components_in_parent(JSContext ctx, JSValue ctor, GameObject gameObject, Type type, bool includeInactive)
         {
             if (JSApi.JS_IsConstructor(ctx, ctor) == 1)
             {

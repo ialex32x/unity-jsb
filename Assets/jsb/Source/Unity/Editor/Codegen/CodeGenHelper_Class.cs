@@ -75,17 +75,24 @@ namespace QuickJS.Unity
             // 构造函数
             if (this.typeBindingInfo.constructors.available)
             {
-                using (new PInvokeGuardCodeGen(cg, typeof(Native.JSCFunctionMagic)))
+                if (this.typeBindingInfo.transform.csConstructorOverride == null)
                 {
-                    using (new BindingConstructorDeclareCodeGen(cg, this.typeBindingInfo.constructors.csBindName))
+                    using (new PInvokeGuardCodeGen(cg, typeof(Native.JSCFunctionMagic)))
                     {
-                        using (new TryCatchGuradCodeGen(cg))
+                        using (new BindingConstructorDeclareCodeGen(cg, this.typeBindingInfo.constructors.csBindName))
                         {
-                            using (new ConstructorCodeGen(cg, this.typeBindingInfo))
+                            using (new TryCatchGuradCodeGen(cg))
                             {
+                                using (new ConstructorCodeGen(cg, this.typeBindingInfo))
+                                {
+                                }
                             }
                         }
                     }
+                }
+
+                using (new TSMethodCodeGen<ConstructorInfo>(cg, this.typeBindingInfo, this.typeBindingInfo.constructors))
+                {
                 }
             }
 
@@ -96,21 +103,25 @@ namespace QuickJS.Unity
 
                 if (transform == null || !transform.IsRedirectedMethod(methodBindingInfo.jsName))
                 {
-                    using (new PInvokeGuardCodeGen(cg))
+                    var jscOverride = transform.GetCSMethodOverrideBinding(methodBindingInfo.jsName);
+                    if (jscOverride == null)
                     {
-                        using (new BindingFuncDeclareCodeGen(cg, methodBindingInfo.csBindName))
+                        using (new PInvokeGuardCodeGen(cg))
                         {
-                            using (new TryCatchGuradCodeGen(cg))
+                            using (new BindingFuncDeclareCodeGen(cg, methodBindingInfo.csBindName))
                             {
-                                using (new MethodCodeGen(cg, methodBindingInfo))
+                                using (new TryCatchGuradCodeGen(cg))
                                 {
+                                    using (new MethodCodeGen(cg, this.typeBindingInfo, methodBindingInfo))
+                                    {
+                                    }
                                 }
                             }
                         }
                     }
                 }
 
-                using (new TSMethodCodeGen(cg, this.typeBindingInfo, methodBindingInfo))
+                using (new TSMethodCodeGen<MethodInfo>(cg, this.typeBindingInfo, methodBindingInfo))
                 {
                 }
             }
@@ -131,22 +142,26 @@ namespace QuickJS.Unity
                         {
                             continue;
                         }
-
-                        using (new PInvokeGuardCodeGen(cg))
+                        
+                        var jscOverride = transform.GetCSMethodOverrideBinding(methodBindingInfo.jsName);
+                        if (jscOverride == null)
                         {
-                            using (new BindingFuncDeclareCodeGen(cg, methodBindingInfo.csBindName))
+                            using (new PInvokeGuardCodeGen(cg))
                             {
-                                using (new TryCatchGuradCodeGen(cg))
+                                using (new BindingFuncDeclareCodeGen(cg, methodBindingInfo.csBindName))
                                 {
-                                    using (new MethodCodeGen(cg, methodBindingInfo))
+                                    using (new TryCatchGuradCodeGen(cg))
                                     {
+                                        using (new MethodCodeGen(cg, this.typeBindingInfo, methodBindingInfo))
+                                        {
+                                        }
                                     }
                                 }
                             }
                         }
                     }
 
-                    using (new TSMethodCodeGen(cg, typeBindingInfo, methodBindingInfo))
+                    using (new TSMethodCodeGen<MethodInfo>(cg, typeBindingInfo, methodBindingInfo))
                     {
                     }
                 }
@@ -164,7 +179,7 @@ namespace QuickJS.Unity
                             {
                                 using (new TryCatchGuradCodeGen(cg))
                                 {
-                                    using (new OperatorCodeGen(cg, operatorBindingInfo))
+                                    using (new OperatorCodeGen(cg, this.typeBindingInfo, operatorBindingInfo))
                                     {
                                     }
                                 }
@@ -367,6 +382,12 @@ namespace QuickJS.Unity
                     }
                 }
 
+                var constructor_jscOverride = typeBindingInfo.transform.csConstructorOverride;
+                if (constructor_jscOverride != null)
+                {
+                    constructor = this.cg.bindingManager.GetCSTypeFullName(constructor_jscOverride.Method);
+                }
+
                 cg.cs.AppendLine("var cls = register.CreateClass(\"{0}\", typeof({1}), {2});",
                     typeBindingInfo.tsTypeNaming.jsName,
                     this.cg.bindingManager.GetCSTypeFullName(typeBindingInfo.type),
@@ -412,10 +433,19 @@ namespace QuickJS.Unity
                 {
                     var regName = kv.Value.jsName;
                     var funcName = kv.Value.csBindName;
-                    string redirect;
-                    if (this.typeBindingInfo.transform != null && this.typeBindingInfo.transform.TryRedirectMethod(regName, out redirect))
+                    var jscOverride = typeBindingInfo.transform.GetCSMethodOverrideBinding(regName);
+
+                    if (jscOverride != null)
                     {
-                        funcName = redirect;
+                        funcName = this.cg.bindingManager.GetCSTypeFullName(jscOverride.Method);
+                    }
+                    else
+                    {
+                        string redirect;
+                        if (this.typeBindingInfo.transform != null && this.typeBindingInfo.transform.TryRedirectMethod(regName, out redirect))
+                        {
+                            funcName = redirect;
+                        }
                     }
 
                     cg.cs.AppendLine("cls.AddMethod(false, \"{0}\", {1});", regName, funcName);
@@ -458,10 +488,19 @@ namespace QuickJS.Unity
                     else
                     {
                         var funcName = methodBindingInfo.csBindName;
-                        string redirect;
-                        if (this.typeBindingInfo.transform != null && this.typeBindingInfo.transform.TryRedirectMethod(regName, out redirect))
+                        var jscOverride = typeBindingInfo.transform.GetCSMethodOverrideBinding(regName);
+
+                        if (jscOverride != null)
                         {
-                            funcName = redirect;
+                            funcName = this.cg.bindingManager.GetCSTypeFullName(jscOverride.Method);
+                        }
+                        else
+                        {
+                            string redirect;
+                            if (this.typeBindingInfo.transform != null && this.typeBindingInfo.transform.TryRedirectMethod(regName, out redirect))
+                            {
+                                funcName = redirect;
+                            }
                         }
                         cg.cs.AppendLine("cls.AddMethod(true, \"{0}\", {1});", regName, funcName);
                     }

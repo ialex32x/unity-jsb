@@ -15,7 +15,18 @@ let delegateTest = new Example_1.DelegateTest();
 delegateTest.onActionWithArgs("add", (a1, a2, a3) => console.log("delegate in js1:", a1, a2, a3));
 delegateTest.onActionWithArgs("add", (a1, a2, a3) => console.log("delegate in js2:", a1, a2, a3));
 delegateTest.CallActionWithArgs("hello", 123, 999);
-// class HelloBehaviour extends MonoBehaviour {
-// }
-// go.AddComponent(HelloBehaviour);
+class HelloBehaviour extends UnityEngine_1.MonoBehaviour {
+    Awake() {
+        console.log("Hello Behaviour Awake!");
+    }
+    Greet() {
+        console.log("Good day!");
+    }
+}
+go.AddComponent(HelloBehaviour);
+let helloBehaviour = go.GetComponent(HelloBehaviour);
+helloBehaviour.Greet();
+console.log(go.AddComponent);
+let box = go.AddComponent(UnityEngine_1.BoxCollider);
+console.log(box);
 //# sourceMappingURL=example_reflectbind_helloworld.js.map

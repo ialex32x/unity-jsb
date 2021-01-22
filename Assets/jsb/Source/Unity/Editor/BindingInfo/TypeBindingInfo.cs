@@ -651,95 +651,121 @@ namespace QuickJS.Unity
             var dynamicType = typeDB.CreateFreeDynamicType(type);
 
             Binding.ClassDecl cls;
-            //TODO: fill in ClassDecl content
-            var dynamicConstructor = default(Binding.IDynamicMethod);
 
-            if (crossbind)
+            if (transform.csConstructorOverride != null)
             {
-                dynamicConstructor = new Binding.DynamicCrossBindConstructor();
+                cls = register.CreateClass(type.Name, type, transform.csConstructorOverride);
             }
             else
             {
-                if (constructors.count > 0)
-                {
-                    var dynamicCtorGroup = new Binding.DynamicMethods("constructor", 1);
-                    foreach (var variant in constructors.variants)
-                    {
-                        foreach (var methodBind in variant.Value.plainMethods)
-                        {
-                            var dynamicCtor = new Binding.DynamicConstructor(dynamicType, methodBind.method);
+                //TODO: fill in ClassDecl content
+                var dynamicConstructor = default(Binding.IDynamicMethod);
 
-                            dynamicCtorGroup.Add(dynamicCtor);
-                        }
-                    }
-                    dynamicConstructor = dynamicCtorGroup;
+                if (crossbind)
+                {
+                    dynamicConstructor = new Binding.DynamicCrossBindConstructor();
                 }
                 else
                 {
-                    // struct 默认无参构造
-                    dynamicConstructor = new Binding.DynamicDefaultConstructor(dynamicType);
+                    if (constructors.count > 0)
+                    {
+                        var dynamicCtorGroup = new Binding.DynamicMethods("constructor", 1);
+                        foreach (var variant in constructors.variants)
+                        {
+                            foreach (var methodBind in variant.Value.plainMethods)
+                            {
+                                var dynamicCtor = new Binding.DynamicConstructor(dynamicType, methodBind.method);
+
+                                dynamicCtorGroup.Add(dynamicCtor);
+                            }
+                        }
+                        dynamicConstructor = dynamicCtorGroup;
+                    }
+                    else
+                    {
+                        // struct 默认无参构造
+                        dynamicConstructor = new Binding.DynamicDefaultConstructor(dynamicType);
+                    }
                 }
+                cls = register.CreateClass(type.Name, type, dynamicConstructor);
             }
-            cls = register.CreateClass(type.Name, type, dynamicConstructor);
 
             foreach (var pair in staticMethods)
             {
                 var methodBindingInfo = pair.Value;
                 var methodJSName = methodBindingInfo.jsName;
-                var methodGroup = new Binding.DynamicMethods(methodJSName, 0);
+                var jscOverride = transform.GetCSMethodOverrideBinding(methodJSName);
 
-                foreach (var variantKV in methodBindingInfo.variants)
+                if (jscOverride != null)
                 {
-                    var expectedArgCount = variantKV.Key;
-                    var variant = variantKV.Value;
-
-                    foreach (var mb in variant.plainMethods)
-                    {
-                        var dynamicMethod = new Binding.DynamicMethod(dynamicType, mb.method);
-
-                        methodGroup.Add(dynamicMethod);
-                    }
-
-                    foreach (var mb in variant.varargMethods)
-                    {
-                        //TODO: [maybe] use a speficied dynamic method class for vararg method
-                        var dynamicMethod = new Binding.DynamicMethod(dynamicType, mb.method);
-
-                        methodGroup.Add(dynamicMethod);
-                    }
+                    cls.AddMethod(true, methodJSName, jscOverride);
                 }
+                else
+                {
+                    var methodGroup = new Binding.DynamicMethods(methodJSName, 0);
 
-                cls.AddMethod(true, methodBindingInfo.jsName, methodGroup);
+                    foreach (var variantKV in methodBindingInfo.variants)
+                    {
+                        var expectedArgCount = variantKV.Key;
+                        var variant = variantKV.Value;
+
+                        foreach (var mb in variant.plainMethods)
+                        {
+                            var dynamicMethod = new Binding.DynamicMethod(dynamicType, mb.method);
+
+                            methodGroup.Add(dynamicMethod);
+                        }
+
+                        foreach (var mb in variant.varargMethods)
+                        {
+                            //TODO: [maybe] use a speficied dynamic method class for vararg method
+                            var dynamicMethod = new Binding.DynamicMethod(dynamicType, mb.method);
+
+                            methodGroup.Add(dynamicMethod);
+                        }
+                    }
+
+                    cls.AddMethod(true, methodJSName, methodGroup);
+                }
             }
 
             foreach (var pair in methods)
             {
                 var methodBindingInfo = pair.Value;
                 var methodJSName = methodBindingInfo.jsName;
-                var methodGroup = new Binding.DynamicMethods(methodJSName, 0);
+                var jscOverride = transform.GetCSMethodOverrideBinding(methodJSName);
 
-                foreach (var variantKV in methodBindingInfo.variants)
+                if (jscOverride != null)
                 {
-                    var expectedArgCount = variantKV.Key;
-                    var variant = variantKV.Value;
-
-                    foreach (var mb in variant.plainMethods)
-                    {
-                        var dynamicMethod = new Binding.DynamicMethod(dynamicType, mb.method);
-
-                        methodGroup.Add(dynamicMethod);
-                    }
-
-                    foreach (var mb in variant.varargMethods)
-                    {
-                        //TODO: [maybe] use a speficied dynamic method class for vararg method
-                        var dynamicMethod = new Binding.DynamicMethod(dynamicType, mb.method);
-
-                        methodGroup.Add(dynamicMethod);
-                    }
+                    cls.AddMethod(false, methodJSName, jscOverride);
                 }
+                else
+                {
+                    var methodGroup = new Binding.DynamicMethods(methodJSName, 0);
 
-                cls.AddMethod(false, methodBindingInfo.jsName, methodGroup);
+                    foreach (var variantKV in methodBindingInfo.variants)
+                    {
+                        var expectedArgCount = variantKV.Key;
+                        var variant = variantKV.Value;
+
+                        foreach (var mb in variant.plainMethods)
+                        {
+                            var dynamicMethod = new Binding.DynamicMethod(dynamicType, mb.method);
+
+                            methodGroup.Add(dynamicMethod);
+                        }
+
+                        foreach (var mb in variant.varargMethods)
+                        {
+                            //TODO: [maybe] use a speficied dynamic method class for vararg method
+                            var dynamicMethod = new Binding.DynamicMethod(dynamicType, mb.method);
+
+                            methodGroup.Add(dynamicMethod);
+                        }
+                    }
+
+                    cls.AddMethod(false, methodJSName, methodGroup);
+                }
             }
 
             foreach (var pair in properties)

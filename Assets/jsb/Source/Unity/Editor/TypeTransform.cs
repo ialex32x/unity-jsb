@@ -22,10 +22,9 @@ namespace QuickJS.Unity
         private JSHotfixAttribute _hotfix;
         private string _typeNaming;
         private bool _enableOperatorOverloading = true;
-        private bool _crossbind = false;
         private bool _disposable;
 
-        public bool crossbind => _crossbind;
+        public bool crossbind => _csConstructorOverride != null;
 
         public bool disposable => _disposable;
 
@@ -52,6 +51,8 @@ namespace QuickJS.Unity
         // 针对特定方法的 ts 声明优化
         private Dictionary<MethodBase, string> _tsMethodDeclarations = new Dictionary<MethodBase, string>();
         private Dictionary<MethodBase, Func<string, CodeGenerator, object, bool>> _csMethodWriter = new Dictionary<MethodBase, Func<string, CodeGenerator, object, bool>>();
+        private Dictionary<string, Native.JSCFunction> _csMethodOverride = new Dictionary<string, Native.JSCFunction>();
+        private Native.JSCFunctionMagic _csConstructorOverride = null;
 
         // d.ts 中额外输出附加方法声明 (例如 Vector3, js中需要通过方法调用进行 +-*/== 等运算)
         private List<string> _tsAdditionalMethodDeclarations = new List<string>();
@@ -75,6 +76,8 @@ namespace QuickJS.Unity
         public bool enableOperatorOverloading => _enableOperatorOverloading;
 
         public Type type => _type;
+
+        public Native.JSCFunctionMagic csConstructorOverride => _csConstructorOverride;
 
         public TypeTransform(Type type)
         {
@@ -419,17 +422,8 @@ namespace QuickJS.Unity
 
         public TypeTransform WriteCrossBindingConstructor(params Type[] parameters)
         {
-            _crossbind = true;
-            return WriteCSConstructorBinding((bindPoint, cg, info) =>
-            {
-                if (bindPoint == BindingPoints.METHOD_BINDING_FULL)
-                {
-                    cg.cs.AppendLine("return _js_crossbind_constructor(ctx, new_target);");
-                    return true;
-                }
-
-                return false;
-            }, parameters);
+            _csConstructorOverride = CommonFix.CrossBindConstructor;
+            return this;
         }
 
         public TypeTransform WriteCSMethodBinding(Func<string, CodeGenerator, object, bool> writer, string methodName, params Type[] parameters)
@@ -441,6 +435,17 @@ namespace QuickJS.Unity
             }
 
             return this;
+        }
+
+        public TypeTransform WriteCSMethodOverrideBinding(string methodName, Native.JSCFunction writer)
+        {
+            _csMethodOverride[methodName] = writer;
+            return this;
+        }
+
+        public Native.JSCFunction GetCSMethodOverrideBinding(string methodName)
+        {
+            return _csMethodOverride.TryGetValue(methodName, out var func) ? func : null;
         }
 
         public bool OnBinding(string bindPoint, MethodBase method, CodeGenerator cg, object info = null)

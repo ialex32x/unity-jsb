@@ -90,26 +90,8 @@ namespace QuickJS.Unity
             SetAssemblyBlocked("ExCSS.Unity");
             AddTypePrefixBlacklist("System.SpanExtensions");
 
-            HackGetComponents(TransformType(typeof(GameObject)))
-                .WriteCSMethodBinding((bindPoint, cg, info) =>
-                {
-                    if (bindPoint == BindingPoints.METHOD_BINDING_BEFORE_INVOKE)
-                    {
-                        cg.cs.AppendLine("var inject = _js_game_object_add_component(ctx, argv[0], self, arg0);");
-                        cg.cs.AppendLine("if (!inject.IsUndefined())");
-                        using (cg.cs.CodeBlockScope())
-                        {
-                            cg.cs.AppendLine("return inject;");
-                        }
-
-                        return true;
-                    }
-                    return false;
-                }, "AddComponent", typeof(Type));
-            ;
-
-            HackGetComponents(TransformType(typeof(Component)))
-            ;
+            HackGetComponents(TransformType(typeof(GameObject)));
+            HackGetComponents(TransformType(typeof(Component)));
 
             TransformType(typeof(MonoBehaviour))
                 .WriteCrossBindingConstructor();
@@ -981,6 +963,11 @@ namespace QuickJS.Unity
                 }
             }
             return arglist;
+        }
+
+        public string GetCSTypeFullName(MethodInfo methodInfo)
+        {
+            return $"{this.GetCSTypeFullName(methodInfo.DeclaringType)}.{methodInfo.Name}";
         }
 
         // 获取 type 在 绑定代码 中对应类型名

@@ -7,7 +7,8 @@ namespace QuickJS.Unity
     // 生成成员方法绑定代码
     public class OperatorCodeGen : MethodBaseCodeGen<MethodInfo>
     {
-        protected OperatorBindingInfo bindingInfo;
+        protected TypeBindingInfo typeBindingInfo;
+        protected OperatorBindingInfo operatorBindingInfo;
 
         protected override Type GetReturnType(MethodInfo method)
         {
@@ -36,7 +37,7 @@ namespace QuickJS.Unity
 
         protected override string GetInvokeBinding(string caller, MethodInfo method, bool hasParams, bool isExtension, string nargs, ParameterInfo[] parameters)
         {
-            var arglist = OpArgsConcat(AppendGetParameters(hasParams, nargs, method, parameters), " " + bindingInfo.cs_op + " ");
+            var arglist = OpArgsConcat(AppendGetParameters(hasParams, nargs, method, parameters), " " + operatorBindingInfo.cs_op + " ");
             var transform = cg.bindingManager.GetTypeTransform(method.DeclaringType);
             if (transform == null || !transform.OnBinding(BindingPoints.METHOD_BINDING_BEFORE_INVOKE, method, cg))
             {
@@ -45,11 +46,12 @@ namespace QuickJS.Unity
             return arglist;
         }
 
-        public OperatorCodeGen(CodeGenerator cg, OperatorBindingInfo bindingInfo)
+        public OperatorCodeGen(CodeGenerator cg, TypeBindingInfo typeBindingInfo, OperatorBindingInfo bindingInfo)
             : base(cg)
         {
-            this.bindingInfo = bindingInfo;
-            WriteCSAllVariants(this.bindingInfo);
+            this.typeBindingInfo = typeBindingInfo;
+            this.operatorBindingInfo = bindingInfo;
+            WriteCSAllVariants(this.typeBindingInfo, this.operatorBindingInfo);
             // WriteTSAllVariants(this.bindingInfo);
         }
     }

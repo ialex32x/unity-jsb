@@ -1,5 +1,5 @@
 import { DelegateTest } from "Example";
-import { Debug, GameObject, MonoBehaviour, Vector3 } from "UnityEngine";
+import { BoxCollider, Debug, GameObject, MonoBehaviour, Vector3 } from "UnityEngine";
 
 console.log("hello, world");
 Debug.Log(<any>"hello, world");
@@ -20,8 +20,20 @@ delegateTest.onActionWithArgs("add", (a1, a2, a3) => console.log("delegate in js
 delegateTest.onActionWithArgs("add", (a1, a2, a3) => console.log("delegate in js2:", a1, a2, a3));
 delegateTest.CallActionWithArgs("hello", 123, 999);
 
-// class HelloBehaviour extends MonoBehaviour {
-// }
+class HelloBehaviour extends MonoBehaviour {
+    Awake() {
+        console.log("Hello Behaviour Awake!");
+    }
 
-// go.AddComponent(HelloBehaviour);
+    Greet() {
+        console.log("Good day!");
+    }
+}
 
+go.AddComponent(HelloBehaviour);
+let helloBehaviour = go.GetComponent(HelloBehaviour);
+helloBehaviour.Greet();
+
+console.log(go.AddComponent);
+let box = go.AddComponent(BoxCollider);
+console.log(box);

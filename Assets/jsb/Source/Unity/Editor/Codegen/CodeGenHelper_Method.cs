@@ -152,8 +152,9 @@ namespace QuickJS.Unity
 
         // 输出所有变体绑定
         // hasOverrides: 是否需要处理重载
-        protected void WriteCSAllVariants(MethodBaseBindingInfo<T> methodBindingInfo) // SortedDictionary<int, MethodBaseVariant<T>> variants)
+        protected void WriteCSAllVariants(TypeBindingInfo typeBindingInfo, MethodBaseBindingInfo<T> methodBindingInfo) // SortedDictionary<int, MethodBaseVariant<T>> variants)
         {
+            var transform = typeBindingInfo.transform;
             var variants = methodBindingInfo.variants;
             var prefs = cg.bindingManager.prefs;
 
@@ -624,7 +625,7 @@ namespace QuickJS.Unity
     public class ConstructorCodeGen : MethodBaseCodeGen<ConstructorInfo>
     {
         private TypeBindingInfo typeBindingInfo;
-        private ConstructorBindingInfo bindingInfo;
+        private ConstructorBindingInfo methodBindingInfo;
 
         private bool disposable => typeBindingInfo.disposable;
 
@@ -636,18 +637,18 @@ namespace QuickJS.Unity
         // 写入默认构造函数 (struct 无参构造)
         private void WriteDefaultConstructorBinding()
         {
-            var decalringTypeName = this.cg.bindingManager.GetCSTypeFullName(this.bindingInfo.decalringType);
+            var decalringTypeName = this.cg.bindingManager.GetCSTypeFullName(this.methodBindingInfo.decalringType);
             this.cg.cs.AppendLine("var o = new {0}();", decalringTypeName);
             this.cg.cs.AppendLine("var val = NewBridgeClassObject(ctx, new_target, o, magic, {0});", CodeGenUtils.ToLiteral(this.disposable));
             this.cg.cs.AppendLine("return val;");
 
-            this.cg.tsDeclare.AppendLine($"{this.bindingInfo.jsName}()");
+            this.cg.tsDeclare.AppendLine($"{this.methodBindingInfo.jsName}()");
         }
 
         protected override string GetInvokeBinding(string caller, ConstructorInfo method, bool hasParams, bool isExtension, string nargs, ParameterInfo[] parameters)
         {
             var arglist = Concat(AppendGetParameters(hasParams, nargs, method, parameters));
-            var decalringTypeName = this.cg.bindingManager.GetCSTypeFullName(this.bindingInfo.decalringType);
+            var decalringTypeName = this.cg.bindingManager.GetCSTypeFullName(this.methodBindingInfo.decalringType);
             // 方法本身有返回值
             var transform = cg.bindingManager.GetTypeTransform(method.DeclaringType);
             if (transform == null || !transform.OnBinding(BindingPoints.METHOD_BINDING_BEFORE_INVOKE, method, cg, arglist))
@@ -675,11 +676,12 @@ namespace QuickJS.Unity
         : base(cg)
         {
             this.typeBindingInfo = typeBindingInfo;
-            this.bindingInfo = typeBindingInfo.constructors;
-            if (this.bindingInfo.count > 0)
+            this.methodBindingInfo = typeBindingInfo.constructors;
+            if (this.methodBindingInfo.count > 0)
             {
-                WriteCSAllVariants(this.bindingInfo);
-                WriteTSAllVariants(typeBindingInfo, this.bindingInfo);
+
+                WriteCSAllVariants(this.typeBindingInfo, this.methodBindingInfo);
+                // WriteTSAllVariants(typeBindingInfo, this.methodBindingInfo);
             }
             else
             {
@@ -691,6 +693,7 @@ namespace QuickJS.Unity
     // 生成成员方法绑定代码
     public class MethodCodeGen : MethodBaseCodeGen<MethodInfo>
     {
+        protected TypeBindingInfo typeBindingInfo;
         protected MethodBindingInfo methodBindingInfo;
 
         protected override Type GetReturnType(MethodInfo method)
@@ -818,30 +821,32 @@ namespace QuickJS.Unity
             return $"{caller}.{method.Name}({arglistSig})";
         }
 
-        public MethodCodeGen(CodeGenerator cg, MethodBindingInfo bindingInfo)
+        public MethodCodeGen(CodeGenerator cg, TypeBindingInfo typeBindingInfo, MethodBindingInfo methodBindingInfo)
         : base(cg)
         {
-            this.methodBindingInfo = bindingInfo;
-            WriteCSAllVariants(this.methodBindingInfo);
+            this.typeBindingInfo = typeBindingInfo;
+            this.methodBindingInfo = methodBindingInfo;
+            WriteCSAllVariants(this.typeBindingInfo, this.methodBindingInfo);
             // WriteTSAllVariants(this.bindingInfo);
         }
     }
 
-    public class TSMethodCodeGen : MethodBaseCodeGen<MethodInfo>
+    public class TSMethodCodeGen<T> : MethodBaseCodeGen<T>
+        where T : MethodBase
     {
-        protected MethodBindingInfo bindingInfo;
+        protected MethodBaseBindingInfo<T> bindingInfo;
 
-        protected override Type GetReturnType(MethodInfo method)
-        {
-            return method.ReturnType;
-        }
-
-        protected override string GetInvokeBinding(string caller, MethodInfo method, bool hasParams, bool isExtension, string nargs, ParameterInfo[] parameters)
+        protected override Type GetReturnType(T method)
         {
             return null;
         }
 
-        public TSMethodCodeGen(CodeGenerator cg, TypeBindingInfo typeBindingInfo, MethodBindingInfo bindingInfo)
+        protected override string GetInvokeBinding(string caller, T method, bool hasParams, bool isExtension, string nargs, ParameterInfo[] parameters)
+        {
+            return null;
+        }
+
+        public TSMethodCodeGen(CodeGenerator cg, TypeBindingInfo typeBindingInfo, MethodBaseBindingInfo<T> bindingInfo)
             : base(cg)
         {
             this.bindingInfo = bindingInfo;

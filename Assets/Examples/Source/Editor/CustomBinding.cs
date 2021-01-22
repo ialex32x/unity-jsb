@@ -38,6 +38,9 @@ namespace Example.Editor
             bindingManager.AddExportedType(typeof(Rect));
             bindingManager.AddExportedType(typeof(RaycastHit));
             bindingManager.AddExportedType(typeof(Physics));
+            bindingManager.AddExportedType(typeof(Collider));
+            bindingManager.AddExportedType(typeof(BoxCollider));
+            bindingManager.AddExportedType(typeof(SphereCollider));
             bindingManager.AddExportedType(typeof(System.Net.IPHostEntry)).SystemRuntime();
 
             bindingManager.AddExportedType(typeof(System.DateTime)).SystemRuntime().EnableOperatorOverloading(false);

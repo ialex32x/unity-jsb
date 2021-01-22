@@ -8,7 +8,7 @@ namespace QuickJS.Unity
     using UnityEngine;
     using UnityEditor;
 
-    public class EditorWindowFix
+    public static class EditorWindowFix
     {
         // as extended method
         // public static T CreateWindow<T>(string title, params Type[] desiredDockNextTo) where T : EditorWindow
