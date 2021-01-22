@@ -10,7 +10,7 @@ namespace QuickJS.Unity
     using UnityEditor;
     using QuickJS.Native;
 
-    public unsafe class DelegateReflectBindMethods
+    public unsafe static class ReflectBindDelegateGen
     {
         public static void ActionCall(ScriptDelegate fn)
         {

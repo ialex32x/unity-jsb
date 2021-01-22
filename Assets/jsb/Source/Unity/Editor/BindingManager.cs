@@ -672,7 +672,7 @@ namespace QuickJS.Unity
 
         private void CollectDelegateReflectMethods()
         {
-            var methods = typeof(DelegateReflectBindMethods).GetMethods();
+            var methods = typeof(ReflectBindDelegateGen).GetMethods();
             foreach (var method in methods)
             {
                 var parameters = method.GetParameters();
