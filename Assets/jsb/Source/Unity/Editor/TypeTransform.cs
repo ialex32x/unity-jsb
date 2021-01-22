@@ -426,6 +426,9 @@ namespace QuickJS.Unity
             return this;
         }
 
+        /// <summary>
+        /// 替换静态绑定代码中的部分执行逻辑 (考虑废弃, 更难维护静态绑定与反射绑定的一致性)
+        /// </summary>
         public TypeTransform WriteCSMethodBinding(Func<string, CodeGenerator, object, bool> writer, string methodName, params Type[] parameters)
         {
             var method = _type.GetMethod(methodName, parameters);

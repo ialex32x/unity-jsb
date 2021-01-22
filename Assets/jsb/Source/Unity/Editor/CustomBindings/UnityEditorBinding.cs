@@ -109,21 +109,7 @@ namespace jsb.Editor
                 .SetMethodBlocked("GetWindow", typeof(Type), typeof(bool))
                 .AddTSMethodDeclaration("static GetWindow<T extends EditorWindow>(type: { new(): T }): T", "GetWindow", typeof(Type))
                 .WriteCrossBindingConstructor()
-                .WriteCSMethodBinding((bindPoint, cg, info) =>
-                {
-                    if (bindPoint == BindingPoints.METHOD_BINDING_BEFORE_INVOKE)
-                    {
-                        cg.cs.AppendLine("var inject = QuickJS.Unity.EditorWindowFix.js_get_window(ctx, argv[0], arg0);");
-                        cg.cs.AppendLine("if (!inject.IsUndefined())");
-                        using (cg.cs.CodeBlockScope())
-                        {
-                            cg.cs.AppendLine("return inject;");
-                        }
-
-                        return true;
-                    }
-                    return false;
-                }, "GetWindow", typeof(Type))
+                .WriteCSMethodOverrideBinding("GetWindow", EditorWindowFix.BindStatic_GetWindow)
                 .AddStaticMethod(EditorWindowFix.CreateWindow)
             ;
         }

@@ -5,11 +5,41 @@ using System.Reflection;
 namespace QuickJS.Unity
 {
     using Native;
+    using Binding;
     using UnityEngine;
     using UnityEditor;
 
     public static class EditorWindowFix
     {
+        [MonoPInvokeCallbackAttribute(typeof(JSCFunction))]
+        public static JSValue BindStatic_GetWindow(JSContext ctx, JSValue this_obj, int argc, JSValue[] argv)
+        {
+            try
+            {
+                //TODO: 需要补充 GetWindow 其余重载匹配
+                if (argc == 1)
+                {
+                    System.Type arg0;
+                    if (!Values.js_get_type(ctx, argv[0], out arg0))
+                    {
+                        throw new ParameterException(typeof(UnityEditor.EditorWindow), "GetWindow", typeof(System.Type), 0);
+                    }
+                    var inject = QuickJS.Unity.EditorWindowFix.js_get_window(ctx, argv[0], arg0);
+                    if (!inject.IsUndefined())
+                    {
+                        return inject;
+                    }
+                    var ret = UnityEditor.EditorWindow.GetWindow(arg0);
+                    return Values.js_push_classvalue(ctx, ret);
+                }
+                throw new NoSuitableMethodException("GetWindow", argc);
+            }
+            catch (Exception exception)
+            {
+                return JSApi.ThrowException(ctx, exception);
+            }
+        }
+
         // as extended method
         // public static T CreateWindow<T>(string title, params Type[] desiredDockNextTo) where T : EditorWindow
         // public static T CreateWindow<T>(params Type[] desiredDockNextTo) where T : EditorWindow
