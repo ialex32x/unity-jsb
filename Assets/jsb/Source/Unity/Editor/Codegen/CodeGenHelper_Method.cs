@@ -829,14 +829,36 @@ namespace QuickJS.Unity
         }
     }
 
+    public class TSConstructorCodeGen : MethodBaseCodeGen<ConstructorInfo>
+    {
+        protected MethodBaseBindingInfo<ConstructorInfo> bindingInfo;
+
+        protected override Type GetReturnType(ConstructorInfo method)
+        {
+            return null;
+        }
+
+        protected override string GetInvokeBinding(string caller, ConstructorInfo method, bool hasParams, bool isExtension, string nargs, ParameterInfo[] parameters)
+        {
+            return null;
+        }
+
+        public TSConstructorCodeGen(CodeGenerator cg, TypeBindingInfo typeBindingInfo, MethodBaseBindingInfo<ConstructorInfo> bindingInfo)
+            : base(cg)
+        {
+            this.bindingInfo = bindingInfo;
+            WriteTSAllVariants(typeBindingInfo, this.bindingInfo);
+        }
+    }
+    
     public class TSMethodCodeGen<T> : MethodBaseCodeGen<T>
-        where T : MethodBase
+        where T : MethodInfo
     {
         protected MethodBaseBindingInfo<T> bindingInfo;
 
         protected override Type GetReturnType(T method)
         {
-            return null;
+            return method.ReturnType;
         }
 
         protected override string GetInvokeBinding(string caller, T method, bool hasParams, bool isExtension, string nargs, ParameterInfo[] parameters)

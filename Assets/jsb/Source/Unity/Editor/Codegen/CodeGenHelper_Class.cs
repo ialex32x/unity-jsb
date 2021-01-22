@@ -91,7 +91,7 @@ namespace QuickJS.Unity
                     }
                 }
 
-                using (new TSMethodCodeGen<ConstructorInfo>(cg, this.typeBindingInfo, this.typeBindingInfo.constructors))
+                using (new TSConstructorCodeGen(cg, this.typeBindingInfo, this.typeBindingInfo.constructors))
                 {
                 }
             }
