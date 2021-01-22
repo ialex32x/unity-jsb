@@ -762,9 +762,13 @@ namespace QuickJS.Unity
                 cls.AddField(isStatic, fieldBindingInfo.regName, dynamicField);
             }
 
-            //TODO: reflectbind, 处理 event
             foreach (var pair in events)
             {
+                var eventBindingInfo = pair.Value;
+                var tsDelegateVar = this.bindingManager.GetTSVariable(eventBindingInfo.regName);
+                var dynamicMethod = new Binding.DynamicEventDelegateOp(dynamicType, eventBindingInfo.eventInfo, tsDelegateVar);
+
+                cls.AddMethod(eventBindingInfo.isStatic, tsDelegateVar, dynamicMethod);
             }
 
             foreach (var pair in delegates)
@@ -775,11 +779,11 @@ namespace QuickJS.Unity
 
                 if (delegateBindingInfo.isField)
                 {
-                    dynamicMethod = new Binding.DynamicFieldDelegateOp(dynamicType, (FieldInfo)delegateBindingInfo.fieldOrPropertyInfo);
+                    dynamicMethod = new Binding.DynamicFieldDelegateOp(dynamicType, (FieldInfo)delegateBindingInfo.fieldOrPropertyInfo, tsDelegateVar);
                 }
                 else
                 {
-                    dynamicMethod = new Binding.DynamicPropertyDelegateOp(dynamicType, (PropertyInfo)delegateBindingInfo.fieldOrPropertyInfo);
+                    dynamicMethod = new Binding.DynamicPropertyDelegateOp(dynamicType, (PropertyInfo)delegateBindingInfo.fieldOrPropertyInfo, tsDelegateVar);
                 }
 
                 cls.AddMethod(delegateBindingInfo.isStatic, tsDelegateVar, dynamicMethod);
