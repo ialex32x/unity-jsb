@@ -25,7 +25,7 @@ namespace QuickJS.Binding
             return JSApi.jsb_set_float_4(this_obj, o.x, o.y, o.width, o.height) == 1;
         }
 
-        public static JSValue js_push_structvalue(JSContext ctx, ref Rect o)
+        public static JSValue js_push_structvalue(JSContext ctx, Rect o)
         {
             var proto = FindPrototypeOf<Rect>(ctx);
             JSValue val = JSApi.jsb_new_bridge_value(ctx, proto, sizeof(float) * 4);
@@ -33,7 +33,7 @@ namespace QuickJS.Binding
             return val;
         }
 
-        public static JSValue js_push_structvalue(JSContext ctx, ref Rect? o)
+        public static JSValue js_push_structvalue(JSContext ctx, Rect? o)
         {
             if (o == null)
             {

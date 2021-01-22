@@ -45,7 +45,7 @@ namespace QuickJS.Binding
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static unsafe JSValue js_push_structvalue(JSContext ctx, ref Ray o)
+        public static unsafe JSValue js_push_structvalue(JSContext ctx, Ray o)
         {
             var proto = FindPrototypeOf<Ray>(ctx);
             JSValue val = JSApi.jsb_new_bridge_value(ctx, proto, sizeof(float) * 6);

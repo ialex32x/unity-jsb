@@ -17,6 +17,34 @@ namespace QuickJS.Unity
         public ReflectBindingCallback(ScriptRuntime runtime)
         {
             _runtime = runtime;
+
+            ReflectBindValueOp.Register<string>(Binding.Values.js_push_primitive, Binding.Values.js_get_primitive);
+            ReflectBindValueOp.Register<bool>(Binding.Values.js_push_primitive, Binding.Values.js_get_primitive);
+            ReflectBindValueOp.Register<char>(Binding.Values.js_push_primitive, Binding.Values.js_get_primitive);
+            ReflectBindValueOp.Register<byte>(Binding.Values.js_push_primitive, Binding.Values.js_get_primitive);
+            ReflectBindValueOp.Register<sbyte>(Binding.Values.js_push_primitive, Binding.Values.js_get_primitive);
+            ReflectBindValueOp.Register<double>(Binding.Values.js_push_primitive, Binding.Values.js_get_primitive);
+            ReflectBindValueOp.Register<float>(Binding.Values.js_push_primitive, Binding.Values.js_get_primitive);
+            ReflectBindValueOp.Register<short>(Binding.Values.js_push_primitive, Binding.Values.js_get_primitive);
+            ReflectBindValueOp.Register<ushort>(Binding.Values.js_push_primitive, Binding.Values.js_get_primitive);
+            ReflectBindValueOp.Register<int>(Binding.Values.js_push_primitive, Binding.Values.js_get_primitive);
+            ReflectBindValueOp.Register<uint>(Binding.Values.js_push_primitive, Binding.Values.js_get_primitive);
+            ReflectBindValueOp.Register<long>(Binding.Values.js_push_primitive, Binding.Values.js_get_primitive);
+            ReflectBindValueOp.Register<ulong>(Binding.Values.js_push_primitive, Binding.Values.js_get_primitive);
+            
+            ReflectBindValueOp.Register<DateTime>(Binding.Values.js_push_structvalue, Binding.Values.js_get_structvalue);
+            ReflectBindValueOp.Register<Vector2>(Binding.Values.js_push_structvalue, Binding.Values.js_get_structvalue);
+            ReflectBindValueOp.Register<Vector2Int>(Binding.Values.js_push_structvalue, Binding.Values.js_get_structvalue);
+            ReflectBindValueOp.Register<Vector3>(Binding.Values.js_push_structvalue, Binding.Values.js_get_structvalue);
+            ReflectBindValueOp.Register<Vector3Int>(Binding.Values.js_push_structvalue, Binding.Values.js_get_structvalue);
+            ReflectBindValueOp.Register<Vector4>(Binding.Values.js_push_structvalue, Binding.Values.js_get_structvalue);
+            ReflectBindValueOp.Register<Rect>(Binding.Values.js_push_structvalue, Binding.Values.js_get_structvalue);
+            ReflectBindValueOp.Register<Quaternion>(Binding.Values.js_push_structvalue, Binding.Values.js_get_structvalue);
+            ReflectBindValueOp.Register<LayerMask>(Binding.Values.js_push_structvalue, Binding.Values.js_get_structvalue);
+            ReflectBindValueOp.Register<Ray>(Binding.Values.js_push_structvalue, Binding.Values.js_get_structvalue);
+            ReflectBindValueOp.Register<Color>(Binding.Values.js_push_structvalue, Binding.Values.js_get_structvalue);
+            ReflectBindValueOp.Register<Color32>(Binding.Values.js_push_structvalue, Binding.Values.js_get_structvalue);
+            ReflectBindValueOp.Register<Matrix4x4>(Binding.Values.js_push_structvalue, Binding.Values.js_get_structvalue);
         }
 
         public void BeginStaticModule(string moduleName)

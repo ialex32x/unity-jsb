@@ -26,7 +26,7 @@ namespace QuickJS.Binding
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static JSValue js_push_structvalue(JSContext ctx, ref LayerMask o)
+        public static JSValue js_push_structvalue(JSContext ctx, LayerMask o)
         {
             var proto = FindPrototypeOf<LayerMask>(ctx);
             JSValue val = JSApi.jsb_new_bridge_value(ctx, proto, sizeof(int) * 1);
@@ -34,7 +34,7 @@ namespace QuickJS.Binding
             return val;
         }
 
-        public static JSValue js_push_structvalue(JSContext ctx, ref LayerMask? o)
+        public static JSValue js_push_structvalue(JSContext ctx, LayerMask? o)
         {
             if (o == null)
             {

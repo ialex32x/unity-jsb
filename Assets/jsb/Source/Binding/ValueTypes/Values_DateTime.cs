@@ -26,7 +26,7 @@ namespace QuickJS.Binding
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static unsafe JSValue js_push_structvalue(JSContext ctx, ref DateTime o)
+        public static unsafe JSValue js_push_structvalue(JSContext ctx, DateTime o)
         {
             var proto = FindPrototypeOf<DateTime>(ctx);
             JSValue val = JSApi.jsb_new_bridge_value(ctx, proto, sizeof(long));

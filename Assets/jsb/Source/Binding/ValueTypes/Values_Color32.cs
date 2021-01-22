@@ -26,7 +26,7 @@ namespace QuickJS.Binding
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static JSValue js_push_structvalue(JSContext ctx, ref Color32 o)
+        public static JSValue js_push_structvalue(JSContext ctx, Color32 o)
         {
             var proto = FindPrototypeOf<Color32>(ctx);
             JSValue val = JSApi.jsb_new_bridge_value(ctx, proto, sizeof(byte) * 4);

@@ -12,6 +12,11 @@ namespace QuickJS.Extra
             return "FairyGUI";
         }
         
+        public override void OnInitialize(BindingManager bindingManager)
+        {
+            ReflectBindValueOp.Register<FairyGUI.Margin>(Binding.Values.js_push_structvalue, Binding.Values.js_get_structvalue);
+        }
+
         public override void OnPreCollectAssemblies(BindingManager bindingManager)
         {
             bindingManager.AddTypePrefixBlacklist("WebSocketSharp.");

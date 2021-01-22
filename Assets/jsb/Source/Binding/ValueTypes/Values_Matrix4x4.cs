@@ -49,7 +49,7 @@ namespace QuickJS.Binding
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static unsafe JSValue js_push_structvalue(JSContext ctx, ref Matrix4x4 o)
+        public static unsafe JSValue js_push_structvalue(JSContext ctx, Matrix4x4 o)
         {
             var proto = FindPrototypeOf<Matrix4x4>(ctx);
             JSValue val = JSApi.jsb_new_bridge_value(ctx, proto, sizeof(float) * 4 * 4);

@@ -49,7 +49,7 @@ namespace QuickJS.Binding
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static JSValue js_push_structvalue(JSContext ctx, ref Quaternion o)
+        public static JSValue js_push_structvalue(JSContext ctx, Quaternion o)
         {
             var proto = FindPrototypeOf<Quaternion>(ctx);
             JSValue val = JSApi.jsb_new_bridge_value(ctx, proto, sizeof(float) * 4);

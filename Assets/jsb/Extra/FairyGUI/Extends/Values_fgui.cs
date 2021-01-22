@@ -21,7 +21,7 @@ namespace QuickJS.Binding
             return ret != 0;
         }
 
-        public static JSValue js_push_structvalue(JSContext ctx, ref FairyGUI.Margin o)
+        public static JSValue js_push_structvalue(JSContext ctx, FairyGUI.Margin o)
         {
             var proto = FindPrototypeOf<Rect>(ctx);
             JSValue val = JSApi.jsb_new_bridge_value(ctx, proto, sizeof(int) * 4);

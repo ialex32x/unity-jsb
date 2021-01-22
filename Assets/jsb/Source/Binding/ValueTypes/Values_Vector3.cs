@@ -26,7 +26,7 @@ namespace QuickJS.Binding
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static JSValue js_push_structvalue(JSContext ctx, ref Vector3 o)
+        public static JSValue js_push_structvalue(JSContext ctx, Vector3 o)
         {
             var proto = FindPrototypeOf<Vector3>(ctx);
             JSValue val = JSApi.jsb_new_bridge_value(ctx, proto, sizeof(float) * 3);

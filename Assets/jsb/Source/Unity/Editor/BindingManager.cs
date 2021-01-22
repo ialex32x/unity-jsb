@@ -873,7 +873,7 @@ namespace QuickJS.Unity
                     }
                 }
 
-                op = "ref ";
+                // op = "ref ";
                 return "js_push_structvalue";
             }
 
