@@ -59,6 +59,7 @@ namespace Example
              };
         }
         public Action<string, float, int> onActionWithArgs;
+        public static Action<string, float, int> onStaticActionWithArgs;
         public Func<int, int> onFunc;
 
         public event Action<int> onEvent;
@@ -87,6 +88,11 @@ namespace Example
         public void CallActionWithArgs(string a1, float a2, int a3)
         {
             onActionWithArgs?.Invoke(a1, a2, a3);
+        }
+
+        public static void CallStaticActionWithArgs(string a1, float a2, int a3)
+        {
+            onStaticActionWithArgs?.Invoke(a1, a2, a3);
         }
 
         public int CallFunc(int a1)

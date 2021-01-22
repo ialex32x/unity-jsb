@@ -21,6 +21,9 @@ namespace QuickJS.Unity
         public bool writable; // 可写
         public bool isStatic; // 静态
 
+        public bool isField;
+        public MemberInfo fieldOrPropertyInfo;
+
         public DelegateBindingInfo(TypeBindingInfo typeBindingInfo, FieldInfo fieldInfo)
         {
             this.declaringType = typeBindingInfo.type;
@@ -29,6 +32,8 @@ namespace QuickJS.Unity
             this.writable = !fieldInfo.IsInitOnly;
             this.isStatic = fieldInfo.IsStatic;
             this.csName = fieldInfo.Name;
+            this.isField = true;
+            this.fieldOrPropertyInfo = fieldInfo;
 
             do
             {
@@ -53,6 +58,8 @@ namespace QuickJS.Unity
             this.writable = propertyInfo.SetMethod != null && propertyInfo.SetMethod.IsPublic;
             this.isStatic = (propertyInfo.GetMethod ?? propertyInfo.SetMethod).IsStatic;
             this.csName = propertyInfo.Name;
+            this.isField = false;
+            this.fieldOrPropertyInfo = propertyInfo;
 
             if (this.isStatic)
             {

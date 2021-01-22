@@ -47,7 +47,7 @@ namespace QuickJS.Unity
                     o = default(T);
                     return true;
                 }
-                
+
                 if (typeof(T).IsInstanceOfType(ft))
                 {
                     o = (T)ft;

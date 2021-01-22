@@ -742,9 +742,22 @@ namespace QuickJS.Unity
             {
             }
 
-            //TODO: reflectbind, 处理 delegate
             foreach (var pair in delegates)
             {
+                var delegateBindingInfo = pair.Value;
+                var tsDelegateVar = this.bindingManager.GetTSVariable(delegateBindingInfo.regName);
+                Binding.IDynamicMethod dynamicMethod = null;
+
+                if (delegateBindingInfo.isField)
+                {
+                    dynamicMethod = new Binding.DynamicFieldDelegateOp(dynamicType, (FieldInfo)delegateBindingInfo.fieldOrPropertyInfo);
+                }
+                else
+                {
+                    dynamicMethod = new Binding.DynamicPropertyDelegateOp(dynamicType, (PropertyInfo)delegateBindingInfo.fieldOrPropertyInfo);
+                }
+
+                cls.AddMethod(delegateBindingInfo.isStatic, tsDelegateVar, dynamicMethod);
             }
 
             return cls;

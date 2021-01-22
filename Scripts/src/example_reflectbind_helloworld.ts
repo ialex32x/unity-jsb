@@ -1,3 +1,4 @@
+import { DelegateTest } from "Example";
 import { Debug, GameObject, MonoBehaviour, Vector3 } from "UnityEngine";
 
 console.log("hello, world");
@@ -11,9 +12,13 @@ console.log("new Vector3(1, 1, 1).x = ", new Vector3(1, 1, 1).x);
 
 go.transform.localPosition = new Vector3(1, 1, 1);
 
-class HelloBehaviour extends MonoBehaviour {
+let delegateTest = new DelegateTest();
 
-}
+delegateTest.onActionWithArgs("set", (a1, a2, a3) => console.log("delegate in js", a1, a2, a3));
+delegateTest.CallActionWithArgs("hello", 123, 999);
 
-go.AddComponent(HelloBehaviour);
+// class HelloBehaviour extends MonoBehaviour {
+// }
+
+// go.AddComponent(HelloBehaviour);
 
