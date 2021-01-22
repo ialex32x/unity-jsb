@@ -5,7 +5,6 @@
 
 > QuickJS is a small and embeddable Javascript engine. It supports the ES2020 specification including modules, asynchronous generators, proxies and BigInt. 
 
-
 # 特性支持
 * JS异步函数与 Unity 协程/ C# Tasking 的结合 (limited support)
 * 支持运算符重载 +, -, *, /, ==, -(负)
@@ -15,6 +14,7 @@
 * [初步] 支持未导出的C#类型的 JS 交互
 * [初步] 支持 C# 代码热更 (hotfix, limited support)
 * [初步] 编辑器执行 JS 脚本
+* [未完成] 开发过程中无需生成绑定代码
 * [未完成] Webpack HMR 运行时模块热替换 (limited support, for development only)
 
 # 附加模块支持 (可选)
