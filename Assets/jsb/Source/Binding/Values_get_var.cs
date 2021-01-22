@@ -12,6 +12,29 @@ namespace QuickJS.Binding
         // 用于根据 Type 信息将 JSValue 专为对应的 CS Object
         private static Dictionary<Type, JSValueCast> _JSCastMap = new Dictionary<Type, JSValueCast>();
 
+        // 初始化, 在 Values 静态构造时调用
+        private static void init_js_cast_map()
+        {
+            _JSCastMap[typeof(void)] = js_value_cast_void;
+            _JSCastMap[typeof(bool)] = js_value_cast_bool;
+            _JSCastMap[typeof(byte)] = js_value_cast_byte;
+            _JSCastMap[typeof(char)] = js_value_cast_char;
+            _JSCastMap[typeof(sbyte)] = js_value_cast_sbyte;
+            _JSCastMap[typeof(short)] = js_value_cast_short;
+            _JSCastMap[typeof(ushort)] = js_value_cast_ushort;
+            _JSCastMap[typeof(int)] = js_value_cast_int;
+            _JSCastMap[typeof(uint)] = js_value_cast_uint;
+            _JSCastMap[typeof(long)] = js_value_cast_long;
+            _JSCastMap[typeof(ulong)] = js_value_cast_ulong;
+            _JSCastMap[typeof(float)] = js_value_cast_float;
+            _JSCastMap[typeof(double)] = js_value_cast_double;
+            _JSCastMap[typeof(string)] = js_value_cast_string;
+            _JSCastMap[typeof(object)] = js_value_cast_object;
+            _JSCastMap[typeof(Type)] = js_value_cast_type;
+            _JSCastMap[typeof(ScriptValue)] = js_value_cast_script_value;
+            _JSCastMap[typeof(ScriptPromise)] = js_value_cast_script_promise;
+        }
+
         // type: expected type of object o
         public static bool js_get_var(JSContext ctx, JSValue val, Type type, out object o)
         {
@@ -34,10 +57,14 @@ namespace QuickJS.Binding
             }
 
             JSValueCast cast;
-            if (_JSCastMap.TryGetValue(type, out cast))
+            do
             {
-                return cast(ctx, val, out o);
-            }
+                if (_JSCastMap.TryGetValue(type, out cast))
+                {
+                    return cast(ctx, val, out o);
+                }
+                type = type.BaseType;
+            } while (type != null);
 
             if (val.IsObject())
             {
@@ -46,28 +73,6 @@ namespace QuickJS.Binding
 
             o = null;
             return false;
-        }
-
-        // 初始化, 在 Values 静态构造时调用
-        private static void init_js_cast_map()
-        {
-            _JSCastMap[typeof(void)] = js_value_cast_void;
-            _JSCastMap[typeof(bool)] = js_value_cast_bool;
-            _JSCastMap[typeof(byte)] = js_value_cast_byte;
-            _JSCastMap[typeof(char)] = js_value_cast_char;
-            _JSCastMap[typeof(sbyte)] = js_value_cast_sbyte;
-            _JSCastMap[typeof(short)] = js_value_cast_short;
-            _JSCastMap[typeof(ushort)] = js_value_cast_ushort;
-            _JSCastMap[typeof(int)] = js_value_cast_int;
-            _JSCastMap[typeof(uint)] = js_value_cast_uint;
-            _JSCastMap[typeof(long)] = js_value_cast_long;
-            _JSCastMap[typeof(ulong)] = js_value_cast_ulong;
-            _JSCastMap[typeof(float)] = js_value_cast_float;
-            _JSCastMap[typeof(double)] = js_value_cast_double;
-            _JSCastMap[typeof(string)] = js_value_cast_string;
-            _JSCastMap[typeof(object)] = js_value_cast_object;
-            _JSCastMap[typeof(Type)] = js_value_cast_type;
-            _JSCastMap[typeof(ScriptValue)] = js_value_cast_script_value;
         }
 
         private static bool js_value_cast_object(JSContext ctx, JSValue val, out object o)
@@ -93,7 +98,7 @@ namespace QuickJS.Binding
                 return js_value_cast_double(ctx, val, out o);
             }
 
-            o = null; 
+            o = null;
             return false;
         }
 
@@ -218,6 +223,14 @@ namespace QuickJS.Binding
         private static bool js_value_cast_script_value(JSContext ctx, JSValue val, out object o)
         {
             ScriptValue rval;
+            var rs = js_get_classvalue(ctx, val, out rval);
+            o = rval;
+            return rs;
+        }
+
+        private static bool js_value_cast_script_promise(JSContext ctx, JSValue val, out object o)
+        {
+            ScriptPromise rval;
             var rs = js_get_classvalue(ctx, val, out rval);
             o = rval;
             return rs;

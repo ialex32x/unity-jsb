@@ -31,6 +31,7 @@ namespace QuickJS.Binding
             _CSCastMap[typeof(string)] = cs_value_cast_string;
             _CSCastMap[typeof(Type)] = cs_value_cast_type;
             _CSCastMap[typeof(ScriptValue)] = cs_value_cast_script_value;
+            _CSCastMap[typeof(ScriptPromise)] = cs_value_cast_script_promise;
         }
 
         // 自动判断类型
@@ -53,10 +54,14 @@ namespace QuickJS.Binding
             }
 
             CSValueCast cast;
-            if (_CSCastMap.TryGetValue(type, out cast))
+            do
             {
-                return cast(ctx, o);
-            }
+                if (_CSCastMap.TryGetValue(type, out cast))
+                {
+                    return cast(ctx, o);
+                }
+                type = type.BaseType;
+            } while (type != null);
 
             //NOTE: 2. fallthrough, push as object
             return js_push_classvalue(ctx, o);
@@ -140,6 +145,11 @@ namespace QuickJS.Binding
         private static JSValue cs_value_cast_script_value(JSContext ctx, object o)
         {
             return js_push_classvalue(ctx, (ScriptValue)o);
+        }
+
+        private static JSValue cs_value_cast_script_promise(JSContext ctx, object o)
+        {
+            return js_push_classvalue(ctx, (ScriptPromise)o);
         }
     }
 }

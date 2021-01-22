@@ -440,7 +440,7 @@ namespace QuickJS.Unity
                 {
                     var parameter = parameters[i];
                     var parameterType = parameter.ParameterType;
-                    if (CodeGenUtils.IsSpecialParameterType(parameterType))
+                    if (Binding.Values.IsAutoBindArgType(parameterType))
                     {
                         // 剔除 JSContext, JSRuntime
                         ArrayUtility.RemoveAt(ref parameters, i);
@@ -588,9 +588,7 @@ namespace QuickJS.Unity
                 var parameter = parameters[pIndex];
                 var pType = parameter.ParameterType;
 
-                if (!pType.IsByRef
-                 || pType == typeof(Native.JSContext) || pType == typeof(Native.JSRuntime)
-                 || pType == typeof(ScriptContext) || pType == typeof(ScriptRuntime))
+                if (!pType.IsByRef || Binding.Values.IsAutoBindArgType(pType))
                 {
                     continue;
                 }

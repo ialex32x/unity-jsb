@@ -16,7 +16,38 @@ namespace QuickJS.Binding
             init_js_cast_map();
             init_cs_cast_map();
         }
-        
+
+        public static bool IsAutoBindArgType(Type pType)
+        {
+            return pType == typeof(JSContext) || pType == typeof(JSRuntime)
+                || pType == typeof(ScriptContext) || pType == typeof(ScriptRuntime);
+        }
+
+        public static object js_get_context(JSContext ctx, Type type)
+        {
+            if (type == typeof(JSContext))
+            {
+                return ctx;
+            }
+            
+            if (type == typeof(JSRuntime))
+            {
+                return JSApi.JS_GetRuntime(ctx);
+            }
+
+            if (type == typeof(ScriptContext))
+            {
+                return ScriptEngine.GetContext(ctx);
+            }
+            
+            if (type == typeof(ScriptRuntime))
+            {
+                return ScriptEngine.GetRuntime(ctx);
+            }
+
+            return null;
+        }
+
         public static JSValue FindPrototypeOf<T>(JSContext ctx)
         {
             int type_id;

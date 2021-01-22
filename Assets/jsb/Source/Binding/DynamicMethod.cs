@@ -23,12 +23,36 @@ namespace QuickJS.Binding
         private DynamicType _type;
         private MethodInfo _methodInfo;
 
+        private ParameterInfo[] _inputParameters;
+        private ParameterInfo[] _methodParameters;
+
         protected Values.CSValueCast _rvalPusher;
 
         public DynamicMethod(DynamicType type, MethodInfo methodInfo)
         {
             _type = type;
             _methodInfo = methodInfo;
+            _methodParameters = _methodInfo.GetParameters();
+
+            var argIndex = 0;
+            for (var i = 0; i < _methodParameters.Length; i++)
+            {
+                var p = _methodParameters[i];
+                if (!Values.IsAutoBindArgType(p.ParameterType))
+                {
+                    argIndex++;
+                }
+            }
+            _inputParameters = new ParameterInfo[argIndex];
+            argIndex = 0;
+            for (var i = 0; i < _methodParameters.Length; i++)
+            {
+                var p = _methodParameters[i];
+                if (!Values.IsAutoBindArgType(p.ParameterType))
+                {
+                    _inputParameters[argIndex++] = p;
+                }
+            }
         }
 
         public void ReplaceRValPusher(Values.CSValueCast rvalPusher)
@@ -38,18 +62,17 @@ namespace QuickJS.Binding
 
         public override ParameterInfo[] GetParameters()
         {
-            return _methodInfo.GetParameters();
+            return _inputParameters;
         }
 
         public override bool CheckArgs(JSContext ctx, int argc, JSValue[] argv)
         {
-            var parameters = _methodInfo.GetParameters();
-            if (parameters.Length != argc)
+            if (_inputParameters.Length != argc)
             {
                 return false;
             }
 
-            return Values.js_match_parameters(ctx, argv, parameters);
+            return Values.js_match_parameters(ctx, argv, _inputParameters);
         }
 
         public override JSValue Invoke(JSContext ctx, JSValue this_obj, int argc, JSValue[] argv)
@@ -67,14 +90,22 @@ namespace QuickJS.Binding
                     throw new ThisBoundException();
                 }
             }
-            var parameters = _methodInfo.GetParameters();
-            var nArgs = argc;
+            var nArgs = _methodParameters.Length;
             var args = new object[nArgs];
+            var vIndex = 0;
             for (var i = 0; i < nArgs; i++)
             {
-                if (!Values.js_get_var(ctx, argv[i], parameters[i].ParameterType, out args[i]))
+                var pType = _methodParameters[i].ParameterType;
+                if (Values.IsAutoBindArgType(pType))
                 {
-                    return JSApi.JS_ThrowInternalError(ctx, "failed to cast val");
+                    args[i] = Values.js_get_context(ctx, pType);
+                }
+                else
+                {
+                    if (!Values.js_get_var(ctx, argv[vIndex++], pType, out args[i]))
+                    {
+                        return JSApi.JS_ThrowInternalError(ctx, "failed to cast val");
+                    }
                 }
             }
 

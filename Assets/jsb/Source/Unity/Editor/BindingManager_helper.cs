@@ -22,7 +22,7 @@ namespace QuickJS.Unity
             for (var i = 0; i < len; i++)
             {
                 var parameterType = parameters[i].ParameterType;
-                if (CodeGenUtils.IsSpecialParameterType(parameterType))
+                if (Binding.Values.IsAutoBindArgType(parameterType))
                 {
                     argc--;
                 }

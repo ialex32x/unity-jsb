@@ -147,9 +147,7 @@ namespace QuickJS.Unity
                 var parameter = parameters[pIndex];
                 var pType = parameter.ParameterType;
 
-                if (!pType.IsByRef
-                 || pType == typeof(Native.JSContext) || pType == typeof(Native.JSRuntime)
-                 || pType == typeof(ScriptContext) || pType == typeof(ScriptRuntime))
+                if (!pType.IsByRef || Binding.Values.IsAutoBindArgType(pType))
                 {
                     continue;
                 }
