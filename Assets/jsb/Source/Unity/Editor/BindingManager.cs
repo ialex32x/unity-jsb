@@ -672,13 +672,13 @@ namespace QuickJS.Unity
                     {
                         log.AppendLine("skip delegate: {0} && {1} required defines: {2}", regDelegateBinding, delegateType, defs);
                         regDelegateBinding.types.Add(delegateType);
-                        regDelegateBinding.reflect = GetReflect(returnType, parameters);
                         _redirectDelegates[delegateType] = regDelegateType;
                         return;
                     }
                 }
                 var delegateBindingInfo = new DelegateBridgeBindingInfo(returnType, parameters, defs);
                 delegateBindingInfo.types.Add(delegateType);
+                delegateBindingInfo.reflect = GetReflect(returnType, parameters);
                 _exportedDelegates.Add(delegateType, delegateBindingInfo);
                 log.AppendLine("add delegate: {0} required defines: {1}", delegateType, defs);
                 for (var i = 0; i < parameters.Length; i++)

@@ -39,9 +39,12 @@ namespace QuickJS.Unity
 
         public void OnPreGenerateDelegate(DelegateBridgeBindingInfo bindingInfo)
         {
+            var typeDB = _runtime.GetTypeDB();
+            var method = bindingInfo.reflect;
+
             foreach (var delegateType in bindingInfo.types)
             {
-                //TODO: 如何通过 delegateType 产生对应的 MethodInfo
+                typeDB.AddDelegate(delegateType, method);
             }
 
         }
