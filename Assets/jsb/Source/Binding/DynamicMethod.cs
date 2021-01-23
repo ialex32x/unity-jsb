@@ -115,6 +115,7 @@ namespace QuickJS.Binding
                 }
                 else
                 {
+                    //TODO: 如果最后一个是可变参数, 后续值放入 typed array
                     if (!Values.js_get_var(ctx, argv[vIndex++], pType, out args[i]))
                     {
                         return JSApi.JS_ThrowInternalError(ctx, "failed to cast val");
