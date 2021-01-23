@@ -25,6 +25,7 @@ namespace QuickJS.Binding
 
         private ParameterInfo[] _inputParameters;
         private ParameterInfo[] _methodParameters;
+        private bool _isVarargMethod;
 
         protected Values.CSValueCast _rvalPusher;
 
@@ -33,6 +34,7 @@ namespace QuickJS.Binding
             _type = type;
             _methodInfo = methodInfo;
             _methodParameters = _methodInfo.GetParameters();
+            _isVarargMethod = Values.IsVarargParameter(_methodParameters);
 
             var argIndex = 0;
             for (var i = 0; i < _methodParameters.Length; i++)
@@ -67,11 +69,22 @@ namespace QuickJS.Binding
 
         public override bool CheckArgs(JSContext ctx, int argc, JSValue[] argv)
         {
-            if (_inputParameters.Length != argc)
+            if (_isVarargMethod)
             {
-                return false;
+                if (_inputParameters.Length - 1 > argc)
+                {
+                    return false;
+                }
+            }
+            else
+            {
+                if (_inputParameters.Length != argc)
+                {
+                    return false;
+                }
             }
 
+            //TODO: check if contains vararg parameter
             return Values.js_match_parameters(ctx, argv, _inputParameters);
         }
 
