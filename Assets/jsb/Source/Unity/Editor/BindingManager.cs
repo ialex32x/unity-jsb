@@ -694,7 +694,7 @@ namespace QuickJS.Unity
         public MethodInfo GetReflect(Type returnType, ParameterInfo[] parameters)
         {
             // skip unsupported types
-            if (BindingManager.ContainsByRefParameters(parameters) || BindingManager.IsVarargMethod(parameters))
+            if (BindingManager.ContainsByRefParameters(parameters) || Binding.Values.IsVarargParameter(parameters))
             {
                 return null;
             }

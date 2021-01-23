@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 
 namespace QuickJS.Binding
@@ -17,7 +18,12 @@ namespace QuickJS.Binding
             init_cs_cast_map();
         }
 
-        public static bool IsAutoBindArgType(Type pType)
+        public static bool IsVarargParameter(ParameterInfo[] parameters)
+        {
+            return parameters.Length > 0 && parameters[parameters.Length - 1].IsDefined(typeof(ParamArrayAttribute), false);
+        }
+
+        public static bool IsContextualType(Type pType)
         {
             return pType == typeof(JSContext) || pType == typeof(JSRuntime)
                 || pType == typeof(ScriptContext) || pType == typeof(ScriptRuntime);

@@ -42,7 +42,7 @@ namespace QuickJS.Unity
 
             var parameters = method.GetParameters();
             var nargs = BindingManager.GetTSParameterCount(parameters);
-            var isVararg = BindingManager.IsVarargMethod(parameters);
+            var isVararg = Binding.Values.IsVarargParameter(parameters);
             MethodBaseVariant<T> variant;
             if (isVararg)
             {

@@ -10,11 +10,6 @@ namespace QuickJS.Unity
 
     public partial class BindingManager
     {
-        public static bool IsVarargMethod(ParameterInfo[] parameters)
-        {
-            return parameters.Length > 0 && parameters[parameters.Length - 1].IsDefined(typeof(ParamArrayAttribute), false);
-        }
-
         public static int GetTSParameterCount(ParameterInfo[] parameters)
         {
             var len = parameters.Length;
@@ -22,7 +17,7 @@ namespace QuickJS.Unity
             for (var i = 0; i < len; i++)
             {
                 var parameterType = parameters[i].ParameterType;
-                if (Binding.Values.IsAutoBindArgType(parameterType))
+                if (Binding.Values.IsContextualType(parameterType))
                 {
                     argc--;
                 }

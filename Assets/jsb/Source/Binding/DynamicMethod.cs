@@ -38,7 +38,7 @@ namespace QuickJS.Binding
             for (var i = 0; i < _methodParameters.Length; i++)
             {
                 var p = _methodParameters[i];
-                if (!Values.IsAutoBindArgType(p.ParameterType))
+                if (!Values.IsContextualType(p.ParameterType))
                 {
                     argIndex++;
                 }
@@ -48,7 +48,7 @@ namespace QuickJS.Binding
             for (var i = 0; i < _methodParameters.Length; i++)
             {
                 var p = _methodParameters[i];
-                if (!Values.IsAutoBindArgType(p.ParameterType))
+                if (!Values.IsContextualType(p.ParameterType))
                 {
                     _inputParameters[argIndex++] = p;
                 }
@@ -96,7 +96,7 @@ namespace QuickJS.Binding
             for (var i = 0; i < nArgs; i++)
             {
                 var pType = _methodParameters[i].ParameterType;
-                if (Values.IsAutoBindArgType(pType))
+                if (Values.IsContextualType(pType))
                 {
                     args[i] = Values.js_get_context(ctx, pType);
                 }
