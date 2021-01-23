@@ -263,5 +263,40 @@ namespace QuickJS.Binding
 
             return true;
         }
+
+        public static bool js_match_parameters_vararg(JSContext ctx, JSValue[] argv, ParameterInfo[] parameterInfos)
+        {
+            var size = parameterInfos.Length - 1;
+            for (var i = 0; i < size; i++)
+            {
+                var parameterInfo = parameterInfos[i];
+                var pType = parameterInfo.ParameterType;
+                if (pType.IsByRef)
+                {
+                    if (!js_match_type_hint(ctx, argv[i], pType))
+                    {
+                        return false;
+                    }
+                }
+                else
+                {
+                    if (!js_match_type(ctx, argv[i], pType))
+                    {
+                        return false;
+                    }
+                }
+            }
+
+            var varArgType = parameterInfos[size].ParameterType.GetElementType();
+            for (var i = size; i < argv.Length; i++)
+            {
+                if (!js_match_type(ctx, argv[i], varArgType))
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
     }
 }

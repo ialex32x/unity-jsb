@@ -75,6 +75,8 @@ namespace QuickJS.Binding
                 {
                     return false;
                 }
+                
+                return Values.js_match_parameters_vararg(ctx, argv, _inputParameters);
             }
             else
             {
@@ -82,10 +84,9 @@ namespace QuickJS.Binding
                 {
                     return false;
                 }
-            }
 
-            //TODO: check if contains vararg parameter
-            return Values.js_match_parameters(ctx, argv, _inputParameters);
+                return Values.js_match_parameters(ctx, argv, _inputParameters);
+            }
         }
 
         public override JSValue Invoke(JSContext ctx, JSValue this_obj, int argc, JSValue[] argv)
@@ -115,10 +116,28 @@ namespace QuickJS.Binding
                 }
                 else
                 {
-                    //TODO: 如果最后一个是可变参数, 后续值放入 typed array
-                    if (!Values.js_get_var(ctx, argv[vIndex++], pType, out args[i]))
+                    if (_isVarargMethod && i == nArgs - 1)
                     {
-                        return JSApi.JS_ThrowInternalError(ctx, "failed to cast val");
+                        var varArgLength = argc - nArgs + 1;
+                        var varArgType = pType.GetElementType();
+                        var varArgArray = Array.CreateInstance(varArgType, varArgLength);
+                        for (var varArgIndex = 0; varArgIndex < varArgLength; varArgIndex++)
+                        {
+                            object varArgElement = null;
+                            if (!Values.js_get_var(ctx, argv[vIndex++], varArgType, out varArgElement))
+                            {
+                                return JSApi.JS_ThrowInternalError(ctx, $"failed to cast val (vararg {varArgIndex})");
+                            }
+                            varArgArray.SetValue(varArgElement, varArgIndex);
+                        }
+                        args[i] = varArgArray;
+                    }
+                    else
+                    {
+                        if (!Values.js_get_var(ctx, argv[vIndex++], pType, out args[i]))
+                        {
+                            return JSApi.JS_ThrowInternalError(ctx, "failed to cast val");
+                        }
                     }
                 }
             }
