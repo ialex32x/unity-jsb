@@ -8,14 +8,12 @@ namespace QuickJS.Binding
     public struct OperatorDef
     {
         public string op;
-        public JSCFunction func;
-        public int length;
+        public JSValue value;
 
-        public OperatorDef(string op, JSCFunction func, int length)
+        public OperatorDef(string op, JSValue value)
         {
-            this.func = func;
-            this.length = length;
             this.op = op;
+            this.value = value;
         }
     }
 
@@ -68,6 +66,21 @@ namespace QuickJS.Binding
                 _proto = JSApi.JS_UNDEFINED;
                 _context = null;
             }
+        }
+
+        public void AddSelfOperator(string op, IDynamicMethod func)
+        {
+            _register.RegisterOperator(_type, op, func);
+        }
+
+        public void AddLeftOperator(string op, IDynamicMethod func, Type type)
+        {
+            _register.RegisterOperator(_type, op, func, true, type);
+        }
+
+        public void AddRightOperator(string op, IDynamicMethod func, Type type)
+        {
+            _register.RegisterOperator(_type, op, func, false, type);
         }
 
         public void AddSelfOperator(string op, JSCFunction func, int length)

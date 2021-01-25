@@ -78,7 +78,7 @@ namespace QuickJS.Unity
     public class OperatorBindingInfo : MethodBaseBindingInfo<MethodInfo>
     {
         public int length; // 参数数
-        public string csName;
+        public string csName; // CS原始方法名 (op_xxx)
         public string cs_op; // 绑定代码中的运算符
         public MethodInfo methodInfo;
         public bool isExtension;

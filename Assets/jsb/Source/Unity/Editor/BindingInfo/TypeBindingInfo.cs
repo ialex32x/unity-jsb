@@ -658,7 +658,6 @@ namespace QuickJS.Unity
             }
             else
             {
-                //TODO: fill in ClassDecl content
                 var dynamicConstructor = default(Binding.IDynamicMethod);
 
                 if (crossbind)
@@ -813,6 +812,11 @@ namespace QuickJS.Unity
                 }
 
                 cls.AddMethod(delegateBindingInfo.isStatic, tsDelegateVar, dynamicMethod);
+            }
+
+            foreach (var operatorBindingInfo in operators)
+            {
+                //TODO: 运算符绑定
             }
 
             return cls;

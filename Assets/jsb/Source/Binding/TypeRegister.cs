@@ -241,22 +241,42 @@ namespace QuickJS.Binding
             return val;
         }
 
-        // self operator for type
         public void RegisterOperator(Type type, string op, JSCFunction func, int length)
+        {
+            RegisterOperator(type, op, JSApi.JS_NewCFunction(_context, func, op, length));
+        }
+
+        public void RegisterOperator(Type type, string op, JSCFunction func, int length, bool left, Type sideType)
+        {
+            RegisterOperator(type, op, JSApi.JS_NewCFunction(_context, func, op, length), left, sideType);
+        }
+
+        public void RegisterOperator(Type type, string op, IDynamicMethod func)
+        {
+            RegisterOperator(type, op, _db.NewDynamicMethod(GetAtom(op), func));
+        }
+
+        public void RegisterOperator(Type type, string op, IDynamicMethod func, bool left, Type sideType)
+        {
+            RegisterOperator(type, op, _db.NewDynamicMethod(GetAtom(op), func), left, sideType);
+        }
+
+        // self operator for type
+        public void RegisterOperator(Type type, string op, JSValue value)
         {
             int index;
             var decl = GetOperatorDecl(type, out index);
-            decl.AddOperator(op, func, length);
+            decl.AddOperator(op, value);
         }
 
         // left/right operator for type
-        public void RegisterOperator(Type type, string op, JSCFunction func, int length, bool left, Type sideType)
+        public void RegisterOperator(Type type, string op, JSValue value, bool left, Type sideType)
         {
             if (sideType == typeof(string) || sideType == typeof(void) || (sideType.IsValueType && (sideType.IsPrimitive || sideType.IsEnum)))
             {
                 int index;
                 var decl = GetOperatorDecl(type, out index);
-                decl.AddCrossOperator(op, func, length, left, sideType);
+                decl.AddCrossOperator(op, value, left, sideType);
             }
             else
             {
@@ -265,11 +285,11 @@ namespace QuickJS.Binding
                 var decl2 = GetOperatorDecl(sideType, out index2);
                 if (index2 > index1)
                 {
-                    decl2.AddCrossOperator(op, func, length, !left, type);
+                    decl2.AddCrossOperator(op, value, !left, type);
                 }
                 else
                 {
-                    decl1.AddCrossOperator(op, func, length, left, sideType);
+                    decl1.AddCrossOperator(op, value, left, sideType);
                 }
             }
         }

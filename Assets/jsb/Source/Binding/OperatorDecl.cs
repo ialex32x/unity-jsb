@@ -24,12 +24,12 @@ namespace QuickJS.Binding
             _count = 1;
         }
 
-        public void AddOperator(string op, JSCFunction func, int length)
+        public void AddOperator(string op, JSValue value)
         {
-            self.Add(new OperatorDef(op, func, length));
+            self.Add(new OperatorDef(op, value));
         }
 
-        public void AddCrossOperator(string op, JSCFunction func, int length, bool bLeft, Type sideType)
+        public void AddCrossOperator(string op, JSValue value, bool bLeft, Type sideType)
         {
             var list = bLeft ? left : right;
             var count = list.Count;
@@ -37,12 +37,12 @@ namespace QuickJS.Binding
             {
                 if (list[i].type == sideType)
                 {
-                    list[i].operators.Add(new OperatorDef(op, func, length));
+                    list[i].operators.Add(new OperatorDef(op, value));
                     return;
                 }
             }
             var newCrossDef = new CrossOperatorDef(sideType);
-            newCrossDef.operators.Add(new OperatorDef(op, func, length));
+            newCrossDef.operators.Add(new OperatorDef(op, value));
             list.Add(newCrossDef);
             _count++;
         }
@@ -59,8 +59,8 @@ namespace QuickJS.Binding
             for (int i = 0, len = self.Count; i < len; i++)
             {
                 var def = self[i];
-                var funcVal = JSApi.JS_NewCFunction(ctx, def.func, def.op, def.length);
-                JSApi.JS_DefinePropertyValue(ctx, argv[0], register.GetAtom(def.op), funcVal, JSPropFlags.DEFAULT);
+                // var funcVal = JSApi.JS_NewCFunction(ctx, def.func, def.op, def.length);
+                JSApi.JS_DefinePropertyValue(ctx, argv[0], register.GetAtom(def.op), def.value, JSPropFlags.DEFAULT);
                 // Debug.LogFormat("{0} operator {1}", type, def.op);
             }
 
@@ -74,8 +74,8 @@ namespace QuickJS.Binding
                 for (int opIndex = 0, opCount = cross.operators.Count; opIndex < opCount; opIndex++)
                 {
                     var def = cross.operators[opIndex];
-                    var funcVal = JSApi.JS_NewCFunction(ctx, def.func, def.op, def.length);
-                    JSApi.JS_DefinePropertyValue(ctx, operator_, register.GetAtom(def.op), funcVal, JSPropFlags.DEFAULT);
+                    // var funcVal = JSApi.JS_NewCFunction(ctx, def.func, def.op, def.length);
+                    JSApi.JS_DefinePropertyValue(ctx, operator_, register.GetAtom(def.op), def.value, JSPropFlags.DEFAULT);
                     argv[i + 1] = operator_;
                     // Debug.LogFormat("{0} {1} operator {2} {3} ({4})", type, side, def.op, cross.type, sideCtor);
                 }
@@ -91,8 +91,8 @@ namespace QuickJS.Binding
                 for (int opIndex = 0, opCount = cross.operators.Count; opIndex < opCount; opIndex++)
                 {
                     var def = cross.operators[opIndex];
-                    var funcVal = JSApi.JS_NewCFunction(ctx, def.func, def.op, def.length);
-                    JSApi.JS_DefinePropertyValue(ctx, operator_, register.GetAtom(def.op), funcVal, JSPropFlags.DEFAULT);
+                    // var funcVal = JSApi.JS_NewCFunction(ctx, def.func, def.op, def.length);
+                    JSApi.JS_DefinePropertyValue(ctx, operator_, register.GetAtom(def.op), def.value, JSPropFlags.DEFAULT);
                     argv[i + 1 + left.Count] = operator_;
                     // Debug.LogFormat("{0} {1} operator {2} {3} ({4})", type, side, def.op, cross.type, sideCtor);
                 }
