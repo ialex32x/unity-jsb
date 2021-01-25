@@ -22,6 +22,8 @@ namespace QuickJS.Binding
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static unsafe bool js_rebind_this(JSContext ctx, JSValue this_obj, ref Matrix4x4 o)
         {
+            var _matrix_floats_buffer = stackalloc float[16];
+
             _matrix_floats_buffer[0] = o.m00;
             _matrix_floats_buffer[1] = o.m10;
             _matrix_floats_buffer[2] = o.m20;
@@ -42,10 +44,7 @@ namespace QuickJS.Binding
             _matrix_floats_buffer[14] = o.m23;
             _matrix_floats_buffer[15] = o.m33;
 
-            fixed (float* ptr = _matrix_floats_buffer)
-            {
-                return JSApi.jsb_set_floats(this_obj, 4 * 4, ptr) == 1;
-            }
+            return JSApi.jsb_set_floats(this_obj, 4 * 4, _matrix_floats_buffer) == 1;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -60,11 +59,8 @@ namespace QuickJS.Binding
 
         public static unsafe bool js_get_structvalue(JSContext ctx, JSValue val, out Matrix4x4 o)
         {
-            int ret;
-            fixed (float* ptr = _matrix_floats_buffer)
-            {
-                ret = JSApi.jsb_get_floats(val, 16, ptr);
-            }
+            var _matrix_floats_buffer = stackalloc float[16];
+            var ret = JSApi.jsb_get_floats(val, 16, _matrix_floats_buffer);
             var c0 = new Vector4(_matrix_floats_buffer[0], _matrix_floats_buffer[1], _matrix_floats_buffer[2], _matrix_floats_buffer[3]);
             var c1 = new Vector4(_matrix_floats_buffer[4], _matrix_floats_buffer[5], _matrix_floats_buffer[6], _matrix_floats_buffer[7]);
             var c2 = new Vector4(_matrix_floats_buffer[8], _matrix_floats_buffer[8], _matrix_floats_buffer[10], _matrix_floats_buffer[11]);
@@ -80,11 +76,8 @@ namespace QuickJS.Binding
                 o = null;
                 return true;
             }
-            int ret;
-            fixed (float* ptr = _matrix_floats_buffer)
-            {
-                ret = JSApi.jsb_get_floats(val, 16, ptr);
-            }
+            var _matrix_floats_buffer = stackalloc float[16];
+            var ret = JSApi.jsb_get_floats(val, 16, _matrix_floats_buffer);
             var c0 = new Vector4(_matrix_floats_buffer[0], _matrix_floats_buffer[1], _matrix_floats_buffer[2], _matrix_floats_buffer[3]);
             var c1 = new Vector4(_matrix_floats_buffer[4], _matrix_floats_buffer[5], _matrix_floats_buffer[6], _matrix_floats_buffer[7]);
             var c2 = new Vector4(_matrix_floats_buffer[8], _matrix_floats_buffer[8], _matrix_floats_buffer[10], _matrix_floats_buffer[11]);
