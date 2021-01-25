@@ -38,7 +38,6 @@ namespace QuickJS.Unity
             this.cg = cg;
 
             var self_name = "_hotfix_this";
-            var js_push = delegateBindingInfo.isStatic ? "js_push_type" : "js_push_classvalue_hotfix";
             var nargs = delegateBindingInfo.parameters.Length;
             var retName = this.cg.bindingManager.GetUniqueName(delegateBindingInfo.parameters, "ret");
             var firstArgument = typeof(ScriptDelegate) + " fn";

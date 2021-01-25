@@ -22,7 +22,7 @@ namespace QuickJS.Unity
                         throw new ThisBoundException();
                     }
                     System.Type arg0;
-                    if (!Values.js_get_type(ctx, argv[0], out arg0))
+                    if (!Values.js_get_classvalue(ctx, argv[0], out arg0))
                     {
                         throw new ParameterException(typeof(UnityEngine.GameObject), "AddComponent", typeof(System.Type), 0);
                     }
@@ -59,7 +59,7 @@ namespace QuickJS.Unity
                                 throw new ThisBoundException();
                             }
                             System.Type arg0;
-                            if (!Values.js_get_type(ctx, argv[0], out arg0))
+                            if (!Values.js_get_classvalue(ctx, argv[0], out arg0))
                             {
                                 throw new ParameterException(typeof(UnityEngine.GameObject), "GetComponent", typeof(System.Type), 0);
                             }
@@ -111,7 +111,7 @@ namespace QuickJS.Unity
                             throw new ThisBoundException();
                         }
                         System.Type arg0;
-                        if (!Values.js_get_type(ctx, argv[0], out arg0))
+                        if (!Values.js_get_classvalue(ctx, argv[0], out arg0))
                         {
                             throw new ParameterException(typeof(UnityEngine.GameObject), "GetComponentInChildren", typeof(System.Type), 0);
                         }
@@ -136,7 +136,7 @@ namespace QuickJS.Unity
                             throw new ThisBoundException();
                         }
                         System.Type arg0;
-                        if (!Values.js_get_type(ctx, argv[0], out arg0))
+                        if (!Values.js_get_classvalue(ctx, argv[0], out arg0))
                         {
                             throw new ParameterException(typeof(UnityEngine.GameObject), "GetComponentInChildren", typeof(System.Type), 0);
                         }
@@ -170,7 +170,7 @@ namespace QuickJS.Unity
                         throw new ThisBoundException();
                     }
                     System.Type arg0;
-                    if (!Values.js_get_type(ctx, argv[0], out arg0))
+                    if (!Values.js_get_classvalue(ctx, argv[0], out arg0))
                     {
                         throw new ParameterException(typeof(UnityEngine.GameObject), "GetComponentInParent", typeof(System.Type), 0);
                     }
@@ -205,7 +205,7 @@ namespace QuickJS.Unity
                             throw new ThisBoundException();
                         }
                         System.Type arg0;
-                        if (!Values.js_get_type(ctx, argv[0], out arg0))
+                        if (!Values.js_get_classvalue(ctx, argv[0], out arg0))
                         {
                             throw new ParameterException(typeof(UnityEngine.GameObject), "GetComponents", typeof(System.Type), 0);
                         }
@@ -230,7 +230,7 @@ namespace QuickJS.Unity
                             throw new ThisBoundException();
                         }
                         System.Type arg0;
-                        if (!Values.js_get_type(ctx, argv[0], out arg0))
+                        if (!Values.js_get_classvalue(ctx, argv[0], out arg0))
                         {
                             throw new ParameterException(typeof(UnityEngine.GameObject), "GetComponents", typeof(System.Type), 0);
                         }
@@ -266,7 +266,7 @@ namespace QuickJS.Unity
                             throw new ThisBoundException();
                         }
                         System.Type arg0;
-                        if (!Values.js_get_type(ctx, argv[0], out arg0))
+                        if (!Values.js_get_classvalue(ctx, argv[0], out arg0))
                         {
                             throw new ParameterException(typeof(UnityEngine.GameObject), "GetComponentsInChildren", typeof(System.Type), 0);
                         }
@@ -291,7 +291,7 @@ namespace QuickJS.Unity
                             throw new ThisBoundException();
                         }
                         System.Type arg0;
-                        if (!Values.js_get_type(ctx, argv[0], out arg0))
+                        if (!Values.js_get_classvalue(ctx, argv[0], out arg0))
                         {
                             throw new ParameterException(typeof(UnityEngine.GameObject), "GetComponentsInChildren", typeof(System.Type), 0);
                         }
@@ -327,7 +327,7 @@ namespace QuickJS.Unity
                             throw new ThisBoundException();
                         }
                         System.Type arg0;
-                        if (!Values.js_get_type(ctx, argv[0], out arg0))
+                        if (!Values.js_get_classvalue(ctx, argv[0], out arg0))
                         {
                             throw new ParameterException(typeof(UnityEngine.GameObject), "GetComponentsInParent", typeof(System.Type), 0);
                         }
@@ -352,7 +352,7 @@ namespace QuickJS.Unity
                             throw new ThisBoundException();
                         }
                         System.Type arg0;
-                        if (!Values.js_get_type(ctx, argv[0], out arg0))
+                        if (!Values.js_get_classvalue(ctx, argv[0], out arg0))
                         {
                             throw new ParameterException(typeof(UnityEngine.GameObject), "GetComponentsInParent", typeof(System.Type), 0);
                         }

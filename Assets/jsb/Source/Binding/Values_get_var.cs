@@ -1,4 +1,5 @@
 using System;
+using System.Reflection;
 using System.Collections.Generic;
 
 namespace QuickJS.Binding
@@ -7,32 +8,107 @@ namespace QuickJS.Binding
 
     public partial class Values
     {
-        public delegate bool JSValueCast(JSContext ctx, JSValue val, out object o);
-
         // 用于根据 Type 信息将 JSValue 专为对应的 CS Object
-        private static Dictionary<Type, JSValueCast> _JSCastMap = new Dictionary<Type, JSValueCast>();
+        private static Dictionary<Type, MethodInfo> _JSCastMap = new Dictionary<Type, MethodInfo>();
+
+        private static Dictionary<Type, MethodInfo> _CSCastMap = new Dictionary<Type, MethodInfo>();
+
+        private static Dictionary<Type, MethodInfo> _JSNewMap = new Dictionary<Type, MethodInfo>();
 
         // 初始化, 在 Values 静态构造时调用
-        private static void init_js_cast_map()
+        private static void init_cast_map()
         {
-            _JSCastMap[typeof(void)] = js_value_cast_void;
-            _JSCastMap[typeof(bool)] = js_value_cast_bool;
-            _JSCastMap[typeof(byte)] = js_value_cast_byte;
-            _JSCastMap[typeof(char)] = js_value_cast_char;
-            _JSCastMap[typeof(sbyte)] = js_value_cast_sbyte;
-            _JSCastMap[typeof(short)] = js_value_cast_short;
-            _JSCastMap[typeof(ushort)] = js_value_cast_ushort;
-            _JSCastMap[typeof(int)] = js_value_cast_int;
-            _JSCastMap[typeof(uint)] = js_value_cast_uint;
-            _JSCastMap[typeof(long)] = js_value_cast_long;
-            _JSCastMap[typeof(ulong)] = js_value_cast_ulong;
-            _JSCastMap[typeof(float)] = js_value_cast_float;
-            _JSCastMap[typeof(double)] = js_value_cast_double;
-            _JSCastMap[typeof(string)] = js_value_cast_string;
-            _JSCastMap[typeof(object)] = js_value_cast_object;
-            _JSCastMap[typeof(Type)] = js_value_cast_type;
-            _JSCastMap[typeof(ScriptValue)] = js_value_cast_script_value;
-            _JSCastMap[typeof(ScriptPromise)] = js_value_cast_script_promise;
+            var methods = typeof(Values).GetMethods();
+            foreach (var method in methods)
+            {
+                if (!method.IsGenericMethodDefinition)
+                {
+                    var parameters = method.GetParameters();
+
+                    if (method.Name == "NewBridgeClassObject")
+                    {
+                        if (parameters.Length == 5)
+                        {
+                            var type = parameters[2].ParameterType;
+                            _JSNewMap[type] = method;
+                        }
+                    }
+                    else if (method.Name.StartsWith("js_get_"))
+                    {
+                        if (parameters.Length == 3 && parameters[2].ParameterType.IsByRef)
+                        {
+                            var type = parameters[2].ParameterType.GetElementType();
+
+                            switch (method.Name)
+                            {
+                                case "js_get_primitive":
+                                case "js_get_structvalue":
+                                case "js_get_classvalue":
+                                    _JSCastMap[type] = method;
+                                    break;
+                            }
+                        }
+                    }
+                    else if (method.Name.StartsWith("js_push_"))
+                    {
+                        if (parameters.Length == 2)
+                        {
+                            var type = parameters[1].ParameterType;
+
+                            _CSCastMap[type] = method;
+                        }
+                    }
+                }
+            }
+        }
+
+        // 自动判断类型
+        public static JSValue js_push_var(JSContext ctx, object o)
+        {
+            if (o == null)
+            {
+                return JSApi.JS_UNDEFINED;
+            }
+
+            var type = o.GetType();
+
+            if (type.BaseType == typeof(MulticastDelegate))
+            {
+                return js_push_delegate(ctx, o as Delegate);
+            }
+
+            if (type.IsEnum)
+            {
+                return js_push_primitive(ctx, Convert.ToInt32(o));
+            }
+
+            MethodInfo cast;
+            do
+            {
+                if (_CSCastMap.TryGetValue(type, out cast))
+                {
+                    var parameters = new object[2] { ctx, o };
+                    var rval = (JSValue)cast.Invoke(null, parameters);
+                    return rval;
+                }
+                type = type.BaseType;
+            } while (type != null);
+
+            //NOTE: 2. fallthrough, push as object
+            return js_push_classvalue(ctx, o);
+        }
+
+        public static JSValue js_new_var(JSContext ctx, JSValue new_target, Type type, object o, int type_id, bool disposable)
+        {
+            MethodInfo cast;
+            if (_JSNewMap.TryGetValue(type, out cast))
+            {
+                var parameters = new object[5] { ctx, new_target, o, type_id, disposable };
+                var rval = (JSValue)cast.Invoke(null, parameters);
+                return rval;
+            }
+
+            return NewBridgeClassObject(ctx, new_target, o, type_id, disposable);
         }
 
         // type: expected type of object o
@@ -56,184 +132,26 @@ namespace QuickJS.Binding
                 return js_get_enumvalue(ctx, val, type, out o);
             }
 
-            JSValueCast cast;
-            do
-            {
-                if (_JSCastMap.TryGetValue(type, out cast))
-                {
-                    return cast(ctx, val, out o);
-                }
-                type = type.BaseType;
-            } while (type != null);
-
-            if (val.IsObject())
-            {
-                return js_get_cached_object(ctx, val, out o);
-            }
-
-            o = null;
-            return false;
-        }
-
-        private static bool js_value_cast_object(JSContext ctx, JSValue val, out object o)
-        {
-            if (val.IsNullish())
+            if (type == typeof(void))
             {
                 o = null;
                 return true;
             }
 
-            if (val.IsString())
+            MethodInfo cast;
+            do
             {
-                return js_value_cast_string(ctx, val, out o);
-            }
+                if (_JSCastMap.TryGetValue(type, out cast))
+                {
+                    var parameters = new object[3] { ctx, val, null };
+                    var rval = (bool)cast.Invoke(null, parameters);
+                    o = parameters[2];
+                    return rval;
+                }
+                type = type.BaseType;
+            } while (type != null);
 
-            if (val.IsBoolean())
-            {
-                return js_value_cast_bool(ctx, val, out o);
-            }
-
-            if (val.IsNumber())
-            {
-                return js_value_cast_double(ctx, val, out o);
-            }
-
-            o = null;
-            return false;
-        }
-
-        private static bool js_value_cast_void(JSContext ctx, JSValue val, out object o)
-        {
-            o = null;
-            return true;
-        }
-
-        private static bool js_value_cast_bool(JSContext ctx, JSValue val, out object o)
-        {
-            bool rval;
-            var rs = js_get_primitive(ctx, val, out rval);
-            o = rval;
-            return rs;
-        }
-
-        private static bool js_value_cast_byte(JSContext ctx, JSValue val, out object o)
-        {
-            byte rval;
-            var rs = js_get_primitive(ctx, val, out rval);
-            o = rval;
-            return rs;
-        }
-
-        private static bool js_value_cast_char(JSContext ctx, JSValue val, out object o)
-        {
-            char rval;
-            var rs = js_get_primitive(ctx, val, out rval);
-            o = rval;
-            return rs;
-        }
-
-        private static bool js_value_cast_sbyte(JSContext ctx, JSValue val, out object o)
-        {
-            sbyte rval;
-            var rs = js_get_primitive(ctx, val, out rval);
-            o = rval;
-            return rs;
-        }
-
-        private static bool js_value_cast_short(JSContext ctx, JSValue val, out object o)
-        {
-            short rval;
-            var rs = js_get_primitive(ctx, val, out rval);
-            o = rval;
-            return rs;
-        }
-
-        private static bool js_value_cast_ushort(JSContext ctx, JSValue val, out object o)
-        {
-            ushort rval;
-            var rs = js_get_primitive(ctx, val, out rval);
-            o = rval;
-            return rs;
-        }
-
-        private static bool js_value_cast_int(JSContext ctx, JSValue val, out object o)
-        {
-            int rval;
-            var rs = js_get_primitive(ctx, val, out rval);
-            o = rval;
-            return rs;
-        }
-
-        private static bool js_value_cast_uint(JSContext ctx, JSValue val, out object o)
-        {
-            uint rval;
-            var rs = js_get_primitive(ctx, val, out rval);
-            o = rval;
-            return rs;
-        }
-
-        private static bool js_value_cast_long(JSContext ctx, JSValue val, out object o)
-        {
-            long rval;
-            var rs = js_get_primitive(ctx, val, out rval);
-            o = rval;
-            return rs;
-        }
-
-        private static bool js_value_cast_ulong(JSContext ctx, JSValue val, out object o)
-        {
-            ulong rval;
-            var rs = js_get_primitive(ctx, val, out rval);
-            o = rval;
-            return rs;
-        }
-
-        private static bool js_value_cast_float(JSContext ctx, JSValue val, out object o)
-        {
-            float rval;
-            var rs = js_get_primitive(ctx, val, out rval);
-            o = rval;
-            return rs;
-        }
-
-        private static bool js_value_cast_double(JSContext ctx, JSValue val, out object o)
-        {
-            double rval;
-            var rs = js_get_primitive(ctx, val, out rval);
-            o = rval;
-            return rs;
-        }
-
-        private static bool js_value_cast_string(JSContext ctx, JSValue val, out object o)
-        {
-            string rval;
-            var rs = js_get_primitive(ctx, val, out rval);
-            o = rval;
-            return rs;
-        }
-
-        private static bool js_value_cast_type(JSContext ctx, JSValue val, out object o)
-        {
-            Type rval;
-            var rs = js_get_type(ctx, val, out rval);
-            o = rval;
-            return rs;
-        }
-
-        private static bool js_value_cast_script_value(JSContext ctx, JSValue val, out object o)
-        {
-            ScriptValue rval;
-            var rs = js_get_classvalue(ctx, val, out rval);
-            o = rval;
-            return rs;
-        }
-
-        private static bool js_value_cast_script_promise(JSContext ctx, JSValue val, out object o)
-        {
-            ScriptPromise rval;
-            var rs = js_get_classvalue(ctx, val, out rval);
-            o = rval;
-            return rs;
+            return js_get_fallthrough(ctx, val, out o);
         }
     }
 }

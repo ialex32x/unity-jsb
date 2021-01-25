@@ -26,7 +26,7 @@ namespace QuickJS.Unity
                                 throw new ThisBoundException();
                             }
                             System.Type arg0;
-                            if (!Values.js_get_type(ctx, argv[0], out arg0))
+                            if (!Values.js_get_classvalue(ctx, argv[0], out arg0))
                             {
                                 throw new ParameterException(typeof(UnityEngine.Component), "GetComponent", typeof(System.Type), 0);
                             }
@@ -77,7 +77,7 @@ namespace QuickJS.Unity
                             throw new ThisBoundException();
                         }
                         System.Type arg0;
-                        if (!Values.js_get_type(ctx, argv[0], out arg0))
+                        if (!Values.js_get_classvalue(ctx, argv[0], out arg0))
                         {
                             throw new ParameterException(typeof(UnityEngine.Component), "GetComponentInChildren", typeof(System.Type), 0);
                         }
@@ -102,7 +102,7 @@ namespace QuickJS.Unity
                             throw new ThisBoundException();
                         }
                         System.Type arg0;
-                        if (!Values.js_get_type(ctx, argv[0], out arg0))
+                        if (!Values.js_get_classvalue(ctx, argv[0], out arg0))
                         {
                             throw new ParameterException(typeof(UnityEngine.Component), "GetComponentInChildren", typeof(System.Type), 0);
                         }
@@ -137,7 +137,7 @@ namespace QuickJS.Unity
                             throw new ThisBoundException();
                         }
                         System.Type arg0;
-                        if (!Values.js_get_type(ctx, argv[0], out arg0))
+                        if (!Values.js_get_classvalue(ctx, argv[0], out arg0))
                         {
                             throw new ParameterException(typeof(UnityEngine.Component), "GetComponentsInChildren", typeof(System.Type), 0);
                         }
@@ -162,7 +162,7 @@ namespace QuickJS.Unity
                             throw new ThisBoundException();
                         }
                         System.Type arg0;
-                        if (!Values.js_get_type(ctx, argv[0], out arg0))
+                        if (!Values.js_get_classvalue(ctx, argv[0], out arg0))
                         {
                             throw new ParameterException(typeof(UnityEngine.Component), "GetComponentsInChildren", typeof(System.Type), 0);
                         }
@@ -195,7 +195,7 @@ namespace QuickJS.Unity
                         throw new ThisBoundException();
                     }
                     System.Type arg0;
-                    if (!Values.js_get_type(ctx, argv[0], out arg0))
+                    if (!Values.js_get_classvalue(ctx, argv[0], out arg0))
                     {
                         throw new ParameterException(typeof(UnityEngine.Component), "GetComponentInParent", typeof(System.Type), 0);
                     }
@@ -229,7 +229,7 @@ namespace QuickJS.Unity
                             throw new ThisBoundException();
                         }
                         System.Type arg0;
-                        if (!Values.js_get_type(ctx, argv[0], out arg0))
+                        if (!Values.js_get_classvalue(ctx, argv[0], out arg0))
                         {
                             throw new ParameterException(typeof(UnityEngine.Component), "GetComponentsInParent", typeof(System.Type), 0);
                         }
@@ -254,7 +254,7 @@ namespace QuickJS.Unity
                             throw new ThisBoundException();
                         }
                         System.Type arg0;
-                        if (!Values.js_get_type(ctx, argv[0], out arg0))
+                        if (!Values.js_get_classvalue(ctx, argv[0], out arg0))
                         {
                             throw new ParameterException(typeof(UnityEngine.Component), "GetComponentsInParent", typeof(System.Type), 0);
                         }
@@ -289,7 +289,7 @@ namespace QuickJS.Unity
                             throw new ThisBoundException();
                         }
                         System.Type arg0;
-                        if (!Values.js_get_type(ctx, argv[0], out arg0))
+                        if (!Values.js_get_classvalue(ctx, argv[0], out arg0))
                         {
                             throw new ParameterException(typeof(UnityEngine.Component), "GetComponents", typeof(System.Type), 0);
                         }
@@ -314,7 +314,7 @@ namespace QuickJS.Unity
                             throw new ThisBoundException();
                         }
                         System.Type arg0;
-                        if (!Values.js_get_type(ctx, argv[0], out arg0))
+                        if (!Values.js_get_classvalue(ctx, argv[0], out arg0))
                         {
                             throw new ParameterException(typeof(UnityEngine.Component), "GetComponents", typeof(System.Type), 0);
                         }

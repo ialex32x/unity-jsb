@@ -27,8 +27,6 @@ namespace QuickJS.Binding
         private ParameterInfo[] _methodParameters;
         private bool _isVarargMethod;
 
-        protected Values.CSValueCast _rvalPusher;
-
         public DynamicMethod(DynamicType type, MethodInfo methodInfo)
         {
             _type = type;
@@ -57,11 +55,6 @@ namespace QuickJS.Binding
             }
         }
 
-        public void ReplaceRValPusher(Values.CSValueCast rvalPusher)
-        {
-            _rvalPusher = rvalPusher;
-        }
-
         public override ParameterInfo[] GetParameters()
         {
             return _inputParameters;
@@ -75,7 +68,7 @@ namespace QuickJS.Binding
                 {
                     return false;
                 }
-                
+
                 return Values.js_match_parameters_vararg(ctx, argv, _inputParameters);
             }
             else
@@ -98,8 +91,7 @@ namespace QuickJS.Binding
             object self = null;
             if (!_methodInfo.IsStatic)
             {
-                Values.js_get_cached_object(ctx, this_obj, out self);
-                if (!_type.CheckThis(self))
+                if (!Values.js_get_var(ctx, this_obj, _type.type, out self) || !_type.CheckThis(self))
                 {
                     throw new ThisBoundException();
                 }
@@ -146,10 +138,6 @@ namespace QuickJS.Binding
             {
                 var ret = _methodInfo.Invoke(self, args);
 
-                if (_rvalPusher != null)
-                {
-                    return _rvalPusher(ctx, ret);
-                }
                 return Values.js_push_var(ctx, ret);
             }
             else
@@ -249,27 +237,35 @@ namespace QuickJS.Binding
     {
         private DynamicType _type;
         private ConstructorInfo _ctor;
+        private ParameterInfo[] _parameters;
+        private bool _disposable;
 
         public DynamicConstructor(DynamicType type, ConstructorInfo ctor)
+        : this(type, ctor, false)
+        {
+        }
+
+        public DynamicConstructor(DynamicType type, ConstructorInfo ctor, bool disposable)
         {
             _type = type;
             _ctor = ctor;
+            _parameters = _ctor.GetParameters();
+            _disposable = disposable;
         }
 
         public override ParameterInfo[] GetParameters()
         {
-            return _ctor.GetParameters();
+            return _parameters;
         }
 
         public override bool CheckArgs(JSContext ctx, int argc, JSValue[] argv)
         {
-            var parameters = _ctor.GetParameters();
-            if (parameters.Length != argc)
+            if (_parameters.Length != argc)
             {
                 return false;
             }
 
-            return Values.js_match_parameters(ctx, argv, parameters);
+            return Values.js_match_parameters(ctx, argv, _parameters);
         }
 
         public override JSValue Invoke(JSContext ctx, JSValue this_obj, int argc, JSValue[] argv)
@@ -279,19 +275,18 @@ namespace QuickJS.Binding
                 return JSApi.JS_ThrowInternalError(ctx, "constructor is inaccessible due to its protection level");
             }
 
-            var parameters = _ctor.GetParameters();
             var nArgs = argc;
             var args = new object[nArgs];
             for (var i = 0; i < nArgs; i++)
             {
-                if (!Values.js_get_var(ctx, argv[i], parameters[i].ParameterType, out args[i]))
+                if (!Values.js_get_var(ctx, argv[i], _parameters[i].ParameterType, out args[i]))
                 {
                     return JSApi.JS_ThrowInternalError(ctx, "failed to cast val");
                 }
             }
 
             var inst = _ctor.Invoke(args);
-            var val = Values.NewBridgeClassObject(ctx, this_obj, inst, _type.id, false);
+            var val = Values.js_new_var(ctx, this_obj, _type.type, inst, _type.id, _disposable);
             return val;
         }
     }

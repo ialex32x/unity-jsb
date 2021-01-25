@@ -5,6 +5,7 @@ using System.Runtime.CompilerServices;
 namespace QuickJS.Binding
 {
     using Native;
+    using QuickJS.Utils;
 
     // 处理常规值, class, struct
     public partial class Values
@@ -13,7 +14,7 @@ namespace QuickJS.Binding
         public static bool js_get_primitive(JSContext ctx, JSValue val, out IntPtr o)
         {
             object o_t;
-            var ret = js_get_object(ctx, val, out o_t);
+            var ret = js_get_cached_object(ctx, val, out o_t);
             o = (IntPtr)o_t;
             return ret;
         }
@@ -27,7 +28,7 @@ namespace QuickJS.Binding
                 return true;
             }
             object o_t;
-            var ret = js_get_object(ctx, val, out o_t);
+            var ret = js_get_cached_object(ctx, val, out o_t);
             o = (IntPtr)o_t;
             return ret;
         }
@@ -960,7 +961,7 @@ namespace QuickJS.Binding
         where T : struct
         {
             object o_t;
-            var ret = js_get_object(ctx, val, out o_t);
+            var ret = js_get_cached_object(ctx, val, out o_t);
             o = (T)o_t;
             return ret;
         }
@@ -975,7 +976,7 @@ namespace QuickJS.Binding
                 return true;
             }
             object o_t;
-            var ret = js_get_object(ctx, val, out o_t);
+            var ret = js_get_cached_object(ctx, val, out o_t);
             o = (T)o_t;
             return ret;
         }
@@ -1064,6 +1065,53 @@ namespace QuickJS.Binding
             return js_get_classvalue<T?[]>(ctx, val, out o);
         }
 
+        public static bool js_get_classvalue(JSContext ctx, JSValue jsValue, out Type o)
+        {
+            if (JSApi.JS_IsString(jsValue))
+            {
+                var name = JSApi.GetString(ctx, jsValue);
+                o = TypeDB.GetType(name);
+                return o != null;
+            }
+            else
+            {
+                var context = ScriptEngine.GetContext(ctx);
+                var type_id = JSApi.JSB_GetBridgeType(ctx, jsValue, context.GetAtom(Values.KeyForCSharpTypeID));
+                if (type_id >= 0)
+                {
+                    var types = context.GetTypeDB();
+                    o = types.GetType(type_id);
+                    // Debug.Log($"get type from exported registry {o}:{typeid}");
+                    return o != null;
+                }
+                else
+                {
+                    var header = JSApi.jsb_get_payload_header(jsValue);
+                    switch (header.type_id)
+                    {
+                        case BridgeObjectType.TypeRef:
+                            {
+                                var types = context.GetTypeDB();
+                                o = types.GetType(header.value);
+                                // Debug.Log($"get type from exported registry {o}:{typeid}");
+                                return o != null;
+                            }
+                        case BridgeObjectType.ObjectRef:
+                            {
+                                var cache = context.GetObjectCache();
+                                object obj;
+                                cache.TryGetObject(header.value, out obj);
+                                o = obj.GetType();
+                                return o != null;
+                            }
+                    }
+                }
+            }
+
+            o = null;
+            return false;
+        }
+
         public static bool js_get_classvalue(JSContext ctx, JSValue val, out Delegate o)
         {
             return js_get_delegate_unsafe(ctx, val, out o);
@@ -1084,41 +1132,10 @@ namespace QuickJS.Binding
                 }
                 return true;
             }
-            // var type_id = JSApi.JSB_GetBridgeType(ctx, val);
-            // if (type_id >= 0)
-            // {
-            //     var valType = ScriptEngine.GetTypeDB(ctx).GetType(type_id);
-            //     throw new InvalidCastException(string.Format("{0} type mismatch {1}", valType, typeof(T)));
-            // }
-            // var jsType = val.tag;
-            // throw new InvalidCastException(string.Format("{0} type mismatch {1}", jsType, typeof(T)));
+
             o = default(T);
             return false;
         }
-
-        // public static bool js_get_classvalue<T>(JSContext ctx, JSValue val, out TypedScriptPromise<T> o)
-        // {
-        //     ScriptPromise value;
-        //     if (js_get_classvalue(ctx, val, out value))
-        //     {
-        //         o = value as TypedScriptPromise<T>;
-        //         return true;
-        //     }
-        //     o = null;
-        //     return false;
-        // }
-
-        // public static bool js_get_classvalue(JSContext ctx, JSValue val, out AnyScriptPromise o)
-        // {
-        //     ScriptPromise value;
-        //     if (js_get_classvalue(ctx, val, out value))
-        //     {
-        //         o = value as AnyScriptPromise;
-        //         return true;
-        //     }
-        //     o = null;
-        //     return false;
-        // }
 
         public static bool js_get_classvalue(JSContext ctx, JSValue val, out ScriptPromise o)
         {
@@ -1253,6 +1270,7 @@ namespace QuickJS.Binding
                 o = null;
                 return true;
             }
+
             var header = JSApi.jsb_get_payload_header(val);
             switch (header.type_id)
             {
@@ -1270,22 +1288,39 @@ namespace QuickJS.Binding
             return false;
         }
 
-        // 只处理 JS_OBJECT
-        public static bool js_get_object(JSContext ctx, JSValue val, out object o)
+        public static bool js_get_fallthrough(JSContext ctx, JSValue val, out object o)
         {
-            if (JSApi.JS_IsObject(val))
+            if (val.IsNullish())
             {
-                return js_get_cached_object(ctx, val, out o);
+                o = null;
+                return true;
             }
-            // Debug.LogFormat("js_get_object({0})", jstype);
-            //     case duk_type_t.DUK_TYPE_STRING:
-            //         o = JSApi.js_get_string(ctx, idx);
-            //         return true;
-            //     default: break;
-            // }
-            // 其他类型不存在对象映射
-            o = null;
-            return false;
+
+            if (val.IsString())
+            {
+                string t;
+                var r = js_get_primitive(ctx, val, out t);
+                o = t;
+                return r;
+            }
+
+            if (val.IsBoolean())
+            {
+                bool t;
+                var r = js_get_primitive(ctx, val, out t);
+                o = t;
+                return r;
+            }
+
+            if (val.IsNumber())
+            {
+                double t;
+                var r = js_get_primitive(ctx, val, out t);
+                o = t;
+                return r;
+            }
+
+            return js_get_cached_object(ctx, val, out o);
         }
 
         public static bool js_get_classvalue_array<T>(JSContext ctx, JSValue val, out T[] o)
@@ -1322,11 +1357,13 @@ namespace QuickJS.Binding
                 }
                 return true;
             }
+
             if (isArray == -1)
             {
                 o = null;
                 return false;
             }
+
             return js_get_classvalue<T[]>(ctx, val, out o);
         }
 
@@ -1340,7 +1377,6 @@ namespace QuickJS.Binding
             return ret;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool js_get_enumvalue(JSContext ctx, JSValue val, Type type, out object o)
         {
             int v;
@@ -1383,11 +1419,13 @@ namespace QuickJS.Binding
                 }
                 return true;
             }
+
             if (isArray == -1)
             {
                 o = null;
                 return false;
             }
+
             return js_get_classvalue<T[]>(ctx, val, out o);
         }
     }

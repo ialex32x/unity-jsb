@@ -674,7 +674,7 @@ namespace QuickJS.Unity
                         {
                             foreach (var methodBind in variant.Value.plainMethods)
                             {
-                                var dynamicCtor = new Binding.DynamicConstructor(dynamicType, methodBind.method);
+                                var dynamicCtor = new Binding.DynamicConstructor(dynamicType, methodBind.method, this.disposable);
 
                                 dynamicCtorGroup.Add(dynamicCtor);
                             }

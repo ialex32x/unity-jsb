@@ -756,11 +756,13 @@ namespace QuickJS.Unity
             {
                 return GetScriptObjectPropertyGetter(type.GetElementType());
             }
+            
             if (type.IsArray && type.GetArrayRank() == 1)
             {
                 var elementType = type.GetElementType();
                 return GetScriptObjectPropertyGetter(elementType) + "_array";
             }
+
             if (type.IsValueType)
             {
                 if (type.IsPrimitive)
@@ -784,18 +786,17 @@ namespace QuickJS.Unity
                 }
                 return "js_get_structvalue";
             }
+
             if (type == typeof(string))
             {
                 return "js_get_primitive";
             }
+
             if (type.BaseType == typeof(MulticastDelegate))
             {
                 return "js_get_delegate";
             }
-            if (type == typeof(Type))
-            {
-                return "js_get_type";
-            }
+            
             return "js_get_classvalue";
         }
 
@@ -866,12 +867,8 @@ namespace QuickJS.Unity
 
             if (type == typeof(object))
             {
+                //TODO: 改为 js_push_csharpobject
                 return "js_push_var";
-            }
-
-            if (type == typeof(Type))
-            {
-                return "js_push_type";
             }
 
             return "js_push_classvalue";

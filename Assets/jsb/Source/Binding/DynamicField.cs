@@ -30,13 +30,14 @@ namespace QuickJS.Binding
             object self = null;
             if (!_fieldInfo.IsStatic)
             {
-                Values.js_get_cached_object(ctx, this_obj, out self);
-                if (!_type.CheckThis(self))
+                if (!Values.js_get_var(ctx, this_obj, _type.type, out self) || !_type.CheckThis(self))
                 {
                     throw new ThisBoundException();
                 }
             }
-            return Values.js_push_var(ctx, _fieldInfo.GetValue(self));
+            
+            var rval = _fieldInfo.GetValue(self);
+            return Values.js_push_var(ctx, rval);
         }
 
         public JSValue SetValue(JSContext ctx, JSValue this_obj, JSValue val)
@@ -48,8 +49,7 @@ namespace QuickJS.Binding
             object self = null;
             if (!_fieldInfo.IsStatic)
             {
-                Values.js_get_cached_object(ctx, this_obj, out self);
-                if (!_type.CheckThis(self))
+                if (!Values.js_get_var(ctx, this_obj, _type.type, out self) || !_type.CheckThis(self))
                 {
                     throw new ThisBoundException();
                 }
@@ -88,13 +88,14 @@ namespace QuickJS.Binding
             object self = null;
             if (!_propertyInfo.GetMethod.IsStatic)
             {
-                Values.js_get_cached_object(ctx, this_obj, out self);
-                if (!_type.CheckThis(self))
+                if (!Values.js_get_var(ctx, this_obj, _type.type, out self) || !_type.CheckThis(self))
                 {
                     throw new ThisBoundException();
                 }
             }
-            return Values.js_push_var(ctx, _propertyInfo.GetValue(self));
+
+            var rval = _propertyInfo.GetValue(self);
+            return Values.js_push_var(ctx, rval);
         }
 
         public JSValue SetValue(JSContext ctx, JSValue this_obj, JSValue val)
@@ -110,8 +111,7 @@ namespace QuickJS.Binding
             object self = null;
             if (!_propertyInfo.SetMethod.IsStatic)
             {
-                Values.js_get_cached_object(ctx, this_obj, out self);
-                if (!_type.CheckThis(self))
+                if (!Values.js_get_var(ctx, this_obj, _type.type, out self) || !_type.CheckThis(self))
                 {
                     throw new ThisBoundException();
                 }

@@ -20,7 +20,7 @@ namespace QuickJS.Unity
                 if (argc == 1)
                 {
                     System.Type arg0;
-                    if (!Values.js_get_type(ctx, argv[0], out arg0))
+                    if (!Values.js_get_classvalue(ctx, argv[0], out arg0))
                     {
                         throw new ParameterException(typeof(UnityEditor.EditorWindow), "GetWindow", typeof(System.Type), 0);
                     }

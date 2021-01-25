@@ -14,8 +14,7 @@ namespace QuickJS.Binding
 
         static Values()
         {
-            init_js_cast_map();
-            init_cs_cast_map();
+            init_cast_map();
         }
 
         public static bool IsVarargParameter(ParameterInfo[] parameters)

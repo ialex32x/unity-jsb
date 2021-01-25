@@ -67,7 +67,7 @@ namespace QuickJS.Binding
             if (type == typeof(Type)) //TODO: remove
             {
                 Type otype;
-                return js_get_type(ctx, jsValue, out otype); // 只要求匹配 Type 本身, 不比较具体 Type
+                return js_get_classvalue(ctx, jsValue, out otype); // 只要求匹配 Type 本身, 不比较具体 Type
                 // return otype == type;
             }
 
