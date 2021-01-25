@@ -13,6 +13,8 @@ namespace QuickJS.Binding
 
         private static Dictionary<Type, MethodInfo> _CSCastMap = new Dictionary<Type, MethodInfo>();
 
+        private static Dictionary<Type, MethodInfo> _JSRebindMap = new Dictionary<Type, MethodInfo>();
+
         private static Dictionary<Type, MethodInfo> _JSNewMap = new Dictionary<Type, MethodInfo>();
 
         // 初始化, 在 Values 静态构造时调用
@@ -31,6 +33,14 @@ namespace QuickJS.Binding
                         {
                             var type = parameters[2].ParameterType;
                             _JSNewMap[type] = method;
+                        }
+                    }
+                    else if (method.Name == "js_rebind_this")
+                    {
+                        if (parameters.Length == 3 && parameters[2].ParameterType.IsByRef)
+                        {
+                            var type = parameters[2].ParameterType.GetElementType();
+                            _JSRebindMap[type] = method;
                         }
                     }
                     else if (method.Name.StartsWith("js_get_"))
@@ -60,6 +70,17 @@ namespace QuickJS.Binding
                     }
                 }
             }
+        }
+
+        public static bool js_rebind_var(JSContext ctx, JSValue this_obj, Type type, object o)
+        {
+            MethodInfo method;
+            if (_JSRebindMap.TryGetValue(type, out method))
+            {
+                var parameters = new object[3] { ctx, this_obj, o };
+                return (bool)method.Invoke(o, parameters);
+            }
+            return false;
         }
 
         // 自动判断类型

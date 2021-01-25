@@ -134,17 +134,19 @@ namespace QuickJS.Binding
                 }
             }
 
+            var ret = _methodInfo.Invoke(self, args);
+
+            if (_type.type.IsValueType && !_methodInfo.IsStatic)
+            {
+                Values.js_rebind_var(ctx, this_obj, _type.type, self);
+            }
+
             if (_methodInfo.ReturnType != typeof(void))
             {
-                var ret = _methodInfo.Invoke(self, args);
-
                 return Values.js_push_var(ctx, ret);
             }
-            else
-            {
-                _methodInfo.Invoke(self, args);
-                return JSApi.JS_UNDEFINED;
-            }
+
+            return JSApi.JS_UNDEFINED;
         }
     }
 
@@ -171,16 +173,14 @@ namespace QuickJS.Binding
                     return JSApi.JS_ThrowInternalError(ctx, "failed to cast val");
                 }
             }
+            var ret = methodInfo.Invoke(self, args);
+
             if (methodInfo.ReturnType != typeof(void))
             {
-                var ret = methodInfo.Invoke(self, args);
                 return Values.js_push_var(ctx, ret);
             }
-            else
-            {
-                methodInfo.Invoke(self, args);
-                return JSApi.JS_UNDEFINED;
-            }
+
+            return JSApi.JS_UNDEFINED;
         }
     }
 

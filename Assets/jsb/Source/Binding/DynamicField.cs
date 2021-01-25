@@ -60,6 +60,12 @@ namespace QuickJS.Binding
                 throw new InvalidCastException();
             }
             _fieldInfo.SetValue(self, t_val);
+            
+            if (_type.type.IsValueType && !_fieldInfo.IsStatic)
+            {
+                Values.js_rebind_var(ctx, this_obj, _type.type, self);
+            }
+
             return JSApi.JS_UNDEFINED;
         }
     }
@@ -122,6 +128,10 @@ namespace QuickJS.Binding
                 throw new InvalidCastException();
             }
             _propertyInfo.SetValue(self, t_val);
+            if (_type.type.IsValueType && !_propertyInfo.SetMethod.IsStatic)
+            {
+                Values.js_rebind_var(ctx, this_obj, _type.type, self);
+            }
             return JSApi.JS_UNDEFINED;
         }
     }

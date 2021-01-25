@@ -8,7 +8,11 @@ let go = new GameObject("Happy Bot");
 
 console.log("go.transform = ", go.transform);
 console.log("go.transform.localPosition.x = ", go.transform.localPosition.x);
-console.log("new Vector3(1, 1, 1).x = ", new Vector3(1, 1, 1).x);
+
+let v = new Vector3(1, 1, 1);
+v.x = 2;
+console.log("v.x = ", v.x);
+console.log("v.magnitude = ", v.magnitude);
 
 go.transform.localPosition = new Vector3(1, 1, 1);
 
