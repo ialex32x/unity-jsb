@@ -816,7 +816,31 @@ namespace QuickJS.Unity
 
             foreach (var operatorBindingInfo in operators)
             {
-                //TODO: 运算符绑定
+                var dynamicMethod = new Binding.DynamicMethod(dynamicType, operatorBindingInfo.methodInfo);
+                var regName = operatorBindingInfo.jsName;
+                var parameters = operatorBindingInfo.methodInfo.GetParameters();
+                var declaringType = operatorBindingInfo.methodInfo.DeclaringType;
+
+                do
+                {
+                    if (parameters.Length == 2)
+                    {
+                        if (parameters[0].ParameterType != declaringType)
+                        {
+                            var leftType = parameters[0].ParameterType;
+                            cls.AddLeftOperator(regName, dynamicMethod, leftType);
+                            break;
+                        }
+                        else if (parameters[1].ParameterType != declaringType)
+                        {
+                            var rightType = parameters[1].ParameterType;
+                            cls.AddRightOperator(regName, dynamicMethod, rightType);
+                            break;
+                        }
+                    }
+
+                    cls.AddSelfOperator(regName, dynamicMethod);
+                } while (false);
             }
 
             return cls;

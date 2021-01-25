@@ -22,6 +22,8 @@ namespace QuickJS
             get { return _context; }
         }
 
+        public bool isValid => _context != null;
+
         public ScriptDelegate(ScriptContext context, JSValue jsValue)
         {
             _context = context;
