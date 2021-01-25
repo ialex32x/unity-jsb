@@ -14,6 +14,10 @@ namespace QuickJS.Unity
     {
         public static void ActionCall(ScriptDelegate fn)
         {
+            if (!fn.isValid)
+            {
+                return;
+            }
             var ctx = fn.ctx;
             var rval = fn.Invoke(ctx);
             if (rval.IsException())
@@ -25,6 +29,10 @@ namespace QuickJS.Unity
 
         public static void ActionCall<T1>(ScriptDelegate fn, T1 a1)
         {
+            if (!fn.isValid)
+            {
+                return;
+            }
             var ctx = fn.ctx;
             var argv = stackalloc JSValue[1];
             argv[0] = ReflectBindValueOp.js_push_tvar<T1>(ctx, a1);
@@ -43,6 +51,10 @@ namespace QuickJS.Unity
 
         public static void ActionCall<T1, T2>(ScriptDelegate fn, T1 a1, T2 a2)
         {
+            if (!fn.isValid)
+            {
+                return;
+            }
             var ctx = fn.ctx;
             var argv = stackalloc JSValue[2];
             argv[0] = ReflectBindValueOp.js_push_tvar<T1>(ctx, a1);
@@ -68,6 +80,10 @@ namespace QuickJS.Unity
 
         public static void ActionCall<T1, T2, T3>(ScriptDelegate fn, T1 a1, T2 a2, T3 a3)
         {
+            if (!fn.isValid)
+            {
+                return;
+            }
             var ctx = fn.ctx;
             var argv = stackalloc JSValue[3];
             argv[0] = ReflectBindValueOp.js_push_tvar<T1>(ctx, a1);
@@ -101,6 +117,10 @@ namespace QuickJS.Unity
 
         public static void ActionCall<T1, T2, T3, T4>(ScriptDelegate fn, T1 a1, T2 a2, T3 a3, T4 a4)
         {
+            if (!fn.isValid)
+            {
+                return;
+            }
             var ctx = fn.ctx;
             var argv = stackalloc JSValue[4];
             argv[0] = ReflectBindValueOp.js_push_tvar<T1>(ctx, a1);
@@ -143,6 +163,10 @@ namespace QuickJS.Unity
 
         public static void ActionCall<T1, T2, T3, T4, T5>(ScriptDelegate fn, T1 a1, T2 a2, T3 a3, T4 a4, T5 a5)
         {
+            if (!fn.isValid)
+            {
+                return;
+            }
             var ctx = fn.ctx;
             var argv = stackalloc JSValue[5];
             argv[0] = ReflectBindValueOp.js_push_tvar<T1>(ctx, a1);
@@ -195,6 +219,10 @@ namespace QuickJS.Unity
 
         public static RT FuncCall<RT>(ScriptDelegate fn)
         {
+            if (!fn.isValid)
+            {
+                return default(RT);
+            }
             var ctx = fn.ctx;
             var rval = fn.Invoke(ctx);
             if (rval.IsException())
@@ -216,6 +244,10 @@ namespace QuickJS.Unity
 
         public static RT FuncCall<T1, RT>(ScriptDelegate fn, T1 a1)
         {
+            if (!fn.isValid)
+            {
+                return default(RT);
+            }
             var ctx = fn.ctx;
             var argv = stackalloc JSValue[1];
             argv[0] = ReflectBindValueOp.js_push_tvar<T1>(ctx, a1);
@@ -245,6 +277,10 @@ namespace QuickJS.Unity
 
         public static RT FuncCall<T1, T2, RT>(ScriptDelegate fn, T1 a1, T2 a2)
         {
+            if (!fn.isValid)
+            {
+                return default(RT);
+            }
             var ctx = fn.ctx;
             var argv = stackalloc JSValue[2];
             argv[0] = ReflectBindValueOp.js_push_tvar<T1>(ctx, a1);
@@ -280,6 +316,10 @@ namespace QuickJS.Unity
 
         public static RT FuncCall<T1, T2, T3, RT>(ScriptDelegate fn, T1 a1, T2 a2, T3 a3)
         {
+            if (!fn.isValid)
+            {
+                return default(RT);
+            }
             var ctx = fn.ctx;
             var argv = stackalloc JSValue[3];
             argv[0] = ReflectBindValueOp.js_push_tvar<T1>(ctx, a1);
