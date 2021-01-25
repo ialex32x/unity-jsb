@@ -368,6 +368,7 @@ namespace QuickJS.Unity
         /// <summary>
         /// 改写返回值的 push 方法
         /// </summary>
+        [Obsolete("此方法不利于统一反射模式绑定逻辑, 字符串需要改为委托")]
         public TypeTransform SetMethodReturnPusher(string pusher, string name, params Type[] parameters)
         {
             var method = _type.GetMethod(name, parameters);
@@ -409,6 +410,7 @@ namespace QuickJS.Unity
             return _tsMethodDeclarations.TryGetValue(method, out code);
         }
 
+        [Obsolete("此方法不利于统一反射模式绑定逻辑，将被移除")]
         public TypeTransform WriteCSConstructorBinding(Func<string, CodeGenerator, object, bool> writer, params Type[] parameters)
         {
             var ctor = _type.GetConstructor(parameters);
@@ -429,6 +431,7 @@ namespace QuickJS.Unity
         /// <summary>
         /// 替换静态绑定代码中的部分执行逻辑 (考虑废弃, 更难维护静态绑定与反射绑定的一致性)
         /// </summary>
+        [Obsolete("此方法不利于统一反射模式绑定逻辑，将被移除")]
         public TypeTransform WriteCSMethodBinding(Func<string, CodeGenerator, object, bool> writer, string methodName, params Type[] parameters)
         {
             var method = _type.GetMethod(methodName, parameters);
@@ -462,17 +465,20 @@ namespace QuickJS.Unity
             return false;
         }
 
+        [Obsolete("此方法不利于统一反射模式绑定逻辑，将被移除")]
         public TypeTransform AddRedirectMethod(string from, string to)
         {
             _redirectedMethods[from] = to;
             return this;
         }
 
+        [Obsolete("此方法不利于统一反射模式绑定逻辑，将被移除")]
         public bool TryRedirectMethod(string name, out string to)
         {
             return _redirectedMethods.TryGetValue(name, out to);
         }
 
+        [Obsolete("此方法不利于统一反射模式绑定逻辑，将被移除")]
         public bool IsRedirectedMethod(string name)
         {
             return _redirectedMethods.ContainsKey(name);
