@@ -476,15 +476,15 @@ namespace QuickJS.Unity
 
         public string AppendMethodReturnValuePusher(MethodBase method, Type returnType, string value)
         {
-            var transform = bindingManager.GetTypeTransform(method.DeclaringType);
-            if (transform != null)
-            {
-                var mrp = transform.GetMethodReturnPusher(method);
-                if (mrp != null)
-                {
-                    return $"{mrp}(ctx, {value})";
-                }
-            }
+            // var transform = bindingManager.GetTypeTransform(method.DeclaringType);
+            // if (transform != null)
+            // {
+            //     var mrp = transform.GetMethodReturnPusher(method);
+            //     if (mrp != null)
+            //     {
+            //         return $"{mrp}(ctx, {value})";
+            //     }
+            // }
             // if (returnType.IsEnum)
             // {
             //     var eType = returnType.GetEnumUnderlyingType();

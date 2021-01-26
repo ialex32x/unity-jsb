@@ -45,9 +45,6 @@ namespace QuickJS.Unity
         // 强制不导出的方法
         private HashSet<MethodBase> _blockedMethods = new HashSet<MethodBase>();
 
-        // 方法返回值 push 方法覆盖
-        private Dictionary<MethodBase, string> _mehotdReturnPusher = new Dictionary<MethodBase, string>();
-
         // 针对特定方法的 ts 声明优化
         private Dictionary<MethodBase, string> _tsMethodDeclarations = new Dictionary<MethodBase, string>();
         private Dictionary<MethodBase, Func<string, CodeGenerator, object, bool>> _csMethodWriter = new Dictionary<MethodBase, Func<string, CodeGenerator, object, bool>>();
@@ -56,8 +53,6 @@ namespace QuickJS.Unity
 
         // d.ts 中额外输出附加方法声明 (例如 Vector3, js中需要通过方法调用进行 +-*/== 等运算)
         private List<string> _tsAdditionalMethodDeclarations = new List<string>();
-
-        private Dictionary<string, string> _redirectedMethods = new Dictionary<string, string>();
 
         private Dictionary<Type, Delegate> _filters = new Dictionary<Type, Delegate>();
         // private Func<ConstructorInfo, bool> _filterConstructorInfo;
@@ -365,26 +360,6 @@ namespace QuickJS.Unity
             return this;
         }
 
-        /// <summary>
-        /// 改写返回值的 push 方法
-        /// </summary>
-        [Obsolete("此方法不利于统一反射模式绑定逻辑, 字符串需要改为委托")]
-        public TypeTransform SetMethodReturnPusher(string pusher, string name, params Type[] parameters)
-        {
-            var method = _type.GetMethod(name, parameters);
-            if (method != null)
-            {
-                _mehotdReturnPusher.Add(method, pusher);
-            }
-            return this;
-        }
-
-        public string GetMethodReturnPusher(MethodBase methodBase)
-        {
-            string pusher;
-            return _mehotdReturnPusher.TryGetValue(methodBase, out pusher) ? pusher : null;
-        }
-
         // TS: 为指定类型的匹配方法添加声明映射 (仅用于优化代码提示体验)
         public TypeTransform AddTSMethodDeclaration(string spec, string name, params Type[] parameters)
         {
@@ -463,25 +438,6 @@ namespace QuickJS.Unity
             }
 
             return false;
-        }
-
-        [Obsolete("此方法不利于统一反射模式绑定逻辑，将被移除")]
-        public TypeTransform AddRedirectMethod(string from, string to)
-        {
-            _redirectedMethods[from] = to;
-            return this;
-        }
-
-        [Obsolete("此方法不利于统一反射模式绑定逻辑，将被移除")]
-        public bool TryRedirectMethod(string name, out string to)
-        {
-            return _redirectedMethods.TryGetValue(name, out to);
-        }
-
-        [Obsolete("此方法不利于统一反射模式绑定逻辑，将被移除")]
-        public bool IsRedirectedMethod(string name)
-        {
-            return _redirectedMethods.ContainsKey(name);
         }
     }
 }

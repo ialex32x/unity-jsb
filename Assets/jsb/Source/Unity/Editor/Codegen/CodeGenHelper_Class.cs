@@ -100,21 +100,17 @@ namespace QuickJS.Unity
             foreach (var kv in this.typeBindingInfo.methods)
             {
                 var methodBindingInfo = kv.Value;
-
-                if (transform == null || !transform.IsRedirectedMethod(methodBindingInfo.jsName))
+                var jscOverride = transform.GetCSMethodOverrideBinding(methodBindingInfo.jsName);
+                if (jscOverride == null)
                 {
-                    var jscOverride = transform.GetCSMethodOverrideBinding(methodBindingInfo.jsName);
-                    if (jscOverride == null)
+                    using (new PInvokeGuardCodeGen(cg))
                     {
-                        using (new PInvokeGuardCodeGen(cg))
+                        using (new BindingFuncDeclareCodeGen(cg, methodBindingInfo.csBindName))
                         {
-                            using (new BindingFuncDeclareCodeGen(cg, methodBindingInfo.csBindName))
+                            using (new TryCatchGuradCodeGen(cg))
                             {
-                                using (new TryCatchGuradCodeGen(cg))
+                                using (new MethodCodeGen(cg, this.typeBindingInfo, methodBindingInfo))
                                 {
-                                    using (new MethodCodeGen(cg, this.typeBindingInfo, methodBindingInfo))
-                                    {
-                                    }
                                 }
                             }
                         }
@@ -136,25 +132,22 @@ namespace QuickJS.Unity
                 foreach (var kv in this.typeBindingInfo.staticMethods)
                 {
                     var methodBindingInfo = kv.Value;
-                    if (transform == null || !transform.IsRedirectedMethod(methodBindingInfo.jsName))
+                    if (methodBindingInfo._cfunc != null)
                     {
-                        if (methodBindingInfo._cfunc != null)
+                        continue;
+                    }
+
+                    var jscOverride = transform.GetCSMethodOverrideBinding(methodBindingInfo.jsName);
+                    if (jscOverride == null)
+                    {
+                        using (new PInvokeGuardCodeGen(cg))
                         {
-                            continue;
-                        }
-                        
-                        var jscOverride = transform.GetCSMethodOverrideBinding(methodBindingInfo.jsName);
-                        if (jscOverride == null)
-                        {
-                            using (new PInvokeGuardCodeGen(cg))
+                            using (new BindingFuncDeclareCodeGen(cg, methodBindingInfo.csBindName))
                             {
-                                using (new BindingFuncDeclareCodeGen(cg, methodBindingInfo.csBindName))
+                                using (new TryCatchGuradCodeGen(cg))
                                 {
-                                    using (new TryCatchGuradCodeGen(cg))
+                                    using (new MethodCodeGen(cg, this.typeBindingInfo, methodBindingInfo))
                                     {
-                                        using (new MethodCodeGen(cg, this.typeBindingInfo, methodBindingInfo))
-                                        {
-                                        }
                                     }
                                 }
                             }
@@ -171,17 +164,14 @@ namespace QuickJS.Unity
             {
                 foreach (var operatorBindingInfo in this.typeBindingInfo.operators)
                 {
-                    if (transform == null || !transform.IsRedirectedMethod(operatorBindingInfo.jsName))
+                    using (new PInvokeGuardCodeGen(cg))
                     {
-                        using (new PInvokeGuardCodeGen(cg))
+                        using (new BindingFuncDeclareCodeGen(cg, operatorBindingInfo.csBindName))
                         {
-                            using (new BindingFuncDeclareCodeGen(cg, operatorBindingInfo.csBindName))
+                            using (new TryCatchGuradCodeGen(cg))
                             {
-                                using (new TryCatchGuradCodeGen(cg))
+                                using (new OperatorCodeGen(cg, this.typeBindingInfo, operatorBindingInfo))
                                 {
-                                    using (new OperatorCodeGen(cg, this.typeBindingInfo, operatorBindingInfo))
-                                    {
-                                    }
                                 }
                             }
                         }
@@ -400,11 +390,6 @@ namespace QuickJS.Unity
                     var funcName = operatorBindingInfo.csBindName;
                     var parameters = operatorBindingInfo.methodInfo.GetParameters();
                     var declaringType = operatorBindingInfo.methodInfo.DeclaringType;
-                    string redirect;
-                    if (this.typeBindingInfo.transform != null && this.typeBindingInfo.transform.TryRedirectMethod(regName, out redirect))
-                    {
-                        funcName = redirect;
-                    }
 
                     do
                     {
@@ -434,18 +419,9 @@ namespace QuickJS.Unity
                     var regName = kv.Value.jsName;
                     var funcName = kv.Value.csBindName;
                     var jscOverride = typeBindingInfo.transform.GetCSMethodOverrideBinding(regName);
-
                     if (jscOverride != null)
                     {
                         funcName = this.cg.bindingManager.GetCSTypeFullName(jscOverride.Method);
-                    }
-                    else
-                    {
-                        string redirect;
-                        if (this.typeBindingInfo.transform != null && this.typeBindingInfo.transform.TryRedirectMethod(regName, out redirect))
-                        {
-                            funcName = redirect;
-                        }
                     }
 
                     cg.cs.AppendLine("cls.AddMethod(false, \"{0}\", {1});", regName, funcName);
@@ -489,19 +465,11 @@ namespace QuickJS.Unity
                     {
                         var funcName = methodBindingInfo.csBindName;
                         var jscOverride = typeBindingInfo.transform.GetCSMethodOverrideBinding(regName);
-
                         if (jscOverride != null)
                         {
                             funcName = this.cg.bindingManager.GetCSTypeFullName(jscOverride.Method);
                         }
-                        else
-                        {
-                            string redirect;
-                            if (this.typeBindingInfo.transform != null && this.typeBindingInfo.transform.TryRedirectMethod(regName, out redirect))
-                            {
-                                funcName = redirect;
-                            }
-                        }
+                        
                         cg.cs.AppendLine("cls.AddMethod(true, \"{0}\", {1});", regName, funcName);
                     }
                 }

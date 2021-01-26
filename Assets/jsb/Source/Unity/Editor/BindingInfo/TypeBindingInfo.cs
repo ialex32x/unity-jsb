@@ -14,6 +14,10 @@ namespace QuickJS.Unity
     {
         public readonly BindingManager bindingManager;
         public readonly Type type;
+
+        /// <summary>
+        /// 类型转换信息 (此处必不为空)
+        /// </summary>
         public readonly TypeTransform transform;
 
         public TypeBindingFlags bindingFlags => transform.bindingFlags;

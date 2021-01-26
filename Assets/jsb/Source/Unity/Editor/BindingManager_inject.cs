@@ -44,23 +44,16 @@ namespace QuickJS.Unity
                     "GetComponentInChildren", typeof(Type))
                 .AddTSMethodDeclaration($"GetComponentInParent<T extends Component>(type: {{ new(): T }}): T",
                     "GetComponentInParent", typeof(Type))
-                // .AddTSMethodDeclaration($"GetComponents<T extends Component>(type: {{ new(): T }}, results: any): void", 
-                //     "GetComponents", typeof(Type))
                 .AddTSMethodDeclaration($"GetComponents<T extends Component>(type: {{ new(): T }}): T[]",
                     "GetComponents", typeof(Type))
-                .SetMethodReturnPusher("js_push_classvalue_array", "GetComponents", typeof(Type))
                 .AddTSMethodDeclaration($"GetComponentsInChildren<T extends Component>(type: {{ new(): T }}, includeInactive: boolean): T[]",
                     "GetComponentsInChildren", typeof(Type), typeof(bool))
-                .SetMethodReturnPusher("js_push_classvalue_array", "GetComponentsInChildren", typeof(Type), typeof(bool))
                 .AddTSMethodDeclaration($"GetComponentsInChildren<T extends Component>(type: {{ new(): T }}): T[]",
                     "GetComponentsInChildren", typeof(Type))
-                .SetMethodReturnPusher("js_push_classvalue_array", "GetComponentsInChildren", typeof(Type))
                 .AddTSMethodDeclaration($"GetComponentsInParent<T extends Component>(type: {{ new(): T }}, includeInactive: boolean): T[]",
                     "GetComponentsInParent", typeof(Type), typeof(bool))
-                .SetMethodReturnPusher("js_push_classvalue_array", "GetComponentsInParent", typeof(Type), typeof(bool))
                 .AddTSMethodDeclaration($"GetComponentsInParent<T extends Component>(type: {{ new(): T }}): T[]",
                     "GetComponentsInParent", typeof(Type))
-                .SetMethodReturnPusher("js_push_classvalue_array", "GetComponentsInParent", typeof(Type))
                 ;
             return typeTransform;
         }
