@@ -1,35 +1,24 @@
     
 BUGFIX:
     ☐ C# 运算符本身存在重载时，需要生成不同的绑定名
-    ✔ C# 常用运算符生成绑定代码的修正 (op_Multiply 等) @done(20-12-22 18:00)
     ☐ 以 toString 形式导出的 ToString 中触发异常将导致调用栈溢出崩溃
-    ✔ 修正重载匹配 (js_match_type 子类也可通过判定) @done(20-12-16 10:10)
 
 必要:
     ☐ 反射模式支持运算符重载 (考虑接入v8, 可能取消运算符重载的导入)
-    ✔ 不生成绑定代码的情况下使用反射模式执行 (只生成 d.ts) (仍待完善) @done(20-12-29 15:30)
-    ✔ 反射模式下支持脚本扩展特定类型 (MonoBehaviour, Editor 等) @done(20-12-29 16:50)
-    ✔ codegen 对生成代码的修改方式调整, 以便兼容反射模式 @done(21-01-22 23:10)
-    ✔ 反射模式支持可变参数 @done(21-01-25 21:28)
-    ✔ 带 ref/out 参数支持的委托绑定 (反射模式不支持) @done(20-12-15 20:12)
     ☐ 主模块与一般模块共用一致的加载流程
     ☐ ES模块与require模块逻辑一致
     ☐ linux build (for dotnet core)
     ☐ 额外的运行时通讯机制 (jsb.runtimes, jsb.postMessage)
-    ✔ 多维数组的支持 @done(20-12-08 14:46)
     ☐ 考虑 Worker 传递消息时 C# 对象的传输 (使用加锁共享池?)
     ☐ JS Worker SAB
     ☐ types lazy load (代替 warmup)
     ☐ V8 backend (windows) 
-    ✔ 导出的目标代码段对 UNITY_EDITOR 的要求改为更通用的 Defines 集合的要求 @done(20-12-08 13:47)
 
 编辑器支持:
-    ✔ JS Behaviour Inspector 支持使用脚本定义编辑器 @done(20-12-14 19:45)
     ☐ 完善 JSEditorWindow 功能
 
 Codegen:
     ☐ 提供选项自动添加关联类型的导出 (如果是泛型具体类, 且对应基类已经导出, 那么自动导出此泛型具体类)
-    ✔ 生成所有导出类的JS模块列表 (可用于 webpack.config 中直接载入并作为 externals 配置项) (Prefs.jsModulePackInfo) @done(20-12-21 22:04)
     ☐ 子类中存在不同签名的同名方法时 (非虚)  时, 输出 ts-ignore
     ☐ 在单一文件中生成 cs 代码
     ☐ jsb.autogen.d.ts 调整
@@ -47,11 +36,24 @@ Codegen:
     ☐ 代码文档注释
     ☐ quickjs Date 只处理了UTC时间
     ☐ 以更通用且自动化的方式生成可继承的类型
-    ✔ [取消] 通过 BindingManager 辅助得到 export types (此功能已通过反射调用直接介入运行时) @done(20-12-29 15:32)
     ☐ 在 unity_qjs.c 中提供 fopen/fread/fclose (为了绕过 C# 中对已经在其他程序中打开的独占文件的读取限制)
-    ✔ [取消] 增加运行时平台分类 @done(20-12-08 15:25)
     ☐ [可能不合理] 提供 reload 接口 (清空指定模块, 并使用原 parent 进行重新载入)
     ☐ [可能不合理] 模块发生重载时, 关联模块也需要重载
+
+2021-01-26 v1.3.0:
+    ✔ JS Behaviour Inspector 支持使用脚本定义编辑器 @done(20-12-14 19:45)
+    ✔ 多维数组的支持 @done(20-12-08 14:46)
+    ✔ C# 常用运算符生成绑定代码的修正 (op_Multiply 等) @done(20-12-22 18:00)
+    ✔ 修正重载匹配 (js_match_type 子类也可通过判定) @done(20-12-16 10:10)
+    ✔ 不生成绑定代码的情况下使用反射模式执行 (只生成 d.ts) (仍待完善) @done(20-12-29 15:30)
+    ✔ 反射模式下支持脚本扩展特定类型 (MonoBehaviour, Editor 等) @done(20-12-29 16:50)
+    ✔ codegen 对生成代码的修改方式调整, 以便兼容反射模式 @done(21-01-22 23:10)
+    ✔ 反射模式支持可变参数 @done(21-01-25 21:28)
+    ✔ 带 ref/out 参数支持的委托绑定 (反射模式不支持) @done(20-12-15 20:12)
+    ✔ 导出的目标代码段对 UNITY_EDITOR 的要求改为更通用的 Defines 集合的要求 @done(20-12-08 13:47)
+    ✔ 生成所有导出类的JS模块列表 (可用于 webpack.config 中直接载入并作为 externals 配置项) (Prefs.jsModulePackInfo) @done(20-12-21 22:04)
+    ✔ [取消] 通过 BindingManager 辅助得到 export types (此功能已通过反射调用直接介入运行时) @done(20-12-29 15:32)
+    ✔ [取消] 增加运行时平台分类 @done(20-12-08 15:25)
 
 2020-12-02 v1.2.1:
     ✔ github workflows @done(20-12-02 20:14)
