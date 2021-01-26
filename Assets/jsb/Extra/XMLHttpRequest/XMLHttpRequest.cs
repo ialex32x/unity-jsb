@@ -188,10 +188,11 @@ namespace QuickJS.Extra
         private void _SendAsync()
         {
             string error = null;
+            HttpWebRequest request = null;
             try
             {
                 var uri = new Uri(_requestUriString);
-                var request = WebRequest.CreateHttp(uri);
+                request = WebRequest.CreateHttp(uri);
                 request.Method = _method;
                 request.Timeout = _timeout;
 
@@ -216,6 +217,10 @@ namespace QuickJS.Extra
                     return;
                 }
                 error = ex.ToString();
+            }
+            finally
+            {
+                try { request?.Abort(); } catch (Exception) { }
             }
 
             ScriptEngine.GetRuntime(_jsContext).EnqueueAction(OnResponseCallback, new ResponseArgs()
