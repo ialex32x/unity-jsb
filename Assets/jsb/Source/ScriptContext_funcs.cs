@@ -421,6 +421,13 @@ namespace QuickJS
         }
 
         [MonoPInvokeCallback(typeof(JSCFunction))]
+        public static JSValue _is_reflect_bind(JSContext ctx, JSValue this_obj, int argc, JSValue[] argv)
+        {
+            var rt = ScriptEngine.GetRuntime(ctx);
+            return rt.isReflectBind ? JSApi.JS_TRUE: JSApi.JS_FALSE;
+        }
+
+        [MonoPInvokeCallback(typeof(JSCFunction))]
         public static JSValue js_import_type(JSContext ctx, JSValue this_obj, int argc, JSValue[] argv)
         {
             if (argc < 1 || !argv[0].IsString())

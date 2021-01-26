@@ -131,6 +131,11 @@ declare module "jsb" {
     function Now(): number
 
     /**
+     * 是否运行在 ReflectBind 模式下
+     */
+    function IsReflectBind(): boolean;
+
+    /**
      * 即 Thread.Sleep()
      */
     function Sleep(millisecondsTimeout?: number): void

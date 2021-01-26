@@ -55,12 +55,15 @@ namespace QuickJS
         private bool _isValid; // destroy 调用后立即 = false
         private bool _isRunning;
         private bool _isWorker;
+        private bool _isReflectBind; // 是否采用 reflectbind 模式进行绑定
 
         public bool withStacktrace
         {
             get { return _withStacktrace; }
             set { _withStacktrace = value; }
         }
+
+        public bool isReflectBind { get { return _isReflectBind; } }
 
         public bool isWorker { get { return _isWorker; } }
 
@@ -226,6 +229,7 @@ namespace QuickJS
 
 #if UNITY_EDITOR
                 bindAll = GetReflectBind(logger) ?? GetStaticBind(logger);
+                _isReflectBind = bindAll.Name == "InvokeReflectBinding";
 #else 
                 bindAll = GetStaticBind(logger);
 #endif
