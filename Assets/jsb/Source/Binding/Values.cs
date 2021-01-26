@@ -20,6 +20,25 @@ namespace QuickJS.Binding
             return parameters.Length > 0 && parameters[parameters.Length - 1].IsDefined(typeof(ParamArrayAttribute), false);
         }
 
+        /// <summary>
+        /// 全局查找目标类型
+        /// </summary>
+        public static Type FindType(string type_name)
+        {
+            Type type = null; //Assembly.GetExecutingAssembly().GetType(type_name);
+            var assemblies = AppDomain.CurrentDomain.GetAssemblies();
+            for (int i = 0, count = assemblies.Length; i < count; i++)
+            {
+                var assembly = assemblies[i];
+                type = assembly.GetType(type_name);
+                if (type != null)
+                {
+                    break;
+                }
+            }
+            return type;
+        }
+
         public static bool IsContextualType(Type pType)
         {
             return pType == typeof(JSContext) || pType == typeof(JSRuntime)
@@ -32,7 +51,7 @@ namespace QuickJS.Binding
             {
                 return ctx;
             }
-            
+
             if (type == typeof(JSRuntime))
             {
                 return JSApi.JS_GetRuntime(ctx);
@@ -42,7 +61,7 @@ namespace QuickJS.Binding
             {
                 return ScriptEngine.GetContext(ctx);
             }
-            
+
             if (type == typeof(ScriptRuntime))
             {
                 return ScriptEngine.GetRuntime(ctx);

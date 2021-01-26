@@ -8,22 +8,6 @@ namespace QuickJS
 {
     public partial class ScriptContext
     {
-        private static Type FindType(string type_name)
-        {
-            Type type = null; //Assembly.GetExecutingAssembly().GetType(type_name);
-            var assemblies = AppDomain.CurrentDomain.GetAssemblies();
-            for (int i = 0, count = assemblies.Length; i < count; i++)
-            {
-                var assembly = assemblies[i];
-                type = assembly.GetType(type_name);
-                if (type != null)
-                {
-                    break;
-                }
-            }
-            return type;
-        }
-
         #region Builtins
 
         [MonoPInvokeCallback(typeof(JSCFunction))]
@@ -293,7 +277,7 @@ namespace QuickJS
             if (argc == 2)
             {
                 var type_name = JSApi.GetString(ctx, argv[1]);
-                var type = FindType(type_name);
+                var type = Values.FindType(type_name);
                 if (type != null)
                 {
                     Delegate d;
@@ -445,7 +429,7 @@ namespace QuickJS
             }
 
             var type_name = JSApi.GetString(ctx, argv[0]);
-            var type = FindType(type_name);
+            var type = Values.FindType(type_name);
 
             if (type == null)
             {
