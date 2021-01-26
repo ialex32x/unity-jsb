@@ -10,11 +10,11 @@
 * 支持运算符重载 +, -, *, /, ==, -(负)
 * 支持 JS 字节码 (QuickJS)
 * extends MonoBehaviour/EditorWindow/Editor in scripts
+* [初步] 开发过程中无需生成绑定代码
 * [初步] 支持 JS Worker (limited support)
 * [初步] 支持未导出的C#类型的 JS 交互
 * [初步] 支持 C# 代码热更 (hotfix, limited support)
-* [初步] 编辑器执行 JS 脚本
-* [未完成] 开发过程中无需生成绑定代码
+* [初步] 编辑器执行 JS 脚本 (支持在脚本中写 EditorWindow, Editor 等)
 * [未完成] Webpack HMR 运行时模块热替换 (limited support, for development only)
 
 # 附加模块支持 (可选)
@@ -318,7 +318,7 @@ npm install
 整个过程仍然使用生成绑定代码的流程, 只是不生成最终绑定代码(仍然生成 d.ts), 将得到与非反射模式基本一致的脚本编写体验.
 
 # 状态
-> 完成度 ~85%
+> 完成度 ~90%
 
 # 文档 
 详细说明参见 [Wiki](https://github.com/ialex32x/unity-jsb/wiki)
