@@ -162,6 +162,53 @@ namespace QuickJS
             return JSApi.JS_ThrowInternalError(context, $"module can not be resolved ({module_id})");
         }
 
+        private MethodInfo GetReflectBind(IScriptLogger logger)
+        {
+            var UnityHelper = Values.FindType("QuickJS.Unity.UnityHelper");
+            if (UnityHelper != null)
+            {
+                var IsReflectBindingSupported = UnityHelper.GetMethod("IsReflectBindingSupported");
+                if (IsReflectBindingSupported != null && (bool)IsReflectBindingSupported.Invoke(null, null))
+                {
+                    var bindAll = UnityHelper.GetMethod("InvokeReflectBinding");
+                    if (bindAll == null)
+                    {
+                        throw new Exception("failed to get method: UnityHelper.InvokeReflectBinding");
+                    }
+
+                    return bindAll;
+                }
+            }
+
+            return null;
+        }
+
+        private MethodInfo GetStaticBind(IScriptLogger logger)
+        {
+            var bindAll = typeof(Values).GetMethod("BindAll", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static);
+            if (bindAll == null)
+            {
+                throw new Exception("generate binding code before run");
+            }
+
+            var codeGenVersionField = typeof(Values).GetField("CodeGenVersion");
+            if (codeGenVersionField == null || !codeGenVersionField.IsStatic || !codeGenVersionField.IsLiteral || codeGenVersionField.FieldType != typeof(uint))
+            {
+                throw new Exception("binding code version mismatch");
+            }
+
+            var codeGenVersion = (uint)codeGenVersionField.GetValue(null);
+            if (codeGenVersion != ScriptEngine.VERSION)
+            {
+                if (logger != null)
+                {
+                    logger.Write(LogLevel.Warn, "CodeGenVersion: {0} != {1}", codeGenVersion, ScriptEngine.VERSION);
+                }
+            }
+
+            return bindAll;
+        }
+
         public void Initialize(IFileSystem fileSystem, IPathResolver resolver, IScriptRuntimeListener listener, IAsyncManager asyncManager, IScriptLogger logger, IO.IByteBufferAllocator byteBufferAllocator)
         {
             if (fileSystem == null)
@@ -177,64 +224,18 @@ namespace QuickJS
                     throw new NullReferenceException(nameof(listener));
                 }
 
-                bindAll = typeof(Values).GetMethod("BindAll", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static);
-                if (bindAll == null)
-                {
 #if UNITY_EDITOR
-                    var throwError = true;
-                    foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
-                    {
-                        var UnityHelper = assembly.GetType("QuickJS.Unity.UnityHelper");
-                        if (UnityHelper != null)
-                        {
-                            var IsReflectBindingSupported = UnityHelper.GetMethod("IsReflectBindingSupported");
-                            if (IsReflectBindingSupported != null)
-                            {
-                                if ((bool)IsReflectBindingSupported.Invoke(null, null))
-                                {
-                                    var InvokeReflectBinding = UnityHelper.GetMethod("InvokeReflectBinding");
-                                    if (InvokeReflectBinding != null)
-                                    {
-                                        bindAll = InvokeReflectBinding;
-                                        throwError = false;
-                                    }
-                                }
-                            }
-                            break;
-                        }
-                    }
-
-                    if (throwError)
-                    {
-                        throw new Exception("generate binding code before run");
-                    }
+                bindAll = GetReflectBind(logger) ?? GetStaticBind(logger);
 #else 
-                    throw new Exception("generate binding code before run");
+                bindAll = GetStaticBind(logger);
 #endif
-                }
-                else
-                {
-                    var codeGenVersionField = typeof(Values).GetField("CodeGenVersion");
-                    if (codeGenVersionField == null || !codeGenVersionField.IsStatic || !codeGenVersionField.IsLiteral || codeGenVersionField.FieldType != typeof(uint))
-                    {
-                        throw new Exception("binding code version mismatch");
-                    }
-
-                    var codeGenVersion = (uint)codeGenVersionField.GetValue(null);
-                    if (codeGenVersion != ScriptEngine.VERSION)
-                    {
-                        if (logger != null)
-                        {
-                            logger.Write(LogLevel.Warn, "CodeGenVersion: {0} != {1}", codeGenVersion, ScriptEngine.VERSION);
-                        }
-                    }
-                }
             }
 
             asyncManager.Initialize(_mainThreadId);
 
             _isValid = true;
             _isRunning = true;
+            _logger = logger;
             // _rwlock = new ReaderWriterLockSlim();
             _rt = JSApi.JS_NewRuntime();
             JSApi.JS_SetHostPromiseRejectionTracker(_rt, JSApi.PromiseRejectionTracker, IntPtr.Zero);
@@ -257,7 +258,6 @@ namespace QuickJS
             _byteBufferAllocator = byteBufferAllocator;
             _autorelease = new Utils.AutoReleasePool();
             _fileSystem = fileSystem;
-            _logger = logger;
             _objectCache = new ObjectCache(_logger);
             _timerManager = new TimerManager(_logger);
             _typeDB = new TypeDB(this, _mainContext);
