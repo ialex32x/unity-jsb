@@ -1,15 +1,8 @@
 import { DelegateTest } from "Example";
+import { IsReflectBind } from "jsb";
 
 if (module == require.main) {
     let actions = new DelegateTest();
-
-    print("测试: 带 ref/out 的委托");
-    actions.complexCall("add", (b, a, v) => {
-        a.value += b;
-        v.value = 999;
-        return 789;
-    });
-    actions.TestComplexCall();
 
     print("测试: 无参数的委托");
     console.log("********** add");
@@ -49,4 +42,16 @@ if (module == require.main) {
     DelegateTest.DipatchStaticEvent(123);
     DelegateTest.onStaticEvent("remove", staticEventHandler);
     DelegateTest.DipatchStaticEvent(123);
+
+    if (!IsReflectBind()) {
+        print("测试: 带 ref/out 的委托");
+        actions.complexCall("add", (b, a, v) => {
+            a.value += b;
+            v.value = 999;
+            return 789;
+        });
+        actions.TestComplexCall();
+    } else {
+        console.warn("reflectbind 模式不支持带 ref,out 参数的委托")
+    }
 }

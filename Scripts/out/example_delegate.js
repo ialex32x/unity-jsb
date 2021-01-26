@@ -1,15 +1,9 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const Example_1 = require("Example");
+const jsb_1 = require("jsb");
 if (module == require.main) {
     let actions = new Example_1.DelegateTest();
-    print("测试: 带 ref/out 的委托");
-    actions.complexCall("add", (b, a, v) => {
-        a.value += b;
-        v.value = 999;
-        return 789;
-    });
-    actions.TestComplexCall();
     print("测试: 无参数的委托");
     console.log("********** add");
     actions.onAction("add", function () {
@@ -42,5 +36,17 @@ if (module == require.main) {
     Example_1.DelegateTest.DipatchStaticEvent(123);
     Example_1.DelegateTest.onStaticEvent("remove", staticEventHandler);
     Example_1.DelegateTest.DipatchStaticEvent(123);
+    if (!jsb_1.IsReflectBind()) {
+        print("测试: 带 ref/out 的委托");
+        actions.complexCall("add", (b, a, v) => {
+            a.value += b;
+            v.value = 999;
+            return 789;
+        });
+        actions.TestComplexCall();
+    }
+    else {
+        console.warn("reflectbind 模式不支持带 ref,out 参数的委托");
+    }
 }
 //# sourceMappingURL=example_delegate.js.map
