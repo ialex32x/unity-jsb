@@ -31,52 +31,62 @@ namespace QuickJS.Native
         {
             var ex = JSApi.JS_GetException(this);
 
-            if (logger != null)
+            try
             {
-                var err_fileName = JSApi.JS_GetProperty(this, ex, JSApi.JS_ATOM_fileName);
-                var err_lineNumber = JSApi.JS_GetProperty(this, ex, JSApi.JS_ATOM_lineNumber);
-                var err_message = JSApi.JS_GetProperty(this, ex, JSApi.JS_ATOM_message);
-                var err_stack = JSApi.JS_GetProperty(this, ex, JSApi.JS_ATOM_stack);
-
-                var fileName = err_fileName.IsNullish() ? "native" : GetString(err_fileName);
-                var lineNumber = err_lineNumber.IsNullish() ? null : GetString(err_lineNumber);
-                var message = GetString(err_message);
-                var stack = GetString(err_stack);
-
-                if (string.IsNullOrEmpty(lineNumber))
+                if (logger != null)
                 {
-                    if (string.IsNullOrEmpty(stack))
+                    var err_fileName = JSApi.JS_GetProperty(this, ex, JSApi.JS_ATOM_fileName);
+                    var err_lineNumber = JSApi.JS_GetProperty(this, ex, JSApi.JS_ATOM_lineNumber);
+                    var err_message = JSApi.JS_GetProperty(this, ex, JSApi.JS_ATOM_message);
+                    var err_stack = JSApi.JS_GetProperty(this, ex, JSApi.JS_ATOM_stack);
+
+                    try
                     {
-                        logger.Write(logLevel, "[{0}] {1} {2}",
-                            fileName, title, message);
+                        var fileName = err_fileName.IsNullish() ? "native" : GetString(err_fileName);
+                        var lineNumber = err_lineNumber.IsNullish() ? null : GetString(err_lineNumber);
+                        var message = GetString(err_message);
+                        var stack = GetString(err_stack);
+
+                        if (string.IsNullOrEmpty(lineNumber))
+                        {
+                            if (string.IsNullOrEmpty(stack))
+                            {
+                                logger.Write(logLevel, "[{0}] {1} {2}",
+                                    fileName, title, message);
+                            }
+                            else
+                            {
+                                logger.Write(logLevel, "[{0}] {1} {2}\nJavascript stack:\n{3}",
+                                    fileName, title, message, stack);
+                            }
+                        }
+                        else
+                        {
+                            if (string.IsNullOrEmpty(stack))
+                            {
+                                logger.Write(logLevel, "[{0}:{1}] {2} {3}",
+                                fileName, lineNumber, title, message);
+                            }
+                            else
+                            {
+                                logger.Write(logLevel, "[{0}:{1}] {2} {3}\nJavascript stack:\n{4}",
+                                    fileName, lineNumber, title, message, stack);
+                            }
+                        }
                     }
-                    else
+                    finally
                     {
-                        logger.Write(logLevel, "[{0}] {1} {2}\nJavascript stack:\n{3}",
-                            fileName, title, message, stack);
+                        JSApi.JS_FreeValue(this, err_fileName);
+                        JSApi.JS_FreeValue(this, err_lineNumber);
+                        JSApi.JS_FreeValue(this, err_message);
+                        JSApi.JS_FreeValue(this, err_stack);
                     }
                 }
-                else
-                {
-                    if (string.IsNullOrEmpty(stack))
-                    {
-                        logger.Write(logLevel, "[{0}:{1}] {2} {3}",
-                        fileName, lineNumber, title, message);
-                    }
-                    else
-                    {
-                        logger.Write(logLevel, "[{0}:{1}] {2} {3}\nJavascript stack:\n{4}",
-                            fileName, lineNumber, title, message, stack);
-                    }
-                }
-
-                JSApi.JS_FreeValue(this, err_fileName);
-                JSApi.JS_FreeValue(this, err_lineNumber);
-                JSApi.JS_FreeValue(this, err_message);
-                JSApi.JS_FreeValue(this, err_stack);
             }
-
-            JSApi.JS_FreeValue(this, ex);
+            finally
+            {
+                JSApi.JS_FreeValue(this, ex);
+            }
         }
 
         // 在外部已确定存在异常
@@ -88,20 +98,25 @@ namespace QuickJS.Native
             var err_message = JSApi.JS_GetProperty(this, ex, JSApi.JS_ATOM_message);
             var err_stack = JSApi.JS_GetProperty(this, ex, JSApi.JS_ATOM_stack);
 
-            var fileName = this.GetString(err_fileName);
-            var lineNumber = this.GetString(err_lineNumber);
-            var message = this.GetString(err_message);
-            var stack = this.GetString(err_stack);
+            try
+            {
+                var fileName = this.GetString(err_fileName);
+                var lineNumber = this.GetString(err_lineNumber);
+                var message = this.GetString(err_message);
+                var stack = this.GetString(err_stack);
+                var exceptionString = string.Format("[JS] {0}:{1} {2}\n{3}", fileName, lineNumber, message, stack);
+                
+                return exceptionString;
+            }
+            finally
+            {
 
-            var exceptionString = string.Format("[JS] {0}:{1} {2}\n{3}", fileName, lineNumber, message, stack);
-
-            JSApi.JS_FreeValue(this, err_fileName);
-            JSApi.JS_FreeValue(this, err_lineNumber);
-            JSApi.JS_FreeValue(this, err_message);
-            JSApi.JS_FreeValue(this, err_stack);
-            JSApi.JS_FreeValue(this, ex);
-
-            return exceptionString;
+                JSApi.JS_FreeValue(this, err_fileName);
+                JSApi.JS_FreeValue(this, err_lineNumber);
+                JSApi.JS_FreeValue(this, err_message);
+                JSApi.JS_FreeValue(this, err_stack);
+                JSApi.JS_FreeValue(this, ex);
+            }
         }
 
         public unsafe string GetString(JSValue jsValue)
