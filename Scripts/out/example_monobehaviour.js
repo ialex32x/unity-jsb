@@ -30,13 +30,6 @@ let MyClass = class MyClass extends UnityEngine_1.MonoBehaviour {
     OnDestroy() {
         console.log("MyClass.OnDestroy", this._tick++);
     }
-    Update() {
-        if (UnityEngine_1.Input.GetMouseButtonUp(0)) {
-            let ray = UnityEngine_1.Camera.main.ScreenPointToRay(UnityEngine_1.Input.mousePosition);
-            let point = ray.origin;
-            console.log(point.x, point.y, point.z);
-        }
-    }
     speak(text) {
         console.log(text);
     }
@@ -55,6 +48,17 @@ class MySubClass extends MyClass {
         super.Awake();
         console.log("MySubClass.Awake", this._tick++);
     }
+    Update() {
+        if (UnityEngine_1.Input.GetMouseButtonUp(0)) {
+            let ray = UnityEngine_1.Camera.main.ScreenPointToRay(UnityEngine_1.Input.mousePosition);
+            let hitInfo = { type: UnityEngine_1.RaycastHit };
+            let layerMask = 1 << UnityEngine_1.LayerMask.NameToLayer("Default");
+            console.log("hittest", layerMask);
+            if (UnityEngine_1.Physics.Raycast(ray, hitInfo, 1000, layerMask)) {
+                console.log("hit", hitInfo.value.transform.name);
+            }
+        }
+    }
     play() {
         console.log("MySubClass.play");
     }
@@ -65,6 +69,10 @@ if (module == require.main) {
     let gameObject = new UnityEngine_1.GameObject();
     let comp1 = gameObject.AddComponent(MySubClass);
     let comp2 = gameObject.AddComponent(MyClass);
+    let cube = UnityEngine_1.GameObject.CreatePrimitive(UnityEngine_1.PrimitiveType.Cube);
+    cube.transform.localPosition = new UnityEngine_1.Vector3(1, 2, 3);
+    cube.transform.localRotation = UnityEngine_1.Quaternion.Euler(30, 60, 90);
+    cube.transform.localScale = new UnityEngine_1.Vector3(2, 3, 4);
     comp1.vv = 1;
     comp2.vv = 2;
     comp1.play();
