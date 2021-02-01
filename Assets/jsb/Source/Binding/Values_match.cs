@@ -247,7 +247,7 @@ namespace QuickJS.Binding
                 var pType = parameterInfo.ParameterType;
                 if (pType.IsByRef)
                 {
-                    if (!js_match_type_hint(ctx, argv[i], pType))
+                    if (!js_match_type_hint(ctx, argv[i], pType.GetElementType()))
                     {
                         return false;
                     }
@@ -273,7 +273,7 @@ namespace QuickJS.Binding
                 var pType = parameterInfo.ParameterType;
                 if (pType.IsByRef)
                 {
-                    if (!js_match_type_hint(ctx, argv[i], pType))
+                    if (!js_match_type_hint(ctx, argv[i], pType.GetElementType()))
                     {
                         return false;
                     }
