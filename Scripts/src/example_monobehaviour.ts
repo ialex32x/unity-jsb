@@ -1,4 +1,4 @@
-import { MonoBehaviour, WaitForSeconds, Object, Input, Camera, GameObject, PrimitiveType, Vector3, Quaternion, Physics, LayerMask, RaycastHit } from "UnityEngine";
+import { MonoBehaviour, WaitForSeconds, Object, Input, Camera, GameObject, PrimitiveType, Vector3, Quaternion, Physics, LayerMask, RaycastHit, Transform, Time, ParticleSystem, ParticleSystemSimulationSpace } from "UnityEngine";
 import * as jsb from "jsb";
 import { Inspector } from "./editor/decorators/inspector";
 import { Out } from "jsb";
@@ -61,6 +61,32 @@ export class MySubClass extends MyClass {
     }
 }
 
+@Inspector("editor/inspector/rotate_inspector", "RotateBehaviourInspector")
+export class RotateBehaviour extends MonoBehaviour {
+    private _rotation: number = 0;
+    rotationSpeed = 50;
+
+    Reset() {
+        this._rotation = 0;
+    }
+
+    Awake() {
+        let ps = this.GetComponent(ParticleSystem);
+        if (ps) {
+            ps.main.simulationSpace = ParticleSystemSimulationSpace.World;
+            console.log("ps.main.simulationSpace:", ps.main.simulationSpace);
+        }
+    }
+
+    Update() {
+        this._rotation += this.rotationSpeed * Time.deltaTime;
+        //@ts-ignore
+        let p: Vector3 = Quaternion.Euler(0, this._rotation, 0) * Vector3.right * 5;
+        p.z *= 0.5;
+        this.transform.localPosition = p;
+    }
+}
+
 if (module == require.main) {
     print("example_monobehaviour");
     let gameObject = new GameObject();
@@ -86,5 +112,11 @@ if (module == require.main) {
     {
         let results = gameObject.GetComponents(MyClass);
         results.forEach(it => console.log("GetComponents(MyClass):", it.vv));
+    }
+
+    let ps = GameObject.Find("/Particle System");
+    console.log("Particle System:", ps);
+    if (ps) {
+        ps.AddComponent(RotateBehaviour);
     }
 }

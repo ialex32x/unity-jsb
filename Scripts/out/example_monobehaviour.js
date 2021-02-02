@@ -6,7 +6,7 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.MySubClass = exports.MyClass = void 0;
+exports.RotateBehaviour = exports.MySubClass = exports.MyClass = void 0;
 const UnityEngine_1 = require("UnityEngine");
 const jsb = require("jsb");
 const inspector_1 = require("./editor/decorators/inspector");
@@ -64,6 +64,34 @@ class MySubClass extends MyClass {
     }
 }
 exports.MySubClass = MySubClass;
+let RotateBehaviour = class RotateBehaviour extends UnityEngine_1.MonoBehaviour {
+    constructor() {
+        super(...arguments);
+        this._rotation = 0;
+        this.rotationSpeed = 50;
+    }
+    Reset() {
+        this._rotation = 0;
+    }
+    Awake() {
+        let ps = this.GetComponent(UnityEngine_1.ParticleSystem);
+        if (ps) {
+            ps.main.simulationSpace = UnityEngine_1.ParticleSystemSimulationSpace.World;
+            console.log("ps.main.simulationSpace:", ps.main.simulationSpace);
+        }
+    }
+    Update() {
+        this._rotation += this.rotationSpeed * UnityEngine_1.Time.deltaTime;
+        //@ts-ignore
+        let p = UnityEngine_1.Quaternion.Euler(0, this._rotation, 0) * UnityEngine_1.Vector3.right * 5;
+        p.z *= 0.5;
+        this.transform.localPosition = p;
+    }
+};
+RotateBehaviour = __decorate([
+    inspector_1.Inspector("editor/inspector/rotate_inspector", "RotateBehaviourInspector")
+], RotateBehaviour);
+exports.RotateBehaviour = RotateBehaviour;
 if (module == require.main) {
     print("example_monobehaviour");
     let gameObject = new UnityEngine_1.GameObject();
@@ -83,6 +111,11 @@ if (module == require.main) {
     {
         let results = gameObject.GetComponents(MyClass);
         results.forEach(it => console.log("GetComponents(MyClass):", it.vv));
+    }
+    let ps = UnityEngine_1.GameObject.Find("/Particle System");
+    console.log("Particle System:", ps);
+    if (ps) {
+        ps.AddComponent(RotateBehaviour);
     }
 }
 //# sourceMappingURL=example_monobehaviour.js.map

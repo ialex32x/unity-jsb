@@ -41,6 +41,10 @@ namespace Example.Editor
             bindingManager.AddExportedType(typeof(Collider));
             bindingManager.AddExportedType(typeof(BoxCollider));
             bindingManager.AddExportedType(typeof(SphereCollider));
+            bindingManager.AddExportedType(typeof(Rigidbody));
+            bindingManager.AddExportedType(typeof(ParticleSystem));
+            bindingManager.AddExportedType(typeof(ParticleSystem.MainModule));
+            bindingManager.AddExportedType(typeof(ParticleSystemSimulationSpace));
             bindingManager.AddExportedType(typeof(System.Net.IPHostEntry)).SystemRuntime();
 
             bindingManager.AddExportedType(typeof(System.DateTime)).SystemRuntime().EnableOperatorOverloading(false);
