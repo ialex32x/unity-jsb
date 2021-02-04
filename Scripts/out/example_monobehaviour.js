@@ -113,6 +113,10 @@ if (module == require.main) {
         results.forEach(it => console.log("GetComponents(MyClass):", it.vv));
     }
     let ps = UnityEngine_1.GameObject.Find("/Particle System");
+    if (!ps) {
+        ps = new UnityEngine_1.GameObject("Particle System");
+        ps.AddComponent(UnityEngine_1.ParticleSystem);
+    }
     console.log("Particle System:", ps);
     if (ps) {
         ps.AddComponent(RotateBehaviour);

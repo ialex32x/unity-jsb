@@ -115,6 +115,10 @@ if (module == require.main) {
     }
 
     let ps = GameObject.Find("/Particle System");
+    if (!ps) {
+        ps = new GameObject("Particle System");
+        ps.AddComponent(ParticleSystem);
+    }
     console.log("Particle System:", ps);
     if (ps) {
         ps.AddComponent(RotateBehaviour);
