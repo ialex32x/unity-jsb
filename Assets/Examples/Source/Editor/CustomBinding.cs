@@ -43,6 +43,7 @@ namespace Example.Editor
             bindingManager.AddExportedType(typeof(SphereCollider));
             bindingManager.AddExportedType(typeof(Rigidbody));
             bindingManager.AddExportedType(typeof(ParticleSystem));
+            bindingManager.AddExportedType(typeof(ParticleSystemRenderer));
             bindingManager.AddExportedType(typeof(ParticleSystem.MainModule));
             bindingManager.AddExportedType(typeof(ParticleSystemSimulationSpace));
             bindingManager.AddExportedType(typeof(System.Net.IPHostEntry)).SystemRuntime();
