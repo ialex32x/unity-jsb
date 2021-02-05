@@ -67,7 +67,7 @@ namespace QuickJS.Module
             if (_modRegisters.TryGetValue(resolved_id, out moduleRegister))
             {
                 var exports_obj = JSApi.JS_NewObject(context);
-                var module_obj = context._new_commonjs_module(resolved_id, exports_obj, true);
+                var module_obj = context._new_commonjs_resolver_module(resolved_id, "static", exports_obj, true);
 
                 moduleRegister.Load(context, module_obj, exports_obj);
 

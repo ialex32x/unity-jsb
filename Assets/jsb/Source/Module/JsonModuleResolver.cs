@@ -53,7 +53,7 @@ namespace QuickJS.Module
                     return rval;
                 }
 
-                var module_obj = context._new_commonjs_module(resolved_id, rval, true);
+                var module_obj = context._new_commonjs_resolver_module(resolved_id, "json", rval, true);
                 JSApi.JS_FreeValue(ctx, module_obj);
 
                 return rval;

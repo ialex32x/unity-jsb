@@ -305,19 +305,30 @@ namespace QuickJS
             return JSApi.JS_GetProperty(_ctx, _moduleCache, prop);
         }
 
+        public JSValue _new_commonjs_resolver_module(string module_id, string resolvername, JSValue exports_obj, bool loaded)
+        {
+            return _new_commonjs_module_entry(module_id, module_id, resolvername, exports_obj, loaded);
+        }
+
         public JSValue _new_commonjs_module(string module_id, JSValue exports_obj, bool loaded)
         {
-            return _new_commonjs_module(module_id, module_id, exports_obj, loaded);
+            return _new_commonjs_module_entry(module_id, module_id, "source", exports_obj, loaded);
+        }
+
+        public JSValue _new_commonjs_module(string module_id, string filename, JSValue exports_obj, bool loaded)
+        {
+            return _new_commonjs_module_entry(module_id, filename, "source", exports_obj, loaded);
         }
 
         //NOTE: 返回值需要调用者 free
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public JSValue _new_commonjs_module(string module_id, string filename, JSValue exports_obj, bool loaded)
+        public JSValue _new_commonjs_module_entry(string module_id, string filename, string resolvername, JSValue exports_obj, bool loaded)
         {
             var module_obj = JSApi.JS_NewObject(_ctx);
             var module_id_atom = GetAtom(module_id);
             var module_id_obj = JSApi.JS_AtomToString(_ctx, module_id_atom);
             var filename_atom = GetAtom(filename);
+            var resolvername_atom = GetAtom(resolvername);
 
             JSApi.JS_SetProperty(_ctx, _moduleCache, module_id_atom, JSApi.JS_DupValue(_ctx, module_obj));
             JSApi.JS_SetProperty(_ctx, module_obj, GetAtom("id"), JSApi.JS_DupValue(_ctx, module_id_obj));
@@ -325,6 +336,7 @@ namespace QuickJS
             JSApi.JS_SetProperty(_ctx, module_obj, GetAtom("cache"), JSApi.JS_DupValue(_ctx, _moduleCache));
             JSApi.JS_SetProperty(_ctx, module_obj, GetAtom("loaded"), JSApi.JS_NewBool(_ctx, loaded));
             JSApi.JS_SetProperty(_ctx, module_obj, GetAtom("exports"), JSApi.JS_DupValue(_ctx, exports_obj));
+            JSApi.JS_SetProperty(_ctx, module_obj, GetAtom("resolvername"), JSApi.JS_AtomToString(_ctx, resolvername_atom));
             JSApi.JS_FreeValue(_ctx, module_id_obj);
 
             _loadedModuleHash[module_id] = module_id;
