@@ -117,25 +117,30 @@ namespace QuickJS
                 return JSApi.JS_UNDEFINED;
             }
 
-            int i = 0;
+            var logger = runtime.GetLogger();
+            if (logger == null)
+            {
+                return JSApi.JS_UNDEFINED;
+            }
 
+            int i = 0;
             if (magic == (int)LogLevel.Assert)
             {
                 if (JSApi.JS_ToBool(ctx, argv[0]) == 1)
                 {
                     return JSApi.JS_UNDEFINED;
                 }
+
                 i = 1;
             }
 
-            var logger = runtime.GetLogger();
-            if (logger == null)
-            {
-                return JSApi.JS_UNDEFINED;
-            }
             var sb = new StringBuilder();
             size_t str_len;
-
+            if (magic == (int)LogLevel.Assert)
+            {
+                sb.Append("Assertion failed: ");
+            }
+            
             for (; i < argc; i++)
             {
                 var pstr = JSApi.JS_ToCStringLen(ctx, out str_len, argv[i]);
@@ -158,7 +163,7 @@ namespace QuickJS
             }
 
             var logLevel = magic == -1 ? LogLevel.Info : (LogLevel)magic;
-            if (magic == -1 || logLevel > LogLevel.Warn || runtime.withStacktrace)
+            if (logLevel > LogLevel.Warn || runtime.withStacktrace)
             {
                 sb.AppendLine();
                 runtime.GetContext(ctx).AppendStacktrace(sb);
