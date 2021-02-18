@@ -144,6 +144,8 @@ namespace QuickJS.Unity
                 .SetMemberBlocked("OnRebuildRequested");
             TransformType(typeof(UnityEngine.Texture))
                 .SetMemberBlocked("imageContentsHash");
+            TransformType(typeof(UnityEngine.Texture2D))
+                .SetMemberBlocked("alphaIsTransparency"); //TODO: 增加成员的 defines 条件编译功能
             TransformType(typeof(UnityEngine.UI.Text))
                 .SetMemberBlocked("OnRebuildRequested");
             TransformType(typeof(UnityEngine.Input))
