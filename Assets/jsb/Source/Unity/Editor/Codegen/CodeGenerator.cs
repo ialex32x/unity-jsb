@@ -63,76 +63,73 @@ namespace QuickJS.Unity
                     {
                         using (new CSNamespaceCodeGen(this, typeof(Values).Namespace))
                         {
-                            using (new PreservedCodeGen(this))
+                            using (new PlainClassCodeGen(this, typeof(Values).Name))
                             {
-                                using (new PlainClassCodeGen(this, typeof(Values).Name))
+                                using (new PreservedCodeGen(this))
                                 {
-                                    using (new PreservedCodeGen(this))
-                                    {
-                                        this.cs.AppendLine("public const uint CodeGenVersion = {0};", ScriptEngine.VERSION);
-                                    }
+                                    this.cs.AppendLine("public const uint CodeGenVersion = {0};", ScriptEngine.VERSION);
+                                }
 
-                                    using (new PreservedCodeGen(this))
+                                using (new PreservedCodeGen(this))
+                                {
+                                    using (var method = new PlainMethodCodeGen(this, "private static void BindAll(ScriptRuntime runtime)"))
                                     {
-                                        using (var method = new PlainMethodCodeGen(this, "private static void BindAll(ScriptRuntime runtime)"))
+                                        var modules = from t in orderedTypes
+                                                        where t.genBindingCode
+                                                        orderby t.tsTypeNaming.jsDepth
+                                                        group t by t.tsTypeNaming.jsModule;
+
+                                        foreach (var module in modules)
                                         {
-                                            var modules = from t in orderedTypes
-                                                          where t.genBindingCode
-                                                          orderby t.tsTypeNaming.jsDepth
-                                                          group t by t.tsTypeNaming.jsModule;
-
-                                            foreach (var module in modules)
+                                            var moduleName = string.IsNullOrEmpty(module.Key) ? this.bindingManager.prefs.defaultJSModule : module.Key;
+                                            if (module.Count() > 0)
                                             {
-                                                var moduleName = string.IsNullOrEmpty(module.Key) ? this.bindingManager.prefs.defaultJSModule : module.Key;
-                                                if (module.Count() > 0)
-                                                {
-                                                    var runtimeVarName = "rt";
-                                                    var moduleVarName = "module";
-                                                    this.cs.AppendLine($"runtime.AddStaticModuleProxy(\"{moduleName}\", ({runtimeVarName}, {moduleVarName}) => ");
-                                                    this.bindingManager.callback.BeginStaticModule(moduleName);
-                                                    this.bindResult.modules.Add(moduleName);
+                                                var runtimeVarName = "rt";
+                                                var moduleVarName = "module";
+                                                this.cs.AppendLine($"runtime.AddStaticModuleProxy(\"{moduleName}\", ({runtimeVarName}, {moduleVarName}) => ");
+                                                this.bindingManager.callback.BeginStaticModule(moduleName);
+                                                this.bindResult.modules.Add(moduleName);
 
-                                                    using (this.cs.TailCallCodeBlockScope())
+                                                using (this.cs.TailCallCodeBlockScope())
+                                                {
+                                                    var editorTypesMap = new Dictionary<string, List<TypeBindingInfo>>();
+                                                    foreach (var type in module)
                                                     {
-                                                        var editorTypesMap = new Dictionary<string, List<TypeBindingInfo>>();
-                                                        foreach (var type in module)
+                                                        if (type.requiredDefines.Count != 0)
                                                         {
-                                                            if (type.requiredDefines.Count != 0)
+                                                            var defs = string.Join(" && ", from def in type.requiredDefines select def);
+                                                            List<TypeBindingInfo> list;
+                                                            if (!editorTypesMap.TryGetValue(defs, out list))
                                                             {
-                                                                var defs = string.Join(" && ", from def in type.requiredDefines select def);
-                                                                List<TypeBindingInfo> list;
-                                                                if (!editorTypesMap.TryGetValue(defs, out list))
-                                                                {
-                                                                    editorTypesMap[defs] = list = new List<TypeBindingInfo>();
-                                                                }
-                                                                list.Add(type);
+                                                                editorTypesMap[defs] = list = new List<TypeBindingInfo>();
                                                             }
-                                                            else
+                                                            list.Add(type);
+                                                        }
+                                                        else
+                                                        {
+                                                            method.AddModuleEntry(moduleName, runtimeVarName, moduleVarName, type);
+                                                        }
+                                                    }
+
+                                                    foreach (var editorTypes in editorTypesMap)
+                                                    {
+                                                        using (new EditorOnlyCodeGen(this, editorTypes.Key))
+                                                        {
+                                                            foreach (var type in editorTypes.Value)
                                                             {
                                                                 method.AddModuleEntry(moduleName, runtimeVarName, moduleVarName, type);
                                                             }
                                                         }
-
-                                                        foreach (var editorTypes in editorTypesMap)
-                                                        {
-                                                            using (new EditorOnlyCodeGen(this, editorTypes.Key))
-                                                            {
-                                                                foreach (var type in editorTypes.Value)
-                                                                {
-                                                                    method.AddModuleEntry(moduleName, runtimeVarName, moduleVarName, type);
-                                                                }
-                                                            }
-                                                        }
                                                     }
-                                                    this.bindingManager.callback.EndStaticModule(moduleName);
                                                 }
+                                                this.bindingManager.callback.EndStaticModule(moduleName);
                                             }
+                                        }
 
-                                            method.AddStatement("{0}.{1}.Bind(runtime);", this.bindingManager.prefs.ns, CodeGenerator.NameOfDelegates);
-                                        } // func: BindAll
-                                    } // 'preserved' attribute for func: BindAll
-                                } // class 
-                            } // preserved
+                                        method.AddStatement("{0}.{1}.Bind(runtime);", this.bindingManager.prefs.ns, CodeGenerator.NameOfDelegates);
+                                    } // func: BindAll
+                                } // 'preserved' attribute for func: BindAll
+                            } // class 
                         } // cs-namespace
                     } // toplevel
                 } // platform
