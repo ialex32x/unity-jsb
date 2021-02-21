@@ -1,5 +1,6 @@
     
 BUGFIX:
+    ☐ 带变参方法变参类型为Object时，存在不一致行为 (例如 Debug.LogWarningFormat)
     ☐ C# 运算符本身存在重载时，需要生成不同的绑定名
     ☐ 以 toString 形式导出的 ToString 中触发异常将导致调用栈溢出崩溃
 
