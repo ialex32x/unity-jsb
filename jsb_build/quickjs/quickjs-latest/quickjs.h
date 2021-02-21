@@ -61,7 +61,7 @@ typedef uint32_t JSAtom;
 #endif
 
 #ifndef JS_PTR64
-#define JS_NAN_BOXING
+// #define JS_NAN_BOXING
 #endif
 
 enum {
