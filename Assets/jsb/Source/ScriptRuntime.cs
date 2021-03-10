@@ -212,7 +212,13 @@ namespace QuickJS
             return bindAll;
         }
 
-        public void Initialize(IFileSystem fileSystem, IPathResolver resolver, IScriptRuntimeListener listener, IAsyncManager asyncManager, IScriptLogger logger, IO.IByteBufferAllocator byteBufferAllocator)
+        public void Initialize(ScriptRuntimeArgs args)
+        {
+            Initialize(args.fileSystem, args.pathResolver, args.listener, args.asyncManager, args.logger, args.byteBufferAllocator, args.useReflectBind);
+        }
+
+        // this method will be marked as private in the future
+        public void Initialize(IFileSystem fileSystem, IPathResolver resolver, IScriptRuntimeListener listener, IAsyncManager asyncManager, IScriptLogger logger, IO.IByteBufferAllocator byteBufferAllocator, bool useReflectBind = true)
         {
             if (fileSystem == null)
             {
@@ -228,8 +234,9 @@ namespace QuickJS
                 }
 
 #if UNITY_EDITOR
-                bindAll = GetReflectBind(logger) ?? GetStaticBind(logger);
+                bindAll = (useReflectBind ? GetReflectBind(logger) : null) ?? GetStaticBind(logger);
                 _isReflectBind = bindAll.Name == "InvokeReflectBinding";
+                logger?.Write(LogLevel.Info, _isReflectBind ? "Running in ReflectBind mode" : "Running in StaticBind mode");
 #else 
                 bindAll = GetStaticBind(logger);
 #endif

@@ -25,6 +25,8 @@ namespace Example
         public string baseUrl = "http://127.0.0.1:8183";
         [ExampleScriptsHint("Scripts/out")]
         public string entryFileName = "example_main.js";
+        [ExampleToggleHint("启用 ReflectBind")]
+        public bool useReflectBind;
         public bool sourceMap;
         public bool stacktrace;
         private ScriptRuntime _rt;
@@ -37,13 +39,13 @@ namespace Example
             _mConsole = new MiniConsole(scrollRect, text, 100);
             _rt = ScriptEngine.CreateRuntime();
             var asyncManager = new DefaultAsyncManager();
-            var fileResolver = new PathResolver();
-            fileResolver.AddSearchPath("node_modules");
+            var pathResolver = new PathResolver();
+            pathResolver.AddSearchPath("node_modules");
 
             if (fileLoader == FileLoader.Resources)
             {
                 fileSystem = new ResourcesFileSystem(_mConsole);
-                fileResolver.AddSearchPath("dist"); // 这里的路径相对于 Unity Resources 空间
+                pathResolver.AddSearchPath("dist"); // 这里的路径相对于 Unity Resources 空间
             }
             else if (fileLoader == FileLoader.HMR)
             {
@@ -54,7 +56,7 @@ namespace Example
             {
                 // 演示了一般文件系统的访问, 实际项目中典型的情况需要自行实现基于 AssetBundle(或 7z/zip) 的文件访问层
                 fileSystem = new DefaultFileSystem(_mConsole);
-                fileResolver.AddSearchPath("Scripts/out");
+                pathResolver.AddSearchPath("Scripts/out");
                 // _rt.AddSearchPath("Assets/Examples/Scripts/dist");
             }
 
@@ -63,7 +65,15 @@ namespace Example
             {
                 _rt.EnableSourceMap();
             }
-            _rt.Initialize(fileSystem, fileResolver, this, asyncManager, _mConsole, new ByteBufferPooledAllocator());
+            _rt.Initialize(new ScriptRuntimeArgs{
+                useReflectBind = useReflectBind,
+                fileSystem = fileSystem, 
+                pathResolver = pathResolver, 
+                listener = this, 
+                asyncManager = asyncManager, 
+                logger = _mConsole, 
+                byteBufferAllocator = new ByteBufferPooledAllocator()
+            });
         }
 
         void Update()
