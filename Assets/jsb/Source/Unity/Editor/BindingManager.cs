@@ -794,6 +794,11 @@ namespace QuickJS.Unity
                 return "js_get_primitive";
             }
 
+            if (type == typeof(object))
+            {
+                return "js_get_var";
+            }
+
             if (type.BaseType == typeof(MulticastDelegate))
             {
                 return "js_get_delegate";
@@ -869,7 +874,6 @@ namespace QuickJS.Unity
 
             if (type == typeof(object))
             {
-                //TODO: 改为 js_push_csharpobject
                 return "js_push_var";
             }
 
