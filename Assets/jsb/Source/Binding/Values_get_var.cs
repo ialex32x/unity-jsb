@@ -132,6 +132,11 @@ namespace QuickJS.Binding
             return NewBridgeClassObject(ctx, new_target, o, type_id, disposable);
         }
 
+        public static bool js_get_var(JSContext ctx, JSValue val, out object o)
+        {
+            return js_get_fallthrough(ctx, val, out o);
+        }
+
         // type: expected type of object o
         public static bool js_get_var(JSContext ctx, JSValue val, Type type, out object o)
         {
