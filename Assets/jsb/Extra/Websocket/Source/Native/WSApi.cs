@@ -22,7 +22,6 @@ namespace QuickJS.Extra.WebSockets
         [DllImport(WSDLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern unsafe lws_context ulws_create(byte* name, size_t len, IntPtr callback, size_t rx_buffer_size, size_t tx_packet_size);
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static lws_context ulws_create(string name, lws_callback_function callback, size_t rx_buffer_size, size_t tx_packet_size)
         {
             var fn = Marshal.GetFunctionPointerForDelegate(callback);

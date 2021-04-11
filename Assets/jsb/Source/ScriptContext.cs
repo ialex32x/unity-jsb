@@ -226,7 +226,6 @@ namespace QuickJS
         ///<summary>
         /// 获取全局对象 (增加引用计数)
         ///</summary>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public JSValue GetGlobalObject()
         {
             return JSApi.JS_DupValue(_ctx, _globalObject);
@@ -235,13 +234,11 @@ namespace QuickJS
         ///<summary>
         /// 获取 string.constructor (增加引用计数)
         ///</summary>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public JSValue GetStringConstructor()
         {
             return JSApi.JS_DupValue(_ctx, _stringConstructor);
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public JSValue GetFunctionConstructor()
         {
             return JSApi.JS_DupValue(_ctx, _functionConstructor);
@@ -250,7 +247,6 @@ namespace QuickJS
         ///<summary>
         /// 获取 number.constructor (增加引用计数)
         ///</summary>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public JSValue GetNumberConstructor()
         {
             return JSApi.JS_DupValue(_ctx, _numberConstructor);
@@ -291,14 +287,12 @@ namespace QuickJS
         ///<summary>
         /// 获取 operator.create (增加引用计数)
         ///</summary>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public JSValue GetOperatorCreate()
         {
             return JSApi.JS_DupValue(_ctx, _operatorCreate);
         }
 
         //NOTE: 返回值需要调用者 free 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public JSValue _get_commonjs_module(string module_id)
         {
             var prop = GetAtom(module_id);
@@ -321,7 +315,6 @@ namespace QuickJS
         }
 
         //NOTE: 返回值需要调用者 free
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public JSValue _new_commonjs_module_entry(string module_id, string filename, string resolvername, JSValue exports_obj, bool loaded)
         {
             var module_obj = JSApi.JS_NewObject(_ctx);

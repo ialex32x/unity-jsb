@@ -19,7 +19,6 @@ namespace QuickJS.Binding
             return val;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static unsafe bool js_rebind_this(JSContext ctx, JSValue this_obj, ref Matrix4x4 o)
         {
             var _matrix_floats_buffer = stackalloc float[16];
@@ -47,7 +46,6 @@ namespace QuickJS.Binding
             return JSApi.jsb_set_floats(this_obj, 4 * 4, _matrix_floats_buffer) == 1;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static unsafe JSValue js_push_structvalue(JSContext ctx, Matrix4x4 o)
         {
             var proto = FindPrototypeOf<Matrix4x4>(ctx);

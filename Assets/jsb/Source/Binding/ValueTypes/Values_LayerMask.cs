@@ -19,13 +19,11 @@ namespace QuickJS.Binding
             return val;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool js_rebind_this(JSContext ctx, JSValue this_obj, ref LayerMask o)
         {
             return JSApi.jsb_set_int_1(this_obj, o.value) == 1;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static JSValue js_push_structvalue(JSContext ctx, LayerMask o)
         {
             var proto = FindPrototypeOf<LayerMask>(ctx);
@@ -46,7 +44,6 @@ namespace QuickJS.Binding
             return val;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool js_get_structvalue(JSContext ctx, JSValue val, out LayerMask o)
         {
             int pres;
@@ -55,7 +52,6 @@ namespace QuickJS.Binding
             return true;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool js_get_structvalue(JSContext ctx, JSValue val, out LayerMask? o)
         {
             if (val.IsNullish())

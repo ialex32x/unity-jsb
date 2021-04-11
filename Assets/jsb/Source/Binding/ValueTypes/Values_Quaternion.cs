@@ -19,13 +19,11 @@ namespace QuickJS.Binding
             return val;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool js_rebind_this(JSContext ctx, JSValue this_obj, ref Quaternion o)
         {
             return JSApi.jsb_set_float_4(this_obj, o.x, o.y, o.z, o.w) == 1;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool js_get_structvalue(JSContext ctx, JSValue val, out Quaternion o)
         {
             float x, y, z, w;
@@ -34,7 +32,6 @@ namespace QuickJS.Binding
             return ret != 0;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool js_get_structvalue(JSContext ctx, JSValue val, out Quaternion? o)
         {
             if (val.IsNullish())
@@ -48,7 +45,6 @@ namespace QuickJS.Binding
             return ret != 0;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static JSValue js_push_structvalue(JSContext ctx, Quaternion o)
         {
             var proto = FindPrototypeOf<Quaternion>(ctx);

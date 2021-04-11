@@ -19,13 +19,11 @@ namespace QuickJS.Binding
             return val;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool js_rebind_this(JSContext ctx, JSValue this_obj, ref Vector3Int o)
         {
             return JSApi.jsb_set_int_3(this_obj, o.x, o.y, o.z) == 1;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static JSValue js_push_structvalue(JSContext ctx, Vector3Int o)
         {
             var proto = FindPrototypeOf<Vector2Int>(ctx);
@@ -34,7 +32,6 @@ namespace QuickJS.Binding
             return val;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool js_get_structvalue(JSContext ctx, JSValue val, out Vector3Int o)
         {
             int x, y, z;
@@ -43,7 +40,6 @@ namespace QuickJS.Binding
             return ret != 0;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool js_get_structvalue(JSContext ctx, JSValue val, out Vector3Int? o)
         {
             if (val.IsNullish())

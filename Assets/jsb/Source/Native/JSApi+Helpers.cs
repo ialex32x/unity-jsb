@@ -160,7 +160,6 @@ namespace QuickJS.Native
             return JSApi.JS_ThrowInternalError(ctx, "dynamic field not found");
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static string GetString(JSContext ctx, JSValue val)
         {
             size_t len;
@@ -175,7 +174,6 @@ namespace QuickJS.Native
             return str;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static unsafe string GetString(JSContext ctx, IntPtr ptr, int len)
         {
             var str = Marshal.PtrToStringAnsi(ptr, len);

@@ -10,7 +10,6 @@ namespace QuickJS.Binding
     // 处理常规值, class, struct
     public partial class Values
     {
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool js_get_primitive(JSContext ctx, JSValue val, out IntPtr o)
         {
             object o_t;
@@ -19,7 +18,6 @@ namespace QuickJS.Binding
             return ret;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool js_get_primitive(JSContext ctx, JSValue val, out IntPtr? o)
         {
             if (val.IsNullish())
@@ -74,7 +72,6 @@ namespace QuickJS.Binding
             return js_get_classvalue<IntPtr[]>(ctx, val, out o);
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool js_get_primitive(JSContext ctx, JSValue val, out bool o)
         {
 #if JSB_STRICT
@@ -89,7 +86,6 @@ namespace QuickJS.Binding
             return r >= 0;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool js_get_primitive(JSContext ctx, JSValue val, out bool? o)
         {
             if (val.IsNullish())
@@ -150,7 +146,6 @@ namespace QuickJS.Binding
             return js_get_classvalue<bool[]>(ctx, val, out o);
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool js_get_primitive(JSContext ctx, JSValue val, out sbyte o)
         {
             int pres;
@@ -159,7 +154,6 @@ namespace QuickJS.Binding
             return true;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool js_get_primitive(JSContext ctx, JSValue val, out sbyte? o)
         {
             if (val.IsNullish())
@@ -214,7 +208,6 @@ namespace QuickJS.Binding
             return js_get_classvalue<sbyte[]>(ctx, val, out o);
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool js_get_primitive(JSContext ctx, JSValue val, out byte o)
         {
             int pres;
@@ -223,7 +216,6 @@ namespace QuickJS.Binding
             return true;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool js_get_primitive(JSContext ctx, JSValue val, out byte? o)
         {
             if (val.IsNullish())
@@ -309,7 +301,6 @@ namespace QuickJS.Binding
             return js_get_classvalue<byte[]>(ctx, val, out o);
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool js_get_primitive(JSContext ctx, JSValue val, out char o)
         {
             int pres;
@@ -318,7 +309,6 @@ namespace QuickJS.Binding
             return true;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool js_get_primitive(JSContext ctx, JSValue val, out char? o)
         {
             if (val.IsNullish())
@@ -373,7 +363,6 @@ namespace QuickJS.Binding
             return js_get_classvalue<char[]>(ctx, val, out o);
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool js_get_primitive(JSContext ctx, JSValue val, out string o)
         {
             //TODO: make this behaviour configurable?
@@ -429,7 +418,6 @@ namespace QuickJS.Binding
             return js_get_classvalue<string[]>(ctx, val, out o);
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool js_get_primitive(JSContext ctx, JSValue val, out short o)
         {
             int pres;
@@ -438,7 +426,6 @@ namespace QuickJS.Binding
             return true;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool js_get_primitive(JSContext ctx, JSValue val, out short? o)
         {
             if (val.IsNullish())
@@ -493,7 +480,6 @@ namespace QuickJS.Binding
             return js_get_classvalue<short[]>(ctx, val, out o);
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool js_get_primitive(JSContext ctx, JSValue val, out ushort o)
         {
             int pres;
@@ -502,7 +488,6 @@ namespace QuickJS.Binding
             return true;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool js_get_primitive(JSContext ctx, JSValue val, out ushort? o)
         {
             if (val.IsNullish())
@@ -557,7 +542,6 @@ namespace QuickJS.Binding
             return js_get_classvalue<ushort[]>(ctx, val, out o);
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool js_get_primitive(JSContext ctx, JSValue val, out int o)
         {
             int pres;
@@ -566,7 +550,6 @@ namespace QuickJS.Binding
             return true;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool js_get_primitive(JSContext ctx, JSValue val, out int? o)
         {
             if (val.IsNullish())
@@ -621,7 +604,6 @@ namespace QuickJS.Binding
             return js_get_classvalue<int[]>(ctx, val, out o);
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool js_get_primitive(JSContext ctx, JSValue val, out uint o)
         {
             uint pres;
@@ -630,7 +612,6 @@ namespace QuickJS.Binding
             return true;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool js_get_primitive(JSContext ctx, JSValue val, out uint? o)
         {
             if (val.IsNullish())
@@ -685,7 +666,6 @@ namespace QuickJS.Binding
             return js_get_classvalue<uint[]>(ctx, val, out o);
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool js_get_primitive(JSContext ctx, JSValue val, out long o)
         {
             long pres;
@@ -694,7 +674,6 @@ namespace QuickJS.Binding
             return true;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool js_get_primitive(JSContext ctx, JSValue val, out long? o)
         {
             if (val.IsNullish())
@@ -749,7 +728,6 @@ namespace QuickJS.Binding
             return js_get_classvalue<long[]>(ctx, val, out o);
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool js_get_primitive(JSContext ctx, JSValue val, out ulong o)
         {
             ulong pres;
@@ -758,7 +736,6 @@ namespace QuickJS.Binding
             return true;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool js_get_primitive(JSContext ctx, JSValue val, out ulong? o)
         {
             if (val.IsNullish())
@@ -813,7 +790,6 @@ namespace QuickJS.Binding
             return js_get_classvalue<ulong[]>(ctx, val, out o);
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool js_get_primitive(JSContext ctx, JSValue val, out float o)
         {
 #if JSB_STRICT
@@ -829,7 +805,6 @@ namespace QuickJS.Binding
             return res == 0;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool js_get_primitive(JSContext ctx, JSValue val, out float? o)
         {
             if (val.IsNullish())
@@ -891,7 +866,6 @@ namespace QuickJS.Binding
             return js_get_classvalue<float[]>(ctx, val, out o);
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool js_get_primitive(JSContext ctx, JSValue val, out double o)
         {
             double pres;
@@ -900,7 +874,6 @@ namespace QuickJS.Binding
             return true;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool js_get_primitive(JSContext ctx, JSValue val, out double? o)
         {
             if (val.IsNullish())
@@ -956,7 +929,6 @@ namespace QuickJS.Binding
         }
 
         // fallthrough
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool js_get_structvalue<T>(JSContext ctx, JSValue val, out T o)
         where T : struct
         {
@@ -966,7 +938,6 @@ namespace QuickJS.Binding
             return ret;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool js_get_structvalue<T>(JSContext ctx, JSValue val, out T? o)
         where T : struct
         {
@@ -1367,7 +1338,6 @@ namespace QuickJS.Binding
             return js_get_classvalue<T[]>(ctx, val, out o);
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool js_get_enumvalue<T>(JSContext ctx, JSValue val, out T o)
         where T : Enum
         {

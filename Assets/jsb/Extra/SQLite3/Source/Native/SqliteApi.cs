@@ -277,7 +277,6 @@ namespace QuickJS.Extra.Sqlite.Native
 
         #region helpers
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static byte[] GetNullTerminatedBytes(string str)
         {
             if (str == null)
@@ -298,7 +297,6 @@ namespace QuickJS.Extra.Sqlite.Native
             return bytes;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static unsafe string GetString(IntPtr ptr, int len)
         {
             var str = Marshal.PtrToStringAnsi(ptr, len);

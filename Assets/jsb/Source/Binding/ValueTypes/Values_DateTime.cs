@@ -19,13 +19,11 @@ namespace QuickJS.Binding
             return val;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static unsafe bool js_rebind_this(JSContext ctx, JSValue this_obj, ref DateTime o)
         {
             return JSApi.jsb_set_bytes(this_obj, o.Ticks) == 1;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static unsafe JSValue js_push_structvalue(JSContext ctx, DateTime o)
         {
             var proto = FindPrototypeOf<DateTime>(ctx);
@@ -34,7 +32,6 @@ namespace QuickJS.Binding
             return val;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static unsafe bool js_get_structvalue(JSContext ctx, JSValue val, out DateTime o)
         {
             long p;
@@ -43,7 +40,6 @@ namespace QuickJS.Binding
             return ret != 0;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static unsafe bool js_get_structvalue(JSContext ctx, JSValue val, out DateTime? o)
         {
             if (val.IsNullish())

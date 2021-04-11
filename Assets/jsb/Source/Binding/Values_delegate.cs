@@ -27,7 +27,6 @@ namespace QuickJS.Binding
             }
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static JSValue js_push_delegate(JSContext ctx, Delegate o)
         {
             if (o == null)

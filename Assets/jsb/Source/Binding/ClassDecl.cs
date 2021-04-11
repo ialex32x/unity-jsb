@@ -161,7 +161,6 @@ namespace QuickJS.Binding
             JSApi.JS_DefinePropertyValue(_context, bStatic ? _ctor : _proto, nameAtom, funcVal, JSPropFlags.DEFAULT);
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void AddField(bool bStatic, string name, JSGetterCFunction getter, JSSetterCFunction setter)
         {
             AddProperty(bStatic, name, getter, setter);

@@ -19,7 +19,6 @@ namespace QuickJS.Binding
             return val;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static unsafe bool js_rebind_this(JSContext ctx, JSValue this_obj, ref Bounds o)
         {
             var data = stackalloc float[6];
@@ -51,7 +50,6 @@ namespace QuickJS.Binding
             return val;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static unsafe bool js_get_structvalue(JSContext ctx, JSValue val, out Bounds o)
         {
             var data = stackalloc float[6];
@@ -60,7 +58,6 @@ namespace QuickJS.Binding
             return ret != 0;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static unsafe bool js_get_structvalue(JSContext ctx, JSValue val, out Bounds? o)
         {
             if (val.IsNullish())

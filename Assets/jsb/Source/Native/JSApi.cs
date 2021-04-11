@@ -134,13 +134,11 @@ namespace QuickJS.Native
 
         public static readonly JSValue[] EmptyValues = new JSValue[0];
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool JS_VALUE_HAS_REF_COUNT(JSValue v)
         {
             return (ulong)v.tag >= unchecked((ulong)JS_TAG_FIRST);
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static JSValue JS_MKVAL(long tag, int val)
         {
             return new JSValue() { u = new JSValueUnion() { int32 = val }, tag = tag };
@@ -202,14 +200,12 @@ namespace QuickJS.Native
         [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern void JS_SetHostPromiseRejectionTracker(JSRuntime rt, IntPtr cb, IntPtr opaque);
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void JS_SetHostPromiseRejectionTracker(JSRuntime rt, JSHostPromiseRejectionTracker cb, IntPtr opaque)
         {
             var fn = Marshal.GetFunctionPointerForDelegate(cb);
             JS_SetHostPromiseRejectionTracker(rt, fn, opaque);
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static unsafe JSValue JS_NewPromiseCapability(JSContext ctx, JSValue[] resolving_funcs)
         {
             fixed (JSValue* ptr = resolving_funcs)
@@ -227,7 +223,6 @@ namespace QuickJS.Native
             JSValueConst receiver, JS_BOOL throw_ref_error);
 
         // 增引用, 需要 FreeValue
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static JSValue JS_GetProperty(JSContext ctx, JSValueConst this_obj, JSAtom prop)
         {
             return JS_GetPropertyInternal(ctx, this_obj, prop, this_obj, 0);
@@ -287,7 +282,6 @@ namespace QuickJS.Native
         [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern unsafe JSValue JSB_ThrowTypeError(JSContext ctx, byte* msg);
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static unsafe JSValue JS_ThrowTypeError(JSContext ctx, string message)
         {
             var bytes = Utils.TextUtils.GetNullTerminatedBytes(message);
@@ -300,7 +294,6 @@ namespace QuickJS.Native
         [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern unsafe JSValue JSB_ThrowInternalError(JSContext ctx, byte* msg);
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static unsafe JSValue JS_ThrowInternalError(JSContext ctx, string message)
         {
             if (string.IsNullOrEmpty(message))
@@ -315,7 +308,6 @@ namespace QuickJS.Native
             }
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static unsafe JSValue ThrowException(JSContext ctx, Exception exception)
         {
             return JS_ThrowInternalError(ctx, exception.ToString());
@@ -328,7 +320,6 @@ namespace QuickJS.Native
         [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern unsafe JSValue JSB_ThrowRangeError(JSContext ctx, byte* msg);
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static unsafe JSValue JS_ThrowRangeError(JSContext ctx, string message)
         {
             var bytes = Utils.TextUtils.GetNullTerminatedBytes(message);
@@ -341,7 +332,6 @@ namespace QuickJS.Native
         [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern unsafe JSValue JSB_ThrowReferenceError(JSContext ctx, byte* msg);
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static unsafe JSValue JS_ThrowReferenceError(JSContext ctx, string message)
         {
             var bytes = Utils.TextUtils.GetNullTerminatedBytes(message);
@@ -400,19 +390,16 @@ namespace QuickJS.Native
         [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern JSValue JS_NewBigInt64(JSContext ctx, int64_t v);
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static JSValue JS_NewBool(JSContext ctx, bool val)
         {
             return val ? JS_TRUE : JS_FALSE;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static JSValue JS_NewInt32(JSContext ctx, int val)
         {
             return JS_MKVAL(JS_TAG_INT, val);
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static JSValue __JS_NewFloat64(JSContext ctx, double d)
         {
             JSValue v = new JSValue();
@@ -421,7 +408,6 @@ namespace QuickJS.Native
             return v;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static JSValue JS_NewUint32(JSContext ctx, uint32_t val)
         {
             JSValue v;
@@ -518,7 +504,6 @@ namespace QuickJS.Native
         public static extern JSValue JSB_NewCFunction(JSContext ctx, IntPtr func, JSAtom atom, int length,
             JSCFunctionEnum cproto, int magic);
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static JSValue JSB_NewCFunction(JSContext ctx, JSCFunction func, JSAtom atom, int length,
             JSCFunctionEnum cproto, int magic)
         {
@@ -526,7 +511,6 @@ namespace QuickJS.Native
             return JSB_NewCFunction(ctx, fn, atom, length, cproto, magic);
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static JSValue JSB_NewCFunction(JSContext ctx, JSCFunctionMagic func, JSAtom atom, int length,
             JSCFunctionEnum cproto, int magic)
         {
@@ -534,28 +518,24 @@ namespace QuickJS.Native
             return JSB_NewCFunction(ctx, fn, atom, length, cproto, magic);
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static JSValue JSB_NewCFunction(JSContext ctx, JSGetterCFunction func, JSAtom atom)
         {
             var fn = Marshal.GetFunctionPointerForDelegate(func);
             return JSB_NewCFunction(ctx, fn, atom, 0, JSCFunctionEnum.JS_CFUNC_getter, 0);
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static JSValue JSB_NewCFunction(JSContext ctx, JSSetterCFunction func, JSAtom atom)
         {
             var fn = Marshal.GetFunctionPointerForDelegate(func);
             return JSB_NewCFunction(ctx, fn, atom, 1, JSCFunctionEnum.JS_CFUNC_setter, 0);
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static JSValue JSB_NewCFunction(JSContext ctx, JSGetterCFunctionMagic func, JSAtom atom, int magic)
         {
             var fn = Marshal.GetFunctionPointerForDelegate(func);
             return JSB_NewCFunction(ctx, fn, atom, 0, JSCFunctionEnum.JS_CFUNC_getter_magic, magic);
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static JSValue JSB_NewCFunction(JSContext ctx, JSSetterCFunctionMagic func, JSAtom atom, int magic)
         {
             var fn = Marshal.GetFunctionPointerForDelegate(func);
@@ -567,7 +547,6 @@ namespace QuickJS.Native
         public static extern JSValue JSB_NewCFunctionMagic(JSContext ctx, IntPtr func, JSAtom atom, int length,
             JSCFunctionEnum cproto, int magic);
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static JSValue JSB_NewCFunctionMagic(JSContext ctx, JSCFunctionMagic func, JSAtom atom, int length,
             JSCFunctionEnum cproto, int magic)
         {
@@ -580,7 +559,6 @@ namespace QuickJS.Native
             [MarshalAs(UnmanagedType.LPStr)] string name,
             int length, JSCFunctionEnum cproto, int magic);
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static JSValue JS_NewCFunctionMagic(JSContext ctx, JSCFunctionMagic func,
             [MarshalAs(UnmanagedType.LPStr)] string name,
             int length, JSCFunctionEnum cproto, int magic)
@@ -589,7 +567,6 @@ namespace QuickJS.Native
             return JS_NewCFunction2(ctx, fn, name, length, cproto, magic);
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static JSValue JS_NewCFunction2(JSContext ctx, JSCFunction func, string name, int length,
             JSCFunctionEnum cproto, int magic)
         {
@@ -625,7 +602,6 @@ namespace QuickJS.Native
         public static extern int JS_SetPropertyInternal(JSContext ctx, JSValueConst this_obj, JSAtom prop, JSValue val,
             int flags);
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int JS_SetProperty(JSContext ctx, JSValueConst this_obj, JSAtom prop, JSValue val)
         {
             return JS_SetPropertyInternal(ctx, this_obj, prop, val, (int)JSPropFlags.JS_PROP_THROW);
@@ -668,7 +644,6 @@ namespace QuickJS.Native
         [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern unsafe JSValue JS_CallConstructor(JSContext ctx, JSValueConst func_obj, int argc, JSValueConst* argv);
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static unsafe JSValue JS_CallConstructor(JSContext ctx, JSValueConst func_obj)
         {
             return JS_CallConstructor(ctx, func_obj, 0, (JSValueConst*)0);
@@ -679,13 +654,11 @@ namespace QuickJS.Native
             int argc, [MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 3)]
             JSValueConst[] argv);
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static unsafe JSValue JS_Call(JSContext ctx, JSValueConst func_obj, JSValueConst this_obj)
         {
             return JS_Call(ctx, func_obj, this_obj, 0, (JSValueConst*)0);
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static unsafe JSValue JS_Call(JSContext ctx, JSValueConst func_obj)
         {
             return JS_Call(ctx, func_obj, JS_UNDEFINED, 0, (JSValueConst*)0);
@@ -775,77 +748,65 @@ namespace QuickJS.Native
         [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern int JS_ResolveModule(JSContext ctx, JSValueConst obj);
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool JS_IsNumber(JSValueConst v)
         {
             var tag = v.tag;
             return tag == JS_TAG_INT || tag == JS_TAG_FLOAT64;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool JS_IsBigInt(JSContext ctx, JSValueConst v)
         {
             var tag = v.tag;
             return tag == JS_TAG_BIG_INT;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool JS_IsBigFloat(JSValueConst v)
         {
             var tag = v.tag;
             return tag == JS_TAG_BIG_FLOAT;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool JS_IsBigDecimal(JSValueConst v)
         {
             var tag = v.tag;
             return tag == JS_TAG_BIG_DECIMAL;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool JS_IsBool(JSValueConst v)
         {
             return v.tag == JS_TAG_BOOL;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool JS_IsNull(JSValueConst v)
         {
             return v.tag == JS_TAG_NULL;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool JS_IsUndefined(JSValueConst v)
         {
             return v.tag == JS_TAG_UNDEFINED;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool JS_IsException(JSValueConst v)
         {
             return (v.tag == JS_TAG_EXCEPTION);
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool JS_IsUninitialized(JSValueConst v)
         {
             return (v.tag == JS_TAG_UNINITIALIZED);
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool JS_IsString(JSValueConst v)
         {
             return v.tag == JS_TAG_STRING;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool JS_IsSymbol(JSValueConst v)
         {
             return v.tag == JS_TAG_SYMBOL;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool JS_IsObject(JSValueConst v)
         {
             return v.tag == JS_TAG_OBJECT;
@@ -982,7 +943,6 @@ namespace QuickJS.Native
         public static extern IntPtr JS_ToCStringLen2(JSContext ctx, out size_t len, [In] JSValue val,
             [MarshalAs(UnmanagedType.Bool)] bool cesu8);
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static IntPtr JS_ToCStringLen(JSContext ctx, out size_t len, JSValue val)
         {
             return JS_ToCStringLen2(ctx, out len, val, false);
@@ -1000,7 +960,6 @@ namespace QuickJS.Native
         public static extern void JS_SetModuleLoaderFunc(JSRuntime rt, IntPtr module_normalize,
             IntPtr module_loader, IntPtr opaque);
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void JS_SetModuleLoaderFunc(JSRuntime rt,
             JSModuleNormalizeFunc module_normalize,
             JSModuleLoaderFunc module_loader, IntPtr opaque)
@@ -1028,7 +987,6 @@ namespace QuickJS.Native
         [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern unsafe IntPtr js_strndup(JSContext ctx, byte* s, size_t n);
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static unsafe IntPtr js_strndup(JSContext ctx, string str)
         {
             var bytes = Utils.TextUtils.GetNullTerminatedBytes(str);
@@ -1058,7 +1016,6 @@ namespace QuickJS.Native
         [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
         private static extern unsafe void JS_SetInterruptHandler(JSRuntime rt, IntPtr cb, IntPtr opaque);
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void JS_SetInterruptHandler(JSRuntime rt, JSInterruptHandler cb, IntPtr opaque)
         {
             var fn = Marshal.GetFunctionPointerForDelegate(cb);

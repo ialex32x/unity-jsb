@@ -19,7 +19,6 @@ namespace QuickJS.Binding
             return val;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool js_rebind_this(JSContext ctx, JSValue this_obj, ref Rect o)
         {
             return JSApi.jsb_set_float_4(this_obj, o.x, o.y, o.width, o.height) == 1;
@@ -46,7 +45,6 @@ namespace QuickJS.Binding
             return val;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool js_get_structvalue(JSContext ctx, JSValue val, out Rect o)
         {
             float x, y, z, w;
@@ -55,7 +53,6 @@ namespace QuickJS.Binding
             return ret != 0;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool js_get_structvalue(JSContext ctx, JSValue val, out Rect? o)
         {
             if (val.IsNullish())

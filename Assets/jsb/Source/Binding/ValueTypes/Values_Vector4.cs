@@ -19,13 +19,11 @@ namespace QuickJS.Binding
             return val;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool js_rebind_this(JSContext ctx, JSValue this_obj, ref Vector4 o)
         {
             return JSApi.jsb_set_float_4(this_obj, o.x, o.y, o.z, o.w) == 1;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static JSValue js_push_structvalue(JSContext ctx, Vector4 o)
         {
             var proto = FindPrototypeOf<Vector4>(ctx);
@@ -47,7 +45,6 @@ namespace QuickJS.Binding
             return val;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool js_get_structvalue(JSContext ctx, JSValue val, out Vector4 o)
         {
             float x, y, z, w;
@@ -56,7 +53,6 @@ namespace QuickJS.Binding
             return ret != 0;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool js_get_structvalue(JSContext ctx, JSValue val, out Vector4? o)
         {
             if (val.IsNullish())

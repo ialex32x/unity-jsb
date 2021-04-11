@@ -19,7 +19,6 @@ namespace QuickJS.Binding
             return val;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static unsafe bool js_rebind_this(JSContext ctx, JSValue this_obj, ref Ray o)
         {
             var buffer = stackalloc float[6];
@@ -34,7 +33,6 @@ namespace QuickJS.Binding
             return JSApi.jsb_set_floats(this_obj, 6, buffer) == 1;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static unsafe bool js_get_structvalue(JSContext ctx, JSValue val, out Ray o)
         {
             var buffer = stackalloc float[6];
@@ -44,7 +42,6 @@ namespace QuickJS.Binding
             return ret != 0;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static unsafe JSValue js_push_structvalue(JSContext ctx, Ray o)
         {
             var proto = FindPrototypeOf<Ray>(ctx);

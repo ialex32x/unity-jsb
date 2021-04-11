@@ -20,58 +20,49 @@ namespace QuickJS.Native
         public JSValueUnion u; // IntPtr
         public long tag;
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool IsException()
         {
             // return JSApi.JS_IsException(this);
             return tag == JSApi.JS_TAG_EXCEPTION;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool IsModule()
         {
             return tag == JSApi.JS_TAG_MODULE;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool IsNullish()
         {
             // return JSApi.JS_IsNull(this) || JSApi.JS_IsUndefined(this);
             return tag == JSApi.JS_TAG_NULL || tag == JSApi.JS_TAG_UNDEFINED;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool IsNull()
         {
             return tag == JSApi.JS_TAG_NULL;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool IsUndefined()
         {
             return tag == JSApi.JS_TAG_UNDEFINED;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool IsBoolean()
         {
             return tag == JSApi.JS_TAG_BOOL;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool IsString()
         {
             return tag == JSApi.JS_TAG_STRING;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool IsNumber()
         {
             // return JSApi.JS_IsNumber(this);
             return tag == JSApi.JS_TAG_INT || tag == JSApi.JS_TAG_FLOAT64;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool IsObject()
         {
             // return JSApi.JS_IsObject(this);

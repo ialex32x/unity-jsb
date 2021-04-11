@@ -77,7 +77,6 @@ namespace QuickJS.Binding
             return types.FindChainedPrototypeOf(typeof(T), out type_id);
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static JSValue FindPrototypeOf(JSContext ctx, Type type)
         {
             int type_id;
@@ -85,7 +84,6 @@ namespace QuickJS.Binding
             return types.FindChainedPrototypeOf(type, out type_id);
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         protected static bool js_script_error(JSContext ctx)
         {
             var logger = ScriptEngine.GetLogger(ctx);
