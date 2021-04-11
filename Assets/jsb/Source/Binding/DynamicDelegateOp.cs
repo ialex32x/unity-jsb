@@ -47,7 +47,7 @@ namespace QuickJS.Binding
                             Delegate value;
                             if (!Values.js_get_delegate(ctx, argv[1], delegateType, out value))
                             {
-                                throw new ParameterException(typeof(Example.DelegateTest), _varName, delegateType, 1);
+                                throw new ParameterException(_type.type, _varName, delegateType, 1);
                             }
                             var fValue = (Delegate)_fieldInfo.GetValue(self);
                             _fieldInfo.SetValue(self, Delegate.Combine(fValue, value));
@@ -58,7 +58,7 @@ namespace QuickJS.Binding
                             Delegate value;
                             if (!Values.js_get_delegate(ctx, argv[1], delegateType, out value))
                             {
-                                throw new ParameterException(typeof(Example.DelegateTest), _varName, delegateType, 1);
+                                throw new ParameterException(_type.type, _varName, delegateType, 1);
                             }
                             var fValue = (Delegate)_fieldInfo.GetValue(self);
                             _fieldInfo.SetValue(self, Delegate.Remove(fValue, value));
@@ -69,7 +69,7 @@ namespace QuickJS.Binding
                             Delegate value;
                             if (!Values.js_get_delegate(ctx, argv[1], delegateType, out value))
                             {
-                                throw new ParameterException(typeof(Example.DelegateTest), _varName, delegateType, 1);
+                                throw new ParameterException(_type.type, _varName, delegateType, 1);
                             }
                             _fieldInfo.SetValue(self, value);
                             return JSApi.JS_UNDEFINED;
@@ -136,7 +136,7 @@ namespace QuickJS.Binding
                             Delegate value;
                             if (!Values.js_get_delegate(ctx, argv[1], delegateType, out value))
                             {
-                                throw new ParameterException(typeof(Example.DelegateTest), _varName, delegateType, 1);
+                                throw new ParameterException(_type.type, _varName, delegateType, 1);
                             }
                             var fValue = (Delegate)_propertyInfo.GetValue(self);
                             _propertyInfo.SetValue(self, Delegate.Combine(fValue, value));
@@ -167,7 +167,7 @@ namespace QuickJS.Binding
                             Delegate value;
                             if (!Values.js_get_delegate(ctx, argv[1], delegateType, out value))
                             {
-                                throw new ParameterException(typeof(Example.DelegateTest), _varName, delegateType, 1);
+                                throw new ParameterException(_type.type, _varName, delegateType, 1);
                             }
                             var fValue = (Delegate)_propertyInfo.GetValue(self);
                             _propertyInfo.SetValue(self, Delegate.Remove(fValue, value));
@@ -198,7 +198,7 @@ namespace QuickJS.Binding
                             Delegate value;
                             if (!Values.js_get_delegate(ctx, argv[1], delegateType, out value))
                             {
-                                throw new ParameterException(typeof(Example.DelegateTest), _varName, delegateType, 1);
+                                throw new ParameterException(_type.type, _varName, delegateType, 1);
                             }
                             _propertyInfo.SetValue(self, value);
                             return JSApi.JS_UNDEFINED;
@@ -285,7 +285,7 @@ namespace QuickJS.Binding
                             Delegate value;
                             if (!Values.js_get_delegate(ctx, argv[1], delegateType, out value))
                             {
-                                throw new ParameterException(typeof(Example.DelegateTest), _varName, delegateType, 1);
+                                throw new ParameterException(_type.type, _varName, delegateType, 1);
                             }
                             _eventInfo.AddEventHandler(self, value);
                             return JSApi.JS_UNDEFINED;
@@ -315,7 +315,7 @@ namespace QuickJS.Binding
                             Delegate value;
                             if (!Values.js_get_delegate(ctx, argv[1], delegateType, out value))
                             {
-                                throw new ParameterException(typeof(Example.DelegateTest), _varName, delegateType, 1);
+                                throw new ParameterException(_type.type, _varName, delegateType, 1);
                             }
                             _eventInfo.RemoveEventHandler(self, value);
                             return JSApi.JS_UNDEFINED;
