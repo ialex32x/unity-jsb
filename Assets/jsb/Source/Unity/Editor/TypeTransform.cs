@@ -168,32 +168,32 @@ namespace QuickJS.Unity
         #region Extension Method Management
         public TypeTransform AddExtensionMethod<T>(Action<T> method, string tsDecl = null)
         {
-            return AddExtensionMethod(method.GetMethodInfo(), tsDecl);
+            return AddExtensionMethod(method.Method, tsDecl);
         }
 
         public TypeTransform AddExtensionMethod<T1, T2>(Action<T1, T2> method, string tsDecl = null)
         {
-            return AddExtensionMethod(method.GetMethodInfo(), tsDecl);
+            return AddExtensionMethod(method.Method, tsDecl);
         }
 
         public TypeTransform AddExtensionMethod<T1, T2, T3>(Action<T1, T2, T3> method, string tsDecl = null)
         {
-            return AddExtensionMethod(method.GetMethodInfo(), tsDecl);
+            return AddExtensionMethod(method.Method, tsDecl);
         }
 
         public TypeTransform AddExtensionMethod<TResult>(Func<TResult> method, string tsDecl = null)
         {
-            return AddExtensionMethod(method.GetMethodInfo(), tsDecl);
+            return AddExtensionMethod(method.Method, tsDecl);
         }
 
         public TypeTransform AddExtensionMethod<T1, TResult>(Func<T1, TResult> method, string tsDecl = null)
         {
-            return AddExtensionMethod(method.GetMethodInfo(), tsDecl);
+            return AddExtensionMethod(method.Method, tsDecl);
         }
 
         public TypeTransform AddExtensionMethod<T1, T2, TResult>(Func<T1, T2, TResult> method, string tsDecl = null)
         {
-            return AddExtensionMethod(method.GetMethodInfo(), tsDecl);
+            return AddExtensionMethod(method.Method, tsDecl);
         }
 
         public TypeTransform AddExtensionMethod(MethodInfo method, string tsDecl = null)
@@ -212,37 +212,37 @@ namespace QuickJS.Unity
         #region Extended Static Method Management
         public TypeTransform AddStaticMethod<T>(Action<T> method, string tsDecl = null)
         {
-            return AddStaticMethod(method.GetMethodInfo(), tsDecl);
+            return AddStaticMethod(method.Method, tsDecl);
         }
 
         public TypeTransform AddStaticMethod<T1, T2>(Action<T1, T2> method, string tsDecl = null)
         {
-            return AddStaticMethod(method.GetMethodInfo(), tsDecl);
+            return AddStaticMethod(method.Method, tsDecl);
         }
 
         public TypeTransform AddStaticMethod<T1, T2, T3>(Action<T1, T2, T3> method, string tsDecl = null)
         {
-            return AddStaticMethod(method.GetMethodInfo(), tsDecl);
+            return AddStaticMethod(method.Method, tsDecl);
         }
 
         public TypeTransform AddStaticMethod<TResult>(Func<TResult> method, string tsDecl = null)
         {
-            return AddStaticMethod(method.GetMethodInfo(), tsDecl);
+            return AddStaticMethod(method.Method, tsDecl);
         }
 
         public TypeTransform AddStaticMethod<T1, TResult>(Func<T1, TResult> method, string tsDecl = null)
         {
-            return AddStaticMethod(method.GetMethodInfo(), tsDecl);
+            return AddStaticMethod(method.Method, tsDecl);
         }
 
         public TypeTransform AddStaticMethod<T1, T2, TResult>(Func<T1, T2, TResult> method, string tsDecl = null)
         {
-            return AddStaticMethod(method.GetMethodInfo(), tsDecl);
+            return AddStaticMethod(method.Method, tsDecl);
         }
 
         public TypeTransform AddStaticMethod(Native.JSCFunction method, string tsDecl = null)
         {
-            return AddStaticMethod(method.GetMethodInfo(), tsDecl);
+            return AddStaticMethod(method.Method, tsDecl);
         }
 
         public TypeTransform AddStaticMethod(MethodInfo method, string tsDecl = null)
