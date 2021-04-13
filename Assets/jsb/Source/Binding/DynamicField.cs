@@ -83,16 +83,17 @@ namespace QuickJS.Binding
 
         public JSValue GetValue(JSContext ctx, JSValue this_obj)
         {
-            if (_propertyInfo.GetMethod == null)
+            var propInfoGetMethod = _propertyInfo.GetGetMethod(true);
+            if (propInfoGetMethod == null)
             {
                 throw new NullReferenceException("property getter is null");
             }
-            if (!_propertyInfo.GetMethod.IsPublic && !_type.privateAccess)
+            if (!propInfoGetMethod.IsPublic && !_type.privateAccess)
             {
                 throw new InaccessibleMemberException(_propertyInfo.Name);
             }
             object self = null;
-            if (!_propertyInfo.GetMethod.IsStatic)
+            if (!propInfoGetMethod.IsStatic)
             {
                 if (!Values.js_get_var(ctx, this_obj, _type.type, out self) || !_type.CheckThis(self))
                 {
@@ -106,16 +107,17 @@ namespace QuickJS.Binding
 
         public JSValue SetValue(JSContext ctx, JSValue this_obj, JSValue val)
         {
-            if (_propertyInfo.SetMethod == null)
+            var propInfoSetMethod = _propertyInfo.GetSetMethod(true);
+            if (propInfoSetMethod == null)
             {
                 throw new NullReferenceException("property setter is null");
             }
-            if (!_propertyInfo.SetMethod.IsPublic && !_type.privateAccess)
+            if (!propInfoSetMethod.IsPublic && !_type.privateAccess)
             {
                 throw new InaccessibleMemberException(_propertyInfo.Name);
             }
             object self = null;
-            if (!_propertyInfo.SetMethod.IsStatic)
+            if (!propInfoSetMethod.IsStatic)
             {
                 if (!Values.js_get_var(ctx, this_obj, _type.type, out self) || !_type.CheckThis(self))
                 {
@@ -128,7 +130,7 @@ namespace QuickJS.Binding
                 throw new InvalidCastException();
             }
             _propertyInfo.SetValue(self, t_val);
-            if (_type.type.IsValueType && !_propertyInfo.SetMethod.IsStatic)
+            if (_type.type.IsValueType && !propInfoSetMethod.IsStatic)
             {
                 Values.js_rebind_var(ctx, this_obj, _type.type, self);
             }
