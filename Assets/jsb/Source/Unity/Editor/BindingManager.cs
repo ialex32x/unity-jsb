@@ -119,9 +119,6 @@ namespace QuickJS.Unity
             ;
 
             // SetTypeBlocked(typeof(RendererExtensions));
-            SetTypeBlocked(typeof(UnityEngine.UI.ILayoutGroup));
-            SetTypeBlocked(typeof(UnityEngine.UI.ILayoutSelfController));
-
             TransformType(typeof(UnityEngine.Events.UnityEvent<>))
                 .Rename("UnityEvent1");
 
@@ -134,20 +131,10 @@ namespace QuickJS.Unity
             TransformType(typeof(UnityEngine.Events.UnityEvent<,,,>))
                 .Rename("UnityEvent4");
 
-            TransformType(typeof(UnityEngine.UI.PositionAsUV1))
-                .SetMemberBlocked("ModifyMesh");
-            TransformType(typeof(UnityEngine.UI.Shadow))
-                .SetMemberBlocked("ModifyMesh");
-            TransformType(typeof(UnityEngine.UI.Outline))
-                .SetMemberBlocked("ModifyMesh");
-            TransformType(typeof(UnityEngine.UI.Graphic))
-                .SetMemberBlocked("OnRebuildRequested");
             TransformType(typeof(UnityEngine.Texture))
                 .SetMemberBlocked("imageContentsHash");
             TransformType(typeof(UnityEngine.Texture2D))
                 .SetMemberBlocked("alphaIsTransparency"); //TODO: 增加成员的 defines 条件编译功能
-            TransformType(typeof(UnityEngine.UI.Text))
-                .SetMemberBlocked("OnRebuildRequested");
             TransformType(typeof(UnityEngine.Input))
                 .SetMemberBlocked("IsJoystickPreconfigured"); // specific platform available only
             TransformType(typeof(UnityEngine.MonoBehaviour))
