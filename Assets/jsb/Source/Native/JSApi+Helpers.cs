@@ -179,6 +179,26 @@ namespace QuickJS.Native
             }
         }
 
+        public static unsafe void MemoryCopy(void* source, void* destination, long destinationSizeInBytes, long sourceBytesToCopy)
+        {
+#if JSB_COMPATIBLE
+            if (sourceBytesToCopy > destinationSizeInBytes)
+            {
+                throw new ArgumentOutOfRangeException();
+            }
+
+            var pSource = (byte*)source;
+            var pDestination = (byte*)destination;
+
+            for (int i = 0; i < sourceBytesToCopy; ++i)
+            {
+                pDestination[i] = pSource[i];
+            }
+#else
+            Buffer.MemoryCopy(source, destination, destinationSizeInBytes, sourceBytesToCopy);
+#endif
+        }
+
         public static unsafe string GetString(JSContext ctx, IntPtr ptr, int len)
         {
             if (len > 0)
@@ -186,7 +206,7 @@ namespace QuickJS.Native
                 var str = Marshal.PtrToStringAnsi(ptr, len);
                 if (str == null)
                 {
-#if JSB_MARSHAL_STRING
+#if JSB_COMPATIBLE
                     var buffer = new byte[len];
                     Marshal.Copy(ptr, buffer, 0, len);
                     return Encoding.UTF8.GetString(buffer);

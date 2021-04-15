@@ -24,8 +24,9 @@ namespace QuickJS.Binding
             var data = stackalloc float[6];
             var center = o.center;
             var size = o.size;
-            Buffer.MemoryCopy(&center.x, data, sizeof(float) * 3, sizeof(float) * 3);
-            Buffer.MemoryCopy(&size.x, data + 3, sizeof(float) * 3, sizeof(float) * 3);
+            
+            JSApi.MemoryCopy(&center.x, data, sizeof(float) * 3, sizeof(float) * 3);
+            JSApi.MemoryCopy(&size.x, data + 3, sizeof(float) * 3, sizeof(float) * 3);
             return JSApi.jsb_set_floats(this_obj, 6, data) == 1;
         }
 

@@ -70,10 +70,14 @@ namespace QuickJS.Unity
                 var task = awaitObject as System.Threading.Tasks.Task;
                 var runtime = context.GetRuntime();
 
+#if JSB_COMPATIBLE
+                task.ContinueWith(antecedent => runtime.EnqueueAction(_OnTaskCompleted, new JSTaskCompletionArgs(task, safeRelease)));
+#else
                 task.GetAwaiter().OnCompleted(() =>
                 {
                     runtime.EnqueueAction(_OnTaskCompleted, new JSTaskCompletionArgs(task, safeRelease));
                 });
+#endif
                 return promise;
             }
             else if (awaitObject is IEnumerator)

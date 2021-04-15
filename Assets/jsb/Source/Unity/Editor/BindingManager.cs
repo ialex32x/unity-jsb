@@ -729,11 +729,22 @@ namespace QuickJS.Unity
                     {
                         return genMethod;
                     }
-                    var types = (from p in parameters select p.ParameterType).Append(returnType).ToArray();
+                    var types = AppendEnumerable(from p in parameters select p.ParameterType, returnType);
                     return genMethod.MakeGenericMethod(types);
                 }
             }
             return null;
+        }
+
+        public static T[] AppendEnumerable<T>(IEnumerable<T> e, T item)
+        {
+#if JSB_COMPATIBLE
+            var list = e.ToList();
+            list.Add(item);
+            return list.ToArray();
+#else
+            return e.Append(item).ToArray();
+#endif
         }
 
         public bool IsExported(Type type)
