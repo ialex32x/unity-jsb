@@ -108,23 +108,25 @@ namespace QuickJS.Binding
             {
                 var op = Values.js_parse_event_op(ctx, argv[0]);
                 var delegateType = _propertyInfo.PropertyType;
+                var propInfoGetMethod = _propertyInfo.GetGetMethod(true);
+                var propInfoSetMethod = _propertyInfo.GetSetMethod(true);
 
                 switch (op)
                 {
                     case Values.EVT_OP_ADD:
                         {
-                            if (_propertyInfo.GetMethod == null || _propertyInfo.SetMethod == null)
+                            if (propInfoGetMethod == null || propInfoSetMethod == null)
                             {
                                 throw new InaccessibleMemberException(_propertyInfo.Name);
                             }
 
-                            if ((!_propertyInfo.GetMethod.IsPublic || !_propertyInfo.SetMethod.IsPublic) && !_type.privateAccess)
+                            if ((!propInfoGetMethod.IsPublic || !propInfoSetMethod.IsPublic) && !_type.privateAccess)
                             {
                                 throw new InaccessibleMemberException(_propertyInfo.Name);
                             }
 
                             object self = null;
-                            if (!_propertyInfo.GetMethod.IsStatic)
+                            if (!propInfoGetMethod.IsStatic)
                             {
                                 Values.js_get_cached_object(ctx, this_obj, out self);
                                 if (!_type.CheckThis(self))
@@ -144,18 +146,18 @@ namespace QuickJS.Binding
                         }
                     case Values.EVT_OP_REMOVE:
                         {
-                            if (_propertyInfo.GetMethod == null || _propertyInfo.SetMethod == null)
+                            if (propInfoGetMethod == null || propInfoSetMethod == null)
                             {
                                 throw new InaccessibleMemberException(_propertyInfo.Name);
                             }
 
-                            if ((!_propertyInfo.GetMethod.IsPublic || !_propertyInfo.SetMethod.IsPublic) && !_type.privateAccess)
+                            if ((!propInfoGetMethod.IsPublic || !propInfoSetMethod.IsPublic) && !_type.privateAccess)
                             {
                                 throw new InaccessibleMemberException(_propertyInfo.Name);
                             }
 
                             object self = null;
-                            if (!_propertyInfo.GetMethod.IsStatic)
+                            if (!propInfoGetMethod.IsStatic)
                             {
                                 Values.js_get_cached_object(ctx, this_obj, out self);
                                 if (!_type.CheckThis(self))
@@ -175,18 +177,18 @@ namespace QuickJS.Binding
                         }
                     case Values.EVT_OP_SET:
                         {
-                            if (_propertyInfo.SetMethod == null)
+                            if (propInfoSetMethod == null)
                             {
                                 throw new InaccessibleMemberException(_propertyInfo.Name);
                             }
 
-                            if (!_propertyInfo.SetMethod.IsPublic && !_type.privateAccess)
+                            if (!propInfoSetMethod.IsPublic && !_type.privateAccess)
                             {
                                 throw new InaccessibleMemberException(_propertyInfo.Name);
                             }
 
                             object self = null;
-                            if (!_propertyInfo.SetMethod.IsStatic)
+                            if (!propInfoSetMethod.IsStatic)
                             {
                                 Values.js_get_cached_object(ctx, this_obj, out self);
                                 if (!_type.CheckThis(self))
@@ -205,18 +207,18 @@ namespace QuickJS.Binding
                         }
                     case Values.EVT_OP_GET:
                         {
-                            if (_propertyInfo.GetMethod == null)
+                            if (propInfoGetMethod == null)
                             {
                                 throw new InaccessibleMemberException(_propertyInfo.Name);
                             }
 
-                            if (!_propertyInfo.GetMethod.IsPublic && !_type.privateAccess)
+                            if (!propInfoGetMethod.IsPublic && !_type.privateAccess)
                             {
                                 throw new InaccessibleMemberException(_propertyInfo.Name);
                             }
 
                             object self = null;
-                            if (!_propertyInfo.GetMethod.IsStatic)
+                            if (!propInfoGetMethod.IsStatic)
                             {
                                 Values.js_get_cached_object(ctx, this_obj, out self);
                                 if (!_type.CheckThis(self))
@@ -262,18 +264,19 @@ namespace QuickJS.Binding
                 {
                     case Values.EVT_OP_ADD:
                         {
-                            if (_eventInfo.AddMethod == null)
+                            var eventInfoAddMethod = _eventInfo.GetAddMethod(true);
+                            if (eventInfoAddMethod == null)
                             {
                                 throw new InaccessibleMemberException(_eventInfo.Name);
                             }
 
-                            if (!_eventInfo.AddMethod.IsPublic && !_type.privateAccess)
+                            if (!eventInfoAddMethod.IsPublic && !_type.privateAccess)
                             {
                                 throw new InaccessibleMemberException(_eventInfo.Name);
                             }
 
                             object self = null;
-                            if (!_eventInfo.AddMethod.IsStatic)
+                            if (!eventInfoAddMethod.IsStatic)
                             {
                                 Values.js_get_cached_object(ctx, this_obj, out self);
                                 if (!_type.CheckThis(self))
@@ -292,18 +295,19 @@ namespace QuickJS.Binding
                         }
                     case Values.EVT_OP_REMOVE:
                         {
-                            if (_eventInfo.RemoveMethod == null)
+                            var eventInfoRemoveMethod = _eventInfo.GetRemoveMethod(true);
+                            if (eventInfoRemoveMethod == null)
                             {
                                 throw new InaccessibleMemberException(_eventInfo.Name);
                             }
 
-                            if (!_eventInfo.RemoveMethod.IsPublic && !_type.privateAccess)
+                            if (!eventInfoRemoveMethod.IsPublic && !_type.privateAccess)
                             {
                                 throw new InaccessibleMemberException(_eventInfo.Name);
                             }
 
                             object self = null;
-                            if (!_eventInfo.RemoveMethod.IsStatic)
+                            if (!eventInfoRemoveMethod.IsStatic)
                             {
                                 Values.js_get_cached_object(ctx, this_obj, out self);
                                 if (!_type.CheckThis(self))
