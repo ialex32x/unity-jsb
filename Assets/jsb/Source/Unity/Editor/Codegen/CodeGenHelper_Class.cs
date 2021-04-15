@@ -435,7 +435,7 @@ namespace QuickJS.Unity
 
                     if (methodBindingInfo._cfunc != null)
                     {
-                        var attr = (JSCFunctionAttribute)methodBindingInfo._cfunc.GetCustomAttribute(typeof(JSCFunctionAttribute));
+                        var attr = (JSCFunctionAttribute)Attribute.GetCustomAttribute(methodBindingInfo._cfunc, typeof(JSCFunctionAttribute));
                         var methodDeclType = this.cg.bindingManager.GetCSTypeFullName(methodBindingInfo._cfunc.DeclaringType);
                         var isStatic = attr.isStatic ? "true" : "false";
                         cg.cs.AppendLine("cls.AddRawMethod({0}, \"{1}\", {2}.{3});", isStatic, regName, methodDeclType, methodBindingInfo._cfunc.Name);

@@ -582,7 +582,7 @@ namespace QuickJS.Unity
                     return;
                 }
 
-                var jsdoc = type.GetCustomAttribute(typeof(JSDocAttribute), false) as JSDocAttribute;
+                var jsdoc = Attribute.GetCustomAttribute(type, typeof(JSDocAttribute), false) as JSDocAttribute;
                 if (jsdoc != null)
                 {
                     AppendJSDoc(jsdoc.lines);
@@ -601,7 +601,7 @@ namespace QuickJS.Unity
                     return;
                 }
 
-                var jsdoc = propertyInfo.GetCustomAttribute(typeof(JSDocAttribute), false) as JSDocAttribute;
+                var jsdoc = Attribute.GetCustomAttribute(propertyInfo, typeof(JSDocAttribute), false) as JSDocAttribute;
                 if (jsdoc != null)
                 {
                     AppendJSDoc(jsdoc.lines);
@@ -620,7 +620,7 @@ namespace QuickJS.Unity
                     return;
                 }
 
-                var jsdoc = fieldInfo.GetCustomAttribute(typeof(JSDocAttribute), false) as JSDocAttribute;
+                var jsdoc = Attribute.GetCustomAttribute(fieldInfo, typeof(JSDocAttribute), false) as JSDocAttribute;
                 if (jsdoc != null)
                 {
                     AppendJSDoc(jsdoc.lines);
@@ -654,7 +654,7 @@ namespace QuickJS.Unity
                     return;
                 }
 
-                var jsdoc = methodInfo.GetCustomAttribute(typeof(JSDocAttribute), false) as JSDocAttribute;
+                var jsdoc = Attribute.GetCustomAttribute(methodInfo, typeof(JSDocAttribute), false) as JSDocAttribute;
                 if (jsdoc != null)
                 {
                     AppendJSDoc(jsdoc.lines);

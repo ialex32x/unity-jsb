@@ -462,7 +462,7 @@ namespace QuickJS.Unity
                 {
                     // 检查具体化泛型基类 (如果基类泛型定义在显式导出清单中, 那么导出此具体化类)
                     // Debug.LogFormat("{0} IsConstructedGenericType:{1} {2} {3}", type, type.IsConstructedGenericType, type.IsGenericType, importBaseType);
-                    if (baseType.IsConstructedGenericType)
+                    if (IsConstructedGenericType(baseType)) // if (baseType.IsConstructedGenericType)
                     {
                         if (IsExportingExplicit(baseType.GetGenericTypeDefinition()))
                         {
@@ -477,12 +477,17 @@ namespace QuickJS.Unity
                 }
 
                 // 尝试以 typescript interface 形式导出泛型定义
-                if (type.IsConstructedGenericType)
+                if (IsConstructedGenericType(type))// if (type.IsConstructedGenericType)
                 {
                     AddExportedType(type.GetGenericTypeDefinition(), false);
                 }
             }
             return typeTransform;
+        }
+
+        public static bool IsConstructedGenericType(Type type)
+        {
+            return type.IsGenericType && !type.IsGenericTypeDefinition;
         }
 
         public TSModuleBindingInfo GetExportedModule(string name)
@@ -1583,7 +1588,7 @@ namespace QuickJS.Unity
                     log.AddTabLevel();
                     foreach (var type in types)
                     {
-                        var hotfixTag = type.GetCustomAttribute(typeof(JSHotfixAttribute)) as JSHotfixAttribute;
+                        var hotfixTag = Attribute.GetCustomAttribute(type, typeof(JSHotfixAttribute)) as JSHotfixAttribute;
                         if (hotfixTag != null)
                         {
                             TransformType(type).SetHotfix(hotfixTag);

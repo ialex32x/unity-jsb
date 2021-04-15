@@ -84,7 +84,8 @@ namespace QuickJS.Unity
 
         public DocBody GetDocBody(PropertyInfo propertyInfo)
         {
-            if (propertyInfo.GetMethod == null || !propertyInfo.GetMethod.IsPublic)
+            var getMethod = propertyInfo.GetGetMethod(true);
+            if (getMethod == null || !getMethod.IsPublic)
             {
                 return null;
             }
