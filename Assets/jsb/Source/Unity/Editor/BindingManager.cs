@@ -571,7 +571,7 @@ namespace QuickJS.Unity
                 var parameter = parameters[i];
 
                 // 暂不支持
-                if (parameter.IsOut || parameter.ParameterType.IsPointer || parameter.IsDefined(typeof(ParamArrayAttribute)))
+                if (parameter.IsOut || parameter.ParameterType.IsPointer || parameter.IsDefined(typeof(ParamArrayAttribute), false))
                 {
                     return false;
                 }

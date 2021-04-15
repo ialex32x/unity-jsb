@@ -30,7 +30,7 @@ namespace QuickJS.Unity
 
         public bool Add(T method, bool isExtension)
         {
-            if (method.IsDefined(typeof(JSCFunctionAttribute)))
+            if (method.IsDefined(typeof(JSCFunctionAttribute), false))
             {
                 if (!method.IsStatic || _cfunc != null)
                 {

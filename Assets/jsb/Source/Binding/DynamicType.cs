@@ -202,7 +202,7 @@ namespace QuickJS.Binding
             for (int i = 0, count = propertyInfos.Length; i < count; i++)
             {
                 var propertyInfo = propertyInfos[i];
-                var anyMethod = propertyInfo.GetMethod ?? propertyInfo.SetMethod;
+                var anyMethod = propertyInfo.GetGetMethod(true) ?? propertyInfo.GetSetMethod(true);
                 var dynamicProperty = new DynamicProperty(this, propertyInfo);
                 cls.AddField(anyMethod.IsStatic, propertyInfo.Name, dynamicProperty);
             }

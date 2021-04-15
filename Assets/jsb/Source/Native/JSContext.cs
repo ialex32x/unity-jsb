@@ -42,10 +42,10 @@ namespace QuickJS.Native
 
                     try
                     {
-                        var fileName = err_fileName.IsNullish() ? "native" : GetString(err_fileName);
-                        var lineNumber = err_lineNumber.IsNullish() ? null : GetString(err_lineNumber);
-                        var message = GetString(err_message);
-                        var stack = GetString(err_stack);
+                        var fileName = err_fileName.IsNullish() ? "native" : JSApi.GetString(this, err_fileName);
+                        var lineNumber = err_lineNumber.IsNullish() ? null : JSApi.GetString(this, err_lineNumber);
+                        var message = JSApi.GetString(this, err_message);
+                        var stack = JSApi.GetString(this, err_stack);
 
                         if (string.IsNullOrEmpty(lineNumber))
                         {
@@ -100,10 +100,10 @@ namespace QuickJS.Native
 
             try
             {
-                var fileName = this.GetString(err_fileName);
-                var lineNumber = this.GetString(err_lineNumber);
-                var message = this.GetString(err_message);
-                var stack = this.GetString(err_stack);
+                var fileName = JSApi.GetString(this, err_fileName);
+                var lineNumber = JSApi.GetString(this, err_lineNumber);
+                var message = JSApi.GetString(this, err_message);
+                var stack = JSApi.GetString(this, err_stack);
                 var exceptionString = string.Format("[JS] {0}:{1} {2}\n{3}", fileName, lineNumber, message, stack);
                 
                 return exceptionString;
@@ -117,29 +117,6 @@ namespace QuickJS.Native
                 JSApi.JS_FreeValue(this, err_stack);
                 JSApi.JS_FreeValue(this, ex);
             }
-        }
-
-        public unsafe string GetString(JSValue jsValue)
-        {
-            size_t len;
-            var ptr = JSApi.JS_ToCStringLen(this, out len, jsValue);
-            if (ptr != IntPtr.Zero)
-            {
-                try
-                {
-                    if (len > 0)
-                    {
-                        var str_ = Encoding.UTF8.GetString((byte*)ptr.ToPointer(), len);
-                        return str_;
-                    }
-                }
-                finally
-                {
-                    JSApi.JS_FreeCString(this, ptr);
-                }
-            }
-
-            return null;
         }
 
         public void SetProperty(JSValue this_obj, string name, JSCFunction fn, int length = 0)

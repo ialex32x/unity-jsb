@@ -140,8 +140,8 @@ namespace QuickJS.Binding
                             {
                                 throw new ParameterException(_type.type, _varName, delegateType, 1);
                             }
-                            var fValue = (Delegate)_propertyInfo.GetValue(self);
-                            _propertyInfo.SetValue(self, Delegate.Combine(fValue, value));
+                            var fValue = (Delegate)_propertyInfo.GetValue(self, null);
+                            _propertyInfo.SetValue(self, Delegate.Combine(fValue, value), null);
                             return JSApi.JS_UNDEFINED;
                         }
                     case Values.EVT_OP_REMOVE:
@@ -171,8 +171,8 @@ namespace QuickJS.Binding
                             {
                                 throw new ParameterException(_type.type, _varName, delegateType, 1);
                             }
-                            var fValue = (Delegate)_propertyInfo.GetValue(self);
-                            _propertyInfo.SetValue(self, Delegate.Remove(fValue, value));
+                            var fValue = (Delegate)_propertyInfo.GetValue(self, null);
+                            _propertyInfo.SetValue(self, Delegate.Remove(fValue, value), null);
                             return JSApi.JS_UNDEFINED;
                         }
                     case Values.EVT_OP_SET:
@@ -202,7 +202,7 @@ namespace QuickJS.Binding
                             {
                                 throw new ParameterException(_type.type, _varName, delegateType, 1);
                             }
-                            _propertyInfo.SetValue(self, value);
+                            _propertyInfo.SetValue(self, value, null);
                             return JSApi.JS_UNDEFINED;
                         }
                     case Values.EVT_OP_GET:
@@ -227,7 +227,7 @@ namespace QuickJS.Binding
                                 }
                             }
 
-                            var ret = (Delegate)_propertyInfo.GetValue(self);
+                            var ret = (Delegate)_propertyInfo.GetValue(self, null);
                             return Values.js_push_delegate(ctx, ret);
                         }
                     default: throw new JSException("invalid event op");

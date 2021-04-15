@@ -169,25 +169,37 @@ namespace QuickJS.Native
                 return null;
             }
 
-            var str = JSApi.GetString(ctx, pstr, len);
-            JSApi.JS_FreeCString(ctx, pstr);
-            return str;
+            try
+            {
+                return JSApi.GetString(ctx, pstr, len);
+            }
+            finally
+            {
+                JSApi.JS_FreeCString(ctx, pstr);
+            }
         }
 
         public static unsafe string GetString(JSContext ctx, IntPtr ptr, int len)
         {
-            var str = Marshal.PtrToStringAnsi(ptr, len);
-            if (str == null)
+            if (len > 0)
             {
-                // var pointer = (byte*)(void*)ptr;
-                // return Encoding.UTF8.GetString(pointer, len);
+                var str = Marshal.PtrToStringAnsi(ptr, len);
+                if (str == null)
+                {
+#if JSB_MARSHAL_STRING
+                    var buffer = new byte[len];
+                    Marshal.Copy(ptr, buffer, 0, len);
+                    return Encoding.UTF8.GetString(buffer);
+#else
+                    var pointer = (byte*)(void*)ptr;
+                    return Encoding.UTF8.GetString(pointer, len);
+#endif
+                }
 
-                var buffer = new byte[len];
-                Marshal.Copy(ptr, buffer, 0, len);
-                return Encoding.UTF8.GetString(buffer);
+                return str;
             }
 
-            return str;
+            return null;
         }
     }
 }

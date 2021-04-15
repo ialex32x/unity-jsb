@@ -101,7 +101,7 @@ namespace QuickJS.Binding
                 }
             }
 
-            var rval = _propertyInfo.GetValue(self);
+            var rval = _propertyInfo.GetValue(self, null);
             return Values.js_push_var(ctx, rval);
         }
 
@@ -129,7 +129,7 @@ namespace QuickJS.Binding
             {
                 throw new InvalidCastException();
             }
-            _propertyInfo.SetValue(self, t_val);
+            _propertyInfo.SetValue(self, t_val, null);
             if (_type.type.IsValueType && !propInfoSetMethod.IsStatic)
             {
                 Values.js_rebind_var(ctx, this_obj, _type.type, self);

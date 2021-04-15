@@ -389,7 +389,7 @@ namespace QuickJS.Unity
             }
 
             var tsMethodRename = bindingInfo.jsName;
-            var isRaw = method.IsDefined(typeof(JSCFunctionAttribute));
+            var isRaw = method.IsDefined(typeof(JSCFunctionAttribute), false);
             //TODO: 需要处理参数类型归并问题, 因为如果类型没有导入 ts 中, 可能会在声明中出现相同参数列表的定义
             //      在 MethodVariant 中创建每个方法对应的TS类型名参数列表, 完全相同的不再输出
             var prefix = "";

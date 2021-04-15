@@ -141,7 +141,7 @@ namespace QuickJS.Unity
             {
                 try
                 {
-                    result = taskType.GetProperty("Result").GetValue(task);
+                    result = taskType.GetProperty("Result").GetValue(task, null);
                 }
                 catch (Exception exception)
                 {
