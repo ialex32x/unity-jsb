@@ -31,6 +31,10 @@ namespace QuickJS.Unity
         public string regName; // js 注册名
         public PropertyInfo propertyInfo;
 
+        public readonly MethodInfo getMethod;
+
+        public readonly MethodInfo setMethod;
+
         public bool isStatic => staticPair.IsValid();
 
         public Type propertyType => propertyInfo.PropertyType;
@@ -38,9 +42,11 @@ namespace QuickJS.Unity
         public PropertyBindingInfo(TypeBindingInfo typeBindingInfo, PropertyInfo propertyInfo)
         {
             this.propertyInfo = propertyInfo;
-            if (propertyInfo.CanRead && propertyInfo.GetMethod != null && propertyInfo.GetMethod.IsPublic)
+            this.getMethod = propertyInfo.GetGetMethod(true);
+            this.setMethod = propertyInfo.GetSetMethod(true);
+            if (propertyInfo.CanRead && getMethod != null && getMethod.IsPublic)
             {
-                if (propertyInfo.GetMethod.IsStatic)
+                if (getMethod.IsStatic)
                 {
                     staticPair.getterName = "BindStaticRead_" + propertyInfo.Name;
                 }
@@ -50,9 +56,9 @@ namespace QuickJS.Unity
                 }
             }
 
-            if (propertyInfo.CanWrite && propertyInfo.SetMethod != null && propertyInfo.SetMethod.IsPublic)
+            if (propertyInfo.CanWrite && setMethod != null && setMethod.IsPublic)
             {
-                if (propertyInfo.SetMethod.IsStatic)
+                if (setMethod.IsStatic)
                 {
                     staticPair.setterName = "BindStaticWrite_" + propertyInfo.Name;
                 }

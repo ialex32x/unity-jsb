@@ -54,9 +54,11 @@ namespace QuickJS.Unity
         {
             this.declaringType = typeBindingInfo.type;
             this.delegateType = propertyInfo.PropertyType;
-            this.readable = propertyInfo.GetMethod != null && propertyInfo.GetMethod.IsPublic;
-            this.writable = propertyInfo.SetMethod != null && propertyInfo.SetMethod.IsPublic;
-            this.isStatic = (propertyInfo.GetMethod ?? propertyInfo.SetMethod).IsStatic;
+            var propInfoGetMethod = propertyInfo.GetGetMethod(true);
+            var propInfoSetMethod = propertyInfo.GetSetMethod(true);
+            this.readable = propInfoGetMethod != null && propInfoGetMethod.IsPublic;
+            this.writable = propInfoSetMethod != null && propInfoSetMethod.IsPublic;
+            this.isStatic = (propInfoGetMethod ?? propInfoSetMethod).IsStatic;
             this.csName = propertyInfo.Name;
             this.isField = false;
             this.fieldOrPropertyInfo = propertyInfo;

@@ -93,7 +93,7 @@ namespace QuickJS.Unity
             this.bindingManager = bindingManager;
             this.type = type;
             this.transform = typeTransform;
-            this._omit = type.IsDefined(typeof(JSOmitAttribute));
+            this._omit = type.IsDefined(typeof(JSOmitAttribute), false);
         }
 
         public void Initialize()
@@ -422,7 +422,7 @@ namespace QuickJS.Unity
                     continue;
                 }
 
-                if ((evt.AddMethod?.IsStatic == true || evt.RemoveMethod?.IsStatic == true) && type.IsGenericTypeDefinition)
+                if ((evt.GetAddMethod(true)?.IsStatic == true || evt.GetRemoveMethod(true)?.IsStatic == true) && type.IsGenericTypeDefinition)
                 {
                     bindingManager.Info("skip static event in generic type definition: {0}", evt.Name);
                     return;
@@ -476,7 +476,10 @@ namespace QuickJS.Unity
                     continue;
                 }
 
-                if ((property.GetMethod?.IsStatic == true || property.SetMethod?.IsStatic == true) && type.IsGenericTypeDefinition)
+                var propInfoGetMethod = property.GetGetMethod(true);
+                var propInfoSetMethod = property.GetSetMethod(true);
+
+                if ((propInfoGetMethod?.IsStatic == true || propInfoSetMethod?.IsStatic == true) && type.IsGenericTypeDefinition)
                 {
                     bindingManager.Info("skip static property in generic type definition: {0}", property.Name);
                     return;
@@ -509,26 +512,26 @@ namespace QuickJS.Unity
                 //NOTE: 索引访问
                 if (property.Name == "Item")
                 {
-                    if (property.CanRead && property.GetMethod != null && property.GetMethod.IsPublic)
+                    if (property.CanRead && propInfoGetMethod != null && propInfoGetMethod.IsPublic)
                     {
-                        if (BindingManager.IsUnsupported(property.GetMethod))
+                        if (BindingManager.IsUnsupported(propInfoGetMethod))
                         {
-                            bindingManager.Info("skip unsupported get-method: {0}", property.GetMethod);
+                            bindingManager.Info("skip unsupported get-method: {0}", propInfoGetMethod);
                             continue;
                         }
 
-                        AddMethod(property.GetMethod, false);
+                        AddMethod(propInfoGetMethod, false);
                     }
 
-                    if (property.CanWrite && property.SetMethod != null && property.SetMethod.IsPublic)
+                    if (property.CanWrite && propInfoSetMethod != null && propInfoSetMethod.IsPublic)
                     {
-                        if (BindingManager.IsUnsupported(property.SetMethod))
+                        if (BindingManager.IsUnsupported(propInfoSetMethod))
                         {
-                            bindingManager.Info("skip unsupported set-method: {0}", property.SetMethod);
+                            bindingManager.Info("skip unsupported set-method: {0}", propInfoSetMethod);
                             continue;
                         }
 
-                        AddMethod(property.SetMethod, false);
+                        AddMethod(propInfoSetMethod, false);
                     }
 
                     // bindingManager.Info("skip indexer property: {0}", property.Name);
