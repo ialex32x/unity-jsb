@@ -19,7 +19,7 @@ namespace QuickJS.Unity
             this.cg = cg;
             this.bindingInfo = bindingInfo;
 
-            var caller = this.cg.AppendGetThisCS(bindingInfo.propertyInfo.GetMethod, false);
+            var caller = this.cg.AppendGetThisCS(bindingInfo.getMethod, false);
 
             this.cg.cs.AppendLine("var ret = {0}.{1};", caller, bindingInfo.propertyInfo.Name);
             var pusher = this.cg.AppendValuePusher(bindingInfo.propertyType, "ret");
@@ -45,7 +45,7 @@ namespace QuickJS.Unity
             var declaringType = propertyInfo.DeclaringType;
             var caller = this.cg.AppendGetThisCS(propertyBindingInfo.setMethod, false);
             var propertyType = this.cg.bindingManager.GetCSTypeFullName(propertyInfo.PropertyType);
-            
+
             this.cg.cs.AppendLine("{0} value;", propertyType);
             var getter = this.cg.bindingManager.GetScriptObjectGetter(propertyInfo.PropertyType, "ctx", "arg_val", "value");
             this.cg.cs.AppendLine("if (!{0})", getter);
