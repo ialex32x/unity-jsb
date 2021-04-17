@@ -101,7 +101,7 @@ namespace QuickJS.Unity
             }
         }
 
-        void Awake()
+        private void SetBridge()
         {
             var inst = target as JSBehaviour;
             var ctx = inst.ctx;
@@ -127,6 +127,11 @@ namespace QuickJS.Unity
                 }
                 JSApi.JS_FreeValue(ctx, editorClass);
             }
+        }
+
+        void Awake()
+        {
+            SetBridge();
         }
 
         void OnEnable()

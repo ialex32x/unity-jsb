@@ -8,12 +8,13 @@ namespace QuickJS.Unity
 
     public class JSBehaviour : MonoBehaviour
     {
-        private string _scriptTypeName;
+        // 在编辑器运行时下与 js 脚本建立链接关系
+        public JSBehaviourScriptRef scriptRef;
 
-        public string scriptTypeName
-        {
-            get { return _scriptTypeName; }
-        }
+        [SerializeField]
+        private JSBehaviourProperties<Object> _objects;
+        [SerializeField]
+        private JSBehaviourProperties<double> _numbers;
 
         // unsafe
         public JSContext ctx { get { return _ctx; } }
@@ -113,7 +114,8 @@ namespace QuickJS.Unity
             }
         }
 
-        public void SetBridge(JSContext ctx, JSValue this_obj, JSValue ctor)
+        // bRuntime = true 表示游戏运行时,反之表示编辑器运行时
+        public void SetBridge(JSContext ctx, JSValue this_obj, JSValue ctor, bool bGameRuntime)
         {
             var context = ScriptEngine.GetContext(ctx);
             if (context == null)
@@ -125,15 +127,19 @@ namespace QuickJS.Unity
             _released = false;
             _ctx = ctx;
             _this_obj = JSApi.JS_DupValue(ctx, this_obj);
-            var nameProp = JSApi.JS_GetProperty(ctx, ctor, JSApi.JS_ATOM_name);
-            if (nameProp.IsException())
+            if (bGameRuntime)
             {
-                _scriptTypeName = "Unknown";
-            }
-            else
-            {
-                _scriptTypeName = JSApi.GetString(ctx, nameProp);
-                JSApi.JS_FreeValue(ctx, nameProp);
+                scriptRef.state = EJSBehaviourLoadState.Dynamic;
+                var nameProp = JSApi.JS_GetProperty(ctx, ctor, JSApi.JS_ATOM_name);
+                if (nameProp.IsException())
+                {
+                    scriptRef.className = "Unknown";
+                }
+                else
+                {
+                    scriptRef.className = JSApi.GetString(ctx, nameProp);
+                    JSApi.JS_FreeValue(ctx, nameProp);
+                }
             }
 
             _updateFunc = JSApi.JS_GetProperty(ctx, this_obj, context.GetAtom("Update"));

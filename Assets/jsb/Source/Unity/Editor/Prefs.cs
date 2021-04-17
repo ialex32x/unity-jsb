@@ -17,6 +17,11 @@ namespace QuickJS.Unity
         public string logPath = "Logs/js-bridge.log";
 
         /// <summary>
+        /// JSBehaviourScriptRef.sourceFile 将基于 sourceDir 拆出对应的 modulePath
+        /// </summary>
+        public string sourceDir = "Scripts/src";
+
+        /// <summary>
         /// 静态绑定代码的生成目录
         /// </summary>
         public string outDir = "Assets/Generated/${platform}";
