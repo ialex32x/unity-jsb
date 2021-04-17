@@ -69,7 +69,7 @@ namespace QuickJS.Unity
                 return;
             }
 
-            _fsw = new FileSystemWatcher(baseDir, "*.ts");
+            _fsw = new FileSystemWatcher(_baseDir, "*.ts");
             _fsw.IncludeSubdirectories = true;
             _fsw.Changed += OnChanged;
             _fsw.Created += OnCreated;
