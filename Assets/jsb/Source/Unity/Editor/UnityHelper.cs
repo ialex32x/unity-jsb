@@ -1,6 +1,8 @@
 using System;
 using System.IO;
+using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Collections.Generic;
 
 namespace QuickJS.Unity
@@ -149,7 +151,7 @@ namespace QuickJS.Unity
             {
                 return true;
             }
-            
+
             return IsExplicitEditorDomain(type.Assembly);
         }
 
@@ -317,6 +319,84 @@ namespace QuickJS.Unity
         }
 
         #endregion
+
+        public static Regex JSBehaviourClassNameRegex = new Regex(@"export\s+class\s+(\w+)\s+extends", RegexOptions.Multiline | RegexOptions.Compiled);
+
+        public static string NormalizePathString(string path)
+        {
+            return path.Replace('\\', '/');
+        }
+
+        // sourceFile: 需要传入 FullPath
+        public static bool ResolveScriptRef(string sourceFile, out string modulePath, out string[] classNames)
+        {
+            modulePath = null;
+            classNames = null;
+
+            if (!Path.IsPathRooted(sourceFile))
+            {
+                sourceFile = Path.GetFullPath(sourceFile);
+            }
+
+            if (!sourceFile.EndsWith(".ts"))
+            {
+                // invalid 
+                return false;
+            }
+
+            var sourceExt = Path.GetExtension(sourceFile);
+
+            if (File.Exists(sourceFile))
+            {
+                var prefs = Prefs.Load();
+                var sourceDir = string.IsNullOrEmpty(prefs.sourceDir) ? "." : prefs.sourceDir;
+                if (Path.IsPathRooted(sourceDir))
+                {
+                    // not implemented
+                }
+                else
+                {
+                    var appRoot = Path.GetPathRoot(Application.dataPath);
+                    var sourceRoot = Path.GetPathRoot(sourceFile).Replace('\\', '/');
+
+                    if (appRoot == sourceRoot)
+                    {
+                        var sourcePathNorm = sourceFile.Replace('\\', '/');
+                        var appPathNorm = Path.Combine(Directory.GetParent(Application.dataPath).FullName, sourceDir).Replace('\\', '/');
+
+                        if (sourcePathNorm.ToLower().StartsWith(appPathNorm.ToLower()))
+                        {
+                            var sourceSubPathNorm = sourcePathNorm[0] == '/' ? sourcePathNorm.Substring(appPathNorm.Length + 1) : sourcePathNorm.Substring(appPathNorm.Length);
+                            var offset = sourceSubPathNorm[0] == '/' ? 1 : 0;
+                            modulePath = sourceSubPathNorm.Substring(offset, sourceSubPathNorm.Length - sourceExt.Length - offset);
+                            classNames = GetJSBehaviourClassName(sourceFile);
+                            return true;
+                        }
+                    }
+                    else
+                    {
+                        // invalid
+                    }
+                }
+            }
+
+            return false;
+        }
+
+        private static string[] GetJSBehaviourClassName(string sourceFile)
+        {
+            var text = File.ReadAllText(sourceFile);
+            var c = JSBehaviourClassNameRegex.Matches(text);
+            var i = 0;
+            var results = new string[c.Count];
+
+            foreach (Match m in c)
+            {
+                results[i++] = m.Groups[1].Value;
+            }
+
+            return results;
+        }
 
         static UnityHelper()
         {

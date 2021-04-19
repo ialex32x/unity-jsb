@@ -165,6 +165,7 @@ namespace QuickJS
             return JSApi.JS_ThrowInternalError(context, $"module can not be resolved ({module_id})");
         }
 
+#if UNITY_EDITOR
         private MethodInfo GetReflectBind(IScriptLogger logger)
         {
             var UnityHelper = Values.FindType("QuickJS.Unity.UnityHelper");
@@ -185,6 +186,7 @@ namespace QuickJS
 
             return null;
         }
+#endif
 
         private MethodInfo GetStaticBind(IScriptLogger logger)
         {
@@ -274,8 +276,8 @@ namespace QuickJS
             _typeDB = new TypeDB(this, _mainContext);
             _typeDB.AddType(typeof(Unity.JSBehaviour), JSApi.JS_UNDEFINED);
 #if UNITY_EDITOR
-            _typeDB.AddType(typeof(Unity.JSEditorWindow), JSApi.JS_UNDEFINED);
-            _typeDB.AddType(typeof(Unity.JSBehaviourInspector), JSApi.JS_UNDEFINED);
+            _typeDB.AddType(Values.FindType("QuickJS.Unity.JSEditorWindow"), JSApi.JS_UNDEFINED);
+            _typeDB.AddType(Values.FindType("QuickJS.Unity.JSBehaviourInspector"), JSApi.JS_UNDEFINED);
 #endif
             listener.OnCreate(this);
 
