@@ -6,7 +6,7 @@ namespace QuickJS.Unity
     using Native;
     using UnityEngine;
 
-    public class JSBehaviour : MonoBehaviour
+    public class JSBehaviour : MonoBehaviour // , ISerializationCallbackReceiver
     {
         // 在编辑器运行时下与 js 脚本建立链接关系
         public JSBehaviourScriptRef scriptRef;
@@ -114,8 +114,39 @@ namespace QuickJS.Unity
             }
         }
 
+        // ctor: js class
+        public static JSValue CreateBridge(GameObject gameObject, JSContext ctx, JSValue ctor)
+        {
+            if (JSApi.JS_IsConstructor(ctx, ctor) == 1)
+            {
+                var header = JSApi.jsb_get_payload_header(ctor);
+                if (header.type_id == BridgeObjectType.None) // it's a plain js value
+                {
+                    var bridge = gameObject.AddComponent<Unity.JSBehaviour>();
+                    var cache = ScriptEngine.GetObjectCache(ctx);
+                    var object_id = cache.AddObject(bridge, false);
+                    var val = JSApi.jsb_construct_bridge_object(ctx, ctor, object_id);
+                    if (val.IsException())
+                    {
+                        cache.RemoveObject(object_id);
+                    }
+                    else
+                    {
+                        cache.AddJSValue(bridge, val);
+                        bridge.SetBridge(ctx, val);
+                        bridge.scriptRef.state = EJSBehaviourLoadState.Dynamic;
+                        // JSApi.JSB_SetBridgeType(ctx, val, type_id);
+                    }
+
+                    return val;
+                }
+            }
+            
+            return JSApi.JS_UNDEFINED;
+        }
+
         // bRuntime = true 表示游戏运行时,反之表示编辑器运行时
-        public void SetBridge(JSContext ctx, JSValue this_obj, JSValue ctor, bool bGameRuntime)
+        public void SetBridge(JSContext ctx, JSValue this_obj)
         {
             var context = ScriptEngine.GetContext(ctx);
             if (context == null)
@@ -127,20 +158,6 @@ namespace QuickJS.Unity
             _released = false;
             _ctx = ctx;
             _this_obj = JSApi.JS_DupValue(ctx, this_obj);
-            if (bGameRuntime)
-            {
-                scriptRef.state = EJSBehaviourLoadState.Dynamic;
-                var nameProp = JSApi.JS_GetProperty(ctx, ctor, JSApi.JS_ATOM_name);
-                if (nameProp.IsException())
-                {
-                    scriptRef.className = "Unknown";
-                }
-                else
-                {
-                    scriptRef.className = JSApi.GetString(ctx, nameProp);
-                    JSApi.JS_FreeValue(ctx, nameProp);
-                }
-            }
 
             _updateFunc = JSApi.JS_GetProperty(ctx, this_obj, context.GetAtom("Update"));
             _updateValid = JSApi.JS_IsFunction(ctx, _updateFunc) == 1;

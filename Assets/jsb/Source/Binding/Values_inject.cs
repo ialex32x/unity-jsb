@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
+using QuickJS.Unity;
 
 namespace QuickJS.Binding
 {
@@ -12,31 +13,9 @@ namespace QuickJS.Binding
         // inject GameObject.AddComponent(Type);
         public static JSValue _js_game_object_add_component(JSContext ctx, JSValue ctor, GameObject gameObject, Type type)
         {
-            if (JSApi.JS_IsConstructor(ctx, ctor) == 1)
+            if (type == typeof(MonoBehaviour))
             {
-                var header = JSApi.jsb_get_payload_header(ctor);
-                if (header.type_id == BridgeObjectType.None) // it's a plain js value
-                {
-                    if (type == typeof(MonoBehaviour))
-                    {
-                        var bridge = gameObject.AddComponent<Unity.JSBehaviour>();
-                        var cache = ScriptEngine.GetObjectCache(ctx);
-                        var object_id = cache.AddObject(bridge, false);
-                        var val = JSApi.jsb_construct_bridge_object(ctx, ctor, object_id);
-                        if (val.IsException())
-                        {
-                            cache.RemoveObject(object_id);
-                        }
-                        else
-                        {
-                            cache.AddJSValue(bridge, val);
-                            bridge.SetBridge(ctx, val, ctor, true);
-                            // JSApi.JSB_SetBridgeType(ctx, val, type_id);
-                        }
-
-                        return val;
-                    }
-                }
+                return JSBehaviour.CreateBridge(gameObject, ctx, ctor);
             }
 
             return JSApi.JS_UNDEFINED;
