@@ -141,22 +141,88 @@ namespace QuickJS.Unity
                     return val;
                 }
             }
+
+            return JSApi.JS_UNDEFINED;
+        }
+
+        public JSValue RebindBridge(JSContext ctx, JSValue ctor)
+        {
+            if (JSApi.JS_IsConstructor(ctx, ctor) == 1)
+            {
+                var header = JSApi.jsb_get_payload_header(ctor);
+                if (header.type_id == BridgeObjectType.None) // it's a plain js value
+                {
+                    var cache = ScriptEngine.GetObjectCache(ctx);
+
+                    // 旧的绑定值释放？
+                    if (!_this_obj.IsNullish())
+                    {
+                        var payload = JSApi.jsb_get_payload_header(_this_obj);
+                        if (payload.type_id == BridgeObjectType.ObjectRef)
+                        {
+                            var runtime = ScriptEngine.GetRuntime(ctx);
+                            var objectCache = runtime.GetObjectCache();
+
+                            if (objectCache != null)
+                            {
+                                object obj;
+                                try
+                                {
+                                    objectCache.RemoveObject(payload.value, out obj);
+                                }
+                                catch (Exception exception)
+                                {
+                                    runtime.GetLogger()?.WriteException(exception);
+                                }
+                            }
+                        }
+                    }
+
+                    var object_id = cache.AddObject(this, false);
+                    var val = JSApi.jsb_construct_bridge_object(ctx, ctor, object_id);
+                    if (val.IsException())
+                    {
+                        cache.RemoveObject(object_id);
+                    }
+                    else
+                    {
+                        cache.AddJSValue(this, val);
+                        this.SetBridge(ctx, val);
+                        // JSApi.JSB_SetBridgeType(ctx, val, type_id);
+                    }
+
+                    return val;
+                }
+            }
             
             return JSApi.JS_UNDEFINED;
         }
 
-        // bRuntime = true 表示游戏运行时,反之表示编辑器运行时
         public void SetBridge(JSContext ctx, JSValue this_obj)
         {
+            if (_released)
+            {
+                return;
+            }
+
             var context = ScriptEngine.GetContext(ctx);
             if (context == null)
             {
                 return;
             }
 
-            context.OnDestroy += OnContextDestroy;
-            _released = false;
-            _ctx = ctx;
+            RemoveJSValues();
+            if (_ctx != (JSContext)ctx)
+            {
+                var oldContext = ScriptEngine.GetContext(_ctx);
+                if (oldContext != null)
+                {
+                    oldContext.OnDestroy -= OnContextDestroy;
+                }
+                context.OnDestroy += OnContextDestroy;
+                _ctx = ctx;
+            }
+
             _this_obj = JSApi.JS_DupValue(ctx, this_obj);
 
             _updateFunc = JSApi.JS_GetProperty(ctx, this_obj, context.GetAtom("Update"));
@@ -222,6 +288,81 @@ namespace QuickJS.Unity
             Release();
         }
 
+        private void RemoveJSValues()
+        {
+            if (_updateValid)
+            {
+                JSApi.JS_FreeValue(_ctx, _updateFunc);
+                _updateFunc = JSApi.JS_UNDEFINED;
+                _updateValid = false;
+            }
+            if (_lateUpdateValid)
+            {
+                JSApi.JS_FreeValue(_ctx, _lateUpdateFunc);
+                _lateUpdateFunc = JSApi.JS_UNDEFINED;
+                _lateUpdateValid = false;
+            }
+            if (_fixedUpdateValid)
+            {
+                JSApi.JS_FreeValue(_ctx, _fixedUpdateFunc);
+                _fixedUpdateFunc = JSApi.JS_UNDEFINED;
+                _fixedUpdateValid = false;
+            }
+            if (_startValid)
+            {
+                JSApi.JS_FreeValue(_ctx, _startFunc);
+                _startFunc = JSApi.JS_UNDEFINED;
+                _startValid = false;
+            }
+            if (_onEnableValid)
+            {
+                JSApi.JS_FreeValue(_ctx, _onEnableFunc);
+                _onEnableFunc = JSApi.JS_UNDEFINED;
+                _onEnableValid = false;
+            }
+            if (_onDisableValid)
+            {
+                JSApi.JS_FreeValue(_ctx, _onDisableFunc);
+                _onDisableFunc = JSApi.JS_UNDEFINED;
+                _onDisableValid = false;
+            }
+            if (_onApplicationFocusValid)
+            {
+                JSApi.JS_FreeValue(_ctx, _onApplicationFocusFunc);
+                _onApplicationFocusFunc = JSApi.JS_UNDEFINED;
+                _onApplicationFocusValid = false;
+            }
+#if UNITY_EDITOR
+            if (_onDrawGizmosValid)
+            {
+                JSApi.JS_FreeValue(_ctx, _onDrawGizmosFunc);
+                _onDrawGizmosFunc = JSApi.JS_UNDEFINED;
+                _onDrawGizmosValid = false;
+            }
+#endif
+            if (_onApplicationPauseValid)
+            {
+                JSApi.JS_FreeValue(_ctx, _onApplicationPauseFunc);
+                _onApplicationPauseFunc = JSApi.JS_UNDEFINED;
+                _onApplicationPauseValid = false;
+            }
+            if (_onApplicationQuitValid)
+            {
+                JSApi.JS_FreeValue(_ctx, _onApplicationQuitFunc);
+                _onApplicationQuitFunc = JSApi.JS_UNDEFINED;
+                _onApplicationQuitValid = false;
+            }
+            if (_onDestroyValid)
+            {
+                JSApi.JS_FreeValue(_ctx, _onDestroyFunc);
+                _onDestroyFunc = JSApi.JS_UNDEFINED;
+                _onDestroyValid = false;
+            }
+
+            JSApi.JS_FreeValue(_ctx, _this_obj);
+            _this_obj = JSApi.JS_UNDEFINED;
+        }
+
         void Release()
         {
             if (_released)
@@ -229,31 +370,7 @@ namespace QuickJS.Unity
                 return;
             }
             _released = true;
-            JSApi.JS_FreeValue(_ctx, _updateFunc);
-            _updateValid = false;
-            JSApi.JS_FreeValue(_ctx, _lateUpdateFunc);
-            _lateUpdateValid = false;
-            JSApi.JS_FreeValue(_ctx, _fixedUpdateFunc);
-            _fixedUpdateValid = false;
-            JSApi.JS_FreeValue(_ctx, _startFunc);
-            _startValid = false;
-            JSApi.JS_FreeValue(_ctx, _onEnableFunc);
-            _onEnableValid = false;
-            JSApi.JS_FreeValue(_ctx, _onDisableFunc);
-            _onDisableValid = false;
-            JSApi.JS_FreeValue(_ctx, _onApplicationFocusFunc);
-            _onApplicationFocusValid = false;
-#if UNITY_EDITOR
-            JSApi.JS_FreeValue(_ctx, _onDrawGizmosFunc);
-            _onDrawGizmosValid = false;
-#endif
-            JSApi.JS_FreeValue(_ctx, _onApplicationPauseFunc);
-            _onApplicationPauseValid = false;
-            JSApi.JS_FreeValue(_ctx, _onApplicationQuitFunc);
-            _onApplicationQuitValid = false;
-            JSApi.JS_FreeValue(_ctx, _onDestroyFunc);
-            _onDestroyValid = false;
-            JSApi.JS_FreeValue(_ctx, _this_obj);
+            RemoveJSValues();
 
             var context = ScriptEngine.GetContext(_ctx);
             if (context != null)

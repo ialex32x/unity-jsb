@@ -111,6 +111,29 @@ namespace QuickJS
             return target;
         }
 
+        /// <summary>
+        /// (内部使用) 获取第一个有效的前台运行时
+        /// </summary>
+        public static ScriptRuntime GetRuntime()
+        {
+            ScriptRuntime target = null;
+            _rwlock.EnterWriteLock();
+            var len = _runtimeRefs.Count;
+            
+            for (int i = 0; i < len; ++i)
+            {
+                var runtimeRef = _runtimeRefs[i];
+                var runtime = runtimeRef.target;
+
+                if (runtime != null && !runtime.isWorker && runtime.isRunning && runtime.isValid)
+                {
+                    target = runtime;
+                }
+            }
+            _rwlock.ExitWriteLock();
+            return target;
+        }
+
         public static ScriptRuntime GetRuntime(JSContext ctx)
         {
             var rt = JSApi.JS_GetRuntime(ctx);
@@ -135,6 +158,21 @@ namespace QuickJS
             }
 
             return runtime;
+        }
+
+        /// <summary>
+        /// (内部使用) 获取第一个有效的前台运行时的 MainContext
+        /// </summary>
+        public static ScriptContext GetContext()
+        {
+            var context = GetRuntime();
+
+            if (context != null && context.isValid)
+            {
+                return context.GetMainContext();
+            }
+
+            return null;
         }
 
         public static ScriptContext GetContext(JSContext ctx)

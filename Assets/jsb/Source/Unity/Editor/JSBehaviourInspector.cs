@@ -105,6 +105,8 @@
 
         private void SetBridge()
         {
+            //TODO: 旧值释放
+
             var ctx = _target.ctx;
             if (ctx.IsValid())
             {
@@ -194,10 +196,27 @@
                         EditorUtility.SetDirty(_target);
                     }
 
-                    // Debug.LogFormat("resolve: {0}", modulePath);
-                    // foreach(var name in classNames)
+                    // ScriptInstance 释放的问题
+                    // 
+                    // var context = ScriptEngine.GetContext();
+                    // if (context != null)
                     // {
-                    //     Debug.LogFormat("       - {0}", name);
+                    //     var ctx = (JSContext)context;
+                    //     var snippet = $"require('{_target.scriptRef.modulePath}')['{_target.scriptRef.className}']";
+                    //     var bytes = System.Text.Encoding.UTF8.GetBytes(snippet);
+                    //     var typeValue = ScriptRuntime.EvalSource(ctx, bytes, _target.scriptRef.sourceFile, false);
+                    //     if (JSApi.JS_IsException(typeValue))
+                    //     {
+                    //         var ex = ctx.GetExceptionString();
+                    //         Debug.LogError(ex);
+                    //     }
+                    //     else
+                    //     {
+                    //         var instValue = _target.RebindBridge(ctx, typeValue);
+                    //         JSApi.JS_FreeValue(ctx, instValue);
+                    //         JSApi.JS_FreeValue(ctx, typeValue);
+                    //         // SetBridge();
+                    //     }
                     // }
                 }
             }
