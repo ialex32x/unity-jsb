@@ -86,6 +86,25 @@ namespace QuickJS
             return GetRuntime(ctx).GetByteBufferAllocator()?.Alloc(size);
         }
 
+        public static bool IsEditorRuntime(ScriptRuntime runtime)
+        {
+            var result = false;
+            _rwlock.EnterWriteLock();
+            var len = _runtimeRefs.Count;
+            
+            for (int i = 0; i < len; ++i)
+            {
+                var runtimeRef = _runtimeRefs[i];
+                if (runtimeRef.target == runtime)
+                {
+                    result = true;
+                    break;
+                }
+            }
+            _rwlock.ExitWriteLock();
+            return result;
+        }
+
         /// <summary>
         /// (内部使用) 获取第一个有效的前台运行时 (不包括编辑器运行时)
         /// </summary>
@@ -104,6 +123,7 @@ namespace QuickJS
                     if (runtime != null && !runtime.isWorker && runtime.isRunning && runtime.isValid)
                     {
                         target = runtime;
+                        break;
                     }
                 }
             }
@@ -128,6 +148,7 @@ namespace QuickJS
                 if (runtime != null && !runtime.isWorker && runtime.isRunning && runtime.isValid)
                 {
                     target = runtime;
+                    break;
                 }
             }
             _rwlock.ExitWriteLock();

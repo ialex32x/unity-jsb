@@ -1,4 +1,6 @@
-﻿namespace QuickJS.Unity
+﻿using System;
+
+namespace QuickJS.Unity
 {
     using UnityEditor;
     using UnityEngine;
@@ -25,16 +27,30 @@
         private bool _onInspectorGUIValid;
         private JSValue _onInspectorGUIFunc;
 
-        public void SetBridge(JSContext ctx, JSValue this_obj, JSValue ctor)
+        public void CreateScriptInstance(JSContext ctx, JSValue this_obj, JSValue ctor)
         {
+            if (_released)
+            {
+                return;
+            }
+            
             var context = ScriptEngine.GetContext(ctx);
             if (context == null)
             {
                 return;
             }
-
-            context.OnDestroy += OnContextDestroy;
-            _released = false;
+            
+            if (_ctx != (JSContext)ctx)
+            {
+                var oldContext = ScriptEngine.GetContext(_ctx);
+                if (oldContext != null)
+                {
+                    oldContext.OnDestroy -= OnContextDestroy;
+                }
+                context.OnDestroy += OnContextDestroy;
+                _ctx = ctx;
+            }
+            
             _ctx = ctx;
             _this_obj = JSApi.JS_DupValue(ctx, this_obj);
 
@@ -74,6 +90,28 @@
             Release();
         }
 
+        private void ReleaseJSValues()
+        {
+            if (_ctx.IsValid())
+            {
+                JSApi.JS_FreeValue(_ctx, _onDestroyFunc);
+                _onDestroyValid = false;
+
+                JSApi.JS_FreeValue(_ctx, _onEnableFunc);
+                _onEnableValid = false;
+
+                JSApi.JS_FreeValue(_ctx, _onDisableFunc);
+                _onDisableValid = false;
+
+                JSApi.JS_FreeValue(_ctx, _onInspectorGUIFunc);
+                _onInspectorGUIValid = false;
+
+                JSApi.JS_FreeValue(_ctx, _this_obj);
+                _this_obj = JSApi.JS_UNDEFINED;
+
+            }
+        }
+
         void Release()
         {
             if (_released)
@@ -82,19 +120,8 @@
             }
             _released = true;
 
-            JSApi.JS_FreeValue(_ctx, _onDestroyFunc);
-            _onDestroyValid = false;
-
-            JSApi.JS_FreeValue(_ctx, _onEnableFunc);
-            _onEnableValid = false;
-
-            JSApi.JS_FreeValue(_ctx, _onDisableFunc);
-            _onDisableValid = false;
-
-            JSApi.JS_FreeValue(_ctx, _onInspectorGUIFunc);
-            _onInspectorGUIValid = false;
-
-            JSApi.JS_FreeValue(_ctx, _this_obj);
+            _target.ReleaseJSValues();
+            ReleaseJSValues();
 
             var context = ScriptEngine.GetContext(_ctx);
             if (context != null)
@@ -103,9 +130,10 @@
             }
         }
 
-        private void SetBridge()
+        private void CreateScriptInstance()
         {
             //TODO: 旧值释放
+            ReleaseJSValues();
 
             var ctx = _target.ctx;
             if (ctx.IsValid())
@@ -113,18 +141,42 @@
                 var editorClass = _target.GetProperty("__editor__");
                 if (JSApi.JS_IsConstructor(ctx, editorClass) == 1)
                 {
-                    var cache = ScriptEngine.GetObjectCache(ctx);
-                    var object_id = cache.AddObject(this, false);
+                    var runtime = ScriptEngine.GetRuntime(ctx);
+                    var objectCache = runtime.GetObjectCache();
+                    
+                    // 旧的绑定值释放？
+                    if (!_this_obj.IsNullish())
+                    {
+                        var payload = JSApi.jsb_get_payload_header(_this_obj);
+                        if (payload.type_id == BridgeObjectType.ObjectRef)
+                        {
+
+                            if (objectCache != null)
+                            {
+                                object obj;
+                                try
+                                {
+                                    objectCache.RemoveObject(payload.value, out obj);
+                                }
+                                catch (Exception exception)
+                                {
+                                    runtime.GetLogger()?.WriteException(exception);
+                                }
+                            }
+                        }
+                    }
+                    
+                    var object_id = objectCache.AddObject(this, false);
                     var val = JSApi.jsb_construct_bridge_object(ctx, editorClass, object_id);
                     if (val.IsException())
                     {
                         ctx.print_exception();
-                        cache.RemoveObject(object_id);
+                        objectCache.RemoveObject(object_id);
                     }
                     else
                     {
-                        cache.AddJSValue(this, val);
-                        this.SetBridge(ctx, val, editorClass);
+                        objectCache.AddJSValue(this, val);
+                        CreateScriptInstance(ctx, val, editorClass);
                         JSApi.JS_FreeValue(ctx, val);
                     }
                 }
@@ -135,7 +187,7 @@
         void Awake()
         {
             _target = target as JSBehaviour;
-            SetBridge();
+            CreateScriptInstance();
         }
 
         void OnEnable()
@@ -197,27 +249,27 @@
                     }
 
                     // ScriptInstance 释放的问题
-                    // 
-                    // var context = ScriptEngine.GetContext();
-                    // if (context != null)
-                    // {
-                    //     var ctx = (JSContext)context;
-                    //     var snippet = $"require('{_target.scriptRef.modulePath}')['{_target.scriptRef.className}']";
-                    //     var bytes = System.Text.Encoding.UTF8.GetBytes(snippet);
-                    //     var typeValue = ScriptRuntime.EvalSource(ctx, bytes, _target.scriptRef.sourceFile, false);
-                    //     if (JSApi.JS_IsException(typeValue))
-                    //     {
-                    //         var ex = ctx.GetExceptionString();
-                    //         Debug.LogError(ex);
-                    //     }
-                    //     else
-                    //     {
-                    //         var instValue = _target.RebindBridge(ctx, typeValue);
-                    //         JSApi.JS_FreeValue(ctx, instValue);
-                    //         JSApi.JS_FreeValue(ctx, typeValue);
-                    //         // SetBridge();
-                    //     }
-                    // }
+                    
+                    var context = ScriptEngine.GetContext();
+                    if (context != null)
+                    {
+                        var ctx = (JSContext)context;
+                        var snippet = $"require('{_target.scriptRef.modulePath}')['{_target.scriptRef.className}']";
+                        var bytes = System.Text.Encoding.UTF8.GetBytes(snippet);
+                        var typeValue = ScriptRuntime.EvalSource(ctx, bytes, _target.scriptRef.sourceFile, false);
+                        if (JSApi.JS_IsException(typeValue))
+                        {
+                            var ex = ctx.GetExceptionString();
+                            Debug.LogError(ex);
+                        }
+                        else
+                        {
+                            var instValue = _target.CreateScriptInstance(ctx, typeValue, false);
+                            JSApi.JS_FreeValue(ctx, instValue);
+                            JSApi.JS_FreeValue(ctx, typeValue);
+                            CreateScriptInstance();
+                        }
+                    }
                 }
             }
             EditorGUILayout.EndHorizontal();

@@ -1,12 +1,13 @@
 using System;
 using System.Collections.Generic;
+using UnityEditor;
 
 namespace QuickJS.Unity
 {
     using Native;
     using UnityEngine;
 
-    public class JSBehaviour : MonoBehaviour // , ISerializationCallbackReceiver
+    public class JSBehaviour : MonoBehaviour , ISerializationCallbackReceiver
     {
         // 在编辑器运行时下与 js 脚本建立链接关系
         public JSBehaviourScriptRef scriptRef;
@@ -114,38 +115,25 @@ namespace QuickJS.Unity
             }
         }
 
+        // 在 gameObject 上创建一个新的脚本组件实例
         // ctor: js class
-        public static JSValue CreateBridge(GameObject gameObject, JSContext ctx, JSValue ctor)
+        public static JSValue CreateScriptInstance(GameObject gameObject, JSContext ctx, JSValue ctor, bool bSetupCallbacks)
         {
             if (JSApi.JS_IsConstructor(ctx, ctor) == 1)
             {
                 var header = JSApi.jsb_get_payload_header(ctor);
                 if (header.type_id == BridgeObjectType.None) // it's a plain js value
                 {
-                    var bridge = gameObject.AddComponent<Unity.JSBehaviour>();
-                    var cache = ScriptEngine.GetObjectCache(ctx);
-                    var object_id = cache.AddObject(bridge, false);
-                    var val = JSApi.jsb_construct_bridge_object(ctx, ctor, object_id);
-                    if (val.IsException())
-                    {
-                        cache.RemoveObject(object_id);
-                    }
-                    else
-                    {
-                        cache.AddJSValue(bridge, val);
-                        bridge.SetBridge(ctx, val);
-                        bridge.scriptRef.state = EJSBehaviourLoadState.Dynamic;
-                        // JSApi.JSB_SetBridgeType(ctx, val, type_id);
-                    }
-
-                    return val;
+                    var bridge = gameObject.AddComponent<JSBehaviour>();
+                    return bridge.CreateScriptInstance(ctx, ctor, bSetupCallbacks);
                 }
             }
 
             return JSApi.JS_UNDEFINED;
         }
 
-        public JSValue RebindBridge(JSContext ctx, JSValue ctor)
+        // 在当前 JSBehaviour 实例上创建一个脚本实例并与之绑定
+        public JSValue CreateScriptInstance(JSContext ctx, JSValue ctor, bool bSetupCallbacks)
         {
             if (JSApi.JS_IsConstructor(ctx, ctor) == 1)
             {
@@ -187,7 +175,7 @@ namespace QuickJS.Unity
                     else
                     {
                         cache.AddJSValue(this, val);
-                        this.SetBridge(ctx, val);
+                        this.SetScriptInstance(ctx, val, bSetupCallbacks);
                         // JSApi.JSB_SetBridgeType(ctx, val, type_id);
                     }
 
@@ -198,7 +186,7 @@ namespace QuickJS.Unity
             return JSApi.JS_UNDEFINED;
         }
 
-        public void SetBridge(JSContext ctx, JSValue this_obj)
+        public void SetScriptInstance(JSContext ctx, JSValue this_obj, bool bSetupCallbacks)
         {
             if (_released)
             {
@@ -211,7 +199,7 @@ namespace QuickJS.Unity
                 return;
             }
 
-            RemoveJSValues();
+            ReleaseJSValues();
             if (_ctx != (JSContext)ctx)
             {
                 var oldContext = ScriptEngine.GetContext(_ctx);
@@ -225,48 +213,58 @@ namespace QuickJS.Unity
 
             _this_obj = JSApi.JS_DupValue(ctx, this_obj);
 
-            _updateFunc = JSApi.JS_GetProperty(ctx, this_obj, context.GetAtom("Update"));
-            _updateValid = JSApi.JS_IsFunction(ctx, _updateFunc) == 1;
+            if (bSetupCallbacks)
+            {
+                _updateFunc = JSApi.JS_GetProperty(ctx, this_obj, context.GetAtom("Update"));
+                _updateValid = JSApi.JS_IsFunction(ctx, _updateFunc) == 1;
 
-            _lateUpdateFunc = JSApi.JS_GetProperty(ctx, this_obj, context.GetAtom("LateUpdate"));
-            _lateUpdateValid = JSApi.JS_IsFunction(ctx, _lateUpdateFunc) == 1;
+                _lateUpdateFunc = JSApi.JS_GetProperty(ctx, this_obj, context.GetAtom("LateUpdate"));
+                _lateUpdateValid = JSApi.JS_IsFunction(ctx, _lateUpdateFunc) == 1;
 
-            _fixedUpdateFunc = JSApi.JS_GetProperty(ctx, this_obj, context.GetAtom("FixedUpdate"));
-            _fixedUpdateValid = JSApi.JS_IsFunction(ctx, _fixedUpdateFunc) == 1;
+                _fixedUpdateFunc = JSApi.JS_GetProperty(ctx, this_obj, context.GetAtom("FixedUpdate"));
+                _fixedUpdateValid = JSApi.JS_IsFunction(ctx, _fixedUpdateFunc) == 1;
 
-            _startFunc = JSApi.JS_GetProperty(ctx, this_obj, context.GetAtom("Start"));
-            _startValid = JSApi.JS_IsFunction(ctx, _startFunc) == 1;
+                _startFunc = JSApi.JS_GetProperty(ctx, this_obj, context.GetAtom("Start"));
+                _startValid = JSApi.JS_IsFunction(ctx, _startFunc) == 1;
 
-            _onEnableFunc = JSApi.JS_GetProperty(ctx, this_obj, context.GetAtom("OnEnable"));
-            _onEnableValid = JSApi.JS_IsFunction(ctx, _onEnableFunc) == 1;
+                _onEnableFunc = JSApi.JS_GetProperty(ctx, this_obj, context.GetAtom("OnEnable"));
+                _onEnableValid = JSApi.JS_IsFunction(ctx, _onEnableFunc) == 1;
 
-            _onDisableFunc = JSApi.JS_GetProperty(ctx, this_obj, context.GetAtom("OnDisable"));
-            _onDisableValid = JSApi.JS_IsFunction(ctx, _onDisableFunc) == 1;
+                _onDisableFunc = JSApi.JS_GetProperty(ctx, this_obj, context.GetAtom("OnDisable"));
+                _onDisableValid = JSApi.JS_IsFunction(ctx, _onDisableFunc) == 1;
 
-            _onApplicationFocusFunc = JSApi.JS_GetProperty(ctx, this_obj, context.GetAtom("OnApplicationFocus"));
-            _onApplicationFocusValid = JSApi.JS_IsFunction(ctx, _onApplicationFocusFunc) == 1;
+                _onApplicationFocusFunc = JSApi.JS_GetProperty(ctx, this_obj, context.GetAtom("OnApplicationFocus"));
+                _onApplicationFocusValid = JSApi.JS_IsFunction(ctx, _onApplicationFocusFunc) == 1;
 
 #if UNITY_EDITOR
-            _onDrawGizmosFunc = JSApi.JS_GetProperty(ctx, this_obj, context.GetAtom("OnDrawGizmos"));
-            _onDrawGizmosValid = JSApi.JS_IsFunction(ctx, _onDrawGizmosFunc) == 1;
+                _onDrawGizmosFunc = JSApi.JS_GetProperty(ctx, this_obj, context.GetAtom("OnDrawGizmos"));
+                _onDrawGizmosValid = JSApi.JS_IsFunction(ctx, _onDrawGizmosFunc) == 1;
 #endif
 
-            _onApplicationPauseFunc = JSApi.JS_GetProperty(ctx, this_obj, context.GetAtom("OnApplicationPause"));
-            _onApplicationPauseValid = JSApi.JS_IsFunction(ctx, _onApplicationPauseFunc) == 1;
+                _onApplicationPauseFunc = JSApi.JS_GetProperty(ctx, this_obj, context.GetAtom("OnApplicationPause"));
+                _onApplicationPauseValid = JSApi.JS_IsFunction(ctx, _onApplicationPauseFunc) == 1;
 
-            _onApplicationQuitFunc = JSApi.JS_GetProperty(ctx, this_obj, context.GetAtom("OnApplicationQuit"));
-            _onApplicationQuitValid = JSApi.JS_IsFunction(ctx, _onApplicationQuitFunc) == 1;
+                _onApplicationQuitFunc = JSApi.JS_GetProperty(ctx, this_obj, context.GetAtom("OnApplicationQuit"));
+                _onApplicationQuitValid = JSApi.JS_IsFunction(ctx, _onApplicationQuitFunc) == 1;
 
-            _onDestroyFunc = JSApi.JS_GetProperty(ctx, this_obj, context.GetAtom("OnDestroy"));
-            _onDestroyValid = JSApi.JS_IsFunction(ctx, _onDestroyFunc) == 1;
+                _onDestroyFunc = JSApi.JS_GetProperty(ctx, this_obj, context.GetAtom("OnDestroy"));
+                _onDestroyValid = JSApi.JS_IsFunction(ctx, _onDestroyFunc) == 1;
 
-            var awake_obj = JSApi.JS_GetProperty(ctx, this_obj, context.GetAtom("Awake"));
+#if UNITY_EDITOR
+                if (EditorApplication.isPlaying)
+                {
+#endif
+                    var awakeFunc = JSApi.JS_GetProperty(ctx, this_obj, context.GetAtom("Awake"));
 
-            Call(awake_obj);
-            JSApi.JS_FreeValue(_ctx, awake_obj);
-            if (enabled && _onEnableValid)
-            {
-                Call(_onEnableFunc);
+                    Call(awakeFunc);
+                    JSApi.JS_FreeValue(_ctx, awakeFunc);
+                    if (enabled && _onEnableValid)
+                    {
+                        Call(_onEnableFunc);
+                    }
+#if UNITY_EDITOR
+                }
+#endif
             }
         }
 
@@ -288,7 +286,7 @@ namespace QuickJS.Unity
             Release();
         }
 
-        private void RemoveJSValues()
+        public void ReleaseJSValues()
         {
             if (_updateValid)
             {
@@ -359,8 +357,11 @@ namespace QuickJS.Unity
                 _onDestroyValid = false;
             }
 
-            JSApi.JS_FreeValue(_ctx, _this_obj);
-            _this_obj = JSApi.JS_UNDEFINED;
+            if (!_this_obj.IsNullish())
+            {
+                JSApi.JS_FreeValue(_ctx, _this_obj);
+                _this_obj = JSApi.JS_UNDEFINED;
+            }
         }
 
         void Release()
@@ -370,7 +371,7 @@ namespace QuickJS.Unity
                 return;
             }
             _released = true;
-            RemoveJSValues();
+            ReleaseJSValues();
 
             var context = ScriptEngine.GetContext(_ctx);
             if (context != null)
@@ -529,6 +530,14 @@ namespace QuickJS.Unity
                 JSApi.JS_FreeValue(_ctx, rval);
             }
             Release();
+        }
+
+        public void OnBeforeSerialize()
+        {
+        }
+
+        public void OnAfterDeserialize()
+        {
         }
     }
 }
