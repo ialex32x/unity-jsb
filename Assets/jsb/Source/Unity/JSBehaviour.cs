@@ -7,7 +7,7 @@ namespace QuickJS.Unity
     using Native;
     using UnityEngine;
 
-    public class JSBehaviour : MonoBehaviour , ISerializationCallbackReceiver
+    public class JSBehaviour : MonoBehaviour, ISerializationCallbackReceiver
     {
         // 在编辑器运行时下与 js 脚本建立链接关系
         public JSBehaviourScriptRef scriptRef;
@@ -53,6 +53,12 @@ namespace QuickJS.Unity
 
         private bool _onDestroyValid;
         private JSValue _onDestroyFunc;
+
+        private bool _onBeforeSerializeValid;
+        private JSValue _onBeforeSerializeFunc;
+
+        private bool _onAfterDeserializeValid;
+        private JSValue _onAfterDeserializeFunc;
 
 #if UNITY_EDITOR
         private bool _onDrawGizmosValid;
@@ -182,7 +188,7 @@ namespace QuickJS.Unity
                     return val;
                 }
             }
-            
+
             return JSApi.JS_UNDEFINED;
         }
 
@@ -212,6 +218,11 @@ namespace QuickJS.Unity
             }
 
             _this_obj = JSApi.JS_DupValue(ctx, this_obj);
+
+            _onBeforeSerializeFunc = JSApi.JS_GetProperty(ctx, this_obj, context.GetAtom("OnBeforeSerialize"));
+            _onBeforeSerializeValid = JSApi.JS_IsFunction(ctx, _onBeforeSerializeFunc) == 1;
+            _onAfterDeserializeFunc = JSApi.JS_GetProperty(ctx, this_obj, context.GetAtom("OnAfterDeserialize"));
+            _onAfterDeserializeValid = JSApi.JS_IsFunction(ctx, _onAfterDeserializeFunc) == 1;
 
             if (bSetupCallbacks)
             {
@@ -288,74 +299,59 @@ namespace QuickJS.Unity
 
         public void ReleaseJSValues()
         {
-            if (_updateValid)
-            {
-                JSApi.JS_FreeValue(_ctx, _updateFunc);
-                _updateFunc = JSApi.JS_UNDEFINED;
-                _updateValid = false;
-            }
-            if (_lateUpdateValid)
-            {
-                JSApi.JS_FreeValue(_ctx, _lateUpdateFunc);
-                _lateUpdateFunc = JSApi.JS_UNDEFINED;
-                _lateUpdateValid = false;
-            }
-            if (_fixedUpdateValid)
-            {
-                JSApi.JS_FreeValue(_ctx, _fixedUpdateFunc);
-                _fixedUpdateFunc = JSApi.JS_UNDEFINED;
-                _fixedUpdateValid = false;
-            }
-            if (_startValid)
-            {
-                JSApi.JS_FreeValue(_ctx, _startFunc);
-                _startFunc = JSApi.JS_UNDEFINED;
-                _startValid = false;
-            }
-            if (_onEnableValid)
-            {
-                JSApi.JS_FreeValue(_ctx, _onEnableFunc);
-                _onEnableFunc = JSApi.JS_UNDEFINED;
-                _onEnableValid = false;
-            }
-            if (_onDisableValid)
-            {
-                JSApi.JS_FreeValue(_ctx, _onDisableFunc);
-                _onDisableFunc = JSApi.JS_UNDEFINED;
-                _onDisableValid = false;
-            }
-            if (_onApplicationFocusValid)
-            {
-                JSApi.JS_FreeValue(_ctx, _onApplicationFocusFunc);
-                _onApplicationFocusFunc = JSApi.JS_UNDEFINED;
-                _onApplicationFocusValid = false;
-            }
+            JSApi.JS_FreeValue(_ctx, _updateFunc);
+            _updateFunc = JSApi.JS_UNDEFINED;
+            _updateValid = false;
+            
+            JSApi.JS_FreeValue(_ctx, _lateUpdateFunc);
+            _lateUpdateFunc = JSApi.JS_UNDEFINED;
+            _lateUpdateValid = false;
+            
+            JSApi.JS_FreeValue(_ctx, _fixedUpdateFunc);
+            _fixedUpdateFunc = JSApi.JS_UNDEFINED;
+            _fixedUpdateValid = false;
+            
+            JSApi.JS_FreeValue(_ctx, _startFunc);
+            _startFunc = JSApi.JS_UNDEFINED;
+            _startValid = false;
+            
+            JSApi.JS_FreeValue(_ctx, _onEnableFunc);
+            _onEnableFunc = JSApi.JS_UNDEFINED;
+            _onEnableValid = false;
+            
+            JSApi.JS_FreeValue(_ctx, _onDisableFunc);
+            _onDisableFunc = JSApi.JS_UNDEFINED;
+            _onDisableValid = false;
+            
+            JSApi.JS_FreeValue(_ctx, _onApplicationFocusFunc);
+            _onApplicationFocusFunc = JSApi.JS_UNDEFINED;
+            _onApplicationFocusValid = false;
 #if UNITY_EDITOR
-            if (_onDrawGizmosValid)
-            {
-                JSApi.JS_FreeValue(_ctx, _onDrawGizmosFunc);
-                _onDrawGizmosFunc = JSApi.JS_UNDEFINED;
-                _onDrawGizmosValid = false;
-            }
+            
+            JSApi.JS_FreeValue(_ctx, _onDrawGizmosFunc);
+            _onDrawGizmosFunc = JSApi.JS_UNDEFINED;
+            _onDrawGizmosValid = false;
 #endif
-            if (_onApplicationPauseValid)
-            {
-                JSApi.JS_FreeValue(_ctx, _onApplicationPauseFunc);
-                _onApplicationPauseFunc = JSApi.JS_UNDEFINED;
-                _onApplicationPauseValid = false;
-            }
-            if (_onApplicationQuitValid)
-            {
-                JSApi.JS_FreeValue(_ctx, _onApplicationQuitFunc);
-                _onApplicationQuitFunc = JSApi.JS_UNDEFINED;
-                _onApplicationQuitValid = false;
-            }
-            if (_onDestroyValid)
-            {
-                JSApi.JS_FreeValue(_ctx, _onDestroyFunc);
-                _onDestroyFunc = JSApi.JS_UNDEFINED;
-                _onDestroyValid = false;
-            }
+            
+            JSApi.JS_FreeValue(_ctx, _onApplicationPauseFunc);
+            _onApplicationPauseFunc = JSApi.JS_UNDEFINED;
+            _onApplicationPauseValid = false;
+            
+            JSApi.JS_FreeValue(_ctx, _onApplicationQuitFunc);
+            _onApplicationQuitFunc = JSApi.JS_UNDEFINED;
+            _onApplicationQuitValid = false;
+            
+            JSApi.JS_FreeValue(_ctx, _onDestroyFunc);
+            _onDestroyFunc = JSApi.JS_UNDEFINED;
+            _onDestroyValid = false;
+
+            JSApi.JS_FreeValue(_ctx, _onBeforeSerializeFunc);
+            _onBeforeSerializeFunc = JSApi.JS_UNDEFINED;
+            _onBeforeSerializeValid = false;
+
+            JSApi.JS_FreeValue(_ctx, _onAfterDeserializeFunc);
+            _onAfterDeserializeFunc = JSApi.JS_UNDEFINED;
+            _onAfterDeserializeValid = false;
 
             if (!_this_obj.IsNullish())
             {
@@ -534,10 +530,28 @@ namespace QuickJS.Unity
 
         public void OnBeforeSerialize()
         {
+            if (_onBeforeSerializeValid)
+            {
+                var rval = JSApi.JS_Call(_ctx, _onBeforeSerializeFunc, _this_obj);
+                if (rval.IsException())
+                {
+                    _ctx.print_exception();
+                }
+                JSApi.JS_FreeValue(_ctx, rval);
+            }
         }
 
         public void OnAfterDeserialize()
         {
+            if (_onAfterDeserializeValid)
+            {
+                var rval = JSApi.JS_Call(_ctx, _onAfterDeserializeFunc, _this_obj);
+                if (rval.IsException())
+                {
+                    _ctx.print_exception();
+                }
+                JSApi.JS_FreeValue(_ctx, rval);
+            }
         }
     }
 }

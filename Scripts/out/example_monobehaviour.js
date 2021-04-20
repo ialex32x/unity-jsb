@@ -30,6 +30,12 @@ let MyClass = class MyClass extends UnityEngine_1.MonoBehaviour {
     OnDestroy() {
         console.log("MyClass.OnDestroy", this._tick++);
     }
+    OnBeforeSerialize() {
+        console.log("MyClass.OnBeforeSerialize");
+    }
+    OnAfterDeserialize() {
+        console.log("MyClass.OnAfterDeserialize");
+    }
     speak(text) {
         console.log(text);
     }

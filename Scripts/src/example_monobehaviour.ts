@@ -25,6 +25,14 @@ export class MyClass extends MonoBehaviour {
     OnDestroy() {
         console.log("MyClass.OnDestroy", this._tick++);
     }
+    
+    OnBeforeSerialize() {
+        console.log("MyClass.OnBeforeSerialize");
+    }
+
+    OnAfterDeserialize() {
+        console.log("MyClass.OnAfterDeserialize");
+    }
 
     speak(text: string) {
         console.log(text);

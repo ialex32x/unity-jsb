@@ -95,20 +95,23 @@ namespace QuickJS.Unity
             if (_ctx.IsValid())
             {
                 JSApi.JS_FreeValue(_ctx, _onDestroyFunc);
+                _onDestroyFunc = JSApi.JS_UNDEFINED;
                 _onDestroyValid = false;
 
                 JSApi.JS_FreeValue(_ctx, _onEnableFunc);
+                _onEnableFunc = JSApi.JS_UNDEFINED;
                 _onEnableValid = false;
 
                 JSApi.JS_FreeValue(_ctx, _onDisableFunc);
+                _onDisableFunc = JSApi.JS_UNDEFINED;
                 _onDisableValid = false;
 
                 JSApi.JS_FreeValue(_ctx, _onInspectorGUIFunc);
+                _onInspectorGUIFunc = JSApi.JS_UNDEFINED;
                 _onInspectorGUIValid = false;
 
                 JSApi.JS_FreeValue(_ctx, _this_obj);
                 _this_obj = JSApi.JS_UNDEFINED;
-
             }
         }
 
