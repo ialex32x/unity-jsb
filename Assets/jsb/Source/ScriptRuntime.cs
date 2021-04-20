@@ -52,6 +52,7 @@ namespace QuickJS
         private Utils.AutoReleasePool _autorelease;
         private IAsyncManager _asyncManager;
 
+        private bool _mainScriptRun;
         private bool _isValid; // destroy 调用后立即 = false
         private bool _isRunning;
         private bool _isWorker;
@@ -62,6 +63,8 @@ namespace QuickJS
             get { return _withStacktrace; }
             set { _withStacktrace = value; }
         }
+
+        public bool mainScriptRun { get { return _mainScriptRun; } }
 
         public bool isReflectBind { get { return _isReflectBind; } }
 
@@ -708,6 +711,7 @@ namespace QuickJS
 
         public object EvalMain(string fileName, Type returnType)
         {
+            _mainScriptRun = true;
             var resolvedPath = ResolveFilePath("", fileName);
             if (resolvedPath != null)
             {

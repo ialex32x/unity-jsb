@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using UnityEditor;
 
 namespace QuickJS.Unity
 {
@@ -22,51 +21,54 @@ namespace QuickJS.Unity
 
         public bool isScriptInstanced => _isScriptInstanced;
 
-        private bool _isScriptInstanced;
+        private bool _isScriptInstanced = false;
 
         private bool _released;
         private JSContext _ctx;
         private JSValue _this_obj = JSApi.JS_UNDEFINED;
 
         private bool _updateValid;
-        private JSValue _updateFunc;
+        private JSValue _updateFunc = JSApi.JS_UNDEFINED;
 
         private bool _lateUpdateValid;
-        private JSValue _lateUpdateFunc;
+        private JSValue _lateUpdateFunc = JSApi.JS_UNDEFINED;
 
         private bool _fixedUpdateValid;
-        private JSValue _fixedUpdateFunc;
+        private JSValue _fixedUpdateFunc = JSApi.JS_UNDEFINED;
 
         private bool _startValid;
-        private JSValue _startFunc;
+        private JSValue _startFunc = JSApi.JS_UNDEFINED;
 
         private bool _onEnableValid;
-        private JSValue _onEnableFunc;
+        private JSValue _onEnableFunc = JSApi.JS_UNDEFINED;
 
         private bool _onDisableValid;
-        private JSValue _onDisableFunc;
+        private JSValue _onDisableFunc = JSApi.JS_UNDEFINED;
 
         private bool _onApplicationFocusValid;
-        private JSValue _onApplicationFocusFunc;
+        private JSValue _onApplicationFocusFunc = JSApi.JS_UNDEFINED;
 
         private bool _onApplicationPauseValid;
-        private JSValue _onApplicationPauseFunc;
+        private JSValue _onApplicationPauseFunc = JSApi.JS_UNDEFINED;
 
         private bool _onApplicationQuitValid;
-        private JSValue _onApplicationQuitFunc;
+        private JSValue _onApplicationQuitFunc = JSApi.JS_UNDEFINED;
 
         private bool _onDestroyValid;
-        private JSValue _onDestroyFunc;
+        private JSValue _onDestroyFunc = JSApi.JS_UNDEFINED;
+
+        private bool _awakeValid;
+        private JSValue _awakeFunc = JSApi.JS_UNDEFINED;
 
         private bool _onBeforeSerializeValid;
-        private JSValue _onBeforeSerializeFunc;
+        private JSValue _onBeforeSerializeFunc = JSApi.JS_UNDEFINED;
 
         private bool _onAfterDeserializeValid;
-        private JSValue _onAfterDeserializeFunc;
+        private JSValue _onAfterDeserializeFunc = JSApi.JS_UNDEFINED;
 
 #if UNITY_EDITOR
         private bool _onDrawGizmosValid;
-        private JSValue _onDrawGizmosFunc;
+        private JSValue _onDrawGizmosFunc = JSApi.JS_UNDEFINED;
 #endif
 
         public int IsInstanceOf(JSValue ctor)
@@ -127,7 +129,7 @@ namespace QuickJS.Unity
 
         // 在 gameObject 上创建一个新的脚本组件实例
         // ctor: js class
-        public static JSValue CreateScriptInstance(GameObject gameObject, JSContext ctx, JSValue ctor, bool bSetupCallbacks)
+        public static JSValue CreateScriptInstance(GameObject gameObject, JSContext ctx, JSValue ctor, bool bSetupCallbacks, bool execAwake)
         {
             if (JSApi.JS_IsConstructor(ctx, ctor) == 1)
             {
@@ -135,7 +137,7 @@ namespace QuickJS.Unity
                 if (header.type_id == BridgeObjectType.None) // it's a plain js value
                 {
                     var bridge = gameObject.AddComponent<JSBehaviour>();
-                    return bridge.CreateScriptInstance(ctx, ctor, bSetupCallbacks);
+                    return bridge.CreateScriptInstance(ctx, ctor, bSetupCallbacks, execAwake);
                 }
             }
 
@@ -147,8 +149,14 @@ namespace QuickJS.Unity
             _isScriptInstanced = true;
         }
 
+        public void ReleaseScriptInstance()
+        {
+            _isScriptInstanced = false;
+            ReleaseJSValues();
+        }
+
         // 在当前 JSBehaviour 实例上创建一个脚本实例并与之绑定
-        public JSValue CreateScriptInstance(JSContext ctx, JSValue ctor, bool bSetupCallbacks)
+        public JSValue CreateScriptInstance(JSContext ctx, JSValue ctor, bool bSetupCallbacks, bool execAwake)
         {
             if (JSApi.JS_IsConstructor(ctx, ctor) == 1)
             {
@@ -191,7 +199,7 @@ namespace QuickJS.Unity
                     else
                     {
                         cache.AddJSValue(this, val);
-                        this.SetScriptInstance(ctx, val, bSetupCallbacks);
+                        this.SetScriptInstance(ctx, val, bSetupCallbacks, execAwake);
                         // JSApi.JSB_SetBridgeType(ctx, val, type_id);
                     }
 
@@ -203,7 +211,7 @@ namespace QuickJS.Unity
             return JSApi.JS_UNDEFINED;
         }
 
-        public void SetScriptInstance(JSContext ctx, JSValue this_obj, bool bSetupCallbacks)
+        public void SetScriptInstance(JSContext ctx, JSValue this_obj, bool bSetupCallbacks, bool execAwake)
         {
             if (_released)
             {
@@ -273,17 +281,20 @@ namespace QuickJS.Unity
                 _onDestroyFunc = JSApi.JS_GetProperty(ctx, this_obj, context.GetAtom("OnDestroy"));
                 _onDestroyValid = JSApi.JS_IsFunction(ctx, _onDestroyFunc) == 1;
 
+                _awakeFunc = JSApi.JS_GetProperty(ctx, this_obj, context.GetAtom("Awake"));
+                _awakeValid = JSApi.JS_IsFunction(ctx, _awakeFunc) == 1;
+
 #if UNITY_EDITOR
-                if (EditorApplication.isPlaying)
+                if (UnityEditor.EditorApplication.isPlaying)
                 {
 #endif
-                    var awakeFunc = JSApi.JS_GetProperty(ctx, this_obj, context.GetAtom("Awake"));
-
-                    CallJSFunc(awakeFunc);
-                    JSApi.JS_FreeValue(_ctx, awakeFunc);
-                    if (enabled && _onEnableValid)
+                    if (execAwake)
                     {
-                        CallJSFunc(_onEnableFunc);
+                        CallJSFunc(_awakeFunc);
+                        if (enabled && _onEnableValid)
+                        {
+                            CallJSFunc(_onEnableFunc);
+                        }
                     }
 #if UNITY_EDITOR
                 }
@@ -357,6 +368,10 @@ namespace QuickJS.Unity
             _onDestroyFunc = JSApi.JS_UNDEFINED;
             _onDestroyValid = false;
 
+            JSApi.JS_FreeValue(_ctx, _awakeFunc);
+            _awakeFunc = JSApi.JS_UNDEFINED;
+            _awakeValid = false;
+
             JSApi.JS_FreeValue(_ctx, _onBeforeSerializeFunc);
             _onBeforeSerializeFunc = JSApi.JS_UNDEFINED;
             _onBeforeSerializeValid = false;
@@ -419,6 +434,19 @@ namespace QuickJS.Unity
             if (_fixedUpdateValid)
             {
                 var rval = JSApi.JS_Call(_ctx, _fixedUpdateFunc, _this_obj);
+                if (rval.IsException())
+                {
+                    _ctx.print_exception();
+                }
+                JSApi.JS_FreeValue(_ctx, rval);
+            }
+        }
+
+        void Awake()
+        {
+            if (_awakeValid)
+            {
+                var rval = JSApi.JS_Call(_ctx, _awakeFunc, _this_obj);
                 if (rval.IsException())
                 {
                     _ctx.print_exception();
@@ -555,6 +583,48 @@ namespace QuickJS.Unity
 
         public void OnAfterDeserialize()
         {
+            // 在游戏运行时中，需要在此处建立脚本连接
+
+            if (!_isScriptInstanced)
+            {
+                if (!string.IsNullOrEmpty(scriptRef.modulePath) && !string.IsNullOrEmpty(scriptRef.className))
+                {
+                    var runtime = ScriptEngine.GetRuntime(false);
+                    if (runtime != null && runtime.mainScriptRun)
+                    {
+                        var context = runtime.GetMainContext();
+                        if (context != null)
+                        {
+                            var ctx = (JSContext) context;
+                            var snippet = $"require('{scriptRef.modulePath}')['{scriptRef.className}']";
+                            var bytes = System.Text.Encoding.UTF8.GetBytes(snippet);
+                            var typeValue = ScriptRuntime.EvalSource(ctx, bytes, scriptRef.sourceFile, false);
+                            if (JSApi.JS_IsException(typeValue))
+                            {
+                                var ex = ctx.GetExceptionString();
+                                Debug.LogError(ex);
+                                CreateUnresolvedScriptInstance();
+                            }
+                            else
+                            {
+                                var instValue = CreateScriptInstance(ctx, typeValue, true, false);
+                                JSApi.JS_FreeValue(ctx, instValue);
+                                JSApi.JS_FreeValue(ctx, typeValue);
+
+                                if (!instValue.IsObject())
+                                {
+                                    Debug.LogError("script instance error");
+                                }
+                            }
+                        }
+                    }
+                    else
+                    {
+                        // Debug.LogError("script runtime not ready");
+                    }
+                }
+            }
+
             if (_onAfterDeserializeValid)
             {
                 var rval = JSApi.JS_Call(_ctx, _onAfterDeserializeFunc, _this_obj);

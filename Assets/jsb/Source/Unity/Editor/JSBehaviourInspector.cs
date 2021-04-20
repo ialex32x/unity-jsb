@@ -17,16 +17,16 @@ namespace QuickJS.Unity
         private JSValue _this_obj = JSApi.JS_UNDEFINED;
 
         private bool _onDestroyValid;
-        private JSValue _onDestroyFunc;
+        private JSValue _onDestroyFunc = JSApi.JS_UNDEFINED;
 
         private bool _onEnableValid;
-        private JSValue _onEnableFunc;
+        private JSValue _onEnableFunc = JSApi.JS_UNDEFINED;
 
         private bool _onDisableValid;
-        private JSValue _onDisableFunc;
+        private JSValue _onDisableFunc = JSApi.JS_UNDEFINED;
 
         private bool _onInspectorGUIValid;
-        private JSValue _onInspectorGUIFunc;
+        private JSValue _onInspectorGUIFunc = JSApi.JS_UNDEFINED;
 
         public void CreateScriptInstance(JSContext ctx, JSValue this_obj, JSValue ctor)
         {
@@ -124,7 +124,7 @@ namespace QuickJS.Unity
             }
             _released = true;
 
-            _target.ReleaseJSValues();
+            _target.ReleaseScriptInstance();
             ReleaseJSValues();
 
             var context = ScriptEngine.GetContext(_ctx);
@@ -292,7 +292,7 @@ namespace QuickJS.Unity
                     }
                     else
                     {
-                        var instValue = _target.CreateScriptInstance(ctx, typeValue, false);
+                        var instValue = _target.CreateScriptInstance(ctx, typeValue, false, false);
                         JSApi.JS_FreeValue(ctx, instValue);
                         JSApi.JS_FreeValue(ctx, typeValue);
                         CreateScriptInstance();

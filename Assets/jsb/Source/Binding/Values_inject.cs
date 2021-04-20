@@ -15,7 +15,7 @@ namespace QuickJS.Binding
         {
             if (type == typeof(MonoBehaviour))
             {
-                return JSBehaviour.CreateScriptInstance(gameObject, ctx, ctor, true);
+                return JSBehaviour.CreateScriptInstance(gameObject, ctx, ctor, true, true);
             }
 
             return JSApi.JS_UNDEFINED;
