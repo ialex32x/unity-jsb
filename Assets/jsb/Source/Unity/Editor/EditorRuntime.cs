@@ -43,7 +43,7 @@ namespace QuickJS.Unity
 
         public static ScriptRuntime GetRuntime()
         {
-            return _instance != null && _instance._ready ?_instance._runtime : null;
+            return _instance != null && _instance._ready ? _instance._runtime : null;
         }
 
         public EditorRuntime()
@@ -145,10 +145,7 @@ namespace QuickJS.Unity
             {
                 _ready = true;
                 var prefs = Prefs.Load();
-                if (prefs != null && !string.IsNullOrEmpty(prefs.editorEntryPoint))
-                {
-                    _runtime.EvalMain(prefs.editorEntryPoint);
-                }
+                _runtime.EvalMain(prefs?.editorEntryPoint);
             }
         }
 

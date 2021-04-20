@@ -1,6 +1,7 @@
 import { Yield } from "jsb";
-import { Camera, Debug, GameObject, Object, WaitForSeconds } from "UnityEngine";
+import { Camera, Debug, GameObject, Object, Resources, WaitForSeconds } from "UnityEngine";
 import { Object as Object1 } from "System";
+import { MyClass } from "./example_monobehaviour";
 
 if (module == require.main) {
     let go = new GameObject("test");
@@ -24,4 +25,10 @@ if (module == require.main) {
 
     console.log("camera.name:", camera.name);
     Debug.LogWarningFormat("blablabla... {0}", <Object1><any>123);
+
+    let testPrefab = Resources.Load("prefab/test");
+    let testGameObject = <GameObject>Object.Instantiate(testPrefab);
+    let testMyClass = testGameObject.GetComponent(MyClass);
+
+    console.log(testMyClass);
 }

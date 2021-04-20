@@ -712,17 +712,22 @@ namespace QuickJS
         public object EvalMain(string fileName, Type returnType)
         {
             _mainScriptRun = true;
-            var resolvedPath = ResolveFilePath("", fileName);
-            if (resolvedPath != null)
+            if (!string.IsNullOrEmpty(fileName))
             {
-                var source = _fileSystem.ReadAllBytes(resolvedPath);
-                var fullPath = _fileSystem.GetFullPath(resolvedPath);
-                return _mainContext.EvalMain(source, resolvedPath, fullPath, returnType);
+                var resolvedPath = ResolveFilePath("", fileName);
+                if (resolvedPath != null)
+                {
+                    var source = _fileSystem.ReadAllBytes(resolvedPath);
+                    var fullPath = _fileSystem.GetFullPath(resolvedPath);
+                    return _mainContext.EvalMain(source, resolvedPath, fullPath, returnType);
+                }
+                else
+                {
+                    throw new UnexpectedException(fileName, "can not resolve file path");
+                }
             }
-            else
-            {
-                throw new UnexpectedException(fileName, "can not resolve file path");
-            }
+            
+            return null;
         }
 
         public bool IsMainThread()

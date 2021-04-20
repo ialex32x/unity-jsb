@@ -12,9 +12,7 @@ namespace QuickJS.Unity
         public JSBehaviourScriptRef scriptRef;
 
         [SerializeField]
-        private JSBehaviourProperties<Object> _objects;
-        [SerializeField]
-        private JSBehaviourProperties<double> _numbers;
+        private JSBehaviourProperties _properties;
 
         // unsafe
         public JSContext ctx { get { return _ctx; } }
@@ -570,20 +568,38 @@ namespace QuickJS.Unity
 
         public void OnBeforeSerialize()
         {
+            if (_properties == null)
+            {
+                _properties = new JSBehaviourProperties();
+            }
+            else
+            {
+                _properties.Clear();
+            }
+
             if (_onBeforeSerializeValid)
             {
-                var rval = JSApi.JS_Call(_ctx, _onBeforeSerializeFunc, _this_obj);
-                if (rval.IsException())
+                unsafe
                 {
-                    _ctx.print_exception();
+                    var argv = stackalloc[] { Binding.Values.js_push_var(_ctx, _properties) };
+                    var rval = JSApi.JS_Call(_ctx, _onBeforeSerializeFunc, _this_obj, 1, argv);
+                    JSApi.JS_FreeValue(_ctx, argv[0]);
+                    if (rval.IsException())
+                    {
+                        _ctx.print_exception();
+                    }
+                    JSApi.JS_FreeValue(_ctx, rval);
                 }
-                JSApi.JS_FreeValue(_ctx, rval);
             }
         }
 
         public void OnAfterDeserialize()
         {
             // 在游戏运行时中，需要在此处建立脚本连接
+            if (_properties == null)
+            {
+                _properties = new JSBehaviourProperties();
+            }
 
             if (!_isScriptInstanced)
             {
@@ -595,7 +611,7 @@ namespace QuickJS.Unity
                         var context = runtime.GetMainContext();
                         if (context != null)
                         {
-                            var ctx = (JSContext) context;
+                            var ctx = (JSContext)context;
                             var snippet = $"require('{scriptRef.modulePath}')['{scriptRef.className}']";
                             var bytes = System.Text.Encoding.UTF8.GetBytes(snippet);
                             var typeValue = ScriptRuntime.EvalSource(ctx, bytes, scriptRef.sourceFile, false);
@@ -627,13 +643,22 @@ namespace QuickJS.Unity
 
             if (_onAfterDeserializeValid)
             {
-                var rval = JSApi.JS_Call(_ctx, _onAfterDeserializeFunc, _this_obj);
-                if (rval.IsException())
+                unsafe
                 {
-                    _ctx.print_exception();
+                    var argv = stackalloc[] { Binding.Values.js_push_var(_ctx, _properties) };
+                    var rval = JSApi.JS_Call(_ctx, _onAfterDeserializeFunc, _this_obj, 1, argv);
+                    JSApi.JS_FreeValue(_ctx, argv[0]);
+                    if (rval.IsException())
+                    {
+                        _ctx.print_exception();
+                    }
+                    JSApi.JS_FreeValue(_ctx, rval);
                 }
-                JSApi.JS_FreeValue(_ctx, rval);
             }
+            // else
+            // {
+            //     Debug.Log("no after deserialize");
+            // }
         }
     }
 }

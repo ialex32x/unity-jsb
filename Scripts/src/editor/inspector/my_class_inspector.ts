@@ -1,4 +1,4 @@
-import { Editor, EditorGUI, EditorGUILayout, MessageType } from "UnityEditor";
+import { Editor, EditorGUI, EditorGUILayout, EditorUtility, MessageType } from "UnityEditor";
 import { GUILayout, Object } from "UnityEngine";
 import { MyClass } from "../../example_monobehaviour";
 
@@ -13,8 +13,13 @@ export class MyClassInspector extends Editor {
         EditorGUILayout.HelpBox("WHY ARE YOU SO SERIOUS?", MessageType.Info);
         EditorGUI.BeginDisabledGroup(true);
         EditorGUILayout.ObjectField("Object", p.gameObject, Object, true);
-        EditorGUILayout.IntField("vv", p.vv);
         EditorGUI.EndDisabledGroup();
+        let vv = EditorGUILayout.IntField("vv", p.vv);
+        if (vv != p.vv) {
+            p.vv = vv;
+            // console.log("write value", p.vv);
+            EditorUtility.SetDirty(p);
+        }
         if (GUILayout.Button("test")) {
             p.speak("hello");
         }

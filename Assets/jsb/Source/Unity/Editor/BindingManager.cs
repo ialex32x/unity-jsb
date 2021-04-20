@@ -1566,6 +1566,7 @@ namespace QuickJS.Unity
             AddExportedType(typeof(MonoBehaviour), true);
 
             AddExportedType(typeof(QuickJS.IO.ByteBuffer));
+            AddExportedType(typeof(QuickJS.Unity.JSBehaviourProperties));
         }
 
         // implicitExport: 默认进行导出(黑名单例外), 否则根据导出标记或手工添加

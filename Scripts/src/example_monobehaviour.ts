@@ -1,11 +1,15 @@
 import { MonoBehaviour, WaitForSeconds, Object, Input, Camera, GameObject, PrimitiveType, Vector3, Quaternion, Physics, LayerMask, RaycastHit, Transform, Time, ParticleSystem, ParticleSystemSimulationSpace } from "UnityEngine";
 import * as jsb from "jsb";
-import { Inspector } from "./editor/decorators/inspector";
+import { Inspector, SerializationUtil, SerializedNumber } from "./editor/decorators/inspector";
 import { Out } from "jsb";
+import { JSBehaviourProperties } from "QuickJS.Unity";
 
 @Inspector("editor/inspector/my_class_inspector", "MyClassInspector")
 export class MyClass extends MonoBehaviour {
+
+    @SerializedNumber()
     vv = 0;
+
     protected _tick = 0;
 
     Awake() {
@@ -26,12 +30,13 @@ export class MyClass extends MonoBehaviour {
         console.log("MyClass.OnDestroy", this._tick++);
     }
     
-    OnBeforeSerialize() {
-        console.log("MyClass.OnBeforeSerialize");
+    OnBeforeSerialize(ps: JSBehaviourProperties) {
+        // console.log("MyClass.OnBeforeSerialize");
+        SerializationUtil.serialize(this, ps);
     }
 
-    OnAfterDeserialize() {
-        console.log("MyClass.OnAfterDeserialize");
+    OnAfterDeserialize(ps: JSBehaviourProperties) {
+        SerializationUtil.deserialize(this, ps);
     }
 
     speak(text: string) {

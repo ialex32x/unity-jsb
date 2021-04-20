@@ -2,6 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const jsb_1 = require("jsb");
 const UnityEngine_1 = require("UnityEngine");
+const example_monobehaviour_1 = require("./example_monobehaviour");
 if (module == require.main) {
     let go = new UnityEngine_1.GameObject("test");
     console.log(go.name);
@@ -20,5 +21,9 @@ if (module == require.main) {
     print("array[0]:", arr[0] == camera);
     console.log("camera.name:", camera.name);
     UnityEngine_1.Debug.LogWarningFormat("blablabla... {0}", 123);
+    let testPrefab = UnityEngine_1.Resources.Load("prefab/test");
+    let testGameObject = UnityEngine_1.Object.Instantiate(testPrefab);
+    let testMyClass = testGameObject.GetComponent(example_monobehaviour_1.MyClass);
+    console.log(testMyClass);
 }
 //# sourceMappingURL=example_unity.js.map

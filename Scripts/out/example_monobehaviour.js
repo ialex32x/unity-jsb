@@ -30,11 +30,12 @@ let MyClass = class MyClass extends UnityEngine_1.MonoBehaviour {
     OnDestroy() {
         console.log("MyClass.OnDestroy", this._tick++);
     }
-    OnBeforeSerialize() {
-        console.log("MyClass.OnBeforeSerialize");
+    OnBeforeSerialize(ps) {
+        // console.log("MyClass.OnBeforeSerialize");
+        inspector_1.SerializationUtil.serialize(this, ps);
     }
-    OnAfterDeserialize() {
-        console.log("MyClass.OnAfterDeserialize");
+    OnAfterDeserialize(ps) {
+        inspector_1.SerializationUtil.deserialize(this, ps);
     }
     speak(text) {
         console.log(text);
@@ -45,6 +46,9 @@ let MyClass = class MyClass extends UnityEngine_1.MonoBehaviour {
         UnityEngine_1.Object.Destroy(this.gameObject);
     }
 };
+__decorate([
+    inspector_1.SerializedNumber()
+], MyClass.prototype, "vv", void 0);
 MyClass = __decorate([
     inspector_1.Inspector("editor/inspector/my_class_inspector", "MyClassInspector")
 ], MyClass);

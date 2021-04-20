@@ -12,8 +12,13 @@ class MyClassInspector extends UnityEditor_1.Editor {
         UnityEditor_1.EditorGUILayout.HelpBox("WHY ARE YOU SO SERIOUS?", UnityEditor_1.MessageType.Info);
         UnityEditor_1.EditorGUI.BeginDisabledGroup(true);
         UnityEditor_1.EditorGUILayout.ObjectField("Object", p.gameObject, UnityEngine_1.Object, true);
-        UnityEditor_1.EditorGUILayout.IntField("vv", p.vv);
         UnityEditor_1.EditorGUI.EndDisabledGroup();
+        let vv = UnityEditor_1.EditorGUILayout.IntField("vv", p.vv);
+        if (vv != p.vv) {
+            p.vv = vv;
+            // console.log("write value", p.vv);
+            UnityEditor_1.EditorUtility.SetDirty(p);
+        }
         if (UnityEngine_1.GUILayout.Button("test")) {
             p.speak("hello");
         }
