@@ -7,17 +7,22 @@ namespace Example
 
     public class BasicRun : MonoBehaviour
     {
+        public bool execRuntime;
+
         void Awake()
         {
-            var rt = JSApi.JS_NewRuntime();
-            var ctx = JSApi.JS_NewContext(rt);
+            if (execRuntime)
+            {
+                var rt = JSApi.JS_NewRuntime();
+                var ctx = JSApi.JS_NewContext(rt);
 
-            JSApi.JS_AddIntrinsicOperators(ctx);
-            var obj = JSApi.JS_NewObject(ctx);
-            JSApi.JS_FreeValue(ctx, obj);
+                JSApi.JS_AddIntrinsicOperators(ctx);
+                var obj = JSApi.JS_NewObject(ctx);
+                JSApi.JS_FreeValue(ctx, obj);
 
-            JSApi.JS_FreeContext(ctx);
-            JSApi.JS_FreeRuntime(rt);
+                JSApi.JS_FreeContext(ctx);
+                JSApi.JS_FreeRuntime(rt);
+            }
         }
     }
 }
