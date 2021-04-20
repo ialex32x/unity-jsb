@@ -6,11 +6,13 @@ namespace QuickJS.Binding
     // 存在重载的函数调用
     public class DynamicMethods : IDynamicMethod
     {
+        private DynamicType _type;
         private string _methodName;
         private List<DynamicMethodBase> _overloads;
 
-        public DynamicMethods(string methodName, int initCapacity)
+        public DynamicMethods(DynamicType type, string methodName, int initCapacity)
         {
+            _type = type;
             _methodName = methodName;
             _overloads = new List<DynamicMethodBase>(initCapacity);
         }
@@ -44,7 +46,7 @@ namespace QuickJS.Binding
                 }
             }
 
-            return JSApi.JS_ThrowInternalError(ctx, $"no overload method matched ({_methodName})");
+            return JSApi.JS_ThrowInternalError(ctx, $"no overload method matched for {_type.type.Name}.{_methodName} [{count}]");
         }
     }
 }

@@ -675,7 +675,7 @@ namespace QuickJS.Unity
                 {
                     if (constructors.count > 0)
                     {
-                        var dynamicCtorGroup = new Binding.DynamicMethods("constructor", 1);
+                        var dynamicCtorGroup = new Binding.DynamicMethods(dynamicType, "constructor", 1);
                         foreach (var variant in constructors.variants)
                         {
                             foreach (var methodBind in variant.Value.plainMethods)
@@ -708,7 +708,7 @@ namespace QuickJS.Unity
                 }
                 else
                 {
-                    var methodGroup = new Binding.DynamicMethods(methodJSName, 0);
+                    var methodGroup = new Binding.DynamicMethods(dynamicType, methodJSName, 0);
 
                     foreach (var variantKV in methodBindingInfo.variants)
                     {
@@ -747,7 +747,7 @@ namespace QuickJS.Unity
                 }
                 else
                 {
-                    var methodGroup = new Binding.DynamicMethods(methodJSName, 0);
+                    var methodGroup = new Binding.DynamicMethods(dynamicType, methodJSName, 0);
 
                     foreach (var variantKV in methodBindingInfo.variants)
                     {
