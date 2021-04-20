@@ -20,9 +20,13 @@ namespace QuickJS.Unity
         // unsafe
         public JSContext ctx { get { return _ctx; } }
 
+        public bool isScriptInstanced => _isScriptInstanced;
+
+        private bool _isScriptInstanced;
+
         private bool _released;
         private JSContext _ctx;
-        private JSValue _this_obj;
+        private JSValue _this_obj = JSApi.JS_UNDEFINED;
 
         private bool _updateValid;
         private JSValue _updateFunc;
@@ -138,6 +142,11 @@ namespace QuickJS.Unity
             return JSApi.JS_UNDEFINED;
         }
 
+        public void CreateUnresolvedScriptInstance()
+        {
+            _isScriptInstanced = true;
+        }
+
         // 在当前 JSBehaviour 实例上创建一个脚本实例并与之绑定
         public JSValue CreateScriptInstance(JSContext ctx, JSValue ctor, bool bSetupCallbacks)
         {
@@ -177,6 +186,7 @@ namespace QuickJS.Unity
                     if (val.IsException())
                     {
                         cache.RemoveObject(object_id);
+                        CreateUnresolvedScriptInstance();
                     }
                     else
                     {
@@ -189,6 +199,7 @@ namespace QuickJS.Unity
                 }
             }
 
+            CreateUnresolvedScriptInstance();
             return JSApi.JS_UNDEFINED;
         }
 
@@ -217,6 +228,7 @@ namespace QuickJS.Unity
                 _ctx = ctx;
             }
 
+            _isScriptInstanced = true;
             _this_obj = JSApi.JS_DupValue(ctx, this_obj);
 
             _onBeforeSerializeFunc = JSApi.JS_GetProperty(ctx, this_obj, context.GetAtom("OnBeforeSerialize"));
@@ -267,11 +279,11 @@ namespace QuickJS.Unity
 #endif
                     var awakeFunc = JSApi.JS_GetProperty(ctx, this_obj, context.GetAtom("Awake"));
 
-                    Call(awakeFunc);
+                    CallJSFunc(awakeFunc);
                     JSApi.JS_FreeValue(_ctx, awakeFunc);
                     if (enabled && _onEnableValid)
                     {
-                        Call(_onEnableFunc);
+                        CallJSFunc(_onEnableFunc);
                     }
 #if UNITY_EDITOR
                 }
@@ -279,7 +291,7 @@ namespace QuickJS.Unity
             }
         }
 
-        private void Call(JSValue func_obj)
+        private void CallJSFunc(JSValue func_obj)
         {
             if (JSApi.JS_IsFunction(_ctx, func_obj) == 1)
             {
@@ -302,45 +314,45 @@ namespace QuickJS.Unity
             JSApi.JS_FreeValue(_ctx, _updateFunc);
             _updateFunc = JSApi.JS_UNDEFINED;
             _updateValid = false;
-            
+
             JSApi.JS_FreeValue(_ctx, _lateUpdateFunc);
             _lateUpdateFunc = JSApi.JS_UNDEFINED;
             _lateUpdateValid = false;
-            
+
             JSApi.JS_FreeValue(_ctx, _fixedUpdateFunc);
             _fixedUpdateFunc = JSApi.JS_UNDEFINED;
             _fixedUpdateValid = false;
-            
+
             JSApi.JS_FreeValue(_ctx, _startFunc);
             _startFunc = JSApi.JS_UNDEFINED;
             _startValid = false;
-            
+
             JSApi.JS_FreeValue(_ctx, _onEnableFunc);
             _onEnableFunc = JSApi.JS_UNDEFINED;
             _onEnableValid = false;
-            
+
             JSApi.JS_FreeValue(_ctx, _onDisableFunc);
             _onDisableFunc = JSApi.JS_UNDEFINED;
             _onDisableValid = false;
-            
+
             JSApi.JS_FreeValue(_ctx, _onApplicationFocusFunc);
             _onApplicationFocusFunc = JSApi.JS_UNDEFINED;
             _onApplicationFocusValid = false;
 #if UNITY_EDITOR
-            
+
             JSApi.JS_FreeValue(_ctx, _onDrawGizmosFunc);
             _onDrawGizmosFunc = JSApi.JS_UNDEFINED;
             _onDrawGizmosValid = false;
 #endif
-            
+
             JSApi.JS_FreeValue(_ctx, _onApplicationPauseFunc);
             _onApplicationPauseFunc = JSApi.JS_UNDEFINED;
             _onApplicationPauseValid = false;
-            
+
             JSApi.JS_FreeValue(_ctx, _onApplicationQuitFunc);
             _onApplicationQuitFunc = JSApi.JS_UNDEFINED;
             _onApplicationQuitValid = false;
-            
+
             JSApi.JS_FreeValue(_ctx, _onDestroyFunc);
             _onDestroyFunc = JSApi.JS_UNDEFINED;
             _onDestroyValid = false;

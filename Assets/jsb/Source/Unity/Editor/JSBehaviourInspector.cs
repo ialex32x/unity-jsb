@@ -9,11 +9,12 @@ namespace QuickJS.Unity
     [CustomEditor(typeof(JSBehaviour))]
     public class JSBehaviourInspector : Editor
     {
+        private bool _replaceScriptInstance;
         private JSBehaviour _target;
 
         private bool _released;
         private JSContext _ctx;
-        private JSValue _this_obj;
+        private JSValue _this_obj = JSApi.JS_UNDEFINED;
 
         private bool _onDestroyValid;
         private JSValue _onDestroyFunc;
@@ -66,13 +67,13 @@ namespace QuickJS.Unity
             _onInspectorGUIFunc = JSApi.JS_GetProperty(ctx, this_obj, context.GetAtom("OnInspectorGUI"));
             _onInspectorGUIValid = JSApi.JS_IsFunction(ctx, _onInspectorGUIFunc) == 1;
 
-            var awake_obj = JSApi.JS_GetProperty(ctx, this_obj, context.GetAtom("Awake"));
+            var awakeFunc = JSApi.JS_GetProperty(ctx, this_obj, context.GetAtom("Awake"));
 
-            Call(awake_obj);
-            JSApi.JS_FreeValue(_ctx, awake_obj);
+            CallJSFunc(awakeFunc);
+            JSApi.JS_FreeValue(_ctx, awakeFunc);
         }
 
-        private void Call(JSValue func_obj)
+        private void CallJSFunc(JSValue func_obj)
         {
             if (JSApi.JS_IsFunction(_ctx, func_obj) == 1)
             {
@@ -170,17 +171,17 @@ namespace QuickJS.Unity
                     }
                     
                     var object_id = objectCache.AddObject(this, false);
-                    var val = JSApi.jsb_construct_bridge_object(ctx, editorClass, object_id);
-                    if (val.IsException())
+                    var editorInstance = JSApi.jsb_construct_bridge_object(ctx, editorClass, object_id);
+                    if (editorInstance.IsException())
                     {
                         ctx.print_exception();
                         objectCache.RemoveObject(object_id);
                     }
                     else
                     {
-                        objectCache.AddJSValue(this, val);
-                        CreateScriptInstance(ctx, val, editorClass);
-                        JSApi.JS_FreeValue(ctx, val);
+                        objectCache.AddJSValue(this, editorInstance);
+                        CreateScriptInstance(ctx, editorInstance, editorClass);
+                        JSApi.JS_FreeValue(ctx, editorInstance);
                     }
                 }
                 JSApi.JS_FreeValue(ctx, editorClass);
@@ -248,30 +249,8 @@ namespace QuickJS.Unity
                     {
                         _target.scriptRef.modulePath = modulePath;
                         _target.scriptRef.className = classNames[0];
+                        _replaceScriptInstance = true;
                         EditorUtility.SetDirty(_target);
-                    }
-
-                    // ScriptInstance 释放的问题
-                    
-                    var context = ScriptEngine.GetContext();
-                    if (context != null)
-                    {
-                        var ctx = (JSContext)context;
-                        var snippet = $"require('{_target.scriptRef.modulePath}')['{_target.scriptRef.className}']";
-                        var bytes = System.Text.Encoding.UTF8.GetBytes(snippet);
-                        var typeValue = ScriptRuntime.EvalSource(ctx, bytes, _target.scriptRef.sourceFile, false);
-                        if (JSApi.JS_IsException(typeValue))
-                        {
-                            var ex = ctx.GetExceptionString();
-                            Debug.LogError(ex);
-                        }
-                        else
-                        {
-                            var instValue = _target.CreateScriptInstance(ctx, typeValue, false);
-                            JSApi.JS_FreeValue(ctx, instValue);
-                            JSApi.JS_FreeValue(ctx, typeValue);
-                            CreateScriptInstance();
-                        }
                     }
                 }
             }
@@ -296,6 +275,36 @@ namespace QuickJS.Unity
             }
 
             DrawSourceRef();
+            if (_replaceScriptInstance || !_target.isScriptInstanced)
+            {
+                var context = ScriptEngine.GetContext();
+                if (context != null && !string.IsNullOrEmpty(_target.scriptRef.modulePath) && !string.IsNullOrEmpty(_target.scriptRef.className))
+                {
+                    var ctx = (JSContext)context;
+                    var snippet = $"require('{_target.scriptRef.modulePath}')['{_target.scriptRef.className}']";
+                    var bytes = System.Text.Encoding.UTF8.GetBytes(snippet);
+                    var typeValue = ScriptRuntime.EvalSource(ctx, bytes, _target.scriptRef.sourceFile, false);
+                    if (JSApi.JS_IsException(typeValue))
+                    {
+                        var ex = ctx.GetExceptionString();
+                        Debug.LogError(ex);
+                        _target.CreateUnresolvedScriptInstance();
+                    }
+                    else
+                    {
+                        var instValue = _target.CreateScriptInstance(ctx, typeValue, false);
+                        JSApi.JS_FreeValue(ctx, instValue);
+                        JSApi.JS_FreeValue(ctx, typeValue);
+                        CreateScriptInstance();
+
+                        if (!instValue.IsObject())
+                        {
+                            Debug.LogError("script instance error");
+                        }
+                    }
+                    _replaceScriptInstance = false;
+                }
+            }
 
             if (_onInspectorGUIValid)
             {
