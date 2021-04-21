@@ -295,6 +295,8 @@ namespace QuickJS.Unity
                         var instValue = _target.CreateScriptInstance(ctx, typeValue, false, false);
                         JSApi.JS_FreeValue(ctx, instValue);
                         JSApi.JS_FreeValue(ctx, typeValue);
+
+                        _target.OnAfterDeserialize();
                         CreateScriptInstance();
 
                         if (!instValue.IsObject())
