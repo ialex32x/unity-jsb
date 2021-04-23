@@ -196,7 +196,7 @@ namespace QuickJS
             var bindAll = typeof(Values).GetMethod("BindAll", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static);
             if (bindAll == null)
             {
-                throw new Exception("generate binding code before run");
+                throw new Exception("generate binding code before run, or turn on ReflectBind");
             }
 
             var codeGenVersionField = typeof(Values).GetField("CodeGenVersion");
