@@ -24,6 +24,14 @@ export function SerializedNumber(name?: string) {
     return Serialized(name, "number");
 }
 
+export function SerializedString(name?: string) {
+    return Serialized(name, "string");
+}
+
+export function SerializedObject(name?: string) {
+    return Serialized(name, "object");
+}
+
 export function Serialized(name?: string, type?: string) {
     return function (target: any, propertyKey: string) {
         let slots: { [k: string]: SlotEntry } = target[SerializedFields];

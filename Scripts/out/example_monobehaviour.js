@@ -50,10 +50,11 @@ __decorate([
     inspector_1.SerializedNumber()
 ], MyClass.prototype, "vv", void 0);
 MyClass = __decorate([
-    inspector_1.Inspector("editor/inspector/my_class_inspector", "MyClassInspector")
+    inspector_1.Inspector("editor/inspector/my_class_inspector", "MyClassInspector"),
+    inspector_1.ScriptType
 ], MyClass);
 exports.MyClass = MyClass;
-class MySubClass extends MyClass {
+let MySubClass = class MySubClass extends MyClass {
     Awake() {
         super.Awake();
         console.log("MySubClass.Awake", this._tick++);
@@ -72,7 +73,10 @@ class MySubClass extends MyClass {
     play() {
         console.log("MySubClass.play");
     }
-}
+};
+MySubClass = __decorate([
+    inspector_1.ScriptType
+], MySubClass);
 exports.MySubClass = MySubClass;
 let RotateBehaviour = class RotateBehaviour extends UnityEngine_1.MonoBehaviour {
     constructor() {
@@ -99,7 +103,8 @@ let RotateBehaviour = class RotateBehaviour extends UnityEngine_1.MonoBehaviour 
     }
 };
 RotateBehaviour = __decorate([
-    inspector_1.Inspector("editor/inspector/rotate_inspector", "RotateBehaviourInspector")
+    inspector_1.Inspector("editor/inspector/rotate_inspector", "RotateBehaviourInspector"),
+    inspector_1.ScriptType
 ], RotateBehaviour);
 exports.RotateBehaviour = RotateBehaviour;
 if (module == require.main) {

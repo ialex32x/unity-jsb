@@ -1,7 +1,12 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.SerializationUtil = exports.Serialized = exports.SerializedNumber = exports.Inspector = void 0;
+exports.SerializationUtil = exports.Serialized = exports.SerializedObject = exports.SerializedString = exports.SerializedNumber = exports.Inspector = exports.ScriptType = void 0;
 let SerializedFields = Symbol("SerializedFields");
+// expose this script class type to JSBehaviour, so you can put it on a prefab gameObject
+function ScriptType(target) {
+    return target;
+}
+exports.ScriptType = ScriptType;
 function Inspector(path, className) {
     return function (target) {
         // 暂时简单实现
@@ -14,6 +19,14 @@ function SerializedNumber(name) {
     return Serialized(name, "number");
 }
 exports.SerializedNumber = SerializedNumber;
+function SerializedString(name) {
+    return Serialized(name, "string");
+}
+exports.SerializedString = SerializedString;
+function SerializedObject(name) {
+    return Serialized(name, "object");
+}
+exports.SerializedObject = SerializedObject;
 function Serialized(name, type) {
     return function (target, propertyKey) {
         let slots = target[SerializedFields];
