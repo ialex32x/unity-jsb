@@ -320,7 +320,7 @@ namespace QuickJS.Unity
 
         #endregion
 
-        public static Regex JSBehaviourClassNameRegex = new Regex(@"export\s+class\s+(\w+)\s+extends", RegexOptions.Multiline | RegexOptions.Compiled);
+        public static Regex JSBehaviourClassNameRegex = new Regex(@"@ScriptType[\n\s]*export\s+class\s+(\w+)\s+extends", RegexOptions.Multiline | RegexOptions.Compiled);
 
         public static string NormalizePathString(string path)
         {

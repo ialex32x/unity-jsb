@@ -7,6 +7,11 @@ interface SlotEntry {
     type: string;
 }
 
+// expose this script class type to JSBehaviour, so you can put it on a prefab gameObject
+export function ScriptType(target: any) {
+    return target;
+}
+
 export function Inspector(path: string, className: string) {
     return function (target: any) {
         // 暂时简单实现

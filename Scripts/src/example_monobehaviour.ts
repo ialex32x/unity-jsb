@@ -1,10 +1,11 @@
 import { MonoBehaviour, WaitForSeconds, Object, Input, Camera, GameObject, PrimitiveType, Vector3, Quaternion, Physics, LayerMask, RaycastHit, Transform, Time, ParticleSystem, ParticleSystemSimulationSpace } from "UnityEngine";
 import * as jsb from "jsb";
-import { Inspector, SerializationUtil, SerializedNumber } from "./editor/decorators/inspector";
+import { Inspector, SerializationUtil, SerializedNumber, ScriptType } from "./editor/decorators/inspector";
 import { Out } from "jsb";
 import { JSBehaviourProperties } from "QuickJS.Unity";
 
 @Inspector("editor/inspector/my_class_inspector", "MyClassInspector")
+@ScriptType
 export class MyClass extends MonoBehaviour {
 
     @SerializedNumber()
@@ -50,6 +51,7 @@ export class MyClass extends MonoBehaviour {
     }
 }
 
+@ScriptType
 export class MySubClass extends MyClass {
     Awake() {
         super.Awake();
@@ -75,6 +77,7 @@ export class MySubClass extends MyClass {
 }
 
 @Inspector("editor/inspector/rotate_inspector", "RotateBehaviourInspector")
+@ScriptType
 export class RotateBehaviour extends MonoBehaviour {
     private _rotation: number = 0;
     rotationSpeed = 50;
