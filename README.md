@@ -9,7 +9,10 @@
 * JS异步函数与 Unity 协程/ C# Tasking 的结合 (limited support)
 * 支持运算符重载 +, -, *, /, ==, -(负)
 * 支持 JS 字节码 (QuickJS)
-* extends MonoBehaviour/EditorWindow/Editor in scripts
+* [初步] 与 Unity 编辑器深度整合
+    * 支持 JS 实现 MonoBehaviour (支持 Prefab)
+    * 支持 JS 实现 编辑器窗口 (EditorWindow)
+    * 支持 JS 实现 Inspector 编辑器 (Editor)
 * [初步] 开发过程中无需生成绑定代码
 * [初步] 支持 JS Worker (limited support)
 * [初步] 支持未导出的C#类型的 JS 交互
@@ -74,7 +77,18 @@ class MyClass extends MonoBehaviour {
     }
 }
 
-class MySubClass extends MyClass {
+// 通过 @ScriptType 修饰器, 可以使此类型被编辑器识别, 以便在 gameObject 上挂载此脚本, 并可存为 prefab
+// 注意: @ScriptType 必须紧跟 export class
+@ScriptType
+export class MySubClass extends MyClass {
+
+    // 通过 @SerializedNumber 修饰器可以使此字段被序列化
+    @SerializedNumber
+    year = 2021
+
+    @SerializedNumber
+    month = 5
+
     Awake() {
         super.Awake();
         console.log("MySubClass.Awake", this._tick++);
@@ -82,6 +96,15 @@ class MySubClass extends MyClass {
 
     play() {
         console.log("MySubClass.play");
+    }
+    
+    // SerializedNumber 等功能目前依赖于此回调, 必须显式写出
+    OnBeforeSerialize(ps: JSBehaviourProperties) {
+        SerializationUtil.serialize(this, ps);
+    }
+
+    OnAfterDeserialize(ps: JSBehaviourProperties) {
+        SerializationUtil.deserialize(this, ps);
     }
 }
 
