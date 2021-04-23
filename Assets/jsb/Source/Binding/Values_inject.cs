@@ -15,7 +15,12 @@ namespace QuickJS.Binding
         {
             if (type == typeof(MonoBehaviour))
             {
-                return JSBehaviour.CreateScriptInstance(gameObject, ctx, ctor, true, true);
+#if UNITY_EDITOR
+                // 在非 Playing 模式下, 通过 AddComponent 方式添加的 JSBehaviour 不会执行 Awake
+                return JSBehaviour.CreateScriptInstance(gameObject, ctx, ctor, UnityEditor.EditorApplication.isPlaying);
+#else
+                return JSBehaviour.CreateScriptInstance(gameObject, ctx, ctor, true);
+#endif                
             }
 
             return JSApi.JS_UNDEFINED;

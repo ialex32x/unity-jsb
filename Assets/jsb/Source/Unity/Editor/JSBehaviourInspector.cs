@@ -9,7 +9,6 @@ namespace QuickJS.Unity
     [CustomEditor(typeof(JSBehaviour))]
     public class JSBehaviourInspector : Editor
     {
-        private bool _replaceScriptInstance;
         private JSBehaviour _target;
 
         private bool _released;
@@ -191,11 +190,17 @@ namespace QuickJS.Unity
         void Awake()
         {
             _target = target as JSBehaviour;
-            CreateScriptInstance();
+            // CreateScriptInstance();
         }
 
         void OnEnable()
         {
+            if (!_target.isScriptInstanced)
+            {
+                _target.SetScriptInstance();
+            }
+            CreateScriptInstance();
+
             if (_onEnableValid)
             {
                 var rval = JSApi.JS_Call(_ctx, _onEnableFunc, _this_obj);
@@ -209,6 +214,11 @@ namespace QuickJS.Unity
 
         void OnDisable()
         {
+            if (_target.isScriptInstanced)
+            {
+                _target.OnBeforeSerialize();
+            }
+
             if (_onDisableValid)
             {
                 var rval = JSApi.JS_Call(_ctx, _onDisableFunc, _this_obj);
@@ -218,6 +228,7 @@ namespace QuickJS.Unity
                 }
                 JSApi.JS_FreeValue(_ctx, rval);
             }
+            Release();
         }
 
         void OnDestroy()
@@ -239,6 +250,8 @@ namespace QuickJS.Unity
             EditorGUILayout.BeginHorizontal();
             //TODO: 使用 SearchField 代替, 对脚本源代码做预处理以提供搜索
             var sourceFile = EditorGUILayout.TextField("SourceFile", _target.scriptRef.sourceFile);
+
+            // 强制刷新脚本绑定
             if (GUILayout.Button("R", GUILayout.Width(20f)))
             {
                 string modulePath;
@@ -249,7 +262,11 @@ namespace QuickJS.Unity
                     {
                         _target.scriptRef.modulePath = modulePath;
                         _target.scriptRef.className = classNames[0];
-                        _replaceScriptInstance = true;
+                        _target.ReleaseScriptInstance();
+                        _target.SetScriptInstance();
+
+                        // 重新绑定当前编辑器脚本实例
+                        this.CreateScriptInstance();
                         EditorUtility.SetDirty(_target);
                     }
                 }
@@ -275,38 +292,6 @@ namespace QuickJS.Unity
             }
 
             DrawSourceRef();
-            if (_replaceScriptInstance || !_target.isScriptInstanced)
-            {
-                var context = ScriptEngine.GetContext();
-                if (context != null && !string.IsNullOrEmpty(_target.scriptRef.modulePath) && !string.IsNullOrEmpty(_target.scriptRef.className))
-                {
-                    var ctx = (JSContext)context;
-                    var snippet = $"require('{_target.scriptRef.modulePath}')['{_target.scriptRef.className}']";
-                    var bytes = System.Text.Encoding.UTF8.GetBytes(snippet);
-                    var typeValue = ScriptRuntime.EvalSource(ctx, bytes, _target.scriptRef.sourceFile, false);
-                    if (JSApi.JS_IsException(typeValue))
-                    {
-                        var ex = ctx.GetExceptionString();
-                        Debug.LogError(ex);
-                        _target.CreateUnresolvedScriptInstance();
-                    }
-                    else
-                    {
-                        var instValue = _target.CreateScriptInstance(ctx, typeValue, false, false);
-                        JSApi.JS_FreeValue(ctx, instValue);
-                        JSApi.JS_FreeValue(ctx, typeValue);
-
-                        _target.OnAfterDeserialize();
-                        CreateScriptInstance();
-
-                        if (!instValue.IsObject())
-                        {
-                            Debug.LogError("script instance error");
-                        }
-                    }
-                    _replaceScriptInstance = false;
-                }
-            }
 
             if (_onInspectorGUIValid)
             {

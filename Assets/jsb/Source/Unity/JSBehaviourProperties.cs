@@ -10,32 +10,46 @@ namespace QuickJS.Unity
     public class JSBehaviourProperties
     {
         [Serializable]
-        public class KeyValuePair<T>
+        public class ObjectKeyValuePair
         {
             public string key;
-            public T value;
+            public Object value;
+        }
+
+        [Serializable]
+        public class NumberKeyValuePair
+        {
+            public string key;
+            public double value;
+        }
+
+        [Serializable]
+        public class StringKeyValuePair
+        {
+            public string key;
+            public string value;
         }
 
         [SerializeField]
-        private List<KeyValuePair<Object>> _objects;
+        private List<ObjectKeyValuePair> _objects;
 
         [SerializeField]
-        private List<KeyValuePair<string>> _strings;
+        private List<StringKeyValuePair> _strings;
 
         [SerializeField]
-        private List<KeyValuePair<double>> _numbers;
+        private List<NumberKeyValuePair> _numbers;
 
         public void SetObject(string key, Object value)
         {
             if (_objects == null)
             {
-                _objects = new List<KeyValuePair<Object>>();
+                _objects = new List<ObjectKeyValuePair>();
             }
 
             var found = _objects.Find(pair => pair.key == key);
             if (found == null)
             {
-                _objects.Add(new KeyValuePair<Object> { key = key, value = value });
+                _objects.Add(new ObjectKeyValuePair { key = key, value = value });
             }
             else
             {
@@ -52,13 +66,13 @@ namespace QuickJS.Unity
         {
             if (_strings == null)
             {
-                _strings = new List<KeyValuePair<string>>();
+                _strings = new List<StringKeyValuePair>();
             }
 
             var found = _strings.Find(pair => pair.key == key);
             if (found == null)
             {
-                _strings.Add(new KeyValuePair<string> { key = key, value = value });
+                _strings.Add(new StringKeyValuePair { key = key, value = value });
             }
             else
             {
@@ -75,13 +89,13 @@ namespace QuickJS.Unity
         {
             if (_numbers == null)
             {
-                _numbers = new List<KeyValuePair<double>>();
+                _numbers = new List<NumberKeyValuePair>();
             }
 
             var found = _numbers.Find(pair => pair.key == key);
             if (found == null)
             {
-                _numbers.Add(new KeyValuePair<double> { key = key, value = value });
+                _numbers.Add(new NumberKeyValuePair { key = key, value = value });
             }
             else
             {
