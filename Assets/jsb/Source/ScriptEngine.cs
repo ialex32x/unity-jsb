@@ -201,7 +201,7 @@ namespace QuickJS
             if (ctx.IsValid())
             {
                 var rt = JSApi.JS_GetRuntime(ctx);
-                return GetRuntime(rt).GetContext(ctx);
+                return GetRuntime(rt)?.GetContext(ctx);
             }
             return null;
         }
