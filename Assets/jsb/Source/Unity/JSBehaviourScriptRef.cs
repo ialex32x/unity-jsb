@@ -24,5 +24,20 @@ namespace QuickJS.Unity
         public string modulePath;
         public string className;
         public EJSBehaviourLoadState state; // (待定)
+
+        public static string ToClassPath(string modulePath, string className)
+        {
+            if (string.IsNullOrEmpty(modulePath))
+            {
+                return className ?? string.Empty;
+            }
+            
+            return string.IsNullOrEmpty(className) ? string.Empty : $"{modulePath.Replace('/', '.')}.{className}";
+        }
+
+        public string ToClassPath()
+        {
+            return ToClassPath(modulePath, className);
+        }
     }
 }

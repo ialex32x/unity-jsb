@@ -328,7 +328,7 @@ namespace QuickJS.Unity
         }
 
         // sourceFile: 需要传入 FullPath
-        public static bool ResolveScriptRef(string sourceFile, out string modulePath, out string[] classNames)
+        public static bool ResolveScriptRef(string sourceDirBase, string sourceFile, out string modulePath, out string[] classNames)
         {
             modulePath = null;
             classNames = null;
@@ -348,8 +348,7 @@ namespace QuickJS.Unity
 
             if (File.Exists(sourceFile))
             {
-                var prefs = Prefs.Load();
-                var sourceDir = string.IsNullOrEmpty(prefs.sourceDir) ? "." : prefs.sourceDir;
+                var sourceDir = string.IsNullOrEmpty(sourceDirBase) ? "." : sourceDirBase;
                 if (Path.IsPathRooted(sourceDir))
                 {
                     // not implemented
@@ -385,6 +384,7 @@ namespace QuickJS.Unity
 
         private static string[] GetJSBehaviourClassName(string sourceFile)
         {
+            //TODO: need optimization?
             var text = File.ReadAllText(sourceFile);
             var c = JSBehaviourClassNameRegex.Matches(text);
             var i = 0;
