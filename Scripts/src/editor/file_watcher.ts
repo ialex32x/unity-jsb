@@ -12,13 +12,20 @@ export interface FileState {
     state: EFileState
 }
 
+export interface IFileStateMap {
+    [name: string]: FileState
+}
+
 export class FileWatcher {
+    static readonly ANY = "* ANY";
+    static readonly CHANGED = "* CHANGED";
+
     private _fsw: FSWatcher;
     private _dispatcher: EventDispatcher = new EventDispatcher();
     private _disposed = false;
 
     private _pending = false;
-    private _cache: { [name: string]: FileState };
+    private _cache: IFileStateMap;
 
     get includeSubdirectories() {
         return this._fsw.includeSubdirectories;
@@ -97,12 +104,14 @@ export class FileWatcher {
         }
 
         this._pending = false;
-        let map = this._cache;
+        let map: IFileStateMap = this._cache;
         this._cache = {};
         for (let name in map) {
             let state = map[name];
             this._dispatcher.dispatch(name, state);
-            this._dispatcher.dispatch("*", state);
+            this._dispatcher.dispatch(FileWatcher.ANY, state);
         }
+
+        this._dispatcher.dispatch(FileWatcher.CHANGED, map);
     }
 }

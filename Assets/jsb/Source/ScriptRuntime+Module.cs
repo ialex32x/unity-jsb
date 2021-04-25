@@ -53,6 +53,7 @@ namespace QuickJS
                 return JSApi.JS_ThrowInternalError(ctx, "require module id (string)");
             }
 
+            // callee is the function <'require'> of current module
             var callee = JSApi.JS_GetActiveFunction(ctx);
 
             if (JSApi.JS_IsFunction(ctx, callee) != 1)

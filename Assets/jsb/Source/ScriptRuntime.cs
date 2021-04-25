@@ -161,7 +161,7 @@ namespace QuickJS
                         return exports;
                     }
 
-                    return resolver.LoadModule(context, resolved_id);
+                    return resolver.LoadModule(context, parent_module_id, resolved_id);
                 }
             }
 

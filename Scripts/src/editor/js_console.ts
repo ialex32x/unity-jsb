@@ -83,6 +83,7 @@ export class JSConsole extends EditorWindow {
                         }
                         // this._history.push(code);
                     }
+                    
                     break;
                 }
             }

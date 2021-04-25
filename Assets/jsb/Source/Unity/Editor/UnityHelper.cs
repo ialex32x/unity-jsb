@@ -117,9 +117,15 @@ namespace QuickJS.Unity
         }
 
         [MenuItem("JS Bridge/Javascript Console", false, 5003)]
-        public static void ShowMyEditorWindow()
+        public static void ShowJSConsole()
         {
             QuickJS.Unity.EditorRuntime.ShowWindow("editor/js_console", "JSConsole");
+        }
+
+        [MenuItem("JS Bridge/Javascript Module View", false, 5003)]
+        public static void ShowJSModuleView()
+        {
+            QuickJS.Unity.EditorRuntime.ShowWindow("editor/js_module_view", "JSModuleView");
         }
 
         public static string GetPlatform()

@@ -292,30 +292,35 @@ namespace QuickJS
             return JSApi.JS_DupValue(_ctx, _operatorCreate);
         }
 
+        //TODO: 思考, 如果 reload 实现为标记, 复用原有 exports 可以在更大程度上实现关联的重载 (因为其他未重载脚本已经得到其引用, 不能合理地完成替换)
+        public JSValue _new_commonjs_exports(string module_id)
+        {
+            return JSApi.JS_NewObject(_ctx);
+        }
+
         //NOTE: 返回值需要调用者 free 
+        // THIS FUNCTION WILL BE REMOVED LATER
         public JSValue _get_commonjs_module(string module_id)
         {
             var prop = GetAtom(module_id);
             return JSApi.JS_GetProperty(_ctx, _moduleCache, prop);
         }
 
+        // for special resolver (json/static) use
+        // no specified parent module assignment
         public JSValue _new_commonjs_resolver_module(string module_id, string resolvername, JSValue exports_obj, bool loaded)
         {
-            return _new_commonjs_module_entry(module_id, module_id, resolvername, exports_obj, loaded);
+            return _new_commonjs_module_entry(null, module_id, module_id, resolvername, exports_obj, loaded);
         }
 
-        public JSValue _new_commonjs_module(string module_id, JSValue exports_obj, bool loaded)
+        // for source script use
+        public JSValue _new_commonjs_script_module(string parent_module_id, string module_id, string filename, JSValue exports_obj, bool loaded)
         {
-            return _new_commonjs_module_entry(module_id, module_id, "source", exports_obj, loaded);
-        }
-
-        public JSValue _new_commonjs_module(string module_id, string filename, JSValue exports_obj, bool loaded)
-        {
-            return _new_commonjs_module_entry(module_id, filename, "source", exports_obj, loaded);
+            return _new_commonjs_module_entry(parent_module_id, module_id, filename, "source", exports_obj, loaded);
         }
 
         //NOTE: 返回值需要调用者 free
-        public JSValue _new_commonjs_module_entry(string module_id, string filename, string resolvername, JSValue exports_obj, bool loaded)
+        public JSValue _new_commonjs_module_entry(string parent_module_id, string module_id, string filename, string resolvername, JSValue exports_obj, bool loaded)
         {
             var module_obj = JSApi.JS_NewObject(_ctx);
             var module_id_atom = GetAtom(module_id);
@@ -330,7 +335,33 @@ namespace QuickJS
             JSApi.JS_SetProperty(_ctx, module_obj, GetAtom("loaded"), JSApi.JS_NewBool(_ctx, loaded));
             JSApi.JS_SetProperty(_ctx, module_obj, GetAtom("exports"), JSApi.JS_DupValue(_ctx, exports_obj));
             JSApi.JS_SetProperty(_ctx, module_obj, GetAtom("resolvername"), JSApi.JS_AtomToString(_ctx, resolvername_atom));
+            JSApi.JS_SetProperty(_ctx, module_obj, GetAtom("children"), JSApi.JS_NewArray(_ctx));
             JSApi.JS_FreeValue(_ctx, module_id_obj);
+
+            // set parent/children here
+            if (!string.IsNullOrEmpty(parent_module_id))
+            {
+                JSValue parent_mod_obj;
+                if (LoadModuleCache(parent_module_id, out parent_mod_obj))
+                {
+                    var children_obj = JSApi.JS_GetProperty(_ctx, parent_mod_obj, GetAtom("children"));
+                    if (JSApi.JS_IsArray(_ctx, children_obj) == 1)
+                    {
+                        var lengthVal = JSApi.JS_GetProperty(_ctx, children_obj, JSApi.JS_ATOM_length);
+                        if (lengthVal.IsNumber())
+                        {
+                            int length;
+                            if (JSApi.JS_ToInt32(_ctx, out length, lengthVal) == 0 && length >= 0)
+                            {
+                                JSApi.JS_SetPropertyUint32(_ctx, children_obj, (uint)length, JSApi.JS_DupValue(_ctx, module_obj));
+                            }
+                        }
+                        JSApi.JS_FreeValue(_ctx, lengthVal);
+                    }
+                    JSApi.JS_FreeValue(_ctx, children_obj);
+                    JSApi.JS_SetProperty(_ctx, module_obj, GetAtom("parent"), parent_mod_obj);
+                }
+            }
 
             _loadedModuleHash[module_id] = module_id;
             return module_obj;
@@ -459,7 +490,7 @@ namespace QuickJS
 
             var exports_obj = JSApi.JS_NewObject(_ctx);
             var require_obj = JSApi.JS_DupValue(_ctx, _require);
-            var module_obj = _new_commonjs_module(module_id, fullPath, exports_obj, false);
+            var module_obj = _new_commonjs_script_module(null, module_id, fullPath, exports_obj, false);
             var module_id_obj = JSApi.JS_AtomToString(_ctx, module_id_atom);
             var filename_obj = JSApi.JS_AtomToString(_ctx, full_path_atom);
             var dirname_obj = JSApi.JS_AtomToString(_ctx, dirname_atom);

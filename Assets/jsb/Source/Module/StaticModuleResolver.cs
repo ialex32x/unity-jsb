@@ -61,7 +61,7 @@ namespace QuickJS.Module
             return false;
         }
 
-        public JSValue LoadModule(ScriptContext context, string resolved_id)
+        public JSValue LoadModule(ScriptContext context, string parent_module_id, string resolved_id)
         {
             IModuleRegister moduleRegister;
             if (_modRegisters.TryGetValue(resolved_id, out moduleRegister))

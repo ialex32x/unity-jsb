@@ -6,16 +6,19 @@ if (typeof globalThis["__fw"] !== "undefined") {
     delete globalThis["__fw"];
 }
 let fw = new file_watcher_1.FileWatcher("Scripts", "*.js");
-fw.on("*", this, function (filestate) {
-    for (let moduleId in require.cache) {
-        let module = require.cache[moduleId];
-        if (module.filename == filestate.fullPath) {
-            // console.warn("change", module.filename);
-            delete require.cache[moduleId];
-            return;
+fw.on(file_watcher_1.FileWatcher.CHANGED, this, function (filestates) {
+    for (let name in filestates) {
+        let filestate = filestates[name];
+        console.log("file changed:", filestate.name, filestate.fullPath, filestate.state);
+        for (let moduleId in require.cache) {
+            let module = require.cache[moduleId];
+            if (module.filename == filestate.fullPath) {
+                console.warn("change", module.filename);
+                delete require.cache[moduleId];
+                return;
+            }
         }
     }
-    // console.warn("file-change", filestate.fullPath);
 });
 globalThis["__fw"] = fw;
 ["OnPostprocessTexture", "OnPostprocessModel", "OnPostprocessAudio", "OnPostprocessMaterial", "OnPostprocessAllAssets"].forEach(k => {

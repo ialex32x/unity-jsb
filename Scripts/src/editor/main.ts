@@ -1,5 +1,5 @@
 
-import { FileState, FileWatcher } from "./file_watcher";
+import { FileState, FileWatcher, IFileStateMap } from "./file_watcher";
 
 if (typeof globalThis["__fw"] !== "undefined") {
     globalThis["__fw"].dispose();
@@ -8,18 +8,22 @@ if (typeof globalThis["__fw"] !== "undefined") {
 
 let fw = new FileWatcher("Scripts", "*.js");
 
-fw.on("*", this, function (filestate: FileState) {
-    for (let moduleId in require.cache) {
-        let module = require.cache[moduleId];
+fw.on(FileWatcher.CHANGED, this, function (filestates: IFileStateMap) {
+    for (let name in filestates) {
+        let filestate = filestates[name];
 
-        if (module.filename == filestate.fullPath) {
-            // console.warn("change", module.filename);
-            delete require.cache[moduleId];
-            return;
+        console.log("file changed:", filestate.name, filestate.fullPath, filestate.state);
+        for (let moduleId in require.cache) {
+            let module = require.cache[moduleId];
+    
+            if (module.filename == filestate.fullPath) {
+                console.warn("change", module.filename);
+                delete require.cache[moduleId];
+                return;
+            }
         }
     }
-    // console.warn("file-change", filestate.fullPath);
-})
+});
 
 globalThis["__fw"] = fw;
 

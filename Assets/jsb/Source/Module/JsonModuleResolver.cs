@@ -28,7 +28,7 @@ namespace QuickJS.Module
             return false;
         }
 
-        public override unsafe JSValue LoadModule(ScriptContext context, string resolved_id)
+        public override unsafe JSValue LoadModule(ScriptContext context, string parent_module_id, string resolved_id)
         {
             var fileSystem = context.GetRuntime().GetFileSystem();
             var resolved_id_bytes = Utils.TextUtils.GetNullTerminatedBytes(resolved_id);

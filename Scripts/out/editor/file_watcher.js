@@ -80,9 +80,12 @@ class FileWatcher {
         for (let name in map) {
             let state = map[name];
             this._dispatcher.dispatch(name, state);
-            this._dispatcher.dispatch("*", state);
+            this._dispatcher.dispatch(FileWatcher.ANY, state);
         }
+        this._dispatcher.dispatch(FileWatcher.CHANGED, map);
     }
 }
 exports.FileWatcher = FileWatcher;
+FileWatcher.ANY = "* ANY";
+FileWatcher.CHANGED = "* CHANGED";
 //# sourceMappingURL=file_watcher.js.map

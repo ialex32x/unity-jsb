@@ -78,7 +78,7 @@ namespace QuickJS.Module
             return false;
         }
 
-        public override unsafe JSValue LoadModule(ScriptContext context, string resolved_id)
+        public override unsafe JSValue LoadModule(ScriptContext context, string parent_module_id, string resolved_id)
         {
             var fileSystem = context.GetRuntime().GetFileSystem();
             var resolved_id_bytes = Utils.TextUtils.GetNullTerminatedBytes(resolved_id);
@@ -102,16 +102,16 @@ namespace QuickJS.Module
             var filename_atom = context.GetAtom(filename);
             var module_id_atom = context.GetAtom(resolved_id);
             var dirname_atom = context.GetAtom(dirname);
-            //TODO: 思考, 如果 reload 实现为标记, 复用原有 exports 可以在更大程度上实现关联的重载 (因为其他未重载脚本已经得到其引用, 不能合理地完成替换)
-            var exports_obj = JSApi.JS_NewObject(ctx); 
+            var exports_obj = context._new_commonjs_exports(resolved_id); 
             var require_obj = JSApi.JSB_NewCFunction(ctx, ScriptRuntime.module_require, context.GetAtom("require"), 1, JSCFunctionEnum.JS_CFUNC_generic, 0);
-            var module_obj = context._new_commonjs_module(resolved_id, filename, exports_obj, false);
+            var module_obj = context._new_commonjs_script_module(parent_module_id, resolved_id, filename, exports_obj, false);
             var main_mod_obj = context._dup_commonjs_main_module();
             var filename_obj = JSApi.JS_AtomToString(ctx, filename_atom);
             var dirname_obj = JSApi.JS_AtomToString(ctx, dirname_atom);
 
             JSApi.JS_SetProperty(ctx, require_obj, context.GetAtom("moduleId"), JSApi.JS_AtomToString(ctx, module_id_atom));
             JSApi.JS_SetProperty(ctx, require_obj, context.GetAtom("main"), main_mod_obj);
+            
             var require_argv = new JSValue[5] { exports_obj, require_obj, module_obj, filename_obj, dirname_obj, };
 
             if (tagValue == ScriptRuntime.BYTECODE_COMMONJS_MODULE_TAG)
