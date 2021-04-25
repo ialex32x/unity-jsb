@@ -57,6 +57,7 @@ namespace Example
                 // 演示了一般文件系统的访问, 实际项目中典型的情况需要自行实现基于 AssetBundle(或 7z/zip) 的文件访问层
                 fileSystem = new DefaultFileSystem(_mConsole);
                 pathResolver.AddSearchPath("Scripts/out");
+                // pathResolver.AddSearchPath("../Scripts/out");
                 // _rt.AddSearchPath("Assets/Examples/Scripts/dist");
             }
 

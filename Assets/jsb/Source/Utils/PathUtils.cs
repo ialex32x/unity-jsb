@@ -38,6 +38,7 @@ namespace QuickJS.Utils
             {
                 return path;
             }
+
             var array = new List<string>(items.Length);
             for (var i = 0; i < items.Length; i++)
             {
@@ -45,8 +46,24 @@ namespace QuickJS.Utils
                 switch (item)
                 {
                     case ".": break;
-                    case "..": array.RemoveAt(array.Count - 1); break;
-                    default: array.Add(item); break;
+                    case "..":
+                    {
+                        if (array.Count > 0 && array[array.Count - 1] != "..")
+                        {
+                            array.RemoveAt(array.Count - 1);
+                        }
+                        else
+                        {
+                            array.Add(item); 
+                        }
+
+                        break;
+                    }
+                    default:
+                    {
+                        array.Add(item);
+                        break;
+                    }
                 }
             }
             return Combine(array.ToArray());
