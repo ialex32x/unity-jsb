@@ -14,8 +14,14 @@ namespace QuickJS.Unity
     {
         private JSBehaviour _target;
 
-        private bool _released;
+        private bool _psView;
+        private bool _foldoutObjects;
+        private bool _foldoutStrings;
+        private bool _foldoutNumbers;
+        private bool _foldoutSourceRef;
+
         private bool _enabled;
+        private bool _enabledPending;
         private JSContext _ctx;
         private JSValue _this_obj = JSApi.JS_UNDEFINED;
 
@@ -38,29 +44,14 @@ namespace QuickJS.Unity
 
         public void CreateScriptInstance(JSContext ctx, JSValue this_obj, JSValue ctor)
         {
-            if (_released)
-            {
-                return;
-            }
-
             var context = ScriptEngine.GetContext(ctx);
             if (context == null)
             {
                 return;
             }
 
-            if (_ctx != (JSContext)ctx)
-            {
-                var oldContext = ScriptEngine.GetContext(_ctx);
-                if (oldContext != null)
-                {
-                    oldContext.OnDestroy -= OnContextDestroy;
-                }
-                context.OnDestroy += OnContextDestroy;
-                _ctx = ctx;
-            }
-
-            _ctx = ctx;
+            context.OnDestroy += OnContextDestroy;
+            _ctx = ctx; 
             _this_obj = JSApi.JS_DupValue(ctx, this_obj);
 
             _onDestroyFunc = JSApi.JS_GetProperty(ctx, this_obj, context.GetAtom("OnDestroy"));
@@ -90,6 +81,7 @@ namespace QuickJS.Unity
                 {
                     _ctx.print_exception();
                 }
+
                 JSApi.JS_FreeValue(_ctx, rval);
             }
         }
@@ -121,25 +113,19 @@ namespace QuickJS.Unity
 
                 JSApi.JS_FreeValue(_ctx, _this_obj);
                 _this_obj = JSApi.JS_UNDEFINED;
+                
+                var context = ScriptEngine.GetContext(_ctx);
+                if (context != null)
+                {
+                    context.OnDestroy -= OnContextDestroy;
+                }
             }
         }
 
         void Release()
         {
-            if (_released)
-            {
-                return;
-            }
-            _released = true;
-
             _target.ReleaseScriptInstance();
             ReleaseJSValues();
-
-            var context = ScriptEngine.GetContext(_ctx);
-            if (context != null)
-            {
-                context.OnDestroy -= OnContextDestroy;
-            }
         }
 
         private void CreateScriptInstance()
@@ -192,6 +178,7 @@ namespace QuickJS.Unity
                         JSApi.JS_FreeValue(ctx, editorInstance);
                     }
                 }
+
                 JSApi.JS_FreeValue(ctx, editorClass);
             }
         }
@@ -199,22 +186,39 @@ namespace QuickJS.Unity
         void OnEnable()
         {
             _enabled = true;
-            _target.SetScriptInstance();
-            CreateScriptInstance();
+            _enabledPending = true;
+            ReleaseJSValues();
+            // EnableScriptInstance();
+        }
 
-            if (_onEnableValid)
+        private void EnableScriptInstance()
+        {
+            if (!_enabledPending)
             {
-                var rval = JSApi.JS_Call(_ctx, _onEnableFunc, _this_obj);
-                if (rval.IsException())
+                return;
+            }
+
+            if (_target.SetScriptInstance())
+            {
+                _enabledPending = false;
+                CreateScriptInstance();
+
+                if (_onEnableValid)
                 {
-                    _ctx.print_exception();
+                    var rval = JSApi.JS_Call(_ctx, _onEnableFunc, _this_obj);
+                    if (rval.IsException())
+                    {
+                        _ctx.print_exception();
+                    }
+
+                    JSApi.JS_FreeValue(_ctx, rval);
                 }
-                JSApi.JS_FreeValue(_ctx, rval);
             }
         }
 
         void OnDisable()
         {
+            _enabledPending = false;
             if (_target.isScriptInstanced)
             {
                 _target.OnBeforeSerialize();
@@ -227,8 +231,10 @@ namespace QuickJS.Unity
                 {
                     _ctx.print_exception();
                 }
+
                 JSApi.JS_FreeValue(_ctx, rval);
             }
+
             Release();
             _enabled = false;
         }
@@ -242,8 +248,10 @@ namespace QuickJS.Unity
                 {
                     _ctx.print_exception();
                 }
+
                 JSApi.JS_FreeValue(_ctx, rval);
             }
+
             Release();
         }
 
@@ -271,50 +279,83 @@ namespace QuickJS.Unity
 
         private void DrawSourceRef()
         {
-            EditorGUILayout.BeginHorizontal();
-            EditorGUILayout.TextField("Source File", _target.scriptRef.sourceFile);
-            var sourceFileRect = GUILayoutUtility.GetLastRect();
+            var showSourceRefEdit = !_target.IsValid();
 
-            if (GUILayout.Button("F", GUILayout.Width(20f)))
+            if (!showSourceRefEdit)
             {
-                sourceFileRect.y += 10f;
-                if (JSScriptSearchWindow.Show(sourceFileRect, _target.scriptRef.ToClassPath(), OnSelectedScript))
+                _foldoutSourceRef = EditorGUILayout.Foldout(_foldoutSourceRef, "Script Ref");
+                showSourceRefEdit = _foldoutSourceRef;
+            }
+
+            if (showSourceRefEdit)
+            {
+                EditorGUILayout.BeginHorizontal();
+                EditorGUILayout.TextField("Source File", _target.scriptRef.sourceFile);
+                var sourceFileRect = GUILayoutUtility.GetLastRect();
+
+                if (GUILayout.Button("F", GUILayout.Width(20f)))
                 {
-                    GUIUtility.ExitGUI();
+                    sourceFileRect.y += 10f;
+                    if (JSScriptSearchWindow.Show(sourceFileRect, _target.scriptRef.ToClassPath(), OnSelectedScript))
+                    {
+                        GUIUtility.ExitGUI();
+                    }
+                }
+
+                EditorGUILayout.EndHorizontal();
+
+                var sourceFileExists = File.Exists(_target.scriptRef.sourceFile);
+
+                if (!sourceFileExists)
+                {
+                    EditorGUILayout.HelpBox("Source file is missing", MessageType.Warning);
+                }
+
+                EditorGUILayout.LabelField("Module Path", _target.scriptRef.modulePath);
+                EditorGUILayout.LabelField("Class Name", _target.scriptRef.className);
+            }
+        }
+
+        private void DrawPrimitiveView()
+        {
+            _psView = EditorGUILayout.Toggle("Primitive View", _psView);
+            if (_psView)
+            {
+                var ps = _target.properties;
+                if (ps == null || ps.Count == 0)
+                {
+                    EditorGUILayout.HelpBox("Empty Properties View", MessageType.Info);
+                    return;
+                }
+
+                if (_foldoutObjects = EditorGUILayout.Foldout(_foldoutObjects, "Objects"))
+                {
+                    ps.ForEach((string key, Object value) =>
+                    {
+                        //
+                        EditorGUILayout.ObjectField(key, value, value != null ? value.GetType() : typeof(Object), true);
+                    });
+                }
+
+                if (_foldoutStrings = EditorGUILayout.Foldout(_foldoutStrings, "Strings"))
+                {
+                    ps.ForEach((string key, string value) =>
+                    {
+                        //
+                        EditorGUILayout.LabelField(key);
+                        EditorGUILayout.TextArea(value);
+                    });
+                }
+
+                if (_foldoutNumbers = EditorGUILayout.Foldout(_foldoutNumbers, "Numbers"))
+                {
+                    ps.ForEach((string key, double value) =>
+                    {
+                        // unsafe
+                        EditorGUILayout.FloatField(key, (float) value);
+                    });
                 }
             }
-
-            // 强制刷新脚本绑定
-            // if (GUILayout.Button("R", GUILayout.Width(20f)))
-            // {
-            //     string modulePath;
-            //     string[] classNames;
-            //     if (UnityHelper.ResolveScriptRef(_target.scriptRef.sourceFile, out modulePath, out classNames))
-            //     {
-            //         if (_target.scriptRef.modulePath != modulePath || _target.scriptRef.className != classNames[0])
-            //         {
-            //             _target.scriptRef.modulePath = modulePath;
-            //             _target.scriptRef.className = classNames[0];
-            //             _target.ReleaseScriptInstance();
-            //             _target.SetScriptInstance();
-            //
-            //             // 重新绑定当前编辑器脚本实例
-            //             this.CreateScriptInstance();
-            //             EditorUtility.SetDirty(_target);
-            //         }
-            //     }
-            // }
-            EditorGUILayout.EndHorizontal();
-            
-            var sourceFileExists = File.Exists(_target.scriptRef.sourceFile);
-
-            if (!sourceFileExists)
-            {
-                EditorGUILayout.HelpBox("Source file is missing", MessageType.Warning);
-            }
-            
-            EditorGUILayout.LabelField("Module Path", _target.scriptRef.modulePath);
-            EditorGUILayout.LabelField("Class Name", _target.scriptRef.className);
         }
 
         public override void OnInspectorGUI()
@@ -326,6 +367,12 @@ namespace QuickJS.Unity
                 return;
             }
 
+            if (_enabledPending)
+            {
+                EnableScriptInstance();
+            }
+
+            DrawPrimitiveView();
             DrawSourceRef();
 
             if (_onInspectorGUIValid)
@@ -335,6 +382,7 @@ namespace QuickJS.Unity
                 {
                     _ctx.print_exception();
                 }
+
                 JSApi.JS_FreeValue(_ctx, rval);
             }
         }

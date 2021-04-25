@@ -14,7 +14,10 @@ namespace QuickJS.Unity
         [SerializeField]
         private JSBehaviourProperties _properties;
 
-        // unsafe
+        // internal use only
+        public JSBehaviourProperties properties => _properties;
+
+        // unsafe, internal use only
         public JSContext ctx { get { return _ctx; } }
 
         public bool isScriptInstanced => _isScriptInstanced;
@@ -311,7 +314,7 @@ namespace QuickJS.Unity
 
         public void ReleaseJSValues()
         {
-            if (!_this_obj.IsNullish())
+            if (!_this_obj.IsNullish()) 
             {
                 JSApi.JS_FreeValue(_ctx, _updateFunc);
                 _updateFunc = JSApi.JS_UNDEFINED;
@@ -380,6 +383,8 @@ namespace QuickJS.Unity
             {
                 context.OnDestroy -= OnContextDestroy;
             }
+
+            _isScriptInstanced = false;
             _ctx = JSContext.Null;
         }
 
@@ -575,6 +580,11 @@ namespace QuickJS.Unity
                     }
                     JSApi.JS_FreeValue(_ctx, rval);
                 }
+
+                if (_properties.Count == 0)
+                {
+                    _properties = null;
+                }
             }
         }
 
@@ -584,7 +594,7 @@ namespace QuickJS.Unity
         }
 
         // 通过 scriptRef 还原脚本绑定关系
-        public void SetScriptInstance()
+        public bool SetScriptInstance()
         {
             if (!_isScriptInstanced)
             {
@@ -624,7 +634,13 @@ namespace QuickJS.Unity
                         Debug.LogError("script runtime not ready");
                     }
                 }
+                else
+                {
+                    CreateUnresolvedScriptInstance();
+                }
             }
+
+            return _isScriptInstanced;
         }
 
         public void _OnScriptingAfterDeserialize()
