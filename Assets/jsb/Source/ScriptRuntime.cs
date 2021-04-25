@@ -155,6 +155,8 @@ namespace QuickJS
                     JSValue mod;
                     if (context.LoadModuleCache(resolved_id, out mod))
                     {
+                        //TODO: 需要处理 reloading 的情况 （reload 过程中触发了 require）
+                        
                         var ctx = (JSContext)context;
                         var exports = JSApi.JS_GetProperty(ctx, mod, context.GetAtom("exports"));
                         JSApi.JS_FreeValue(ctx, mod);
@@ -166,6 +168,20 @@ namespace QuickJS
             }
 
             return JSApi.JS_ThrowInternalError(context, $"module can not be resolved ({module_id})");
+        }
+
+        public bool ReloadModule(ScriptContext context, string resolved_id)
+        {
+            for (int i = 0, count = _moduleResolvers.Count; i < count; i++)
+            {
+                var resolver = _moduleResolvers[i];
+                if (resolver.ContainsModule(_fileSystem, _pathResolver, resolved_id))
+                {
+                    return resolver.ReloadModule(context, resolved_id);
+                }
+            }
+
+            return false;
         }
 
 #if UNITY_EDITOR

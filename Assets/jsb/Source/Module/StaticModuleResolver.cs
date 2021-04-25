@@ -50,6 +50,11 @@ namespace QuickJS.Module
             return this;
         }
 
+        public bool ContainsModule(IFileSystem fileSystem, IPathResolver pathResolver, string resolved_id)
+        {
+            return _modRegisters.ContainsKey(resolved_id);
+        }
+
         public bool ResolveModule(IFileSystem fileSystem, IPathResolver pathResolver, string parent_module_id, string module_id, out string resolved_id)
         {
             if (_modRegisters.ContainsKey(module_id))
@@ -58,6 +63,12 @@ namespace QuickJS.Module
                 return true;
             }
             resolved_id = null;
+            return false;
+        }
+
+        public bool ReloadModule(ScriptContext context, string resolved_id)
+        {
+            // unsupported
             return false;
         }
 

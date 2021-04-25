@@ -37,6 +37,9 @@ namespace QuickJS
         private JSValue _stringConstructor;
         private JSValue _functionConstructor;
 
+        private bool _isReloading;
+        private List<string> _reloadingModules;
+
         // id = context slot index + 1
         public int id { get { return _contextId; } }
 
@@ -373,7 +376,7 @@ namespace QuickJS
             return JSApi.JS_GetProperty(_ctx, _require, GetAtom("main"));
         }
 
-        public bool LoadModuleCache(string module_id, out JSValue value)
+        public bool LoadModuleCache(string module_id,  out JSValue value)
         {
             var prop = GetAtom(module_id);
             var mod = JSApi.JS_GetProperty(_ctx, _moduleCache, prop);
@@ -384,6 +387,57 @@ namespace QuickJS
             }
             value = JSApi.JS_UNDEFINED;
             JSApi.JS_FreeValue(_ctx, mod);
+            return false;
+        }
+
+        public void BeginModuleReload()
+        {
+            if (!_isReloading)
+            {
+                _isReloading = true;
+                _reloadingModules = new List<string>();
+            }
+        }
+
+        public void MarkModuleReload(string module_id)
+        {
+            if (_isReloading && !_reloadingModules.Contains(module_id))
+            {
+                _reloadingModules.Add(module_id);
+            }
+        }
+
+        public void EndModuleReload()
+        {
+            if (!_isReloading)
+            {
+                return;
+            }
+
+            _isReloading = false;
+            while (_reloadingModules.Count > 0)
+            {
+                var module_id = _reloadingModules[0];
+
+                if (!_runtime.ReloadModule(this, module_id))
+                {
+                    _reloadingModules.Remove(module_id);
+                }
+            }
+        }
+
+        public bool TryGetModuleForReloading(string resolved_id, out JSValue module_obj)
+        {
+            if (_reloadingModules != null && _reloadingModules.Contains(resolved_id))
+            {
+                if (LoadModuleCache(resolved_id, out module_obj))
+                {
+                    _reloadingModules.Remove(resolved_id);
+                    return true;
+                }
+            }
+            
+            module_obj = JSApi.JS_UNDEFINED;
             return false;
         }
 
@@ -449,6 +503,14 @@ namespace QuickJS
                 // ns_hotfix.AddFunction("after", hotfix_after);
 
                 ns_jsb.AddValue("hotfix", ns_hotfix.GetConstructor());
+            }
+            {
+                var ns_ModuleManager = register.CreateClass("ModuleManager");
+                ns_ModuleManager.AddFunction("BeginReload", ModuleManager_BeginReload, 0);
+                ns_ModuleManager.AddFunction("MarkReload", ModuleManager_MarkReload, 1);
+                ns_ModuleManager.AddFunction("EndReload", ModuleManager_EndReload, 0);
+
+                ns_jsb.AddValue("ModuleManager", ns_ModuleManager.GetConstructor());
             }
             return ns_jsb;
         }

@@ -28,6 +28,13 @@ namespace QuickJS.Module
             return false;
         }
 
+        public override bool ReloadModule(ScriptContext context, string resolved_id)
+        {
+            var rval = LoadModule(context, null, resolved_id);
+            JSApi.JS_FreeValue(context, rval);
+            return true;
+        }
+
         public override unsafe JSValue LoadModule(ScriptContext context, string parent_module_id, string resolved_id)
         {
             var fileSystem = context.GetRuntime().GetFileSystem();

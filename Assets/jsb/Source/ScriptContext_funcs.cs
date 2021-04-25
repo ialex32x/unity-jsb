@@ -471,6 +471,49 @@ namespace QuickJS
             return JSApi.JS_GetProperty(ctx, proto, JSApi.JS_ATOM_constructor);
         }
 
+        [MonoPInvokeCallback(typeof(JSCFunction))]
+        public static JSValue ModuleManager_BeginReload(JSContext ctx, JSValue this_obj, int argc, JSValue[] argv)
+        {
+            var context = ScriptEngine.GetContext(ctx);
+            if (context != null)
+            {
+                context.BeginModuleReload();
+            }
+            return JSApi.JS_UNDEFINED;
+        }
+
+        [MonoPInvokeCallback(typeof(JSCFunction))]
+        public static JSValue ModuleManager_MarkReload(JSContext ctx, JSValue this_obj, int argc, JSValue[] argv)
+        {
+            if (argc < 1 || !argv[0].IsString())
+            {
+                return JSApi.JS_ThrowInternalError(ctx, "resolved module_id expected");
+            }
+            
+            var context = ScriptEngine.GetContext(ctx);
+            if (context != null)
+            {
+                var module_id = JSApi.GetString(ctx, argv[0]);
+                if (!string.IsNullOrEmpty(module_id))
+                {
+                    context.MarkModuleReload(module_id);
+                    return JSApi.JS_TRUE;
+                }
+            }
+            return JSApi.JS_FALSE;
+        }
+
+        [MonoPInvokeCallback(typeof(JSCFunction))]
+        public static JSValue ModuleManager_EndReload(JSContext ctx, JSValue this_obj, int argc, JSValue[] argv)
+        {
+            var context = ScriptEngine.GetContext(ctx);
+            if (context != null)
+            {
+                context.EndModuleReload();
+            }
+            return JSApi.JS_UNDEFINED;
+        }
+
         //TODO: 临时代码
         [MonoPInvokeCallback(typeof(JSCFunction))]
         public static JSValue hotfix_replace_single(JSContext ctx, JSValue this_obj, int argc, JSValue[] argv)

@@ -1,4 +1,5 @@
-import { EditorGUILayout, EditorWindow } from "UnityEditor";
+import { ModuleManager } from "jsb";
+import { EditorGUI, EditorGUILayout, EditorWindow } from "UnityEditor";
 import { GUIContent, GUILayout } from "UnityEngine";
 
 export class JSModuleView extends EditorWindow {
@@ -10,11 +11,23 @@ export class JSModuleView extends EditorWindow {
 
     private drawModule(mod: NodeModule) {
         GUILayout.Space(12);
-        EditorGUILayout.TextField("Module ID", mod.id);
 
         if (typeof this._touch[mod.id] !== "undefined") {
+            EditorGUILayout.TextField("Module ID", mod.id);
             return;
         }
+
+        EditorGUILayout.BeginHorizontal();
+        EditorGUILayout.TextField("Module ID", mod.id);
+        let doReload = false;
+        if (mod["resolvername"] != "source") {
+            EditorGUI.BeginDisabledGroup(true);
+            doReload = GUILayout.Button("Reload");
+            EditorGUI.EndDisabledGroup();
+        } else {
+            doReload = GUILayout.Button("Reload");
+        }
+        EditorGUILayout.EndHorizontal();
 
         this._touch[mod.id] = true;
         EditorGUILayout.TextField("File Name", mod.filename);
@@ -37,6 +50,12 @@ export class JSModuleView extends EditorWindow {
             }
             EditorGUILayout.EndVertical();
             EditorGUILayout.EndHorizontal();
+        }
+
+        if (doReload) {
+            ModuleManager.BeginReload();
+            ModuleManager.MarkReload(mod.id);
+            ModuleManager.EndReload();
         }
     }
 

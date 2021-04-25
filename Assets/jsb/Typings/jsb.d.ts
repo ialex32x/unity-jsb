@@ -107,10 +107,21 @@ declare module "jsb" {
         static postMessage(id: number, data: any): void;
     }
 
+    class ModuleManager {
+        static BeginReload();
+
+        /**
+         * 将此模块标记为等待重载
+         */
+        static MarkReload(moduleId: string);
+
+        static EndReload();
+    }
+
     /**
      * 执行指定脚本 (慎用, 与 webpack 等工具的结合性可能不太好)
      */
-    function DoFile(filename: string): void
+    function DoFile(filename: string): void;
 
     /**
      * 强行执行一次完整垃圾回收
