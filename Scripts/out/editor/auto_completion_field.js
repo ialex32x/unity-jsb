@@ -59,14 +59,16 @@ class AutoCompletionField extends dispatcher_1.EventDispatcher {
         var result = asToolbar
             ? this.searchField.OnToolbarGUI(rect, this.searchString)
             : this.searchField.OnGUI(rect, this.searchString);
-        if (result != this.searchString) {
-            this.dispatch("change", result);
-            this.selectedIndex = -1;
-            this.showResults = true;
-        }
-        this.searchString = result;
-        if (this.hasSearchbarFocused()) {
-            this.repaintFocusedWindow();
+        if (typeof result === "string") {
+            if (result != this.searchString) {
+                this.dispatch("change", result);
+                this.selectedIndex = -1;
+                this.showResults = true;
+            }
+            this.searchString = result;
+            if (this.hasSearchbarFocused()) {
+                this.repaintFocusedWindow();
+            }
         }
     }
     onDownOrUpArrowKeyPressed() {

@@ -5,6 +5,10 @@ const UnityEditor_1 = require("UnityEditor");
 const UnityEngine_1 = require("UnityEngine");
 const auto_completion_field_1 = require("./auto_completion_field");
 function fillAutoCompletion(scope, pattern) {
+    let result = [];
+    if (typeof pattern !== "string") {
+        return result;
+    }
     let head = '';
     pattern.replace(/\\W*([\\w\\.]+)$/, (a, b, c) => {
         head = pattern.substr(0, c + a.length - b.length);
@@ -23,7 +27,6 @@ function fillAutoCompletion(scope, pattern) {
         }
         pattern = pattern.substr(index + 1);
     }
-    let result = [];
     for (let k in scope) {
         if (k.indexOf(pattern) == 0) {
             result.push(head + left + k);

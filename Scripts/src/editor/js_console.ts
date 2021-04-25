@@ -3,7 +3,14 @@ import { Event, EventType, GUI, GUIContent, GUILayout, KeyCode, Rect } from "Uni
 import { AutoCompletionField } from "./auto_completion_field";
 
 export function fillAutoCompletion(scope: any, pattern: string): Array<string> {
+    let result: Array<string> = [];
+
+    if (typeof pattern !== "string") {
+        return result;
+    }
+    
     let head = '';
+
     pattern.replace(/\\W*([\\w\\.]+)$/, (a, b, c) => {
         head = pattern.substr(0, c + a.length - b.length);
         pattern = b;
@@ -23,7 +30,6 @@ export function fillAutoCompletion(scope: any, pattern: string): Array<string> {
         pattern = pattern.substr(index + 1);
     }
 
-    let result: Array<string> = [];
     for (let k in scope) {
         if (k.indexOf(pattern) == 0) {
             result.push(head + left + k);
