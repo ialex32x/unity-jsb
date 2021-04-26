@@ -14,13 +14,6 @@ namespace QuickJS.Unity
     /// </summary>
     public class JSEditorWindow : EditorWindow, IHasCustomMenu
     {
-        private string _scriptTypeName;
-
-        public string scriptTypeName
-        {
-            get { return _scriptTypeName; }
-        }
-
         private bool _released;
         private bool _destroyed;
         private JSContext _ctx;
@@ -107,16 +100,6 @@ namespace QuickJS.Unity
             _released = false;
             _ctx = ctx;
             _this_obj = JSApi.JS_DupValue(ctx, this_obj);
-            var nameProp = JSApi.JS_GetProperty(ctx, ctor, JSApi.JS_ATOM_name);
-            if (nameProp.IsException())
-            {
-                _scriptTypeName = "Unknown";
-            }
-            else
-            {
-                _scriptTypeName = JSApi.GetString(ctx, nameProp);
-                JSApi.JS_FreeValue(ctx, nameProp);
-            }
 
             _updateFunc = JSApi.JS_GetProperty(ctx, this_obj, context.GetAtom("Update"));
             _updateValid = JSApi.JS_IsFunction(ctx, _updateFunc) == 1;

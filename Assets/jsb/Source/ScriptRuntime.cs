@@ -147,6 +147,21 @@ namespace QuickJS
             return null;
         }
 
+        public string ResolveModuleId(ScriptContext context, string parent_module_id, string module_id)
+        {
+            for (int i = 0, count = _moduleResolvers.Count; i < count; i++)
+            {
+                var resolver = _moduleResolvers[i];
+                string resolved_id;
+                if (resolver.ResolveModule(_fileSystem, _pathResolver, parent_module_id, module_id, out resolved_id))
+                {
+                    return resolved_id;
+                }
+            }
+
+            return null;
+        }
+
         public JSValue ResolveModule(ScriptContext context, string parent_module_id, string module_id)
         {
             for (int i = 0, count = _moduleResolvers.Count; i < count; i++)
@@ -162,7 +177,7 @@ namespace QuickJS
                         JSValue exports_obj;
                         if (resolver.ReloadModule(context, resolved_id, module_obj, out exports_obj))
                         {
-                            RaiseScriptReloadingEvent(context, resolved_id);
+                            RaiseScriptReloadingEvent_nothrow(context, resolved_id);
                             JSApi.JS_FreeValue(context, module_obj);
                             return exports_obj;
                         }
@@ -201,7 +216,7 @@ namespace QuickJS
                         JSValue exports_obj;
                         if (resolver.ReloadModule(context, resolved_id, module_obj, out exports_obj))
                         {
-                            RaiseScriptReloadingEvent(context, resolved_id);
+                            RaiseScriptReloadingEvent_nothrow(context, resolved_id);
                             JSApi.JS_FreeValue(ctx, module_obj);
                             JSApi.JS_FreeValue(ctx, exports_obj);
                             return true;
@@ -216,11 +231,12 @@ namespace QuickJS
             return false;
         }
 
-        private void RaiseScriptReloadingEvent(ScriptContext context, string resolved_id)
+        private void RaiseScriptReloadingEvent_nothrow(ScriptContext context, string resolved_id)
         {
             try
             {
                 OnScriptReloading?.Invoke(context, resolved_id);
+                context.RaiseScriptReloadingEvent_throw(resolved_id);
             }
             catch (Exception exception)
             {

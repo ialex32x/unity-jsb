@@ -229,8 +229,12 @@ namespace QuickJS.Unity
             }
 
             ReleaseJSValues();
+            
             _ctx = ctx;
             context.OnDestroy += OnContextDestroy;
+#if UNITY_EDITOR
+            context.OnScriptReloading += OnScriptReloading;
+#endif
 
             _isScriptInstanced = true;
             _this_obj = JSApi.JS_DupValue(ctx, this_obj);
@@ -311,6 +315,18 @@ namespace QuickJS.Unity
         {
             ReleaseJSValues();
         }
+        
+#if UNITY_EDITOR
+        private void OnScriptReloading(ScriptContext context, string resolved_id)
+        {
+            if (context.IsReloading(scriptRef, resolved_id))
+            {
+                OnBeforeSerialize();
+                ReleaseJSValues();
+                SetScriptInstance();
+            }
+        }
+#endif
 
         public void ReleaseJSValues()
         {
@@ -377,15 +393,17 @@ namespace QuickJS.Unity
                 JSApi.JS_FreeValue(_ctx, _this_obj);
                 _this_obj = JSApi.JS_UNDEFINED;
             }
-
+            _isScriptInstanced = false;
             var context = ScriptEngine.GetContext(_ctx);
+            _ctx = JSContext.Null;
+            
             if (context != null)
             {
                 context.OnDestroy -= OnContextDestroy;
+#if UNITY_EDITOR
+                context.OnScriptReloading -= OnScriptReloading;
+#endif
             }
-
-            _isScriptInstanced = false;
-            _ctx = JSContext.Null;
         }
 
         void Update()

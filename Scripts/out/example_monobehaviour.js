@@ -38,7 +38,7 @@ let MyClass = class MyClass extends UnityEngine_1.MonoBehaviour {
         inspector_1.SerializationUtil.deserialize(this, ps);
     }
     speak(text) {
-        console.log(text);
+        console.log("modified", text);
     }
     async test() {
         console.log("MyClass.test (will be destroied after 5 secs.", this.transform);

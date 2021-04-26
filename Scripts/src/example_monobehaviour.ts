@@ -41,7 +41,7 @@ export class MyClass extends MonoBehaviour {
     }
 
     speak(text: string) {
-        console.log(text);
+        console.log("modified", text);
     }
 
     async test() {

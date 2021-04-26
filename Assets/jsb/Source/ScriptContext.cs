@@ -7,6 +7,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using QuickJS.Binding;
 using QuickJS.Native;
+using QuickJS.Unity;
 using QuickJS.Utils;
 
 namespace QuickJS
@@ -15,6 +16,8 @@ namespace QuickJS
     {
         public event Action<ScriptContext> OnDestroy;
         public event Action<int> OnAfterDestroy;
+
+        public event Action<ScriptContext, string> OnScriptReloading;
 
         private ScriptRuntime _runtime;
         private int _contextId;
@@ -410,6 +413,16 @@ namespace QuickJS
 
             _isReloading = false;
             _waitForReloadModules = null;
+        }
+
+        public void RaiseScriptReloadingEvent_throw(string resolved_id)
+        {
+            OnScriptReloading?.Invoke(this, resolved_id);
+        }
+
+        public bool IsReloading(JSBehaviourScriptRef scriptRef, string resolved_id)
+        {
+            return _runtime.ResolveModuleId(this, "", scriptRef.modulePath) == resolved_id;
         }
 
         public bool TryGetModuleForReloading(string resolved_id, out JSValue module_obj)
