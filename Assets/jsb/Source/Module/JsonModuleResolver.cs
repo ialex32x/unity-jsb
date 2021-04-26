@@ -28,10 +28,16 @@ namespace QuickJS.Module
             return false;
         }
 
-        public override bool ReloadModule(ScriptContext context, string resolved_id)
+        public override bool ReloadModule(ScriptContext context, string resolved_id, JSValue module_obj, out JSValue exports_obj)
         {
-            var rval = LoadModule(context, null, resolved_id);
-            JSApi.JS_FreeValue(context, rval);
+            exports_obj = LoadModule(context, null, resolved_id);
+            if (exports_obj.IsException())
+            {
+                ((JSContext) context).print_exception();
+                exports_obj = JSApi.JS_UNDEFINED;
+                return false;
+            }
+            
             return true;
         }
 

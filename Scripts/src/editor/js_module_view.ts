@@ -1,6 +1,7 @@
 import { ModuleManager } from "jsb";
 import { EditorGUI, EditorGUILayout, EditorWindow } from "UnityEditor";
 import { GUIContent, GUILayout } from "UnityEngine";
+import { reload } from "./js_reload";
 
 export class JSModuleView extends EditorWindow {
     private _touch: any;
@@ -53,9 +54,7 @@ export class JSModuleView extends EditorWindow {
         }
 
         if (doReload) {
-            ModuleManager.BeginReload();
-            ModuleManager.MarkReload(mod.id);
-            ModuleManager.EndReload();
+            reload(mod);
         }
     }
 

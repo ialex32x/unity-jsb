@@ -58,6 +58,6 @@ namespace QuickJS.Module
 
         public abstract JSValue LoadModule(ScriptContext context, string parent_module_id, string resolved_id);
         
-        public abstract bool ReloadModule(ScriptContext context, string resolved_id);
+        public abstract bool ReloadModule(ScriptContext context, string resolved_id, JSValue module_obj, out JSValue exports_obj);
     }
 }

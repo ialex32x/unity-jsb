@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.reload = void 0;
 const file_watcher_1 = require("./file_watcher");
 const jsb_1 = require("jsb");
 if (typeof globalThis["__fw"] !== "undefined") {
@@ -7,12 +8,31 @@ if (typeof globalThis["__fw"] !== "undefined") {
     delete globalThis["__fw"];
 }
 let fw = new file_watcher_1.FileWatcher("Scripts", "*.js");
-function collect_reload(mod, dirtylist) {
+function reload(mod) {
+    if (typeof mod === "object") {
+        let dirtylist = [];
+        collect_reload_deps(mod, dirtylist);
+        do_reload(dirtylist);
+    }
+}
+exports.reload = reload;
+function do_reload(dirtylist) {
+    if (dirtylist.length > 0) {
+        jsb_1.ModuleManager.BeginReload();
+        for (let i = 0; i < dirtylist.length; i++) {
+            let mod = dirtylist[i];
+            console.warn("reloading", mod.id);
+            jsb_1.ModuleManager.MarkReload(mod.id);
+        }
+        jsb_1.ModuleManager.EndReload();
+    }
+}
+function collect_reload_deps(mod, dirtylist) {
     if (dirtylist.indexOf(mod) < 0) {
         dirtylist.push(mod);
         let parent = mod.parent;
         if (typeof parent === "object") {
-            collect_reload(parent, dirtylist);
+            collect_reload_deps(parent, dirtylist);
             parent = parent.parent;
         }
     }
@@ -27,21 +47,13 @@ fw.on(file_watcher_1.FileWatcher.CHANGED, this, function (filestates) {
             let mod = cache[moduleId];
             // console.warn(mod.filename, mod.filename == filestate.fullPath)
             if (mod.filename == filestate.fullPath) {
-                collect_reload(mod, dirtylist);
+                collect_reload_deps(mod, dirtylist);
                 // delete cache[moduleId];
                 break;
             }
         }
     }
-    if (dirtylist.length > 0) {
-        jsb_1.ModuleManager.BeginReload();
-        for (let i = 0; i < dirtylist.length; i++) {
-            let mod = dirtylist[i];
-            console.warn("reloading", mod.id);
-            jsb_1.ModuleManager.MarkReload(mod.id);
-        }
-        jsb_1.ModuleManager.EndReload();
-    }
+    do_reload(dirtylist);
 });
 globalThis["__fw"] = fw;
 console.log("i am here");

@@ -22,8 +22,6 @@ namespace QuickJS
         private AtomCache _atoms;
         private JSStringCache _stringCache;
 
-        // 保存已加载模块的信息
-        private Dictionary<string, string> _loadedModuleHash;
         private JSValue _moduleCache; // commonjs module cache
         private JSValue _require; // require function object 
         private bool _isValid;
@@ -38,7 +36,7 @@ namespace QuickJS
         private JSValue _functionConstructor;
 
         private bool _isReloading;
-        private List<string> _reloadingModules;
+        private List<string> _waitForReloadModules;
 
         // id = context slot index + 1
         public int id { get { return _contextId; } }
@@ -54,8 +52,6 @@ namespace QuickJS
             _atoms = new AtomCache(_ctx);
             _stringCache = new JSStringCache(_ctx);
             _moduleCache = JSApi.JS_NewObject(_ctx);
-            _loadedModuleHash = new Dictionary<string, string>();
-
             _globalObject = JSApi.JS_GetGlobalObject(_ctx);
             _objectConstructor = JSApi.JS_GetProperty(_ctx, _globalObject, JSApi.JS_ATOM_Object);
             _numberConstructor = JSApi.JS_GetProperty(_ctx, _globalObject, JSApi.JS_ATOM_Number);
@@ -295,20 +291,7 @@ namespace QuickJS
             return JSApi.JS_DupValue(_ctx, _operatorCreate);
         }
 
-        //TODO: 思考, 如果 reload 实现为标记, 复用原有 exports 可以在更大程度上实现关联的重载 (因为其他未重载脚本已经得到其引用, 不能合理地完成替换)
-        public JSValue _new_commonjs_exports(string module_id)
-        {
-            return JSApi.JS_NewObject(_ctx);
-        }
-
-        //NOTE: 返回值需要调用者 free 
-        // THIS FUNCTION WILL BE REMOVED LATER
-        public JSValue _get_commonjs_module(string module_id)
-        {
-            var prop = GetAtom(module_id);
-            return JSApi.JS_GetProperty(_ctx, _moduleCache, prop);
-        }
-
+        //TODO: 改为消耗 exports_obj 计数
         // for special resolver (json/static) use
         // no specified parent module assignment
         public JSValue _new_commonjs_resolver_module(string module_id, string resolvername, JSValue exports_obj, bool loaded)
@@ -316,12 +299,14 @@ namespace QuickJS
             return _new_commonjs_module_entry(null, module_id, module_id, resolvername, exports_obj, loaded);
         }
 
+        //TODO: 改为消耗 exports_obj 计数
         // for source script use
         public JSValue _new_commonjs_script_module(string parent_module_id, string module_id, string filename, JSValue exports_obj, bool loaded)
         {
             return _new_commonjs_module_entry(parent_module_id, module_id, filename, "source", exports_obj, loaded);
         }
 
+        //TODO: 改为消耗 exports_obj 计数
         //NOTE: 返回值需要调用者 free
         public JSValue _new_commonjs_module_entry(string parent_module_id, string module_id, string filename, string resolvername, JSValue exports_obj, bool loaded)
         {
@@ -366,7 +351,6 @@ namespace QuickJS
                 }
             }
 
-            _loadedModuleHash[module_id] = module_id;
             return module_obj;
         }
 
@@ -395,15 +379,15 @@ namespace QuickJS
             if (!_isReloading)
             {
                 _isReloading = true;
-                _reloadingModules = new List<string>();
+                _waitForReloadModules = new List<string>();
             }
         }
 
         public void MarkModuleReload(string module_id)
         {
-            if (_isReloading && !_reloadingModules.Contains(module_id))
+            if (_isReloading && !_waitForReloadModules.Contains(module_id))
             {
-                _reloadingModules.Add(module_id);
+                _waitForReloadModules.Add(module_id);
             }
         }
 
@@ -414,25 +398,27 @@ namespace QuickJS
                 return;
             }
 
-            _isReloading = false;
-            while (_reloadingModules.Count > 0)
+            while (_waitForReloadModules.Count > 0)
             {
-                var module_id = _reloadingModules[0];
+                var module_id = _waitForReloadModules[0];
 
                 if (!_runtime.ReloadModule(this, module_id))
                 {
-                    _reloadingModules.Remove(module_id);
+                    _waitForReloadModules.Remove(module_id);
                 }
             }
+
+            _isReloading = false;
+            _waitForReloadModules = null;
         }
 
         public bool TryGetModuleForReloading(string resolved_id, out JSValue module_obj)
         {
-            if (_reloadingModules != null && _reloadingModules.Contains(resolved_id))
+            if (_waitForReloadModules != null && _waitForReloadModules.Contains(resolved_id))
             {
+                _waitForReloadModules.Remove(resolved_id);
                 if (LoadModuleCache(resolved_id, out module_obj))
                 {
-                    _reloadingModules.Remove(resolved_id);
                     return true;
                 }
             }
@@ -441,23 +427,99 @@ namespace QuickJS
             return false;
         }
 
-        public string[] GetModuleCacheList()
+        // this method will consume the module_obj refcount 
+        public unsafe JSValue LoadModuleFromSource(byte[] source, string resolved_id, JSValue module_obj)
         {
-            var keys = new string[_loadedModuleHash.Count];
-            _loadedModuleHash.Keys.CopyTo(keys, 0);
-            return keys;
-        }
+            var context = this;
+            var ctx = _ctx;
+            var dirname = PathUtils.GetDirectoryName(resolved_id);
+            var resolved_id_bytes = Utils.TextUtils.GetNullTerminatedBytes(resolved_id);
+            var filename_obj = JSApi.JS_GetProperty(ctx, module_obj, context.GetAtom("filename"));
+            var module_id_atom = context.GetAtom(resolved_id);
+            var dirname_atom = context.GetAtom(dirname);
+            var require_obj = JSApi.JSB_NewCFunction(ctx, ScriptRuntime.module_require, context.GetAtom("require"), 1, JSCFunctionEnum.JS_CFUNC_generic, 0);
+            var main_mod_obj = context._dup_commonjs_main_module();
+            var dirname_obj = JSApi.JS_AtomToString(ctx, dirname_atom);
+            var exports_obj = JSApi.JS_GetProperty(ctx, module_obj, context.GetAtom("exports"));
 
-        /// <summary>
-        /// 清除模块缓存
-        /// </summary>
-        public void UnloadModuleCache(string module_id)
-        {
-            var prop = GetAtom(module_id);
-            JSApi.JS_SetProperty(_ctx, _moduleCache, prop, JSApi.JS_UNDEFINED);
-            _loadedModuleHash.Remove(module_id);
-        }
+            JSApi.JS_SetProperty(ctx, require_obj, context.GetAtom("moduleId"), JSApi.JS_AtomToString(ctx, module_id_atom));
+            JSApi.JS_SetProperty(ctx, require_obj, context.GetAtom("main"), main_mod_obj);
 
+            var require_argv = new JSValue[5] { exports_obj, require_obj, module_obj, filename_obj, dirname_obj, };
+
+            var tagValue = ScriptRuntime.TryReadByteCodeTagValue(source);
+            if (tagValue == ScriptRuntime.BYTECODE_COMMONJS_MODULE_TAG)
+            {
+                // bytecode
+                fixed (byte* intput_ptr = source)
+                {
+                    var bytecodeFunc = JSApi.JS_ReadObject(ctx, intput_ptr + sizeof(uint), source.Length - sizeof(uint), JSApi.JS_READ_OBJ_BYTECODE);
+
+                    if (bytecodeFunc.tag == JSApi.JS_TAG_FUNCTION_BYTECODE)
+                    {
+                        var func_val = JSApi.JS_EvalFunction(ctx, bytecodeFunc); // it's CallFree (bytecodeFunc)
+                        if (JSApi.JS_IsFunction(ctx, func_val) != 1)
+                        {
+                            JSApi.JS_FreeValue(ctx, func_val);
+                            JSApi.JS_FreeValue(ctx, require_argv);
+                            return JSApi.JS_ThrowInternalError(ctx, "failed to require bytecode module");
+                        }
+
+                        var rval = JSApi.JS_Call(ctx, func_val, JSApi.JS_UNDEFINED, require_argv.Length, require_argv);
+                        JSApi.JS_FreeValue(ctx, func_val);
+                        if (rval.IsException())
+                        {
+                            JSApi.JS_FreeValue(ctx, require_argv);
+                            return rval;
+                        }
+                        // success
+                        JSApi.JS_FreeValue(ctx, rval);
+                    }
+                    else
+                    {
+                        JSApi.JS_FreeValue(ctx, bytecodeFunc);
+                        JSApi.JS_FreeValue(ctx, require_argv);
+                        return JSApi.JS_ThrowInternalError(ctx, "failed to require bytecode module");
+                    }
+                }
+            }
+            else
+            {
+                // source
+                var input_bytes = TextUtils.GetShebangNullTerminatedCommonJSBytes(source);
+                fixed (byte* input_ptr = input_bytes)
+                fixed (byte* resolved_id_ptr = resolved_id_bytes)
+                {
+                    var input_len = (size_t)(input_bytes.Length - 1);
+                    var func_val = JSApi.JS_Eval(ctx, input_ptr, input_len, resolved_id_ptr, JSEvalFlags.JS_EVAL_TYPE_GLOBAL | JSEvalFlags.JS_EVAL_FLAG_STRICT);
+                    if (func_val.IsException())
+                    {
+                        JSApi.JS_FreeValue(ctx, require_argv);
+                        return func_val;
+                    }
+
+                    if (JSApi.JS_IsFunction(ctx, func_val) == 1)
+                    {
+                        var rval = JSApi.JS_Call(ctx, func_val, JSApi.JS_UNDEFINED, require_argv.Length, require_argv);
+                        if (rval.IsException())
+                        {
+                            JSApi.JS_FreeValue(ctx, func_val);
+                            JSApi.JS_FreeValue(ctx, require_argv);
+                            return rval;
+                        }
+                        JSApi.JS_FreeValue(ctx, rval);
+                    }
+
+                    JSApi.JS_FreeValue(ctx, func_val);
+                }
+            }
+
+            JSApi.JS_SetProperty(ctx, module_obj, context.GetAtom("loaded"), JSApi.JS_NewBool(ctx, true));
+            var exports_ = JSApi.JS_GetProperty(ctx, module_obj, context.GetAtom("exports"));
+            JSApi.JS_FreeValue(ctx, require_argv);
+            return exports_;
+        }
+        
         /// <summary>
         /// 添加全局函数
         /// </summary>

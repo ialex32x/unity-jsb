@@ -9,13 +9,34 @@ if (typeof globalThis["__fw"] !== "undefined") {
 
 let fw = new FileWatcher("Scripts", "*.js");
 
-function collect_reload(mod: NodeModule, dirtylist: Array<NodeModule>) {
+export function reload(mod: NodeModule) {
+    if (typeof mod === "object") {
+        let dirtylist = [];
+        collect_reload_deps(mod, dirtylist);
+        do_reload(dirtylist);
+    }
+}
+
+function do_reload(dirtylist: Array<NodeModule>) {
+    if (dirtylist.length > 0) {
+        ModuleManager.BeginReload();
+        for (let i = 0; i < dirtylist.length; i++) {
+            let mod = dirtylist[i];
+
+            console.warn("reloading", mod.id);
+            ModuleManager.MarkReload(mod.id);
+        }
+        ModuleManager.EndReload();
+    }
+}
+
+function collect_reload_deps(mod: NodeModule, dirtylist: Array<NodeModule>) {
     if (dirtylist.indexOf(mod) < 0) {
         dirtylist.push(mod);
 
         let parent = mod.parent;
         if (typeof parent === "object") {
-            collect_reload(parent, dirtylist);
+            collect_reload_deps(parent, dirtylist);
             parent = parent.parent;
         }
     }
@@ -34,22 +55,13 @@ fw.on(FileWatcher.CHANGED, this, function (filestates: IFileStateMap) {
 
             // console.warn(mod.filename, mod.filename == filestate.fullPath)
             if (mod.filename == filestate.fullPath) {
-                collect_reload(mod, dirtylist);
+                collect_reload_deps(mod, dirtylist);
                 // delete cache[moduleId];
                 break;
             }
         }
     }
-    if (dirtylist.length > 0) {
-        ModuleManager.BeginReload();
-        for (let i = 0; i < dirtylist.length; i++) {
-            let mod = dirtylist[i];
-
-            console.warn("reloading", mod.id);
-            ModuleManager.MarkReload(mod.id);
-        }
-        ModuleManager.EndReload();
-    }
+    do_reload(dirtylist);
 });
 
 globalThis["__fw"] = fw;

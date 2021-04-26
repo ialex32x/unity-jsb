@@ -66,9 +66,10 @@ namespace QuickJS.Module
             return false;
         }
 
-        public bool ReloadModule(ScriptContext context, string resolved_id)
+        public bool ReloadModule(ScriptContext context, string resolved_id, JSValue module_obj, out JSValue exports_obj)
         {
             // unsupported
+            exports_obj = JSApi.JS_UNDEFINED;
             return false;
         }
 

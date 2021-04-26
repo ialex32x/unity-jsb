@@ -1,9 +1,9 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.JSModuleView = void 0;
-const jsb_1 = require("jsb");
 const UnityEditor_1 = require("UnityEditor");
 const UnityEngine_1 = require("UnityEngine");
+const js_reload_1 = require("./js_reload");
 class JSModuleView extends UnityEditor_1.EditorWindow {
     OnEnable() {
         this.titleContent = new UnityEngine_1.GUIContent("JS Modules");
@@ -47,9 +47,7 @@ class JSModuleView extends UnityEditor_1.EditorWindow {
             UnityEditor_1.EditorGUILayout.EndHorizontal();
         }
         if (doReload) {
-            jsb_1.ModuleManager.BeginReload();
-            jsb_1.ModuleManager.MarkReload(mod.id);
-            jsb_1.ModuleManager.EndReload();
+            js_reload_1.reload(mod);
         }
     }
     OnGUI() {
