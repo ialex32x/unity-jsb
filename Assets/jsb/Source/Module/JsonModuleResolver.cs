@@ -45,7 +45,7 @@ namespace QuickJS.Module
         {
             var fileSystem = context.GetRuntime().GetFileSystem();
             var resolved_id_bytes = Utils.TextUtils.GetNullTerminatedBytes(resolved_id);
-            var dirname = PathUtils.GetDirectoryName(resolved_id);
+            // var dirname = PathUtils.GetDirectoryName(resolved_id);
             var source = fileSystem.ReadAllBytes(resolved_id);
             var ctx = (JSContext)context;
 

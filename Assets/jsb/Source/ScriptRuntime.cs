@@ -24,6 +24,9 @@ namespace QuickJS
         public event Action<ScriptRuntime> OnDestroy;
         public event Action<int> OnAfterDestroy;
         public event Action OnUpdate;
+
+        public event Action<ScriptContext, string> OnScriptReloading;
+        
         public Func<JSContext, string, string, int, string> OnSourceMap;
 
         // private Mutext _lock;
@@ -159,6 +162,7 @@ namespace QuickJS
                         JSValue exports_obj;
                         if (resolver.ReloadModule(context, resolved_id, module_obj, out exports_obj))
                         {
+                            RaiseScriptReloadingEvent(context, resolved_id);
                             JSApi.JS_FreeValue(context, module_obj);
                             return exports_obj;
                         }
@@ -197,6 +201,7 @@ namespace QuickJS
                         JSValue exports_obj;
                         if (resolver.ReloadModule(context, resolved_id, module_obj, out exports_obj))
                         {
+                            RaiseScriptReloadingEvent(context, resolved_id);
                             JSApi.JS_FreeValue(ctx, module_obj);
                             JSApi.JS_FreeValue(ctx, exports_obj);
                             return true;
@@ -209,6 +214,18 @@ namespace QuickJS
             }
 
             return false;
+        }
+
+        private void RaiseScriptReloadingEvent(ScriptContext context, string resolved_id)
+        {
+            try
+            {
+                OnScriptReloading?.Invoke(context, resolved_id);
+            }
+            catch (Exception exception)
+            {
+                _logger?.WriteException(exception);
+            }
         }
 
 #if UNITY_EDITOR
