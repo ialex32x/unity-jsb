@@ -420,7 +420,7 @@ namespace QuickJS
             OnScriptReloading?.Invoke(this, resolved_id);
         }
 
-        public bool IsReloading(JSBehaviourScriptRef scriptRef, string resolved_id)
+        public bool CheckModuleId(JSBehaviourScriptRef scriptRef, string resolved_id)
         {
             return _runtime.ResolveModuleId(this, "", scriptRef.modulePath) == resolved_id;
         }

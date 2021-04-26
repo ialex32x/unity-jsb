@@ -319,7 +319,7 @@ namespace QuickJS.Unity
 #if UNITY_EDITOR
         private void OnScriptReloading(ScriptContext context, string resolved_id)
         {
-            if (context.IsReloading(scriptRef, resolved_id))
+            if (context.CheckModuleId(scriptRef, resolved_id))
             {
                 OnBeforeSerialize();
                 ReleaseJSValues();
