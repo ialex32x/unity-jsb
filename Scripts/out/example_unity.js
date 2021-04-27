@@ -22,8 +22,13 @@ if (module == require.main) {
     console.log("camera.name:", camera.name);
     UnityEngine_1.Debug.LogWarningFormat("blablabla... {0}", 123);
     let testPrefab = UnityEngine_1.Resources.Load("prefab/test");
-    let testGameObject = UnityEngine_1.Object.Instantiate(testPrefab);
-    let testMyClass = testGameObject.GetComponent(example_monobehaviour_1.MyClass);
-    console.log(testMyClass);
+    if (testPrefab) {
+        let testGameObject = UnityEngine_1.Object.Instantiate(testPrefab);
+        let testMyClass = testGameObject.GetComponent(example_monobehaviour_1.MyClass);
+        console.log(testMyClass);
+    }
+    else {
+        console.warn("Resources/prefab/test.prefab not found");
+    }
 }
 //# sourceMappingURL=example_unity.js.map

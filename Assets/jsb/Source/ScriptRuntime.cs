@@ -26,8 +26,9 @@ namespace QuickJS
         public event Action OnUpdate;
 
         public event Action<ScriptContext, string> OnScriptReloading;
-        
+
         public Func<JSContext, string, string, int, string> OnSourceMap;
+        public Action<ScriptRuntime, TypeRegister> extraBinding;
 
         // private Mutext _lock;
         private JSRuntime _rt;
@@ -43,7 +44,6 @@ namespace QuickJS
         private int _mainThreadId;
         private uint _class_id_alloc = JSApi.__JSB_GetClassID();
 
-        private IScriptRuntimeListener _listener;
         private IFileSystem _fileSystem;
         private IPathResolver _pathResolver;
         private List<IModuleResolver> _moduleResolvers = new List<IModuleResolver>();
@@ -55,11 +55,10 @@ namespace QuickJS
         private Utils.AutoReleasePool _autorelease;
         private IAsyncManager _asyncManager;
 
-        private bool _mainScriptRun;
         private bool _isValid; // destroy 调用后立即 = false
         private bool _isRunning;
+        private bool _isInitialized;
         private bool _isWorker;
-        private bool _isReflectBind; // 是否采用 reflectbind 模式进行绑定
 
         public bool withStacktrace
         {
@@ -67,9 +66,7 @@ namespace QuickJS
             set { _withStacktrace = value; }
         }
 
-        public bool mainScriptRun { get { return _mainScriptRun; } }
-
-        public bool isReflectBind { get { return _isReflectBind; } }
+        public bool isInitialized { get { return _isInitialized; } }
 
         public bool isWorker { get { return _isWorker; } }
 
@@ -110,6 +107,14 @@ namespace QuickJS
         {
             _allProxyModuleRegisters[type] = proxy;
             proxy.Add(type, bind, ns);
+        }
+
+        // 添加默认 resolver
+        public void AddModuleResolvers()
+        {
+            AddModuleResolver(new StaticModuleResolver());
+            AddModuleResolver(new JsonModuleResolver());
+            AddModuleResolver(new SourceModuleResolver(new Utils.DefaultJsonConverter()));
         }
 
         public T AddModuleResolver<T>(T moduleResolver)
@@ -209,7 +214,7 @@ namespace QuickJS
             {
                 var resolver = _moduleResolvers[i];
                 if (resolver.ContainsModule(_fileSystem, _pathResolver, resolved_id))
-                { 
+                {
                     JSValue module_obj;
                     if (context.TryGetModuleForReloading(resolved_id, out module_obj))
                     {
@@ -223,7 +228,7 @@ namespace QuickJS
                         }
                         JSApi.JS_FreeValue(ctx, module_obj);
                     }
-                    
+
                     return false;
                 }
             }
@@ -244,83 +249,17 @@ namespace QuickJS
             }
         }
 
-#if UNITY_EDITOR
-        private MethodInfo GetReflectBind(IScriptLogger logger)
-        {
-            var UnityHelper = Values.FindType("QuickJS.Unity.UnityHelper");
-            if (UnityHelper != null)
-            {
-                var IsReflectBindingSupported = UnityHelper.GetMethod("IsReflectBindingSupported");
-                if (IsReflectBindingSupported != null && (bool)IsReflectBindingSupported.Invoke(null, null))
-                {
-                    var bindAll = UnityHelper.GetMethod("InvokeReflectBinding");
-                    if (bindAll == null)
-                    {
-                        throw new Exception("failed to get method: UnityHelper.InvokeReflectBinding");
-                    }
-
-                    return bindAll;
-                }
-            }
-
-            return null;
-        }
-#endif
-
-        private MethodInfo GetStaticBind(IScriptLogger logger)
-        {
-            var bindAll = typeof(Values).GetMethod("BindAll", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static);
-            if (bindAll == null)
-            {
-                throw new Exception("generate binding code before run, or turn on ReflectBind");
-            }
-
-            var codeGenVersionField = typeof(Values).GetField("CodeGenVersion");
-            if (codeGenVersionField == null || !codeGenVersionField.IsStatic || !codeGenVersionField.IsLiteral || codeGenVersionField.FieldType != typeof(uint))
-            {
-                throw new Exception("binding code version mismatch");
-            }
-
-            var codeGenVersion = (uint)codeGenVersionField.GetValue(null);
-            if (codeGenVersion != ScriptEngine.VERSION)
-            {
-                if (logger != null)
-                {
-                    logger.Write(LogLevel.Warn, "CodeGenVersion: {0} != {1}", codeGenVersion, ScriptEngine.VERSION);
-                }
-            }
-
-            return bindAll;
-        }
-
         public void Initialize(ScriptRuntimeArgs args)
         {
-            Initialize(args.fileSystem, args.pathResolver, args.listener, args.asyncManager, args.logger, args.byteBufferAllocator, args.useReflectBind);
+            Initialize(args.fileSystem, args.pathResolver, args.asyncManager, args.logger, args.byteBufferAllocator, args.binder);
         }
 
         // this method will be marked as private in the future
-        public void Initialize(IFileSystem fileSystem, IPathResolver resolver, IScriptRuntimeListener listener, IAsyncManager asyncManager, IScriptLogger logger, IO.IByteBufferAllocator byteBufferAllocator, bool useReflectBind = true)
+        public void Initialize(IFileSystem fileSystem, IPathResolver resolver, IAsyncManager asyncManager, IScriptLogger logger, IO.IByteBufferAllocator byteBufferAllocator, IBinder binder)
         {
             if (fileSystem == null)
             {
                 throw new NullReferenceException(nameof(fileSystem));
-            }
-
-            MethodInfo bindAll = null;
-            if (!isWorker)
-            {
-                if (listener == null)
-                {
-                    throw new NullReferenceException(nameof(listener));
-                }
-
-#if UNITY_EDITOR
-                bindAll = (useReflectBind ? GetReflectBind(logger) : null) ?? GetStaticBind(logger);
-                _isReflectBind = bindAll.Name == "InvokeReflectBinding";
-                logger?.Write(LogLevel.Info, _isReflectBind ? "Running in ReflectBind mode" : "Running in StaticBind mode");
-#else 
-                bindAll = GetStaticBind(logger);
-#endif
             }
 
             asyncManager.Initialize(_mainThreadId);
@@ -344,7 +283,6 @@ namespace QuickJS
             CreateContext();
             JSApi.JS_NewClass(_rt, JSApi.JSB_GetBridgeClassID(), "CSharpClass", JSApi.class_finalizer);
 
-            _listener = listener;
             _pathResolver = resolver;
             _asyncManager = asyncManager;
             _byteBufferAllocator = byteBufferAllocator;
@@ -353,32 +291,37 @@ namespace QuickJS
             _objectCache = new ObjectCache(_logger);
             _timerManager = new TimerManager(_logger);
             _typeDB = new TypeDB(this, _mainContext);
+#if !JSB_UNITYLESS
             _typeDB.AddType(typeof(Unity.JSBehaviour), JSApi.JS_UNDEFINED);
+#endif
 #if UNITY_EDITOR
             _typeDB.AddType(Values.FindType("QuickJS.Unity.JSEditorWindow"), JSApi.JS_UNDEFINED);
             _typeDB.AddType(Values.FindType("QuickJS.Unity.JSBehaviourInspector"), JSApi.JS_UNDEFINED);
 #endif
-            listener.OnCreate(this);
 
             // await Task.Run(() => runner.OnBind(this, register));
-            if (bindAll != null)
+            try
             {
-                bindAll.Invoke(null, new object[] { this });
+                binder?.Bind(this);
+            }
+            catch (Exception exception)
+            {
+                _logger?.WriteException(exception);
             }
 
             var register = new TypeRegister(_mainContext);
-            listener.OnBind(this, register);
             if (!_isWorker)
             {
                 JSWorker.Bind(register);
             }
             TimerManager.Bind(register);
+            extraBinding?.Invoke(this, register);
             register.Finish();
 
             AddStaticModule("jsb", ScriptContext.Bind);
             FindModuleResolver<StaticModuleResolver>().Warmup(_mainContext);
 
-            listener.OnComplete(this);
+            _isInitialized = true;
         }
 
         [MonoPInvokeCallback(typeof(JSInterruptHandler))]
@@ -426,7 +369,8 @@ namespace QuickJS
             var runtime = ScriptEngine.CreateRuntime();
 
             runtime._isWorker = true;
-            runtime.Initialize(_fileSystem, _pathResolver, _listener, _asyncManager, _logger, new IO.ByteBufferPooledAllocator());
+            runtime.extraBinding = extraBinding;
+            runtime.Initialize(_fileSystem, _pathResolver, _asyncManager, _logger, new IO.ByteBufferPooledAllocator(), null);
             return runtime;
         }
 
@@ -787,7 +731,6 @@ namespace QuickJS
 
         public object EvalMain(string fileName, Type returnType)
         {
-            _mainScriptRun = true;
             if (!string.IsNullOrEmpty(fileName))
             {
                 var resolvedPath = ResolveFilePath("", fileName);
@@ -802,7 +745,7 @@ namespace QuickJS
                     throw new UnexpectedException(fileName, "can not resolve file path");
                 }
             }
-            
+
             return null;
         }
 
@@ -887,6 +830,7 @@ namespace QuickJS
         public void Shutdown()
         {
             //TODO: lock?
+            _isInitialized = false;
             _isRunning = false;
             if (!_isWorker)
             {
@@ -913,6 +857,8 @@ namespace QuickJS
                 }
             }
 
+            _isInitialized = false;
+            _isRunning = false;
             _timerManager.Destroy();
             _objectCache.Destroy();
             _typeDB.Destroy();

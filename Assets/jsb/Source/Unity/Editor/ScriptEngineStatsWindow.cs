@@ -1,3 +1,4 @@
+#if !JSB_UNITYLESS
 using System;
 using System.IO;
 using System.Text;
@@ -282,3 +283,5 @@ namespace QuickJS.Unity
         }
     }
 }
+
+#endif

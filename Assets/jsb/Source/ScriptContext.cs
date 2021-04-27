@@ -7,7 +7,6 @@ using System.Text;
 using System.Text.RegularExpressions;
 using QuickJS.Binding;
 using QuickJS.Native;
-using QuickJS.Unity;
 using QuickJS.Utils;
 
 namespace QuickJS
@@ -363,7 +362,7 @@ namespace QuickJS
             return JSApi.JS_GetProperty(_ctx, _require, GetAtom("main"));
         }
 
-        public bool LoadModuleCache(string module_id,  out JSValue value)
+        public bool LoadModuleCache(string module_id, out JSValue value)
         {
             var prop = GetAtom(module_id);
             var mod = JSApi.JS_GetProperty(_ctx, _moduleCache, prop);
@@ -420,10 +419,12 @@ namespace QuickJS
             OnScriptReloading?.Invoke(this, resolved_id);
         }
 
-        public bool CheckModuleId(JSBehaviourScriptRef scriptRef, string resolved_id)
+#if !JSB_UNITYLESS
+        public bool CheckModuleId(Unity.JSBehaviourScriptRef scriptRef, string resolved_id)
         {
             return _runtime.ResolveModuleId(this, "", scriptRef.modulePath) == resolved_id;
         }
+#endif
 
         public bool TryGetModuleForReloading(string resolved_id, out JSValue module_obj)
         {
@@ -435,7 +436,7 @@ namespace QuickJS
                     return true;
                 }
             }
-            
+
             module_obj = JSApi.JS_UNDEFINED;
             return false;
         }
@@ -532,7 +533,7 @@ namespace QuickJS
             JSApi.JS_FreeValue(ctx, require_argv);
             return exports_;
         }
-        
+
         /// <summary>
         /// 添加全局函数
         /// </summary>
@@ -568,7 +569,6 @@ namespace QuickJS
             ns_jsb.AddFunction("Sleep", _sleep, 1);
             ns_jsb.AddFunction("AddModule", _add_module, 2);
             ns_jsb.AddFunction("Now", _now, 0);
-            ns_jsb.AddFunction("IsReflectBind", _is_reflect_bind, 0);
             {
                 var ns_hotfix = register.CreateClass("JSBHotfix");
                 ns_hotfix.AddFunction("replace_single", hotfix_replace_single, 2);

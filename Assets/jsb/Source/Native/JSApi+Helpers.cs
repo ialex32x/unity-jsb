@@ -30,12 +30,12 @@ namespace QuickJS.Native
                             {
                                 var stack = GetString(ctx, val);
                                 JS_FreeValue(ctx, val);
-                                logger.Write(LogLevel.Error, "Unhandled promise rejection: {0}\n{1}", reasonStr, stack);
+                                logger.Write(Utils.LogLevel.Error, "Unhandled promise rejection: {0}\n{1}", reasonStr, stack);
                                 return;
                             }
                             JS_FreeValue(ctx, val);
                         }
-                        logger.Write(LogLevel.Error, "Unhandled promise rejection: {0}", reasonStr);
+                        logger.Write(Utils.LogLevel.Error, "Unhandled promise rejection: {0}", reasonStr);
                     } while (false);
                 }
             }

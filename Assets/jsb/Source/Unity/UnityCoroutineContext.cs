@@ -1,9 +1,4 @@
-using System;
-using System.IO;
-using System.Collections;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using System.Net;
+#if !JSB_UNITYLESS
 
 namespace QuickJS.Unity
 {
@@ -13,3 +8,5 @@ namespace QuickJS.Unity
     {
     }
 }
+
+#endif

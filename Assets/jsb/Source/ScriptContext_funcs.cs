@@ -3,6 +3,7 @@ using System.Reflection;
 using System.Text;
 using QuickJS.Binding;
 using QuickJS.Native;
+using QuickJS.Utils;
 
 namespace QuickJS
 {
@@ -423,13 +424,6 @@ namespace QuickJS
             }
 
             return JSApi.JS_FALSE;
-        }
-
-        [MonoPInvokeCallback(typeof(JSCFunction))]
-        public static JSValue _is_reflect_bind(JSContext ctx, JSValue this_obj, int argc, JSValue[] argv)
-        {
-            var rt = ScriptEngine.GetRuntime(ctx);
-            return rt.isReflectBind ? JSApi.JS_TRUE: JSApi.JS_FALSE;
         }
 
         [MonoPInvokeCallback(typeof(JSCFunction))]

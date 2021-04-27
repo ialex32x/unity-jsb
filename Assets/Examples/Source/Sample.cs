@@ -11,7 +11,7 @@ namespace Example
     using UnityEngine;
 
     // test
-    public class Sample : MonoBehaviour, IScriptRuntimeListener
+    public class Sample : MonoBehaviour
     {
         public enum FileLoader
         {
@@ -66,15 +66,29 @@ namespace Example
             {
                 _rt.EnableSourceMap();
             }
-            _rt.Initialize(new ScriptRuntimeArgs{
-                useReflectBind = useReflectBind,
-                fileSystem = fileSystem, 
-                pathResolver = pathResolver, 
-                listener = this, 
-                asyncManager = asyncManager, 
-                logger = _mConsole, 
-                byteBufferAllocator = new ByteBufferPooledAllocator()
+            _rt.AddModuleResolvers();
+            _rt.extraBinding = (runtime, register) =>
+            {
+                FSWatcher.Bind(register);
+                QuickJS.Extra.WebSocket.Bind(register);
+                QuickJS.Extra.XMLHttpRequest.Bind(register);
+                if (!runtime.isWorker)
+                {
+                    var uri = new Uri(baseUrl);
+                    QuickJS.Extra.DOMCompatibleLayer.Bind(register, uri);
+                    QuickJS.Extra.NodeCompatibleLayer.Bind(register);
+                }
+            };
+            _rt.Initialize(new ScriptRuntimeArgs
+            {
+                fileSystem = fileSystem,
+                pathResolver = pathResolver,
+                asyncManager = asyncManager,
+                logger = _mConsole,
+                byteBufferAllocator = new ByteBufferPooledAllocator(),
+                binder = ReflectionBinder.GetBinder(useReflectBind),
             });
+            _rt.EvalMain(entryFileName);
         }
 
         void Update()
@@ -90,35 +104,6 @@ namespace Example
             ScriptEngine.Shutdown();
             GC.Collect();
             GC.WaitForPendingFinalizers();
-        }
-
-        public void OnCreate(ScriptRuntime runtime)
-        {
-            runtime.AddModuleResolvers();
-        }
-
-        public void OnBind(ScriptRuntime runtime, TypeRegister register)
-        {
-            runtime.AddStaticModule("static_test1", context => QuickJS.Native.JSApi.JS_NewInt32(context, 123));
-            runtime.AddStaticModule("static_test2", context => QuickJS.Native.JSApi.JS_NewInt32(context, 456));
-
-            FSWatcher.Bind(register);
-            QuickJS.Extra.WebSocket.Bind(register);
-            QuickJS.Extra.XMLHttpRequest.Bind(register);
-            if (!runtime.isWorker)
-            {
-                var uri = new Uri(baseUrl);
-                QuickJS.Extra.DOMCompatibleLayer.Bind(register, uri);
-                QuickJS.Extra.NodeCompatibleLayer.Bind(register);
-            }
-        }
-
-        public void OnComplete(ScriptRuntime runtime)
-        {
-            if (!runtime.isWorker)
-            {
-                _rt.EvalMain(entryFileName);
-            }
         }
     }
 }

@@ -2,3 +2,7 @@
 C#
 
 JSB_COMPATIBLE
+兼容 .net4.0
+
+JSB_UNITYLESS
+非 Unity 环境

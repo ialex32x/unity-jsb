@@ -1,12 +1,13 @@
-﻿using System;
+﻿#if !JSB_UNITYLESS
+using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
-using QuickJS.Unity;
 
 namespace QuickJS.Binding
 {
-    using Native;
     using UnityEngine;
+    using Native;
+    using Unity;
 
     public partial class Values
     {
@@ -367,3 +368,4 @@ namespace QuickJS.Binding
         }
     }
 }
+#endif

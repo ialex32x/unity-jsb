@@ -17,12 +17,11 @@ namespace QuickJS
     {
         public IFileSystem fileSystem;
         public IPathResolver pathResolver;
-        public IScriptRuntimeListener listener;
         public IAsyncManager asyncManager;
         public IScriptLogger logger;
         public IO.IByteBufferAllocator byteBufferAllocator;
 
         // only available in editor
-        public bool useReflectBind;
+        public IBinder binder;
     }
 }

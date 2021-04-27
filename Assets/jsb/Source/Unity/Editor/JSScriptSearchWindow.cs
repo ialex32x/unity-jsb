@@ -1,4 +1,5 @@
-﻿using System;
+﻿#if !JSB_UNITYLESS
+using System;
 using System.Collections.Generic;
 
 namespace QuickJS.Unity
@@ -130,7 +131,7 @@ namespace QuickJS.Unity
         {
             if (_finder == null)
             {
-                var baseDir = Prefs.Load().sourceDir;
+                var baseDir = UnityHelper.LoadPrefs().sourceDir;
                 _finder = new JSScriptFinder(baseDir);
                     
                 //TODO: need optimization, make the full collecting process async, and wait it finished 
@@ -225,3 +226,4 @@ namespace QuickJS.Unity
         }
     }
 }
+#endif

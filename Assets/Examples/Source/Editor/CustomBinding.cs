@@ -3,6 +3,7 @@
 namespace Example.Editor
 {
     using QuickJS.Unity;
+    using QuickJS.Binding;
     using UnityEngine;
 
     public class CustomBinding : AbstractBindingProcess

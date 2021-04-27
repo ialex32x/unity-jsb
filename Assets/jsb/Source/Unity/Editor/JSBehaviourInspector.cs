@@ -1,4 +1,5 @@
-﻿using System;
+﻿#if !JSB_UNITYLESS
+using System;
 using System.Collections.Generic;
 using System.IO;
 
@@ -388,3 +389,4 @@ namespace QuickJS.Unity
         }
     }
 }
+#endif

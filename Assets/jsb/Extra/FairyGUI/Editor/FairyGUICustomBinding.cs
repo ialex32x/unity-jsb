@@ -3,6 +3,7 @@ using System.Reflection;
 namespace QuickJS.Extra
 {
     using QuickJS.Unity;
+    using QuickJS.Binding;
     using UnityEngine;
 
     public class FairyGUICustomBinding : AbstractBindingProcess

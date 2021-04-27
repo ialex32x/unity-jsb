@@ -1,3 +1,4 @@
+#if !JSB_UNITYLESS
 
 namespace QuickJS.Unity
 {
@@ -57,3 +58,4 @@ namespace QuickJS.Unity
     //     }
     // }
 }
+#endif

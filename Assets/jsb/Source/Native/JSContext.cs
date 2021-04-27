@@ -21,13 +21,13 @@ namespace QuickJS.Native
             return _ptr == c._ptr;
         }
 
-        public void print_exception(LogLevel logLevel = LogLevel.Error, string title = "")
+        public void print_exception(Utils.LogLevel logLevel = Utils.LogLevel.Error, string title = "")
         {
             var logger = ScriptEngine.GetLogger(this);
             print_exception(logger, logLevel, title);
         }
 
-        public void print_exception(IScriptLogger logger, LogLevel logLevel, string title)
+        public void print_exception(Utils.IScriptLogger logger, Utils.LogLevel logLevel, string title)
         {
             var ex = JSApi.JS_GetException(this);
 

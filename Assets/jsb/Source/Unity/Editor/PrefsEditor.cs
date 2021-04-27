@@ -1,4 +1,5 @@
-﻿using System;
+﻿#if !JSB_UNITYLESS
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
@@ -9,6 +10,7 @@ namespace QuickJS.Unity
 {
     using UnityEngine;
     using UnityEditor;
+    using QuickJS.Binding;
 
     // 配置编辑器
     public class PrefsEditor : BaseEditorWindow
@@ -25,22 +27,51 @@ namespace QuickJS.Unity
         private List<Type> _filteredTypes = new List<Type>();
         private Vector2 _sv;
         private Prefs _prefs;
+        private string _filePath;
+
+        private bool _dirty;
 
         protected override void OnEnable()
         {
             base.OnEnable();
             titleContent = new GUIContent("JS Bridge Prefs");
 
-            _prefs = Prefs.Load();
+            _prefs = UnityHelper.LoadPrefs(out _filePath);
             _assemblies = AppDomain.CurrentDomain.GetAssemblies();
+        }
+
+        public void MarkAsDirty()
+        {
+            if (!_dirty)
+            {
+                _dirty = true;
+                EditorApplication.delayCall += Save;
+            }
+        }
+
+        public void Save()
+        {
+            if (_dirty)
+            {
+                _dirty = false;
+                try
+                {
+                    var json = JsonUtility.ToJson(this, true);
+                    System.IO.File.WriteAllText(_filePath, json);
+                }
+                catch (Exception exception)
+                {
+                    Debug.LogWarning(exception);
+                }
+            }
         }
 
         protected override void OnPaint()
         {
-            EditorGUILayout.HelpBox("(experimental) Editor for " + _prefs.path, MessageType.Warning);
+            EditorGUILayout.HelpBox("(experimental) Editor for " + _filePath, MessageType.Warning);
             if (GUILayout.Button("Save"))
             {
-                _prefs.MarkAsDirty();
+                MarkAsDirty();
             }
 
             // ShowAssemblies();
@@ -93,12 +124,12 @@ namespace QuickJS.Unity
                                 if (pMethod == BindingGenMethod.Implicit)
                                 {
                                     _prefs.implicitAssemblies.Remove(name);
-                                    _prefs.MarkAsDirty();
+                                    MarkAsDirty();
                                 }
                                 else if (pMethod == BindingGenMethod.Explicit)
                                 {
                                     _prefs.explicitAssemblies.Remove(name);
-                                    _prefs.MarkAsDirty();
+                                    MarkAsDirty();
                                 }
                                 break;
                             case BindingGenMethod.Implicit:
@@ -107,7 +138,7 @@ namespace QuickJS.Unity
                                     _prefs.explicitAssemblies.Remove(name);
                                 }
                                 _prefs.implicitAssemblies.Add(name);
-                                _prefs.MarkAsDirty();
+                                MarkAsDirty();
                                 break;
                             case BindingGenMethod.Explicit:
                                 if (pMethod == BindingGenMethod.Implicit)
@@ -115,7 +146,7 @@ namespace QuickJS.Unity
                                     _prefs.implicitAssemblies.Remove(name);
                                 }
                                 _prefs.explicitAssemblies.Add(name);
-                                _prefs.MarkAsDirty();
+                                MarkAsDirty();
                                 break;
                         }
                     }
@@ -131,7 +162,7 @@ namespace QuickJS.Unity
                 {
                     if (EditorUtility.DisplayDialog("Reload", "Reload duktape.json?", "ok", "cancel"))
                     {
-                        Defer(() => _prefs = Prefs.Load());
+                        Defer(() => _prefs = UnityHelper.LoadPrefs(out _filePath));
                     }
                 }
                 GUI.color = color;
@@ -240,3 +271,4 @@ namespace QuickJS.Unity
         }
     }
 }
+#endif

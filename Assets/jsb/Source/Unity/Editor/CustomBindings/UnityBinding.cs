@@ -1,3 +1,4 @@
+#if !JSB_UNITYLESS
 using System;
 using System.Reflection;
 
@@ -5,6 +6,7 @@ namespace jsb.Editor
 {
     using QuickJS.Native;
     using QuickJS.Unity;
+    using QuickJS.Binding;
     using UnityEngine;
     using UnityEditor;
     using UnityEditor.IMGUI.Controls;
@@ -94,6 +96,7 @@ namespace jsb.Editor
             bindingManager.AddExportedType(typeof(MonoBehaviour), true);
 
             bindingManager.AddExportedType(typeof(Resources)).SetAllConstructorsBlocked();
+            bindingManager.AddExportedType(typeof(QuickJS.Unity.JSBehaviourProperties));
         }
         
         private static TypeTransform HackGetComponents(TypeTransform typeTransform)
@@ -145,3 +148,4 @@ namespace jsb.Editor
         }
     }
 }
+#endif

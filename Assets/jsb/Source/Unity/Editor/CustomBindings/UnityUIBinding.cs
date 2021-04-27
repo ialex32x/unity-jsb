@@ -1,3 +1,4 @@
+#if !JSB_UNITYLESS
 using System;
 using System.Reflection;
 
@@ -5,6 +6,7 @@ namespace jsb.Editor
 {
     using QuickJS.Native;
     using QuickJS.Unity;
+    using QuickJS.Binding;
     using UnityEngine;
     using UnityEditor;
     using UnityEditor.IMGUI.Controls;
@@ -43,3 +45,4 @@ namespace jsb.Editor
         }
     }
 }
+#endif

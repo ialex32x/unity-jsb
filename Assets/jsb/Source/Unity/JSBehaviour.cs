@@ -1,3 +1,4 @@
+#if !JSB_UNITYLESS
 using System;
 using System.Collections.Generic;
 
@@ -619,7 +620,7 @@ namespace QuickJS.Unity
                 if (!string.IsNullOrEmpty(scriptRef.modulePath) && !string.IsNullOrEmpty(scriptRef.className))
                 {
                     var runtime = ScriptEngine.GetRuntime();
-                    if (runtime != null && runtime.mainScriptRun)
+                    if (runtime != null && runtime.isInitialized)
                     {
                         var context = runtime.GetMainContext();
                         if (context != null)
@@ -685,3 +686,4 @@ namespace QuickJS.Unity
         }
     }
 }
+#endif

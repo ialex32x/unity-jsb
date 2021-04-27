@@ -27,8 +27,12 @@ if (module == require.main) {
     Debug.LogWarningFormat("blablabla... {0}", <Object1><any>123);
 
     let testPrefab = Resources.Load("prefab/test");
-    let testGameObject = <GameObject>Object.Instantiate(testPrefab);
-    let testMyClass = testGameObject.GetComponent(MyClass);
+    if (testPrefab) {
+        let testGameObject = <GameObject>Object.Instantiate(testPrefab);
+        let testMyClass = testGameObject.GetComponent(MyClass);
 
-    console.log(testMyClass);
+        console.log(testMyClass);
+    } else {
+        console.warn("Resources/prefab/test.prefab not found");
+    }
 }

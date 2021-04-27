@@ -103,7 +103,7 @@ namespace QuickJS.Binding
                 var rval = JSApi.JS_Call(ctx, create, JSApi.JS_UNDEFINED, argv.Length, ptr);
                 if (rval.IsException())
                 {
-                    ctx.print_exception(LogLevel.Warn, string.Format("[{0} operators failed]", type));
+                    ctx.print_exception(Utils.LogLevel.Warn, string.Format("[{0} operators failed]", type));
                 }
                 else
                 {

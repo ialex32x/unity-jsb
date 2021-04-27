@@ -1,3 +1,4 @@
+#if !JSB_UNITYLESS
 using System;
 using System.IO;
 using System.Linq;
@@ -10,6 +11,7 @@ namespace QuickJS.Unity
     using UnityEngine;
     using UnityEditor;
     using System.Reflection;
+    using QuickJS.Binding;
 
     [Serializable]
     public class TSConfig
@@ -45,7 +47,7 @@ namespace QuickJS.Unity
         [MenuItem("JS Bridge/Generate Bindings And Type Definition")]
         public static void GenerateBindingsAndTypeDefinition()
         {
-            var bm = new BindingManager(Prefs.Load(), new DefaultBindingCallback(), new UnityBindingLogger());
+            var bm = new BindingManager(LoadPrefs());
             bm.Collect();
             bm.Generate(TypeBindingFlags.Default);
             bm.Cleanup();
@@ -56,7 +58,7 @@ namespace QuickJS.Unity
         [MenuItem("JS Bridge/Generate Type Definition")]
         public static void GenerateTypeDefinition()
         {
-            var bm = new BindingManager(Prefs.Load(), new DefaultBindingCallback(), new UnityBindingLogger());
+            var bm = new BindingManager(LoadPrefs());
             bm.Collect();
             bm.Generate(TypeBindingFlags.TypeDefinition);
             bm.Cleanup();
@@ -64,14 +66,50 @@ namespace QuickJS.Unity
             AssetDatabase.Refresh();
         }
 
+        public static Prefs LoadPrefs()
+        {
+            string filePath;
+            return LoadPrefs(out filePath);
+        }
+
+        public static Prefs LoadPrefs(out string filePath)
+        {
+            var pathlist = Prefs.PATH.Split(';');
+            foreach (var path in pathlist)
+            {
+                if (System.IO.File.Exists(path))
+                {
+                    try
+                    {
+                        var json = Utils.TextUtils.NormalizeJson(System.IO.File.ReadAllText(path));
+                        Debug.Log($"load prefs({path}): {json}");
+                        var prefs = JsonUtility.FromJson<Prefs>(json);
+                        filePath = path;
+                        if (string.IsNullOrEmpty(prefs.typescriptDir))
+                        {
+                            prefs.typescriptDir = prefs.outDir;
+                        }
+                        return prefs;
+                    }
+                    catch (Exception exception)
+                    {
+                        Debug.LogWarning(exception);
+                    }
+                }
+            }
+            var defaultPrefs = new Prefs();
+            filePath = pathlist[0];
+            return defaultPrefs;
+        }
+
         public static bool IsReflectBindingSupported()
         {
-            return Prefs.Load().reflectBinding;
+            return LoadPrefs().reflectBinding;
         }
 
         public static void InvokeReflectBinding(ScriptRuntime runtime)
         {
-            var bm = new BindingManager(Prefs.Load(), new ReflectBindingCallback(runtime), new UnityBindingLogger());
+            var bm = new BindingManager(LoadPrefs(), new ReflectBindingCallback(runtime));
             bm.Collect();
             bm.Generate(TypeBindingFlags.None);
             bm.Report();
@@ -90,7 +128,7 @@ namespace QuickJS.Unity
 #else
                     string command = "tsc";
 #endif
-                    var exitCode = ShellHelper.Run(command, "", 30);
+                    var exitCode = UnityShellHelper.Run(command, "", 30);
                     Debug.Log($"{command}: {exitCode}");
                 };
             };
@@ -99,7 +137,7 @@ namespace QuickJS.Unity
         [MenuItem("JS Bridge/Clear")]
         public static void ClearBindings()
         {
-            var prefs = Prefs.Load();
+            var prefs = LoadPrefs();
             var kv = new Dictionary<string, List<string>>();
             foreach (var dir in prefs.cleanupDir)
             {
@@ -274,7 +312,7 @@ namespace QuickJS.Unity
                 Debug.LogFormat("no tsconfig.json found, compile as ES6 module mode");
             }
 
-            using (var compiler = new ScriptCompiler())
+            using (var compiler = new UnityJSScriptCompiler())
             {
                 var objects = Selection.objects;
                 for (var i = 0; i < objects.Length; ++i)
@@ -286,7 +324,7 @@ namespace QuickJS.Unity
             }
         }
 
-        private static void CompileBytecode(ScriptCompiler compiler, string assetPath, bool commonJSModule)
+        private static void CompileBytecode(UnityJSScriptCompiler compiler, string assetPath, bool commonJSModule)
         {
             if (Directory.Exists(assetPath))
             {
@@ -419,3 +457,4 @@ namespace QuickJS.Unity
         // }
     }
 }
+#endif

@@ -1,4 +1,5 @@
-﻿namespace QuickJS.Unity
+﻿#if !JSB_UNITYLESS
+namespace QuickJS.Unity
 {
     public struct JSScriptClassPathHint
     {
@@ -26,3 +27,4 @@
         }
     }
 }
+#endif

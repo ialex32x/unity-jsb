@@ -1,3 +1,4 @@
+#if !JSB_UNITYLESS
 using System;
 
 namespace QuickJS.Unity
@@ -11,7 +12,7 @@ namespace QuickJS.Unity
     using QuickJS.Native;
 
     [InitializeOnLoad]
-    public class EditorRuntime : IScriptRuntimeListener
+    public class EditorRuntime
     {
         private enum RunMode
         {
@@ -26,13 +27,14 @@ namespace QuickJS.Unity
         private RunMode _runMode;
         private int _tick;
         private bool _ready;
+        private Prefs _prefs;
 
         static EditorRuntime()
         {
-            var prefs = Prefs.Load();
+            var prefs = UnityHelper.LoadPrefs();
             if (prefs.editorScripting)
             {
-                _instance = new EditorRuntime();
+                _instance = new EditorRuntime(prefs);
             }
         }
 
@@ -46,8 +48,9 @@ namespace QuickJS.Unity
             return _instance != null && _instance._ready ? _instance._runtime : null;
         }
 
-        public EditorRuntime()
+        public EditorRuntime(Prefs prefs)
         {
+            _prefs = prefs;
             _runMode = RunMode.None;
             EditorApplication.delayCall += OnInit;
             EditorApplication.update += OnUpdate;
@@ -84,9 +87,23 @@ namespace QuickJS.Unity
 
             if (_runtime == null)
             {
+                var logger = new DefaultScriptLogger();
+                var fileResolver = new PathResolver();
+                var fileSystem = new DefaultFileSystem(logger);
+                var asyncManager = new DefaultAsyncManager();
+
                 _tick = Environment.TickCount;
                 _runtime = ScriptEngine.CreateRuntime(true);
-                _runtime.Initialize(this);
+                _runtime.AddModuleResolvers();
+                _runtime.extraBinding = (runtime, register) =>
+                {
+                    FSWatcher.Bind(register);
+                };
+                _runtime.Initialize(fileSystem, fileResolver, asyncManager, logger, new ByteBufferPooledAllocator(), ReflectionBinder.GetBinder(_prefs.reflectBinding));
+                _runtime.AddSearchPath("Scripts/out");
+                _runtime.AddSearchPath("node_modules");
+                _ready = true;
+                _runtime.EvalMain(_prefs.editorEntryPoint);
             }
         }
 
@@ -121,34 +138,6 @@ namespace QuickJS.Unity
             }
         }
 
-        public void OnCreate(ScriptRuntime runtime)
-        {
-            runtime.AddSearchPath("Scripts/out");
-            runtime.AddSearchPath("node_modules");
-        }
-
-        public void OnBind(ScriptRuntime runtime, TypeRegister register)
-        {
-            FSWatcher.Bind(register);
-            // QuickJS.Extra.WebSocket.Bind(register);
-            // QuickJS.Extra.XMLHttpRequest.Bind(register);
-            // if (!runtime.isWorker)
-            // {
-            //     QuickJS.Extra.DOMCompatibleLayer.Bind(register);
-            //     QuickJS.Extra.NodeCompatibleLayer.Bind(register);
-            // }
-        }
-
-        public void OnComplete(ScriptRuntime runtime)
-        {
-            if (!runtime.isWorker)
-            {
-                _ready = true;
-                var prefs = Prefs.Load();
-                _runtime.EvalMain(prefs?.editorEntryPoint);
-            }
-        }
-
         private static void onEvalReturn(JSContext ctx, JSValue jsValue)
         {
             var logger = _instance._runtime.GetLogger();
@@ -177,3 +166,4 @@ namespace QuickJS.Unity
         }
     }
 }
+#endif
