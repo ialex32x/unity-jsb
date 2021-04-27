@@ -45,7 +45,7 @@ namespace QuickJS.Unity
         [MenuItem("JS Bridge/Generate Bindings And Type Definition")]
         public static void GenerateBindingsAndTypeDefinition()
         {
-            var bm = new BindingManager(Prefs.Load(), new DefaultBindingCallback());
+            var bm = new BindingManager(Prefs.Load(), new DefaultBindingCallback(), new UnityBindingLogger());
             bm.Collect();
             bm.Generate(TypeBindingFlags.Default);
             bm.Cleanup();
@@ -56,7 +56,7 @@ namespace QuickJS.Unity
         [MenuItem("JS Bridge/Generate Type Definition")]
         public static void GenerateTypeDefinition()
         {
-            var bm = new BindingManager(Prefs.Load(), new DefaultBindingCallback());
+            var bm = new BindingManager(Prefs.Load(), new DefaultBindingCallback(), new UnityBindingLogger());
             bm.Collect();
             bm.Generate(TypeBindingFlags.TypeDefinition);
             bm.Cleanup();
@@ -71,7 +71,7 @@ namespace QuickJS.Unity
 
         public static void InvokeReflectBinding(ScriptRuntime runtime)
         {
-            var bm = new BindingManager(Prefs.Load(), new ReflectBindingCallback(runtime));
+            var bm = new BindingManager(Prefs.Load(), new ReflectBindingCallback(runtime), new UnityBindingLogger());
             bm.Collect();
             bm.Generate(TypeBindingFlags.None);
             bm.Report();

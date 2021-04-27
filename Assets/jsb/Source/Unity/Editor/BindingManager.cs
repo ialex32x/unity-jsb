@@ -7,14 +7,13 @@ using System.Text.RegularExpressions;
 
 namespace QuickJS.Unity
 {
-    using UnityEngine;
-    using UnityEditor;
-
     public partial class BindingManager
     {
         public DateTime dateTime;
         public TextGenerator log;
         public Prefs prefs;
+
+        private IBindingLogger _logger;
 
         private HashSet<string> _blockedAssemblies = new HashSet<string>();  // 禁止导出的 assembly
         private List<string> _implicitAssemblies = new List<string>(); // 默认导出所有类型
@@ -68,13 +67,14 @@ namespace QuickJS.Unity
             );
         }
 
-        public BindingManager(Prefs prefs, IBindingCallback callback)
+        public BindingManager(Prefs prefs, IBindingCallback callback, IBindingLogger logger)
         {
             this.prefs = prefs;
             this.dateTime = DateTime.Now;
             var tab = prefs.tab;
             var newline = prefs.newline;
 
+            _logger = logger ?? new DefaultBindingLogger();
             _callback = callback;
             _typePrefixBlacklist = new List<string>(prefs.typePrefixBlacklist);
             _blacklist = new HashSet<Type>();
@@ -87,60 +87,12 @@ namespace QuickJS.Unity
 
             CollectDelegateReflectMethods();
             AddNameRule("js", t => char.ToLower(t[0]) + t.Substring(1));
-            SetAssemblyBlocked("ExCSS.Unity");
             AddTypePrefixBlacklist("System.SpanExtensions");
-
-            HackGetComponents(TransformType(typeof(GameObject)));
-            HackGetComponents(TransformType(typeof(Component)));
-
-            TransformType(typeof(MonoBehaviour))
-                .WriteCrossBindingConstructor();
-
-            var buildTarget = EditorUserBuildSettings.activeBuildTarget;
-            if (buildTarget != BuildTarget.iOS)
-            {
-                _typePrefixBlacklist.Add("UnityEngine.Apple");
-            }
-            if (buildTarget != BuildTarget.Android)
-            {
-                _typePrefixBlacklist.Add("UnityEngine.Android");
-            }
-            _typePrefixBlacklist.Add("SyntaxTree.");
-
-            // fix d.ts, some C# classes use explicit implemented interface method
-            SetTypeBlocked(typeof(UnityEngine.ILogHandler));
-            SetTypeBlocked(typeof(UnityEngine.ISerializationCallbackReceiver));
-            SetTypeBlocked(typeof(UnityEngine.Playables.ScriptPlayable<>));
-            SetTypeBlocked(typeof(AOT.MonoPInvokeCallbackAttribute));
 
             TransformType(typeof(string))
                 .AddTSMethodDeclaration("static Equals(a: string | Object, b: string | Object, comparisonType: any): boolean", "Equals", typeof(string), typeof(string), typeof(StringComparison))
                 .AddTSMethodDeclaration("static Equals(a: string | Object, b: string | Object): boolean", "Equals", typeof(string), typeof(string))
             ;
-
-            // SetTypeBlocked(typeof(RendererExtensions));
-            TransformType(typeof(UnityEngine.Events.UnityEvent<>))
-                .Rename("UnityEvent1");
-
-            TransformType(typeof(UnityEngine.Events.UnityEvent<,>))
-                .Rename("UnityEvent2");
-
-            TransformType(typeof(UnityEngine.Events.UnityEvent<,,>))
-                .Rename("UnityEvent3");
-
-            TransformType(typeof(UnityEngine.Events.UnityEvent<,,,>))
-                .Rename("UnityEvent4");
-
-            TransformType(typeof(UnityEngine.Texture))
-                .SetMemberBlocked("imageContentsHash");
-            TransformType(typeof(UnityEngine.Texture2D))
-                .SetMemberBlocked("alphaIsTransparency"); //TODO: 增加成员的 defines 条件编译功能
-            TransformType(typeof(UnityEngine.Input))
-                .SetMemberBlocked("IsJoystickPreconfigured"); // specific platform available only
-            TransformType(typeof(UnityEngine.MonoBehaviour))
-                .SetMemberBlocked("runInEditMode"); // editor only
-            TransformType(typeof(UnityEngine.QualitySettings))
-                .SetMemberBlocked("streamingMipmapsRenderersPerFrame");
 
             // editor 使用的 .net 与 player 所用存在差异, 这里屏蔽不存在的成员
             TransformType(typeof(double))
@@ -366,17 +318,17 @@ namespace QuickJS.Unity
                         {
                             inst.OnInitialize(this);
                             _bindingProcess.Add(inst);
-                            Debug.Log($"add binding process: {type}");
+                            _logger.Log($"add binding process: {type}");
                         }
                         else
                         {
-                            Debug.Log($"skip binding process: {type}");
+                            _logger.Log($"skip binding process: {type}");
                         }
                     }
                 }
                 catch (Exception exception)
                 {
-                    Debug.LogWarning($"failed to add binding process: {type}\n{exception}");
+                    _logger.LogWarning($"failed to add binding process: {type}\n{exception}");
                 }
             }
         }
@@ -1070,7 +1022,7 @@ namespace QuickJS.Unity
         {
             if (prefs.randomizedBindingCode)
             {
-                return (char)Random.Range('a', 'z') + Guid.NewGuid().ToString().Replace("-", "");
+                return 'a' + Guid.NewGuid().ToString().Replace("-", "");
             }
             return "BindConstructor";
         }
@@ -1079,7 +1031,7 @@ namespace QuickJS.Unity
         {
             if (prefs.randomizedBindingCode)
             {
-                return (char)Random.Range('A', 'Z') + Guid.NewGuid().ToString().Replace("-", "");
+                return 'Z' + Guid.NewGuid().ToString().Replace("-", "");
             }
             return (bStatic ? "BindStatic_" : "Bind_") + csName;
         }
@@ -1473,7 +1425,7 @@ namespace QuickJS.Unity
             }
             catch (Exception ex)
             {
-                Debug.LogErrorFormat("{0} {1} {2}", assembly, assembly.Location, ex);
+                _logger.LogError($"{assembly} {assembly.Location} {ex}");
                 return false;
             }
 
@@ -1546,25 +1498,6 @@ namespace QuickJS.Unity
                 .SetMemberBlocked("CreateDelegate")
             ;
 
-            AddExportedType(typeof(LayerMask));
-            AddExportedType(typeof(Color));
-            AddExportedType(typeof(Color32));
-            AddExportedType(typeof(Vector2));
-            AddExportedType(typeof(Vector2Int));
-            AddExportedType(typeof(Vector3));
-            AddExportedType(typeof(Vector3Int));
-            AddExportedType(typeof(Vector4));
-            AddExportedType(typeof(Quaternion));
-            AddExportedType(typeof(Matrix4x4));
-            AddExportedType(typeof(PrimitiveType));
-            AddExportedType(typeof(Object))
-                .EnableOperatorOverloading(false)
-            ;
-            AddExportedType(typeof(GameObject), true);
-            AddExportedType(typeof(Camera), true);
-            AddExportedType(typeof(Transform), true);
-            AddExportedType(typeof(MonoBehaviour), true);
-
             AddExportedType(typeof(QuickJS.IO.ByteBuffer));
             AddExportedType(typeof(QuickJS.Unity.JSBehaviourProperties));
         }
@@ -1621,7 +1554,7 @@ namespace QuickJS.Unity
                 }
                 catch (Exception exception)
                 {
-                    Debug.LogErrorFormat("{0}", exception);
+                    _logger.LogError(exception.ToString());
                     log.AppendLine(exception.ToString());
                 }
                 log.DecTabLevel();
@@ -1736,7 +1669,7 @@ namespace QuickJS.Unity
                 catch (Exception exception)
                 {
                     Error($"generate failed {typeBindingInfo.type.FullName}: {exception.Message}");
-                    Debug.LogError(exception.StackTrace);
+                    _logger.LogError(exception.StackTrace);
                 }
             }
 
@@ -1755,7 +1688,7 @@ namespace QuickJS.Unity
                 catch (Exception exception)
                 {
                     Error($"generate delegates failed: {exception.Message}");
-                    Debug.LogError(exception.StackTrace);
+                    _logger.LogError(exception.StackTrace);
                 }
             }
 
@@ -1771,7 +1704,7 @@ namespace QuickJS.Unity
                 catch (Exception exception)
                 {
                     Error($"generate delegates failed: {exception.Message}");
-                    Debug.LogError(exception.StackTrace);
+                    _logger.LogError(exception.StackTrace);
                 }
             }
             cg.End();
@@ -1786,7 +1719,7 @@ namespace QuickJS.Unity
                 catch (Exception exception)
                 {
                     Error($"generate delegates failed: {exception.Message}");
-                    Debug.LogError(exception.StackTrace);
+                    _logger.LogError(exception.StackTrace);
                 }
             }
 
@@ -1814,11 +1747,11 @@ namespace QuickJS.Unity
         {
             var now = DateTime.Now;
             var ts = now.Subtract(dateTime);
-            Debug.LogFormat("generated {0} type(s), {1} delegate(s), {2} deletion(s) in {3:0.##} seconds.",
+            _logger.Log(string.Format("generated {0} type(s), {1} delegate(s), {2} deletion(s) in {3:0.##} seconds.",
                 _exportedTypes.Count,
                 _exportedDelegates.Count,
                 _removedFiles.Count,
-                ts.TotalSeconds);
+                ts.TotalSeconds));
         }
     }
 }
