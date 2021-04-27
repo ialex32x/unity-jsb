@@ -9,7 +9,7 @@
 * JS异步函数与 Unity 协程/ C# Tasking 的结合 (limited support)
 * 支持运算符重载 +, -, *, /, ==, -(负)
 * 支持 JS 字节码 (QuickJS)
-* 支持开发过程[实时代码热加载](jsb_build/res/jsbehaviour_auto_reload.mp4)
+* 支持开发过程[实时代码热加载](#实时热加载)
 * [初步] 与 Unity 编辑器深度整合
     * 支持 JS 实现 MonoBehaviour (支持 Prefab)
     * 支持 JS 实现 编辑器窗口 (EditorWindow)
@@ -282,6 +282,8 @@ onmessage = function (data) {
 ```
 
 ## 实时热加载
+![实时代码热加载](jsb_build/res/jsbehaviour_auto_reload.mp4)
+
 目前的加载策略是以当前变化的模块为起点, 向上追溯到根模块 (即依赖此模块的模块), 全部重新载入一遍, 并且复用了变化前模块的 exports. 因此以下情况可能存在一些需要注意的问题:
 1. 变化后内容有删减的情况下, 将依然沿用变化前遗留的内容
 1. 对 module.exports = new_object 直接覆盖的情况下, 其他没有热加载的脚本持有的仍然是变化前的 exports 副本
