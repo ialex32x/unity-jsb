@@ -17,7 +17,7 @@ export class KingHumanController extends JSBehaviourBase {
 
     Awake() {
         // this.transform.localScale = new Vector3(1, 1, 1);
-        this.transform.localPosition = new Vector3(1.0, 2.2, 0);
+        // this.transform.localPosition = new Vector3(1.0, 2.2, 0);
     }
 
     OnAfterDeserialize(ps) {

@@ -19,7 +19,7 @@ let KingHumanController = class KingHumanController extends js_behaviour_base_1.
     }
     Awake() {
         // this.transform.localScale = new Vector3(1, 1, 1);
-        this.transform.localPosition = new UnityEngine_1.Vector3(1.0, 2.2, 0);
+        // this.transform.localPosition = new Vector3(1.0, 2.2, 0);
     }
     OnAfterDeserialize(ps) {
         super.OnAfterDeserialize(ps);
