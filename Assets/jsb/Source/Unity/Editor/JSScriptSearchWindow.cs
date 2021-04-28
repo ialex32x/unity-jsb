@@ -103,7 +103,7 @@ namespace QuickJS.Unity
             ShowAsDropDown(screenRect, CalculateWindowSize(rect));
             
             _searchResults.Clear();
-            GetScriptFinder().Search(_searchString, _searchResults);
+            GetScriptFinder().Search(_searchString, JSScriptClassType.MonoBehaviour, _searchResults);
         }
         
         private Vector2 CalculateWindowSize(Rect buttonRect)
@@ -131,11 +131,11 @@ namespace QuickJS.Unity
         {
             if (_finder == null)
             {
-                var baseDir = UnityHelper.LoadPrefs().sourceDir;
-                _finder = new JSScriptFinder(baseDir);
-                    
-                //TODO: need optimization, make the full collecting process async, and wait it finished 
-                _finder.Start();
+                var prefs = UnityHelper.LoadPrefs();
+                var baseDir = prefs.sourceDir;
+
+                _finder = new JSScriptFinder(baseDir, prefs.typescriptExt);
+                _finder.Start(); //TODO: need optimization, make the full collecting process async, and wait it finished 
             }
 
             return _finder;
@@ -155,7 +155,7 @@ namespace QuickJS.Unity
             {
                 _searchString = result;
                 _searchResults.Clear();
-                GetScriptFinder().Search(_searchString, _searchResults);
+                GetScriptFinder().Search(_searchString, JSScriptClassType.MonoBehaviour, _searchResults);
             }
 
             rect.y += 18;

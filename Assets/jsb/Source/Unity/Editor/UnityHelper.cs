@@ -366,6 +366,7 @@ namespace QuickJS.Unity
 
         // https://regex101.com/r/426q4x/1
         public static Regex JSBehaviourClassNameRegex = new Regex(@"@ScriptType[\n\s]*export\s+class\s+(\w+)\s+extends", RegexOptions.Multiline | RegexOptions.Compiled);
+        public static Regex JSCustomEditorClassNameRegex = new Regex(@"^\s*@CustomEditor\s*\(.*\)[\n\s]*export\s+class\s+(\w+)\s+extends", RegexOptions.Multiline | RegexOptions.Compiled);
 
         public static string NormalizePathString(string path)
         {
@@ -373,11 +374,8 @@ namespace QuickJS.Unity
         }
 
         // sourceFile: 需要传入 FullPath
-        public static bool ResolveScriptRef(string sourceDirBase, string sourceFile, out string modulePath, out string[] classNames)
+        public static bool ResolveScriptRef(string sourceDirBase, string sourceFile, List<JSScriptClassPathHint> hints)
         {
-            modulePath = null;
-            classNames = null;
-
             if (!Path.IsPathRooted(sourceFile))
             {
                 sourceFile = Path.GetFullPath(sourceFile);
@@ -412,8 +410,8 @@ namespace QuickJS.Unity
                         {
                             var sourceSubPathNorm = sourcePathNorm[0] == '/' ? sourcePathNorm.Substring(appPathNorm.Length + 1) : sourcePathNorm.Substring(appPathNorm.Length);
                             var offset = sourceSubPathNorm[0] == '/' ? 1 : 0;
-                            modulePath = sourceSubPathNorm.Substring(offset, sourceSubPathNorm.Length - sourceExt.Length - offset);
-                            classNames = GetJSBehaviourClassName(sourceFile);
+                            var modulePath = sourceSubPathNorm.Substring(offset, sourceSubPathNorm.Length - sourceExt.Length - offset);
+                            GetJSScriptClasses(sourceFile, modulePath, hints);
                             return true;
                         }
                     }
@@ -427,20 +425,20 @@ namespace QuickJS.Unity
             return false;
         }
 
-        private static string[] GetJSBehaviourClassName(string sourceFile)
+        private static void GetJSScriptClasses(string sourceFile, string modulePath, List<JSScriptClassPathHint> hints)
         {
             //TODO: need optimization?
             var text = File.ReadAllText(sourceFile);
-            var c = JSBehaviourClassNameRegex.Matches(text);
-            var i = 0;
-            var results = new string[c.Count];
-
-            foreach (Match m in c)
+            
+            foreach (Match m in JSBehaviourClassNameRegex.Matches(text))
             {
-                results[i++] = m.Groups[1].Value;
+                hints.Add(new JSScriptClassPathHint(sourceFile, modulePath, m.Groups[1].Value, JSScriptClassType.MonoBehaviour));
             }
 
-            return results;
+            foreach (Match m in JSCustomEditorClassNameRegex.Matches(text))
+            {
+                hints.Add(new JSScriptClassPathHint(sourceFile, modulePath, m.Groups[1].Value, JSScriptClassType.Editor));
+            }
         }
 
         static UnityHelper()

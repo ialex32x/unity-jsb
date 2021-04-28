@@ -9,13 +9,15 @@ namespace QuickJS.Unity
     {
         private FileSystemWatcher _fsw;
         private string _baseDir;
+        private string _fileExt;
 
         // classPath => JSScriptClassPathHint
         private Dictionary<string, JSScriptClassPathHint> _scriptClassPaths = new Dictionary<string, JSScriptClassPathHint>();
 
-        public JSScriptFinder(string baseDir)
+        public JSScriptFinder(string baseDir, string fileExt)
         {
             _baseDir = baseDir;
+            _fileExt = fileExt;
         }
 
         private void OnChanged(object sender, FileSystemEventArgs e)
@@ -51,29 +53,27 @@ namespace QuickJS.Unity
 
         private void ParseFile(string filePath)
         {
-            if (!filePath.EndsWith(".ts"))
+            if (!filePath.EndsWith(_fileExt))
             {
                 return;
             }
 
-            string modulePath;
-            string[] classNames;
-            if (UnityHelper.ResolveScriptRef(_baseDir, filePath, out modulePath, out classNames))
+            var results = new List<JSScriptClassPathHint>();
+            if (UnityHelper.ResolveScriptRef(_baseDir, filePath, results))
             {
-                foreach (var className in classNames)
+                foreach (var result in results)
                 {
-                    var hint = new JSScriptClassPathHint(filePath, modulePath, className);
-                    _scriptClassPaths.Add(hint.ToClassPath(), hint);
+                    _scriptClassPaths.Add(result.ToClassPath(), result);
                 }
             }
         }
 
-        public bool Search(string pattern, List<JSScriptClassPathHint> results)
+        public bool Search(string pattern, JSScriptClassType classType, List<JSScriptClassPathHint> results)
         {
             foreach (var pair in _scriptClassPaths)
             {
                 //TODO: need optimization
-                if (pair.Key.Contains(pattern))
+                if (pair.Value.classType == classType && pair.Key.Contains(pattern))
                 {
                     results.Add(pair.Value);
                 }
@@ -89,7 +89,7 @@ namespace QuickJS.Unity
                 return;
             }
 
-            _fsw = new FileSystemWatcher(_baseDir, "*.ts");
+            _fsw = new FileSystemWatcher(_baseDir, $"*{_fileExt}");
             _fsw.IncludeSubdirectories = true;
             _fsw.Changed += OnChanged;
             _fsw.Created += OnCreated;

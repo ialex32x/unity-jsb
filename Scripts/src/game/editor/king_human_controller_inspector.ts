@@ -2,13 +2,15 @@ import { Editor, EditorGUI, EditorGUILayout, EditorUtility, MessageType } from "
 import { Animator, GUILayout, Object } from "UnityEngine";
 import { KingHumanController } from "../king_human_controller";
 
+// @CustomEditor(KingHumanController)
 export class KingHumanControllerInspector extends Editor {
     OnInspectorGUI() {
         let p = <KingHumanController>this.target;
 
-        let anim = <Animator>EditorGUILayout.ObjectField("Animator", p.animator, Animator, true);
-        if (anim != p.animator) {
-            p.animator = anim;
+        EditorGUI.BeginChangeCheck();
+        p.animator = <Animator>EditorGUILayout.ObjectField("Animator", p.animator, Animator, true);
+        p.moveSpeed = EditorGUILayout.FloatField("Move Speed", p.moveSpeed);
+        if (EditorGUI.EndChangeCheck()) {
             EditorUtility.SetDirty(p);
         }
 

@@ -1,5 +1,5 @@
 import { Animator, Input, KeyCode, SpriteRenderer, Time, Vector3 } from "UnityEngine";
-import { Inspector, ScriptType, SerializedObject } from "../editor/decorators/inspector";
+import { Inspector, ScriptType, SerializedNumber, SerializedObject } from "../editor/decorators/inspector";
 import { JSBehaviourBase } from "./js_behaviour_base";
 
 // 暂时不支持相对路径
@@ -9,11 +9,19 @@ export class KingHumanController extends JSBehaviourBase {
     @SerializedObject()
     animator: Animator;
 
+    @SerializedNumber()
+    moveSpeed = 1.8;
+
     private moving = false;
     private spriteRenderer: SpriteRenderer;
 
     Awake() {
-        this.transform.localScale = new Vector3(5, 5, 5);
+        // this.transform.localScale = new Vector3(1, 1, 1);
+        this.transform.localPosition = new Vector3(1.0, 2.2, 0);
+    }
+
+    OnAfterDeserialize(ps) {
+        super.OnAfterDeserialize(ps);
         this.spriteRenderer = this.GetComponent(SpriteRenderer);
     }
 
@@ -28,14 +36,14 @@ export class KingHumanController extends JSBehaviourBase {
                 hori = 1;
             }
 
-            if (Input.GetKey(KeyCode.W)) {
-                vert = 1;
-            } else if (Input.GetKey(KeyCode.S)) {
-                vert = -1;
-            }
+            // if (Input.GetKey(KeyCode.W)) {
+            //     vert = 1;
+            // } else if (Input.GetKey(KeyCode.S)) {
+            //     vert = -1;
+            // }
 
             if (hori != 0 || vert != 0) {
-                let scale = Time.deltaTime * 5;
+                let scale = Time.deltaTime * this.moveSpeed;
                 this.transform.Translate(hori * scale, vert * scale, 0);
                 if (hori != 0) {
                     this.spriteRenderer.flipX = hori < 0;

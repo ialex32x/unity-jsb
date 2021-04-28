@@ -29,6 +29,11 @@ namespace QuickJS.Binding
         public string typescriptDir = "Assets/Generated/Typings";
 
         /// <summary>
+        /// 编辑器搜索脚本源码时匹配的后缀名
+        /// </summary>
+        public string typescriptExt = ".ts";
+
+        /// <summary>
         /// Assembly-CSharp.dll 对应的 XmlDoc 生成目录
         /// </summary>
         public string xmlDocDir = "Assets/Generated/Docs";

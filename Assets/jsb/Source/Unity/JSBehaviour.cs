@@ -12,9 +12,6 @@ namespace QuickJS.Unity
         // 在编辑器运行时下与 js 脚本建立链接关系
         public JSBehaviourScriptRef scriptRef;
 
-        [SerializeField]
-        private JSBehaviourProperties _properties;
-
         // internal use only
         public JSBehaviourProperties properties => _properties;
 
@@ -22,6 +19,15 @@ namespace QuickJS.Unity
         public JSContext ctx { get { return _ctx; } }
 
         public bool isScriptInstanced => _isScriptInstanced;
+
+#if UNITY_EDITOR
+        // self controlled script instance lifetime 
+        private bool _isStandaloneScript = false;
+        public bool isStandaloneScript => _isStandaloneScript;
+#endif
+
+        [SerializeField]
+        private JSBehaviourProperties _properties;
 
         private bool _isScriptInstanced = false;
 
@@ -139,7 +145,7 @@ namespace QuickJS.Unity
 
         // 在 gameObject 上创建一个新的脚本组件实例
         // ctor: js class
-        public static JSValue CreateScriptInstance(GameObject gameObject, JSContext ctx, JSValue ctor, bool execAwake)
+        public static JSValue SetScriptInstance(GameObject gameObject, JSContext ctx, JSValue ctor, bool execAwake)
         {
             if (JSApi.JS_IsConstructor(ctx, ctor) == 1)
             {
@@ -147,14 +153,14 @@ namespace QuickJS.Unity
                 if (header.type_id == BridgeObjectType.None) // it's a plain js value
                 {
                     var bridge = gameObject.AddComponent<JSBehaviour>();
-                    return bridge.CreateScriptInstance(ctx, ctor, execAwake);
+                    return bridge.SetScriptInstance(ctx, ctor, execAwake);
                 }
             }
 
             return JSApi.JS_UNDEFINED;
         }
 
-        public void CreateUnresolvedScriptInstance()
+        public void SetUnresolvedScriptInstance()
         {
             _isScriptInstanced = true;
         }
@@ -166,7 +172,7 @@ namespace QuickJS.Unity
         }
 
         // 在当前 JSBehaviour 实例上创建一个脚本实例并与之绑定
-        public JSValue CreateScriptInstance(JSContext ctx, JSValue ctor, bool execAwake)
+        public JSValue SetScriptInstance(JSContext ctx, JSValue ctor, bool execAwake)
         {
             if (JSApi.JS_IsConstructor(ctx, ctor) == 1)
             {
@@ -204,7 +210,7 @@ namespace QuickJS.Unity
                     if (val.IsException())
                     {
                         cache.RemoveObject(object_id);
-                        CreateUnresolvedScriptInstance();
+                        SetUnresolvedScriptInstance();
                     }
                     else
                     {
@@ -217,7 +223,7 @@ namespace QuickJS.Unity
                 }
             }
 
-            CreateUnresolvedScriptInstance();
+            SetUnresolvedScriptInstance();
             return JSApi.JS_UNDEFINED;
         }
 
@@ -230,7 +236,7 @@ namespace QuickJS.Unity
             }
 
             ReleaseJSValues();
-            
+
             _ctx = ctx;
             context.OnDestroy += OnContextDestroy;
 #if UNITY_EDITOR
@@ -316,7 +322,7 @@ namespace QuickJS.Unity
         {
             ReleaseJSValues();
         }
-        
+
 #if UNITY_EDITOR
         private void OnScriptReloading(ScriptContext context, string resolved_id)
         {
@@ -324,14 +330,14 @@ namespace QuickJS.Unity
             {
                 OnBeforeSerialize();
                 ReleaseJSValues();
-                SetScriptInstance();
+                CreateScriptInstance();
             }
         }
 #endif
 
         public void ReleaseJSValues()
         {
-            if (!_this_obj.IsNullish()) 
+            if (!_this_obj.IsNullish())
             {
                 JSApi.JS_FreeValue(_ctx, _updateFunc);
                 _updateFunc = JSApi.JS_UNDEFINED;
@@ -397,7 +403,7 @@ namespace QuickJS.Unity
             _isScriptInstanced = false;
             var context = ScriptEngine.GetContext(_ctx);
             _ctx = JSContext.Null;
-            
+
             if (context != null)
             {
                 context.OnDestroy -= OnContextDestroy;
@@ -448,7 +454,10 @@ namespace QuickJS.Unity
 
         void Awake()
         {
-            SetScriptInstance();
+#if UNITY_EDITOR
+            _isStandaloneScript = true;
+#endif
+            CreateScriptInstance();
             _OnScriptingAfterDeserialize();
 
             if (_awakeValid)
@@ -597,7 +606,10 @@ namespace QuickJS.Unity
                     {
                         _ctx.print_exception();
                     }
-                    JSApi.JS_FreeValue(_ctx, rval);
+                    else
+                    {
+                        JSApi.JS_FreeValue(_ctx, rval);
+                    }
                 }
 
                 if (_properties.Count == 0)
@@ -613,7 +625,7 @@ namespace QuickJS.Unity
         }
 
         // 通过 scriptRef 还原脚本绑定关系
-        public bool SetScriptInstance()
+        public bool CreateScriptInstance()
         {
             if (!_isScriptInstanced)
             {
@@ -633,11 +645,11 @@ namespace QuickJS.Unity
                             {
                                 var ex = ctx.GetExceptionString();
                                 Debug.LogError(ex);
-                                CreateUnresolvedScriptInstance();
+                                SetUnresolvedScriptInstance();
                             }
                             else
                             {
-                                var instValue = CreateScriptInstance(ctx, typeValue, false);
+                                var instValue = SetScriptInstance(ctx, typeValue, false);
                                 JSApi.JS_FreeValue(ctx, instValue);
                                 JSApi.JS_FreeValue(ctx, typeValue);
 
@@ -655,7 +667,7 @@ namespace QuickJS.Unity
                 }
                 else
                 {
-                    CreateUnresolvedScriptInstance();
+                    SetUnresolvedScriptInstance();
                 }
             }
 
@@ -680,7 +692,10 @@ namespace QuickJS.Unity
                     {
                         _ctx.print_exception();
                     }
-                    JSApi.JS_FreeValue(_ctx, rval);
+                    else
+                    {
+                        JSApi.JS_FreeValue(_ctx, rval);
+                    }
                 }
             }
         }

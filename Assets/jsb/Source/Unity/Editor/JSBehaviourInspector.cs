@@ -52,7 +52,7 @@ namespace QuickJS.Unity
             }
 
             context.OnDestroy += OnContextDestroy;
-            _ctx = ctx; 
+            _ctx = ctx;
             _this_obj = JSApi.JS_DupValue(ctx, this_obj);
 
             _onDestroyFunc = JSApi.JS_GetProperty(ctx, this_obj, context.GetAtom("OnDestroy"));
@@ -114,7 +114,7 @@ namespace QuickJS.Unity
 
                 JSApi.JS_FreeValue(_ctx, _this_obj);
                 _this_obj = JSApi.JS_UNDEFINED;
-                
+
                 var context = ScriptEngine.GetContext(_ctx);
                 if (context != null)
                 {
@@ -125,13 +125,15 @@ namespace QuickJS.Unity
 
         void Release()
         {
-            _target.ReleaseScriptInstance();
+            if (!_target.isStandaloneScript)
+            {
+                _target.ReleaseScriptInstance();
+            }
             ReleaseJSValues();
         }
 
         private void CreateScriptInstance()
         {
-            //TODO: 旧值释放
             ReleaseJSValues();
 
             var ctx = _target.ctx;
@@ -199,21 +201,39 @@ namespace QuickJS.Unity
                 return;
             }
 
-            if (_target.SetScriptInstance())
+            // 当前编辑器为附加模式执行时, 等待目标脚本建立连接
+            // 否则由编辑器管理目标生命周期
+
+            if (_target.isStandaloneScript)
             {
-                _enabledPending = false;
-                CreateScriptInstance();
-
-                if (_onEnableValid)
+                if (_target.isScriptInstanced)
                 {
-                    var rval = JSApi.JS_Call(_ctx, _onEnableFunc, _this_obj);
-                    if (rval.IsException())
-                    {
-                        _ctx.print_exception();
-                    }
-
-                    JSApi.JS_FreeValue(_ctx, rval);
+                    this.OnEnableScriptInstance();
                 }
+            }
+            else
+            {
+                if (_target.CreateScriptInstance())
+                {
+                    this.OnEnableScriptInstance();
+                }
+            }
+        }
+
+        private void OnEnableScriptInstance()
+        {
+            _enabledPending = false;
+            this.CreateScriptInstance();
+
+            if (_onEnableValid)
+            {
+                var rval = JSApi.JS_Call(_ctx, _onEnableFunc, _this_obj);
+                if (rval.IsException())
+                {
+                    _ctx.print_exception();
+                }
+
+                JSApi.JS_FreeValue(_ctx, rval);
             }
         }
 
@@ -266,8 +286,9 @@ namespace QuickJS.Unity
                     _target.scriptRef.modulePath = classPath.modulePath;
                     _target.scriptRef.className = classPath.className;
 
+                    this.ReleaseJSValues();
                     _target.ReleaseScriptInstance();
-                    _target.SetScriptInstance();
+                    _target.CreateScriptInstance();
 
                     // 重新绑定当前编辑器脚本实例
                     this.CreateScriptInstance();
@@ -353,7 +374,7 @@ namespace QuickJS.Unity
                     ps.ForEach((string key, double value) =>
                     {
                         // unsafe
-                        EditorGUILayout.FloatField(key, (float) value);
+                        EditorGUILayout.FloatField(key, (float)value);
                     });
                 }
             }

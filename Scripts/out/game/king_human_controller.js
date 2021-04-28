@@ -14,10 +14,15 @@ const js_behaviour_base_1 = require("./js_behaviour_base");
 let KingHumanController = class KingHumanController extends js_behaviour_base_1.JSBehaviourBase {
     constructor() {
         super(...arguments);
+        this.moveSpeed = 1.8;
         this.moving = false;
     }
     Awake() {
-        this.transform.localScale = new UnityEngine_1.Vector3(5, 5, 5);
+        // this.transform.localScale = new Vector3(1, 1, 1);
+        this.transform.localPosition = new UnityEngine_1.Vector3(1.0, 2.2, 0);
+    }
+    OnAfterDeserialize(ps) {
+        super.OnAfterDeserialize(ps);
         this.spriteRenderer = this.GetComponent(UnityEngine_1.SpriteRenderer);
     }
     Update() {
@@ -30,14 +35,13 @@ let KingHumanController = class KingHumanController extends js_behaviour_base_1.
             else if (UnityEngine_1.Input.GetKey(UnityEngine_1.KeyCode.D)) {
                 hori = 1;
             }
-            if (UnityEngine_1.Input.GetKey(UnityEngine_1.KeyCode.W)) {
-                vert = 1;
-            }
-            else if (UnityEngine_1.Input.GetKey(UnityEngine_1.KeyCode.S)) {
-                vert = -1;
-            }
+            // if (Input.GetKey(KeyCode.W)) {
+            //     vert = 1;
+            // } else if (Input.GetKey(KeyCode.S)) {
+            //     vert = -1;
+            // }
             if (hori != 0 || vert != 0) {
-                let scale = UnityEngine_1.Time.deltaTime * 5;
+                let scale = UnityEngine_1.Time.deltaTime * this.moveSpeed;
                 this.transform.Translate(hori * scale, vert * scale, 0);
                 if (hori != 0) {
                     this.spriteRenderer.flipX = hori < 0;
@@ -65,6 +69,9 @@ let KingHumanController = class KingHumanController extends js_behaviour_base_1.
 __decorate([
     inspector_1.SerializedObject()
 ], KingHumanController.prototype, "animator", void 0);
+__decorate([
+    inspector_1.SerializedNumber()
+], KingHumanController.prototype, "moveSpeed", void 0);
 KingHumanController = __decorate([
     inspector_1.Inspector("game/editor/king_human_controller_inspector", "KingHumanControllerInspector"),
     inspector_1.ScriptType
