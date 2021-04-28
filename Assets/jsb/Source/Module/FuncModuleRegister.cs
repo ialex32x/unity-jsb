@@ -23,7 +23,7 @@ namespace QuickJS.Module
 
         public void Load(ScriptContext context, JSValue module_obj, JSValue exports_obj)
         {
-            var register = new TypeRegister(context);
+            var register = context.CreateTypeRegister();
             var clazz = _bind(register);
             JSApi.JS_SetProperty(context, module_obj, register.GetAtom("exports"), clazz.GetConstructor());
             register.Finish();

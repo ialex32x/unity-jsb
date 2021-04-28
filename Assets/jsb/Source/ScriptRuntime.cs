@@ -109,6 +109,23 @@ namespace QuickJS
             proxy.Add(type, bind, ns);
         }
 
+        public bool EnsureReflectBindTypeLoaded(ScriptContext context, Type type)
+        {
+            ProxyModuleRegister proxy;
+            if (_allProxyModuleRegisters.TryGetValue(type, out proxy))
+            {
+                if (!proxy.IsLoaded())
+                {
+                    var typeRegister = context.CreateTypeRegister();
+                    proxy.LoadTypes(typeRegister);
+                    typeRegister.Finish();
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
         // 添加默认 resolver
         public void AddModuleResolvers()
         {
@@ -309,7 +326,7 @@ namespace QuickJS
                 _logger?.WriteException(exception);
             }
 
-            var register = new TypeRegister(_mainContext);
+            var register = _mainContext.CreateTypeRegister();
             if (!_isWorker)
             {
                 JSWorker.Bind(register);
@@ -319,7 +336,7 @@ namespace QuickJS
             register.Finish();
 
             AddStaticModule("jsb", ScriptContext.Bind);
-            FindModuleResolver<StaticModuleResolver>().Warmup(_mainContext);
+            // FindModuleResolver<StaticModuleResolver>().Warmup(_mainContext);
 
             _isInitialized = true;
         }
@@ -351,13 +368,13 @@ namespace QuickJS
             FindModuleResolver<StaticModuleResolver>().AddStaticModule(module_id, register);
         }
 
-        public void AddStaticModuleProxy(string module_id, Action<ScriptRuntime, ProxyModuleRegister> proxyReg)
-        {
-            var proxy = new ProxyModuleRegister(this);
+        // public void AddStaticModuleProxy(string module_id, Action<ScriptRuntime, ProxyModuleRegister> proxyReg)
+        // {
+        //     var proxy = new ProxyModuleRegister(this);
 
-            proxyReg(this, proxy);
-            FindModuleResolver<StaticModuleResolver>().AddStaticModule(module_id, proxy);
-        }
+        //     proxyReg(this, proxy);
+        //     FindModuleResolver<StaticModuleResolver>().AddStaticModule(module_id, proxy);
+        // }
 
         public ScriptRuntime CreateWorker()
         {

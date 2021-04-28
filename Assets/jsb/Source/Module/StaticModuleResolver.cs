@@ -10,24 +10,24 @@ namespace QuickJS.Module
     {
         private Dictionary<string, IModuleRegister> _modRegisters = new Dictionary<string, IModuleRegister>();
 
-        /// <summary>
-        /// [临时方案] 直接载入所有绑定类型
-        /// </summary>
-        public void Warmup(ScriptContext context)
-        {
-            var typeRegister = new Binding.TypeRegister(context);
+        // /// <summary>
+        // /// [临时方案] 直接载入所有绑定类型
+        // /// </summary>
+        // public void Warmup(ScriptContext context)
+        // {
+        //     var typeRegister = context.CreateTypeRegister();
 
-            foreach (var kv in _modRegisters)
-            {
-                var pmr = kv.Value as ProxyModuleRegister;
-                if (pmr != null)
-                {
-                    pmr.LoadTypes(typeRegister);
-                }
-            }
+        //     foreach (var kv in _modRegisters)
+        //     {
+        //         var pmr = kv.Value as ProxyModuleRegister;
+        //         if (pmr != null)
+        //         {
+        //             pmr.LoadTypes(typeRegister);
+        //         }
+        //     }
 
-            typeRegister.Finish();
-        }
+        //     typeRegister.Finish();
+        // }
 
         public StaticModuleResolver AddStaticModule(string module_id, ModuleExportsBind bind)
         {

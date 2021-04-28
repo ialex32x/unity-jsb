@@ -40,6 +40,8 @@ namespace QuickJS
         private bool _isReloading;
         private List<string> _waitForReloadModules;
 
+        private TypeRegister _currentTypeRegister;
+
         // id = context slot index + 1
         public int id { get { return _contextId; } }
 
@@ -93,6 +95,25 @@ namespace QuickJS
                     }
                 }
             }
+        }
+
+        public void ReleaseTypeRegister(TypeRegister register)
+        {
+            _currentTypeRegister = null;
+        }
+
+        public TypeRegister CreateTypeRegister()
+        {
+            if (_currentTypeRegister == null)
+            {
+                _currentTypeRegister = new TypeRegister(this);
+            }
+            else
+            {
+                _currentTypeRegister.AddRef();
+            }
+
+            return _currentTypeRegister;
         }
 
         private unsafe void CreateDefaultOperators(JSValue constructor)

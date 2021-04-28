@@ -10,6 +10,7 @@ namespace QuickJS.Binding
     {
         private ScriptContext _context;
         private TypeDB _db;
+        private int _refCount;
 
         // 注册过程中产生的 atom, 完成后自动释放 
         private AtomCache _atoms;
@@ -50,8 +51,14 @@ namespace QuickJS.Binding
             var ctx = (JSContext)context;
 
             _context = context;
+            _refCount = 1;
             _atoms = new AtomCache(_context);
             _db = context.GetTypeDB();
+        }
+
+        public void AddRef()
+        {
+            _refCount++;
         }
 
         public TypeDB GetTypeDB()
@@ -296,32 +303,38 @@ namespace QuickJS.Binding
 
         public void Finish()
         {
-            SubmitOperators();
-            _atoms.Clear();
-            var ctx = (JSContext)_context;
+            _refCount--;
 
-            for (int i = 0, count = _pendingTypes.Count; i < count; i++)
+            if (_refCount == 0)
             {
-                var type = _pendingTypes[i];
-                var proto = _db.GetPrototypeOf(type);
-                if (!proto.IsNullish())
+                _context.ReleaseTypeRegister(this);
+                SubmitOperators();
+                _atoms.Clear();
+                var ctx = (JSContext)_context;
+
+                for (int i = 0, count = _pendingTypes.Count; i < count; i++)
                 {
-                    var baseType = type.BaseType;
-                    var parentProto = _db.FindChainedPrototypeOf(baseType);
-                    if (!parentProto.IsNullish())
+                    var type = _pendingTypes[i];
+                    var proto = _db.GetPrototypeOf(type);
+                    if (!proto.IsNullish())
                     {
-                        JSApi.JS_SetPrototype(ctx, proto, parentProto);
+                        var baseType = type.BaseType;
+                        var parentProto = _db.FindChainedPrototypeOf(baseType);
+                        if (!parentProto.IsNullish())
+                        {
+                            JSApi.JS_SetPrototype(ctx, proto, parentProto);
+                        }
                     }
                 }
-            }
 
-            for (int i = 0, count = _pendingClasses.Count; i < count; i++)
-            {
-                var clazz = _pendingClasses[i];
-                clazz.Close();
-            }
+                for (int i = 0, count = _pendingClasses.Count; i < count; i++)
+                {
+                    var clazz = _pendingClasses[i];
+                    clazz.Close();
+                }
 
-            _pendingTypes.Clear();
+                _pendingTypes.Clear();
+            }
         }
     }
 }

@@ -56,7 +56,7 @@ namespace QuickJS.Binding
             var ns = CodeGenUtils.NormalizeEx(elements, jsName);
             var type = typeBindingInfo.type;
 
-            _runtime.AddTypeReference(_moduleReg, type, register => typeBindingInfo.DoReflectBind(register), ns);
+            _runtime.AddTypeReference(_moduleReg, type, register => typeBindingInfo.DoReflectBind(register, _moduleReg), ns);
         }
 
         public void EndStaticModule(string moduleName)

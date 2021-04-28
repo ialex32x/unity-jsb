@@ -45,6 +45,11 @@ namespace QuickJS.Module
             });
         }
 
+        public bool IsLoaded()
+        {
+            return _exports.IsObject();
+        }
+
         public void LoadTypes(TypeRegister register)
         {
             if (_exports.IsUndefined())
@@ -86,7 +91,7 @@ namespace QuickJS.Module
 
         public void Load(ScriptContext context, JSValue module_obj, JSValue exports_obj)
         {
-            var register = new TypeRegister(context);
+            var register = context.CreateTypeRegister();
             LoadTypes(register);
             JSApi.JS_SetProperty(context, module_obj, context.GetAtom("exports"), JSApi.JS_DupValue(context, _exports));
             register.Finish();

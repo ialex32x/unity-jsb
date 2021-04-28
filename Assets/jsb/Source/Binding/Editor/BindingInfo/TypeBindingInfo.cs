@@ -649,7 +649,7 @@ namespace QuickJS.Binding
         /// <summary>
         /// 按照 TypeBindingInfo 的记录, 进行动态类型的成员绑定.
         /// </summary>
-        public Binding.ClassDecl DoReflectBind(Binding.TypeRegister register)
+        public Binding.ClassDecl DoReflectBind(Binding.TypeRegister register, Module.ProxyModuleRegister proxyModuleRegister)
         {
             var typeDB = register.GetTypeDB();
             var dynamicType = typeDB.CreateFreeDynamicType(type);
@@ -791,6 +791,7 @@ namespace QuickJS.Binding
                 cls.AddField(isStatic, fieldBindingInfo.regName, dynamicField);
             }
 
+            // 注册事件
             foreach (var pair in events)
             {
                 var eventBindingInfo = pair.Value;
@@ -800,6 +801,7 @@ namespace QuickJS.Binding
                 cls.AddMethod(eventBindingInfo.isStatic, tsDelegateVar, dynamicMethod);
             }
 
+            // 注册委托
             foreach (var pair in delegates)
             {
                 var delegateBindingInfo = pair.Value;
@@ -816,6 +818,13 @@ namespace QuickJS.Binding
                 }
 
                 cls.AddMethod(delegateBindingInfo.isStatic, tsDelegateVar, dynamicMethod);
+            }
+
+            // 注册运算符
+            if (operators.Count > 0)
+            {
+                //TODO: 目前运算符必须在同一个 TypeRegister 实例中注册
+                // proxyModuleRegister.MarkAsCritical();
             }
 
             foreach (var operatorBindingInfo in operators)

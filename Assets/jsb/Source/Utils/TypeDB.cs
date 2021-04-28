@@ -29,6 +29,7 @@ namespace QuickJS.Utils
             _context = context;
         }
 
+        // 获取指定类型的动态绑定 (此方法仅用于用户运行时, 不适用于 RefectBind)
         public DynamicType GetDynamicType(Type type, bool privateAccess)
         {
             DynamicType dynamicType;
@@ -41,7 +42,7 @@ namespace QuickJS.Utils
                 return dynamicType;
             }
 
-            var register = new TypeRegister(_context);
+            var register = _context.CreateTypeRegister();
 
             dynamicType = new DynamicType(type, privateAccess);
             dynamicType.Bind(register);
@@ -153,7 +154,7 @@ namespace QuickJS.Utils
             }
 
             JSValue proto;
-            if (_prototypes.TryGetValue(cType, out proto))
+            if (TryGetPrototypeOf(cType, out proto))
             {
                 type_id = GetTypeID(cType);
                 return proto;
@@ -175,7 +176,7 @@ namespace QuickJS.Utils
             }
 
             JSValue proto;
-            if (_prototypes.TryGetValue(cType, out proto))
+            if (TryGetPrototypeOf(cType, out proto))
             {
                 return proto;
             }
@@ -198,7 +199,7 @@ namespace QuickJS.Utils
             }
 
             JSValue proto;
-            if (_prototypes.TryGetValue(cType, out proto))
+            if (TryGetPrototypeOf(cType, out proto))
             {
                 pType = cType;
                 return proto;
@@ -207,26 +208,45 @@ namespace QuickJS.Utils
             return FindChainedPrototypeOf(cType.BaseType, out pType);
         }
 
+        public bool TryGetPrototypeOf(Type type, out JSValue proto)
+        {
+            if (_prototypes.TryGetValue(type, out proto))
+            {
+                return true;
+            }
+
+            if (_runtime.EnsureReflectBindTypeLoaded(_context, type))
+            {
+                if (_prototypes.TryGetValue(type, out proto))
+                {
+                    return true;
+                }
+            }
+
+            proto = JSApi.JS_UNDEFINED;
+            return false;
+        }
+
         public JSValue GetPrototypeOf(Type type)
         {
-            //TODO: check lazy load from module 
-
             JSValue proto;
-            if (_prototypes.TryGetValue(type, out proto))
+            if (TryGetPrototypeOf(type, out proto))
             {
                 return proto;
             }
+
             return JSApi.JS_UNDEFINED;
         }
 
         public JSValue FindPrototypeOf(Type type, out int type_id)
         {
             JSValue proto;
-            if (_prototypes.TryGetValue(type, out proto))
+            if (TryGetPrototypeOf(type, out proto))
             {
                 type_id = GetTypeID(type);
                 return proto;
             }
+
             type_id = -1;
             return JSApi.JS_UNDEFINED;
         }
