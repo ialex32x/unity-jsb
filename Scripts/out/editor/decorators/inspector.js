@@ -7,6 +7,7 @@ function ScriptType(target) {
     return target;
 }
 exports.ScriptType = ScriptType;
+// path: 指定编辑器脚本所在模块, 暂时不支持相对路径
 function Inspector(path, className) {
     return function (target) {
         // 暂时简单实现

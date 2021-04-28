@@ -12,6 +12,7 @@ export function ScriptType(target: any) {
     return target;
 }
 
+// path: 指定编辑器脚本所在模块, 暂时不支持相对路径
 export function Inspector(path: string, className: string) {
     return function (target: any) {
         // 暂时简单实现

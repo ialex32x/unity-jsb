@@ -94,6 +94,13 @@ namespace jsb.Editor
             bindingManager.AddExportedType(typeof(Camera), true);
             bindingManager.AddExportedType(typeof(Transform), true);
             bindingManager.AddExportedType(typeof(MonoBehaviour), true);
+            bindingManager.AddExportedType(typeof(Sprite), true);
+            bindingManager.AddExportedType(typeof(SpriteRenderer), true);
+            bindingManager.AddExportedType(typeof(Animation), true);
+            bindingManager.AddExportedType(typeof(AnimationClip), true);
+            bindingManager.AddExportedType(typeof(Animator), true);
+            bindingManager.AddExportedType(typeof(AnimationState), true);
+            bindingManager.AddExportedType(typeof(WrapMode), true);
 
             bindingManager.AddExportedType(typeof(Resources)).SetAllConstructorsBlocked();
             bindingManager.AddExportedType(typeof(QuickJS.Unity.JSBehaviourProperties));

@@ -1,0 +1,1 @@
+{"version":3,"file":"js_behaviour_base.js","sourceRoot":"","sources":["../../src/game/js_behaviour_base.ts"],"names":[],"mappings":";;;AACA,6CAA4C;AAC5C,8DAAmE;AAEnE,MAAa,eAAgB,SAAQ,2BAAa;IAC9C,iBAAiB,CAAC,EAAyB;QACvC,6BAAiB,CAAC,SAAS,CAAC,IAAI,EAAE,EAAE,CAAC,CAAC;IAC1C,CAAC;IAED,kBAAkB,CAAC,EAAyB;QACxC,6BAAiB,CAAC,WAAW,CAAC,IAAI,EAAE,EAAE,CAAC,CAAC;IAC5C,CAAC;CAEJ;AATD,0CASC"}
