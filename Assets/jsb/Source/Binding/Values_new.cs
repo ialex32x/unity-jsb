@@ -4,7 +4,6 @@ using System.Runtime.CompilerServices;
 
 namespace QuickJS.Binding
 {
-    using UnityEngine;
     using Native;
 
     // 处理特殊操作, 关联本地对象等

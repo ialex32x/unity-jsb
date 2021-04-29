@@ -8,9 +8,6 @@ using QuickJS.Native;
 
 namespace QuickJS.Binding
 {
-    using UnityEngine;
-    using UnityEditor;
-
     public class ClassCodeGen : TypeCodeGen
     {
         public ClassCodeGen(CodeGenerator cg, TypeBindingInfo typeBindingInfo)
@@ -357,13 +354,15 @@ namespace QuickJS.Binding
 
                 if (!typeBindingInfo.constructors.available && !typeBindingInfo.type.IsAbstract)
                 {
-                    if (typeBindingInfo.type.IsSubclassOf(typeof(Component)))
+#if !JSB_UNITYLESS
+                    if (typeBindingInfo.type.IsSubclassOf(typeof(UnityEngine.Component)))
                     {
                         // 因为 ts 泛型约束需要 new() 形式, 所以在定义中产生一个 public 定义
                         // 例如: GetComponent<T extends Component>(type: { new(): T }): T
                         cg.tsDeclare.AppendLine("/*protected*/ constructor()");
                     }
                     else
+#endif
                     {
                         if (!typeBindingInfo.type.IsGenericTypeDefinition)
                         {
@@ -469,7 +468,7 @@ namespace QuickJS.Binding
                         {
                             funcName = this.cg.bindingManager.GetCSTypeFullName(jscOverride.Method);
                         }
-                        
+
                         cg.cs.AppendLine("cls.AddMethod(true, \"{0}\", {1});", regName, funcName);
                     }
                 }

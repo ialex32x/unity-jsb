@@ -7,9 +7,6 @@ using System.Reflection;
 
 namespace QuickJS.Binding
 {
-    using UnityEngine;
-    using UnityEditor;
-
     public abstract class MethodBaseCodeGen<T> : IDisposable
     where T : MethodBase
     {
@@ -433,7 +430,7 @@ namespace QuickJS.Binding
                 var parameters = method.GetParameters();
                 if (isExtension)
                 {
-                    ArrayUtility.RemoveAt(ref parameters, 0);
+                    CodeGenUtils.RemoveAt(ref parameters, 0);
                 }
 
                 for (int i = 0, len = parameters.Length; i < len;)
@@ -443,7 +440,7 @@ namespace QuickJS.Binding
                     if (Binding.Values.IsContextualType(parameterType))
                     {
                         // 剔除 JSContext, JSRuntime
-                        ArrayUtility.RemoveAt(ref parameters, i);
+                        CodeGenUtils.RemoveAt(ref parameters, i);
                         len--;
                     }
                     // else if (parameter.IsOut)

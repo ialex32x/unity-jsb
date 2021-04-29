@@ -6,9 +6,6 @@ using System.Reflection;
 
 namespace QuickJS.Binding
 {
-    using UnityEngine;
-    using UnityEditor;
-    
     public class HotfixDelegateCodeGen : IDisposable
     {
         protected CodeGenerator cg;

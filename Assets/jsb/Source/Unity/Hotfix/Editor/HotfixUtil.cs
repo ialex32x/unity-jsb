@@ -188,7 +188,11 @@ namespace QuickJS.Unity.Hotfix
 
         public static void Run()
         {
-            var testAssembly = System.Reflection.Assembly.Load("Assembly-CSharp");
+            var testAssembly = Binding.BindingManager.TryGetAssembly("Assembly-CSharp");
+            if (testAssembly == null)
+            {
+                return;
+            }
             var assemblyFilePath = testAssembly.Location;
             var a = AssemblyDefinition.ReadAssembly(assemblyFilePath);
             var delegateTypes = new List<TypeDefinition>();

@@ -8,6 +8,7 @@ namespace QuickJS.Binding
 
     public partial class Values
     {
+#if !JSB_UNITYLESS
         // variant push
         public static JSValue js_push_classvalue(JSContext ctx, UnityEngine.Object o)
         {
@@ -17,6 +18,7 @@ namespace QuickJS.Binding
             }
             return js_push_object(ctx, (object)o);
         }
+#endif
 
         public static JSValue js_push_classvalue(JSContext ctx, ScriptValue o)
         {
@@ -100,7 +102,7 @@ namespace QuickJS.Binding
             var jsVal = types.GetPrototypeOf(o);
             return JSApi.JS_DupValue(ctx, jsVal);
         }
-        
+
         // variant push
         public static JSValue js_push_classvalue(JSContext ctx, object o)
         {

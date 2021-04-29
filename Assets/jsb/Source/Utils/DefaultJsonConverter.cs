@@ -11,9 +11,12 @@ namespace QuickJS.Utils
 
         public static object FromJson(string json, Type type)
         {
-#if JSB_UNITYLESS && !JSB_UNITY_UTILITY
-            //TODO: dotnet core: System.Text.Json.JsonSerializer.Deserialize
+#if JSB_UNITYLESS
+#if JSB_COMPATIBLE
             throw new NotImplementedException();
+#else
+            return System.Text.Json.JsonSerializer.Deserialize(json, type);
+#endif
 #else
             return UnityEngine.JsonUtility.FromJson(json, type);
 #endif
@@ -21,8 +24,12 @@ namespace QuickJS.Utils
 
         public static string ToJson(object obj, bool prettyPrint)
         {
-#if JSB_UNITYLESS && !JSB_UNITY_UTILITY
+#if JSB_UNITYLESS
+#if JSB_COMPATIBLE
             throw new NotImplementedException();
+#else
+            return System.Text.Json.JsonSerializer.Serialize(obj);
+#endif
 #else
             return UnityEngine.JsonUtility.ToJson(obj, true);
 #endif

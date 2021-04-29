@@ -1548,15 +1548,25 @@ namespace QuickJS.Binding
             {
                 log.AppendLine("assembly: {0}", assemblyName);
                 log.AddTabLevel();
-                ExportTypesInAssembly(Assembly.Load(assemblyName), implicitExport);
+                ExportTypesInAssembly(TryGetAssembly(assemblyName), implicitExport);
                 log.DecTabLevel();
             }
+        }
+
+        public static Assembly TryGetAssembly(string name)
+        {
+            try { return Assembly.Load(name); } catch (Exception) { }
+            return null;
         }
 
         public void ExportTypesInAssembly(Assembly assembly, bool implicitExport)
         {
             try
             {
+                if (assembly == null)
+                {
+                    return;
+                }
                 var types = assembly.GetExportedTypes();
 
                 log.AppendLine("info: {0}", assembly);

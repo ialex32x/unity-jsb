@@ -4,7 +4,6 @@ using System.Runtime.CompilerServices;
 
 namespace QuickJS.Binding
 {
-    using UnityEngine;
     using Native;
 
     public partial class Values

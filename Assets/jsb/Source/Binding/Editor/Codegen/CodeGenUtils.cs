@@ -7,11 +7,21 @@ using System.Reflection;
 
 namespace QuickJS.Binding
 {
-    using UnityEngine;
-    using UnityEditor;
-
     public static class CodeGenUtils
     {
+        public static void RemoveAt<T>(ref T[] array, int index)
+        {
+#if JSB_UNITYLESS
+            for (var i = index; i < array.Length - 1; i++)
+            {
+                array[i] = array[i + 1];
+            }
+            Array.Resize(ref array, array.Length - 1);
+#else
+            UnityEditor.ArrayUtility.RemoveAt(ref array, index);
+#endif
+        }
+
         public static string ToLiteral(bool v)
         {
             return v ? "true" : "false";

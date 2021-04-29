@@ -1,3 +1,4 @@
+#if !JSB_UNITYLESS
 using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
@@ -85,3 +86,4 @@ namespace QuickJS.Binding
         }
     }
 }
+#endif

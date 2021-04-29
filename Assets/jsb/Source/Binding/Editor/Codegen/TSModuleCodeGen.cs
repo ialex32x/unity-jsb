@@ -7,9 +7,6 @@ using System.Reflection;
 
 namespace QuickJS.Binding
 {
-    using UnityEngine;
-    using UnityEditor;
-
     public class TSModuleCodeGen : IDisposable
     {
         protected CodeGenerator cg;

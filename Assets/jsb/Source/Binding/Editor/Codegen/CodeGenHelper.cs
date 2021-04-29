@@ -7,9 +7,6 @@ using System.Reflection;
 
 namespace QuickJS.Binding
 {
-    using UnityEngine;
-    using UnityEditor;
-
     public class CSDebugCodeGen : IDisposable
     {
         protected CodeGenerator cg;
@@ -52,7 +49,9 @@ namespace QuickJS.Binding
 
         private void AppendCommonHead()
         {
-            this.cg.cs.AppendLine("// Unity: {0}", Application.unityVersion);
+#if !JSB_UNITYLESS
+            this.cg.cs.AppendLine("// Unity: {0}", UnityEngine.Application.unityVersion);
+#endif
             this.cg.cs.AppendLine("using System;");
             this.cg.cs.AppendLine("using System.Collections.Generic;");
             this.cg.cs.AppendLine();
@@ -415,25 +414,26 @@ namespace QuickJS.Binding
             this.bf = bf;
             this.predef = string.Empty;
 
+#if !JSB_UNITYLESS
             if ((this.bf & TypeBindingFlags.BuildTargetPlatformOnly) != 0)
             {
-                var buildTarget = EditorUserBuildSettings.activeBuildTarget;
+                var buildTarget = UnityEditor.EditorUserBuildSettings.activeBuildTarget;
                 switch (buildTarget)
                 {
-                    case BuildTarget.Android:
+                    case UnityEditor.BuildTarget.Android:
                         predef = "UNITY_ANDROID";
                         break;
-                    case BuildTarget.iOS:
+                    case UnityEditor.BuildTarget.iOS:
                         predef = "UNITY_IOS";
                         break;
-                    case BuildTarget.WSAPlayer:
+                    case UnityEditor.BuildTarget.WSAPlayer:
                         predef = "UNITY_WSA"; // not supported
                         break;
-                    case BuildTarget.StandaloneWindows:
-                    case BuildTarget.StandaloneWindows64:
+                    case UnityEditor.BuildTarget.StandaloneWindows:
+                    case UnityEditor.BuildTarget.StandaloneWindows64:
                         predef = "UNITY_STANDALONE_WIN";
                         break;
-                    case BuildTarget.StandaloneOSX:
+                    case UnityEditor.BuildTarget.StandaloneOSX:
                         predef = "UNITY_STANDALONE_OSX";
                         break;
                     default:
@@ -441,6 +441,7 @@ namespace QuickJS.Binding
                         break;
                 }
             }
+#endif
 
             if (!string.IsNullOrEmpty(this.predef))
             {

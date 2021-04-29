@@ -10,7 +10,6 @@ using QuickJS.Utils;
 
 namespace QuickJS.Utils
 {
-    using UnityEngine;
     using QuickJS;
     using QuickJS.IO;
     using QuickJS.Native;
