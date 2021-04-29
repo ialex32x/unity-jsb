@@ -1548,55 +1548,59 @@ namespace QuickJS.Binding
             {
                 log.AppendLine("assembly: {0}", assemblyName);
                 log.AddTabLevel();
-                try
-                {
-                    var assembly = Assembly.Load(assemblyName);
-                    var types = assembly.GetExportedTypes();
+                ExportTypesInAssembly(Assembly.Load(assemblyName), implicitExport);
+                log.DecTabLevel();
+            }
+        }
 
-                    log.AppendLine("info: {0}", assembly);
-                    log.AppendLine("location: {0}", assembly.Location);
-                    log.AppendLine("types: {0}", types.Length);
-                    log.AddTabLevel();
-                    foreach (var type in types)
+        public void ExportTypesInAssembly(Assembly assembly, bool implicitExport)
+        {
+            try
+            {
+                var types = assembly.GetExportedTypes();
+
+                log.AppendLine("info: {0}", assembly);
+                log.AppendLine("location: {0}", assembly.Location);
+                log.AppendLine("types: {0}", types.Length);
+                log.AddTabLevel();
+                foreach (var type in types)
+                {
+                    var hotfixTag = Attribute.GetCustomAttribute(type, typeof(JSHotfixAttribute)) as JSHotfixAttribute;
+                    if (hotfixTag != null)
                     {
-                        var hotfixTag = Attribute.GetCustomAttribute(type, typeof(JSHotfixAttribute)) as JSHotfixAttribute;
-                        if (hotfixTag != null)
-                        {
-                            TransformType(type).SetHotfix(hotfixTag);
-                            AddHotfixType(type);
-                        }
-
-                        if (IsExportingBlocked(type))
-                        {
-                            log.AppendLine("blocked: {0}", type.FullName);
-                            continue;
-                        }
-
-                        if (implicitExport)
-                        {
-                            log.AppendLine("export (implicit): {0}", type.FullName);
-                            this.AddExportedType(type, true);
-                            continue;
-                        }
-
-                        if (IsExportingExplicit(type))
-                        {
-                            log.AppendLine("export (explicit): {0}", type.FullName);
-                            this.AddExportedType(type, true);
-                            continue;
-                        }
-
-                        TryExportTypeMembers(type);
-                        log.AppendLine("skip: {0}", type.FullName);
+                        TransformType(type).SetHotfix(hotfixTag);
+                        AddHotfixType(type);
                     }
-                    log.DecTabLevel();
-                }
-                catch (Exception exception)
-                {
-                    _logger.LogError(exception.ToString());
-                    log.AppendLine(exception.ToString());
+
+                    if (IsExportingBlocked(type))
+                    {
+                        log.AppendLine("blocked: {0}", type.FullName);
+                        continue;
+                    }
+
+                    if (implicitExport)
+                    {
+                        log.AppendLine("export (implicit): {0}", type.FullName);
+                        this.AddExportedType(type, true);
+                        continue;
+                    }
+
+                    if (IsExportingExplicit(type))
+                    {
+                        log.AppendLine("export (explicit): {0}", type.FullName);
+                        this.AddExportedType(type, true);
+                        continue;
+                    }
+
+                    TryExportTypeMembers(type);
+                    log.AppendLine("skip: {0}", type.FullName);
                 }
                 log.DecTabLevel();
+            }
+            catch (Exception exception)
+            {
+                _logger.LogError(exception.ToString());
+                log.AppendLine(exception.ToString());
             }
         }
 

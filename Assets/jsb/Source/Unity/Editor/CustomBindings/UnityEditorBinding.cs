@@ -115,6 +115,11 @@ namespace jsb.Editor
                 .AddStaticMethod(EditorWindowFix.CreateWindow)
             ;
         }
+        
+        public override void OnPostExporting(BindingManager bindingManager)
+        {
+            bindingManager.ExportTypesInAssembly(typeof(Editor).Assembly, true);
+        }
     }
 }
 #endif
