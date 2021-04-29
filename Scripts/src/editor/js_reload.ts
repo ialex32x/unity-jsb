@@ -56,7 +56,6 @@ fw.on(FileWatcher.CHANGED, this, function (filestates: IFileStateMap) {
             // console.warn(mod.filename, mod.filename == filestate.fullPath)
             if (mod.filename == filestate.fullPath) {
                 collect_reload_deps(mod, dirtylist);
-                // delete cache[moduleId];
                 break;
             }
         }

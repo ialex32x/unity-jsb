@@ -17,6 +17,7 @@ namespace QuickJS
         public event Action<int> OnAfterDestroy;
 
         public event Action<ScriptContext, string> OnScriptReloading;
+        public event Action<ScriptContext, string> OnScriptReloaded;
 
         private ScriptRuntime _runtime;
         private int _contextId;
@@ -438,6 +439,11 @@ namespace QuickJS
         public void RaiseScriptReloadingEvent_throw(string resolved_id)
         {
             OnScriptReloading?.Invoke(this, resolved_id);
+        }
+
+        public void RaiseScriptReloadedEvent_throw(string resolved_id)
+        {
+            OnScriptReloaded?.Invoke(this, resolved_id);
         }
 
 #if !JSB_UNITYLESS

@@ -22,10 +22,11 @@ namespace QuickJS
         }
 
         public event Action<ScriptRuntime> OnDestroy;
+        public event Action<ScriptRuntime> OnInitialized;
         public event Action<int> OnAfterDestroy;
         public event Action OnUpdate;
-
         public event Action<ScriptContext, string> OnScriptReloading;
+        public event Action<ScriptContext, string> OnScriptReloaded;
 
         public Func<JSContext, string, string, int, string> OnSourceMap;
         public Action<ScriptRuntime, TypeRegister> extraBinding;
@@ -197,9 +198,10 @@ namespace QuickJS
                     if (context.TryGetModuleForReloading(resolved_id, out module_obj))
                     {
                         JSValue exports_obj;
+                        RaiseScriptReloadingEvent_nothrow(context, resolved_id);
                         if (resolver.ReloadModule(context, resolved_id, module_obj, out exports_obj))
                         {
-                            RaiseScriptReloadingEvent_nothrow(context, resolved_id);
+                            RaiseScriptReloadedEvent_nothrow(context, resolved_id);
                             JSApi.JS_FreeValue(context, module_obj);
                             return exports_obj;
                         }
@@ -236,9 +238,10 @@ namespace QuickJS
                     if (context.TryGetModuleForReloading(resolved_id, out module_obj))
                     {
                         JSValue exports_obj;
+                        RaiseScriptReloadingEvent_nothrow(context, resolved_id);
                         if (resolver.ReloadModule(context, resolved_id, module_obj, out exports_obj))
                         {
-                            RaiseScriptReloadingEvent_nothrow(context, resolved_id);
+                            RaiseScriptReloadedEvent_nothrow(context, resolved_id);
                             JSApi.JS_FreeValue(ctx, module_obj);
                             JSApi.JS_FreeValue(ctx, exports_obj);
                             return true;
@@ -259,6 +262,19 @@ namespace QuickJS
             {
                 OnScriptReloading?.Invoke(context, resolved_id);
                 context.RaiseScriptReloadingEvent_throw(resolved_id);
+            }
+            catch (Exception exception)
+            {
+                _logger?.WriteException(exception);
+            }
+        }
+
+        private void RaiseScriptReloadedEvent_nothrow(ScriptContext context, string resolved_id)
+        {
+            try
+            {
+                OnScriptReloaded?.Invoke(context, resolved_id);
+                context.RaiseScriptReloadedEvent_throw(resolved_id);
             }
             catch (Exception exception)
             {
@@ -339,6 +355,7 @@ namespace QuickJS
             // FindModuleResolver<StaticModuleResolver>().Warmup(_mainContext);
 
             _isInitialized = true;
+            OnInitialized?.Invoke(this);
         }
 
         [MonoPInvokeCallback(typeof(JSInterruptHandler))]

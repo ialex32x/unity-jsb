@@ -23,6 +23,8 @@ namespace QuickJS
 
         private static IO.ByteBufferThreadedPooledAllocator _sharedAllocator;
 
+        public static event Action<ScriptRuntime> RuntimeCreated;
+
         static ScriptEngine()
         {
             _sharedAllocator = new IO.ByteBufferThreadedPooledAllocator();
@@ -241,7 +243,8 @@ namespace QuickJS
             freeEntry.isEditorRuntime = isEditorRuntime;
             runtime.OnAfterDestroy += OnRuntimeAfterDestroy;
             _rwlock.ExitWriteLock();
-
+            RuntimeCreated?.Invoke(runtime);
+            
             return runtime;
         }
 

@@ -1,5 +1,5 @@
 import { Animator, Input, KeyCode, SpriteRenderer, Time, Vector3 } from "UnityEngine";
-import { Inspector, ScriptType, SerializedNumber, SerializedObject } from "../editor/decorators/inspector";
+import { Inspector, ScriptType, SerializationUtil, SerializedNumber, SerializedObject } from "../editor/decorators/inspector";
 import { JSBehaviourBase } from "./js_behaviour_base";
 
 // 暂时不支持相对路径
@@ -20,8 +20,12 @@ export class KingHumanController extends JSBehaviourBase {
         // this.transform.localPosition = new Vector3(1.0, 2.2, 0);
     }
 
+    OnBeforeSerialize(ps) {
+        super.OnBeforeSerialize(ps);
+    }
+
     OnAfterDeserialize(ps) {
-        super.OnAfterDeserialize(ps);
+        super.OnAfterDeserialize(ps); 
         this.spriteRenderer = this.GetComponent(SpriteRenderer);
     }
 
@@ -51,6 +55,7 @@ export class KingHumanController extends JSBehaviourBase {
                 if (!this.moving) {
                     this.moving = true;
                     this.animator.Play("Run", 0);
+                    // console.log("go1");
                 }
             } else {
                 if (this.moving) {

@@ -52,6 +52,7 @@ namespace QuickJS.Unity
             }
 
             context.OnDestroy += OnContextDestroy;
+            context.OnScriptReloaded += OnScriptReloaded;
             _ctx = ctx;
             _this_obj = JSApi.JS_DupValue(ctx, this_obj);
 
@@ -87,6 +88,17 @@ namespace QuickJS.Unity
             }
         }
 
+        private void OnScriptReloaded(ScriptContext context, string resolved_id)
+        {
+            if (context.CheckModuleId(_target.scriptRef, resolved_id))
+            {
+                if (_enabled)
+                {
+                    OnEnable();
+                }
+            }
+        }
+
         private void OnContextDestroy(ScriptContext context)
         {
             Release();
@@ -119,6 +131,7 @@ namespace QuickJS.Unity
                 if (context != null)
                 {
                     context.OnDestroy -= OnContextDestroy;
+                    context.OnScriptReloaded -= OnScriptReloaded;
                 }
             }
         }
@@ -137,53 +150,60 @@ namespace QuickJS.Unity
             ReleaseJSValues();
 
             var ctx = _target.ctx;
-            if (ctx.IsValid())
+            if (!ctx.IsValid())
             {
-                var editorClass = _target.GetProperty("__editor__");
-                if (JSApi.JS_IsConstructor(ctx, editorClass) == 1)
+                return;
+            }
+
+            var runtime = ScriptEngine.GetRuntime(ctx);
+            if (runtime == null || !runtime.isRunning)
+            {
+                return;
+            }
+            
+            var editorClass = _target.GetProperty("__editor__");
+            if (JSApi.JS_IsConstructor(ctx, editorClass) == 1)
+            {
+                var objectCache = runtime.GetObjectCache();
+
+                // 旧的绑定值释放？
+                if (!_this_obj.IsNullish())
                 {
-                    var runtime = ScriptEngine.GetRuntime(ctx);
-                    var objectCache = runtime.GetObjectCache();
-
-                    // 旧的绑定值释放？
-                    if (!_this_obj.IsNullish())
+                    var payload = JSApi.jsb_get_payload_header(_this_obj);
+                    if (payload.type_id == BridgeObjectType.ObjectRef)
                     {
-                        var payload = JSApi.jsb_get_payload_header(_this_obj);
-                        if (payload.type_id == BridgeObjectType.ObjectRef)
-                        {
 
-                            if (objectCache != null)
+                        if (objectCache != null)
+                        {
+                            object obj;
+                            try
                             {
-                                object obj;
-                                try
-                                {
-                                    objectCache.RemoveObject(payload.value, out obj);
-                                }
-                                catch (Exception exception)
-                                {
-                                    runtime.GetLogger()?.WriteException(exception);
-                                }
+                                objectCache.RemoveObject(payload.value, out obj);
+                            }
+                            catch (Exception exception)
+                            {
+                                runtime.GetLogger()?.WriteException(exception);
                             }
                         }
                     }
-
-                    var object_id = objectCache.AddObject(this, false);
-                    var editorInstance = JSApi.jsb_construct_bridge_object(ctx, editorClass, object_id);
-                    if (editorInstance.IsException())
-                    {
-                        ctx.print_exception();
-                        objectCache.RemoveObject(object_id);
-                    }
-                    else
-                    {
-                        objectCache.AddJSValue(this, editorInstance);
-                        CreateScriptInstance(ctx, editorInstance, editorClass);
-                        JSApi.JS_FreeValue(ctx, editorInstance);
-                    }
                 }
 
-                JSApi.JS_FreeValue(ctx, editorClass);
+                var object_id = objectCache.AddObject(this, false);
+                var editorInstance = JSApi.jsb_construct_bridge_object(ctx, editorClass, object_id);
+                if (editorInstance.IsException())
+                {
+                    ctx.print_exception();
+                    objectCache.RemoveObject(object_id);
+                }
+                else
+                {
+                    objectCache.AddJSValue(this, editorInstance);
+                    CreateScriptInstance(ctx, editorInstance, editorClass);
+                    JSApi.JS_FreeValue(ctx, editorInstance);
+                }
             }
+
+            JSApi.JS_FreeValue(ctx, editorClass);
         }
 
         void OnEnable()
@@ -240,10 +260,10 @@ namespace QuickJS.Unity
         void OnDisable()
         {
             _enabledPending = false;
-            if (_target.isScriptInstanced)
-            {
-                _target.OnBeforeSerialize();
-            }
+            // if (_target.isScriptInstanced)
+            // {
+            //     _target.OnBeforeSerialize();
+            // }
 
             if (_onDisableValid)
             {

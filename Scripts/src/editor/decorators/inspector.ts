@@ -1,6 +1,10 @@
 import { JSBehaviourProperties } from "QuickJS.Unity";
 
-let SerializedFields = Symbol("SerializedFields");
+let SerializedFields = globalThis["__SerializedFields_Symbol__"];
+
+if (typeof SerializedFields === "undefined") {
+    SerializedFields = globalThis["__SerializedFields_Symbol__"] = Symbol("SerializedFields");
+}
 
 interface SlotEntry {
     propertyKey: string;
@@ -62,7 +66,8 @@ export class SerializationUtil {
         this.forEach(target, ps, (name, slot, self, extra) => {
             let value = self[slot.propertyKey];
 
-            switch(slot.type) {
+            // console.log("serializing", slot.propertyKey, value);
+            switch (slot.type) {
                 case "number": {
                     extra.SetNumber(name, typeof value === "number" ? value : 0);
                     break;
@@ -81,21 +86,23 @@ export class SerializationUtil {
 
     static deserialize(target: any, ps: JSBehaviourProperties) {
         this.forEach(target, ps, (name, slot, self, extra) => {
-            switch(slot.type) {
+            let value = null;
+            switch (slot.type) {
                 case "number": {
-                    self[slot.propertyKey] = extra.GetNumber(name);
-                    // console.log("get number", name, slot.propertyKey, self[slot.propertyKey]);
+                    value = extra.GetNumber(name);
                     break;
                 }
                 case "string": {
-                    self[slot.propertyKey] = extra.GetString(name);
+                    value = extra.GetString(name);
                     break;
                 }
                 case "object": {
-                    self[slot.propertyKey] = extra.GetObject(name);
+                    value = extra.GetObject(name);
                     break;
                 }
             }
+            self[slot.propertyKey] = value;
+            // console.log("deserialize", slot.propertyKey, value);
         });
     }
 }

@@ -14,6 +14,10 @@ export class KingHumanControllerInspector extends Editor {
             EditorUtility.SetDirty(p);
         }
 
+        if (GUILayout.Button("Speak")) {
+            console.log("Hello, world 666 !");
+        }
+
         if (GUILayout.Button("Attack")) {
             p.animator.Play("Attack", 0, 1);
         }

@@ -13,6 +13,9 @@ class KingHumanControllerInspector extends UnityEditor_1.Editor {
         if (UnityEditor_1.EditorGUI.EndChangeCheck()) {
             UnityEditor_1.EditorUtility.SetDirty(p);
         }
+        if (UnityEngine_1.GUILayout.Button("Speak")) {
+            console.log("Hello, world 666 !");
+        }
         if (UnityEngine_1.GUILayout.Button("Attack")) {
             p.animator.Play("Attack", 0, 1);
         }

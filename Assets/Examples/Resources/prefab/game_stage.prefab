@@ -287,7 +287,7 @@ GameObject:
   - component: {fileID: 6815848825619597188}
   - component: {fileID: 7161838735410085109}
   - component: {fileID: 4110258182185209090}
-  - component: {fileID: 4254929256011524251}
+  - component: {fileID: 2480755226849003214}
   m_Layer: 0
   m_Name: player
   m_TagString: Untagged
@@ -424,7 +424,7 @@ Animator:
   m_HasTransformHierarchy: 1
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorControllerStateOnDisable: 0
---- !u!114 &4254929256011524251
+--- !u!114 &2480755226849003214
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -437,7 +437,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   scriptRef:
-    sourceFile: Scripts/src/game/king_human_controller.ts
+    sourceFile: C:\projects\unity-jsb\Scripts\src\game\king_human_controller.ts
     modulePath: game/king_human_controller
     className: KingHumanController
     state: 0

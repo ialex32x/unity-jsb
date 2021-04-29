@@ -282,7 +282,7 @@ onmessage = function (data) {
 ```
 
 ## 实时热加载
-![实时代码热加载](jsb_build/res/jsbehaviour_auto_reload.mp4)
+![实时代码热加载](jsb_build/res/hotload.gif)
 
 目前的加载策略是以当前变化的模块为起点, 向上追溯到根模块 (即依赖此模块的模块), 全部重新载入一遍, 并且复用了变化前模块的 exports. 因此以下情况可能存在一些需要注意的问题:
 1. 变化后内容有删减的情况下, 将依然沿用变化前遗留的内容

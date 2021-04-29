@@ -1,5 +1,6 @@
 #if !JSB_UNITYLESS
 using System;
+using System.IO;
 
 namespace QuickJS.Unity
 {
@@ -52,6 +53,7 @@ namespace QuickJS.Unity
         {
             _prefs = prefs;
             _runMode = RunMode.None;
+            ScriptEngine.RuntimeCreated += OnScriptRuntimeCreated;
             EditorApplication.delayCall += OnInit;
             EditorApplication.update += OnUpdate;
             EditorApplication.quitting += OnQuitting;
@@ -100,11 +102,38 @@ namespace QuickJS.Unity
                     FSWatcher.Bind(register);
                 };
                 _runtime.Initialize(fileSystem, fileResolver, asyncManager, logger, new ByteBufferPooledAllocator(), ReflectionBinder.GetBinder(_prefs.reflectBinding));
-                _runtime.AddSearchPath("Scripts/out");
-                _runtime.AddSearchPath("node_modules");
                 _ready = true;
-                _runtime.EvalMain(_prefs.editorEntryPoint);
             }
+        }
+
+        private void OnScriptRuntimeCreated(ScriptRuntime runtime)
+        {
+            runtime.OnInitialized += OnScriptRuntimeInitialized;
+        }
+
+        public TSConfig GetTSConfig(string workspace = null)
+        {
+            var tsconfigPath = string.IsNullOrEmpty(workspace) ? "tsconfig.json" : Path.Combine(workspace, "tsconfig.json");
+            if (File.Exists(tsconfigPath))
+            {
+                var text = Utils.TextUtils.NormalizeJson(File.ReadAllText(tsconfigPath));
+                var tsconfig = JsonUtility.FromJson<TSConfig>(text);
+                return tsconfig;
+            }
+
+            Debug.LogWarning("no tsconfig.json found");
+            return null;
+        }
+
+        private void OnScriptRuntimeInitialized(ScriptRuntime runtime)
+        {
+            var tsconfig = GetTSConfig();
+
+            if (tsconfig != null)
+            {
+                runtime.AddSearchPath(tsconfig.compilerOptions.outDir);
+            }
+            runtime.EvalMain(_prefs.editorEntryPoint);
         }
 
         private void OnPlayModeStateChanged(PlayModeStateChange mode)
@@ -125,6 +154,7 @@ namespace QuickJS.Unity
                     OnQuitting();
                     return;
                 }
+
                 var tick = Environment.TickCount;
                 if (tick < _tick)
                 {
@@ -138,26 +168,30 @@ namespace QuickJS.Unity
             }
         }
 
-        private static void onEvalReturn(JSContext ctx, JSValue jsValue)
-        {
-            var logger = _instance._runtime.GetLogger();
-            if (logger != null)
-            {
-                var ret = JSApi.GetString(ctx, jsValue);
-                logger.Write(LogLevel.Info, ret);
-            }
-        }
-
         public static void Eval(string code)
         {
-            if (_instance != null && _instance._runtime != null)
+            if (_instance != null)
             {
-                _instance._runtime.GetMainContext().EvalSource(code, "eval");
+                if (_instance._runtime != null)
+                {
+                    _instance._runtime.GetMainContext().EvalSource(code, "eval");
+                    return;
+                }
+                else
+                {
+                    if (_instance._runMode == RunMode.Playing)
+                    {
+                        var runtime = ScriptEngine.GetRuntime(false);
+                        if (runtime != null)
+                        {
+                            runtime.GetMainContext().EvalSource(code, "eval");
+                            return;
+                        }
+                    }
+                }
             }
-            else
-            {
-                Debug.LogError("no running EditorRuntime");
-            }
+
+            Debug.LogError("no running EditorRuntime");
         }
 
         public static void ShowWindow(string module, string typename)

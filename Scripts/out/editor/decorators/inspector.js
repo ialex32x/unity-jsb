@@ -1,7 +1,10 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.SerializationUtil = exports.Serialized = exports.SerializedObject = exports.SerializedString = exports.SerializedNumber = exports.Inspector = exports.ScriptType = void 0;
-let SerializedFields = Symbol("SerializedFields");
+let SerializedFields = globalThis["__SerializedFields_Symbol__"];
+if (typeof SerializedFields === "undefined") {
+    SerializedFields = globalThis["__SerializedFields_Symbol__"] = Symbol("SerializedFields");
+}
 // expose this script class type to JSBehaviour, so you can put it on a prefab gameObject
 function ScriptType(target) {
     return target;
@@ -54,6 +57,7 @@ class SerializationUtil {
     static serialize(target, ps) {
         this.forEach(target, ps, (name, slot, self, extra) => {
             let value = self[slot.propertyKey];
+            // console.log("serializing", slot.propertyKey, value);
             switch (slot.type) {
                 case "number": {
                     extra.SetNumber(name, typeof value === "number" ? value : 0);
@@ -72,21 +76,23 @@ class SerializationUtil {
     }
     static deserialize(target, ps) {
         this.forEach(target, ps, (name, slot, self, extra) => {
+            let value = null;
             switch (slot.type) {
                 case "number": {
-                    self[slot.propertyKey] = extra.GetNumber(name);
-                    // console.log("get number", name, slot.propertyKey, self[slot.propertyKey]);
+                    value = extra.GetNumber(name);
                     break;
                 }
                 case "string": {
-                    self[slot.propertyKey] = extra.GetString(name);
+                    value = extra.GetString(name);
                     break;
                 }
                 case "object": {
-                    self[slot.propertyKey] = extra.GetObject(name);
+                    value = extra.GetObject(name);
                     break;
                 }
             }
+            self[slot.propertyKey] = value;
+            // console.log("deserialize", slot.propertyKey, value);
         });
     }
 }
