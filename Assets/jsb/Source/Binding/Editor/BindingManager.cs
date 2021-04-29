@@ -305,7 +305,19 @@ namespace QuickJS.Binding
 
         private void Initialize()
         {
-            var assembly = Assembly.Load("Assembly-CSharp-Editor");
+            var assemblies = AppDomain.CurrentDomain.GetAssemblies();
+            for (var i = 0; i < assemblies.Length; i++)
+            {
+                var assembly = assemblies[i];
+                if (!assembly.IsDynamic && IsAssemblyReferenceTo(assembly, typeof(IBindingProcess).Assembly))
+                {
+                    CollectBindingProcess(assembly);
+                }
+            }
+        }
+
+        private void CollectBindingProcess(Assembly assembly)
+        {
             var types = assembly.GetExportedTypes();
             for (int i = 0, size = types.Length; i < size; i++)
             {
@@ -1413,6 +1425,26 @@ namespace QuickJS.Binding
             _blockedAssemblies.Add(name);
         }
 
+        public bool IsAssemblyReferenceTo(Assembly assembly, Assembly target)
+        {
+            if (assembly == target)
+            {
+                return true;
+            }
+
+            var refs = assembly.GetReferencedAssemblies();
+            for (int i = 0, count = refs.Length; i < count; i++)
+            {
+                var @ref = refs[i];
+                if (@ref.Name == target.GetName().Name)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
         public bool IsAssemblyBlocked(Assembly assembly)
         {
             try
@@ -1642,7 +1674,7 @@ namespace QuickJS.Binding
         {
             var cg = new CodeGenerator(this, typeBindingFlags);
             var csOutDir = _utils.ReplacePathVars(prefs.outDir);
-            var tsOutDir = _utils.ReplacePathVars(prefs.typescriptDir); 
+            var tsOutDir = _utils.ReplacePathVars(prefs.typescriptDir);
             var extraExt = prefs.extraExt;
             // var extraExt = "";
 
