@@ -49,6 +49,17 @@
             "name": "SwitchPlayer",
             "type": "unity",
             "request": "launch"
+        }, 
+        {
+            "name": "dotnetcore example",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "build dotnetcore example",
+            "program": "${workspaceFolder}/jsb_build/dotnetcore/bin/Debug/example.dll",
+            "args": [],
+            "cwd": "${workspaceFolder}/jsb_build/dotnetcore",
+            "console": "internalConsole",
+            "stopAtEntry": false
         }
     ]
 }

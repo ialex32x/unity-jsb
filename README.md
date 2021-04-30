@@ -314,6 +314,12 @@ jsb.hotfix.before_single("HotfixTest", "AnotherCall", function () {
 
 ```
 
+### 对导出的 Unity API 附加了自带文档说明
+![unity_ts_docs](jsb_build/res/unity_ts_docs.png)
+
+### 利用强类型提供代码提示
+![ts_code_complete](jsb_build/res/ts_code_complete.png)
+
 # 如何使用
 ## 获取此项目
 ```
@@ -328,14 +334,13 @@ npm install
 打开项目, 执行菜单项 ```JS Bridge/Generate Bindings And Type Definition```
 
 ## 运行示例
+
+### Examples for Unity
 打开 ```Assets/Examples/Scenes/SampleScene.unity``` 即可运行示例脚本.
 > 依赖 node_modules 的实例脚本可以在编辑器中直接执行, 如果要在最终环境中执行, 需经过脚本打包, 详情请自行查阅 webpack/gulp 打包相关资料, 项目中有基本的打包配置样例.
 
-### 对导出的 Unity API 附加了自带文档说明
-![unity_ts_docs](jsb_build/res/unity_ts_docs.png)
-
-### 利用强类型提供代码提示
-![ts_code_complete](jsb_build/res/ts_code_complete.png)
+### Example for dotnetcore
+使用 VSCode 打开此项目根目录, 在 ```Run And Debug``` 页签中选择 ```dotnetcore example``` 直接启动即可运行示例.
 
 # 多线程
 > 单个运行时不支持多线程使用. 

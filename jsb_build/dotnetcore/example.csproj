@@ -15,4 +15,8 @@
   <ItemGroup>
     <Compile Include="../../Assets/jsb/Source/**/*.cs" />
   </ItemGroup>
+
+  <Target Name="CopyQuickJS" AfterTargets="AfterBuild">
+    <Copy SourceFiles="../../Assets/jsb/Plugins/x64/quickjs.dll" DestinationFolder="$(OutDir)" SkipUnchangedFiles="true" OverwriteReadOnlyFiles="true" />
+  </Target>
 </Project>

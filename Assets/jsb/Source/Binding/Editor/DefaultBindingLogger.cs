@@ -12,7 +12,7 @@ namespace QuickJS.Binding
         public void Log(string message)
         {
 #if JSB_UNITYLESS
-            Console.WriteLine("[INFO ] {0}", message);
+            Console.WriteLine("[INFO  ] {0}", message);
 #else
             UnityEngine.Debug.Log(message);
 #endif
@@ -21,7 +21,7 @@ namespace QuickJS.Binding
         public void LogWarning(string message)
         {
 #if JSB_UNITYLESS
-            Console.WriteLine("[WARN ] {0}", message);
+            Console.WriteLine("[WARN  ] {0}", message);
 #else
             UnityEngine.Debug.LogWarning(message);
 #endif
@@ -30,7 +30,7 @@ namespace QuickJS.Binding
         public void LogError(string message)
         {
 #if JSB_UNITYLESS
-            Console.WriteLine("[ERROR] {0}", message);
+            Console.WriteLine("[ERROR ] {0}", message);
 #else
             UnityEngine.Debug.LogError(message);
 #endif

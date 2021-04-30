@@ -331,6 +331,7 @@ namespace QuickJS.Unity
 
             if (showSourceRefEdit)
             {
+                // EditorGUI.BeginDisabledGroup(_target.isStandaloneScript);
                 EditorGUILayout.BeginHorizontal();
                 EditorGUILayout.TextField("Source File", _target.scriptRef.sourceFile);
                 var sourceFileRect = GUILayoutUtility.GetLastRect();
@@ -355,7 +356,9 @@ namespace QuickJS.Unity
 
                 EditorGUILayout.LabelField("Module Path", _target.scriptRef.modulePath);
                 EditorGUILayout.LabelField("Class Name", _target.scriptRef.className);
+                // EditorGUI.EndDisabledGroup();
             }
+            EditorGUILayout.Separator();
         }
 
         private void DrawPrimitiveView()
