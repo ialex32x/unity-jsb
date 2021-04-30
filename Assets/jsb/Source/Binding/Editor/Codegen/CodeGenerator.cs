@@ -274,7 +274,7 @@ namespace QuickJS.Binding
         {
             try
             {
-                var contents = bindingManager.utils.ToJson(obj, true);
+                var contents = bindingManager.json.Serialize(obj, true);
                 File.WriteAllText(path, contents);
                 this.bindingManager.Info($"output file: {path} ({contents.Length})");
             }

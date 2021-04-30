@@ -22,6 +22,6 @@ namespace QuickJS
         public IO.IByteBufferAllocator byteBufferAllocator;
 
         // only available in editor
-        public IBinder binder;
+        public BindAction binder;
     }
 }

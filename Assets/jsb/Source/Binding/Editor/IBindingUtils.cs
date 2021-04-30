@@ -7,8 +7,6 @@ namespace QuickJS.Binding
 {
     public interface IBindingUtils
     {
-        string ToJson(object obj, bool prettyPrint);
-
         string ReplacePathVars(string value);
 
         bool IsExplicitEditorType(Type type);
@@ -16,11 +14,6 @@ namespace QuickJS.Binding
 
     public class DefaultBindingUtils : IBindingUtils
     {
-        public string ToJson(object obj, bool prettyPrint)
-        {
-            return Utils.DefaultJsonConverter.ToJson(obj, prettyPrint);
-        }
-
         public string ReplacePathVars(string value)
         {
 #if JSB_UNITYLESS

@@ -13,6 +13,7 @@ namespace QuickJS.Binding
         public TextGenerator log;
         public Prefs prefs;
 
+        private Utils.IJsonConverter _jsonConv;
         private IBindingUtils _utils;
         private IBindingLogger _logger;
 
@@ -57,6 +58,8 @@ namespace QuickJS.Binding
 
         public IBindingCallback callback => _callback;
 
+        public Utils.IJsonConverter json => _jsonConv;
+
         public IBindingUtils utils => _utils;
 
         static BindingManager()
@@ -70,13 +73,14 @@ namespace QuickJS.Binding
             );
         }
 
-        public BindingManager(Prefs prefs, IBindingCallback callback = null, IBindingUtils utils = null, IBindingLogger logger = null)
+        public BindingManager(Prefs prefs, IBindingCallback callback = null, Utils.IJsonConverter jsonConverter = null, IBindingUtils utils = null, IBindingLogger logger = null)
         {
             this.prefs = prefs;
             this.dateTime = DateTime.Now;
             var tab = prefs.tab;
             var newline = prefs.newline;
 
+            _jsonConv = jsonConverter ?? new Utils.DefaultJsonConverter();
             _utils = utils ?? new DefaultBindingUtils();
             _logger = logger ?? new DefaultBindingLogger();
             _callback = callback ?? new DefaultBindingCallback();

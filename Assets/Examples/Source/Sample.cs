@@ -86,7 +86,7 @@ namespace Example
                 asyncManager = asyncManager,
                 logger = _mConsole,
                 byteBufferAllocator = new ByteBufferPooledAllocator(),
-                binder = ReflectionBinder.GetBinder(useReflectBind),
+                binder = DefaultBinder.GetBinder(useReflectBind),
             });
             _rt.EvalMain(entryFileName);
         }

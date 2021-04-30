@@ -288,7 +288,7 @@ namespace QuickJS
         }
 
         // this method will be marked as private in the future
-        public void Initialize(IFileSystem fileSystem, IPathResolver resolver, IAsyncManager asyncManager, IScriptLogger logger, IO.IByteBufferAllocator byteBufferAllocator, IBinder binder)
+        private void Initialize(IFileSystem fileSystem, IPathResolver resolver, IAsyncManager asyncManager, IScriptLogger logger, IO.IByteBufferAllocator byteBufferAllocator, BindAction binder)
         {
             if (fileSystem == null)
             {
@@ -335,7 +335,7 @@ namespace QuickJS
             // await Task.Run(() => runner.OnBind(this, register));
             try
             {
-                binder?.Bind(this);
+                binder?.Invoke(this);
             }
             catch (Exception exception)
             {

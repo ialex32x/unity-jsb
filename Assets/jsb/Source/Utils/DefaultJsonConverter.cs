@@ -6,11 +6,6 @@ namespace QuickJS.Utils
     {
         public object Deserialize(string json, Type type)
         {
-            return FromJson(json, type);
-        }
-
-        public static object FromJson(string json, Type type)
-        {
 #if JSB_UNITYLESS
 #if JSB_COMPATIBLE
             throw new NotImplementedException();
@@ -22,7 +17,7 @@ namespace QuickJS.Utils
 #endif
         }
 
-        public static string ToJson(object obj, bool prettyPrint)
+        public string Serialize(object obj, bool prettyPrint)
         {
 #if JSB_UNITYLESS
 #if JSB_COMPATIBLE
@@ -34,6 +29,5 @@ namespace QuickJS.Utils
             return UnityEngine.JsonUtility.ToJson(obj, true);
 #endif
         }
-
     }
 }

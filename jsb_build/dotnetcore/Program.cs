@@ -17,7 +17,15 @@ namespace DotnetCoreConsoleApp
             var runtime = ScriptEngine.CreateRuntime();
 
             runtime.AddModuleResolvers();
-            runtime.Initialize(fileSystem, fileResolver, asyncManager, logger, new ByteBufferPooledAllocator(), ReflectionBinder.GetBinder(true));
+            runtime.Initialize(new ScriptRuntimeArgs
+            {
+                fileSystem = fileSystem,
+                pathResolver = pathResolver,
+                asyncManager = asyncManager,
+                logger = logger,
+                byteBufferAllocator = new ByteBufferPooledAllocator(),
+                binder = DefaultBinder.GetBinder(true),
+            });
             runtime.AddSearchPath("./");
             runtime.AddSearchPath("./node_modules");
             runtime.EvalMain("main");

@@ -90,7 +90,7 @@ namespace QuickJS.Unity
             if (_runtime == null)
             {
                 var logger = new DefaultScriptLogger();
-                var fileResolver = new PathResolver();
+                var pathResolver = new PathResolver();
                 var fileSystem = new DefaultFileSystem(logger);
                 var asyncManager = new DefaultAsyncManager();
 
@@ -101,7 +101,15 @@ namespace QuickJS.Unity
                 {
                     FSWatcher.Bind(register);
                 };
-                _runtime.Initialize(fileSystem, fileResolver, asyncManager, logger, new ByteBufferPooledAllocator(), ReflectionBinder.GetBinder(_prefs.reflectBinding));
+                _runtime.Initialize(new ScriptRuntimeArgs
+                {
+                    fileSystem = fileSystem,
+                    pathResolver = pathResolver,
+                    asyncManager = asyncManager,
+                    logger = logger,
+                    byteBufferAllocator = new ByteBufferPooledAllocator(),
+                    binder = DefaultBinder.GetBinder(_prefs.reflectBinding),
+                });
                 _ready = true;
             }
         }
