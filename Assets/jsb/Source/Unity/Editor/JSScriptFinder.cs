@@ -10,9 +10,15 @@ namespace QuickJS.Unity
         private FileSystemWatcher _fsw;
         private string _baseDir;
         private string _fileExt;
+        private bool _isRefreshing;
 
         // classPath => JSScriptClassPathHint
         private Dictionary<string, JSScriptClassPathHint> _scriptClassPaths = new Dictionary<string, JSScriptClassPathHint>();
+        private Dictionary<string, List<string>> _fullPathToClassPath = new Dictionary<string, List<string>>();
+
+        private bool _cachedChangesDirty = false;
+        // fullPath => WatcherChangeType
+        private Dictionary<string, WatcherChangeTypes> _cachedChanges = new Dictionary<string, WatcherChangeTypes>();
 
         public JSScriptFinder(string baseDir, string fileExt)
         {
@@ -22,20 +28,40 @@ namespace QuickJS.Unity
 
         private void OnChanged(object sender, FileSystemEventArgs e)
         {
+            lock (_cachedChanges)
+            {
+                _cachedChanges[e.FullPath] = WatcherChangeTypes.Changed;
+                _cachedChangesDirty = true;
+                // UnityEngine.Debug.Log($"changed {e.FullPath}");
+            }
         }
 
         private void OnCreated(object sender, FileSystemEventArgs e)
         {
+            lock (_cachedChanges)
+            {
+                _cachedChanges[e.FullPath] = WatcherChangeTypes.Created;
+                _cachedChangesDirty = true;
+                // UnityEngine.Debug.Log($"created {e.FullPath}");
+            }
         }
 
         private void OnDeleted(object sender, FileSystemEventArgs e)
         {
+            lock (_cachedChanges)
+            {
+                _cachedChanges[e.FullPath] = WatcherChangeTypes.Deleted;
+                _cachedChangesDirty = true;
+                // UnityEngine.Debug.Log($"deleted {e.FullPath}");
+            }
         }
 
         public void RefreshAll()
         {
+            _isRefreshing = true;
             _scriptClassPaths.Clear();
             SearchDirectory(_baseDir);
+            _isRefreshing = false;
         }
 
         private void SearchDirectory(string dir)
@@ -59,11 +85,29 @@ namespace QuickJS.Unity
             }
 
             var results = new List<JSScriptClassPathHint>();
-            if (UnityHelper.ResolveScriptRef(_baseDir, filePath, results))
+            string normalizedPath;
+            if (UnityHelper.ResolveScriptRef(_baseDir, filePath, out normalizedPath, results))
             {
+                List<string> list;
+                if (_fullPathToClassPath.TryGetValue(normalizedPath, out list))
+                {
+                    foreach (var item in list)
+                    {
+                        _scriptClassPaths.Remove(item);
+                    }
+                    list.Clear();
+                }
+                else
+                {
+                    list = _fullPathToClassPath[normalizedPath] = new List<string>();
+                }
+
                 foreach (var result in results)
                 {
-                    _scriptClassPaths.Add(result.ToClassPath(), result);
+                    var classPath = result.ToClassPath();
+
+                    list.Add(classPath);
+                    _scriptClassPaths[classPath] = result;
                 }
             }
         }
@@ -95,7 +139,48 @@ namespace QuickJS.Unity
             _fsw.Created += OnCreated;
             _fsw.Deleted += OnDeleted;
             _fsw.EnableRaisingEvents = true;
+            UnityEditor.EditorApplication.update += OnUpdate;
             RefreshAll();
+        }
+
+        private void OnUpdate()
+        {
+            if (_isRefreshing)
+            {
+                return;
+            }
+
+            lock (_cachedChanges)
+            {
+                if (_cachedChangesDirty)
+                {
+                    foreach (var pair in _cachedChanges)
+                    {
+                        var fullPath = pair.Key;
+                        var changeType = pair.Value;
+
+                        if (changeType == WatcherChangeTypes.Deleted)
+                        {
+                            List<string> classPathList;
+                            var lowerCasedFullPath = fullPath.ToLower();
+                            if (_fullPathToClassPath.TryGetValue(lowerCasedFullPath, out classPathList))
+                            {
+                                _fullPathToClassPath.Remove(lowerCasedFullPath);
+                                foreach (var item in classPathList)
+                                {
+                                    _scriptClassPaths.Remove(item);
+                                }
+                            }
+                        }
+                        else
+                        {
+                            ParseFile(fullPath);
+                        }
+                    }
+                    _cachedChanges.Clear();
+                    _cachedChangesDirty = false;
+                }
+            }
         }
 
         public void Stop()
@@ -105,6 +190,7 @@ namespace QuickJS.Unity
                 return;
             }
 
+            UnityEditor.EditorApplication.update -= OnUpdate;
             _fsw.Dispose();
             _fsw = null;
         }

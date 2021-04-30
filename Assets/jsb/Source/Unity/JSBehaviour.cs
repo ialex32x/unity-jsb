@@ -657,10 +657,10 @@ namespace QuickJS.Unity
                                 JSApi.JS_FreeValue(ctx, instValue);
                                 JSApi.JS_FreeValue(ctx, typeValue);
 
-                                if (!instValue.IsObject())
-                                {
-                                    Debug.LogError("script instance error");
-                                }
+                                // if (!instValue.IsObject())
+                                // {
+                                //     Debug.LogError("script instance error");
+                                // }
                             }
                         }
                     }

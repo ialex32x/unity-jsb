@@ -374,13 +374,14 @@ namespace QuickJS.Unity
         }
 
         // sourceFile: 需要传入 FullPath
-        public static bool ResolveScriptRef(string sourceDirBase, string sourceFile, List<JSScriptClassPathHint> hints)
+        public static bool ResolveScriptRef(string sourceDirBase, string sourceFile, out string normalizedPath, List<JSScriptClassPathHint> hints)
         {
             if (!Path.IsPathRooted(sourceFile))
             {
                 sourceFile = Path.GetFullPath(sourceFile);
             }
 
+            normalizedPath = sourceFile;
             if (!sourceFile.EndsWith(".ts"))
             {
                 // invalid 
@@ -429,7 +430,7 @@ namespace QuickJS.Unity
         {
             //TODO: need optimization?
             var text = File.ReadAllText(sourceFile);
-            
+
             foreach (Match m in JSBehaviourClassNameRegex.Matches(text))
             {
                 hints.Add(new JSScriptClassPathHint(sourceFile, modulePath, m.Groups[1].Value, JSScriptClassType.MonoBehaviour));

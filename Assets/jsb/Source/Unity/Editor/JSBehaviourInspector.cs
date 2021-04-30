@@ -160,7 +160,7 @@ namespace QuickJS.Unity
             {
                 return;
             }
-            
+
             var editorClass = _target.GetProperty("__editor__");
             if (JSApi.JS_IsConstructor(ctx, editorClass) == 1)
             {
@@ -338,7 +338,7 @@ namespace QuickJS.Unity
                 if (GUILayout.Button("F", GUILayout.Width(20f)))
                 {
                     sourceFileRect.y += 10f;
-                    if (JSScriptSearchWindow.Show(sourceFileRect, _target.scriptRef.ToClassPath(), OnSelectedScript))
+                    if (JSScriptSearchWindow.Show(sourceFileRect, string.Empty, OnSelectedScript))
                     {
                         GUIUtility.ExitGUI();
                     }
@@ -417,15 +417,33 @@ namespace QuickJS.Unity
             DrawPrimitiveView();
             DrawSourceRef();
 
-            if (_onInspectorGUIValid)
+            if (_target.isScriptInstanced)
             {
-                var rval = JSApi.JS_Call(_ctx, _onInspectorGUIFunc, _this_obj);
-                if (rval.IsException())
+                if (_target.IsValid())
                 {
-                    _ctx.print_exception();
-                }
+                    if (_onInspectorGUIValid)
+                    {
+                        var rval = JSApi.JS_Call(_ctx, _onInspectorGUIFunc, _this_obj);
+                        if (rval.IsException())
+                        {
+                            _ctx.print_exception();
+                        }
 
-                JSApi.JS_FreeValue(_ctx, rval);
+                        JSApi.JS_FreeValue(_ctx, rval);
+                    }
+                    else
+                    {
+                        EditorGUILayout.HelpBox("No inspector available for this script type", MessageType.Info);
+                    }
+                }
+                else
+                {
+                    EditorGUILayout.HelpBox("Invalid script reference", MessageType.Warning);
+                }
+            }
+            else
+            {
+                EditorGUILayout.HelpBox("Waiting for script instancing...", MessageType.Warning);
             }
         }
     }

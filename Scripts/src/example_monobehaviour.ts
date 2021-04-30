@@ -103,6 +103,10 @@ export class RotateBehaviour extends MonoBehaviour {
     }
 }
 
+@ScriptType
+export class Something5Behaviour extends MonoBehaviour {
+}
+
 if (module == require.main) {
     print("example_monobehaviour");
     let gameObject = new GameObject();

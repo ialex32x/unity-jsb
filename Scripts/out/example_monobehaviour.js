@@ -6,7 +6,7 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.RotateBehaviour = exports.MySubClass = exports.MyClass = void 0;
+exports.Something5Behaviour = exports.RotateBehaviour = exports.MySubClass = exports.MyClass = void 0;
 const UnityEngine_1 = require("UnityEngine");
 const jsb = require("jsb");
 const inspector_1 = require("./editor/decorators/inspector");
@@ -107,6 +107,12 @@ RotateBehaviour = __decorate([
     inspector_1.ScriptType
 ], RotateBehaviour);
 exports.RotateBehaviour = RotateBehaviour;
+let Something5Behaviour = class Something5Behaviour extends UnityEngine_1.MonoBehaviour {
+};
+Something5Behaviour = __decorate([
+    inspector_1.ScriptType
+], Something5Behaviour);
+exports.Something5Behaviour = Something5Behaviour;
 if (module == require.main) {
     print("example_monobehaviour");
     let gameObject = new UnityEngine_1.GameObject();
