@@ -349,7 +349,7 @@ npm install
 
 # 状态
 > 完成度 ~95%  
-> 支持 .NET 4.0 以及 Unity (开发所用版本为2019, 其余版本未测试) 
+> 支持 .NET 4.0/dotnetcore 3.1/Unity2019+ (开发所用版本为2019, 其余版本未测试) 
 
 # 文档 
 详细说明参见 [Wiki](https://github.com/ialex32x/unity-jsb/wiki)
