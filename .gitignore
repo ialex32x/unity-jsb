@@ -24,6 +24,9 @@
 /*.svd
 /*.pdb
 /*.opendb
+/jsb_build/dotnetcore/bin/
+/jsb_build/dotnetcore/Logs/
+/jsb_build/dotnetcore/obj/
 
 # Unity3D generated meta files
 /*.pidb.meta

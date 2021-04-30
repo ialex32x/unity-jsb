@@ -1,15 +1,9 @@
 <Project>
-    <PropertyGroup>
+    <PropertyGroup Condition="$(SolutionName) == 'unity-jsb'">
         <GenerateDocumentationFile>true</GenerateDocumentationFile>
         <!-- The rest is omitted for clarity. -->
-    </PropertyGroup>
-
-    <PropertyGroup>
         <!-- warning CS1591: Missing XML comment for publicly visible type or member -->
         <NoWarn>1591,1570</NoWarn>
-    </PropertyGroup>
-
-    <PropertyGroup>
         <DocumentationFile>Assets\Generated\Docs\$(MSBuildProjectName).xml</DocumentationFile>
     </PropertyGroup>
 </Project>
