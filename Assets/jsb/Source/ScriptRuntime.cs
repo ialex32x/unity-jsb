@@ -314,7 +314,7 @@ namespace QuickJS
             JSApi.JS_SetRuntimeOpaque(_rt, (IntPtr)_runtimeId);
             JSApi.JS_SetModuleLoaderFunc(_rt, module_normalize, module_loader, IntPtr.Zero);
             CreateContext();
-            JSApi.JS_NewClass(_rt, JSApi.JSB_GetBridgeClassID(), "CSharpClass", JSApi.class_finalizer);
+            JSApi.JS_NewClass(_rt, JSApi.class_finalizer);
 
             _pathResolver = resolver;
             _asyncManager = asyncManager;

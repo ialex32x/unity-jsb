@@ -7,7 +7,7 @@ namespace QuickJS.Extra.WebSockets
 {
     using size_t = QuickJS.Native.size_t;
 
-#if UNITY_EDITOR_WIN || UNITY_STANDALONE_WIN
+#if UNITY_EDITOR_WIN || UNITY_STANDALONE_WIN || JSB_UNITYLESS
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
 #endif
     public delegate int lws_callback_function(lws wsi, lws_callback_reasons reason, IntPtr user, IntPtr @in, size_t len);
