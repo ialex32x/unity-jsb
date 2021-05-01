@@ -5,6 +5,10 @@ const UnityEditor_1 = require("UnityEditor");
 const UnityEngine_1 = require("UnityEngine");
 const js_reload_1 = require("./js_reload");
 class JSModuleView extends UnityEditor_1.EditorWindow {
+    constructor() {
+        super(...arguments);
+        this._sv = UnityEngine_1.Vector2.zero;
+    }
     OnEnable() {
         this.titleContent = new UnityEngine_1.GUIContent("JS Modules");
     }
@@ -37,7 +41,7 @@ class JSModuleView extends UnityEditor_1.EditorWindow {
         if (typeof mod.children !== "undefined") {
             UnityEditor_1.EditorGUILayout.IntField("Children", mod.children.length);
             UnityEditor_1.EditorGUILayout.BeginHorizontal();
-            UnityEngine_1.GUILayout.Space(12);
+            UnityEngine_1.GUILayout.Space(50);
             UnityEditor_1.EditorGUILayout.BeginVertical();
             for (let i = 0; i < mod.children.length; i++) {
                 let child = mod.children[i];
@@ -56,10 +60,12 @@ class JSModuleView extends UnityEditor_1.EditorWindow {
             return;
         }
         this._touch = {};
+        this._sv = UnityEditor_1.EditorGUILayout.BeginScrollView(this._sv);
         Object.keys(cache).forEach(name => {
             let mod = cache[name];
             this.drawModule(mod);
         });
+        UnityEditor_1.EditorGUILayout.EndScrollView();
     }
 }
 exports.JSModuleView = JSModuleView;

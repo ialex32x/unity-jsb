@@ -1,10 +1,11 @@
 import { ModuleManager } from "jsb";
 import { EditorGUI, EditorGUILayout, EditorWindow } from "UnityEditor";
-import { GUIContent, GUILayout } from "UnityEngine";
+import { GUIContent, GUILayout, Vector2 } from "UnityEngine";
 import { reload } from "./js_reload";
 
 export class JSModuleView extends EditorWindow {
     private _touch: any;
+    private _sv = Vector2.zero;
 
     OnEnable() {
         this.titleContent = new GUIContent("JS Modules");
@@ -41,7 +42,7 @@ export class JSModuleView extends EditorWindow {
         if (typeof mod.children !== "undefined") {
             EditorGUILayout.IntField("Children", mod.children.length);
             EditorGUILayout.BeginHorizontal();
-            GUILayout.Space(12);
+            GUILayout.Space(50);
             EditorGUILayout.BeginVertical();
             for (let i = 0; i < mod.children.length; i++) {
                 let child = mod.children[i];
@@ -65,10 +66,12 @@ export class JSModuleView extends EditorWindow {
         }
 
         this._touch = {};
+        this._sv = EditorGUILayout.BeginScrollView(this._sv)
         Object.keys(cache).forEach(name => {
             let mod = cache[name];
             this.drawModule(mod);
         });
+        EditorGUILayout.EndScrollView();
     }
 }
 
