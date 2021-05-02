@@ -3,6 +3,7 @@ using System.Threading;
 using QuickJS;
 using QuickJS.IO;
 using QuickJS.Utils;
+using QuickJS.Binding;
 
 namespace DotnetCoreConsoleApp
 {
@@ -11,7 +12,7 @@ namespace DotnetCoreConsoleApp
         static void Main(string[] args)
         {
             var logger = new DefaultScriptLogger();
-            var fileResolver = new PathResolver();
+            var pathResolver = new PathResolver();
             var fileSystem = new DefaultFileSystem(logger);
             var asyncManager = new DefaultAsyncManager();
             var runtime = ScriptEngine.CreateRuntime();
