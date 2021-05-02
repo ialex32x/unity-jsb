@@ -1,12 +1,30 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.SerializationUtil = exports.Serialized = exports.SerializedObject = exports.SerializedString = exports.SerializedNumber = exports.Inspector = exports.ScriptType = void 0;
-let SerializedFields = globalThis["__SerializedFields_Symbol__"];
-if (typeof SerializedFields === "undefined") {
-    SerializedFields = globalThis["__SerializedFields_Symbol__"] = Symbol("SerializedFields");
-}
+let SerializedFields = Symbol.for("SerializedFields");
+let PropertiesTouched = Symbol.for("PropertiesTouched");
 // expose this script class type to JSBehaviour, so you can put it on a prefab gameObject
 function ScriptType(target) {
+    let OnBeforeSerialize = target.prototype["OnBeforeSerialize"];
+    target.prototype["OnBeforeSerialize"] = function (ps) {
+        this[PropertiesTouched] = false;
+        if (typeof OnBeforeSerialize === "function") {
+            OnBeforeSerialize.call(this, ps);
+        }
+        if (!this[PropertiesTouched]) {
+            SerializationUtil.serialize(this, ps);
+        }
+    };
+    let OnAfterDeserialize = target.prototype["OnAfterDeserialize"];
+    target.prototype["OnAfterDeserialize"] = function (ps) {
+        this[PropertiesTouched] = false;
+        if (typeof OnAfterDeserialize === "function") {
+            OnAfterDeserialize.call(this, ps);
+        }
+        if (!this[PropertiesTouched]) {
+            SerializationUtil.deserialize(this, ps);
+        }
+    };
     return target;
 }
 exports.ScriptType = ScriptType;
@@ -55,6 +73,7 @@ class SerializationUtil {
         }
     }
     static serialize(target, ps) {
+        target[PropertiesTouched] = true;
         this.forEach(target, ps, (name, slot, self, extra) => {
             let value = self[slot.propertyKey];
             // console.log("serializing", slot.propertyKey, value);
@@ -75,6 +94,7 @@ class SerializationUtil {
         });
     }
     static deserialize(target, ps) {
+        target[PropertiesTouched] = true;
         this.forEach(target, ps, (name, slot, self, extra) => {
             let value = null;
             switch (slot.type) {

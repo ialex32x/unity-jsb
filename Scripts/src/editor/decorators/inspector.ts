@@ -1,10 +1,7 @@
 import { JSBehaviourProperties } from "QuickJS.Unity";
 
-let SerializedFields = globalThis["__SerializedFields_Symbol__"];
-
-if (typeof SerializedFields === "undefined") {
-    SerializedFields = globalThis["__SerializedFields_Symbol__"] = Symbol("SerializedFields");
-}
+let SerializedFields = Symbol.for("SerializedFields");
+let PropertiesTouched = Symbol.for("PropertiesTouched");
 
 interface SlotEntry {
     propertyKey: string;
@@ -13,6 +10,28 @@ interface SlotEntry {
 
 // expose this script class type to JSBehaviour, so you can put it on a prefab gameObject
 export function ScriptType(target: any) {
+    let OnBeforeSerialize: Function = target.prototype["OnBeforeSerialize"];
+    target.prototype["OnBeforeSerialize"] = function (ps) {
+        this[PropertiesTouched] = false;
+        if (typeof OnBeforeSerialize === "function") {
+            OnBeforeSerialize.call(this, ps);
+        }
+        if (!this[PropertiesTouched]) {
+            SerializationUtil.serialize(this, ps);
+        }
+    }
+
+    let OnAfterDeserialize: Function = target.prototype["OnAfterDeserialize"];
+    target.prototype["OnAfterDeserialize"] = function (ps) {
+        this[PropertiesTouched] = false;
+        if (typeof OnAfterDeserialize === "function") {
+            OnAfterDeserialize.call(this, ps);
+        }
+        if (!this[PropertiesTouched]) {
+            SerializationUtil.deserialize(this, ps);
+        }
+    }
+
     return target;
 }
 
@@ -63,6 +82,7 @@ export class SerializationUtil {
     }
 
     static serialize(target: any, ps: JSBehaviourProperties) {
+        target[PropertiesTouched] = true;
         this.forEach(target, ps, (name, slot, self, extra) => {
             let value = self[slot.propertyKey];
 
@@ -85,6 +105,7 @@ export class SerializationUtil {
     }
 
     static deserialize(target: any, ps: JSBehaviourProperties) {
+        target[PropertiesTouched] = true;
         this.forEach(target, ps, (name, slot, self, extra) => {
             let value = null;
             switch (slot.type) {

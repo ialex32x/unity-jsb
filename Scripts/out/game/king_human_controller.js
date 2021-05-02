@@ -21,11 +21,8 @@ let KingHumanController = class KingHumanController extends js_behaviour_base_1.
         // this.transform.localScale = new Vector3(1, 1, 1);
         // this.transform.localPosition = new Vector3(1.0, 2.2, 0);
     }
-    OnBeforeSerialize(ps) {
-        super.OnBeforeSerialize(ps);
-    }
     OnAfterDeserialize(ps) {
-        super.OnAfterDeserialize(ps);
+        // 发生脚本重载时不会触发 Awake 所以在此处赋值
         this.spriteRenderer = this.GetComponent(UnityEngine_1.SpriteRenderer);
     }
     Update() {

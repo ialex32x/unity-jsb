@@ -20,12 +20,8 @@ export class KingHumanController extends JSBehaviourBase {
         // this.transform.localPosition = new Vector3(1.0, 2.2, 0);
     }
 
-    OnBeforeSerialize(ps) {
-        super.OnBeforeSerialize(ps);
-    }
-
     OnAfterDeserialize(ps) {
-        super.OnAfterDeserialize(ps); 
+        // 发生脚本重载时不会触发 Awake 所以在此处赋值
         this.spriteRenderer = this.GetComponent(SpriteRenderer);
     }
 

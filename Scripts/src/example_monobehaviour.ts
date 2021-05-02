@@ -31,15 +31,6 @@ export class MyClass extends MonoBehaviour {
         console.log("MyClass.OnDestroy", this._tick++);
     }
     
-    OnBeforeSerialize(ps: JSBehaviourProperties) {
-        // console.log("MyClass.OnBeforeSerialize");
-        SerializationUtil.serialize(this, ps);
-    }
-
-    OnAfterDeserialize(ps: JSBehaviourProperties) {
-        SerializationUtil.deserialize(this, ps);
-    }
-
     speak(text: string) {
         console.log("modified", text);
     }
