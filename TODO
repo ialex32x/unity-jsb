@@ -7,6 +7,7 @@ BUGFIX:
 
 必要:
     ☐ 反射模式支持运算符重载 (考虑接入v8, 可能取消运算符重载的导入)
+    ☐ ScriptableObject supports
     ☐ JS Worker Runtime 的类型绑定
     ☐ 主模块与一般模块共用一致的加载流程
     ☐ ES模块与require模块逻辑一致
