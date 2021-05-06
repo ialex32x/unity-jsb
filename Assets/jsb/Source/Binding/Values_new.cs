@@ -25,12 +25,6 @@ namespace QuickJS.Binding
             return proto;
         }
 
-        [Obsolete("use _js_crossbind_constructor instead (please regenerate the binding code)")]
-        protected static JSValue _js_mono_behaviour_constructor(JSContext ctx, JSValue new_target)
-        {
-            return _js_crossbind_constructor(ctx, new_target);
-        }
-
         /// <summary>
         /// 用于对由 js 构造产生的 c# 对象产生一个 js 包装对象 
         /// 注意: 此函数签名发生变化时, 用于优化的所有重载匹配函数需要统一变化
