@@ -5,7 +5,7 @@ namespace QuickJS.Binding
 {
     public delegate void BindAction(ScriptRuntime runtime);
 
-    public static class DefaultBinder 
+    public static class DefaultBinder
     {
         public static BindAction GetBinder(bool useReflectBind)
         {
@@ -49,12 +49,6 @@ namespace QuickJS.Binding
 
         public static void ReflectBind(ScriptRuntime runtime)
         {
-#if JSB_UNITYLESS
-            var bm = new Binding.BindingManager(new Binding.Prefs(), new Binding.ReflectBindingCallback(runtime));
-            bm.Collect();
-            bm.Generate(Binding.TypeBindingFlags.None);
-            bm.Report();
-#else
             var logger = runtime.GetLogger();
             try
             {
@@ -81,7 +75,6 @@ namespace QuickJS.Binding
             {
                 logger.Write(Utils.LogLevel.Error, "failed to get method: UnityHelper.InvokeReflectBinding");
             }
-#endif
         }
     }
 }

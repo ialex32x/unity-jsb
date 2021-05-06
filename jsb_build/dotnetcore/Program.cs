@@ -25,7 +25,7 @@ namespace DotnetCoreConsoleApp
                 asyncManager = asyncManager,
                 logger = logger,
                 byteBufferAllocator = new ByteBufferPooledAllocator(),
-                binder = DefaultBinder.GetBinder(true),
+                binder = BindingManager.UnitylessReflectBind,
             });
             runtime.AddSearchPath("./");
             runtime.AddSearchPath("./node_modules");
