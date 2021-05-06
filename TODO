@@ -7,6 +7,7 @@ BUGFIX:
 
 必要:
     ☐ 反射模式支持运算符重载 (考虑接入v8, 可能取消运算符重载的导入)
+    ☐ build quickjs libraries for linux
     ☐ ScriptableObject supports
     ☐ JS Worker Runtime 的类型绑定
     ☐ 主模块与一般模块共用一致的加载流程
@@ -46,6 +47,7 @@ Codegen:
     ☐ quickjs Date 只处理了UTC时间
     ☐ 以更通用且自动化的方式生成可继承的类型
     ☐ 在 unity_qjs.c 中提供 fopen/fread/fclose (为了绕过 C# 中对已经在其他程序中打开的独占文件的读取限制)
+    ☐ README in English 
     ✔ 提供 reload 接口 (清空指定模块, 并使用原 parent 进行重新载入) @done(21-05-01 08:05)
     ✔ 模块发生重载时, 关联模块也需要重载 @done(21-05-01 08:05)
 
