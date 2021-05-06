@@ -221,20 +221,6 @@ namespace QuickJS.Binding
             AddCSTypeNameMap(typeof(System.Object), "object");
             AddCSTypeNameMap(typeof(void), "void");
 
-            // AddCSTypePusherMap(typeof(bool), "DuktapeDLL.duk_push_boolean");
-            // AddCSTypePusherMap(typeof(char), "DuktapeDLL.duk_push_int");
-            // AddCSTypePusherMap(typeof(byte), "DuktapeDLL.duk_push_int");
-            // AddCSTypePusherMap(typeof(sbyte), "DuktapeDLL.duk_push_int");
-            // AddCSTypePusherMap(typeof(short), "DuktapeDLL.duk_push_int");
-            // AddCSTypePusherMap(typeof(ushort), "DuktapeDLL.duk_push_int");
-            // AddCSTypePusherMap(typeof(int), "DuktapeDLL.duk_push_int");
-            // AddCSTypePusherMap(typeof(uint), "DuktapeDLL.duk_push_uint");
-            // AddCSTypePusherMap(typeof(long), "DuktapeDLL.duk_push_number");
-            // AddCSTypePusherMap(typeof(ulong), "DuktapeDLL.duk_push_number");
-            // AddCSTypePusherMap(typeof(float), "DuktapeDLL.duk_push_number");
-            // AddCSTypePusherMap(typeof(double), "DuktapeDLL.duk_push_number");
-            // AddCSTypePusherMap(typeof(string), "DuktapeDLL.duk_push_string");
-
             Initialize();
         }
 

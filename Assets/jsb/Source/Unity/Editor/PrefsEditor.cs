@@ -160,7 +160,7 @@ namespace QuickJS.Unity
                 GUI.color = Color.green;
                 if (GUILayout.Button("R", GUILayout.Width(20f)))
                 {
-                    if (EditorUtility.DisplayDialog("Reload", "Reload duktape.json?", "ok", "cancel"))
+                    if (EditorUtility.DisplayDialog("Reload", $"Reload {Prefs.PATH}?", "ok", "cancel"))
                     {
                         Defer(() => _prefs = UnityHelper.LoadPrefs(out _filePath));
                     }

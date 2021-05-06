@@ -506,10 +506,8 @@ namespace QuickJS.Binding
             {
                 caller = "self";
                 this.cs.AppendLine($"{this.bindingManager.GetCSTypeFullName(declaringType)} {caller};");
-                // this.cs.AppendLine($"DuktapeDLL.duk_push_this(ctx);");
                 var getter = this.bindingManager.GetScriptObjectGetter(declaringType, "ctx", "this_obj", caller);
                 this.cs.AppendLine("{0};", getter);
-                // this.cs.AppendLine($"DuktapeDLL.duk_pop(ctx);"); 
             }
             return caller;
         }
@@ -539,14 +537,12 @@ namespace QuickJS.Binding
             {
                 caller = "self";
                 this.cs.AppendLine($"{this.bindingManager.GetCSTypeFullName(declaringType)} {caller};");
-                // this.cs.AppendLine($"DuktapeDLL.duk_push_this(ctx);");
                 var getter = this.bindingManager.GetScriptObjectGetter(declaringType, "ctx", "this_obj", caller);
                 this.cs.AppendLine("if (!{0})", getter);
                 using (this.cs.CodeBlockScope())
                 {
                     this.cs.AppendLine("throw new ThisBoundException();");
                 }
-                // this.cs.AppendLine($"DuktapeDLL.duk_pop(ctx);");
             }
             return caller;
         }
@@ -556,7 +552,6 @@ namespace QuickJS.Binding
             if (isVararg)
             {
                 var varName = "argc";
-                // cs.AppendLine("var {0} = DuktapeDLL.duk_get_top(ctx);", varName);
                 return varName;
             }
             return null;
