@@ -5,28 +5,8 @@ using System.Reflection;
 
 namespace QuickJS.Binding
 {
-    public class DefaultBindingCallback : IBindingCallback
+    public class DefaultCodeGenCallback : ICodeGenCallback
     {
-        public void BeginStaticModule(string moduleName)
-        {
-        }
-
-        public void AddTypeReference(string moduleName, TypeBindingInfo typeBindingInfo, string[] elements, string jsName)
-        {
-        }
-
-        public void EndStaticModule(string moduleName)
-        {
-        }
-
-        public void OnPreGenerateDelegate(DelegateBridgeBindingInfo bindingInfo)
-        {
-        }
-
-        public void OnPostGenerateDelegate(DelegateBridgeBindingInfo bindingInfo)
-        {
-        }
-
         public bool OnTypeGenerating(TypeBindingInfo typeBindingInfo, int current, int total)
         {
 #if JSB_UNITYLESS

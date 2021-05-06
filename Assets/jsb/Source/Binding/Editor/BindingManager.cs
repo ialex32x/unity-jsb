@@ -49,14 +49,13 @@ namespace QuickJS.Binding
         // 自定义的处理流程
         private List<IBindingProcess> _bindingProcess = new List<IBindingProcess>();
 
-        private IBindingCallback _callback;
+        private ICodeGenCallback _codegenCallback;
+        private IBindingCallback _bindingCallback;
 
         // ruleName: text => text
         private Dictionary<string, Func<string, string>> _nameRules = new Dictionary<string, Func<string, string>>();
         // text => text
         private Dictionary<string, string> _globalNameRules = new Dictionary<string, string>();
-
-        public IBindingCallback callback => _callback;
 
         public Utils.IJsonConverter json => _jsonConv;
 
@@ -83,7 +82,8 @@ namespace QuickJS.Binding
             _jsonConv = jsonConverter ?? new Utils.DefaultJsonConverter();
             _utils = utils ?? new DefaultBindingUtils();
             _logger = logger ?? new DefaultBindingLogger();
-            _callback = callback ?? new DefaultBindingCallback();
+            _codegenCallback = new DefaultCodeGenCallback();
+            _bindingCallback = callback;
             _typePrefixBlacklist = new List<string>(prefs.typePrefixBlacklist);
             _blacklist = new HashSet<Type>();
             log = new TextGenerator(newline, tab);
@@ -1315,7 +1315,6 @@ namespace QuickJS.Binding
                     this.Error($"process failed [{bp}][OnPreGenerateDelegate]: {exception}");
                 }
             }
-            callback.OnPreGenerateDelegate(bindingInfo);
         }
 
         public void OnPostGenerateDelegate(DelegateBridgeBindingInfo bindingInfo)
@@ -1332,7 +1331,6 @@ namespace QuickJS.Binding
                     this.Error($"process failed [{bp}][OnPostGenerateDelegate]: {exception}");
                 }
             }
-            callback.OnPostGenerateDelegate(bindingInfo);
         }
 
         private void OnCleanup()
@@ -1707,12 +1705,13 @@ namespace QuickJS.Binding
                 try
                 {
                     current++;
-                    cancel = _callback.OnTypeGenerating(typeBindingInfo, current, total);
+                    cancel = _codegenCallback.OnTypeGenerating(typeBindingInfo, current, total);
                     if (cancel)
                     {
                         Warn("operation canceled");
                         break;
                     }
+                    
                     if (!typeBindingInfo.omit)
                     {
                         cg.Clear();
@@ -1737,10 +1736,23 @@ namespace QuickJS.Binding
                     var exportedDelegatesArray = new DelegateBridgeBindingInfo[this._exportedDelegates.Count];
                     this._exportedDelegates.Values.CopyTo(exportedDelegatesArray, 0);
 
-                    cg.Clear();
-                    cg.Generate(exportedDelegatesArray, _exportedHotfixDelegates);
-                    cg.WriteCSharp(csOutDir, CodeGenerator.NameOfDelegates, extraExt);
-                    cg.WriteTSD(tsOutDir, CodeGenerator.NameOfDelegates, extraExt);
+                    if (_bindingCallback != null)
+                    {
+                        for (var i = 0; i < exportedDelegatesArray.Length; i++)
+                        {
+                            var delegateBindingInfo = exportedDelegatesArray[i];
+                            // var nargs = delegateBindingInfo.parameters.Length;
+
+                            _bindingCallback.AddDelegate(delegateBindingInfo);
+                        }
+                    }
+                    else //TODO: 临时做法, ReflectBind 与代码生成互斥
+                    {
+                        cg.Clear();
+                        cg.Generate(exportedDelegatesArray, _exportedHotfixDelegates);
+                        cg.WriteCSharp(csOutDir, CodeGenerator.NameOfDelegates, extraExt);
+                        cg.WriteTSD(tsOutDir, CodeGenerator.NameOfDelegates, extraExt);
+                    }
                 }
                 catch (Exception exception)
                 {
@@ -1753,10 +1765,35 @@ namespace QuickJS.Binding
             {
                 try
                 {
-                    cg.Clear();
-                    cg.GenerateBindingList(_collectedTypes);
-                    cg.WriteCSharp(csOutDir, CodeGenerator.NameOfBindingList, extraExt);
-                    cg.WriteTSD(tsOutDir, CodeGenerator.NameOfBindingList, extraExt);
+                    var modules = from t in _collectedTypes
+                                  where t.genBindingCode
+                                  orderby t.tsTypeNaming.jsDepth
+                                  group t by t.tsTypeNaming.jsModule;
+
+                    // for reflect binding
+                    if (_bindingCallback != null)
+                    {
+                        foreach (var module in modules)
+                        {
+                            if (module.Count() > 0)
+                            {
+                                var moduleName = string.IsNullOrEmpty(module.Key) ? this.prefs.defaultJSModule : module.Key;
+                                _bindingCallback.BeginStaticModule(moduleName);
+                                foreach (var type in module)
+                                {
+                                    _bindingCallback.AddTypeReference(moduleName, type);
+                                }
+                                _bindingCallback.EndStaticModule(moduleName);
+                            }
+                        }
+                    }
+                    else //TODO: 临时做法, ReflectBind 与代码生成互斥
+                    {
+                        cg.Clear();
+                        cg.GenerateBindingList(modules);
+                        cg.WriteCSharp(csOutDir, CodeGenerator.NameOfBindingList, extraExt);
+                        cg.WriteTSD(tsOutDir, CodeGenerator.NameOfBindingList, extraExt);
+                    }
                 }
                 catch (Exception exception)
                 {
@@ -1797,7 +1834,7 @@ namespace QuickJS.Binding
             {
             }
 
-            _callback.OnGenerateFinish();
+            _codegenCallback.OnGenerateFinish();
         }
 
         public void Report()

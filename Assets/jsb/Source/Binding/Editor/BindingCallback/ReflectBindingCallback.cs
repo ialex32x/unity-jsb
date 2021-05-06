@@ -51,12 +51,9 @@ namespace QuickJS.Binding
             _moduleReg = new Module.ProxyModuleRegister(_runtime);
         }
 
-        public void AddTypeReference(string moduleName, TypeBindingInfo typeBindingInfo, string[] elements, string jsName)
+        public void AddTypeReference(string moduleName, TypeBindingInfo typeBindingInfo)
         {
-            var ns = CodeGenUtils.NormalizeEx(elements, jsName);
-            var type = typeBindingInfo.type;
-
-            _runtime.AddTypeReference(_moduleReg, type, register => typeBindingInfo.DoReflectBind(register, _moduleReg), ns);
+            _runtime.AddTypeReference(_moduleReg, typeBindingInfo.type, register => typeBindingInfo.DoReflectBind(register, _moduleReg), typeBindingInfo.tsTypeNaming.jsFullNameForReflectBind);
         }
 
         public void EndStaticModule(string moduleName)
@@ -64,7 +61,7 @@ namespace QuickJS.Binding
             _runtime.AddStaticModule(moduleName, _moduleReg);
         }
 
-        public void OnPreGenerateDelegate(DelegateBridgeBindingInfo bindingInfo)
+        public void AddDelegate(DelegateBridgeBindingInfo bindingInfo)
         {
             var typeDB = _runtime.GetTypeDB();
             var method = bindingInfo.reflect;
@@ -74,19 +71,6 @@ namespace QuickJS.Binding
                 typeDB.AddDelegate(delegateType, method);
             }
 
-        }
-
-        public void OnPostGenerateDelegate(DelegateBridgeBindingInfo bindingInfo)
-        {
-        }
-
-        public bool OnTypeGenerating(TypeBindingInfo typeBindingInfo, int current, int total)
-        {
-            return false;
-        }
-
-        public void OnGenerateFinish()
-        {
         }
     }
 }

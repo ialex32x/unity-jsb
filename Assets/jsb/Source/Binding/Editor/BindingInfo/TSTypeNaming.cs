@@ -20,6 +20,8 @@ namespace QuickJS.Binding
         /// </summary>
         public readonly string jsNamespace;
 
+        public readonly string[] jsNamespaceSlice;
+
         ///<summary>
         /// 不带泛型部分的js注册名
         ///</summary>
@@ -29,6 +31,8 @@ namespace QuickJS.Binding
         /// js注册名 (带平面化的泛型部分)
         /// </summary>
         public readonly string jsName;
+        
+        public readonly string jsNameNormalized;
 
         /// <summary>
         /// js 模块中的顶层访问名 (内部类的顶层访问名为最外层类的类名, 否则就是类名本身 jsPureName)
@@ -48,6 +52,8 @@ namespace QuickJS.Binding
         /// 当前类型的完整JS类型名 (如果是具化泛型类, 则为扁平化的具化泛型类名称)
         /// </summary>
         public readonly string jsFullName;
+
+        public readonly string[] jsFullNameForReflectBind;
 
         public TSTypeNaming(BindingManager bindingManager, Type type, TypeTransform typeTransform)
         {
@@ -174,7 +180,10 @@ namespace QuickJS.Binding
             }
 
             this.jsDepth = this.jsModuleAccess.Split('.').Length;
-            this.jsFullName = CodeGenUtils.Concat(".", jsModule, jsNamespace, jsName);
+            this.jsFullName = CodeGenUtils.Concat(".", jsModule, jsNamespace, this.jsName);
+            this.jsNamespaceSlice = jsNamespace.Split('.');
+            this.jsNameNormalized = CodeGenUtils.Normalize(this.jsName);
+            this.jsFullNameForReflectBind = CodeGenUtils.NormalizeEx(jsNamespaceSlice, CodeGenUtils.Normalize(jsName));
         }
 
         /// <summary>

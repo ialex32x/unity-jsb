@@ -48,7 +48,7 @@ namespace QuickJS.Binding
             }
         }
 
-        public void GenerateBindingList(List<TypeBindingInfo> orderedTypes)
+        public void GenerateBindingList(IEnumerable<IGrouping<string, TypeBindingInfo>> modules)
         {
             this.cs.enabled = (typeBindingFlags & TypeBindingFlags.BindingCode) != 0;
             this.tsDeclare.enabled = (typeBindingFlags & TypeBindingFlags.TypeDefinition) != 0;
@@ -72,20 +72,14 @@ namespace QuickJS.Binding
                                 {
                                     using (var method = new PlainMethodCodeGen(this, "private static void BindAll(ScriptRuntime runtime)"))
                                     {
-                                        var modules = from t in orderedTypes
-                                                        where t.genBindingCode
-                                                        orderby t.tsTypeNaming.jsDepth
-                                                        group t by t.tsTypeNaming.jsModule;
-
                                         foreach (var module in modules)
                                         {
-                                            var moduleName = string.IsNullOrEmpty(module.Key) ? this.bindingManager.prefs.defaultJSModule : module.Key;
                                             if (module.Count() > 0)
                                             {
+                                                var moduleName = string.IsNullOrEmpty(module.Key) ? this.bindingManager.prefs.defaultJSModule : module.Key;
                                                 var runtimeVarName = "rt";
                                                 var moduleVarName = "module";
                                                 this.cs.AppendLine($"runtime.AddStaticModuleProxy(\"{moduleName}\", ({runtimeVarName}, {moduleVarName}) => ");
-                                                this.bindingManager.callback.BeginStaticModule(moduleName);
                                                 this.bindResult.modules.Add(moduleName);
 
                                                 using (this.cs.TailCallCodeBlockScope())
@@ -120,7 +114,6 @@ namespace QuickJS.Binding
                                                         }
                                                     }
                                                 }
-                                                this.bindingManager.callback.EndStaticModule(moduleName);
                                             }
                                         }
 

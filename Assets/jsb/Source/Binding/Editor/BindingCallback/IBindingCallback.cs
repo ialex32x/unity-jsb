@@ -8,15 +8,9 @@ namespace QuickJS.Binding
     public interface IBindingCallback
     {
         void BeginStaticModule(string moduleName);
-        void AddTypeReference(string moduleName, TypeBindingInfo typeBindingInfo, string[] elements, string jsName);
+        void AddTypeReference(string moduleName, TypeBindingInfo typeBindingInfo);
         void EndStaticModule(string moduleName);
 
-        void OnPreGenerateDelegate(DelegateBridgeBindingInfo bindingInfo);
-        void OnPostGenerateDelegate(DelegateBridgeBindingInfo bindingInfo);
-
-        // return true to cancel the binding process
-        bool OnTypeGenerating(TypeBindingInfo typeBindingInfo, int current, int total);
-
-        void OnGenerateFinish();
+        void AddDelegate(DelegateBridgeBindingInfo bindingInfo);
     }
 }
