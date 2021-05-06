@@ -72,7 +72,7 @@ namespace QuickJS.Binding
             );
         }
 
-        public BindingManager(Prefs prefs, IBindingCallback callback = null, Utils.IJsonConverter jsonConverter = null, IBindingUtils utils = null, IBindingLogger logger = null)
+        public BindingManager(Prefs prefs, ICodeGenCallback codeGenCallback, IBindingCallback bindingCallback = null, Utils.IJsonConverter jsonConverter = null, IBindingUtils utils = null, IBindingLogger logger = null)
         {
             this.prefs = prefs;
             this.dateTime = DateTime.Now;
@@ -82,8 +82,8 @@ namespace QuickJS.Binding
             _jsonConv = jsonConverter ?? new Utils.DefaultJsonConverter();
             _utils = utils ?? new DefaultBindingUtils();
             _logger = logger ?? new DefaultBindingLogger();
-            _codegenCallback = new DefaultCodeGenCallback();
-            _bindingCallback = callback;
+            _codegenCallback = codeGenCallback;
+            _bindingCallback = bindingCallback;
             _typePrefixBlacklist = new List<string>(prefs.typePrefixBlacklist);
             _blacklist = new HashSet<Type>();
             log = new TextGenerator(newline, tab);
@@ -1705,7 +1705,7 @@ namespace QuickJS.Binding
                 try
                 {
                     current++;
-                    cancel = _codegenCallback.OnTypeGenerating(typeBindingInfo, current, total);
+                    cancel = _codegenCallback != null ? _codegenCallback.OnTypeGenerating(typeBindingInfo, current, total) : false;
                     if (cancel)
                     {
                         Warn("operation canceled");
@@ -1746,7 +1746,8 @@ namespace QuickJS.Binding
                             _bindingCallback.AddDelegate(delegateBindingInfo);
                         }
                     }
-                    else //TODO: 临时做法, ReflectBind 与代码生成互斥
+                    
+                    if (_codegenCallback != null)
                     {
                         cg.Clear();
                         cg.Generate(exportedDelegatesArray, _exportedHotfixDelegates);
@@ -1787,7 +1788,8 @@ namespace QuickJS.Binding
                             }
                         }
                     }
-                    else //TODO: 临时做法, ReflectBind 与代码生成互斥
+                    
+                    if (_codegenCallback != null)
                     {
                         cg.Clear();
                         cg.GenerateBindingList(modules);
@@ -1834,7 +1836,7 @@ namespace QuickJS.Binding
             {
             }
 
-            _codegenCallback.OnGenerateFinish();
+            _codegenCallback?.OnGenerateFinish();
         }
 
         public void Report()
