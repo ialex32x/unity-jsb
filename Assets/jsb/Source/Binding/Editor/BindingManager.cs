@@ -9,13 +9,22 @@ namespace QuickJS.Binding
 {
     public partial class BindingManager
     {
+        public struct Args
+        {
+            public ICodeGenCallback codeGenCallback;
+            public IBindingCallback bindingCallback;
+            public IBindingLogger bindingLogger;
+            public Utils.IJsonConverter jsonConverter;
+            public IBindingUtils utils;
+            public bool useLogWriter;
+        }
+
         public DateTime dateTime;
-        public TextGenerator log;
         public Prefs prefs;
 
         private Utils.IJsonConverter _jsonConv;
         private IBindingUtils _utils;
-        private IBindingLogger _logger;
+        private TextGenerator _logWriter;
 
         private HashSet<string> _blockedAssemblies = new HashSet<string>();  // 禁止导出的 assembly
         private List<string> _implicitAssemblies = new List<string>(); // 默认导出所有类型
@@ -51,6 +60,7 @@ namespace QuickJS.Binding
 
         private ICodeGenCallback _codegenCallback;
         private IBindingCallback _bindingCallback;
+        private IBindingLogger _bindingLogger;
 
         // ruleName: text => text
         private Dictionary<string, Func<string, string>> _nameRules = new Dictionary<string, Func<string, string>>();
@@ -58,8 +68,6 @@ namespace QuickJS.Binding
         private Dictionary<string, string> _globalNameRules = new Dictionary<string, string>();
 
         public Utils.IJsonConverter json => _jsonConv;
-
-        public IBindingUtils utils => _utils;
 
         static BindingManager()
         {
@@ -72,21 +80,21 @@ namespace QuickJS.Binding
             );
         }
 
-        public BindingManager(Prefs prefs, ICodeGenCallback codeGenCallback, IBindingCallback bindingCallback = null, Utils.IJsonConverter jsonConverter = null, IBindingUtils utils = null, IBindingLogger logger = null)
+        public BindingManager(Prefs prefs, Args args)
         {
             this.prefs = prefs;
             this.dateTime = DateTime.Now;
             var tab = prefs.tab;
             var newline = prefs.newline;
 
-            _jsonConv = jsonConverter ?? new Utils.DefaultJsonConverter();
-            _utils = utils ?? new DefaultBindingUtils();
-            _logger = logger ?? new DefaultBindingLogger();
-            _codegenCallback = codeGenCallback;
-            _bindingCallback = bindingCallback;
+            _jsonConv = args.jsonConverter ?? new Utils.DefaultJsonConverter();
+            _utils = args.utils ?? new DefaultBindingUtils();
+            _bindingLogger = args.bindingLogger;
+            _codegenCallback = args.codeGenCallback;
+            _bindingCallback = args.bindingCallback;
             _typePrefixBlacklist = new List<string>(prefs.typePrefixBlacklist);
             _blacklist = new HashSet<Type>();
-            log = new TextGenerator(newline, tab);
+            _logWriter = args.useLogWriter ? new TextGenerator(newline, tab) : null;
 
             if (prefs.optToString)
             {
@@ -342,17 +350,17 @@ namespace QuickJS.Binding
                         {
                             inst.OnInitialize(this);
                             _bindingProcess.Add(inst);
-                            _logger.Log($"add binding process: {type}");
+                            _bindingLogger?.Log($"add binding process: {type}");
                         }
                         else
                         {
-                            _logger.Log($"skip binding process: {type}");
+                            _bindingLogger?.Log($"skip binding process: {type}");
                         }
                     }
                 }
                 catch (Exception exception)
                 {
-                    _logger.LogWarning($"failed to add binding process: {type}\n{exception}");
+                    _bindingLogger?.LogWarning($"failed to add binding process: {type}\n{exception}");
                 }
             }
         }
@@ -418,7 +426,7 @@ namespace QuickJS.Binding
             {
                 var typeBindingInfo = new TypeBindingInfo(this, type, typeTransform);
                 _exportedTypes.Add(type, typeBindingInfo);
-                log.AppendLine($"AddExportedType: {type} Assembly: {type.Assembly} Location: {type.Assembly.Location}");
+                Info($"AddExportedType: {type} Assembly: {type.Assembly} Location: {type.Assembly.Location}");
 
                 var baseType = type.BaseType;
                 if (baseType != null && !IsExportingBlocked(baseType))
@@ -596,17 +604,17 @@ namespace QuickJS.Binding
                 var parameters = invoke.GetParameters();
                 if (ContainsPointer(invoke))
                 {
-                    log.AppendLine("skip unsafe (pointer) delegate: [{0}] {1}", delegateType, invoke);
+                    Info("skip unsafe (pointer) delegate: [{0}] {1}", delegateType, invoke);
                     return;
                 }
                 if (ContainsGenericParameters(invoke))
                 {
-                    log.AppendLine("skip generic delegate: [{0}] {1}", delegateType, invoke);
+                    Info("skip generic delegate: [{0}] {1}", delegateType, invoke);
                     return;
                 }
                 if (prefs.skipDelegateWithByRefParams && ContainsByRefParameters(invoke))
                 {
-                    log.AppendLine("skip ByRef delegate (unsupported yet): [{0}] {1}", delegateType, invoke);
+                    Info("skip ByRef delegate (unsupported yet): [{0}] {1}", delegateType, invoke);
                     return;
                 }
                 var requiredDefines = new HashSet<string>();
@@ -622,7 +630,7 @@ namespace QuickJS.Binding
                     var regDelegateBinding = kv.Value;
                     if (regDelegateBinding.Equals(returnType, parameters, defs))
                     {
-                        log.AppendLine("skip delegate: {0} && {1} required defines: {2}", regDelegateBinding, delegateType, defs);
+                        Info("skip delegate: {0} && {1} required defines: {2}", regDelegateBinding, delegateType, defs);
                         regDelegateBinding.types.Add(delegateType);
                         _redirectDelegates[delegateType] = regDelegateType;
                         return;
@@ -632,7 +640,7 @@ namespace QuickJS.Binding
                 delegateBindingInfo.types.Add(delegateType);
                 delegateBindingInfo.reflect = GetReflect(returnType, parameters);
                 _exportedDelegates.Add(delegateType, delegateBindingInfo);
-                log.AppendLine("add delegate: {0} required defines: {1}", delegateType, defs);
+                Info("add delegate: {0} required defines: {1}", delegateType, defs);
                 for (var i = 0; i < parameters.Length; i++)
                 {
                     CollectDelegate(parameters[i].ParameterType);
@@ -1374,8 +1382,8 @@ namespace QuickJS.Binding
             ExportBuiltins();
             OnPostExporting();
 
-            log.AppendLine("collecting members");
-            log.AddTabLevel();
+            Info("collecting members");
+            _logWriter?.AddTabLevel();
             OnPreCollectTypes();
             foreach (var type in _hotfixTypes)
             {
@@ -1388,7 +1396,7 @@ namespace QuickJS.Binding
             }
 
             OnPostCollectTypes();
-            log.DecTabLevel();
+            _logWriter?.DecTabLevel();
         }
 
         private void _CollectType(Type type)
@@ -1408,10 +1416,10 @@ namespace QuickJS.Binding
 
             typeBindingInfo.Initialize();
             _collectedTypes.Add(typeBindingInfo);
-            log.AppendLine("type: {0}", type);
-            log.AddTabLevel();
+            Info("type: {0}", type);
+            _logWriter?.AddTabLevel();
             typeBindingInfo.Collect();
-            log.DecTabLevel();
+            _logWriter?.DecTabLevel();
         }
 
         public void AddTypePrefixBlacklist(string prefix)
@@ -1467,7 +1475,7 @@ namespace QuickJS.Binding
             }
             catch (Exception ex)
             {
-                _logger.LogError($"{assembly} {assembly.Location} {ex}");
+                _bindingLogger?.LogError($"{assembly} {assembly.Location} {ex}");
                 return false;
             }
 
@@ -1548,10 +1556,10 @@ namespace QuickJS.Binding
         {
             foreach (var assemblyName in assemblyNames)
             {
-                log.AppendLine("assembly: {0}", assemblyName);
-                log.AddTabLevel();
+                Info("assembly: {0}", assemblyName);
+                _logWriter?.AddTabLevel();
                 ExportTypesInAssembly(TryGetAssembly(assemblyName), implicitExport);
-                log.DecTabLevel();
+                _logWriter?.DecTabLevel();
             }
         }
 
@@ -1571,10 +1579,10 @@ namespace QuickJS.Binding
                 }
                 var types = assembly.GetExportedTypes();
 
-                log.AppendLine("info: {0}", assembly);
-                log.AppendLine("location: {0}", assembly.Location);
-                log.AppendLine("types: {0}", types.Length);
-                log.AddTabLevel();
+                Info("info: {0}", assembly);
+                Info("location: {0}", assembly.Location);
+                Info("types: {0}", types.Length);
+                _logWriter?.AddTabLevel();
                 foreach (var type in types)
                 {
                     var hotfixTag = Attribute.GetCustomAttribute(type, typeof(JSHotfixAttribute)) as JSHotfixAttribute;
@@ -1586,33 +1594,32 @@ namespace QuickJS.Binding
 
                     if (IsExportingBlocked(type))
                     {
-                        log.AppendLine("blocked: {0}", type.FullName);
+                        Info("blocked: {0}", type.FullName);
                         continue;
                     }
 
                     if (implicitExport)
                     {
-                        log.AppendLine("export (implicit): {0}", type.FullName);
+                        Info("export (implicit): {0}", type.FullName);
                         this.AddExportedType(type, true);
                         continue;
                     }
 
                     if (IsExportingExplicit(type))
                     {
-                        log.AppendLine("export (explicit): {0}", type.FullName);
+                        Info("export (explicit): {0}", type.FullName);
                         this.AddExportedType(type, true);
                         continue;
                     }
 
                     TryExportTypeMembers(type);
-                    log.AppendLine("skip: {0}", type.FullName);
+                    Info("skip: {0}", type.FullName);
                 }
-                log.DecTabLevel();
+                _logWriter?.DecTabLevel();
             }
             catch (Exception exception)
             {
-                _logger.LogError(exception.ToString());
-                log.AppendLine(exception.ToString());
+                Error(exception.ToString());
             }
         }
 
@@ -1636,15 +1643,15 @@ namespace QuickJS.Binding
         // 清理多余文件
         public void Cleanup()
         {
-            log.AppendLine("cleanup");
-            log.AddTabLevel();
+            Info("cleanup");
+            _logWriter?.AddTabLevel();
             Cleanup(_outputFiles, file =>
             {
                 _removedFiles.Add(file);
-                log.AppendLine("remove unused file {0}", file);
+                Info("remove unused file {0}", file);
             });
             OnCleanup();
-            log.DecTabLevel();
+            _logWriter?.DecTabLevel();
         }
 
         public static void Cleanup(Dictionary<string, List<string>> excludedFilesKV, Action<string> ondelete)
@@ -1711,7 +1718,7 @@ namespace QuickJS.Binding
                         Warn("operation canceled");
                         break;
                     }
-                    
+
                     if (!typeBindingInfo.omit)
                     {
                         cg.Clear();
@@ -1725,7 +1732,6 @@ namespace QuickJS.Binding
                 catch (Exception exception)
                 {
                     Error($"generate failed {typeBindingInfo.type.FullName}: {exception.Message}");
-                    _logger.LogError(exception.StackTrace);
                 }
             }
 
@@ -1746,7 +1752,7 @@ namespace QuickJS.Binding
                             _bindingCallback.AddDelegate(delegateBindingInfo);
                         }
                     }
-                    
+
                     if (_codegenCallback != null)
                     {
                         cg.Clear();
@@ -1758,7 +1764,6 @@ namespace QuickJS.Binding
                 catch (Exception exception)
                 {
                     Error($"generate delegates failed: {exception.Message}");
-                    _logger.LogError(exception.StackTrace);
                 }
             }
 
@@ -1788,7 +1793,7 @@ namespace QuickJS.Binding
                             }
                         }
                     }
-                    
+
                     if (_codegenCallback != null)
                     {
                         cg.Clear();
@@ -1800,7 +1805,6 @@ namespace QuickJS.Binding
                 catch (Exception exception)
                 {
                     Error($"generate delegates failed: {exception.Message}");
-                    _logger.LogError(exception.StackTrace);
                 }
             }
             cg.End();
@@ -1815,13 +1819,13 @@ namespace QuickJS.Binding
                 catch (Exception exception)
                 {
                     Error($"generate delegates failed: {exception.Message}");
-                    _logger.LogError(exception.StackTrace);
                 }
             }
 
             try
             {
-                if (!string.IsNullOrEmpty(prefs.logPath))
+                var logText = _logWriter?.Submit();
+                if (!string.IsNullOrEmpty(logText) && !string.IsNullOrEmpty(prefs.logPath))
                 {
                     var logPath = prefs.logPath;
                     var logDir = Path.GetDirectoryName(logPath);
@@ -1829,7 +1833,7 @@ namespace QuickJS.Binding
                     {
                         Directory.CreateDirectory(logDir);
                     }
-                    File.WriteAllText(logPath, log.Submit());
+                    File.WriteAllText(logPath, logText);
                 }
             }
             catch (Exception)
@@ -1843,7 +1847,7 @@ namespace QuickJS.Binding
         {
             var now = DateTime.Now;
             var ts = now.Subtract(dateTime);
-            _logger.Log(string.Format("generated {0} type(s), {1} delegate(s), {2} deletion(s) in {3:0.##} seconds.",
+            _bindingLogger?.Log(string.Format("generated {0} type(s), {1} delegate(s), {2} deletion(s) in {3:0.##} seconds.",
                 _exportedTypes.Count,
                 _exportedDelegates.Count,
                 _removedFiles.Count,

@@ -49,7 +49,7 @@ namespace QuickJS.Binding
             this.cg.cs.AppendLine("[{0}(typeof({1}))]",
                 this.cg.bindingManager.GetCSTypeFullName(typeof(JSDelegateAttribute)),
                 sig);
-            this.cg.bindingManager.log.AppendLine("emitting delegate decl: {0}", sig);
+            this.cg.bindingManager.Info("emitting delegate decl: {0}", sig);
             if (!string.IsNullOrEmpty(arglist))
             {
                 arglist = ", " + arglist;
