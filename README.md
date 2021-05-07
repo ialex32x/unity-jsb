@@ -1,56 +1,41 @@
 # unity-jsb
 
-使用 [QuickJS](https://bellard.org/quickjs/) 为 Unity3D 项目提供 Javascript 运行时支持.<br/>
-通过生成静态绑定代码的方式提供性能良好的 C#/JS 互操作支持. 支持移动平台. <br/>
+[中文说明](README_cn.md)
+
+It brings Javascript runtime capability to Unity3D by integerating [QuickJS](https://bellard.org/quickjs/).<br/> 
 
 > QuickJS is a small and embeddable Javascript engine. It supports the ES2020 specification including modules, asynchronous generators, proxies and BigInt. 
 
-# 特性支持
-* JS异步函数与 Unity 协程/ C# Tasking 的结合 (limited support)
-* 支持运算符重载 +, -, *, /, ==, -(负)
-* 支持 JS 字节码 (QuickJS)
-* 支持开发过程[实时代码热加载](#实时热加载)
-* [初步] 与 Unity 编辑器深度整合
-    * 支持 JS 实现 MonoBehaviour (支持 Prefab)
-    * 支持 JS 实现 编辑器窗口 (EditorWindow)
-    * 支持 JS 实现 Inspector 编辑器 (Editor)
-    * [未完成] 支持 JS 实现 ScriptableObject
-* [初步] 开发过程中无需生成绑定代码
-* [初步] 支持 JS Worker (limited support)
-* [初步] 支持未导出的C#类型的 JS 交互
-* [初步] 支持 C# 代码热更 (hotfix, limited support)
-* [初步] 编辑器执行 JS 脚本 (支持在脚本中写 EditorWindow, Editor 等)
-* [未完成] Webpack HMR 运行时模块热替换 (limited support, for development only)
+# Features
+* Unity3D coroutines and C# tasks support in JS async function
+* Operator overload for Vector2/Vector3 etc.
+* [Javascript hotload](#Hotload) in development
+* Highly integerated with Unity3D
+    * JS implemented MonoBehaviour (include Prefab)
+    * JS implemented EditorWindow
+    * JS implemented Editor (Inspector)
+    * [NOT_IMPLEMENTED] JS implemented ScriptableObject
+* JS/C# interaction without binding code
+* Generates binding code for better performance
+* JS Worker
+* [UNFINISHED] Hotfix on C#
 
-# 附加模块支持 (可选)
-Extra 为可选附加模块, 提供不同的特定功能, 不需要的直接删除相应目录即可.
-* Websocket (初步支持, limited support)
-* XMLHttpRequest (初步支持, limited support)
-* SourceMap (支持 stacktrace 转换)
-* MiniConsole (演示了如何将日志转向界面)
-* NodeCompatibleLayer (experimental)
-* DOMCompatibleLayer (experimental)
-* UdpSocket (未实现)
-* SQLite (未实现)
-* FairyGUI 接入示例 (with FairyGUI Editor plugin)
+> Supports .NET 4.0/dotnetcore 3.1/Unity2019+ 
 
-# 特性示例
-> 推荐使用 typescript 编写脚本, unity-jsb 对导出的 C# 类型自动生成了对应的 d.ts 声明, 以提供强类型辅助. 示例代码均使用 typescript. 
->
-> 也可以根据喜好选择 coffeescript/clojurescript 等任何可以编译成 javascript 的语言. 最终运行的都是 javascript.
+# Extra Features (Optional)
+* Websocket 
+* XMLHttpRequest 
 
-## MonoBehaviour in Javascript
-> 支持 JS class 直接继承 MonoBehaviour 
->
-> 所有响应函数支持 JS 异步函数
+# Samples
+> Typescript is the preferred language for unity-jsb, the definition files (d.ts) of exported C# types is automatically generated.
+
+## Extends MonoBehaviour 
 
 ```ts
-// 导出到 JS 中的 C# 类型的命名空间将作为 JS 的模块名
-// 通过 VSCode 等编辑器, 可以很方便地自动填写 import 语句
+// the namespace will be mapped into module in javascript
+// types in module could be automatically imported in VSCode
 import { MonoBehaviour, WaitForSeconds, Object, GameObject } from "UnityEngine";
 
-// 通过 @Inspector 可以指定由脚本实现的编辑器 (script implemented custom editor extends UnityEngine.Editor)
-// 详见 example_monobehaviour.ts 例子
 class MyClass extends MonoBehaviour {
     protected _tick = 0;
 
@@ -79,12 +64,11 @@ class MyClass extends MonoBehaviour {
     }
 }
 
-// 通过 @ScriptType 修饰器, 可以使此类型被编辑器识别, 以便在 gameObject 上挂载此脚本, 并可存为 prefab
-// 注意: @ScriptType 必须紧跟 export class
+// with @ScriptType decorator, this class will be recognized by Unity Editor
 @ScriptType
 export class MySubClass extends MyClass {
 
-    // 通过 @SerializedNumber 修饰器可以使此字段被序列化
+    // make this field be serialized automatically
     @SerializedNumber
     year = 2021
 
@@ -99,15 +83,6 @@ export class MySubClass extends MyClass {
     play() {
         console.log("MySubClass.play");
     }
-    
-    // SerializedNumber 等功能目前依赖于此回调, 必须显式写出
-    OnBeforeSerialize(ps: JSBehaviourProperties) {
-        SerializationUtil.serialize(this, ps);
-    }
-
-    OnAfterDeserialize(ps: JSBehaviourProperties) {
-        SerializationUtil.deserialize(this, ps);
-    }
 }
 
 let gameObject = new GameObject();
@@ -119,8 +94,7 @@ let comp_bySuperClass = gameObject.GetComponent(MyClass);
 comp_bySuperClass.test();
 ```
 
-## 支持编辑器脚本
-> 目前实现了在脚本中继承 EditorWindow (功能还在完善中).
+## Extends EditorWindow
 
 ```ts
 import { EditorWindow } from "UnityEditor";
@@ -144,10 +118,10 @@ export class MyEditorWindow extends EditorWindow {
 }
 ```
 
-## 异步调用
-* 支持 await/async 
-* 支持JS异步函数直接等待 Unity 协程的等待对象直接结合使用 
-* 支持JS异步函数直接等待 C# Task (但JS环境本身并不支持多线程) 
+## Async Functions
+* await Unity3D coroutines
+* await C# Tasks
+
 ```ts
 import { WaitForSeconds } from "UnityEngine";
 import { IPHostEntry } from "System.Net";
@@ -172,17 +146,14 @@ async function testAsyncFunc () {
 testAsyncFunc();
 ```
 
-## 运算符重载
-> 可以直接支持 Vector3 * Vector3, Vector3 * float 等写法.
->
-> 需要特别注意的是, JS 中没有 C# struct值类型对应概念, Vector3 是按引用赋值的, 切记!
+## Operator overloading
+> ```Vector3 * Vector3``` or ```Vector3 * float``` is all right, but be caution that there is no value type in Javascript, Vector3 is by-ref in Javascript.
 
 ```ts
 {
     let vec1 = new Vector3(1, 2, 3);
     let vec2 = new Vector3(9, 8, 7);
-    // 此特性目前不是js标准, 带语法提示的编辑器通常会提示错误, 但并不影响执行
-    // 不希望看到错误提示的可以添加 hint, 比如 vscode 下添加如下标记即可
+    
     // @ts-ignore
     let vec3 = vec1 + vec2; 
     let vec4 = vec1 + vec2;
@@ -198,15 +169,11 @@ testAsyncFunc();
 }
 ```
 
-## 模块
+## Modules
 
 ```ts
-// 支持 ES6 模块 (import)
-// 注: 当使用 typescript 作为书写语言时, 会经过 compilerOptions.module 选项转换为对应版本的模块语句 (比如通常使用 commonjs, 最终 javascript 脚本中将被转化为 require)
-//     目前的主要精力放在 require 的处理流程上, 如果直接在 javascript 中使用 ES6 import 的模块语句, 无法正常导入绑定类 (详见TODO: ES 模块与 require 模块逻辑一致)
-import { fib } from "./fib.js";
+// Supports commonjs modules (require)
 
-// 支持 commonjs 模块 (基础支持) (node.js 'require')
 require("./test");
 
 // commonjs modules cache access
@@ -258,7 +225,7 @@ xhr.send();
 ```
 
 ## Worker
-> Worker 在后台线程中执行, 默认不进行C#类型绑定, 可通过 onmessage/postMessage 与主线程通讯
+> This feature is unfinished, all C# types are not exported into Worker runtime at present.
 ```ts
 /// master.js
 
@@ -282,83 +249,63 @@ onmessage = function (data) {
 
 ```
 
-## 实时热加载
-![实时代码热加载](jsb_build/res/hotload.gif)
-
-目前的加载策略是以当前变化的模块为起点, 向上追溯到根模块 (即依赖此模块的模块), 全部重新载入一遍, 并且复用了变化前模块的 exports. 因此以下情况可能存在一些需要注意的问题:
-1. 变化后内容有删减的情况下, 将依然沿用变化前遗留的内容
-1. 对 module.exports = new_object 直接覆盖的情况下, 其他没有热加载的脚本持有的仍然是变化前的 exports 副本
-1. 没有热加载的脚本中已经持有 exports 内的变量的, 将依然是变化前的副本 (通过 tsc 编译的结果通常是持有 exports 后间接访问成员, 因此大部分情况下没有问题)
-
-> 当 JSBehaviour 关联脚本热加载时, 将触发一次 OnBeforeSerialize, 然后替换为更新后的脚本实例, 并触发 OnAfterDeserialize
+## Hotload
+![Code Hotload](jsb_build/res/hotload.gif)
 
 ## Hotfix
-初步功能, 尚未实现完整流程.
+> This feature is unfinished.
 
 ```ts
 
+// replace method in C# class
 jsb.hotfix.replace_single("HotfixTest", "Foo", function (x: number) {
-    // 注入后, 可以访问类的私有成员
-    // 如果注入的方法是实例方法, this 将被绑定为 C# 对象实例 
-    // 如果注入的方法是静态方法, this 将被绑定为 C# 类型 (对应的 JS Constructor)
+    // CAUTION: private memebers will be accessible in scripts after hotfix
+    // if the replaced method is instance method, 'this' refers to C# object instance
+    // otherwise, 'this' refers to the type itself (JS Constructor)
     console.log("replace C# method body by js function", this.value); 
     return x;
 });
 
+// insert code snippet before method in C# class
 jsb.hotfix.before_single("HotfixTest", "AnotherCall", function () {
-    print("在 C# 代码之前插入执行");
+    print("this will be executed before C# code");
 });
 
-//NOTE: 如果 HotfixTest 已经是静态绑定过的类型, 注入会导致此类型被替换为反射方式进行 C#/JS 交互, 并且可以访问私有成员
-// 目前只能注入简单的成员方法
-// 需要先执行 /JS Bridge/Generate Binding 生成对应委托的静态绑定, 再执行 /JS Bridge/Hotfix 修改 dll 后才能在 JS 中进行注入
 
 ```
 
-### 对导出的 Unity API 附加了自带文档说明
+### Unity API Docs included in d.ts
 ![unity_ts_docs](jsb_build/res/unity_ts_docs.png)
 
-### 利用强类型提供代码提示
+### Strong-typed
 ![ts_code_complete](jsb_build/res/ts_code_complete.png)
 
-# 如何使用
-## 获取此项目
+# Howto
+## Clone
 ```
 git clone https://github.com/ialex32x/unity-jsb --depth=1
 ```
-## 安装 node_modules
-在项目根目录执行, 自动安装 npm 包
+## Restore node_modules
 ```
 npm install
 ```
-## 生成绑定代码和对应d.ts
-打开项目, 执行菜单项 ```JS Bridge/Generate Bindings And Type Definition```
+## Generate d.ts (Optional)
+Open project with Unity3D, run menu command ```JS Bridge/Generate Type Definition```
 
-## 运行示例
+## Examples
 
 ### Examples for Unity
-打开 ```Assets/Examples/Scenes/SampleScene.unity``` 即可运行示例脚本.
-> 依赖 node_modules 的实例脚本可以在编辑器中直接执行, 如果要在最终环境中执行, 需经过脚本打包, 详情请自行查阅 webpack/gulp 打包相关资料, 项目中有基本的打包配置样例.
+Open ```Assets/Examples/Scenes/SampleScene.unity``` and select specific example you want to check.
+> If you use node_modules in your scripts, you need to package them via webpack/gulp when the game actually runs on target platform.
 
 ### Example for dotnetcore
-使用 VSCode 打开此项目根目录, 在 ```Run And Debug``` 页签中选择 ```dotnetcore example``` 直接启动即可运行示例.
+Open this project directory in VSCode, select ```dotnetcore example``` in ```Run And Debug``` panel, then just run it.
 
-# 多线程
-> 单个运行时不支持多线程使用. 
-> JS 环境下通过 Worker 支持多线程脚本运行.
+# Multi-threading
+> It's not supported in a single runtime. You need to use worker.
 
 # Debugger
-> 暂不支持
-
-# 性能
-> 待测试
-
-# 状态
-> 完成度 ~95%  
-> 支持 .NET 4.0/dotnetcore 3.1/Unity2019+ (开发所用版本为2019, 其余版本未测试) 
-
-# 文档 
-详细说明参见 [Wiki](https://github.com/ialex32x/unity-jsb/wiki)
+> Not supported yet.
 
 # Referenced libraries
 
