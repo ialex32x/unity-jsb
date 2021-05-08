@@ -69,6 +69,11 @@ namespace QuickJS.Binding
         /// </summary>
         public string editorEntryPoint = "editor/main";
 
+        public List<string> editorRequires = new List<string>(new string[]
+        {
+            "plover/editor/js_reload"
+        });
+
         /// <summary>
         /// 代码生成调试开关, 生成的代码将完全在注释中, 方便反复生成对比查问题
         /// </summary>

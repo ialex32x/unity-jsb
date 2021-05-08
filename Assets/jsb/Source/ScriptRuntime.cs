@@ -185,6 +185,12 @@ namespace QuickJS
             return null;
         }
 
+        public void ResolveModule(string module_id)
+        {
+            var rval = ResolveModule(_mainContext, "", module_id);
+            JSApi.JS_FreeValueRT(_rt, rval);
+        }
+
         public JSValue ResolveModule(ScriptContext context, string parent_module_id, string module_id)
         {
             for (int i = 0, count = _moduleResolvers.Count; i < count; i++)

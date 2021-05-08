@@ -120,7 +120,7 @@ namespace QuickJS.Binding
                             object varArgElement = null;
                             if (!Values.js_get_var(ctx, argv[vIndex++], varArgType, out varArgElement))
                             {
-                                return JSApi.JS_ThrowInternalError(ctx, $"failed to cast val (vararg {varArgIndex})");
+                                return JSApi.JS_ThrowInternalError(ctx, $"failed to cast val vararg #{varArgIndex}");
                             }
                             varArgArray.SetValue(varArgElement, varArgIndex);
                         }
@@ -135,7 +135,7 @@ namespace QuickJS.Binding
                             {
                                 if (!Values.js_get_var(ctx, argv[vIndex], pType.GetElementType(), out args[i]))
                                 {
-                                    return JSApi.JS_ThrowInternalError(ctx, $"failed to cast val {vIndex}");
+                                    return JSApi.JS_ThrowInternalError(ctx, $"failed to cast val byref #{vIndex}");
                                 }
                             }
                         }
@@ -143,7 +143,7 @@ namespace QuickJS.Binding
                         {
                             if (!Values.js_get_var(ctx, argv[vIndex], pType, out args[i]))
                             {
-                                return JSApi.JS_ThrowInternalError(ctx, $"failed to cast val {vIndex}");
+                                return JSApi.JS_ThrowInternalError(ctx, $"failed to cast val #{vIndex}");
                             }
                         }
                         vIndex++;

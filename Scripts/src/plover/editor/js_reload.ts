@@ -1,35 +1,40 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.reload = void 0;
-const file_watcher_1 = require("./file_watcher");
-const jsb_1 = require("jsb");
-if (typeof globalThis["__fw"] !== "undefined") {
-    globalThis["__fw"].dispose();
-    delete globalThis["__fw"];
+import { FileWatcher, IFileStateMap } from "./file_watcher";
+import { ModuleManager } from "jsb";
+
+let FileWatcherSymbol = Symbol.for("GlobalFileWatcher");
+
+if (typeof globalThis[FileWatcherSymbol] !== "undefined") {
+    globalThis[FileWatcherSymbol].dispose();
+    delete globalThis[FileWatcherSymbol];
 }
-let fw = new file_watcher_1.FileWatcher("Scripts", "*.js");
-function reload(mod) {
+
+let fw = new FileWatcher("Scripts", "*.js");
+
+export function reload(mod: NodeModule) {
     if (typeof mod === "object") {
         let dirtylist = [];
         collect_reload_deps(mod, dirtylist);
         do_reload(dirtylist);
     }
 }
-exports.reload = reload;
-function do_reload(dirtylist) {
+
+function do_reload(dirtylist: Array<NodeModule>) {
     if (dirtylist.length > 0) {
-        jsb_1.ModuleManager.BeginReload();
+        ModuleManager.BeginReload();
         for (let i = 0; i < dirtylist.length; i++) {
             let mod = dirtylist[i];
+
             console.warn("reloading", mod.id);
-            jsb_1.ModuleManager.MarkReload(mod.id);
+            ModuleManager.MarkReload(mod.id);
         }
-        jsb_1.ModuleManager.EndReload();
+        ModuleManager.EndReload();
     }
 }
-function collect_reload_deps(mod, dirtylist) {
+
+function collect_reload_deps(mod: NodeModule, dirtylist: Array<NodeModule>) {
     if (dirtylist.indexOf(mod) < 0) {
         dirtylist.push(mod);
+
         let parent = mod.parent;
         if (typeof parent === "object") {
             collect_reload_deps(parent, dirtylist);
@@ -37,14 +42,18 @@ function collect_reload_deps(mod, dirtylist) {
         }
     }
 }
-fw.on(file_watcher_1.FileWatcher.CHANGED, this, function (filestates) {
+
+fw.on(FileWatcher.CHANGED, this, function (filestates: IFileStateMap) {
     let cache = require.main["cache"];
     let dirtylist = [];
+
     for (let name in filestates) {
         let filestate = filestates[name];
+
         // console.log("file changed:", filestate.name, filestate.fullPath, filestate.state);
         for (let moduleId in cache) {
-            let mod = cache[moduleId];
+            let mod: NodeModule = cache[moduleId];
+
             // console.warn(mod.filename, mod.filename == filestate.fullPath)
             if (mod.filename == filestate.fullPath) {
                 collect_reload_deps(mod, dirtylist);
@@ -54,6 +63,6 @@ fw.on(file_watcher_1.FileWatcher.CHANGED, this, function (filestates) {
     }
     do_reload(dirtylist);
 });
-globalThis["__fw"] = fw;
+
+globalThis[FileWatcherSymbol] = fw;
 console.log("i am here");
-//# sourceMappingURL=js_reload.js.map

@@ -170,13 +170,13 @@ namespace QuickJS.Unity
         [MenuItem("JS Bridge/Javascript Console", false, 5003)]
         public static void ShowJSConsole()
         {
-            QuickJS.Unity.EditorRuntime.ShowWindow("editor/js_console", "JSConsole");
+            QuickJS.Unity.EditorRuntime.ShowWindow("plover/editor/js_console", "JSConsole");
         }
 
         [MenuItem("JS Bridge/Javascript Module View", false, 5003)]
         public static void ShowJSModuleView()
         {
-            QuickJS.Unity.EditorRuntime.ShowWindow("editor/js_module_view", "JSModuleView");
+            QuickJS.Unity.EditorRuntime.ShowWindow("plover/editor/js_module_view", "JSModuleView");
         }
 
         public static string GetPlatform()
@@ -378,7 +378,7 @@ namespace QuickJS.Unity
         #endregion
 
         // https://regex101.com/r/426q4x/1
-        public static Regex JSBehaviourClassNameRegex = new Regex(@"@ScriptType[\n\s]*export\s+class\s+(\w+)\s+extends", RegexOptions.Multiline | RegexOptions.Compiled);
+        public static Regex JSBehaviourClassNameRegex = new Regex(@"@ScriptType\([\s\w\{\})]*\)[\n\s]*export\s+class\s+(\w+)\s+extends", RegexOptions.Multiline | RegexOptions.Compiled);
         public static Regex JSCustomEditorClassNameRegex = new Regex(@"^\s*@CustomEditor\s*\(.*\)[\n\s]*export\s+class\s+(\w+)\s+extends", RegexOptions.Multiline | RegexOptions.Compiled);
 
         public static string NormalizePathString(string path)

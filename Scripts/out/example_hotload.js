@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const System_IO_1 = require("System.IO");
-const file_watcher_1 = require("./editor/file_watcher");
+const file_watcher_1 = require("./plover/editor/file_watcher");
 let data = JSON.parse(System_IO_1.File.ReadAllText("Scripts/config/data.json"));
 let fw = new file_watcher_1.FileWatcher("Scripts/config", "*.json");
 function show_data() {

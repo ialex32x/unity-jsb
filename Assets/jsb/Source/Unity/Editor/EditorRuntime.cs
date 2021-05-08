@@ -141,7 +141,13 @@ namespace QuickJS.Unity
             {
                 runtime.AddSearchPath(tsconfig.compilerOptions.outDir);
             }
+
             runtime.EvalMain(_prefs.editorEntryPoint);
+            
+            foreach (var module in _prefs.editorRequires)
+            {
+                runtime.ResolveModule(module);
+            }
         }
 
         private void OnPlayModeStateChanged(PlayModeStateChange mode)

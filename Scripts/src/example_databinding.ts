@@ -1,5 +1,5 @@
-import { DataBinding, Subscriber } from "./events/data_binding"
-import { Dispatcher } from "./events/dispatcher"
+import { DataBinding, Subscriber } from "./plover/events/data_binding"
+import { Dispatcher } from "./plover/events/dispatcher"
 
 interface MyData {
     name: string

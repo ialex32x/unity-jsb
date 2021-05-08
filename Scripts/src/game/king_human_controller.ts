@@ -1,15 +1,15 @@
 import { Animator, Input, KeyCode, SpriteRenderer, Time, Vector3 } from "UnityEngine";
-import { Inspector, ScriptType, SerializationUtil, SerializedNumber, SerializedObject } from "../editor/decorators/inspector";
+import { Inspector, ScriptType, ScriptNumber, ScriptObject } from "../plover/editor/decorators/inspector";
 import { JSBehaviourBase } from "./js_behaviour_base";
 
 // 暂时不支持相对路径
 @Inspector("game/editor/king_human_controller_inspector", "KingHumanControllerInspector")
-@ScriptType
+@ScriptType()
 export class KingHumanController extends JSBehaviourBase {
-    @SerializedObject()
+    @ScriptObject({editorOnly: true})
     animator: Animator;
 
-    @SerializedNumber()
+    @ScriptNumber()
     moveSpeed = 1.8;
 
     private moving = false;
@@ -20,7 +20,7 @@ export class KingHumanController extends JSBehaviourBase {
         // this.transform.localPosition = new Vector3(1.0, 2.2, 0);
     }
 
-    OnAfterDeserialize(ps) {
+    OnAfterDeserialize() {
         // 发生脚本重载时不会触发 Awake 所以在此处赋值
         this.spriteRenderer = this.GetComponent(SpriteRenderer);
     }

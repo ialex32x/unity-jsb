@@ -8,7 +8,7 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.KingHumanController = void 0;
 const UnityEngine_1 = require("UnityEngine");
-const inspector_1 = require("../editor/decorators/inspector");
+const inspector_1 = require("../plover/editor/decorators/inspector");
 const js_behaviour_base_1 = require("./js_behaviour_base");
 // 暂时不支持相对路径
 let KingHumanController = class KingHumanController extends js_behaviour_base_1.JSBehaviourBase {
@@ -21,7 +21,7 @@ let KingHumanController = class KingHumanController extends js_behaviour_base_1.
         // this.transform.localScale = new Vector3(1, 1, 1);
         // this.transform.localPosition = new Vector3(1.0, 2.2, 0);
     }
-    OnAfterDeserialize(ps) {
+    OnAfterDeserialize() {
         // 发生脚本重载时不会触发 Awake 所以在此处赋值
         this.spriteRenderer = this.GetComponent(UnityEngine_1.SpriteRenderer);
     }
@@ -68,14 +68,14 @@ let KingHumanController = class KingHumanController extends js_behaviour_base_1.
     }
 };
 __decorate([
-    inspector_1.SerializedObject()
+    inspector_1.ScriptObject({ editorOnly: true })
 ], KingHumanController.prototype, "animator", void 0);
 __decorate([
-    inspector_1.SerializedNumber()
+    inspector_1.ScriptNumber()
 ], KingHumanController.prototype, "moveSpeed", void 0);
 KingHumanController = __decorate([
     inspector_1.Inspector("game/editor/king_human_controller_inspector", "KingHumanControllerInspector"),
-    inspector_1.ScriptType
+    inspector_1.ScriptType()
 ], KingHumanController);
 exports.KingHumanController = KingHumanController;
 //# sourceMappingURL=king_human_controller.js.map

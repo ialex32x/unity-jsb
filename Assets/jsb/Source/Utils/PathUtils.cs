@@ -20,11 +20,6 @@ namespace QuickJS.Utils
             return System.IO.Path.Combine(path1, path2, path3).Replace('\\', '/');
         }
 
-        public static string Combine(string path1, string path2, string path3, string path4)
-        {
-            return System.IO.Path.Combine(path1, path2, path3, path4).Replace('\\', '/');
-        }
-
         public static string Combine(params string[] paths)
         {
             return System.IO.Path.Combine(paths).Replace('\\', '/');

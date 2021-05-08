@@ -1,5 +1,5 @@
 import { File, FileInfo } from "System.IO";
-import { FileState, FileWatcher } from "./editor/file_watcher";
+import { FileState, FileWatcher } from "./plover/editor/file_watcher";
 
 let data = JSON.parse(File.ReadAllText("Scripts/config/data.json"));
 let fw = new FileWatcher("Scripts/config", "*.json");

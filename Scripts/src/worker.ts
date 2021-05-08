@@ -1,4 +1,3 @@
-import { Sleep } from "jsb";
 
 onmessage = function (e: any) {
     let data = e.data;

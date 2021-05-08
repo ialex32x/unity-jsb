@@ -18,10 +18,17 @@ namespace QuickJS.Unity
         }
 
         [Serializable]
+        public class IntegerKeyValuePair
+        {
+            public string key;
+            public int value;
+        }
+
+        [Serializable]
         public class NumberKeyValuePair
         {
             public string key;
-            public double value;
+            public float value;
         }
 
         [Serializable]
@@ -38,15 +45,19 @@ namespace QuickJS.Unity
         private List<StringKeyValuePair> _strings;
 
         [SerializeField]
+        private List<IntegerKeyValuePair> _integers;
+        
+        [SerializeField]
         private List<NumberKeyValuePair> _numbers;
 
         public int Count
         {
-            get { return ObjectCount + StringCount + NumberCount; }
+            get { return ObjectCount + StringCount + NumberCount + IntegerCount; }
         }
 
         private int ObjectCount => _objects != null ? _objects.Count : 0;
         private int StringCount => _strings != null ? _strings.Count : 0;
+        private int IntegerCount => _integers != null ? _integers.Count : 0;
         private int NumberCount => _numbers != null ? _numbers.Count : 0;
 
         public void ForEach(Action<string, Object> cb)
@@ -119,7 +130,42 @@ namespace QuickJS.Unity
             return _strings?.Find(pair => pair.key == key)?.value;
         }
 
-        public void ForEach(Action<string, double> cb)
+        public void ForEach(Action<string, int> cb)
+        {
+            if (_integers != null)
+            {
+                for (int i = 0, count = _integers.Count; i < count; i++)
+                {
+                    var pair = _integers[i];
+                    cb(pair.key, pair.value);
+                }
+            }
+        }
+
+        public void SetInteger(string key, int value)
+        {
+            if (_integers == null)
+            {
+                _integers = new List<IntegerKeyValuePair>();
+            }
+
+            var found = _integers.Find(pair => pair.key == key);
+            if (found == null)
+            {
+                _integers.Add(new IntegerKeyValuePair { key = key, value = value });
+            }
+            else
+            {
+                found.value = value;
+            }
+        }
+
+        public int GetInteger(string key)
+        {
+            return _integers?.Find(pair => pair.key == key)?.value ?? 0;
+        }
+
+        public void ForEach(Action<string, float> cb)
         {
             if (_numbers != null)
             {
@@ -131,7 +177,7 @@ namespace QuickJS.Unity
             }
         }
 
-        public void SetNumber(string key, double value)
+        public void SetNumber(string key, float value)
         {
             if (_numbers == null)
             {
@@ -149,9 +195,9 @@ namespace QuickJS.Unity
             }
         }
 
-        public double GetNumber(string key)
+        public float GetNumber(string key)
         {
-            return _numbers?.Find(pair => pair.key == key)?.value ?? 0.0;
+            return _numbers?.Find(pair => pair.key == key)?.value ?? 0.0f;
         }
 
         public void Clear()
@@ -159,6 +205,7 @@ namespace QuickJS.Unity
             _objects?.Clear();
             _strings?.Clear();
             _numbers?.Clear();
+            _integers?.Clear();
         }
     }
 }

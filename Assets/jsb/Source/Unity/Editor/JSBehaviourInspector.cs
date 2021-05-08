@@ -16,9 +16,6 @@ namespace QuickJS.Unity
         private JSBehaviour _target;
 
         private bool _psView;
-        private bool _foldoutObjects;
-        private bool _foldoutStrings;
-        private bool _foldoutNumbers;
         private bool _foldoutSourceRef;
 
         private bool _enabled;
@@ -373,33 +370,30 @@ namespace QuickJS.Unity
                     return;
                 }
 
-                if (_foldoutObjects = EditorGUILayout.Foldout(_foldoutObjects, "Objects"))
+                ps.ForEach((string key, Object value) =>
                 {
-                    ps.ForEach((string key, Object value) =>
-                    {
-                        //
-                        EditorGUILayout.ObjectField(key, value, value != null ? value.GetType() : typeof(Object), true);
-                    });
-                }
+                    //
+                    EditorGUILayout.ObjectField(key, value, value != null ? value.GetType() : typeof(Object), true);
+                });
 
-                if (_foldoutStrings = EditorGUILayout.Foldout(_foldoutStrings, "Strings"))
+                ps.ForEach((string key, string value) =>
                 {
-                    ps.ForEach((string key, string value) =>
-                    {
-                        //
-                        EditorGUILayout.LabelField(key);
-                        EditorGUILayout.TextArea(value);
-                    });
-                }
+                    //
+                    EditorGUILayout.LabelField(key);
+                    EditorGUILayout.TextArea(value);
+                });
 
-                if (_foldoutNumbers = EditorGUILayout.Foldout(_foldoutNumbers, "Numbers"))
+                ps.ForEach((string key, int value) =>
                 {
-                    ps.ForEach((string key, double value) =>
-                    {
-                        // unsafe
-                        EditorGUILayout.FloatField(key, (float)value);
-                    });
-                }
+                    // unsafe
+                    EditorGUILayout.IntField(key, value);
+                });
+
+                ps.ForEach((string key, float value) =>
+                {
+                    // unsafe
+                    EditorGUILayout.FloatField(key, value);
+                });
             }
         }
 

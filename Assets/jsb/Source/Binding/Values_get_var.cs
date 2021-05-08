@@ -140,10 +140,18 @@ namespace QuickJS.Binding
         // type: expected type of object o
         public static bool js_get_var(JSContext ctx, JSValue val, Type type, out object o)
         {
+            if (type.BaseType == typeof(MulticastDelegate))
+            {
+                Delegate d;
+                var rs = js_get_delegate(ctx, val, type, out d);
+                o = d;
+                return rs;
+            }
+
             var lookupType = type;
+            MethodInfo cast;
             do
             {
-                MethodInfo cast;
                 if (_JSCastMap.TryGetValue(lookupType, out cast))
                 {
                     var parameters = new object[3] { ctx, val, null };
@@ -195,14 +203,6 @@ namespace QuickJS.Binding
                     o = array;
                     return true;
                 }
-            }
-
-            if (type.BaseType == typeof(MulticastDelegate))
-            {
-                Delegate d;
-                var rs = js_get_delegate(ctx, val, type, out d);
-                o = d;
-                return rs;
             }
 
             if (type.IsEnum)
