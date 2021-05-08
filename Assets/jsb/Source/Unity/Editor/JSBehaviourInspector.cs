@@ -20,7 +20,7 @@ namespace QuickJS.Unity
 
         private bool _enabled;
         private bool _enabledPending;
-        private JSContext _ctx;
+        private JSContext _ctx = JSContext.Null;
         private JSValue _this_obj = JSApi.JS_UNDEFINED;
 
         private bool _onDestroyValid;
@@ -38,37 +38,6 @@ namespace QuickJS.Unity
         void Awake()
         {
             _target = target as JSBehaviour;
-        }
-
-        public void CreateScriptInstance(JSContext ctx, JSValue this_obj, JSValue ctor)
-        {
-            var context = ScriptEngine.GetContext(ctx);
-            if (context == null)
-            {
-                return;
-            }
-
-            context.OnDestroy += OnContextDestroy;
-            context.OnScriptReloaded += OnScriptReloaded;
-            _ctx = ctx;
-            _this_obj = JSApi.JS_DupValue(ctx, this_obj);
-
-            _onDestroyFunc = JSApi.JS_GetProperty(ctx, this_obj, context.GetAtom("OnDestroy"));
-            _onDestroyValid = JSApi.JS_IsFunction(ctx, _onDestroyFunc) == 1;
-
-            _onEnableFunc = JSApi.JS_GetProperty(ctx, this_obj, context.GetAtom("OnEnable"));
-            _onEnableValid = JSApi.JS_IsFunction(ctx, _onEnableFunc) == 1;
-
-            _onDisableFunc = JSApi.JS_GetProperty(ctx, this_obj, context.GetAtom("OnDisable"));
-            _onDisableValid = JSApi.JS_IsFunction(ctx, _onDisableFunc) == 1;
-
-            _onInspectorGUIFunc = JSApi.JS_GetProperty(ctx, this_obj, context.GetAtom("OnInspectorGUI"));
-            _onInspectorGUIValid = JSApi.JS_IsFunction(ctx, _onInspectorGUIFunc) == 1;
-
-            var awakeFunc = JSApi.JS_GetProperty(ctx, this_obj, context.GetAtom("Awake"));
-
-            CallJSFunc(awakeFunc);
-            JSApi.JS_FreeValue(_ctx, awakeFunc);
         }
 
         private void CallJSFunc(JSValue func_obj)
@@ -103,7 +72,7 @@ namespace QuickJS.Unity
 
         private void ReleaseJSValues()
         {
-            if (_ctx.IsValid())
+            if (!_this_obj.IsNullish())
             {
                 JSApi.JS_FreeValue(_ctx, _onDestroyFunc);
                 _onDestroyFunc = JSApi.JS_UNDEFINED;
@@ -123,13 +92,15 @@ namespace QuickJS.Unity
 
                 JSApi.JS_FreeValue(_ctx, _this_obj);
                 _this_obj = JSApi.JS_UNDEFINED;
+            }
 
-                var context = ScriptEngine.GetContext(_ctx);
-                if (context != null)
-                {
-                    context.OnDestroy -= OnContextDestroy;
-                    context.OnScriptReloaded -= OnScriptReloaded;
-                }
+            var context = ScriptEngine.GetContext(_ctx);
+            _ctx = JSContext.Null;
+
+            if (context != null)
+            {
+                context.OnDestroy -= OnContextDestroy;
+                context.OnScriptReloaded -= OnScriptReloaded;
             }
         }
 
@@ -140,6 +111,40 @@ namespace QuickJS.Unity
                 _target.ReleaseScriptInstance();
             }
             ReleaseJSValues();
+        }
+
+        private void CreateScriptInstance(JSContext ctx, JSValue this_obj, JSValue ctor)
+        {
+            var context = ScriptEngine.GetContext(ctx);
+            if (context == null || !context.IsValid())
+            {
+                return;
+            }
+
+            context.OnDestroy += OnContextDestroy;
+            context.OnScriptReloaded += OnScriptReloaded;
+            _ctx = ctx;
+            _this_obj = JSApi.JS_DupValue(ctx, this_obj);
+
+            if (!_this_obj.IsNullish())
+            {
+                _onDestroyFunc = JSApi.JS_GetProperty(ctx, this_obj, context.GetAtom("OnDestroy"));
+                _onDestroyValid = JSApi.JS_IsFunction(ctx, _onDestroyFunc) == 1;
+
+                _onEnableFunc = JSApi.JS_GetProperty(ctx, this_obj, context.GetAtom("OnEnable"));
+                _onEnableValid = JSApi.JS_IsFunction(ctx, _onEnableFunc) == 1;
+
+                _onDisableFunc = JSApi.JS_GetProperty(ctx, this_obj, context.GetAtom("OnDisable"));
+                _onDisableValid = JSApi.JS_IsFunction(ctx, _onDisableFunc) == 1;
+
+                _onInspectorGUIFunc = JSApi.JS_GetProperty(ctx, this_obj, context.GetAtom("OnInspectorGUI"));
+                _onInspectorGUIValid = JSApi.JS_IsFunction(ctx, _onInspectorGUIFunc) == 1;
+
+                var awakeFunc = JSApi.JS_GetProperty(ctx, this_obj, context.GetAtom("Awake"));
+
+                CallJSFunc(awakeFunc);
+                JSApi.JS_FreeValue(_ctx, awakeFunc);
+            }
         }
 
         private void CreateScriptInstance()
@@ -213,7 +218,7 @@ namespace QuickJS.Unity
 
         private void EnableScriptInstance()
         {
-            if (!_enabledPending)
+            if (!_enabledPending || !_enabled)
             {
                 return;
             }
@@ -257,10 +262,7 @@ namespace QuickJS.Unity
         void OnDisable()
         {
             _enabledPending = false;
-            // if (_target.isScriptInstanced)
-            // {
-            //     _target.OnBeforeSerialize();
-            // }
+            _enabled = false;
 
             if (_onDisableValid)
             {
@@ -274,7 +276,6 @@ namespace QuickJS.Unity
             }
 
             Release();
-            _enabled = false;
         }
 
         void OnDestroy()
@@ -290,6 +291,7 @@ namespace QuickJS.Unity
                 JSApi.JS_FreeValue(_ctx, rval);
             }
 
+            _enabledPending = false;
             Release();
         }
 
