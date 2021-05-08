@@ -163,6 +163,7 @@ export class EditorUtil {
                         if (slot.editable && editablePE) {
                             let newValue = EditorGUILayout.IntField(label, oldValue);
                             if (newValue != oldValue) {
+                                self[propertyKey] = newValue;
                                 EditorUtility.SetDirty(self);
                             }
                         } else {
@@ -177,6 +178,7 @@ export class EditorUtil {
                         if (slot.editable && editablePE) {
                             let newValue = EditorGUILayout.FloatField(label, oldValue);
                             if (newValue != oldValue) {
+                                self[propertyKey] = newValue;
                                 EditorUtility.SetDirty(self);
                             }
                         } else {
@@ -194,6 +196,7 @@ export class EditorUtil {
                         if (slot.editable && editablePE) {
                             let newValue = EditorGUILayout.TextField(label, oldValue);
                             if (newValue != oldValue) {
+                                self[propertyKey] = newValue;
                                 EditorUtility.SetDirty(self);
                             }
                         } else {
@@ -208,13 +211,14 @@ export class EditorUtil {
                         if (typeof oldValue !== "object") {
                             oldValue = null;
                         }
-                        if (slot.editable) {
-                            let allowSceneObjects = slot.extra.allowSceneObjects;
+                        if (slot.editable && editablePE) {
+                            let allowSceneObjects = slot.extra && slot.extra.allowSceneObjects;
                             let newValue = EditorGUILayout.ObjectField(label, oldValue,
-                                slot.extra.type || Object,
+                                slot.extra && slot.extra.type || Object,
                                 typeof allowSceneObjects === "boolean" ? allowSceneObjects : true);
 
                             if (newValue != oldValue) {
+                                self[propertyKey] = newValue;
                                 EditorUtility.SetDirty(self);
                             }
                         } else {

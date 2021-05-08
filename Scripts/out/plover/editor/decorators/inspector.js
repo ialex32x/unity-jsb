@@ -118,6 +118,7 @@ class EditorUtil {
                         if (slot.editable && editablePE) {
                             let newValue = UnityEditor_1.EditorGUILayout.IntField(label, oldValue);
                             if (newValue != oldValue) {
+                                self[propertyKey] = newValue;
                                 UnityEditor_1.EditorUtility.SetDirty(self);
                             }
                         }
@@ -133,6 +134,7 @@ class EditorUtil {
                         if (slot.editable && editablePE) {
                             let newValue = UnityEditor_1.EditorGUILayout.FloatField(label, oldValue);
                             if (newValue != oldValue) {
+                                self[propertyKey] = newValue;
                                 UnityEditor_1.EditorUtility.SetDirty(self);
                             }
                         }
@@ -151,6 +153,7 @@ class EditorUtil {
                         if (slot.editable && editablePE) {
                             let newValue = UnityEditor_1.EditorGUILayout.TextField(label, oldValue);
                             if (newValue != oldValue) {
+                                self[propertyKey] = newValue;
                                 UnityEditor_1.EditorUtility.SetDirty(self);
                             }
                         }
@@ -166,10 +169,11 @@ class EditorUtil {
                         if (typeof oldValue !== "object") {
                             oldValue = null;
                         }
-                        if (slot.editable) {
-                            let allowSceneObjects = slot.extra.allowSceneObjects;
-                            let newValue = UnityEditor_1.EditorGUILayout.ObjectField(label, oldValue, slot.extra.type || UnityEngine_1.Object, typeof allowSceneObjects === "boolean" ? allowSceneObjects : true);
+                        if (slot.editable && editablePE) {
+                            let allowSceneObjects = slot.extra && slot.extra.allowSceneObjects;
+                            let newValue = UnityEditor_1.EditorGUILayout.ObjectField(label, oldValue, slot.extra && slot.extra.type || UnityEngine_1.Object, typeof allowSceneObjects === "boolean" ? allowSceneObjects : true);
                             if (newValue != oldValue) {
+                                self[propertyKey] = newValue;
                                 UnityEditor_1.EditorUtility.SetDirty(self);
                             }
                         }

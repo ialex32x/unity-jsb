@@ -65,4 +65,3 @@ fw.on(FileWatcher.CHANGED, this, function (filestates: IFileStateMap) {
 });
 
 globalThis[FileWatcherSymbol] = fw;
-console.log("i am here");

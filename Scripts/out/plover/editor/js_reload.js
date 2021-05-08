@@ -56,5 +56,4 @@ fw.on(file_watcher_1.FileWatcher.CHANGED, this, function (filestates) {
     do_reload(dirtylist);
 });
 globalThis[FileWatcherSymbol] = fw;
-console.log("i am here");
 //# sourceMappingURL=js_reload.js.map

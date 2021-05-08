@@ -7,6 +7,7 @@ const UnityEngine_1 = require("UnityEngine");
 class KingHumanControllerInspector extends UnityEditor_1.Editor {
     OnInspectorGUI() {
         let p = this.target;
+        // EditorUtil.draw(p);
         UnityEditor_1.EditorGUI.BeginChangeCheck();
         p.animator = UnityEditor_1.EditorGUILayout.ObjectField("Animator", p.animator, UnityEngine_1.Animator, true);
         p.moveSpeed = UnityEditor_1.EditorGUILayout.FloatField("Move Speed", p.moveSpeed);

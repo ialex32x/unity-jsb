@@ -1,5 +1,6 @@
 import { Editor, EditorGUI, EditorGUILayout, EditorUtility, MessageType } from "UnityEditor";
 import { Animator, GUILayout, Object } from "UnityEngine";
+import { EditorUtil } from "../../plover/editor/decorators/inspector";
 import { KingHumanController } from "../king_human_controller";
 
 // @CustomEditor(KingHumanController)
@@ -7,6 +8,7 @@ export class KingHumanControllerInspector extends Editor {
     OnInspectorGUI() {
         let p = <KingHumanController>this.target;
 
+        // EditorUtil.draw(p);
         EditorGUI.BeginChangeCheck();
         p.animator = <Animator>EditorGUILayout.ObjectField("Animator", p.animator, Animator, true);
         p.moveSpeed = EditorGUILayout.FloatField("Move Speed", p.moveSpeed);
