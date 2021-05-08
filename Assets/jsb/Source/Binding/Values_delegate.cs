@@ -15,7 +15,6 @@ namespace QuickJS.Binding
 
         public static int js_parse_event_op(JSContext ctx, JSValue val)
         {
-            //TODO: 临时方案, 低效
             var str = JSApi.GetString(ctx, val);
             switch (str)
             {

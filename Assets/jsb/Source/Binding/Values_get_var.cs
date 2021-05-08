@@ -140,10 +140,62 @@ namespace QuickJS.Binding
         // type: expected type of object o
         public static bool js_get_var(JSContext ctx, JSValue val, Type type, out object o)
         {
-            //TODO: 处理数组
-            // if (type.IsArray)
-            // {
-            // }
+            var lookupType = type;
+            do
+            {
+                MethodInfo cast;
+                if (_JSCastMap.TryGetValue(lookupType, out cast))
+                {
+                    var parameters = new object[3] { ctx, val, null };
+                    var rval = (bool)cast.Invoke(null, parameters);
+                    o = parameters[2];
+                    return rval;
+                }
+                lookupType = lookupType.BaseType;
+            } while (lookupType != null);
+
+            if (type.IsArray)
+            {
+                if (val.IsNullish())
+                {
+                    o = null;
+                    return true;
+                }
+
+                if (type.GetArrayRank() == 1 && JSApi.JS_IsArray(ctx, val) == 1)
+                {
+                    var lengthVal = JSApi.JS_GetProperty(ctx, val, JSApi.JS_ATOM_length);
+                    if (JSApi.JS_IsException(lengthVal))
+                    {
+                        o = null;
+                        return js_script_error(ctx);
+                    }
+
+                    var elementType = type.GetElementType();
+                    int length;
+                    JSApi.JS_ToInt32(ctx, out length, lengthVal);
+                    JSApi.JS_FreeValue(ctx, lengthVal);
+                    var array = Array.CreateInstance(elementType, length);
+                    for (var i = 0U; i < length; i++)
+                    {
+                        var eVal = JSApi.JS_GetPropertyUint32(ctx, val, i);
+                        object e;
+                        if (js_get_var(ctx, eVal, elementType, out e))
+                        {
+                            array.SetValue(e, i);
+                            JSApi.JS_FreeValue(ctx, eVal);
+                        }
+                        else
+                        {
+                            o = null;
+                            JSApi.JS_FreeValue(ctx, eVal);
+                            return false;
+                        }
+                    }
+                    o = array;
+                    return true;
+                }
+            }
 
             if (type.BaseType == typeof(MulticastDelegate))
             {
@@ -163,19 +215,6 @@ namespace QuickJS.Binding
                 o = null;
                 return true;
             }
-
-            MethodInfo cast;
-            do
-            {
-                if (_JSCastMap.TryGetValue(type, out cast))
-                {
-                    var parameters = new object[3] { ctx, val, null };
-                    var rval = (bool)cast.Invoke(null, parameters);
-                    o = parameters[2];
-                    return rval;
-                }
-                type = type.BaseType;
-            } while (type != null);
 
             return js_get_fallthrough(ctx, val, out o);
         }

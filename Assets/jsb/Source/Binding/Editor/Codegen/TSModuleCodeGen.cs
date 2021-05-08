@@ -203,7 +203,6 @@ namespace QuickJS.Binding
                 return;
             }
 
-            //TODO: 检查泛型的类型参数的类型引用
             if (type.IsGenericType && !type.IsGenericTypeDefinition)
             {
                 if (type.GetGenericTypeDefinition() == typeof(Nullable<>))

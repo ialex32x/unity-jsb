@@ -395,18 +395,6 @@ namespace QuickJS.Binding
             {
                 prefix += "// js_op_overloading: ";
             }
-            else
-            {
-                // var baseType = typeBindingInfo.type.BaseType;
-                // if (baseType != null)
-                // {
-                //     //TODO: 需要检查 TypeBindingInfo 对此的命名修改
-                //     if (baseType.GetMethods().Where(baseMethodInfo => baseMethodInfo.Name == tsMethodRename).Count() != 0)
-                //     {
-                //         prefix += "// @ts-ignore" + this.cg.tsDeclare.newline + this.cg.tsDeclare.tabString;
-                //     }
-                // }
-            }
 
             if (method.IsStatic && !isExtension)
             {

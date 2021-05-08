@@ -97,7 +97,7 @@ namespace QuickJS.Binding
         {
             _tsTypeNaming = bindingManager.GetTSTypeNaming(type, true);
             _csBindingName = bindingManager.prefs.typeBindingPrefix
-                + this.tsTypeNaming.jsFullName
+                + _tsTypeNaming.jsFullName
                     .Replace('.', '_')
                     .Replace('+', '_')
                     .Replace('<', '_')
@@ -106,7 +106,7 @@ namespace QuickJS.Binding
                     .Replace(',', '_')
                     .Replace('=', '_');
 
-            var module = this.bindingManager.GetExportedModule(this.tsTypeNaming.jsModule);
+            var module = this.bindingManager.GetExportedModule(_tsTypeNaming.jsModule);
 
             module.Add(this);
         }
@@ -578,8 +578,8 @@ namespace QuickJS.Binding
             }
 
             CollectMethods(type.GetMethods(bindingFlags), false);
-            CollectMethods(bindingManager.GetTypeTransform(type).extensionMethods, true);
-            CollectMethods(bindingManager.GetTypeTransform(type).staticMethods, false);
+            CollectMethods(transform.extensionMethods, true);
+            CollectMethods(transform.staticMethods, false);
         }
 
         private void CollectMethods(IEnumerable<MethodInfo> methods, bool asExtensionAnyway)
