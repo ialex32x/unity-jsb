@@ -2,7 +2,7 @@
 
 [中文说明](README_cn.md)
 
-It brings Javascript runtime capability to Unity3D by integerating [QuickJS](https://bellard.org/quickjs/).<br/> 
+It brings Javascript runtime capability to Unity3D by integrating [QuickJS](https://bellard.org/quickjs/).<br/> 
 
 > QuickJS is a small and embeddable Javascript engine. It supports the ES2020 specification including modules, asynchronous generators, proxies and BigInt. 
 
