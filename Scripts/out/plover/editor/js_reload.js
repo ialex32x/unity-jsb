@@ -44,6 +44,9 @@ fw.on(file_watcher_1.FileWatcher.CHANGED, this, function (filestates) {
     for (let name in filestates) {
         let filestate = filestates[name];
         // console.log("file changed:", filestate.name, filestate.fullPath, filestate.state);
+        if (filestate.state != file_watcher_1.EFileState.CHANGE) {
+            continue;
+        }
         for (let moduleId in cache) {
             let mod = cache[moduleId];
             // console.warn(mod.filename, mod.filename == filestate.fullPath)

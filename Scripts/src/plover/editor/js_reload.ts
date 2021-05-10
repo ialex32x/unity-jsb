@@ -1,4 +1,4 @@
-import { FileWatcher, IFileStateMap } from "./file_watcher";
+import { EFileState, FileWatcher, IFileStateMap } from "./file_watcher";
 import { ModuleManager } from "jsb";
 
 let FileWatcherSymbol = Symbol.for("GlobalFileWatcher");
@@ -51,6 +51,11 @@ fw.on(FileWatcher.CHANGED, this, function (filestates: IFileStateMap) {
         let filestate = filestates[name];
 
         // console.log("file changed:", filestate.name, filestate.fullPath, filestate.state);
+
+        if (filestate.state != EFileState.CHANGE) {
+            continue;
+        }
+
         for (let moduleId in cache) {
             let mod: NodeModule = cache[moduleId];
 

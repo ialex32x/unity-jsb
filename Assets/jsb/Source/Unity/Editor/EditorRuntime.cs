@@ -160,11 +160,14 @@ namespace QuickJS.Unity
             }
         }
 
-        private void OnModuleSourceChanged(string modulePath)
+        private void OnModuleSourceChanged(string modulePath, JSScriptClassType classTypes)
         {
-            if (_runtime != null && _runtime.isValid && !EditorApplication.isCompiling)
+            if ((classTypes & JSScriptClassType.Editor) != 0)
             {
-                _runtime.ResolveModule(modulePath);
+                if (_runtime != null && _runtime.isValid && !EditorApplication.isCompiling)
+                {
+                    _runtime.ResolveModule(modulePath);
+                }
             }
         }
 

@@ -41,8 +41,10 @@
 
 /.idea
 
-/Assets/Generated
-/Assets/Generated.meta
+/Assets/Generated/*
+# /Assets/Generated.meta
+!/Assets/Generated/Typings
+!/Assets/Generated/Typings.meta
 /Assets/Examples/Resources/*
 !/Assets/Examples/Resources/UI
 !/Assets/Examples/Resources/UI.meta

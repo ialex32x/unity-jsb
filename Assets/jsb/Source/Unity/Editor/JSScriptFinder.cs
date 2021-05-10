@@ -22,7 +22,7 @@ namespace QuickJS.Unity
         // fullPath => WatcherChangeType
         private Dictionary<string, WatcherChangeTypes> _cachedChanges = new Dictionary<string, WatcherChangeTypes>();
 
-        public event Action<string> ModuleSourceChanged;
+        public event Action<string, JSScriptClassType> ModuleSourceChanged;
 
         public static JSScriptFinder GetInstance()
         {
@@ -121,15 +121,17 @@ namespace QuickJS.Unity
                     list = _fullPathToClassPath[normalizedPath] = new List<string>();
                 }
 
+                var classTypes = JSScriptClassType.None;
                 foreach (var result in results)
                 {
                     var classPath = result.ToClassPath();
 
                     list.Add(classPath);
                     _scriptClassPaths[classPath] = result;
+                    classTypes |= result.classType;
                 }
 
-                ModuleSourceChanged?.Invoke(modulePath);
+                ModuleSourceChanged?.Invoke(modulePath, classTypes);
             }
         }
 

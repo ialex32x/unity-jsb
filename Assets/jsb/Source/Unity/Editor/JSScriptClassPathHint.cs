@@ -1,10 +1,12 @@
 ﻿#if !JSB_UNITYLESS
 namespace QuickJS.Unity
 {
+    [System.Flags]
     public enum JSScriptClassType
     {
-        MonoBehaviour,
-        Editor,
+        None = 0,
+        MonoBehaviour = 1,
+        Editor = 2,
         // EditorWindow,
     }
 
