@@ -10,7 +10,6 @@ exports.KingHumanController = void 0;
 const UnityEngine_1 = require("UnityEngine");
 const inspector_1 = require("../plover/editor/decorators/inspector");
 const js_behaviour_base_1 = require("./js_behaviour_base");
-// 暂时不支持相对路径
 let KingHumanController = class KingHumanController extends js_behaviour_base_1.JSBehaviourBase {
     constructor() {
         super(...arguments);
@@ -74,7 +73,6 @@ __decorate([
     inspector_1.ScriptNumber()
 ], KingHumanController.prototype, "moveSpeed", void 0);
 KingHumanController = __decorate([
-    inspector_1.Inspector("game/editor/king_human_controller_inspector", "KingHumanControllerInspector"),
     inspector_1.ScriptType()
 ], KingHumanController);
 exports.KingHumanController = KingHumanController;

@@ -2,8 +2,9 @@ import { JSBehaviourProperties } from "QuickJS.Unity";
 import { EditorApplication, EditorGUI, EditorGUILayout, EditorUtility } from "UnityEditor";
 import { Object } from "UnityEngine";
 
-let SerializedFields = Symbol.for("SerializedFields");
-let PropertiesTouched = Symbol.for("PropertiesTouched");
+let Symbol_SerializedFields = Symbol.for("SerializedFields");
+let Symbol_PropertiesTouched = Symbol.for("PropertiesTouched");
+let Symbol_CustomEditor = Symbol.for("CustomEditor");
 
 type PropertyTypeID = "integer" | "float" | "string" | "object";
 
@@ -51,22 +52,22 @@ export function ScriptType(meta?: ClassMetaInfo) {
     return function (target: any) {
         let OnBeforeSerialize: Function = target.prototype["OnBeforeSerialize"];
         target.prototype["OnBeforeSerialize"] = function (ps) {
-            this[PropertiesTouched] = false;
+            this[Symbol_PropertiesTouched] = false;
             if (typeof OnBeforeSerialize === "function") {
                 OnBeforeSerialize.call(this, ps);
             }
-            if (!this[PropertiesTouched]) {
+            if (!this[Symbol_PropertiesTouched]) {
                 SerializationUtil.serialize(this, ps);
             }
         }
 
         let OnAfterDeserialize: Function = target.prototype["OnAfterDeserialize"];
         target.prototype["OnAfterDeserialize"] = function (ps) {
-            this[PropertiesTouched] = false;
+            this[Symbol_PropertiesTouched] = false;
             if (typeof OnAfterDeserialize === "function") {
                 OnAfterDeserialize.call(this, ps);
             }
-            if (!this[PropertiesTouched]) {
+            if (!this[Symbol_PropertiesTouched]) {
                 SerializationUtil.deserialize(this, ps);
             }
         }
@@ -75,12 +76,10 @@ export function ScriptType(meta?: ClassMetaInfo) {
     }
 }
 
-// path: 指定编辑器脚本所在模块, 暂时不支持相对路径
-export function Inspector(path: string, className: string) {
-    return function (target: any) {
-        // 暂时简单实现
-        target.prototype.__editor__ = require(path)[className];
-        return target;
+export function ScriptEditor(forType: any) {
+    return function (editorType: any) {
+        forType.prototype[Symbol_CustomEditor] = editorType;
+        return editorType;
     }
 }
 
@@ -122,9 +121,9 @@ export function ScriptObject(meta?: PropertyMetaInfo) {
 
 export function ScriptProperty(meta?: PropertyMetaInfo) {
     return function (target: any, propertyKey: string) {
-        let slots: { [k: string]: PropertyMetaInfo } = target[SerializedFields];
+        let slots: { [k: string]: PropertyMetaInfo } = target[Symbol_SerializedFields];
         if (typeof slots === "undefined") {
-            slots = target[SerializedFields] = {};
+            slots = target[Symbol_SerializedFields] = {};
         }
 
         let slot = slots[propertyKey] = meta || {};
@@ -148,6 +147,10 @@ export function ScriptProperty(meta?: PropertyMetaInfo) {
 }
 
 export class EditorUtil {
+    static getCustomEditor(forType: any) {
+        return forType[Symbol_CustomEditor];
+    }
+
     /**
      * 默认编辑器绘制行为
      */
@@ -236,7 +239,7 @@ export class EditorUtil {
 
 export class SerializationUtil {
     static forEach(target: any, extra: any, cb: (propertyKey: string, slot: PropertyMetaInfo, target: any, extra: any) => void) {
-        let slots: {} = target[SerializedFields];
+        let slots: {} = target[Symbol_SerializedFields];
         if (typeof slots !== "undefined") {
             for (let propertyKey in slots) {
                 cb(propertyKey, slots[propertyKey], target, extra);
@@ -245,7 +248,7 @@ export class SerializationUtil {
     }
 
     static serialize(target: any, ps: JSBehaviourProperties) {
-        target[PropertiesTouched] = true;
+        target[Symbol_PropertiesTouched] = true;
         this.forEach(target, ps, (propertyKey, slot, self, extra: JSBehaviourProperties) => {
             if (slot.serializable) {
                 let value = self[propertyKey];
@@ -274,7 +277,7 @@ export class SerializationUtil {
     }
 
     static deserialize(target: any, ps: JSBehaviourProperties) {
-        target[PropertiesTouched] = true;
+        target[Symbol_PropertiesTouched] = true;
         this.forEach(target, ps, (propertyKey, slot, self, extra: JSBehaviourProperties) => {
             if (slot.serializable) {
                 let value = null;

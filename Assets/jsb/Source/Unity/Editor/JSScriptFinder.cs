@@ -7,6 +7,8 @@ namespace QuickJS.Unity
 {
     public class JSScriptFinder
     {
+        private static JSScriptFinder _finder;
+        
         private FileSystemWatcher _fsw;
         private string _baseDir;
         private string _fileExt;
@@ -19,6 +21,22 @@ namespace QuickJS.Unity
         private bool _cachedChangesDirty = false;
         // fullPath => WatcherChangeType
         private Dictionary<string, WatcherChangeTypes> _cachedChanges = new Dictionary<string, WatcherChangeTypes>();
+
+        public event Action<string> ModuleSourceChanged;
+
+        public static JSScriptFinder GetInstance()
+        {
+            if (_finder == null)
+            {
+                var prefs = UnityHelper.LoadPrefs();
+                var baseDir = prefs.sourceDir;
+
+                _finder = new JSScriptFinder(baseDir, prefs.typescriptExt);
+                _finder.Start(); //TODO: need optimization, make the full collecting process async, and wait it finished 
+            }
+
+            return _finder;
+        }
 
         public JSScriptFinder(string baseDir, string fileExt)
         {
@@ -86,7 +104,8 @@ namespace QuickJS.Unity
 
             var results = new List<JSScriptClassPathHint>();
             string normalizedPath;
-            if (UnityHelper.ResolveScriptRef(_baseDir, filePath, out normalizedPath, results))
+            string modulePath;
+            if (UnityHelper.ResolveScriptRef(_baseDir, filePath, out normalizedPath, out modulePath, results))
             {
                 List<string> list;
                 if (_fullPathToClassPath.TryGetValue(normalizedPath, out list))
@@ -109,7 +128,14 @@ namespace QuickJS.Unity
                     list.Add(classPath);
                     _scriptClassPaths[classPath] = result;
                 }
+
+                ModuleSourceChanged?.Invoke(modulePath);
             }
+        }
+
+        public bool Search(JSScriptClassType classType, List<JSScriptClassPathHint> results)
+        {
+            return Search(null, classType, results);
         }
 
         public bool Search(string pattern, JSScriptClassType classType, List<JSScriptClassPathHint> results)
@@ -117,7 +143,7 @@ namespace QuickJS.Unity
             foreach (var pair in _scriptClassPaths)
             {
                 //TODO: need optimization
-                if (pair.Value.classType == classType && pair.Key.Contains(pattern))
+                if (pair.Value.classType == classType && (string.IsNullOrEmpty(pattern) || pair.Key.Contains(pattern)))
                 {
                     results.Add(pair.Value);
                 }

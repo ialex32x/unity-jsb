@@ -1,6 +1,7 @@
 #if !JSB_UNITYLESS
 using System;
 using System.IO;
+using System.Collections.Generic;
 
 namespace QuickJS.Unity
 {
@@ -73,6 +74,7 @@ namespace QuickJS.Unity
             var runtime = _runtime;
             _runtime = null;
             _runMode = RunMode.None;
+            JSScriptFinder.GetInstance().ModuleSourceChanged -= OnModuleSourceChanged;
             EditorApplication.delayCall -= OnInit;
             EditorApplication.update -= OnUpdate;
             EditorApplication.quitting -= OnQuitting;
@@ -143,10 +145,26 @@ namespace QuickJS.Unity
             }
 
             runtime.EvalMain(_prefs.editorEntryPoint);
-            
+
             foreach (var module in _prefs.editorRequires)
             {
                 runtime.ResolveModule(module);
+            }
+
+            var editorScripts = new List<JSScriptClassPathHint>();
+            JSScriptFinder.GetInstance().ModuleSourceChanged += OnModuleSourceChanged;
+            JSScriptFinder.GetInstance().Search(JSScriptClassType.Editor, editorScripts);
+            foreach (var editorScript in editorScripts)
+            {
+                runtime.ResolveModule(editorScript.modulePath);
+            }
+        }
+
+        private void OnModuleSourceChanged(string modulePath)
+        {
+            if (_runtime != null && _runtime.isValid && !EditorApplication.isCompiling)
+            {
+                _runtime.ResolveModule(modulePath);
             }
         }
 

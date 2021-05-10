@@ -1,9 +1,7 @@
 import { Animator, Input, KeyCode, SpriteRenderer, Time, Vector3 } from "UnityEngine";
-import { Inspector, ScriptType, ScriptNumber, ScriptObject } from "../plover/editor/decorators/inspector";
+import { ScriptType, ScriptNumber, ScriptObject } from "../plover/editor/decorators/inspector";
 import { JSBehaviourBase } from "./js_behaviour_base";
 
-// 暂时不支持相对路径
-@Inspector("game/editor/king_human_controller_inspector", "KingHumanControllerInspector")
 @ScriptType()
 export class KingHumanController extends JSBehaviourBase {
     @ScriptObject({editorOnly: true})

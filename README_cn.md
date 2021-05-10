@@ -10,12 +10,12 @@
 * 支持运算符重载 +, -, *, /, ==, -(负)
 * 支持 JS 字节码 (QuickJS)
 * 支持开发过程[实时代码热加载](#实时热加载)
-* [初步] 与 Unity 编辑器深度整合
+* 与 Unity 编辑器深度整合
     * 支持 JS 实现 MonoBehaviour (支持 Prefab)
     * 支持 JS 实现 编辑器窗口 (EditorWindow)
     * 支持 JS 实现 Inspector 编辑器 (Editor)
     * [未完成] 支持 JS 实现 ScriptableObject
-* [初步] 开发过程中无需生成绑定代码
+* 开发过程中无需生成绑定代码
 * [初步] 支持 JS Worker (limited support)
 * [初步] 支持未导出的C#类型的 JS 交互
 * [初步] 支持 C# 代码热更 (hotfix, limited support)
@@ -44,7 +44,6 @@ Extra 为可选附加模块, 提供不同的特定功能, 不需要的直接删�
 // 通过 VSCode 等编辑器, 可以很方便地自动填写 import 语句
 import { MonoBehaviour, WaitForSeconds, Object, GameObject } from "UnityEngine";
 
-// 通过 @Inspector 可以指定由脚本实现的编辑器 (script implemented custom editor extends UnityEngine.Editor)
 // 详见 example_monobehaviour.ts 例子
 class MyClass extends MonoBehaviour {
     protected _tick = 0;
@@ -115,7 +114,40 @@ comp_bySuperClass.test();
 ```
 
 ## 支持编辑器脚本
-> 目前实现了在脚本中继承 EditorWindow (功能还在完善中).
+> 目前实现了在脚本中继承 Editor/EditorWindow (功能还在完善中).
+
+```ts
+import { Editor, EditorGUI, EditorGUILayout, EditorUtility, MessageType } from "UnityEditor";
+import { GUILayout, Object } from "UnityEngine";
+import { MyClass } from "../../example_monobehaviour";
+import { ScriptEditor } from "../../plover/editor/decorators/inspector";
+
+// 类似于在 C# 中 CustomEditor 的写法
+@ScriptEditor(MyClass)
+export class MyClassInspector extends Editor {
+    Awake() {
+        console.log("my class inspector class awake");
+    }
+
+    OnInspectorGUI() {
+        let p = <MyClass>this.target;
+
+        EditorGUILayout.HelpBox("WHY ARE YOU SO SERIOUS?", MessageType.Info);
+        EditorGUI.BeginDisabledGroup(true);
+        EditorGUILayout.ObjectField("Object", p.gameObject, Object, true);
+        EditorGUI.EndDisabledGroup();
+        let vv = EditorGUILayout.IntField("vv", p.vv);
+        if (vv != p.vv) {
+            p.vv = vv;
+            // console.log("write value", p.vv);
+            EditorUtility.SetDirty(p);
+        }
+        if (GUILayout.Button("test")) {
+            p.speak("hello");
+        }
+    }
+}
+```
 
 ```ts
 import { EditorWindow } from "UnityEditor";
@@ -196,16 +228,13 @@ testAsyncFunc();
 ## 模块
 
 ```ts
-// 支持 ES6 模块 (import)
-// 注: 当使用 typescript 作为书写语言时, 会经过 compilerOptions.module 选项转换为对应版本的模块语句 (比如通常使用 commonjs, 最终 javascript 脚本中将被转化为 require)
-//     目前的主要精力放在 require 的处理流程上, 如果直接在 javascript 中使用 ES6 import 的模块语句, 无法正常导入绑定类 (详见TODO: ES 模块与 require 模块逻辑一致)
-import { fib } from "./fib.js";
 
 // 支持 commonjs 模块 (基础支持) (node.js 'require')
 require("./test");
 
 // commonjs modules cache access
 Object.keys(require.cache).forEach(key => console.log(key));
+
 ```
 
 ## WebSocket 

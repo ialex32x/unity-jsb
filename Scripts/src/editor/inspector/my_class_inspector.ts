@@ -1,7 +1,9 @@
 import { Editor, EditorGUI, EditorGUILayout, EditorUtility, MessageType } from "UnityEditor";
 import { GUILayout, Object } from "UnityEngine";
 import { MyClass } from "../../example_monobehaviour";
+import { ScriptEditor } from "../../plover/editor/decorators/inspector";
 
+@ScriptEditor(MyClass)
 export class MyClassInspector extends Editor {
     Awake() {
         console.log("my class inspector class awake");

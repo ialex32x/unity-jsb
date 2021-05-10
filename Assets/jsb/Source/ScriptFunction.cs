@@ -155,7 +155,8 @@ namespace QuickJS
             return rObj;
         }
 
-        private unsafe JSValue _Invoke(int argc, JSValue* argv)
+        // unsafe primitive call, will not change ref count of jsvalue in argv
+        public unsafe JSValue _Invoke(int argc, JSValue* argv)
         {
             if (_context == null)
             {

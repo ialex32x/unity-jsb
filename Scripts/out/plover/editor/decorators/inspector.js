@@ -1,30 +1,31 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.SerializationUtil = exports.EditorUtil = exports.ScriptProperty = exports.ScriptObject = exports.ScriptString = exports.ScriptNumber = exports.ScriptInteger = exports.Inspector = exports.ScriptType = void 0;
+exports.SerializationUtil = exports.EditorUtil = exports.ScriptProperty = exports.ScriptObject = exports.ScriptString = exports.ScriptNumber = exports.ScriptInteger = exports.ScriptEditor = exports.ScriptType = void 0;
 const UnityEditor_1 = require("UnityEditor");
 const UnityEngine_1 = require("UnityEngine");
-let SerializedFields = Symbol.for("SerializedFields");
-let PropertiesTouched = Symbol.for("PropertiesTouched");
+let Symbol_SerializedFields = Symbol.for("SerializedFields");
+let Symbol_PropertiesTouched = Symbol.for("PropertiesTouched");
+let Symbol_CustomEditor = Symbol.for("CustomEditor");
 // expose this script class type to JSBehaviour, so you can put it on a prefab gameObject
 function ScriptType(meta) {
     return function (target) {
         let OnBeforeSerialize = target.prototype["OnBeforeSerialize"];
         target.prototype["OnBeforeSerialize"] = function (ps) {
-            this[PropertiesTouched] = false;
+            this[Symbol_PropertiesTouched] = false;
             if (typeof OnBeforeSerialize === "function") {
                 OnBeforeSerialize.call(this, ps);
             }
-            if (!this[PropertiesTouched]) {
+            if (!this[Symbol_PropertiesTouched]) {
                 SerializationUtil.serialize(this, ps);
             }
         };
         let OnAfterDeserialize = target.prototype["OnAfterDeserialize"];
         target.prototype["OnAfterDeserialize"] = function (ps) {
-            this[PropertiesTouched] = false;
+            this[Symbol_PropertiesTouched] = false;
             if (typeof OnAfterDeserialize === "function") {
                 OnAfterDeserialize.call(this, ps);
             }
-            if (!this[PropertiesTouched]) {
+            if (!this[Symbol_PropertiesTouched]) {
                 SerializationUtil.deserialize(this, ps);
             }
         };
@@ -32,15 +33,13 @@ function ScriptType(meta) {
     };
 }
 exports.ScriptType = ScriptType;
-// path: 指定编辑器脚本所在模块, 暂时不支持相对路径
-function Inspector(path, className) {
-    return function (target) {
-        // 暂时简单实现
-        target.prototype.__editor__ = require(path)[className];
-        return target;
+function ScriptEditor(forType) {
+    return function (editorType) {
+        forType.prototype[Symbol_CustomEditor] = editorType;
+        return editorType;
     };
 }
-exports.Inspector = Inspector;
+exports.ScriptEditor = ScriptEditor;
 function ScriptInteger(meta) {
     if (typeof meta === "undefined") {
         meta = { type: "integer" };
@@ -83,9 +82,9 @@ function ScriptObject(meta) {
 exports.ScriptObject = ScriptObject;
 function ScriptProperty(meta) {
     return function (target, propertyKey) {
-        let slots = target[SerializedFields];
+        let slots = target[Symbol_SerializedFields];
         if (typeof slots === "undefined") {
-            slots = target[SerializedFields] = {};
+            slots = target[Symbol_SerializedFields] = {};
         }
         let slot = slots[propertyKey] = meta || {};
         if (typeof slot.serializable !== "boolean") {
@@ -104,6 +103,9 @@ function ScriptProperty(meta) {
 }
 exports.ScriptProperty = ScriptProperty;
 class EditorUtil {
+    static getCustomEditor(forType) {
+        return forType[Symbol_CustomEditor];
+    }
     /**
      * 默认编辑器绘制行为
      */
@@ -192,7 +194,7 @@ class EditorUtil {
 exports.EditorUtil = EditorUtil;
 class SerializationUtil {
     static forEach(target, extra, cb) {
-        let slots = target[SerializedFields];
+        let slots = target[Symbol_SerializedFields];
         if (typeof slots !== "undefined") {
             for (let propertyKey in slots) {
                 cb(propertyKey, slots[propertyKey], target, extra);
@@ -200,7 +202,7 @@ class SerializationUtil {
         }
     }
     static serialize(target, ps) {
-        target[PropertiesTouched] = true;
+        target[Symbol_PropertiesTouched] = true;
         this.forEach(target, ps, (propertyKey, slot, self, extra) => {
             if (slot.serializable) {
                 let value = self[propertyKey];
@@ -227,7 +229,7 @@ class SerializationUtil {
         });
     }
     static deserialize(target, ps) {
-        target[PropertiesTouched] = true;
+        target[Symbol_PropertiesTouched] = true;
         this.forEach(target, ps, (propertyKey, slot, self, extra) => {
             if (slot.serializable) {
                 let value = null;

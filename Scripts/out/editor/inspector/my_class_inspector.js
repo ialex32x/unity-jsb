@@ -1,9 +1,17 @@
 "use strict";
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.MyClassInspector = void 0;
 const UnityEditor_1 = require("UnityEditor");
 const UnityEngine_1 = require("UnityEngine");
-class MyClassInspector extends UnityEditor_1.Editor {
+const example_monobehaviour_1 = require("../../example_monobehaviour");
+const inspector_1 = require("../../plover/editor/decorators/inspector");
+let MyClassInspector = class MyClassInspector extends UnityEditor_1.Editor {
     Awake() {
         console.log("my class inspector class awake");
     }
@@ -23,6 +31,9 @@ class MyClassInspector extends UnityEditor_1.Editor {
             p.speak("hello");
         }
     }
-}
+};
+MyClassInspector = __decorate([
+    inspector_1.ScriptEditor(example_monobehaviour_1.MyClass)
+], MyClassInspector);
 exports.MyClassInspector = MyClassInspector;
 //# sourceMappingURL=my_class_inspector.js.map

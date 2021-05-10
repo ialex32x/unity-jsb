@@ -3,12 +3,11 @@ BUGFIX:
     ☐ 带变参方法变参类型为Object时，存在不一致行为 (例如 Debug.LogWarningFormat)
     ☐ C# 运算符本身存在重载时，需要生成不同的绑定名
     ☐ 以 toString 形式导出的 ToString 中触发异常将导致调用栈溢出崩溃
-    ☐ dotnetcore 执行反射绑定函数时异常
+    ✔ dotnetcore 执行反射绑定函数时异常 @done(21-05-10 19:14)
 
 必要:
     ☐ 反射模式支持运算符重载 (考虑接入v8, 可能取消运算符重载的导入)
     ☐ build quickjs libraries for linux
-    ☐ ScriptableObject supports
     ☐ JS Worker Runtime 的类型绑定
     ☐ 主模块与一般模块共用一致的加载流程
     ☐ ES模块与require模块逻辑一致
@@ -26,7 +25,7 @@ BUGFIX:
     ✔ 支持热加载 @done(21-05-01 08:05)
 
 Codegen:
-    ☐ 优化生成速度
+    ✔ 优化生成速度 @done(21-05-10 19:13)
     ☐ JSB_UNITYLESS 环境下 d.ts 的输出
     ☐ 提供选项自动添加关联类型的导出 (如果是泛型具体类, 且对应基类已经导出, 那么自动导出此泛型具体类)
     ☐ 子类中存在不同签名的同名方法时 (非虚)  时, 输出 ts-ignore
@@ -47,7 +46,7 @@ Codegen:
     ☐ quickjs Date 只处理了UTC时间
     ☐ 以更通用且自动化的方式生成可继承的类型
     ☐ 在 unity_qjs.c 中提供 fopen/fread/fclose (为了绕过 C# 中对已经在其他程序中打开的独占文件的读取限制)
-    ☐ README in English 
+    ✔ README in English @done(21-05-10 19:14)
     ✔ 提供 reload 接口 (清空指定模块, 并使用原 parent 进行重新载入) @done(21-05-01 08:05)
     ✔ 模块发生重载时, 关联模块也需要重载 @done(21-05-01 08:05)
 

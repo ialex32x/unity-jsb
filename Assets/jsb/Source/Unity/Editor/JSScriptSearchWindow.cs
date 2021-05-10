@@ -10,8 +10,6 @@ namespace QuickJS.Unity
 
     public class JSScriptSearchWindow : EditorWindow
     {
-        private static JSScriptFinder _finder;
-        
         private bool _parepared;
         private Action<JSScriptClassPathHint> _selectCallback;
         
@@ -103,7 +101,7 @@ namespace QuickJS.Unity
             ShowAsDropDown(screenRect, CalculateWindowSize(rect));
             
             _searchResults.Clear();
-            GetScriptFinder().Search(_searchString, JSScriptClassType.MonoBehaviour, _searchResults);
+            JSScriptFinder.GetInstance().Search(_searchString, JSScriptClassType.MonoBehaviour, _searchResults);
         }
         
         private Vector2 CalculateWindowSize(Rect buttonRect)
@@ -127,20 +125,6 @@ namespace QuickJS.Unity
             return new Vector2(vector.x, vector.y);
         }
 
-        private JSScriptFinder GetScriptFinder()
-        {
-            if (_finder == null)
-            {
-                var prefs = UnityHelper.LoadPrefs();
-                var baseDir = prefs.sourceDir;
-
-                _finder = new JSScriptFinder(baseDir, prefs.typescriptExt);
-                _finder.Start(); //TODO: need optimization, make the full collecting process async, and wait it finished 
-            }
-
-            return _finder;
-        }
-
         private void DrawSearchField()
         {
             var rect = GUILayoutUtility.GetRect(1, 1, 18, 18, GUILayout.ExpandWidth(true));
@@ -155,7 +139,7 @@ namespace QuickJS.Unity
             {
                 _searchString = result;
                 _searchResults.Clear();
-                GetScriptFinder().Search(_searchString, JSScriptClassType.MonoBehaviour, _searchResults);
+                JSScriptFinder.GetInstance().Search(_searchString, JSScriptClassType.MonoBehaviour, _searchResults);
             }
 
             rect.y += 18;

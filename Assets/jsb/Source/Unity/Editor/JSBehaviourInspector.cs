@@ -163,7 +163,23 @@ namespace QuickJS.Unity
                 return;
             }
 
-            var editorClass = _target.GetProperty("__editor__");
+            var editorClass = JSApi.JS_UNDEFINED;
+            var scriptFunc = runtime.GetMainContext().EvalSource<ScriptFunction>("require('plover/editor/decorators/inspector').EditorUtil.getCustomEditor", "eval");
+            if (scriptFunc != null)
+            {
+                unsafe
+                {
+                    JSValue targetValue = _target;
+                    if (targetValue.IsObject())
+                    {
+                        var args = stackalloc JSValue[] { _target };
+                        editorClass = scriptFunc._Invoke(1, args);
+                    }
+                }
+                scriptFunc.Dispose();
+            }
+
+            // var editorClass = _target.GetProperty("__editor__");
             if (JSApi.JS_IsConstructor(ctx, editorClass) == 1)
             {
                 var objectCache = runtime.GetObjectCache();

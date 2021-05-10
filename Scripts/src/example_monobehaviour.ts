@@ -1,9 +1,8 @@
 import { MonoBehaviour, WaitForSeconds, Object, Input, Camera, GameObject, PrimitiveType, Vector3, Quaternion, Physics, LayerMask, RaycastHit, Transform, Time, ParticleSystem, ParticleSystemSimulationSpace } from "UnityEngine";
 import * as jsb from "jsb";
-import { Inspector, SerializationUtil, ScriptNumber, ScriptType, ScriptInteger } from "./plover/editor/decorators/inspector";
+import { ScriptNumber, ScriptType, ScriptInteger } from "./plover/editor/decorators/inspector";
 import { Out } from "jsb";
 
-@Inspector("editor/inspector/my_class_inspector", "MyClassInspector")
 @ScriptType()
 export class MyClass extends MonoBehaviour {
 
@@ -67,7 +66,6 @@ export class MySubClass extends MyClass {
     }
 }
 
-@Inspector("editor/inspector/rotate_inspector", "RotateBehaviourInspector")
 @ScriptType()
 export class RotateBehaviour extends MonoBehaviour {
     private _rotation: number = 0;

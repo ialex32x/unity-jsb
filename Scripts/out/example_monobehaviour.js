@@ -46,7 +46,6 @@ __decorate([
     inspector_1.ScriptInteger({ editable: false, serializable: false })
 ], MyClass.prototype, "_tick", void 0);
 MyClass = __decorate([
-    inspector_1.Inspector("editor/inspector/my_class_inspector", "MyClassInspector"),
     inspector_1.ScriptType()
 ], MyClass);
 exports.MyClass = MyClass;
@@ -102,7 +101,6 @@ __decorate([
     inspector_1.ScriptNumber({ serializable: false })
 ], RotateBehaviour.prototype, "rotationSpeed", void 0);
 RotateBehaviour = __decorate([
-    inspector_1.Inspector("editor/inspector/rotate_inspector", "RotateBehaviourInspector"),
     inspector_1.ScriptType()
 ], RotateBehaviour);
 exports.RotateBehaviour = RotateBehaviour;

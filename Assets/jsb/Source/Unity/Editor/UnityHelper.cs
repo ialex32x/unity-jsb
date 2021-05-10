@@ -378,8 +378,8 @@ namespace QuickJS.Unity
         #endregion
 
         // https://regex101.com/r/426q4x/1
-        public static Regex JSBehaviourClassNameRegex = new Regex(@"@ScriptType\([\s\w\{\})]*\)[\n\s]*export\s+class\s+(\w+)\s+extends", RegexOptions.Multiline | RegexOptions.Compiled);
-        public static Regex JSCustomEditorClassNameRegex = new Regex(@"^\s*@CustomEditor\s*\(.*\)[\n\s]*export\s+class\s+(\w+)\s+extends", RegexOptions.Multiline | RegexOptions.Compiled);
+        public static Regex JSBehaviourClassNameRegex = new Regex(@"@ScriptType\s*\([\s\w\{\})]*\)[\n\s]*export\s+class\s+(\w+)\s+extends", RegexOptions.Multiline | RegexOptions.Compiled);
+        public static Regex JSCustomEditorClassNameRegex = new Regex(@"^\s*@ScriptEditor\s*\([\s\w\{\})]*\)[\n\s]*export\s+class\s+(\w+)\s+extends", RegexOptions.Multiline | RegexOptions.Compiled);
 
         public static string NormalizePathString(string path)
         {
@@ -387,7 +387,7 @@ namespace QuickJS.Unity
         }
 
         // sourceFile: 需要传入 FullPath
-        public static bool ResolveScriptRef(string sourceDirBase, string sourceFile, out string normalizedPath, List<JSScriptClassPathHint> hints)
+        public static bool ResolveScriptRef(string sourceDirBase, string sourceFile, out string normalizedPath, out string modulePath, List<JSScriptClassPathHint> hints)
         {
             if (!Path.IsPathRooted(sourceFile))
             {
@@ -398,6 +398,7 @@ namespace QuickJS.Unity
             if (!sourceFile.EndsWith(".ts"))
             {
                 // invalid 
+                modulePath = null;
                 return false;
             }
 
@@ -424,7 +425,8 @@ namespace QuickJS.Unity
                         {
                             var sourceSubPathNorm = sourcePathNorm[0] == '/' ? sourcePathNorm.Substring(appPathNorm.Length + 1) : sourcePathNorm.Substring(appPathNorm.Length);
                             var offset = sourceSubPathNorm[0] == '/' ? 1 : 0;
-                            var modulePath = sourceSubPathNorm.Substring(offset, sourceSubPathNorm.Length - sourceExt.Length - offset);
+                            
+                            modulePath = sourceSubPathNorm.Substring(offset, sourceSubPathNorm.Length - sourceExt.Length - offset);
                             GetJSScriptClasses(sourceFile, modulePath, hints);
                             return true;
                         }
@@ -436,6 +438,7 @@ namespace QuickJS.Unity
                 }
             }
 
+            modulePath = null;
             return false;
         }
 

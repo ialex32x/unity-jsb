@@ -78,6 +78,11 @@ namespace QuickJS.Unity
         private JSValue _onDrawGizmosFunc = JSApi.JS_UNDEFINED;
 #endif
 
+        public static implicit operator JSValue(JSBehaviour self)
+        {
+            return self._this_obj;
+        }
+
         public bool IsValid()
         {
             return _ctx.IsValid() && !_this_obj.IsNullish();
@@ -107,6 +112,7 @@ namespace QuickJS.Unity
             {
                 return JSApi.JS_UNDEFINED;
             }
+
             return JSApi.JS_GetPropertyStr(_ctx, _this_obj, key);
         }
 
