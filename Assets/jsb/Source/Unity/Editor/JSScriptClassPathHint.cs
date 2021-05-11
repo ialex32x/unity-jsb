@@ -23,11 +23,11 @@ namespace QuickJS.Unity
             this.sourceFile = sourceFile;
             this.modulePath = modulePath;
             this.className = className;
-            this.classPath = JSBehaviourScriptRef.ToClassPath(modulePath, className);
+            this.classPath = JSScriptRef.ToClassPath(modulePath, className);
             this.classType = classType;
         }
 
-        public bool IsReferenced(JSBehaviourScriptRef scriptRef)
+        public bool IsReferenced(JSScriptRef scriptRef)
         {
             return scriptRef.sourceFile == sourceFile && scriptRef.modulePath == modulePath && scriptRef.className == className;
         }

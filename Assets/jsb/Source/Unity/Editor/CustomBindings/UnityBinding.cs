@@ -103,7 +103,7 @@ namespace jsb.Editor
             bindingManager.AddExportedType(typeof(WrapMode), true);
 
             bindingManager.AddExportedType(typeof(Resources)).SetAllConstructorsBlocked();
-            bindingManager.AddExportedType(typeof(QuickJS.Unity.JSBehaviourProperties));
+            bindingManager.AddExportedType(typeof(QuickJS.Unity.JSScriptProperties));
         }
         
         private static TypeTransform HackGetComponents(TypeTransform typeTransform)

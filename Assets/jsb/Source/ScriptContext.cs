@@ -447,7 +447,7 @@ namespace QuickJS
         }
 
 #if !JSB_UNITYLESS
-        public bool CheckModuleId(Unity.JSBehaviourScriptRef scriptRef, string resolved_id)
+        public bool CheckModuleId(Unity.JSScriptRef scriptRef, string resolved_id)
         {
             return _runtime.ResolveModuleId(this, "", scriptRef.modulePath) == resolved_id;
         }

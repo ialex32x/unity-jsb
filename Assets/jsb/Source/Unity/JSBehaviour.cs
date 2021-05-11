@@ -6,14 +6,22 @@ namespace QuickJS.Unity
 {
     using Native;
     using UnityEngine;
+    using UnityEngine.Serialization;
 
-    public class JSBehaviour : MonoBehaviour, ISerializationCallbackReceiver
+    public class JSBehaviour : MonoBehaviour, ISerializationCallbackReceiver, IScriptEditorSupport
     {
         // 在编辑器运行时下与 js 脚本建立链接关系
-        public JSBehaviourScriptRef scriptRef;
+        [SerializeField]
+        [FormerlySerializedAs("scriptRef")]
+        private JSScriptRef _scriptRef;
+
+        public JSScriptRef scriptRef { get { return _scriptRef; } set { _scriptRef = value; } }
+
+        [SerializeField]
+        private JSScriptProperties _properties;
 
         // internal use only
-        public JSBehaviourProperties properties => _properties;
+        public JSScriptProperties properties => _properties;
 
         // unsafe, internal use only
         public JSContext ctx { get { return _ctx; } }
@@ -26,12 +34,10 @@ namespace QuickJS.Unity
         public bool isStandaloneScript => _isStandaloneScript;
 #endif
 
-        [SerializeField]
-        private JSBehaviourProperties _properties;
-
         private bool _isScriptInstanced = false;
 
-        private JSContext _ctx;
+        private JSContext _ctx = JSContext.Null;
+
         private JSValue _this_obj = JSApi.JS_UNDEFINED;
 
         private bool _updateValid;
@@ -78,9 +84,9 @@ namespace QuickJS.Unity
         private JSValue _onDrawGizmosFunc = JSApi.JS_UNDEFINED;
 #endif
 
-        public static implicit operator JSValue(JSBehaviour self)
+        public JSValue ToValue()
         {
-            return self._this_obj;
+            return _this_obj;
         }
 
         public bool IsValid()
@@ -333,15 +339,15 @@ namespace QuickJS.Unity
 #if UNITY_EDITOR
         private void OnScriptReloading(ScriptContext context, string resolved_id)
         {
-            if (context.CheckModuleId(scriptRef, resolved_id))
+            if (context.CheckModuleId(_scriptRef, resolved_id))
             {
                 OnBeforeSerialize();
             }
         }
-        
+
         private void OnScriptReloaded(ScriptContext context, string resolved_id)
         {
-            if (context.CheckModuleId(scriptRef, resolved_id))
+            if (context.CheckModuleId(_scriptRef, resolved_id))
             {
                 ReleaseJSValues();
                 CreateScriptInstance();
@@ -605,7 +611,7 @@ namespace QuickJS.Unity
             {
                 if (_properties == null)
                 {
-                    _properties = new JSBehaviourProperties();
+                    _properties = new JSScriptProperties();
                 }
                 else
                 {
@@ -639,7 +645,7 @@ namespace QuickJS.Unity
         {
             if (!_isScriptInstanced)
             {
-                if (!string.IsNullOrEmpty(scriptRef.modulePath) && !string.IsNullOrEmpty(scriptRef.className))
+                if (!string.IsNullOrEmpty(_scriptRef.modulePath) && !string.IsNullOrEmpty(_scriptRef.className))
                 {
                     var runtime = ScriptEngine.GetRuntime();
                     if (runtime != null && runtime.isInitialized)
@@ -648,9 +654,9 @@ namespace QuickJS.Unity
                         if (context != null)
                         {
                             var ctx = (JSContext)context;
-                            var snippet = $"require('{scriptRef.modulePath}')['{scriptRef.className}']";
+                            var snippet = $"require('{_scriptRef.modulePath}')['{_scriptRef.className}']";
                             var bytes = System.Text.Encoding.UTF8.GetBytes(snippet);
-                            var typeValue = ScriptRuntime.EvalSource(ctx, bytes, scriptRef.sourceFile, false);
+                            var typeValue = ScriptRuntime.EvalSource(ctx, bytes, _scriptRef.sourceFile, false);
                             if (JSApi.JS_IsException(typeValue))
                             {
                                 var ex = ctx.GetExceptionString();
@@ -690,7 +696,7 @@ namespace QuickJS.Unity
             {
                 if (_properties == null)
                 {
-                    _properties = new JSBehaviourProperties();
+                    _properties = new JSScriptProperties();
                 }
 
                 unsafe
