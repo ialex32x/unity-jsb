@@ -32,6 +32,9 @@ namespace jsb.Editor
             bindingManager.TransformType(typeof(MonoBehaviour))
                 .WriteCrossBindingConstructor();
 
+            bindingManager.TransformType(typeof(ScriptableObject))
+                .WriteCrossBindingConstructor();
+
             var buildTarget = EditorUserBuildSettings.activeBuildTarget;
             if (buildTarget != BuildTarget.iOS)
             {
