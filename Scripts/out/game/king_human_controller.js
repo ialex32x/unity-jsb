@@ -8,7 +8,7 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.KingHumanController = void 0;
 const UnityEngine_1 = require("UnityEngine");
-const inspector_1 = require("../plover/editor/decorators/inspector");
+const editor_decorators_1 = require("../plover/editor/editor_decorators");
 const js_behaviour_base_1 = require("./js_behaviour_base");
 let KingHumanController = class KingHumanController extends js_behaviour_base_1.JSBehaviourBase {
     constructor() {
@@ -67,13 +67,13 @@ let KingHumanController = class KingHumanController extends js_behaviour_base_1.
     }
 };
 __decorate([
-    inspector_1.ScriptObject({ editorOnly: true })
+    editor_decorators_1.ScriptObject({ editorOnly: true })
 ], KingHumanController.prototype, "animator", void 0);
 __decorate([
-    inspector_1.ScriptNumber()
+    editor_decorators_1.ScriptNumber()
 ], KingHumanController.prototype, "moveSpeed", void 0);
 KingHumanController = __decorate([
-    inspector_1.ScriptType()
+    editor_decorators_1.ScriptType()
 ], KingHumanController);
 exports.KingHumanController = KingHumanController;
 //# sourceMappingURL=king_human_controller.js.map

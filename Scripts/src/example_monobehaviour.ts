@@ -1,6 +1,6 @@
 import { MonoBehaviour, WaitForSeconds, Object, Input, Camera, GameObject, PrimitiveType, Vector3, Quaternion, Physics, LayerMask, RaycastHit, Transform, Time, ParticleSystem, ParticleSystemSimulationSpace } from "UnityEngine";
 import * as jsb from "jsb";
-import { ScriptNumber, ScriptType, ScriptInteger } from "./plover/editor/decorators/inspector";
+import { ScriptNumber, ScriptType, ScriptInteger } from "./plover/editor/editor_decorators";
 import { Out } from "jsb";
 
 @ScriptType()

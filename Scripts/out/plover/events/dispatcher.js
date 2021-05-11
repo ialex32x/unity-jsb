@@ -7,12 +7,16 @@ class Handler {
         this.fn = fn;
     }
     invoke(arg0, arg1, arg2) {
-        this.fn.call(this.caller, arg0, arg1, arg2);
+        if (this.fn) {
+            this.fn.call(this.caller, arg0, arg1, arg2);
+        }
     }
 }
 exports.Handler = Handler;
 /**
  * 简单的事件分发器实现
+ * 此实现功能与 DuktapeJS.Dispatcher 基本一致,
+ * 但 DuktapeJS.Dispatcher 不保证事件响应顺序, 但效率更高 (因为复用了中途移除的索引)
  */
 class Dispatcher {
     constructor() {
@@ -31,6 +35,8 @@ class Dispatcher {
                 let item = this._handlers[i];
                 if (item.caller == caller) {
                     found = true;
+                    item.fn = null;
+                    item.caller = null;
                     this._handlers.splice(i, 1);
                     size--;
                 }
@@ -43,6 +49,8 @@ class Dispatcher {
         for (let i = 0; i < size; i++) {
             let item = this._handlers[i];
             if (item.caller == caller && item.fn == fn) {
+                item.fn = null;
+                item.caller = null;
                 this._handlers.splice(i, 1);
                 return true;
             }
@@ -99,7 +107,7 @@ class EventDispatcher {
             dispatcher.off(caller, fn);
         }
     }
-    offAll() {
+    clear() {
         for (let evt in this._dispatcher) {
             let dispatcher = this._dispatcher[evt];
             if (dispatcher instanceof Dispatcher) {

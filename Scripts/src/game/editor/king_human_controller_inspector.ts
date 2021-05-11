@@ -1,6 +1,6 @@
 import { Editor, EditorGUI, EditorGUILayout, EditorUtility, MessageType } from "UnityEditor";
 import { Animator, GUILayout, Object } from "UnityEngine";
-import { EditorUtil, ScriptEditor } from "../../plover/editor/decorators/inspector";
+import { EditorUtil, ScriptEditor } from "../../plover/editor/editor_decorators";
 import { KingHumanController } from "../king_human_controller";
 
 @ScriptEditor(KingHumanController)

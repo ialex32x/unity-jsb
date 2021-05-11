@@ -9,7 +9,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.KingHumanControllerInspector = void 0;
 const UnityEditor_1 = require("UnityEditor");
 const UnityEngine_1 = require("UnityEngine");
-const inspector_1 = require("../../plover/editor/decorators/inspector");
+const editor_decorators_1 = require("../../plover/editor/editor_decorators");
 const king_human_controller_1 = require("../king_human_controller");
 let KingHumanControllerInspector = class KingHumanControllerInspector extends UnityEditor_1.Editor {
     OnInspectorGUI() {
@@ -33,7 +33,7 @@ let KingHumanControllerInspector = class KingHumanControllerInspector extends Un
     }
 };
 KingHumanControllerInspector = __decorate([
-    inspector_1.ScriptEditor(king_human_controller_1.KingHumanController)
+    editor_decorators_1.ScriptEditor(king_human_controller_1.KingHumanController)
 ], KingHumanControllerInspector);
 exports.KingHumanControllerInspector = KingHumanControllerInspector;
 //# sourceMappingURL=king_human_controller_inspector.js.map

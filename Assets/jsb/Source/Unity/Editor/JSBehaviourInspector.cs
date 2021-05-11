@@ -164,7 +164,7 @@ namespace QuickJS.Unity
             }
 
             var editorClass = JSApi.JS_UNDEFINED;
-            var scriptFunc = runtime.GetMainContext().EvalSource<ScriptFunction>("require('plover/editor/decorators/inspector').EditorUtil.getCustomEditor", "eval");
+            var scriptFunc = runtime.GetMainContext().EvalSource<ScriptFunction>("require('plover/editor/editor_decorators').EditorUtil.getCustomEditor", "eval");
             if (scriptFunc != null)
             {
                 unsafe

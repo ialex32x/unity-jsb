@@ -1,5 +1,5 @@
 import { Animator, Input, KeyCode, SpriteRenderer, Time, Vector3 } from "UnityEngine";
-import { ScriptType, ScriptNumber, ScriptObject } from "../plover/editor/decorators/inspector";
+import { ScriptType, ScriptNumber, ScriptObject } from "../plover/editor/editor_decorators";
 import { JSBehaviourBase } from "./js_behaviour_base";
 
 @ScriptType()

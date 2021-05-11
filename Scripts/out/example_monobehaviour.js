@@ -9,7 +9,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.Something5Behaviour = exports.RotateBehaviour = exports.MySubClass = exports.MyClass = void 0;
 const UnityEngine_1 = require("UnityEngine");
 const jsb = require("jsb");
-const inspector_1 = require("./plover/editor/decorators/inspector");
+const editor_decorators_1 = require("./plover/editor/editor_decorators");
 let MyClass = class MyClass extends UnityEngine_1.MonoBehaviour {
     constructor() {
         super(...arguments);
@@ -40,13 +40,13 @@ let MyClass = class MyClass extends UnityEngine_1.MonoBehaviour {
     }
 };
 __decorate([
-    inspector_1.ScriptNumber()
+    editor_decorators_1.ScriptNumber()
 ], MyClass.prototype, "vv", void 0);
 __decorate([
-    inspector_1.ScriptInteger({ editable: false, serializable: false })
+    editor_decorators_1.ScriptInteger({ editable: false, serializable: false })
 ], MyClass.prototype, "_tick", void 0);
 MyClass = __decorate([
-    inspector_1.ScriptType()
+    editor_decorators_1.ScriptType()
 ], MyClass);
 exports.MyClass = MyClass;
 let MySubClass = class MySubClass extends MyClass {
@@ -70,7 +70,7 @@ let MySubClass = class MySubClass extends MyClass {
     }
 };
 MySubClass = __decorate([
-    inspector_1.ScriptType()
+    editor_decorators_1.ScriptType()
 ], MySubClass);
 exports.MySubClass = MySubClass;
 let RotateBehaviour = class RotateBehaviour extends UnityEngine_1.MonoBehaviour {
@@ -98,16 +98,16 @@ let RotateBehaviour = class RotateBehaviour extends UnityEngine_1.MonoBehaviour 
     }
 };
 __decorate([
-    inspector_1.ScriptNumber({ serializable: false })
+    editor_decorators_1.ScriptNumber({ serializable: false })
 ], RotateBehaviour.prototype, "rotationSpeed", void 0);
 RotateBehaviour = __decorate([
-    inspector_1.ScriptType()
+    editor_decorators_1.ScriptType()
 ], RotateBehaviour);
 exports.RotateBehaviour = RotateBehaviour;
 let Something5Behaviour = class Something5Behaviour extends UnityEngine_1.MonoBehaviour {
 };
 Something5Behaviour = __decorate([
-    inspector_1.ScriptType()
+    editor_decorators_1.ScriptType()
 ], Something5Behaviour);
 exports.Something5Behaviour = Something5Behaviour;
 if (module == require.main) {

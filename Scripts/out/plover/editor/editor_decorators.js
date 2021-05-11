@@ -1,56 +1,15 @@
-import { JSBehaviourProperties } from "QuickJS.Unity";
-import { EditorApplication, EditorGUI, EditorGUILayout, EditorUtility } from "UnityEditor";
-import { Object } from "UnityEngine";
-
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.SerializationUtil = exports.EditorUtil = exports.DefaultEditor = exports.ScriptProperty = exports.ScriptObject = exports.ScriptString = exports.ScriptNumber = exports.ScriptInteger = exports.ScriptEditor = exports.ScriptType = void 0;
+const UnityEditor_1 = require("UnityEditor");
+const UnityEngine_1 = require("UnityEngine");
 let Symbol_SerializedFields = Symbol.for("SerializedFields");
 let Symbol_PropertiesTouched = Symbol.for("PropertiesTouched");
 let Symbol_CustomEditor = Symbol.for("CustomEditor");
-
-type PropertyTypeID = "integer" | "float" | "string" | "object";
-
-export interface PropertyMetaInfo {
-    /**
-     * slot name in property table
-     */
-    name?: string;
-
-    /**
-     * (默认编辑器行为中) 是否可见
-     */
-    visible?: boolean;
-
-    /**
-     * (默认编辑器行为中) 是否可以编辑
-     */
-    editable?: boolean;
-
-    /**
-     * 是否仅编辑器状态可编辑
-     */
-    editorOnly?: boolean;
-
-    /**
-     * 是否序列化
-     */
-    serializable?: boolean;
-
-    type?: PropertyTypeID;
-
-    label?: string;
-
-    tooltip?: string;
-
-    extra?: any;
-}
-
-export interface ClassMetaInfo {
-
-}
-
 // expose this script class type to JSBehaviour, so you can put it on a prefab gameObject
-export function ScriptType(meta?: ClassMetaInfo) {
-    return function (target: any) {
-        let OnBeforeSerialize: Function = target.prototype["OnBeforeSerialize"];
+function ScriptType(meta) {
+    return function (target) {
+        let OnBeforeSerialize = target.prototype["OnBeforeSerialize"];
         target.prototype["OnBeforeSerialize"] = function (ps) {
             this[Symbol_PropertiesTouched] = false;
             if (typeof OnBeforeSerialize === "function") {
@@ -59,9 +18,8 @@ export function ScriptType(meta?: ClassMetaInfo) {
             if (!this[Symbol_PropertiesTouched]) {
                 SerializationUtil.serialize(this, ps);
             }
-        }
-
-        let OnAfterDeserialize: Function = target.prototype["OnAfterDeserialize"];
+        };
+        let OnAfterDeserialize = target.prototype["OnAfterDeserialize"];
         target.prototype["OnAfterDeserialize"] = function (ps) {
             this[Symbol_PropertiesTouched] = false;
             if (typeof OnAfterDeserialize === "function") {
@@ -70,164 +28,167 @@ export function ScriptType(meta?: ClassMetaInfo) {
             if (!this[Symbol_PropertiesTouched]) {
                 SerializationUtil.deserialize(this, ps);
             }
-        }
-
+        };
         return target;
-    }
+    };
 }
-
-export function ScriptEditor(forType: any) {
-    return function (editorType: any) {
+exports.ScriptType = ScriptType;
+function ScriptEditor(forType) {
+    return function (editorType) {
         forType.prototype[Symbol_CustomEditor] = editorType;
         return editorType;
-    }
+    };
 }
-
-export function ScriptInteger(meta?: PropertyMetaInfo) {
+exports.ScriptEditor = ScriptEditor;
+function ScriptInteger(meta) {
     if (typeof meta === "undefined") {
         meta = { type: "integer" };
-    } else {
+    }
+    else {
         meta.type = "integer";
     }
     return ScriptProperty(meta);
 }
-
-export function ScriptNumber(meta?: PropertyMetaInfo) {
+exports.ScriptInteger = ScriptInteger;
+function ScriptNumber(meta) {
     if (typeof meta === "undefined") {
         meta = { type: "float" };
-    } else {
+    }
+    else {
         meta.type = "float";
     }
     return ScriptProperty(meta);
 }
-
-export function ScriptString(meta?: PropertyMetaInfo) {
+exports.ScriptNumber = ScriptNumber;
+function ScriptString(meta) {
     if (typeof meta === "undefined") {
         meta = { type: "string" };
-    } else {
+    }
+    else {
         meta.type = "string";
     }
     return ScriptProperty(meta);
 }
-
-export function ScriptObject(meta?: PropertyMetaInfo) {
+exports.ScriptString = ScriptString;
+function ScriptObject(meta) {
     if (typeof meta === "undefined") {
         meta = { type: "object" };
-    } else {
+    }
+    else {
         meta.type = "object";
     }
     return ScriptProperty(meta);
 }
-
-export function ScriptProperty(meta?: PropertyMetaInfo) {
-    return function (target: any, propertyKey: string) {
-        let slots: { [k: string]: PropertyMetaInfo } = target[Symbol_SerializedFields];
+exports.ScriptObject = ScriptObject;
+function ScriptProperty(meta) {
+    return function (target, propertyKey) {
+        let slots = target[Symbol_SerializedFields];
         if (typeof slots === "undefined") {
             slots = target[Symbol_SerializedFields] = {};
         }
-
         let slot = slots[propertyKey] = meta || {};
-
         if (typeof slot.serializable !== "boolean") {
             slot.serializable = true;
         }
-
         if (typeof slot.editable !== "boolean") {
             slot.editable = true;
         }
-
         if (typeof slot.visible !== "boolean") {
             slot.visible = true;
         }
-
         if (typeof slot.name !== "string") {
             slot.name = propertyKey;
         }
+    };
+}
+exports.ScriptProperty = ScriptProperty;
+class DefaultEditor extends UnityEditor_1.Editor {
+    OnInspectorGUI() {
+        EditorUtil.draw(this.target);
     }
 }
-
-export class EditorUtil {
-    static getCustomEditor(forType: any) {
-        return forType[Symbol_CustomEditor];
+exports.DefaultEditor = DefaultEditor;
+class EditorUtil {
+    static getCustomEditor(forType) {
+        return forType[Symbol_CustomEditor] || DefaultEditor;
     }
-
     /**
      * 默认编辑器绘制行为
      */
-    static draw(target: any, extra?: any) {
+    static draw(target, extra) {
         SerializationUtil.forEach(target, extra, (propertyKey, slot, self, extra) => {
             if (slot.visible) {
                 let label = slot.label || propertyKey;
-                let editablePE = !slot.editorOnly || !EditorApplication.isPlaying;
-
+                let editablePE = !slot.editorOnly || !UnityEditor_1.EditorApplication.isPlaying;
                 switch (slot.type) {
                     case "integer": {
-                        let oldValue: number = self[propertyKey];
+                        let oldValue = self[propertyKey];
                         if (slot.editable && editablePE) {
-                            let newValue = EditorGUILayout.IntField(label, oldValue);
+                            let newValue = UnityEditor_1.EditorGUILayout.IntField(label, oldValue);
                             if (newValue != oldValue) {
                                 self[propertyKey] = newValue;
-                                EditorUtility.SetDirty(self);
+                                UnityEditor_1.EditorUtility.SetDirty(self);
                             }
-                        } else {
-                            EditorGUI.BeginDisabledGroup(true);
-                            EditorGUILayout.IntField(label, oldValue);
-                            EditorGUI.EndDisabledGroup();
+                        }
+                        else {
+                            UnityEditor_1.EditorGUI.BeginDisabledGroup(true);
+                            UnityEditor_1.EditorGUILayout.IntField(label, oldValue);
+                            UnityEditor_1.EditorGUI.EndDisabledGroup();
                         }
                         break;
                     }
                     case "float": {
-                        let oldValue: number = self[propertyKey];
+                        let oldValue = self[propertyKey];
                         if (slot.editable && editablePE) {
-                            let newValue = EditorGUILayout.FloatField(label, oldValue);
+                            let newValue = UnityEditor_1.EditorGUILayout.FloatField(label, oldValue);
                             if (newValue != oldValue) {
                                 self[propertyKey] = newValue;
-                                EditorUtility.SetDirty(self);
+                                UnityEditor_1.EditorUtility.SetDirty(self);
                             }
-                        } else {
-                            EditorGUI.BeginDisabledGroup(true);
-                            EditorGUILayout.FloatField(label, oldValue);
-                            EditorGUI.EndDisabledGroup();
+                        }
+                        else {
+                            UnityEditor_1.EditorGUI.BeginDisabledGroup(true);
+                            UnityEditor_1.EditorGUILayout.FloatField(label, oldValue);
+                            UnityEditor_1.EditorGUI.EndDisabledGroup();
                         }
                         break;
                     }
                     case "string": {
-                        let oldValue: string = self[propertyKey];
+                        let oldValue = self[propertyKey];
                         if (typeof oldValue !== "string") {
                             oldValue = "" + oldValue;
                         }
                         if (slot.editable && editablePE) {
-                            let newValue = EditorGUILayout.TextField(label, oldValue);
+                            let newValue = UnityEditor_1.EditorGUILayout.TextField(label, oldValue);
                             if (newValue != oldValue) {
                                 self[propertyKey] = newValue;
-                                EditorUtility.SetDirty(self);
+                                UnityEditor_1.EditorUtility.SetDirty(self);
                             }
-                        } else {
-                            EditorGUI.BeginDisabledGroup(true);
-                            EditorGUILayout.TextField(label, oldValue);
-                            EditorGUI.EndDisabledGroup();
+                        }
+                        else {
+                            UnityEditor_1.EditorGUI.BeginDisabledGroup(true);
+                            UnityEditor_1.EditorGUILayout.TextField(label, oldValue);
+                            UnityEditor_1.EditorGUI.EndDisabledGroup();
                         }
                         break;
                     }
                     case "object": {
-                        let oldValue: Object = self[propertyKey];
+                        let oldValue = self[propertyKey];
                         if (typeof oldValue !== "object") {
                             oldValue = null;
                         }
                         if (slot.editable && editablePE) {
                             let allowSceneObjects = slot.extra && slot.extra.allowSceneObjects;
-                            let newValue = EditorGUILayout.ObjectField(label, oldValue,
-                                slot.extra && slot.extra.type || Object,
-                                typeof allowSceneObjects === "boolean" ? allowSceneObjects : true);
-
+                            let newValue = UnityEditor_1.EditorGUILayout.ObjectField(label, oldValue, slot.extra && slot.extra.type || UnityEngine_1.Object, typeof allowSceneObjects === "boolean" ? allowSceneObjects : true);
                             if (newValue != oldValue) {
                                 self[propertyKey] = newValue;
-                                EditorUtility.SetDirty(self);
+                                UnityEditor_1.EditorUtility.SetDirty(self);
                             }
-                        } else {
-                            EditorGUI.BeginDisabledGroup(true);
-                            EditorGUILayout.ObjectField(label, oldValue, Object, false);
-                            EditorGUI.EndDisabledGroup();
+                        }
+                        else {
+                            UnityEditor_1.EditorGUI.BeginDisabledGroup(true);
+                            UnityEditor_1.EditorGUILayout.ObjectField(label, oldValue, UnityEngine_1.Object, false);
+                            UnityEditor_1.EditorGUI.EndDisabledGroup();
                         }
                         break;
                     }
@@ -236,23 +197,21 @@ export class EditorUtil {
         });
     }
 }
-
-export class SerializationUtil {
-    static forEach(target: any, extra: any, cb: (propertyKey: string, slot: PropertyMetaInfo, target: any, extra: any) => void) {
-        let slots: {} = target[Symbol_SerializedFields];
+exports.EditorUtil = EditorUtil;
+class SerializationUtil {
+    static forEach(target, extra, cb) {
+        let slots = target[Symbol_SerializedFields];
         if (typeof slots !== "undefined") {
             for (let propertyKey in slots) {
                 cb(propertyKey, slots[propertyKey], target, extra);
             }
         }
     }
-
-    static serialize(target: any, ps: JSBehaviourProperties) {
+    static serialize(target, ps) {
         target[Symbol_PropertiesTouched] = true;
-        this.forEach(target, ps, (propertyKey, slot, self, extra: JSBehaviourProperties) => {
+        this.forEach(target, ps, (propertyKey, slot, self, extra) => {
             if (slot.serializable) {
                 let value = self[propertyKey];
-
                 // console.log("serializing", slot.propertyKey, value);
                 switch (slot.type) {
                     case "integer": {
@@ -275,13 +234,11 @@ export class SerializationUtil {
             }
         });
     }
-
-    static deserialize(target: any, ps: JSBehaviourProperties) {
+    static deserialize(target, ps) {
         target[Symbol_PropertiesTouched] = true;
-        this.forEach(target, ps, (propertyKey, slot, self, extra: JSBehaviourProperties) => {
+        this.forEach(target, ps, (propertyKey, slot, self, extra) => {
             if (slot.serializable) {
                 let value = null;
-
                 switch (slot.type) {
                     case "integer": {
                         value = extra.GetInteger(slot.name);
@@ -306,3 +263,5 @@ export class SerializationUtil {
         });
     }
 }
+exports.SerializationUtil = SerializationUtil;
+//# sourceMappingURL=editor_decorators.js.map

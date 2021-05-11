@@ -10,7 +10,7 @@ exports.RotateBehaviourInspector = void 0;
 const UnityEditor_1 = require("UnityEditor");
 const UnityEngine_1 = require("UnityEngine");
 const example_monobehaviour_1 = require("../../example_monobehaviour");
-const inspector_1 = require("../../plover/editor/decorators/inspector");
+const editor_decorators_1 = require("../../plover/editor/editor_decorators");
 let RotateBehaviourInspector = class RotateBehaviourInspector extends UnityEditor_1.Editor {
     Awake() {
         console.log("my class inspector class awake");
@@ -25,7 +25,7 @@ let RotateBehaviourInspector = class RotateBehaviourInspector extends UnityEdito
     }
 };
 RotateBehaviourInspector = __decorate([
-    inspector_1.ScriptEditor(example_monobehaviour_1.RotateBehaviour)
+    editor_decorators_1.ScriptEditor(example_monobehaviour_1.RotateBehaviour)
 ], RotateBehaviourInspector);
 exports.RotateBehaviourInspector = RotateBehaviourInspector;
 //# sourceMappingURL=rotate_inspector.js.map
