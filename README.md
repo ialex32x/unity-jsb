@@ -10,7 +10,7 @@ It brings Javascript runtime capability to Unity3D by integrating [QuickJS](http
 * Unity3D coroutines and C# tasks support in JS async function
 * Operator overload for Vector2/Vector3 etc.
 * [Javascript hotload](#Hotload) in development
-* Highly integerated with Unity3D
+* Highly integrated with Unity3D
     * JS implemented MonoBehaviour (include Prefab)
     * JS implemented EditorWindow
     * JS implemented Editor (Inspector)
