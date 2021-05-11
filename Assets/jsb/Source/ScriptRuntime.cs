@@ -332,6 +332,7 @@ namespace QuickJS
             _typeDB = new TypeDB(this, _mainContext);
 #if !JSB_UNITYLESS
             _typeDB.AddType(typeof(Unity.JSBehaviour), JSApi.JS_UNDEFINED);
+            _typeDB.AddType(typeof(Unity.JSScriptableObject), JSApi.JS_UNDEFINED);
 #endif
 #if UNITY_EDITOR
             _typeDB.AddType(Values.FindType("QuickJS.Unity.JSEditorWindow"), JSApi.JS_UNDEFINED);
