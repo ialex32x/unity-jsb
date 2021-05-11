@@ -65,15 +65,18 @@ class MyClass extends MonoBehaviour {
 }
 
 // with @ScriptType decorator, this class will be recognized by Unity Editor
-@ScriptType
+@ScriptType()
 export class MySubClass extends MyClass {
 
     // make this field be serialized automatically
-    @SerializedNumber
-    year = 2021
+    @ScriptInteger()
+    year = 2021;
 
-    @SerializedNumber
-    month = 5
+    @ScriptInteger()
+    month = 5;
+
+    @ScriptString()
+    theName = "Bob";
 
     Awake() {
         super.Awake();

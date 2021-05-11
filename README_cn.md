@@ -75,14 +75,14 @@ class MyClass extends MonoBehaviour {
 
 // 通过 @ScriptType 修饰器, 可以使此类型被编辑器识别, 以便在 gameObject 上挂载此脚本, 并可存为 prefab
 // 注意: @ScriptType 必须紧跟 export class
-@ScriptType
+@ScriptType()
 export class MySubClass extends MyClass {
 
-    // 通过 @SerializedNumber 修饰器可以使此字段被序列化
-    @SerializedNumber
+    // 通过 @ScriptInteger() 修饰器可以使此字段被序列化
+    @ScriptInteger()
     year = 2021
 
-    @SerializedNumber
+    @ScriptInteger()
     month = 5
 
     Awake() {
@@ -92,15 +92,6 @@ export class MySubClass extends MyClass {
 
     play() {
         console.log("MySubClass.play");
-    }
-    
-    // SerializedNumber 等功能目前依赖于此回调, 必须显式写出
-    OnBeforeSerialize(ps: JSBehaviourProperties) {
-        SerializationUtil.serialize(this, ps);
-    }
-
-    OnAfterDeserialize(ps: JSBehaviourProperties) {
-        SerializationUtil.deserialize(this, ps);
     }
 }
 
