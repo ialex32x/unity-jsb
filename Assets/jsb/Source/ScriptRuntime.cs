@@ -392,13 +392,14 @@ namespace QuickJS
             FindModuleResolver<StaticModuleResolver>().AddStaticModule(module_id, register);
         }
 
-        // public void AddStaticModuleProxy(string module_id, Action<ScriptRuntime, ProxyModuleRegister> proxyReg)
-        // {
-        //     var proxy = new ProxyModuleRegister(this);
+        // 用于静态绑定代码注册绑定模块
+        public void AddStaticModuleProxy(string module_id, Action<ScriptRuntime, ProxyModuleRegister> proxyReg)
+        {
+            var proxy = new ProxyModuleRegister(this);
 
-        //     proxyReg(this, proxy);
-        //     FindModuleResolver<StaticModuleResolver>().AddStaticModule(module_id, proxy);
-        // }
+            proxyReg(this, proxy);
+            FindModuleResolver<StaticModuleResolver>().AddStaticModule(module_id, proxy);
+        }
 
         public ScriptRuntime CreateWorker()
         {

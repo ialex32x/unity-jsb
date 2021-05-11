@@ -30,7 +30,7 @@ namespace QuickJS.Unity
 
         public bool IsReferenced(JSScriptRef scriptRef)
         {
-            return scriptRef.sourceFile == sourceFile && scriptRef.modulePath == modulePath && scriptRef.className == className;
+            return scriptRef.modulePath == modulePath && scriptRef.className == className;
         }
 
         public string ToClassPath()

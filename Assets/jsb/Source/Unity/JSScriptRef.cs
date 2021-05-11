@@ -16,6 +16,11 @@ namespace QuickJS.Unity
         public string modulePath;
         public string className;
 
+        public bool IsEmpty()
+        {
+            return string.IsNullOrEmpty(modulePath) && string.IsNullOrEmpty(className);
+        }
+
         public static string ToClassPath(string modulePath, string className)
         {
             if (string.IsNullOrEmpty(modulePath))

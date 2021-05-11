@@ -25,6 +25,9 @@ namespace jsb.Editor
 
         public override void OnPreExporting(BindingManager bindingManager)
         {
+            bindingManager.AddTypePrefixBlacklist("Unity.");
+            bindingManager.AddTypePrefixBlacklist("TreeEditor.");
+            
             bindingManager.AddExportedType(typeof(GUI)).SetAllConstructorsBlocked();
             bindingManager.AddExportedType(typeof(GUIUtility)).SetAllConstructorsBlocked();
             bindingManager.AddExportedType(typeof(GUILayout)).SetAllConstructorsBlocked();
@@ -57,7 +60,9 @@ namespace jsb.Editor
             bindingManager.AddExportedType(typeof(MessageType)).EditorRuntime();
             bindingManager.AddExportedType(typeof(Hash128)).EditorRuntime();
             bindingManager.AddExportedType(typeof(ImportAssetOptions)).EditorRuntime();
+            #if !UNITY_2019_3_OR_NEWER
             bindingManager.AddExportedType(typeof(ScriptingRuntimeVersion)).EditorRuntime();
+            #endif
             bindingManager.AddExportedType(typeof(AssetPostprocessor)).EditorRuntime().SetAllConstructorsBlocked();
             bindingManager.AddExportedType(typeof(AssetImporter)).EditorRuntime();
             bindingManager.AddExportedType(typeof(ModelImporter)).EditorRuntime();

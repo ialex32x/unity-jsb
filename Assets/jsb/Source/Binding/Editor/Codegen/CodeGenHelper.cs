@@ -199,6 +199,7 @@ namespace QuickJS.Binding
             this.cg = cg;
             this.typeBindingInfo = typeBindingInfo;
             this.cg.cs.AppendLine("// Assembly: {0}", typeBindingInfo.Assembly.GetName());
+            this.cg.cs.AppendLine("// Location: {0}", typeBindingInfo.Assembly.Location);
             this.cg.cs.AppendLine("// Type: {0}", typeBindingInfo.FullName);
             this.cg.cs.AppendLine("[{0}]", typeof(JSBindingAttribute).Name);
             // this.cg.cs.AppendLine("[UnityEngine.Scripting.Preserve]");

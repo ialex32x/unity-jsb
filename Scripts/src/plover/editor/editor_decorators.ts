@@ -1,4 +1,4 @@
-import { JSBehaviourProperties } from "QuickJS.Unity";
+import { JSScriptProperties } from "QuickJS.Unity";
 import { Editor, EditorApplication, EditorGUI, EditorGUILayout, EditorUtility } from "UnityEditor";
 import { Object } from "UnityEngine";
 
@@ -45,6 +45,10 @@ export interface PropertyMetaInfo {
 
 export interface ClassMetaInfo {
 
+}
+
+export function ScriptAsset(meta?: any) {
+    return ScriptType(meta);
 }
 
 // expose this script class type to JSBehaviour, so you can put it on a prefab gameObject
@@ -253,9 +257,9 @@ export class SerializationUtil {
         }
     }
 
-    static serialize(target: any, ps: JSBehaviourProperties) {
+    static serialize(target: any, ps: JSScriptProperties) {
         target[Symbol_PropertiesTouched] = true;
-        this.forEach(target, ps, (propertyKey, slot, self, extra: JSBehaviourProperties) => {
+        this.forEach(target, ps, (propertyKey, slot, self, extra: JSScriptProperties) => {
             if (slot.serializable) {
                 let value = self[propertyKey];
 
@@ -282,9 +286,9 @@ export class SerializationUtil {
         });
     }
 
-    static deserialize(target: any, ps: JSBehaviourProperties) {
+    static deserialize(target: any, ps: JSScriptProperties) {
         target[Symbol_PropertiesTouched] = true;
-        this.forEach(target, ps, (propertyKey, slot, self, extra: JSBehaviourProperties) => {
+        this.forEach(target, ps, (propertyKey, slot, self, extra: JSScriptProperties) => {
             if (slot.serializable) {
                 let value = null;
 

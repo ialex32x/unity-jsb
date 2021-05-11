@@ -9,8 +9,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.KingHumanController = void 0;
 const UnityEngine_1 = require("UnityEngine");
 const editor_decorators_1 = require("../plover/editor/editor_decorators");
-const js_behaviour_base_1 = require("./js_behaviour_base");
-let KingHumanController = class KingHumanController extends js_behaviour_base_1.JSBehaviourBase {
+let KingHumanController = class KingHumanController extends UnityEngine_1.MonoBehaviour {
     constructor() {
         super(...arguments);
         this.moveSpeed = 1.8;

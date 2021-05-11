@@ -217,6 +217,11 @@ namespace QuickJS.Unity
         /// </summary>
         public static bool IsExplicitEditorDomain(Assembly assembly)
         {
+            if (assembly == typeof(Editor).Assembly)
+            {
+                return true;
+            }
+
             var location = assembly.Location.Replace('\\', '/');
             var assetsPath = new FileInfo(Application.dataPath);
             var fullAssetsPath = assetsPath.FullName.Replace('\\', '/');
@@ -379,6 +384,7 @@ namespace QuickJS.Unity
 
         // https://regex101.com/r/426q4x/1
         public static Regex JSBehaviourClassNameRegex = new Regex(@"@ScriptType\s*\([\s\w\{\})]*\)[\n\s]*export\s+class\s+(\w+)\s+extends", RegexOptions.Multiline | RegexOptions.Compiled);
+        public static Regex JSAssetClassNameRegex = new Regex(@"@ScriptAsset\s*\([\s\w\{\})]*\)[\n\s]*export\s+class\s+(\w+)\s+extends", RegexOptions.Multiline | RegexOptions.Compiled);
         public static Regex JSCustomEditorClassNameRegex = new Regex(@"^\s*@ScriptEditor\s*\([\s\w\{\})]*\)[\n\s]*export\s+class\s+(\w+)\s+extends", RegexOptions.Multiline | RegexOptions.Compiled);
 
         public static string NormalizePathString(string path)
@@ -450,6 +456,11 @@ namespace QuickJS.Unity
             foreach (Match m in JSBehaviourClassNameRegex.Matches(text))
             {
                 hints.Add(new JSScriptClassPathHint(sourceFile, modulePath, m.Groups[1].Value, JSScriptClassType.MonoBehaviour));
+            }
+
+            foreach (Match m in JSAssetClassNameRegex.Matches(text))
+            {
+                hints.Add(new JSScriptClassPathHint(sourceFile, modulePath, m.Groups[1].Value, JSScriptClassType.ScriptableObject));
             }
 
             foreach (Match m in JSCustomEditorClassNameRegex.Matches(text))

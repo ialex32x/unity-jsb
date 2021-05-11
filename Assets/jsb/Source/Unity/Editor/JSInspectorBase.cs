@@ -14,8 +14,9 @@ namespace QuickJS.Unity
     {
         private T _target;
         protected JSScriptClassType _classType;
-        private bool _psView;
-        private bool _foldoutSourceRef;
+
+        private string[] _tabViews = new string[] { "Editor", "Source", "Primitive" };
+        private int _selectedTabViewIndex = 0;
 
         private bool _enabled;
         private bool _enabledPending;
@@ -343,104 +344,76 @@ namespace QuickJS.Unity
             }
         }
 
-        private void DrawSourceRef()
+        private void DrawSourceView()
         {
-            var showSourceRefEdit = !_target.IsValid();
+            // EditorGUI.BeginDisabledGroup(_target.isStandaloneScript);
+            EditorGUILayout.BeginHorizontal();
+            EditorGUILayout.TextField("Source File", _target.scriptRef.sourceFile);
+            var sourceFileRect = GUILayoutUtility.GetLastRect();
 
-            if (!showSourceRefEdit)
+            if (GUILayout.Button("F", GUILayout.Width(20f)))
             {
-                _foldoutSourceRef = EditorGUILayout.Foldout(_foldoutSourceRef, "Script Ref");
-                showSourceRefEdit = _foldoutSourceRef;
+                sourceFileRect.y += 10f;
+                if (JSScriptSearchWindow.Show(sourceFileRect, string.Empty, _classType, OnSelectedScript))
+                {
+                    GUIUtility.ExitGUI();
+                }
             }
 
-            if (showSourceRefEdit)
+            EditorGUILayout.EndHorizontal();
+
+            if (!string.IsNullOrEmpty(_target.scriptRef.sourceFile))
             {
-                // EditorGUI.BeginDisabledGroup(_target.isStandaloneScript);
-                EditorGUILayout.BeginHorizontal();
-                EditorGUILayout.TextField("Source File", _target.scriptRef.sourceFile);
-                var sourceFileRect = GUILayoutUtility.GetLastRect();
-
-                if (GUILayout.Button("F", GUILayout.Width(20f)))
-                {
-                    sourceFileRect.y += 10f;
-                    if (JSScriptSearchWindow.Show(sourceFileRect, string.Empty, _classType, OnSelectedScript))
-                    {
-                        GUIUtility.ExitGUI();
-                    }
-                }
-
-                EditorGUILayout.EndHorizontal();
-
                 var sourceFileExists = File.Exists(_target.scriptRef.sourceFile);
 
                 if (!sourceFileExists)
                 {
                     EditorGUILayout.HelpBox("Source file is missing", MessageType.Warning);
                 }
-
-                EditorGUILayout.LabelField("Module Path", _target.scriptRef.modulePath);
-                EditorGUILayout.LabelField("Class Name", _target.scriptRef.className);
-                // EditorGUI.EndDisabledGroup();
             }
-            EditorGUILayout.Separator();
+
+            EditorGUILayout.LabelField("Module Path", _target.scriptRef.modulePath);
+            EditorGUILayout.LabelField("Class Name", _target.scriptRef.className);
+            // EditorGUI.EndDisabledGroup();
         }
 
         private void DrawPrimitiveView()
         {
-            _psView = EditorGUILayout.Toggle("Primitive View", _psView);
-            if (_psView)
+            var ps = _target.properties;
+            if (ps == null || ps.Count == 0)
             {
-                var ps = _target.properties;
-                if (ps == null || ps.Count == 0)
-                {
-                    EditorGUILayout.HelpBox("Empty Properties View", MessageType.Info);
-                    return;
-                }
-
-                ps.ForEach((string key, Object value) =>
-                {
-                    //
-                    EditorGUILayout.ObjectField(key, value, value != null ? value.GetType() : typeof(Object), true);
-                });
-
-                ps.ForEach((string key, string value) =>
-                {
-                    //
-                    EditorGUILayout.LabelField(key);
-                    EditorGUILayout.TextArea(value);
-                });
-
-                ps.ForEach((string key, int value) =>
-                {
-                    // unsafe
-                    EditorGUILayout.IntField(key, value);
-                });
-
-                ps.ForEach((string key, float value) =>
-                {
-                    // unsafe
-                    EditorGUILayout.FloatField(key, value);
-                });
-            }
-        }
-
-        public override void OnInspectorGUI()
-        {
-            if (UnityEditor.EditorApplication.isCompiling)
-            {
-                Release();
-                EditorGUILayout.HelpBox("Temporarily unavailable in the script compilation process", MessageType.Warning);
+                EditorGUILayout.HelpBox("Empty Properties View", MessageType.Info);
                 return;
             }
 
-            if (_enabledPending)
+            ps.ForEach((string key, Object value) =>
             {
-                EnableScriptInstance();
-            }
+                //
+                EditorGUILayout.ObjectField(key, value, value != null ? value.GetType() : typeof(Object), true);
+            });
 
-            DrawPrimitiveView();
-            DrawSourceRef();
+            ps.ForEach((string key, string value) =>
+            {
+                //
+                EditorGUILayout.LabelField(key);
+                EditorGUILayout.TextArea(value);
+            });
 
+            ps.ForEach((string key, int value) =>
+            {
+                // unsafe
+                EditorGUILayout.IntField(key, value);
+            });
+
+            ps.ForEach((string key, float value) =>
+            {
+                // unsafe
+                EditorGUILayout.FloatField(key, value);
+            });
+        }
+
+        private void DrawScriptingView()
+        {
             if (_target.isScriptInstanced)
             {
                 if (_target.IsValid())
@@ -462,12 +435,39 @@ namespace QuickJS.Unity
                 }
                 else
                 {
-                    EditorGUILayout.HelpBox("Invalid script reference", MessageType.Warning);
+                    if (!_target.scriptRef.IsEmpty())
+                    {
+                        EditorGUILayout.HelpBox("Invalid script reference", MessageType.Warning);
+                    }
+                    DrawSourceView();
                 }
             }
             else
             {
                 EditorGUILayout.HelpBox("Waiting for script instancing...", MessageType.Warning);
+            }
+        }
+
+        public override void OnInspectorGUI()
+        {
+            if (UnityEditor.EditorApplication.isCompiling)
+            {
+                Release();
+                EditorGUILayout.HelpBox("Temporarily unavailable in the script compilation process", MessageType.Warning);
+                return;
+            }
+
+            if (_enabledPending)
+            {
+                EnableScriptInstance();
+            }
+
+            _selectedTabViewIndex = GUILayout.Toolbar(_selectedTabViewIndex, _tabViews);
+            switch (_selectedTabViewIndex)
+            {
+                case 0: DrawScriptingView(); break;
+                case 1: DrawSourceView(); break;
+                default: DrawPrimitiveView(); break;
             }
         }
     }

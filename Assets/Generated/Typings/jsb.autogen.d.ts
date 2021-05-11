@@ -148,6 +148,8 @@ declare module "UnityEngine" {
      */
     class Color32 extends ValueType {
         constructor(r: jsb.byte, g: jsb.byte, b: jsb.byte, a: jsb.byte)
+        $GetValue(index: number): jsb.byte
+        $SetValue(index: number, value: jsb.byte): void
         /** Returns a nicely formatted string of this color.
          */
         toString(format: string): string
@@ -375,10 +377,13 @@ declare module "UnityEngine" {
          */
         static RoundToInt(v: Vector2): Vector2Int
         static op_Inequality(lhs: Vector2Int, rhs: Vector2Int): boolean
+        // js_op_overloading: static neg(v: Vector2Int): Vector2Int
         // js_op_overloading: static +(a: Vector2Int, b: Vector2Int): Vector2Int
         // js_op_overloading: static -(a: Vector2Int, b: Vector2Int): Vector2Int
         // js_op_overloading: static *(a: Vector2Int, b: Vector2Int): Vector2Int
+        // js_op_overloading: static *(a: number, b: Vector2Int): Vector2Int
         // js_op_overloading: static *(a: Vector2Int, b: number): Vector2Int
+        // js_op_overloading: static /(a: Vector2Int, b: number): Vector2Int
         // js_op_overloading: static ==(lhs: Vector2Int, rhs: Vector2Int): boolean
         /** X component of the vector.
          */
@@ -453,12 +458,16 @@ declare module "UnityEngine" {
         /** Rotates a vector current towards target.
          * @param current The vector being managed.
          * @param target The vector.
-         * @param maxRadiansDelta The distance between the two vectors  in radians.
-         * @param maxMagnitudeDelta The length of the radian.
+         * @param maxRadiansDelta The maximum angle in radians allowed for this rotation.
+         * @param maxMagnitudeDelta The maximum allowed change in vector magnitude for this rotation.
          * @returns The location that RotateTowards generates. 
          */
         static RotateTowards(current: Vector3, target: Vector3, maxRadiansDelta: number, maxMagnitudeDelta: number): Vector3
-        /** Linearly interpolates between two vectors.
+        /** Linearly interpolates between two points.
+         * @param a Start value, returned when t = 0.
+         * @param b End value, returned when t = 1.
+         * @param t Value used to interpolate between a and b.
+         * @returns Interpolated value, equals to a + (b - a) * t. 
          */
         static Lerp(a: Vector3, b: Vector3, t: number): Vector3
         /** Linearly interpolates between two vectors.
@@ -517,6 +526,9 @@ declare module "UnityEngine" {
          */
         static Project(vector: Vector3, onNormal: Vector3): Vector3
         /** Projects a vector onto a plane defined by a normal orthogonal to the plane.
+         * @param planeNormal The direction from the vector towards the plane.
+         * @param vector The location of the vector above the plane.
+         * @returns The location of the vector on the plane. 
          */
         static ProjectOnPlane(vector: Vector3, planeNormal: Vector3): Vector3
         /** Returns the angle in degrees between from and to.
@@ -658,7 +670,10 @@ declare module "UnityEngine" {
         // js_op_overloading: static +(a: Vector3Int, b: Vector3Int): Vector3Int
         // js_op_overloading: static -(a: Vector3Int, b: Vector3Int): Vector3Int
         // js_op_overloading: static *(a: Vector3Int, b: Vector3Int): Vector3Int
+        // js_op_overloading: static neg(a: Vector3Int): Vector3Int
         // js_op_overloading: static *(a: Vector3Int, b: number): Vector3Int
+        // js_op_overloading: static *(a: number, b: Vector3Int): Vector3Int
+        // js_op_overloading: static /(a: Vector3Int, b: number): Vector3Int
         // js_op_overloading: static ==(lhs: Vector3Int, rhs: Vector3Int): boolean
         /** X component of the vector.
          */
@@ -841,7 +856,11 @@ declare module "UnityEngine" {
         /** Returns the Inverse of rotation.
          */
         static Inverse(rotation: Quaternion): Quaternion
-        /** Spherically interpolates between a and b by t. The parameter t is clamped to the range [0, 1].
+        /** Spherically interpolates between quaternions a and b by ratio t. The parameter t is clamped to the range [0, 1].
+         * @param a Start value, returned when t = 0.
+         * @param b End value, returned when t = 1.
+         * @param t Interpolation ratio.
+         * @returns A quaternion spherically interpolated between quaternions a and b. 
          */
         static Slerp(a: Quaternion, b: Quaternion, t: number): Quaternion
         /** Spherically interpolates between a and b by t. The parameter t is not clamped.
@@ -873,7 +892,7 @@ declare module "UnityEngine" {
         /** Returns the angle in degrees between two rotations a and b.
          */
         static Angle(a: Quaternion, b: Quaternion): number
-        /** Returns a rotation that rotates z degrees around the z axis, x degrees around the x axis, and y degrees around the y axis.
+        /** Returns a rotation that rotates z degrees around the z axis, x degrees around the x axis, and y degrees around the y axis; applied in that order.
          */
         static Euler(x: number, y: number, z: number): Quaternion
         /** Returns a rotation that rotates z degrees around the z axis, x degrees around the x axis, and y degrees around the y axis.
@@ -913,7 +932,8 @@ declare module "UnityEngine" {
     }
 }
 declare module "UnityEngine" {
-    import { ValueType, Object as Object1 } from "System";
+    import * as jsb from "jsb";
+    import { ValueType, Array, Object as Object1 } from "System";
     /** A standard 4x4 transformation matrix.
      */
     class Matrix4x4 extends ValueType {
@@ -961,15 +981,33 @@ declare module "UnityEngine" {
         /** Creates a translation, rotation and scaling matrix.
          */
         static TRS(pos: Vector3, q: Quaternion, s: Vector3): Matrix4x4
+        /** Computes the inverse of a 3D affine matrix.
+         * @param input Input matrix to invert.
+         * @param result The result of the inversion. Equal to the input matrix if the function fails.
+         * @returns Returns true and a valid result if the function succeeds, false and a copy of the input matrix if the function fails. 
+         */
+        static Inverse3DAffine(input: Matrix4x4, result: jsb.Ref<Matrix4x4>): boolean
         static Inverse(m: Matrix4x4): Matrix4x4
         static Transpose(m: Matrix4x4): Matrix4x4
-        /** Creates an orthogonal projection matrix.
+        /** Create an orthogonal projection matrix.
+         * @param left Left-side x-coordinate.
+         * @param right Right-side x-coordinate.
+         * @param bottom Bottom y-coordinate.
+         * @param top Top y-coordinate.
+         * @param zNear Near depth clipping plane value.
+         * @param zFar Far depth clipping plane value.
+         * @returns The projection matrix. 
          */
         static Ortho(left: number, right: number, bottom: number, top: number, zNear: number, zFar: number): Matrix4x4
-        /** Creates a perspective projection matrix.
+        /** Create a perspective projection matrix.
+         * @param fov Vertical field-of-view in degrees.
+         * @param aspect Aspect ratio (width divided by height).
+         * @param zNear Near depth clipping plane value.
+         * @param zFar Far depth clipping plane value.
+         * @returns The projection matrix. 
          */
         static Perspective(fov: number, aspect: number, zNear: number, zFar: number): Matrix4x4
-        /** Given a source point, a target point, and an up vector, computes a transformation matrix that corresponds to a camera viewing the target from the source, such that the right-hand vector is perpendicular to the up vector.
+        /** Create a "look at" matrix.
          * @param from The source point.
          * @param to The target point.
          * @param up The vector describing the up direction (typically Vector3.up).
@@ -1014,19 +1052,19 @@ declare module "UnityEngine" {
         /** Attempts to get a rotation quaternion from this matrix.
          */
         readonly rotation: Quaternion
-        /** Attempts to get a scale value from the matrix.
+        /** Attempts to get a scale value from the matrix. (Read Only)
          */
         readonly lossyScale: Vector3
-        /** Is this the identity matrix?
+        /** Checks whether this is an identity matrix. (Read Only)
          */
         readonly isIdentity: boolean
-        /** The determinant of the matrix.
+        /** The determinant of the matrix. (Read Only)
          */
         readonly determinant: number
         /** This property takes a projection matrix and returns the six plane coordinates that define a projection frustum.
          */
         readonly decomposeProjection: any
-        /** The inverse of this matrix (Read Only).
+        /** The inverse of this matrix. (Read Only)
          */
         readonly inverse: Matrix4x4
         /** Returns the transpose of this matrix (Read Only).
@@ -1098,7 +1136,7 @@ declare module "UnityEngine" {
          * @param position Position for the new object.
          * @param rotation Orientation of the new object.
          * @param parent Parent that will be assigned to the new object.
-         * @param instantiateInWorldSpace Pass true when assigning a parent Object to maintain the world position of the Object, instead of setting its position relative to the new parent. Pass false to set the Object's position relative to its new parent.
+         * @param instantiateInWorldSpace When you assign a parent Object, pass true to position the new object directly in world space. Pass false to set the Object’s position relative to its new parent..
          * @returns The instantiated clone. 
          */
         static Instantiate(original: Object, position: Vector3, rotation: Quaternion, parent: Transform): Object
@@ -1107,7 +1145,7 @@ declare module "UnityEngine" {
          * @param position Position for the new object.
          * @param rotation Orientation of the new object.
          * @param parent Parent that will be assigned to the new object.
-         * @param instantiateInWorldSpace Pass true when assigning a parent Object to maintain the world position of the Object, instead of setting its position relative to the new parent. Pass false to set the Object's position relative to its new parent.
+         * @param instantiateInWorldSpace When you assign a parent Object, pass true to position the new object directly in world space. Pass false to set the Object’s position relative to its new parent..
          * @returns The instantiated clone. 
          */
         static Instantiate(original: Object, position: Vector3, rotation: Quaternion): Object
@@ -1116,7 +1154,7 @@ declare module "UnityEngine" {
          * @param position Position for the new object.
          * @param rotation Orientation of the new object.
          * @param parent Parent that will be assigned to the new object.
-         * @param instantiateInWorldSpace Pass true when assigning a parent Object to maintain the world position of the Object, instead of setting its position relative to the new parent. Pass false to set the Object's position relative to its new parent.
+         * @param instantiateInWorldSpace When you assign a parent Object, pass true to position the new object directly in world space. Pass false to set the Object’s position relative to its new parent..
          * @returns The instantiated clone. 
          */
         static Instantiate(original: Object, parent: Transform, instantiateInWorldSpace: boolean): Object
@@ -1125,7 +1163,7 @@ declare module "UnityEngine" {
          * @param position Position for the new object.
          * @param rotation Orientation of the new object.
          * @param parent Parent that will be assigned to the new object.
-         * @param instantiateInWorldSpace Pass true when assigning a parent Object to maintain the world position of the Object, instead of setting its position relative to the new parent. Pass false to set the Object's position relative to its new parent.
+         * @param instantiateInWorldSpace When you assign a parent Object, pass true to position the new object directly in world space. Pass false to set the Object’s position relative to its new parent..
          * @returns The instantiated clone. 
          */
         static Instantiate(original: Object, parent: Transform): Object
@@ -1134,16 +1172,16 @@ declare module "UnityEngine" {
          * @param position Position for the new object.
          * @param rotation Orientation of the new object.
          * @param parent Parent that will be assigned to the new object.
-         * @param instantiateInWorldSpace Pass true when assigning a parent Object to maintain the world position of the Object, instead of setting its position relative to the new parent. Pass false to set the Object's position relative to its new parent.
+         * @param instantiateInWorldSpace When you assign a parent Object, pass true to position the new object directly in world space. Pass false to set the Object’s position relative to its new parent..
          * @returns The instantiated clone. 
          */
         static Instantiate(original: Object): Object
-        /** Removes a gameobject, component or asset.
+        /** Removes a GameObject, component or asset.
          * @param obj The object to destroy.
          * @param t The optional amount of time to delay before destroying the object.
          */
         static Destroy(obj: Object, t: number): void
-        /** Removes a gameobject, component or asset.
+        /** Removes a GameObject, component or asset.
          * @param obj The object to destroy.
          * @param t The optional amount of time to delay before destroying the object.
          */
@@ -1158,18 +1196,18 @@ declare module "UnityEngine" {
          * @param allowDestroyingAssets Set to true to allow assets to be destroyed.
          */
         static DestroyImmediate(obj: Object): void
-        /** Returns a list of all active loaded objects of Type type.
+        /** The older, non-generic version of this method. In most cases you should use the generic version of this method.
          * @param type The type of object to find.
-         * @returns The array of objects found matching the type specified. 
+         * @returns Returns an array of all active loaded objects of Type type. 
          */
         static FindObjectsOfType(type: any): Array<Object>
         /** Do not destroy the target Object when loading a new Scene.
          * @param target An Object not destroyed on Scene change.
          */
         static DontDestroyOnLoad(target: Object): void
-        /** Returns the first active loaded object of Type type.
+        /** The older, non-generic version of this method. In most cases you should use the generic version of this method.
          * @param type The type of object to find.
-         * @returns This returns the  Object that matches the specified type. It returns null if no Object matches the type. 
+         * @returns Returns an array of all active loaded objects of Type type. 
          */
         static FindObjectOfType(type: any): Object
         static op_Equality(x: Object, y: Object): boolean
@@ -1209,13 +1247,14 @@ declare module "UnityEngine" {
          * @returns A component of the matching type, if found. 
          */
         GetComponentInChildren<T extends Component>(type: { new(): T }): T
-        /** Returns the component of Type type in the GameObject or any of its parents.
+        /** Retrieves the component of Type type in the GameObject or any of its parents.
          * @param type Type of component to find.
+         * @returns Returns a component if a component matching the type is found. Returns null otherwise. 
          */
         GetComponentInParent<T extends Component>(type: { new(): T }): T
         GetComponents(type: any, results: any): void
         /** Returns all components of Type type in the GameObject.
-         * @param type The type of Component to retrieve.
+         * @param type The type of component to retrieve.
          */
         GetComponents<T extends Component>(type: { new(): T }): T[]
         /** Returns all components of Type type in the GameObject or any of its children.
@@ -1234,6 +1273,12 @@ declare module "UnityEngine" {
          */
         GetComponentsInParent<T extends Component>(type: { new(): T }, includeInactive: boolean): T[]
         GetComponentsInParent<T extends Component>(type: { new(): T }): T[]
+        /** Gets the component of the specified type, if it exists.
+         * @param type The type of component to retrieve.
+         * @param component The output argument that will contain the component or null.
+         * @returns Returns true if the component is found, false otherwise. 
+         */
+        TryGetComponent(type: any, component: jsb.Out<Component>): boolean
         /** Calls the method named methodName on every MonoBehaviour in this game object and on every ancestor of the behaviour.
          * @param methodName The name of the method to call.
          * @param value An optional parameter value to pass to the called method.
@@ -1302,7 +1347,7 @@ declare module "UnityEngine" {
          */
         static FindWithTag(tag: string): GameObject
         static FindGameObjectWithTag(tag: string): GameObject
-        /** Returns a list of active GameObjects tagged tag. Returns empty array if no GameObject was found.
+        /** Returns an array of active GameObjects tagged tag. Returns empty array if no GameObject was found.
          * @param tag The name of the tag to search GameObjects for.
          */
         static FindGameObjectsWithTag(tag: string): Array<GameObject>
@@ -1321,7 +1366,7 @@ declare module "UnityEngine" {
         /** Defines whether the GameObject is active in the Scene.
          */
         readonly activeInHierarchy: boolean
-        /** Editor only API that specifies if a game object is static.
+        /** Gets and sets the GameObject's StaticEditorFlags.
          */
         isStatic: boolean
         /** The tag of this game object.
@@ -1330,6 +1375,9 @@ declare module "UnityEngine" {
         /** Scene that the GameObject is part of.
          */
         readonly scene: any
+        /** Scene culling mask Unity uses to determine which scene to render the GameObject in.
+         */
+        readonly sceneCullingMask: number
         readonly gameObject: GameObject
     }
 }
@@ -1384,7 +1432,10 @@ declare module "UnityEngine" {
          */
         ViewportToWorldPoint(position: Vector3): Vector3
         ScreenToWorldPoint(position: Vector3, eye: any): Vector3
-        /** Transforms position from screen space into world space.
+        /** Transforms a point from screen space into world space, where world space is defined as the coordinate system at the very top of your game's hierarchy.
+         * @param position A screen space position (often mouse x, y), plus a z position for depth (for example, a camera clipping plane).
+         * @param eye By default, Camera.MonoOrStereoscopicEye.Mono. Can be set to Camera.MonoOrStereoscopicEye.Left or Camera.MonoOrStereoscopicEye.Right for use in stereoscopic rendering (e.g., for VR).
+         * @returns The worldspace point created by converting the screen space point at the provided distance z from the camera plane. 
          */
         ScreenToWorldPoint(position: Vector3): Vector3
         /** Transforms position from screen space into viewport space.
@@ -1502,10 +1553,10 @@ declare module "UnityEngine" {
          */
         static GetAllCameras(cameras: Array<Camera>): number
         static SetupCurrent(cur: Camera): void
-        /** The near clipping plane distance.
+        /** The distance of the near clipping plane from the the Camera, in world units.
          */
         nearClipPlane: number
-        /** The far clipping plane distance.
+        /** The distance of the far clipping plane from the Camera, in world units.
          */
         farClipPlane: number
         /** The field of view of the camera in degrees.
@@ -1562,7 +1613,7 @@ declare module "UnityEngine" {
         /** How to perform per-layer culling for a Camera.
          */
         layerCullSpherical: boolean
-        /** Identifies what kind of camera this is.
+        /** Identifies what kind of camera this is, using the CameraType enum.
          */
         cameraType: any
         /** Sets the culling maks used to determine which objects from which Scenes to draw.
@@ -1650,7 +1701,7 @@ See EditorSceneManager.SetSceneCullingMask.
         /** Get the view projection matrix used on the last frame.
          */
         readonly previousViewProjectionMatrix: Matrix4x4
-        /** The first enabled camera tagged "MainCamera" (Read Only).
+        /** The first enabled Camera component that is tagged "MainCamera" (Read Only).
          */
         static readonly main: Camera
         /** The camera we are currently rendering with, for low-level render control only (Read Only).
@@ -1729,6 +1780,12 @@ declare module "UnityEngine" {
         /** Returns the component with name type if the game object has one attached, null if it doesn't.
          */
         GetComponent(type: string): Component
+        /** Gets the component of the specified type, if it exists.
+         * @param type The type of the component to retrieve.
+         * @param component The output argument that will contain the component or null.
+         * @returns Returns true if the component is found, false otherwise. 
+         */
+        TryGetComponent(type: any, component: jsb.Out<Component>): boolean
         GetComponentInChildren<T extends Component>(type: { new(): T }, includeInactive: boolean): T
         /** Returns the component of Type type in the GameObject or any of its children using depth first search.
          * @param t The type of Component to retrieve.
@@ -1853,16 +1910,12 @@ declare module "UnityEngine" {
     class Transform extends Component {
         /** Set the parent of the transform.
          * @param parent The parent Transform to use.
-         * @param worldPositionStays If true, the parent-relative position, scale and
-        rotation are modified such that the object keeps the same world space position,
-        rotation and scale as before.
+         * @param worldPositionStays If true, the parent-relative position, scale and rotation are modified such that the object keeps the same world space position, rotation and scale as before.
          */
         SetParent(parent: Transform, worldPositionStays: boolean): void
         /** Set the parent of the transform.
          * @param parent The parent Transform to use.
-         * @param worldPositionStays If true, the parent-relative position, scale and
-        rotation are modified such that the object keeps the same world space position,
-        rotation and scale as before.
+         * @param worldPositionStays If true, the parent-relative position, scale and rotation are modified such that the object keeps the same world space position, rotation and scale as before.
          */
         SetParent(p: Transform): void
         /** Sets the world space position and rotation of the Transform component.
@@ -1886,13 +1939,18 @@ declare module "UnityEngine" {
         /** Moves the transform in the direction and distance of translation.
          */
         Translate(translation: Vector3): void
-        /** Applies a rotation of zAngle degrees around the z axis, xAngle degrees around the x axis, and yAngle degrees around the y axis (in that order).
-         * @param relativeTo Determines whether to rotate the GameObject either is locally to the GameObject or relative to the Scene in world space.
+        /** The implementation of this method applies a rotation of zAngle degrees around the z axis, xAngle degrees around the x axis, and yAngle degrees around the y axis (in that order).
+         * @param relativeTo Determines whether to rotate the GameObject either locally to the GameObject or relative to the Scene in world space.
          * @param xAngle Degrees to rotate the GameObject around the X axis.
          * @param yAngle Degrees to rotate the GameObject around the Y axis.
          * @param zAngle Degrees to rotate the GameObject around the Z axis.
          */
         Rotate(xAngle: number, yAngle: number, zAngle: number, relativeTo: any): void
+        /** The implementation of this method applies a rotation of zAngle degrees around the z axis, xAngle degrees around the x axis, and yAngle degrees around the y axis (in that order).
+         * @param xAngle Degrees to rotate the GameObject around the X axis.
+         * @param yAngle Degrees to rotate the GameObject around the Y axis.
+         * @param zAngle Degrees to rotate the GameObject around the Z axis.
+         */
         Rotate(xAngle: number, yAngle: number, zAngle: number): void
         /** Rotates the object around the given axis by the number of degrees defined by the given angle.
          * @param angle The degrees of rotation to apply.
@@ -1901,11 +1959,18 @@ declare module "UnityEngine" {
          */
         Rotate(axis: Vector3, angle: number, relativeTo: any): void
         /** Applies a rotation of eulerAngles.z degrees around the z-axis, eulerAngles.x degrees around the x-axis, and eulerAngles.y degrees around the y-axis (in that order).
-         * @param eulers The rotation to apply.
+         * @param eulers The rotation to apply in euler angles.
          * @param relativeTo Determines whether to rotate the GameObject either locally to  the GameObject or relative to the Scene in world space.
          */
         Rotate(eulers: Vector3, relativeTo: any): void
+        /** Rotates the object around the given axis by the number of degrees defined by the given angle.
+         * @param axis The axis to apply rotation to.
+         * @param angle The degrees of rotation to apply.
+         */
         Rotate(axis: Vector3, angle: number): void
+        /** Applies a rotation of eulerAngles.z degrees around the z-axis, eulerAngles.x degrees around the x-axis, and eulerAngles.y degrees around the y-axis (in that order).
+         * @param eulers The rotation to apply in euler angles.
+         */
         Rotate(eulers: Vector3): void
         /** Rotates the transform about axis passing through point in world coordinates by angle degrees.
          */
@@ -2010,16 +2075,16 @@ declare module "UnityEngine" {
         /** The green axis of the transform in world space.
          */
         up: Vector3
-        /** The blue axis of the transform in world space.
+        /** Returns a normalized vector representing the blue axis of the transform in world space.
          */
         forward: Vector3
-        /** The rotation of the transform in world space stored as a Quaternion.
+        /** A Quaternion that stores the rotation of the Transform in world space.
          */
         rotation: Quaternion
         /** The rotation of the transform relative to the transform rotation of the parent.
          */
         localRotation: Quaternion
-        /** The scale of the transform relative to the parent.
+        /** The scale of the transform relative to the GameObjects parent.
          */
         localScale: Vector3
         /** The parent of the transform.
@@ -2078,7 +2143,7 @@ declare module "UnityEngine" {
         /** Starts a coroutine named methodName.
          */
         StartCoroutine(methodName: string): Coroutine
-        /** Starts a coroutine.
+        /** Starts a Coroutine.
          */
         StartCoroutine(routine: IEnumerator): Coroutine
         /** Stops the first coroutine named methodName, or the coroutine stored in routine running on this behaviour.
@@ -2106,8 +2171,28 @@ declare module "UnityEngine" {
     }
 }
 declare module "UnityEngine" {
+    import { Object as Object1 } from "System";
+    /** A class you can derive from if you want to create objects that don't need to be attached to game objects.
+     */
+    class ScriptableObject extends Object {
+        constructor()
+        /** Creates an instance of a scriptable object.
+         * @param className The type of the ScriptableObject to create, as the name of the type.
+         * @param type The type of the ScriptableObject to create, as a System.Type instance.
+         * @returns The created ScriptableObject. 
+         */
+        static CreateInstance(className: string): ScriptableObject
+        /** Creates an instance of a scriptable object.
+         * @param className The type of the ScriptableObject to create, as the name of the type.
+         * @param type The type of the ScriptableObject to create, as a System.Type instance.
+         * @returns The created ScriptableObject. 
+         */
+        static CreateInstance(type: any): ScriptableObject
+    }
+}
+declare module "UnityEngine" {
     import * as jsb from "jsb";
-    import { Enum, Array, Object as Object1 } from "System";
+    import { Enum, Array, Object as Object1, ValueType } from "System";
     /** Represents a Sprite object for use in 2D gameplay.
      */
     class Sprite extends Object {
@@ -2124,6 +2209,35 @@ declare module "UnityEngine" {
          * @param triangles Array of sprite mesh triangle indices.
          */
         OverrideGeometry(vertices: Array<Vector2>, triangles: Array<number>): void
+        /** Returns an array of BindPoses.
+         * @param sprite The sprite to retrieve the bind pose from.
+         * @returns A list of bind poses for this sprite. There is no need to dispose the returned NativeArray. 
+         */
+        GetBindPoses(): any
+        SetBindPoses(src: any): void
+        /** Returns a list of indices. This is the same as Sprite.triangle.
+         * @returns A read-only list of indices indicating how the triangles are formed between the vertices. The array is marked as undisposable. 
+         */
+        GetIndices(): any
+        SetIndices(src: any): void
+        /** Returns a list of SpriteBone in this Sprite.
+         * @param sprite The sprite to get the list of SpriteBone from.
+         * @returns An array of SpriteBone that belongs to this Sprite. 
+         */
+        GetBones(): Array<any>
+        /** Sets the SpriteBones for this Sprite.
+         */
+        SetBones(src: Array<any>): void
+        /** Checks if a specific channel exists for this Sprite.
+         * @returns True if the channel exists. 
+         */
+        HasVertexAttribute(channel: any): boolean
+        /** Sets the vertex count. This resizes the internal buffer. It also preserves any configurations of VertexAttributes.
+         */
+        SetVertexCount(count: number): void
+        /** Returns the number of vertices in this Sprite.
+         */
+        GetVertexCount(): number
         /** Create a new Sprite object.
          * @param texture Texture from which to obtain the sprite graphic.
          * @param rect Rectangular section of the texture to use for the sprite.
@@ -2249,6 +2363,9 @@ declare module "UnityEngine" {
      */
     class SpriteRenderer extends Renderer {
         constructor()
+        /** Stop using the deformable buffer to render the Sprite and use the original mesh instead.
+         */
+        DeactivateDeformableBuffer(): void
         /** The Sprite to render.
          */
         sprite: Sprite
@@ -2330,6 +2447,9 @@ declare module "UnityEngine" {
         /** Does this object receive shadows?
          */
         receiveShadows: boolean
+        /** Allows turning off rendering for a specific component.
+         */
+        forceRenderingOff: boolean
         /** Specifies the mode for motion vector rendering.
          */
         motionVectorGenerationMode: any
@@ -2345,6 +2465,9 @@ declare module "UnityEngine" {
         /** This value sorts renderers by priority. Lower values are rendered first and higher values are rendered last.
          */
         rendererPriority: number
+        /** Describes how this renderer is updated for ray tracing.
+         */
+        rayTracingMode: any
         /** Name of the Renderer's sorting layer.
          */
         sortingLayerName: string
@@ -2895,6 +3018,7 @@ declare module "UnityEngine" {
         /** See AnimatorController.parameters.
          */
         GetParameter(index: number): any
+        MatchTarget(matchPosition: Vector3, matchRotation: Quaternion, targetBodyPart: any, weightMask: any, startNormalizedTime: number, targetNormalizedTime: number, completeMatch: boolean): void
         /** Automatically adjust the GameObject position and rotation.
          * @param matchPosition The position we want the body part to reach.
          * @param matchRotation The rotation in which we want the body part to be.
@@ -2902,6 +3026,7 @@ declare module "UnityEngine" {
          * @param weightMask Structure that contains weights for matching position and rotation.
          * @param startNormalizedTime Start time within the animation clip (0 - beginning of clip, 1 - end of clip).
          * @param targetNormalizedTime End time within the animation clip (0 - beginning of clip, 1 - end of clip), values greater than 1 can be set to trigger a match after a certain number of loops. Ex: 2.3 means at 30% of 2nd loop.
+         * @param completeMatch Allows you to specify what should happen if the MatchTarget function is interrupted. A value of true causes the GameObject to immediately move to the matchPosition if interrupted. A value of false causes the GameObject to stay at its current position if interrupted.
          */
         MatchTarget(matchPosition: Vector3, matchRotation: Quaternion, targetBodyPart: any, weightMask: any, startNormalizedTime: number, targetNormalizedTime: number): void
         MatchTarget(matchPosition: Vector3, matchRotation: Quaternion, targetBodyPart: any, weightMask: any, startNormalizedTime: number): void
@@ -3022,6 +3147,85 @@ declare module "UnityEngine" {
         Update(deltaTime: number): void
         Rebind(): void
         ApplyBuiltinRootMotion(): void
+        /** Creates a dependency between animator jobs and the job represented by the supplied job handle. To add multiple job dependencies, call this method for each job that need to run before the Animator's jobs.
+         * @param animator The Animator instance that calls this method.
+         * @param jobHandle The JobHandle of the job that needs to run before animator jobs.
+         */
+        AddJobDependency(jobHandle: any): void
+        /** Create a TransformStreamHandle representing the new binding between the Animator and a Transform already bound to the Animator.
+         * @param animator The Animator instance that calls this method.
+         * @param transform The Transform to bind.
+         * @returns Returns the TransformStreamHandle that represents the new binding. 
+         */
+        BindStreamTransform(transform: Transform): any
+        /** Create a PropertyStreamHandle representing the new binding on the Component property of a Transform already bound to the Animator.
+         * @param animator The Animator instance that calls this method.
+         * @param transform The Transform to target.
+         * @param type The Component type.
+         * @param property The property to bind.
+         * @param isObjectReference isObjectReference need to be set to true if the property to bind does animate an Object like SpriteRenderer.sprite.
+         * @returns Returns the PropertyStreamHandle that represents the new binding. 
+         */
+        BindStreamProperty(transform: Transform, type: any, property: string, isObjectReference: boolean): any
+        /** Create a PropertyStreamHandle representing the new binding on the Component property of a Transform already bound to the Animator.
+         * @param animator The Animator instance that calls this method.
+         * @param transform The Transform to target.
+         * @param type The Component type.
+         * @param property The property to bind.
+         * @param isObjectReference isObjectReference need to be set to true if the property to bind does animate an Object like SpriteRenderer.sprite.
+         * @returns Returns the PropertyStreamHandle that represents the new binding. 
+         */
+        BindStreamProperty(transform: Transform, type: any, property: string): any
+        /** Create a custom property in the AnimationStream to pass extra data to downstream animation jobs in your graph. Custom properties created in the AnimationStream do not exist in the scene.
+         * @param animator The Animator instance that calls this method.
+         * @param name The name of the property.
+         * @param type The type of property to create (float, integer or boolean).
+         * @returns Returns the PropertyStreamHandle that represents the new binding. 
+         */
+        BindCustomStreamProperty(property: string, type: any): any
+        /** Create a TransformSceneHandle representing the new binding between the Animator and a Transform in the Scene.
+         * @param animator The Animator instance that calls this method.
+         * @param transform The Transform to bind.
+         * @returns Returns the TransformSceneHandle that represents the new binding. 
+         */
+        BindSceneTransform(transform: Transform): any
+        /** Create a PropertySceneHandle representing the new binding on the Component property of a Transform in the Scene.
+         * @param animator The Animator instance that calls this method.
+         * @param transform The Transform to target.
+         * @param type The Component type.
+         * @param property The property to bind.
+         * @param isObjectReference isObjectReference need to be set to true if the property to bind does access an Object like SpriteRenderer.sprite.
+         * @returns Returns the PropertySceneHandle that represents the new binding. 
+         */
+        BindSceneProperty(transform: Transform, type: any, property: string, isObjectReference: boolean): any
+        /** Create a PropertySceneHandle representing the new binding on the Component property of a Transform in the Scene.
+         * @param animator The Animator instance that calls this method.
+         * @param transform The Transform to target.
+         * @param type The Component type.
+         * @param property The property to bind.
+         * @param isObjectReference isObjectReference need to be set to true if the property to bind does access an Object like SpriteRenderer.sprite.
+         * @returns Returns the PropertySceneHandle that represents the new binding. 
+         */
+        BindSceneProperty(transform: Transform, type: any, property: string): any
+        /** Open a new stream on the Animator.
+         * @param animator The Animator instance that calls this method.
+         * @param stream The new stream.
+         * @returns Returns whether or not the stream has been opened. 
+         */
+        OpenAnimationStream(stream: jsb.Ref<any>): boolean
+        /** Close a stream that has been opened using OpenAnimationStream.
+         * @param animator The Animator instance that calls this method.
+         * @param stream The stream to close.
+         */
+        CloseAnimationStream(stream: jsb.Ref<any>): void
+        /** Newly created handles are always resolved lazily on the next access when the jobs are run. To avoid a cpu spike while evaluating the jobs you can manually resolve all handles from the main thread.
+         * @param animator The Animator instance that calls this method.
+         */
+        ResolveAllStreamHandles(): void
+        /** Newly created handles are always resolved lazily on the next access when the jobs are run. To avoid a cpu spike while evaluating the jobs you can manually resolve all handles from the main thread.
+         * @param animator The Animator instance that calls this method.
+         */
+        ResolveAllSceneHandles(): void
         /** Generates an parameter id from a string.
          * @param name The string to convert to Id.
          */
@@ -3296,18 +3500,16 @@ declare module "UnityEngine" {
      */
     class Resources extends Object1 {
         /** Returns a list of all objects of Type type.
-         * @param type Type of the class to match while searching.
-         * @returns An array of objects whose class is type or is derived from type. 
          */
         static FindObjectsOfTypeAll(type: any): Array<Object>
         /** Loads an asset stored at path in a Resources folder.
-         * @param path Pathname of the target folder. When using the empty string (i.e., ""), the function will load the entire contents of the Resources folder.
+         * @param path Path to the target resource to load. When using an empty string (i.e., ""), the function loads the entire contents of the Resources folder.
          * @param systemTypeInstance Type filter for objects returned.
          * @returns The requested asset returned as an Object. 
          */
         static Load(path: string, systemTypeInstance: any): Object
         /** Loads an asset stored at path in a Resources folder.
-         * @param path Pathname of the target folder. When using the empty string (i.e., ""), the function will load the entire contents of the Resources folder.
+         * @param path Path to the target resource to load. When using an empty string (i.e., ""), the function loads the entire contents of the Resources folder.
          * @param systemTypeInstance Type filter for objects returned.
          * @returns The requested asset returned as an Object. 
          */
@@ -3341,7 +3543,7 @@ declare module "UnityEngine" {
 declare module "QuickJS.Unity" {
     import { Object } from "System";
     import { Object as Object1 } from "UnityEngine";
-    class JSBehaviourProperties extends Object {
+    class JSScriptProperties extends Object {
         constructor()
         ForEach(cb: (arg1: string, arg2: Object1) => void): void
         ForEach(cb: (arg1: string, arg2: string) => void): void
@@ -3962,6 +4164,7 @@ declare module "UnityEngine" {
          * @returns The index of the selected button. 
          */
         static SelectionGrid(position: Rect, selected: number, content: Array<GUIContent>, xCount: number): number
+        static HorizontalSlider(position: Rect, value: number, leftValue: number, rightValue: number, slider: GUIStyle, thumb: GUIStyle, thumbExtent: GUIStyle): number
         /** A horizontal slider the user can drag to change a value between a min and a max.
          * @param position Rectangle on the screen to use for the slider.
          * @param value The value the slider shows. This determines the position of the draggable thumb.
@@ -3982,6 +4185,7 @@ declare module "UnityEngine" {
          * @returns The value that has been set by the user. 
          */
         static HorizontalSlider(position: Rect, value: number, leftValue: number, rightValue: number): number
+        static VerticalSlider(position: Rect, value: number, topValue: number, bottomValue: number, slider: GUIStyle, thumb: GUIStyle, thumbExtent: GUIStyle): number
         /** A vertical slider the user can drag to change a value between a min and a max.
          * @param position Rectangle on the screen to use for the slider.
          * @param value The value the slider shows. This determines the position of the draggable thumb.
@@ -4002,7 +4206,7 @@ declare module "UnityEngine" {
          * @returns The value that has been set by the user. 
          */
         static VerticalSlider(position: Rect, value: number, topValue: number, bottomValue: number): number
-        static Slider(position: Rect, value: number, size: number, start: number, end: number, slider: GUIStyle, thumb: GUIStyle, horiz: boolean, id: number): number
+        static Slider(position: Rect, value: number, size: number, start: number, end: number, slider: GUIStyle, thumb: GUIStyle, horiz: boolean, id: number, thumbExtent: GUIStyle): number
         /** Make a horizontal scrollbar. Scrollbars are what you use to scroll through a document. Most likely, you want to use scrollViews instead.
          * @param position Rectangle on the screen to use for the scrollbar.
          * @param value The position between min and max.
@@ -5450,7 +5654,7 @@ declare module "UnityEngine" {
         /** Style used by default for GUI.Toggle controls.
          */
         toggle: GUIStyle
-        /** Style used by default for Window controls (SA GUI.Window).
+        /** Style used by default for Window controls (See Also: GUI.Window).
          */
         window: GUIStyle
         /** Style used by default for the background part of GUI.HorizontalSlider controls.
@@ -5553,9 +5757,6 @@ declare module "UnityEngine" {
         CalcMinMaxWidth(content: GUIContent, minWidth: jsb.Out<number>, maxWidth: jsb.Out<number>): void
         toString(): string
         static op_Implicit(str: string): GUIStyle
-        /** The name of this GUIStyle. Used for getting them based on name.
-         */
-        name: string
         /** The font to use for rendering. If null, the default font for the current GUISkin is used instead.
          */
         font: any
@@ -5595,6 +5796,9 @@ declare module "UnityEngine" {
         /** Enable HTML-style tags for Text Formatting Markup.
          */
         richText: boolean
+        /** The name of this GUIStyle. Used for getting them based on name.
+         */
+        name: string
         /** Rendering settings for when the component is displayed normally.
          */
         normal: any
@@ -5778,10 +5982,14 @@ declare module "UnityEngine" {
         ClampToBounds(bounds: RectInt): void
         /** Returns true if the given position is within the RectInt.
          * @param position Position to check.
-         * @param inclusive Whether the max limits are included in the check.
          * @returns Whether the position is within the RectInt. 
          */
         Contains(position: Vector2Int): boolean
+        /** RectInts overlap if each RectInt Contains a shared point.
+         * @param other Other rectangle to test overlapping with.
+         * @returns True if the other rectangle overlaps this one. 
+         */
+        Overlaps(other: RectInt): boolean
         toString(): string
         /** Returns true if the given RectInt is equal to this RectInt.
          */
@@ -6082,7 +6290,7 @@ declare module "UnityEngine" {
     }
 }
 declare module "UnityEngine" {
-    import { Object as Object1 } from "System";
+    import { Object as Object1, Enum } from "System";
     /** A UnityGUI event.
      */
     class Event extends Object1 {
@@ -6112,12 +6320,17 @@ declare module "UnityEngine" {
         /** The relative movement of the mouse compared to last event.
          */
         delta: Vector2
+        /** The type of pointer that created this event (for example, mouse, touch screen, pen).
+         */
+        pointerType: any
         /** Which mouse button was pressed.
          */
         button: number
         /** Which modifier keys are held down.
          */
         modifiers: EventModifiers
+        /** How hard stylus pressure is applied.
+         */
         pressure: number
         /** How many consecutive mouse clicks have we received.
          */
@@ -6340,6 +6553,9 @@ declare module "UnityEditor" {
         /** Style for word wrapped label.
          */
         static readonly wordWrappedLabel: GUIStyle
+        /** Style used for links.
+         */
+        static readonly linkLabel: GUIStyle
         /** Style for white label.
          */
         static readonly whiteLabel: GUIStyle
@@ -6638,20 +6854,6 @@ declare module "UnityEditor" {
 }
 declare module "UnityEditor" {
     import * as jsb from "jsb";
-    import { Enum } from "System";
-    /** Available scripting runtimes to be used by the Editor and Players.
-     */
-    enum ScriptingRuntimeVersion {
-        /** Use the stable version of the scripting runtime.
-         */
-        Legacy = 0,
-        /** Use the most recent version of the scripting runtime available.
-         */
-        Latest = 1,
-    }
-}
-declare module "UnityEditor" {
-    import * as jsb from "jsb";
     import { Object } from "System";
     import { Object as Object1 } from "UnityEngine";
     /** AssetPostprocessor lets you hook into the import pipeline and run scripts prior or after importing assets.
@@ -6752,9 +6954,6 @@ declare module "UnityEditor" {
          * @returns Returns true if the materials have been successfly remapped, otherwise false. 
          */
         SearchAndRemapMaterials(nameOption: any, searchOption: any): boolean
-        /** Import materials from file.
-         */
-        importMaterials: boolean
         /** Material naming setting.
          */
         materialName: any
@@ -6776,6 +6975,9 @@ declare module "UnityEditor" {
         /** Detect file units and import as 1FileUnit=1UnityUnit, otherwise it will import as 1cm=1UnityUnit.
          */
         useFileUnits: boolean
+        /** Scaling factor used when useFileScale is set to true (Read-only).
+         */
+        readonly fileScale: number
         /** Use FileScale when importing.
          */
         useFileScale: boolean
@@ -6937,6 +7139,9 @@ Notes:
         /** The path of the transform used to generation the motion of the animation.
          */
         motionNodeName: string
+        /** The Avatar generation of the imported model.
+         */
+        avatarSetup: any
         /** Imports the HumanDescription from the given Avatar.
          */
         sourceAvatar: any
@@ -6953,6 +7158,15 @@ Notes:
 The default value is true.
          */
         useSRGBMaterialColor: boolean
+        /** Sorts the gameObject hierarchy by name.
+         */
+        sortHierarchyByName: boolean
+        /** Material creation options.
+         */
+        materialImportMode: any
+        /** Generate auto mapping if no avatarSetup is provided when importing humanoid animation.
+         */
+        autoGenerateAvatarMappingIfUnspecified: boolean
     }
 }
 declare module "UnityEditor" {
@@ -7057,15 +7271,6 @@ declare module "UnityEditor" {
          * @returns Returns true if the settings for both VideoClipImporters match. Returns false otherwise. 
          */
         Equals(rhs: VideoClipImporter): boolean
-        /** Used in legacy import mode.  Same as MovieImport.quality.
-         */
-        quality: number
-        /** Used in legacy import mode.  Same as MovieImport.linearTexture.
-         */
-        linearColor: boolean
-        /** True to import a MovieTexture (deprecated), false for a VideoClip (preferred).
-         */
-        useLegacyImporter: boolean
         /** Size in bytes of the file before importing.
          */
         readonly sourceFileSize: number
@@ -7096,6 +7301,9 @@ declare module "UnityEditor" {
         /** Import audio tracks from source file.
          */
         importAudio: boolean
+        /** Whether the imported clip contains sRGB color data.
+         */
+        sRGBClip: boolean
         /** Default values for the platform-specific import settings.
          */
         defaultTargetSettings: any
@@ -7179,6 +7387,19 @@ declare module "UnityEditor" {
          */
         SetTextureSettings(src: any): void
         ReadTextureImportInstructions(target: BuildTarget, desiredFormat: jsb.Out<any>, colorSpace: jsb.Out<any>, compressionQuality: jsb.Out<number>): void
+        /** Validates TextureImporterFormat based on a specified import type (TextureImporterType) and a specified build target (BuildTarget.).
+         * @param textureType The TextureImporterType that the importer uses.
+         * @param target The platform that the setting targets, referred to as the BuilTarget.
+         * @param currentFormat The TextureImporterFormat to validate.
+         * @returns Returns true if TextureImporterFormat is valid and can be set. Returns false otherwise. 
+         */
+        static IsPlatformTextureFormatValid(textureType: any, target: BuildTarget, currentFormat: any): boolean
+        /** Validates TextureImporterFormat based on the type of the current format (TextureImporterType) and the default platform.
+         * @param currentFormat The TextureImporterType that the importer uses.
+         * @param textureType The TextureImporterFormat to validate.
+         * @returns Returns true if TextureImporterFormat is valid and can be set. Returns false otherwise. 
+         */
+        static IsDefaultPlatformTextureFormatValid(textureType: any, currentFormat: any): boolean
         /** Maximum texture size.
          */
         maxTextureSize: number
@@ -7218,10 +7439,10 @@ declare module "UnityEditor" {
         /** Generate Mip Maps.
          */
         mipmapEnabled: boolean
-        /** Keep texture borders the same when generating mipmaps?
+        /** Keeps texture borders the same when generating mipmaps.
          */
         borderMipmap: boolean
-        /** Is texture storing color data?
+        /** Determines whether this texture stores color data.
          */
         sRGBTexture: boolean
         /** Enables or disables coverage-preserving alpha MIP mapping.
@@ -7233,7 +7454,7 @@ declare module "UnityEditor" {
         /** Mipmap filtering mode.
          */
         mipmapFilter: any
-        /** Fade out mip levels to gray color?
+        /** Fades out mip levels to a gray color.
          */
         fadeout: boolean
         /** Mip level where texture begins to fade out.
@@ -7242,7 +7463,7 @@ declare module "UnityEditor" {
         /** Mip level where texture is faded out completely.
          */
         mipmapFadeDistanceEnd: number
-        /** Convert heightmap to normal map?
+        /** Converts heightmaps to normal maps.
          */
         convertToNormalmap: boolean
         /** Normal map filtering mode.
@@ -7460,8 +7681,6 @@ declare module "UnityEditor" {
      */
     enum StatusQueryOptions {
         /** Force a refresh of the version control system status of the file. This is slow but accurate.
-
-See Also: AssetDatabase.IsOpenForEdit, AssetDatabase.IsMetaFileOpenForEdit.
          */
         ForceUpdate = 0,
         /** This option sets the status query to first use the latest valid version control system status of the file and query for a valid status synchronously if otherwise.
@@ -7659,6 +7878,13 @@ See PrefabUtility.IsDefaultOverride for more information.
         /** Value of an object reference property.
          */
         objectReferenceValue: Object1
+        managedReferenceValue: Object
+        /** String corresponding to the value of the managed reference object (dynamic) full type string.
+         */
+        readonly managedReferenceFullTypename: string
+        /** String corresponding to the value of the managed reference field full type string.
+         */
+        readonly managedReferenceFieldTypename: string
         objectReferenceInstanceIDValue: number
         /** Enum index of an enum property.
          */
@@ -7791,6 +8017,9 @@ declare module "UnityEditor" {
         /** Bounds with Integer values property.
          */
         BoundsInt = 23,
+        /** Managed reference property.
+         */
+        ManagedReference = 24,
         Generic = -1,
     }
 }
@@ -7870,6 +8099,10 @@ declare module "UnityEditor" {
         /** Disables Asset Bundle LoadAsset by file name with extension.
          */
         DisableLoadAssetByFileNameWithExtension = 8192,
+        /** Removes the Unity Version number in the Archive File & Serialized File headers during the build.
+         */
+        AssetBundleStripUnityVersion = 32768,
+        EnableProtection = 65536,
     }
 }
 declare module "UnityEditor" {
@@ -7946,6 +8179,12 @@ declare module "UnityEditor" {
          */
         Switch = 38,
         Lumin = 39,
+        /** Build a Stadia standalone.
+         */
+        Stadia = 40,
+        /** Build a CloudRendering standalone.
+         */
+        CloudRendering = 41,
         NoTarget = -2,
         /** OBSOLETE: Use iOS. Build an iOS player.
          */
@@ -8142,9 +8381,9 @@ declare module "UnityEditor" {
          * @returns The static editor flags of the GameObject specified. 
          */
         static GetStaticEditorFlags(go: GameObject): any
-        /** Sets the static editor flags on the specified GameObject.
-         * @param go The GameObject whose static editor flags you want to set.
-         * @param flags The flags to set on the GameObject.
+        /** Sets the StaticEditorFlags of the specified GameObject.
+         * @param go The GameObject whose Static Editor Flags you want to set.
+         * @param flags The StaticEditorFlags to set on the GameObject.
          */
         static SetStaticEditorFlags(go: GameObject, flags: any): void
         /** Returns true if the passed in StaticEditorFlags are set on the GameObject specified.
@@ -8272,7 +8511,7 @@ declare module "UnityEditor" {
 declare module "UnityEditor" {
     import * as jsb from "jsb";
     import { Object, Enum, Array } from "System";
-    import { Color, Matrix4x4, Camera, Vector3, Quaternion, EventType, Vector2, Texture2D, Rect, GUIStyle, GUIContent, Texture } from "UnityEngine";
+    import { Color, Matrix4x4, Camera, Vector3, Quaternion, EventType, Vector2, Transform, Texture2D, Rect, GUIStyle, GUIContent, Texture } from "UnityEngine";
     /** Custom 3D GUI controls and drawing in the Scene view.
      */
     @jsb.RequiredDefines("UNITY_EDITOR")
@@ -8498,10 +8737,29 @@ Note: Use HandleUtility.GetHandleSize where you might want to have constant scre
          * @returns The new value modified by the user's interaction with the handle. If the user has not moved the handle, it will return the same value as you passed into the function. 
          */
         static ScaleSlider(scale: number, position: Vector3, direction: Vector3, rotation: Quaternion, size: number, snap: number): number
-        /** Rounds the value val to the closest multiple of snap (snap can only be positive).
-         * @returns The rounded value, if snap is positive, and val otherwise. 
+        /** Rounds value to the closest multiple of snap if snapping is active. Note that snap can only be positive.
+         * @param value The value to snap.
+         * @param snap The increment to snap to.
+         * @returns If snapping is active, rounds value to the closest multiple of snap (snap can only be positive). 
          */
-        static SnapValue(val: number, snap: number): number
+        static SnapValue(value: number, snap: number): number
+        /** Rounds value to the closest multiple of snap if snapping is active. Note that snap can only be positive.
+         * @param value The value to snap.
+         * @param snap The increment to snap to.
+         * @returns If snapping is active, rounds value to the closest multiple of snap (snap can only be positive). 
+         */
+        static SnapValue(value: Vector2, snap: Vector2): Vector2
+        /** Rounds value to the closest multiple of snap if snapping is active. Note that snap can only be positive.
+         * @param value The value to snap.
+         * @param snap The increment to snap to.
+         * @returns If snapping is active, rounds value to the closest multiple of snap (snap can only be positive). 
+         */
+        static SnapValue(value: Vector3, snap: Vector3): Vector3
+        /** Rounds each Transform.position to the closest multiple of EditorSnap.move.
+         * @param transforms The transforms to snap.
+         * @param axis The axes on which to apply snapping.
+         */
+        static SnapToGrid(transforms: Array<Transform>, axis: any): void
         static SelectionFrame(controlID: number, position: Vector3, rotation: Quaternion, size: number): void
         /** Draw anti-aliased line specified with point array and width.
          * @param lineTex The AA texture used for rendering.
@@ -8874,8 +9132,8 @@ declare module "UnityEditor" {
 }
 declare module "UnityEditor" {
     import * as jsb from "jsb";
+    import { Color, Quaternion, Camera, Vector3, Object as Object1, Transform, Bounds } from "UnityEngine";
     import { ValueType, Object, Array, Enum } from "System";
-    import { Quaternion, Camera, Vector3, Object as Object1, Transform, Bounds } from "UnityEngine";
     /** Use this class to manage SceneView settings, change the SceneView camera properties, subscribe to events, call SceneView methods, and render open scenes.
      */
     @jsb.RequiredDefines("UNITY_EDITOR")
@@ -8985,6 +9243,9 @@ declare module "UnityEditor" {
         /** The SceneView that is being drawn.
          */
         static readonly currentDrawingSceneView: SceneView
+        /** Gets the Color of selected outline.
+         */
+        static readonly selectedOutlineColor: Color
         /** Sets the visibility of all Gizmos in the Scene view.
          */
         drawGizmos: boolean
@@ -9009,6 +9270,9 @@ declare module "UnityEditor" {
         /** Use SceneViewState to set the debug options for the Scene view.
          */
         sceneViewState: any
+        /** Gets or sets whether to enable the grid for an instance of the SceneView.
+         */
+        showGrid: boolean
         /** Use CameraSettings to set the properties for the SceneView Camera.
          */
         cameraSettings: any
@@ -9038,6 +9302,7 @@ declare module "UnityEditor" {
         orthographic: boolean
         onValidateCameraMode(op: "add" | "remove", fn: (arg: any) => boolean): void
         onCameraModeChanged(op: "add" | "remove", fn: (obj: any) => void): void
+        gridVisibilityChanged(op: "add" | "remove", fn: (obj: boolean) => void): void
         static beforeSceneGui(op: "add" | "remove", fn: (obj: SceneView) => void): void
         static duringSceneGui(op: "add" | "remove", fn: (obj: SceneView) => void): void
     }
@@ -9435,6 +9700,9 @@ declare module "UnityEditor.Build.Reporting" {
         /** The StrippingInfo object for the build.
          */
         readonly strippingInfo: any
+        /** An array of all the PackedAssets generated by the build process.
+         */
+        readonly packedAssets: Array<any>
     }
 }
 declare module "UnityEngine" {
@@ -9473,8 +9741,14 @@ declare module "UnityEditor" {
     @jsb.RequiredDefines("UNITY_EDITOR")
     class BuildPipeline extends Object {
         static GetBuildTargetGroup(platform: BuildTarget): any
+        /** Given a BuildTarget will return the well known string representation for the build target platform.
+         * @param targetPlatform An instance of the BuildTarget enum.
+         * @returns Target platform name represented by the passed in BuildTarget. 
+         */
+        static GetBuildTargetName(targetPlatform: BuildTarget): string
+        static SetAssetBundleEncryptKey(password: string): void
         /** Builds a player. These overloads are still supported, but will be replaced. Please use BuildPlayer (BuildPlayerOptions buildPlayerOptions)  instead.
-         * @param levels The Scenes to be included in the build. If empty, the currently open Scene will be built. Paths are relative to the project folder (AssetsMyLevelsMyScene.unity).
+         * @param scenes The Scenes to include in the build. If empty, the build only includes the currently open Scene. Paths are relative to the project folder (AssetsMyLevelsMyScene.unity).
          * @param locationPathName The path where the application will be built.
          * @param target The BuildTarget to build.
          * @param options Additional BuildOptions, like whether to run the built player.
@@ -9482,7 +9756,7 @@ declare module "UnityEditor" {
          */
         static BuildPlayer(levels: Array<any>, locationPathName: string, target: BuildTarget, options: any): BuildReport
         /** Builds a player. These overloads are still supported, but will be replaced. Please use BuildPlayer (BuildPlayerOptions buildPlayerOptions)  instead.
-         * @param levels The Scenes to be included in the build. If empty, the currently open Scene will be built. Paths are relative to the project folder (AssetsMyLevelsMyScene.unity).
+         * @param scenes The Scenes to include in the build. If empty, the build only includes the currently open Scene. Paths are relative to the project folder (AssetsMyLevelsMyScene.unity).
          * @param locationPathName The path where the application will be built.
          * @param target The BuildTarget to build.
          * @param options Additional BuildOptions, like whether to run the built player.
@@ -9545,40 +9819,83 @@ In some cases the player directory path can be affected by BuildOptions.Developm
 declare module "UnityEditor" {
     import * as jsb from "jsb";
     import { Object, Array } from "System";
-    import { IEnumerable } from "System.Collections.Generic";
+    import { List, IEnumerable } from "System.Collections.Generic";
     import { Object as Object1, Hash128, Texture } from "UnityEngine";
     /** An Interface for accessing assets and performing operations on assets.
      */
     @jsb.RequiredDefines("UNITY_EDITOR")
     class AssetDatabase extends Object {
-        static ForceReserializeAssets(assetPaths: IEnumerable<string>, options: ForceReserializeAssetsOptions): void
-        static ForceReserializeAssets(): void
-        /** Warning Use the overload with a long localId parameter. Using the overload with an integer localId parameter can cause an integer overflow in localId. This can happen when the object passed to the API is part of a Prefab.
-
-Get the GUID and local file id from an object instance id.
-         * @param instanceID InstanceID of the object to retrieve information for.
-         * @param obj The object to retrieve GUID and File Id for.
-         * @param guid The GUID of the asset.
-         * @param localId The local file identifier of this asset.
-         * @returns True if the guid and file id were successfully found, false if not. 
+        static IsOpenForEdit(assetOrMetaFilePaths: Array<string>, outNotEditablePaths: List<string>, statusQueryOptions: StatusQueryOptions): void
+        /** Query whether an Asset file is open for editing in version control.
+         * @param assetObject Object representing the asset whose status you wish to query.
+         * @param assetOrMetaFilePath Path to the asset file or its .meta file on disk, relative to project folder.
+         * @param message Returns a reason for the asset not being open for edit.
+         * @param statusOptions Options for how the version control system should be queried. These options can effect the speed and accuracy of the query. Default is StatusQueryOptions.UseCachedIfPossible.
+         * @returns True if the asset is considered open for edit by the selected version control system. 
          */
-        static TryGetGUIDAndLocalFileIdentifier(obj: Object1, guid: jsb.Out<string>, localId: jsb.Out<number>): boolean
-        /** Warning Use the overload with a long localId parameter. Using the overload with an integer localId parameter can cause an integer overflow in localId. This can happen when the object passed to the API is part of a Prefab.
-
-Get the GUID and local file id from an object instance id.
-         * @param instanceID InstanceID of the object to retrieve information for.
-         * @param obj The object to retrieve GUID and File Id for.
-         * @param guid The GUID of the asset.
-         * @param localId The local file identifier of this asset.
-         * @returns True if the guid and file id were successfully found, false if not. 
+        static IsOpenForEdit(assetObject: Object1, message: jsb.Out<string>, statusOptions: StatusQueryOptions): boolean
+        /** Query whether an Asset file is open for editing in version control.
+         * @param assetObject Object representing the asset whose status you wish to query.
+         * @param assetOrMetaFilePath Path to the asset file or its .meta file on disk, relative to project folder.
+         * @param message Returns a reason for the asset not being open for edit.
+         * @param statusOptions Options for how the version control system should be queried. These options can effect the speed and accuracy of the query. Default is StatusQueryOptions.UseCachedIfPossible.
+         * @returns True if the asset is considered open for edit by the selected version control system. 
          */
-        static TryGetGUIDAndLocalFileIdentifier(instanceID: number, guid: jsb.Out<string>, localId: jsb.Out<number>): boolean
-        /** Removes object from its asset (See Also: AssetDatabase.AddObjectToAsset).
+        static IsOpenForEdit(assetOrMetaFilePath: string, message: jsb.Out<string>, statusOptions: StatusQueryOptions): boolean
+        /** Query whether an Asset file is open for editing in version control.
+         * @param assetObject Object representing the asset whose status you wish to query.
+         * @param assetOrMetaFilePath Path to the asset file or its .meta file on disk, relative to project folder.
+         * @param message Returns a reason for the asset not being open for edit.
+         * @param statusOptions Options for how the version control system should be queried. These options can effect the speed and accuracy of the query. Default is StatusQueryOptions.UseCachedIfPossible.
+         * @returns True if the asset is considered open for edit by the selected version control system. 
          */
-        static RemoveObjectFromAsset(objectToRemove: Object1): void
-        /** Imports package at packagePath into the current project.
+        static IsOpenForEdit(assetObject: Object1, statusOptions: StatusQueryOptions): boolean
+        /** Query whether an Asset file is open for editing in version control.
+         * @param assetObject Object representing the asset whose status you wish to query.
+         * @param assetOrMetaFilePath Path to the asset file or its .meta file on disk, relative to project folder.
+         * @param message Returns a reason for the asset not being open for edit.
+         * @param statusOptions Options for how the version control system should be queried. These options can effect the speed and accuracy of the query. Default is StatusQueryOptions.UseCachedIfPossible.
+         * @returns True if the asset is considered open for edit by the selected version control system. 
          */
-        static ImportPackage(packagePath: string, interactive: boolean): void
+        static IsOpenForEdit(assetOrMetaFilePath: string, statusOptions: StatusQueryOptions): boolean
+        /** Query whether an Asset file is open for editing in version control.
+         * @param assetObject Object representing the asset whose status you wish to query.
+         * @param assetOrMetaFilePath Path to the asset file or its .meta file on disk, relative to project folder.
+         * @param message Returns a reason for the asset not being open for edit.
+         * @param statusOptions Options for how the version control system should be queried. These options can effect the speed and accuracy of the query. Default is StatusQueryOptions.UseCachedIfPossible.
+         * @returns True if the asset is considered open for edit by the selected version control system. 
+         */
+        static IsOpenForEdit(assetObject: Object1, message: jsb.Out<string>): boolean
+        /** Query whether an Asset file is open for editing in version control.
+         * @param assetObject Object representing the asset whose status you wish to query.
+         * @param assetOrMetaFilePath Path to the asset file or its .meta file on disk, relative to project folder.
+         * @param message Returns a reason for the asset not being open for edit.
+         * @param statusOptions Options for how the version control system should be queried. These options can effect the speed and accuracy of the query. Default is StatusQueryOptions.UseCachedIfPossible.
+         * @returns True if the asset is considered open for edit by the selected version control system. 
+         */
+        static IsOpenForEdit(assetOrMetaFilePath: string, message: jsb.Out<string>): boolean
+        /** Query whether an Asset file is open for editing in version control.
+         * @param assetObject Object representing the asset whose status you wish to query.
+         * @param assetOrMetaFilePath Path to the asset file or its .meta file on disk, relative to project folder.
+         * @param message Returns a reason for the asset not being open for edit.
+         * @param statusOptions Options for how the version control system should be queried. These options can effect the speed and accuracy of the query. Default is StatusQueryOptions.UseCachedIfPossible.
+         * @returns True if the asset is considered open for edit by the selected version control system. 
+         */
+        static IsOpenForEdit(assetObject: Object1): boolean
+        /** Query whether an Asset file is open for editing in version control.
+         * @param assetObject Object representing the asset whose status you wish to query.
+         * @param assetOrMetaFilePath Path to the asset file or its .meta file on disk, relative to project folder.
+         * @param message Returns a reason for the asset not being open for edit.
+         * @param statusOptions Options for how the version control system should be queried. These options can effect the speed and accuracy of the query. Default is StatusQueryOptions.UseCachedIfPossible.
+         * @returns True if the asset is considered open for edit by the selected version control system. 
+         */
+        static IsOpenForEdit(assetOrMetaFilePath: string): boolean
+        static MakeEditable(paths: Array<string>, prompt: string, outNotEditablePaths: List<string>): boolean
+        /** Makes a file open for editing in version control.
+         * @param path Specifies the path to a file relative to the project root.
+         * @returns true if Unity successfully made the file editable in the version control system. Otherwise, returns false. 
+         */
+        static MakeEditable(path: string): boolean
         /** Search the asset database using the search filter string.
          * @param filter The filter string can contain search data.  See below for details about this string.
          * @param searchInFolders The folders where the search will start.
@@ -9597,10 +9914,12 @@ Get the GUID and local file id from an object instance id.
         /** Is object an asset?
          */
         static Contains(instanceID: number): boolean
-        /** Create a new folder.
-         * @param parentFolder The name of the parent folder.
+        /** Creates a new folder, in the specified parent folder.
+
+The parent folder string must start with the "Assets" folder, and all folders within the parent folder string must already exist. For example, when specifying "AssetsParentFolder1Parentfolder2/", the new folder will be created in "ParentFolder2" only if ParentFolder1 and ParentFolder2 already exist.
+         * @param parentFolder The path to the parent folder. Must start with "Assets/".
          * @param newFolderName The name of the new folder.
-         * @returns The GUID of the newly created folder. 
+         * @returns The GUID of the newly created folder, if the folder was created successfully. Otherwise returns an empty string. 
          */
         static CreateFolder(parentFolder: string, newFolderName: string): string
         /** Is asset a main asset in the project window?
@@ -9609,7 +9928,6 @@ Get the GUID and local file id from an object instance id.
         /** Is asset a main asset in the project window?
          */
         static IsMainAsset(instanceID: number): boolean
-        static GetCurrentCacheServerIp(): string
         /** Does the asset form part of another asset?
          * @param obj The asset Object to query.
          * @param instanceID Instance ID of the asset Object to query.
@@ -9632,6 +9950,7 @@ Get the GUID and local file id from an object instance id.
         /** Determines whether the Asset is a native Asset.
          */
         static IsNativeAsset(instanceID: number): boolean
+        static GetCurrentCacheServerIp(): string
         /** Creates a new unique path for an asset.
          */
         static GenerateUniqueAssetPath(path: string): string
@@ -9678,6 +9997,7 @@ Get the GUID and local file id from an object instance id.
         /** Duplicates the asset at path and stores it at newPath.
          * @param path Filesystem path of the source asset.
          * @param newPath Filesystem path of the new asset to create.
+         * @returns Returns true if the copy operation is successful or false if part of the process fails. 
          */
         static CopyAsset(path: string, newPath: string): boolean
         /** Writes the import settings to disk.
@@ -9766,6 +10086,12 @@ Get the GUID and local file id from an object instance id.
         static Refresh(): void
         /** Opens the asset with associated application.
          */
+        static OpenAsset(instanceID: number, lineNumber: number, columnNumber: number): boolean
+        /** Opens the asset with associated application.
+         */
+        static OpenAsset(target: Object1, lineNumber: number, columnNumber: number): boolean
+        /** Opens the asset with associated application.
+         */
         static OpenAsset(instanceID: number, lineNumber: number): boolean
         /** Opens the asset with associated application.
          */
@@ -9784,7 +10110,7 @@ Get the GUID and local file id from an object instance id.
          * @returns GUID. 
          */
         static AssetPathToGUID(path: string): string
-        /** Translate a GUID to its current asset path.
+        /** Gets the corresponding asset path for the supplied guid, or an empty string if the GUID can't be found.
          */
         static GUIDToAssetPath(guid: string): string
         /** Returns the hash of all the dependencies of an asset.
@@ -9813,7 +10139,7 @@ Get the GUID and local file id from an object instance id.
          */
         static RemoveAssetBundleName(assetBundleName: string, forceRemove: boolean): boolean
         static RemoveUnusedAssetBundleNames(): void
-        /** Get the paths of the assets which have been marked with the given assetBundle name.
+        /** Returns an array containing the paths of all assets marked with the specified Asset Bundle name.
          */
         static GetAssetPathsFromAssetBundle(assetBundleName: string): Array<string>
         /** Get the Asset paths for all Assets tagged with assetBundleName and
@@ -9836,27 +10162,35 @@ Get the GUID and local file id from an object instance id.
          * @returns The names of all AssetBundles that the input depends on. 
          */
         static GetAssetBundleDependencies(assetBundleName: string, recursive: boolean): Array<string>
-        /** Given a pathName, returns the list of all assets that it depends on.
+        /** Returns an array of all the assets that are dependencies of the asset at the specified pathName.
+
+Note: GetDependencies() gets the Assets that are referenced by other Assets. For example, a Scene could contain many GameObjects with a Material attached to them. In this case,  GetDependencies() will return the path to the Material Assets, but not the GameObjects as those are not Assets on your disk.
          * @param pathName The path to the asset for which dependencies are required.
-         * @param recursive If false, return only assets which are direct dependencies of the input; if true, include all indirect dependencies of the input. Defaults to true.
+         * @param recursive Controls whether this method recursively checks and returns all dependencies including indirect dependencies (when set to true), or whether it only returns direct dependencies (when set to false).
          * @returns The paths of all assets that the input depends on. 
          */
         static GetDependencies(pathName: string, recursive: boolean): Array<string>
-        /** Given an array of pathNames, returns the list of all assets that the input depend on.
+        /** Returns an array of the paths of assets that are dependencies of all the assets in the list of pathNames that you provide.
+
+Note: GetDependencies() gets the Assets that are referenced by other Assets. For example, a Scene could contain many GameObjects with a Material attached to them. In this case,  GetDependencies() will return the path to the Material Assets, but not the GameObjects as those are not Assets on your disk.
          * @param pathNames The path to the assets for which dependencies are required.
-         * @param recursive If false, return only assets which are direct dependencies of the input; if true, include all indirect dependencies of the input. Defaults to true.
+         * @param recursive Controls whether this method recursively checks and returns all dependencies including indirect dependencies (when set to true), or whether it only returns direct dependencies (when set to false).
          * @returns The paths of all assets that the input depends on. 
          */
         static GetDependencies(pathNames: Array<string>, recursive: boolean): Array<string>
-        /** Given a pathName, returns the list of all assets that it depends on.
+        /** Returns an array of all the assets that are dependencies of the asset at the specified pathName.
+
+Note: GetDependencies() gets the Assets that are referenced by other Assets. For example, a Scene could contain many GameObjects with a Material attached to them. In this case,  GetDependencies() will return the path to the Material Assets, but not the GameObjects as those are not Assets on your disk.
          * @param pathName The path to the asset for which dependencies are required.
-         * @param recursive If false, return only assets which are direct dependencies of the input; if true, include all indirect dependencies of the input. Defaults to true.
+         * @param recursive Controls whether this method recursively checks and returns all dependencies including indirect dependencies (when set to true), or whether it only returns direct dependencies (when set to false).
          * @returns The paths of all assets that the input depends on. 
          */
         static GetDependencies(pathName: string): Array<string>
-        /** Given an array of pathNames, returns the list of all assets that the input depend on.
+        /** Returns an array of the paths of assets that are dependencies of all the assets in the list of pathNames that you provide.
+
+Note: GetDependencies() gets the Assets that are referenced by other Assets. For example, a Scene could contain many GameObjects with a Material attached to them. In this case,  GetDependencies() will return the path to the Material Assets, but not the GameObjects as those are not Assets on your disk.
          * @param pathNames The path to the assets for which dependencies are required.
-         * @param recursive If false, return only assets which are direct dependencies of the input; if true, include all indirect dependencies of the input. Defaults to true.
+         * @param recursive Controls whether this method recursively checks and returns all dependencies including indirect dependencies (when set to true), or whether it only returns direct dependencies (when set to false).
          * @returns The paths of all assets that the input depends on. 
          */
         static GetDependencies(pathNames: Array<string>): Array<string>
@@ -9872,53 +10206,67 @@ Get the GUID and local file id from an object instance id.
         /** Exports the assets identified by assetPathNames to a unitypackage file in fileName.
          */
         static ExportPackage(assetPathNames: Array<string>, fileName: string): void
-        /** Query whether an asset file is open for edit in version control.
-         * @param assetObject Object representing the asset whose status you wish to query.
-         * @param assetOrMetaFilePath Path to the asset file or its .meta file on disk, relative to project folder.
-         * @param message Returns a reason for the asset not being open for edit.
-         * @param StatusQueryOptions Options for how the version control system should be queried. These options can effect the speed and accuracy of the query.
-         * @returns True if the asset is considered open for edit by the selected version control system. 
-         */
-        static IsOpenForEdit(assetObject: Object1, message: jsb.Out<string>, statusOptions: StatusQueryOptions): boolean
-        /** Query whether an asset file is open for edit in version control.
-         * @param assetObject Object representing the asset whose status you wish to query.
-         * @param assetOrMetaFilePath Path to the asset file or its .meta file on disk, relative to project folder.
-         * @param message Returns a reason for the asset not being open for edit.
-         * @param StatusQueryOptions Options for how the version control system should be queried. These options can effect the speed and accuracy of the query.
-         * @returns True if the asset is considered open for edit by the selected version control system. 
-         */
-        static IsOpenForEdit(assetOrMetaFilePath: string, message: jsb.Out<string>, statusOptions: StatusQueryOptions): boolean
-        /** Query whether an asset file is open for edit in version control.
-         * @param assetObject Object representing the asset whose status you wish to query.
-         * @param assetOrMetaFilePath Path to the asset file or its .meta file on disk, relative to project folder.
-         * @param message Returns a reason for the asset not being open for edit.
-         * @param StatusQueryOptions Options for how the version control system should be queried. These options can effect the speed and accuracy of the query.
-         * @returns True if the asset is considered open for edit by the selected version control system. 
-         */
-        static IsOpenForEdit(assetObject: Object1, StatusQueryOptions: StatusQueryOptions): boolean
-        /** Query whether an asset file is open for edit in version control.
-         * @param assetObject Object representing the asset whose status you wish to query.
-         * @param assetOrMetaFilePath Path to the asset file or its .meta file on disk, relative to project folder.
-         * @param message Returns a reason for the asset not being open for edit.
-         * @param StatusQueryOptions Options for how the version control system should be queried. These options can effect the speed and accuracy of the query.
-         * @returns True if the asset is considered open for edit by the selected version control system. 
-         */
-        static IsOpenForEdit(assetOrMetaFilePath: string, StatusQueryOptions: StatusQueryOptions): boolean
         /** Query whether an asset's metadata (.meta) file is open for edit in version control.
          * @param assetObject Object representing the asset whose metadata status you wish to query.
          * @param message Returns a reason for the asset metadata not being open for edit.
-         * @param StatusQueryOptions Options for how the version control system should be queried. These options can effect the speed and accuracy of the query.
+         * @param statusOptions Options for how the version control system should be queried. These options can effect the speed and accuracy of the query. Default is StatusQueryOptions.UseCachedIfPossible.
          * @returns True if the asset's metadata is considered open for edit by the selected version control system. 
          */
         static IsMetaFileOpenForEdit(assetObject: Object1, message: jsb.Out<string>, statusOptions: StatusQueryOptions): boolean
         /** Query whether an asset's metadata (.meta) file is open for edit in version control.
          * @param assetObject Object representing the asset whose metadata status you wish to query.
          * @param message Returns a reason for the asset metadata not being open for edit.
-         * @param StatusQueryOptions Options for how the version control system should be queried. These options can effect the speed and accuracy of the query.
+         * @param statusOptions Options for how the version control system should be queried. These options can effect the speed and accuracy of the query. Default is StatusQueryOptions.UseCachedIfPossible.
          * @returns True if the asset's metadata is considered open for edit by the selected version control system. 
          */
         static IsMetaFileOpenForEdit(assetObject: Object1, statusOptions: StatusQueryOptions): boolean
+        /** Query whether an asset's metadata (.meta) file is open for edit in version control.
+         * @param assetObject Object representing the asset whose metadata status you wish to query.
+         * @param message Returns a reason for the asset metadata not being open for edit.
+         * @param statusOptions Options for how the version control system should be queried. These options can effect the speed and accuracy of the query. Default is StatusQueryOptions.UseCachedIfPossible.
+         * @returns True if the asset's metadata is considered open for edit by the selected version control system. 
+         */
+        static IsMetaFileOpenForEdit(assetObject: Object1, message: jsb.Out<string>): boolean
+        /** Query whether an asset's metadata (.meta) file is open for edit in version control.
+         * @param assetObject Object representing the asset whose metadata status you wish to query.
+         * @param message Returns a reason for the asset metadata not being open for edit.
+         * @param statusOptions Options for how the version control system should be queried. These options can effect the speed and accuracy of the query. Default is StatusQueryOptions.UseCachedIfPossible.
+         * @returns True if the asset's metadata is considered open for edit by the selected version control system. 
+         */
+        static IsMetaFileOpenForEdit(assetObject: Object1): boolean
         static GetBuiltinExtraResource(type: any, path: string): Object1
+        static ForceReserializeAssets(assetPaths: IEnumerable<string>, options: ForceReserializeAssetsOptions): void
+        static ForceReserializeAssets(): void
+        /** Warning Use the overload with a long localId parameter. Using the overload with an integer localId parameter can cause an integer overflow in localId. This can happen when the object passed to the API is part of a Prefab.
+
+Get the GUID and local file id from an object instance id.
+         * @param instanceID InstanceID of the object to retrieve information for.
+         * @param obj The object to retrieve GUID and File Id for.
+         * @param assetRef The asset reference to retrieve GUID and File Id for.
+         * @param guid The GUID of the asset.
+         * @param localId The local file identifier of this asset.
+         * @returns True if the guid and file id were successfully found, false if not. 
+         */
+        static TryGetGUIDAndLocalFileIdentifier(obj: Object1, guid: jsb.Out<string>, localId: jsb.Out<number>): boolean
+        /** Warning Use the overload with a long localId parameter. Using the overload with an integer localId parameter can cause an integer overflow in localId. This can happen when the object passed to the API is part of a Prefab.
+
+Get the GUID and local file id from an object instance id.
+         * @param instanceID InstanceID of the object to retrieve information for.
+         * @param obj The object to retrieve GUID and File Id for.
+         * @param assetRef The asset reference to retrieve GUID and File Id for.
+         * @param guid The GUID of the asset.
+         * @param localId The local file identifier of this asset.
+         * @returns True if the guid and file id were successfully found, false if not. 
+         */
+        static TryGetGUIDAndLocalFileIdentifier(instanceID: number, guid: jsb.Out<string>, localId: jsb.Out<number>): boolean
+        /** Removes object from its asset (See Also: AssetDatabase.AddObjectToAsset).
+         */
+        static RemoveObjectFromAsset(objectToRemove: Object1): void
+        /** Imports package at packagePath into the current project.
+         */
+        static ImportPackage(packagePath: string, interactive: boolean): void
+        static DisallowAutoRefresh(): void
+        static AllowAutoRefresh(): void
         protected constructor()
         static importPackageStarted(op: "add" | "remove", fn: (packageName: string) => void): void
         static importPackageCompleted(op: "add" | "remove", fn: (packageName: string) => void): void
@@ -9934,10 +10282,11 @@ declare module "UnityEditor" {
      */
     @jsb.RequiredDefines("UNITY_EDITOR")
     class ShaderUtil extends Object {
-        /** Get the number of properties in Shader s.
-         * @param s The shader to check against.
+        /** Determines whether the specified Shader contains a valid Procedural Instancing variant.
+         * @param s The Shader to check.
+         * @returns Returns true if the Shader has a valid Procedural Instancing variant. Returns false otherwise. 
          */
-        static GetPropertyCount(s: any): number
+        static HasProceduralInstancing(s: any): boolean
         /** Returns the number of errors and warnings generated by the Unity Shader Compiler for the given Shader.
          * @param s The Shader instance to check for messages.
          * @returns The number of errors and warnings generated by the Unity Shader Compiler. 
@@ -9961,55 +10310,98 @@ declare module "UnityEditor" {
          * @returns An array of ShaderMessage structs containing the generated messages. 
          */
         static GetComputeShaderMessages(s: any): Array<any>
-        /** Get the name of the shader propery at index propertyIdx of Shader s.
-         * @param s The shader to check against.
-         * @param propertyIdx The property index to use.
+        /** Returns the number of errors and warnings generated by the Shader Compiler for the given RayTracingShader.
+         * @param s The RayTracingShader instance to check for messages.
+         * @returns The number of errors and warnings generated by the Shader Compiler. 
          */
-        static GetPropertyName(s: any, propertyIdx: number): string
-        /** Get the ShaderProperyType of the shader propery at index propertyIdx of Shader s.
-         * @param s The shader to check against.
-         * @param propertyIdx The property index to use.
+        static GetRayTracingShaderMessageCount(s: any): number
+        /** Returns each error and warning generated by the Shader Compiler for the given RayTracingShader.
+         * @param s The RayTracingShader instance to check for messages.
+         * @returns An array of ShaderMessage structs containing the generated messages. 
          */
-        static GetPropertyType(s: any, propertyIdx: number): any
-        /** Get the description of the shader propery at index propertyIdx of Shader s.
-         * @param s The shader to check against.
-         * @param propertyIdx The property index to use.
+        static GetRayTracingShaderMessages(s: any): Array<any>
+        /** Returns the number of ray generation Shaders defined whitin a given RayTracingShader.
+         * @param s The RayTracingShader instance.
+         * @returns The number of ray generation Shaders defined in the RayTracingShader instance passed as argument. 
          */
-        static GetPropertyDescription(s: any, propertyIdx: number): string
-        /** Get Limits for a range property at index propertyIdx of Shader s.
-         * @param defminmax Which value to get: 0 = default, 1 = min, 2 = max.
-         * @param s The shader to check against.
-         * @param propertyIdx The property index to use.
+        static GetRayGenerationShaderCount(s: any): number
+        /** Returns the name of a user-defined ray generation Shader from within a RayTracingShader.
+         * @param s The RayTracingShader instance.
+         * @param shaderIndex The ray generation Shader index for which to retrieve the name. The ray generation Shaders defined in a RayTracingShader are sorted alphabetically by the Shader compiler.
+         * @returns The name of the ray generation Shader at the index passed using the "shaderIndex" argument. 
          */
-        static GetRangeLimits(s: any, propertyIdx: number, defminmax: number): number
-        /** Gets texture dimension of a shader property.
-         * @param s The shader to get the property from.
-         * @param propertyIdx The property index to use.
-         * @returns Texture dimension. 
+        static GetRayGenerationShaderName(s: any, shaderIndex: number): string
+        /** Returns the number of miss Shaders defined whitin a given RayTracingShader.
+         * @param s The RayTracingShader instance.
+         * @returns The number of miss Shaders defined in the RayTracingShader instance passed as argument. 
          */
-        static GetTexDim(s: any, propertyIdx: number): any
-        /** Is the shader propery at index propertyIdx of Shader s hidden?
-         * @param s The shader to check against.
-         * @param propertyIdx The property index to use.
+        static GetMissShaderCount(s: any): number
+        /** Returns the name of a user-defined miss Shader from within a RayTracingShader.
+         * @param s The RayTracingShader instance.
+         * @param shaderIndex The miss Shader index for which to retrieve the name. The miss Shaders defined in a RayTracingShader are sorted alphabetically by the Shader compiler.
+         * @returns The name of the miss Shader at the index passed using the "shaderIndex" argument. 
          */
-        static IsShaderPropertyHidden(s: any, propertyIdx: number): boolean
-        /** Is the shader propery at index propertyIdx of Shader s a NonModifiableTextureProperty?
-         * @param s The shader to check against.
-         * @param propertyIdx The property index to use.
+        static GetMissShaderName(s: any, shaderIndex: number): string
+        /** Returns the ray payload size of a user-defined miss Shader from within a RayTracingShader.
+         * @param s The RayTracingShader instance.
+         * @param shaderIndex The miss Shader index for which to retrieve the ray payload size.
+         * @returns The ray payload size in bytes. 
          */
-        static IsShaderPropertyNonModifiableTexureProperty(s: any, propertyIdx: number): boolean
+        static GetMissShaderRayPayloadSize(s: any, shaderIndex: number): number
+        /** Returns the number of callable Shaders defined whitin a given RayTracingShader.
+         * @param s The RayTracingShader instance.
+         * @returns The number of callable Shaders defined in the RayTracingShader instance passed as argument. 
+         */
+        static GetCallableShaderCount(s: any): number
+        /** Returns the name of a user-defined callable Shader from within a RayTracingShader.
+         * @param s The RayTracingShader instance.
+         * @param shaderIndex The callable Shader index for which to retrieve the name. The callable Shaders defined in a RayTracingShader are sorted alphabetically by the Shader compiler.
+         * @returns The name of the callable Shader at the index passed using the "shaderIndex" argument. 
+         */
+        static GetCallableShaderName(s: any, shaderIndex: number): string
+        /** Returns the parameter size of a user-defined callable Shader from within a RayTracingShader.
+         * @param s The RayTracingShader instance.
+         * @param shaderIndex The callable Shader index for which to retrieve the parameter size.
+         * @returns The parameter size in bytes. 
+         */
+        static GetCallableShaderParamSize(s: any, shaderIndex: number): number
         /** Clears all internally-cached data that was generated for the given shader, such as errors and compilation info.
          */
         static ClearCachedData(s: any): void
+        /** Creates a new Shader object from the provided source code string. You can use this method alongside the ScriptedImporter to create custom shader generation tools in the Editor.
+         * @param context A context object that the asset system needs to register shader dependencies properly.
+         * @param source A string that contains a shader written in code.
+         * @param compileInitialShaderVariants Set to true to compile the code contained in the source string; otherwise false.
+         */
+        static CreateShaderAsset(context: any, source: string, compileInitialShaderVariants: boolean): any
+        /** Creates a new Shader object from the provided source code string. You can use this method alongside the ScriptedImporter to create custom shader generation tools in the Editor.
+         * @param context A context object that the asset system needs to register shader dependencies properly.
+         * @param source A string that contains a shader written in code.
+         * @param compileInitialShaderVariants Set to true to compile the code contained in the source string; otherwise false.
+         */
         static CreateShaderAsset(source: string, compileInitialShaderVariants: boolean): any
+        /** Creates a new Shader object from the provided source code string. You can use this method alongside the ScriptedImporter to create custom shader generation tools in the Editor.
+         * @param context A context object that the asset system needs to register shader dependencies properly.
+         * @param source A string that contains a shader written in code.
+         * @param compileInitialShaderVariants Set to true to compile the code contained in the source string; otherwise false.
+         */
         static CreateShaderAsset(source: string): any
-        /** Replaces the existing source code in the specified shader with the source code in the supplied string. The override provides a boolean that specifies whether the shader should be recompiled.
+        /** Replaces the existing source code in the specified shader with the source code in the supplied string.
+         * @param context A context object that the asset system needs to register shader dependencies properly.
+         * @param source A string that contains a shader written in code.
+         * @param compileInitialShaderVariants Set to true to compile the code contained in the source string; otherwise false.
+         * @param shader The Shader to update.
+         */
+        static UpdateShaderAsset(context: any, shader: any, source: string, compileInitialShaderVariants: boolean): void
+        /** Replaces the existing source code in the specified shader with the source code in the supplied string.
+         * @param context A context object that the asset system needs to register shader dependencies properly.
          * @param source A string that contains a shader written in code.
          * @param compileInitialShaderVariants Set to true to compile the code contained in the source string; otherwise false.
          * @param shader The Shader to update.
          */
         static UpdateShaderAsset(shader: any, source: string, compileInitialShaderVariants: boolean): void
-        /** Replaces the existing source code in the specified shader with the source code in the supplied string. The override provides a boolean that specifies whether the shader should be recompiled.
+        /** Replaces the existing source code in the specified shader with the source code in the supplied string.
+         * @param context A context object that the asset system needs to register shader dependencies properly.
          * @param source A string that contains a shader written in code.
          * @param compileInitialShaderVariants Set to true to compile the code contained in the source string; otherwise false.
          * @param shader The Shader to update.
@@ -10039,6 +10431,48 @@ declare module "UnityEditor" {
          * @param forceSync Forces the script execution to wait until the compilation has finished. Optional.
          */
         static CompilePass(material: Material, pass: number, forceSync: boolean): void
+        /** Get the number of properties in Shader s.
+         * @param s The shader to check against.
+         */
+        static GetPropertyCount(s: any): number
+        /** Get the name of the shader propery at index propertyIdx of Shader s.
+         * @param s The shader to check against.
+         * @param propertyIdx The property index to use.
+         */
+        static GetPropertyName(s: any, propertyIdx: number): string
+        /** Get the ShaderProperyType of the shader propery at index propertyIdx of Shader s.
+         * @param s The shader to check against.
+         * @param propertyIdx The property index to use.
+         */
+        static GetPropertyType(s: any, propertyIdx: number): any
+        /** Get the description of the shader propery at index propertyIdx of Shader s.
+         * @param s The shader to check against.
+         * @param propertyIdx The property index to use.
+         * @returns Returns the description of the given shader property. 
+         */
+        static GetPropertyDescription(s: any, propertyIdx: number): string
+        /** Get Limits for a range property at index propertyIdx of Shader s.
+         * @param defminmax Which value to get: 0 = default, 1 = min, 2 = max.
+         * @param s The shader to check against.
+         * @param propertyIdx The property index to use.
+         */
+        static GetRangeLimits(s: any, propertyIdx: number, defminmax: number): number
+        /** Gets texture dimension of a shader property.
+         * @param s The shader to get the property from.
+         * @param propertyIdx The property index to use.
+         * @returns Texture dimension. 
+         */
+        static GetTexDim(s: any, propertyIdx: number): any
+        /** Is the shader propery at index propertyIdx of Shader s hidden?
+         * @param s The shader to check against.
+         * @param propertyIdx The property index to use.
+         */
+        static IsShaderPropertyHidden(s: any, propertyIdx: number): boolean
+        /** Is the shader propery at index propertyIdx of Shader s a NonModifiableTextureProperty?
+         * @param s The shader to check against.
+         * @param propertyIdx The property index to use.
+         */
+        static IsShaderPropertyNonModifiableTexureProperty(s: any, propertyIdx: number): boolean
         /** Get the shader data for a specific shader.
          * @param shader The shader to get data from.
          * @returns The shader data for the provided shader. 
@@ -10049,9 +10483,6 @@ declare module "UnityEditor" {
          * @returns True if the Shader generated errors, false if there were no errors. 
          */
         static ShaderHasError(shader: any): boolean
-        /** Clears compile time messages for the given shader.
-         */
-        static ClearShaderErrors(s: any): void
         protected constructor()
         /** Does the current hardware support render textues.
          */
@@ -10082,18 +10513,40 @@ declare module "UnityEditor" {
          */
         static OpenFilePanelWithFilters(title: string, directory: string, filters: Array<string>): string
         static RevealInFinder(path: string): void
-        /** Displays a modal dialog.
+        /** This method displays a modal dialog that lets the user opt-out of being shown the current dialog box again.
          * @param title The title of the message box.
          * @param message The text of the message.
          * @param ok Label displayed on the OK dialog button.
          * @param cancel Label displayed on the Cancel dialog button.
+         * @param dialogOptOutDecisionType The type of opt-out decision a user can make.
+         * @param dialogOptOutDecisionStorageKey The unique key setting to store the decision under.
+         * @returns true if the user clicks the ok button, or previously opted out. Returns false if the user cancels or closes the dialog without making a decision. 
+         */
+        static DisplayDialog(title: string, message: string, ok: string, cancel: string, dialogOptOutDecisionType: any, dialogOptOutDecisionStorageKey: string): boolean
+        /** This method displays a modal dialog that lets the user opt-out of being shown the current dialog box again.
+         * @param title The title of the message box.
+         * @param message The text of the message.
+         * @param ok Label displayed on the OK dialog button.
+         * @param cancel Label displayed on the Cancel dialog button.
+         * @param dialogOptOutDecisionType The type of opt-out decision a user can make.
+         * @param dialogOptOutDecisionStorageKey The unique key setting to store the decision under.
+         * @returns true if the user clicks the ok button, or previously opted out. Returns false if the user cancels or closes the dialog without making a decision. 
+         */
+        static DisplayDialog(title: string, message: string, ok: string, dialogOptOutDecisionType: any, dialogOptOutDecisionStorageKey: string): boolean
+        /** This method displays a modal dialog.
+         * @param title The title of the message box.
+         * @param message The text of the message.
+         * @param ok Label displayed on the OK dialog button.
+         * @param cancel Label displayed on the Cancel dialog button.
+         * @returns Returns true if the user clicks the OK button. Returns false otherwise. 
          */
         static DisplayDialog(title: string, message: string, ok: string, cancel: string): boolean
-        /** Displays a modal dialog.
+        /** This method displays a modal dialog.
          * @param title The title of the message box.
          * @param message The text of the message.
          * @param ok Label displayed on the OK dialog button.
          * @param cancel Label displayed on the Cancel dialog button.
+         * @returns Returns true if the user clicks the OK button. Returns false otherwise. 
          */
         static DisplayDialog(title: string, message: string, ok: string): boolean
         /** Displays a modal dialog with three buttons.
@@ -10102,7 +10555,7 @@ declare module "UnityEditor" {
          * @param ok Dialog function chosen.
          * @param cancel Close dialog with no operation.
          * @param alt Choose alternative dialog purpose.
-         * @returns The id of the chosen button. 
+         * @returns Returns the id of the chosen button. The ids are 0, 1 or 2 corresponding to the ok, cancel and alt buttons respectively. 
          */
         static DisplayDialogComplex(title: string, message: string, ok: string, cancel: string, alt: string): number
         /** Displays the "open folder" dialog and returns the selected path name.
@@ -10140,6 +10593,9 @@ declare module "UnityEditor" {
          * @param target The object to mark as dirty.
          */
         static SetDirty(target: Object1): void
+        /** Clear target's dirty flag.
+         */
+        static ClearDirty(target: Object1): void
         static InvokeDiffTool(leftTitle: string, leftFile: string, rightTitle: string, rightFile: string, ancestorTitle: string, ancestorFile: string): string
         /** Copy all settings of a Unity Object.
          */
@@ -10177,9 +10633,6 @@ declare module "UnityEditor" {
         /** Set the Scene View selected display mode for this Renderer.
          */
         static SetSelectedRenderState(renderer: Renderer, renderState: any): void
-        /** Saves an AudioClip or MovieTexture to a file.
-         */
-        static ExtractOggFile(obj: Object1, path: string): boolean
         static OpenWithDefaultApp(fileName: string): void
         /** Sets this camera to allow animation of materials in the Editor.
          */
@@ -10214,6 +10667,8 @@ declare module "UnityEditor" {
          */
         static IsDirty(target: Object1): boolean
         static FocusProjectWindow(): void
+        static RequestScriptReload(): void
+        static IsRunningUnderCPUEmulation(): boolean
         static LoadWindowLayout(path: string): boolean
         static SaveFilePanelInProject(title: string, defaultName: string, extension: string, message: string, path: string): string
         /** Displays the "save file" dialog in the Assets folder of the project and returns the selected path name.
@@ -10224,6 +10679,18 @@ declare module "UnityEditor" {
         static CopySerializedIfDifferent(source: Object1, dest: Object1): void
         static UnloadUnusedAssetsImmediate(includeMonoReferencesAsRoots: boolean): void
         static UnloadUnusedAssetsImmediate(): void
+        /** This method displays a modal dialog that lets the user opt-out of being shown the current dialog box again.
+         * @param dialogOptOutDecisionType The type of opt-out decision a user can make.
+         * @param dialogOptOutDecisionStorageKey The unique key setting to store the decision under.
+         * @returns true if the user previously opted out of seeing the dialog associated with dialogOptOutDecisionStorageKey. Returns false if the user did not yet opt out. 
+         */
+        static GetDialogOptOutDecision(dialogOptOutDecisionType: any, dialogOptOutDecisionStorageKey: string): boolean
+        /** This method displays a modal dialog that lets the user opt-out of being shown the current dialog box again.
+         * @param dialogOptOutDecisionType The type of opt-out decision a user can make.
+         * @param dialogOptOutDecisionStorageKey The unique key setting to store the decision under.
+         * @param optOutDecision The unique key setting to store the decision under.
+         */
+        static SetDialogOptOutDecision(dialogOptOutDecisionType: any, dialogOptOutDecisionStorageKey: string, optOutDecision: boolean): void
         /** Displays a popup menu.
          */
         static DisplayPopupMenu(position: Rect, menuItemPath: string, command: any): void
@@ -12332,7 +12799,7 @@ declare module "UnityEditor" {
          * @param foldout The shown foldout state.
          * @param content The label to show.
          * @param style Optional GUIStyle.
-         * @param toggleOnLabelClick Whether to toggle the foldout state when the label is clicked.
+         * @param toggleOnLabelClick Specifies whether clicking the label toggles the foldout state. The default value is false. Set to true to include the label in the clickable area.
          * @returns The foldout state selected by the user. If true, you should render sub-objects. 
          */
         static Foldout(foldout: boolean, content: string, toggleOnLabelClick: boolean, style: GUIStyle): boolean
@@ -12340,7 +12807,7 @@ declare module "UnityEditor" {
          * @param foldout The shown foldout state.
          * @param content The label to show.
          * @param style Optional GUIStyle.
-         * @param toggleOnLabelClick Whether to toggle the foldout state when the label is clicked.
+         * @param toggleOnLabelClick Specifies whether clicking the label toggles the foldout state. The default value is false. Set to true to include the label in the clickable area.
          * @returns The foldout state selected by the user. If true, you should render sub-objects. 
          */
         static Foldout(foldout: boolean, content: GUIContent, toggleOnLabelClick: boolean, style: GUIStyle): boolean
@@ -12348,7 +12815,7 @@ declare module "UnityEditor" {
          * @param foldout The shown foldout state.
          * @param content The label to show.
          * @param style Optional GUIStyle.
-         * @param toggleOnLabelClick Whether to toggle the foldout state when the label is clicked.
+         * @param toggleOnLabelClick Specifies whether clicking the label toggles the foldout state. The default value is false. Set to true to include the label in the clickable area.
          * @returns The foldout state selected by the user. If true, you should render sub-objects. 
          */
         static Foldout(foldout: boolean, content: string, style: GUIStyle): boolean
@@ -12356,7 +12823,7 @@ declare module "UnityEditor" {
          * @param foldout The shown foldout state.
          * @param content The label to show.
          * @param style Optional GUIStyle.
-         * @param toggleOnLabelClick Whether to toggle the foldout state when the label is clicked.
+         * @param toggleOnLabelClick Specifies whether clicking the label toggles the foldout state. The default value is false. Set to true to include the label in the clickable area.
          * @returns The foldout state selected by the user. If true, you should render sub-objects. 
          */
         static Foldout(foldout: boolean, content: GUIContent, style: GUIStyle): boolean
@@ -12366,7 +12833,7 @@ declare module "UnityEditor" {
          * @param foldout The shown foldout state.
          * @param content The label to show.
          * @param style Optional GUIStyle.
-         * @param toggleOnLabelClick Whether to toggle the foldout state when the label is clicked.
+         * @param toggleOnLabelClick Specifies whether clicking the label toggles the foldout state. The default value is false. Set to true to include the label in the clickable area.
          * @returns The foldout state selected by the user. If true, you should render sub-objects. 
          */
         static Foldout(foldout: boolean, content: string): boolean
@@ -12374,7 +12841,7 @@ declare module "UnityEditor" {
          * @param foldout The shown foldout state.
          * @param content The label to show.
          * @param style Optional GUIStyle.
-         * @param toggleOnLabelClick Whether to toggle the foldout state when the label is clicked.
+         * @param toggleOnLabelClick Specifies whether clicking the label toggles the foldout state. The default value is false. Set to true to include the label in the clickable area.
          * @returns The foldout state selected by the user. If true, you should render sub-objects. 
          */
         static Foldout(foldout: boolean, content: GUIContent): boolean
@@ -14394,6 +14861,8 @@ GUILayout.MaxHeight, GUILayout.ExpandWidth, GUILayout.ExpandHeight.
          */
         static HelpBox(message: string, type: MessageType): void
         static HelpBox(content: GUIContent, wide: boolean): void
+        static Space(width: number, expand: boolean): void
+        static Space(width: number): void
         static Space(): void
         static Separator(): void
         /** Begin a vertical group with a toggle to enable or disable all the controls within at once.
@@ -14627,6 +15096,12 @@ GUILayout.MaxHeight, GUILayout.ExpandWidth, GUILayout.ExpandHeight.
         static Knob(knobSize: Vector2, value: number, minValue: number, maxValue: number, unit: string, backgroundColor: Color, activeColor: Color, showValue: boolean, ...options: GUILayoutOption[]): number
         /** Makes a toolbar populated with the collection of editor tools that match the EditorToolAttribute of the target object.
          * @param target The target object.
+         * @param content An optional prefix label.
+         */
+        static EditorToolbarForTarget(content: GUIContent, target: Object1): void
+        /** Makes a toolbar populated with the collection of editor tools that match the EditorToolAttribute of the target object.
+         * @param target The target object.
+         * @param content An optional prefix label.
          */
         static EditorToolbarForTarget(target: Object1): void
         /** Makes a toolbar populated with the specified collection of editor tools.
@@ -14689,9 +15164,6 @@ declare module "UnityEditor" {
         /** Is editor currently connected to Unity Remote 4 client app.
          */
         static readonly isRemoteConnected: boolean
-        /** Returns the scripting runtime version currently used by the Editor.
-         */
-        static readonly scriptingRuntimeVersion: ScriptingRuntimeVersion
         /** Path to the Unity editor contents folder. (Read Only)
          */
         static readonly applicationContentsPath: string
@@ -14758,7 +15230,7 @@ declare module "UnityEditor" {
          * @returns Generated texture or null. 
          */
         RenderStaticPreview(assetPath: string, subAssets: Array<Object>, width: number, height: number): Texture2D
-        /** Implement to create your own custom preview for the preview area of the inspector, primary editor headers and the object selector.
+        /** Implement to create your own custom preview for the preview area of the inspector, the headers of the primary editor, and the object selector.
          * @param r Rectangle in which to draw the preview.
          * @param background Background image.
          */
@@ -14819,6 +15291,11 @@ declare module "UnityEditor" {
          * @param objects All objects must be of the same type.
          */
         static CreateEditor(targetObjects: Array<Object>): Editor
+        /** Draws the inspector GUI with a foldout header for target.
+         * @param target The object to display the Inspector for.
+         * @param editor The reference to a variable of type Editor.
+         */
+        static DrawFoldoutInspector(target: Object, editor: jsb.Ref<Editor>): void
         /** The object being inspected.
          */
         target: Object
@@ -14869,11 +15346,13 @@ declare module "UnityEditor" {
         Show(immediateDisplay: boolean): void
         Show(): void
         ShowAuxWindow(): void
+        ShowModal(): void
         Close(): void
         Repaint(): void
         /** Sends an Event to a window.
          */
         SendEvent(e: Event): boolean
+        GetExtraPaneTypes(): any
         /** Returns the first EditorWindow of type t which is currently on the screen.
          * @param t The type of the window. Must derive from EditorWindow.
          * @param utility Set this to true, to create a floating utility window, false to create a normal window.
@@ -17325,13 +17804,14 @@ declare module "UnityEngine" {
          */
         LoadAllAssetsAsync(type: any): any
         LoadAllAssetsAsync(): any
-        /** Unloads all assets in the bundle.
+        /** Unloads an AssetBundle freeing its data.
+         * @param unloadAllLoadedObjects Determines whether the current instances of objects loaded from the AssetBundle will also be unloaded.
          */
         Unload(unloadAllLoadedObjects: boolean): void
         GetAllAssetNames(): Array<string>
         GetAllScenePaths(): Array<string>
-        /** Unloads all currently loaded Asset Bundles.
-         * @param unloadAllObjects Determines whether the current instances of objects loaded from Asset Bundles will also be unloaded.
+        /** Unloads all currently loaded AssetBundles.
+         * @param unloadAllObjects Determines whether the current instances of objects loaded from AssetBundles will also be unloaded.
          */
         static UnloadAllAssetBundles(unloadAllObjects: boolean): void
         static GetAllLoadedAssetBundles(): any
@@ -17385,11 +17865,12 @@ declare module "UnityEngine" {
         static LoadFromStream(stream: any, crc: number, managedReadBufferSize: number): AssetBundle
         static LoadFromStream(stream: any, crc: number): AssetBundle
         static LoadFromStream(stream: any): AssetBundle
+        static SetAssetBundleDecryptKey(password: string): void
         /** Asynchronously recompress a downloaded/stored AssetBundle from one BuildCompression to another.
          * @param inputPath Path to the AssetBundle to recompress.
          * @param outputPath Path to the recompressed AssetBundle to be generated. Can be the same as inputPath.
          * @param method The compression method, level and blocksize to use during recompression. Only some BuildCompression types are supported (see note).
-         * @param expectedCRC CRC of the AssetBundle to test against. Testing this requires additional file reading and computation. Pass in 0 to skip this check.
+         * @param expectedCRC CRC of the AssetBundle to test against. Testing this requires additional file reading and computation. Pass in 0 to skip this check. Unity does not compute a CRC when the source and destination BuildCompression are the same, so no CRC verification takes place (see note).
          * @param priority The priority at which the recompression operation should run. This sets thread priority during the operation and does not effect the order in which operations are performed. Recompression operations run on a background worker thread.
          */
         static RecompressAssetBundleAsync(inputPath: string, outputPath: string, method: any, expectedCRC: number, priority: any): any
@@ -17401,7 +17882,7 @@ declare module "UnityEngine" {
 }
 declare module "UnityEngine" {
     import { Enum } from "System";
-    /** Base class for texture handling. Contains functionality that is common to both Texture2D and RenderTexture classes.
+    /** Base class for texture handling.
      */
     class Texture extends Object {
         GetNativeTexturePtr(): any
@@ -17412,6 +17893,9 @@ declare module "UnityEngine" {
         static SetStreamingTextureMaterialDebugProperties(): void
         protected constructor()
         static masterTextureLimit: number
+        /** How many mipmap levels are in this texture (Read Only).
+         */
+        readonly mipmapCount: number
         static anisotropicFiltering: any
         /** Returns the GraphicsFormat format or color format of a texture object.
          */
@@ -17495,14 +17979,19 @@ declare module "UnityEngine" {
         /** Allow texture creation to occur on any thread (rather than the dedicated render thread).
          */
         static allowThreadedTextureCreation: boolean
+        /** Can be used with texture constructors that take a mip count to indicate that all mips should be generated.  The value of this field is -1.
+         */
+        static readonly GenerateAllMips: number
     }
 }
 declare module "UnityEngine" {
     import * as jsb from "jsb";
     import { Enum, Array, Object as Object1 } from "System";
-    /** Class for texture handling.
+    /** Class that represents textures in C# code.
      */
     class Texture2D extends Texture {
+        constructor(width: number, height: number, format: any, mipCount: number, flags: any)
+        constructor(width: number, height: number, textureFormat: any, mipCount: number, linear: boolean)
         constructor(width: number, height: number, textureFormat: any, mipChain: boolean, linear: boolean)
         constructor(width: number, height: number, format: any, flags: any)
         constructor(width: number, height: number, format: any, flags: any)
@@ -17513,6 +18002,7 @@ declare module "UnityEngine" {
         Compress(highQuality: boolean): void
         ClearRequestedMipmapLevel(): void
         IsRequestedMipmapLevelLoaded(): boolean
+        ClearMinimumMipmapLevel(): void
         /** Updates Unity texture to use different native texture object.
          * @param nativeTex Native 2D texture object.
          */
@@ -17630,7 +18120,7 @@ declare module "UnityEngine" {
         EncodeToJPG(): Array<jsb.byte>
         EncodeToEXR(flags: any): Array<jsb.byte>
         EncodeToEXR(): Array<jsb.byte>
-        /** Loads PNG/JPG image byte array into a texture.
+        /** Loads PNG/JPG (or supported format) image byte array into a texture.
          * @param data The byte array containing the image data to load.
          * @param markNonReadable Set to false by default, pass true to optionally mark the texture as non-readable.
          * @param tex The texture to load the image into.
@@ -17648,40 +18138,52 @@ declare module "UnityEngine" {
          */
         static CreateExternalTexture(width: number, height: number, format: any, mipChain: boolean, linear: boolean, nativeTex: any): Texture2D
         static GenerateAtlas(sizes: Array<Vector2>, padding: number, atlasSize: number, results: any): boolean
-        /** How many mipmap levels are in this texture (Read Only).
-         */
-        readonly mipmapCount: number
         /** The format of the pixel data in the texture (Read Only).
          */
         readonly format: any
-        /** Get a small texture with all white pixels.
+        /** Gets a small Texture with all white pixels.
          */
         static readonly whiteTexture: Texture2D
-        /** Get a small texture with all black pixels.
+        /** Gets a small Texture with all black pixels.
          */
         static readonly blackTexture: Texture2D
-        /** Gets a small texture with pixels that represent surface normal vectors at a neutral position.
+        /** Gets a small Texture with all red pixels.
+         */
+        static readonly redTexture: Texture2D
+        /** Gets a small Texture with all gray pixels.
+         */
+        static readonly grayTexture: Texture2D
+        /** Gets a small Texture with all gray pixels.
+         */
+        static readonly linearGrayTexture: Texture2D
+        /** Gets a small Texture with pixels that represent surface normal vectors at a neutral position.
          */
         static readonly normalTexture: Texture2D
         /** Returns true if the Read/Write Enabled checkbox was checked when the texture was imported; otherwise returns false. For a dynamic Texture created from script, always returns true. For additional information, see TextureImporter.isReadable.
          */
         readonly isReadable: boolean
-        /** Has mipmap streaming been enabled for this texture.
+        /** Determines whether mipmap streaming is enabled for this Texture.
          */
         readonly streamingMipmaps: boolean
-        /** Relative priority for this texture when reducing memory size in order to hit the memory budget.
+        /** Sets the relative priority for this Texture when reducing memory size to fit within the memory budget.
          */
         readonly streamingMipmapsPriority: number
         /** The mipmap level to load.
          */
         requestedMipmapLevel: number
-        /** The mipmap level which would have been loaded by the streaming system before memory budgets are applied.
+        /** Restricts the mipmap streaming system to a minimum mip level for this Texture.
+         */
+        minimumMipmapLevel: number
+        /** The mipmap level calculated by the streaming system, which takes into account the streaming Cameras and the location of the objects containing this Texture. This is unaffected by requestedMipmapLevel or minimumMipmapLevel.
+         */
+        readonly calculatedMipmapLevel: number
+        /** The mipmap level that the streaming system would load before memory budgets are applied.
          */
         readonly desiredMipmapLevel: number
-        /** Which mipmap level is in the process of being loaded by the mipmap streaming system.
+        /** The mipmap level that the mipmap streaming system is in the process of loading.
          */
         readonly loadingMipmapLevel: number
-        /** Which mipmap level is currently loaded by the streaming system.
+        /** The mipmap level that is currently loaded by the streaming system.
          */
         readonly loadedMipmapLevel: number
     }
@@ -17821,12 +18323,28 @@ declare module "UnityEngine" {
          * @param nameID Property name ID, use Shader.PropertyToID to get it.
          * @param name Property name, e.g. "_MainTex".
          * @param value Texture to set.
+         * @param element Optional parameter that specifies the type of data from the render texture to set.
+         */
+        SetTexture(name: string, value: any, element: any): void
+        /** Sets a named texture.
+         * @param nameID Property name ID, use Shader.PropertyToID to get it.
+         * @param name Property name, e.g. "_MainTex".
+         * @param value Texture to set.
+         * @param element Optional parameter that specifies the type of data from the render texture to set.
+         */
+        SetTexture(nameID: number, value: any, element: any): void
+        /** Sets a named texture.
+         * @param nameID Property name ID, use Shader.PropertyToID to get it.
+         * @param name Property name, e.g. "_MainTex".
+         * @param value Texture to set.
+         * @param element Optional parameter that specifies the type of data from the render texture to set.
          */
         SetTexture(name: string, value: Texture): void
         /** Sets a named texture.
          * @param nameID Property name ID, use Shader.PropertyToID to get it.
          * @param name Property name, e.g. "_MainTex".
          * @param value Texture to set.
+         * @param element Optional parameter that specifies the type of data from the render texture to set.
          */
         SetTexture(nameID: number, value: Texture): void
         /** Sets a named ComputeBuffer value.
@@ -18068,16 +18586,16 @@ declare module "UnityEngine" {
         /** The shader used by the material.
          */
         shader: any
-        /** The main material's color.
+        /** The main color of the Material.
          */
         color: Color
-        /** The material's texture.
+        /** The main texture.
          */
         mainTexture: Texture
-        /** The texture offset of the main texture.
+        /** The offset of the main texture.
          */
         mainTextureOffset: Vector2
-        /** The texture scale of the main texture.
+        /** The scale of the main texture.
          */
         mainTextureScale: Vector2
         /** Render queue of this material.
@@ -19522,7 +20040,7 @@ declare module "UnityEngine" {
     }
 }
 declare module "UnityEngine" {
-    /** Waits until the end of the frame after all cameras and GUI is rendered, just before displaying the frame on screen.
+    /** Waits until the end of the frame after Unity has rendererd every Camera and GUI, just before displaying the frame on screen.
      */
     class WaitForEndOfFrame extends YieldInstruction {
         constructor()
@@ -19570,7 +20088,7 @@ declare module "UnityEngine" {
         /** The maximum time a frame can spend on particle updates. If the frame takes longer than this, then updates are split into multiple smaller updates.
          */
         static maximumParticleDeltaTime: number
-        /** The scale at which the time is passing. This can be used for slow motion effects.
+        /** The scale at which time passes. This can be used for slow motion effects.
          */
         static timeScale: number
         /** The total number of frames that have passed (Read Only).
@@ -19581,6 +20099,9 @@ declare module "UnityEngine" {
          */
         static readonly realtimeSinceStartup: number
         /** Slows game playback time to allow screenshots to be saved between frames.
+         */
+        static captureDeltaTime: number
+        /** The reciprocal of Time.captureDeltaTime.
          */
         static captureFramerate: number
         /** Returns true if called inside a fixed time step callback (like MonoBehaviour's MonoBehaviour.FixedUpdate), otherwise returns false.
@@ -20258,11 +20779,11 @@ Note that IgnoreLayerCollision will reset the trigger state of affected collider
         /** Casts a ray against all colliders in the Scene and returns detailed information on what was hit.
          * @param origin The starting point of the ray in world coordinates.
          * @param direction The direction of the ray.
-         * @param hitInfo If true is returned, hitInfo will contain more information about where the collider was hit. (See Also: RaycastHit).
+         * @param hitInfo If true is returned, hitInfo will contain more information about where the closest collider was hit. (See Also: RaycastHit).
          * @param maxDistance The max distance the ray should check for collisions.
          * @param layerMask A that is used to selectively ignore colliders when casting a ray.
          * @param queryTriggerInteraction Specifies whether this query should hit Triggers.
-         * @returns True when the ray intersects any collider, otherwise false. 
+         * @returns Returns true when the ray intersects any collider, otherwise false. 
          */
         static Raycast(origin: Vector3, direction: Vector3, hitInfo: jsb.Out<RaycastHit>, maxDistance: number, layerMask: number, queryTriggerInteraction: any): boolean
         /** Casts a ray, from point origin, in direction direction, of length maxDistance, against all colliders in the Scene.
@@ -20271,17 +20792,17 @@ Note that IgnoreLayerCollision will reset the trigger state of affected collider
          * @param maxDistance The max distance the ray should check for collisions.
          * @param layerMask A that is used to selectively ignore Colliders when casting a ray.
          * @param queryTriggerInteraction Specifies whether this query should hit Triggers.
-         * @returns True if the ray intersects with a Collider, otherwise false. 
+         * @returns Returns true if the ray intersects with a Collider, otherwise false. 
          */
         static Raycast(origin: Vector3, direction: Vector3, maxDistance: number, layerMask: number, queryTriggerInteraction: any): boolean
         static Raycast(origin: Vector3, direction: Vector3, hitInfo: jsb.Out<RaycastHit>, maxDistance: number, layerMask: number): boolean
         /** Same as above using ray.origin and ray.direction instead of origin and direction.
          * @param ray The starting point and direction of the ray.
-         * @param hitInfo If true is returned, hitInfo will contain more information about where the collider was hit. (See Also: RaycastHit).
+         * @param hitInfo If true is returned, hitInfo will contain more information about where the closest collider was hit. (See Also: RaycastHit).
          * @param maxDistance The max distance the ray should check for collisions.
          * @param layerMask A that is used to selectively ignore colliders when casting a ray.
          * @param queryTriggerInteraction Specifies whether this query should hit Triggers.
-         * @returns True when the ray intersects any collider, otherwise false. 
+         * @returns Returns true when the ray intersects any collider, otherwise false. 
          */
         static Raycast(ray: Ray, hitInfo: jsb.Out<RaycastHit>, maxDistance: number, layerMask: number, queryTriggerInteraction: any): boolean
         static Raycast(origin: Vector3, direction: Vector3, maxDistance: number, layerMask: number): boolean
@@ -20291,7 +20812,7 @@ Note that IgnoreLayerCollision will reset the trigger state of affected collider
          * @param maxDistance The max distance the ray should check for collisions.
          * @param layerMask A that is used to selectively ignore colliders when casting a ray.
          * @param queryTriggerInteraction Specifies whether this query should hit Triggers.
-         * @returns True when the ray intersects any collider, otherwise false. 
+         * @returns Returns true when the ray intersects any collider, otherwise false. 
          */
         static Raycast(ray: Ray, maxDistance: number, layerMask: number, queryTriggerInteraction: any): boolean
         static Raycast(ray: Ray, hitInfo: jsb.Out<RaycastHit>, maxDistance: number, layerMask: number): boolean
@@ -20428,11 +20949,12 @@ Note that IgnoreLayerCollision will reset the trigger state of affected collider
          */
         static RaycastAll(origin: Vector3, direction: Vector3, maxDistance: number, layerMask: number, queryTriggerInteraction: any): Array<RaycastHit>
         static RaycastAll(origin: Vector3, direction: Vector3, maxDistance: number, layerMask: number): Array<RaycastHit>
-        /** Casts a ray through the Scene and returns all hits. Note that order is not guaranteed.
+        /** Casts a ray through the Scene and returns all hits. Note that order of the results is undefined.
          * @param ray The starting point and direction of the ray.
          * @param maxDistance The max distance the rayhit is allowed to be from the start of the ray.
          * @param layerMask A that is used to selectively ignore colliders when casting a ray.
          * @param queryTriggerInteraction Specifies whether this query should hit Triggers.
+         * @returns An array of RaycastHit objects. Note that the order of the results is undefined. 
          */
         static RaycastAll(ray: Ray, maxDistance: number, layerMask: number, queryTriggerInteraction: any): Array<RaycastHit>
         static RaycastAll(origin: Vector3, direction: Vector3, maxDistance: number): Array<RaycastHit>
@@ -20445,8 +20967,8 @@ Note that IgnoreLayerCollision will reset the trigger state of affected collider
          * @param results The buffer to store the hits into.
          * @param direction The direction of the ray.
          * @param maxDistance The max distance the rayhit is allowed to be from the start of the ray.
-         * @param layermask A that is used to selectively ignore colliders when casting a ray.
          * @param queryTriggerInteraction Specifies whether this query should hit Triggers.
+         * @param layerMask A that is used to selectively ignore colliders when casting a ray.
          * @returns The amount of hits stored into the results buffer. 
          */
         static RaycastNonAlloc(origin: Vector3, direction: Vector3, results: Array<RaycastHit>, maxDistance: number, layerMask: number, queryTriggerInteraction: any): number
@@ -20514,11 +21036,12 @@ Note that IgnoreLayerCollision will reset the trigger state of affected collider
         static OverlapCapsule(point0: Vector3, point1: Vector3, radius: number, layerMask: number, queryTriggerInteraction: any): Array<Collider>
         static OverlapCapsule(point0: Vector3, point1: Vector3, radius: number, layerMask: number): Array<Collider>
         static OverlapCapsule(point0: Vector3, point1: Vector3, radius: number): Array<Collider>
-        /** Returns an array with all colliders touching or inside the sphere.
+        /** Computes and stores colliders touching or inside the sphere.
          * @param position Center of the sphere.
          * @param radius Radius of the sphere.
-         * @param layerMask A that is used to selectively ignore colliders when casting a ray.
+         * @param layerMask A defines which layers of colliders to include in the query.
          * @param queryTriggerInteraction Specifies whether this query should hit Triggers.
+         * @returns Returns an array with all colliders touching or inside the sphere. 
          */
         static OverlapSphere(position: Vector3, radius: number, layerMask: number, queryTriggerInteraction: any): Array<Collider>
         static OverlapSphere(position: Vector3, radius: number, layerMask: number): Array<Collider>
@@ -20552,9 +21075,9 @@ Note that IgnoreLayerCollision will reset the trigger state of affected collider
          * @param position Center of the sphere.
          * @param radius Radius of the sphere.
          * @param results The buffer to store the results into.
-         * @param layerMask A that is used to selectively ignore colliders when casting a ray.
+         * @param layerMask A defines which layers of colliders to include in the query.
          * @param queryTriggerInteraction Specifies whether this query should hit Triggers.
-         * @returns The amount of colliders stored into the results buffer. 
+         * @returns Returns the amount of colliders stored into the results buffer. 
          */
         static OverlapSphereNonAlloc(position: Vector3, radius: number, results: Array<Collider>, layerMask: number, queryTriggerInteraction: any): number
         static OverlapSphereNonAlloc(position: Vector3, radius: number, results: Array<Collider>, layerMask: number): number
@@ -20705,6 +21228,11 @@ Note that IgnoreLayerCollision will reset the trigger state of affected collider
          * @param subdivisions How many cells to create along x and z axis.
          */
         static RebuildBroadphaseRegions(worldBounds: Bounds, subdivisions: number): void
+        /** Prepares the Mesh for use with a MeshCollider.
+         * @param meshID The instance ID of the Mesh to bake collision data from.
+         * @param convex A flag to indicate whether to bake convex geometry or not.
+         */
+        static BakeMesh(meshID: number, convex: boolean): void
         /** The gravity applied to all rigid bodies in the Scene.
          */
         static gravity: Vector3
@@ -20847,8 +21375,8 @@ declare module "UnityEngine" {
         /** Sets the mass based on the attached colliders assuming a constant density.
          */
         SetDensity(density: number): void
-        /** Moves the rigidbody to position.
-         * @param position The new position for the Rigidbody object.
+        /** Moves the kinematic Rigidbody towards position.
+         * @param position Provides the new position for the Rigidbody object.
          */
         MovePosition(position: Vector3): void
         /** Rotates the rigidbody to rotation.
@@ -21006,7 +21534,7 @@ declare module "UnityEngine" {
         SweepTestAll(direction: Vector3, maxDistance: number, queryTriggerInteraction: any): Array<RaycastHit>
         SweepTestAll(direction: Vector3, maxDistance: number): Array<RaycastHit>
         SweepTestAll(direction: Vector3): Array<RaycastHit>
-        /** The velocity vector of the rigidbody.
+        /** The velocity vector of the rigidbody. It represents the rate of change of Rigidbody position.
          */
         velocity: Vector3
         /** The angular velocity vector of the rigidbody measured in radians per second.
@@ -21057,7 +21585,7 @@ declare module "UnityEngine" {
         /** The position of the rigidbody.
          */
         position: Vector3
-        /** The rotation of the rigidbody.
+        /** The rotation of the Rigidbody.
          */
         rotation: Quaternion
         /** Interpolation allows you to smooth out the effect of running physics at a fixed frame rate.
@@ -21080,18 +21608,28 @@ declare module "UnityEngine" {
 declare module "UnityEngine" {
     import * as jsb from "jsb";
     import { ValueType, Array, Object as Object1, Enum } from "System";
-    /** Script interface for Particle Systems.
+    /** Script interface for ParticleSystem. Unity's powerful and versatile particle system implementation.
      */
     class ParticleSystem extends Component {
         constructor()
         SetParticles(particles: Array<any>, size: number, offset: number): void
+        SetParticles(particles: any, size: number, offset: number): void
         SetParticles(particles: Array<any>, size: number): void
+        SetParticles(particles: any, size: number): void
         SetParticles(particles: Array<any>): void
+        SetParticles(particles: any): void
         GetParticles(particles: Array<any>, size: number, offset: number): number
+        GetParticles(particles: any, size: number, offset: number): number
         GetParticles(particles: Array<any>, size: number): number
+        GetParticles(particles: any, size: number): number
         GetParticles(particles: Array<any>): number
+        GetParticles(particles: any): number
         SetCustomParticleData(customData: any, streamIndex: any): void
         GetCustomParticleData(customData: any, streamIndex: any): number
+        GetPlaybackState(): any
+        SetPlaybackState(playbackState: any): void
+        GetTrails(): any
+        SetTrails(trailData: any): void
         /** Fast-forwards the Particle System by simulating particles over the given period of time, then pauses it.
          * @param t Time period in seconds to advance the ParticleSystem simulation by. If restart is true, the ParticleSystem will be reset to 0 time, and then advanced by this value. If restart is false, the ParticleSystem simulation will be advanced in time from its current state by this value.
          * @param withChildren Fast-forward all child Particle Systems as well.
@@ -21163,7 +21701,6 @@ declare module "UnityEngine" {
          * @param subEmitterIndex Index of the sub emitter to trigger.
          */
         TriggerSubEmitter(subEmitterIndex: number): void
-        ClearJob(): void
         /** Safe array size for use with ParticleSystem.GetCollisionEvents.
          */
         GetSafeCollisionEventSize(): number
@@ -21178,13 +21715,18 @@ declare module "UnityEngine" {
         SetTriggerParticles(type: any, particles: any, offset: number, count: number): void
         SetTriggerParticles(type: any, particles: any): void
         static ResetPreMappedBufferMemory(): void
+        /** Limits the amount of graphics memory Unity reserves for efficient rendering of Particle Systems.
+         * @param vertexBuffersCount The maximum number of cached vertex buffers.
+         * @param indexBuffersCount The maximum number of cached index buffers.
+         */
+        static SetMaximumPreMappedBufferCounts(vertexBuffersCount: number, indexBuffersCount: number): void
         /** Determines whether the Particle System is playing.
          */
         readonly isPlaying: boolean
         /** Determines whether the Particle System is emitting particles. A Particle System may stop emitting when its emission module has finished, it has been paused or if the system has been stopped using ParticleSystem.Stop|Stop with the ParticleSystemStopBehavior.StopEmitting|StopEmitting flag. Resume emitting by calling ParticleSystem.Play|Play.
          */
         readonly isEmitting: boolean
-        /** Determines whether the Particle System is stopped.
+        /** Determines whether the Particle System is in the stopped state.
          */
         readonly isStopped: boolean
         /** Determines whether the Particle System is paused.
@@ -21208,67 +21750,67 @@ declare module "UnityEngine" {
         /** Access the main Particle System settings.
          */
         readonly main: ParticleSystem.MainModule
-        /** Script interface for the Particle System emission module.
+        /** Script interface for the EmissionModule of a Particle System.
          */
         readonly emission: any
-        /** Script interface for the Particle System Shape module.
+        /** Script interface for the ShapeModule of a Particle System. 
          */
         readonly shape: any
-        /** Script interface for the Particle System Velocity over Lifetime module.
+        /** Script interface for the VelocityOverLifetimeModule of a Particle System.
          */
         readonly velocityOverLifetime: any
-        /** Script interface for the Particle System Limit Velocity over Lifetime module.
+        /** Script interface for the LimitVelocityOverLifetimeModule of a Particle System. .
          */
         readonly limitVelocityOverLifetime: any
-        /** Script interface for the Particle System velocity inheritance module.
+        /** Script interface for the InheritVelocityModule of a Particle System.
          */
         readonly inheritVelocity: any
-        /** Script interface for the Particle System force over lifetime module.
+        /** Script interface for the ForceOverLifetimeModule of a Particle System.
          */
         readonly forceOverLifetime: any
-        /** Script interface for the Particle System color over lifetime module.
+        /** Script interface for the ColorOverLifetimeModule of a Particle System.
          */
         readonly colorOverLifetime: any
-        /** Script interface for the Particle System color by lifetime module.
+        /** Script interface for the ColorByLifetimeModule of a Particle System.
          */
         readonly colorBySpeed: any
-        /** Script interface for the Particle System Size over Lifetime module.
+        /** Script interface for the SizeOverLifetimeModule of a Particle System. 
          */
         readonly sizeOverLifetime: any
-        /** Script interface for the Particle System Size by Speed module.
+        /** Script interface for the SizeBySpeedModule of a Particle System.
          */
         readonly sizeBySpeed: any
-        /** Script interface for the Particle System Rotation over Lifetime module.
+        /** Script interface for the RotationOverLifetimeModule of a Particle System.
          */
         readonly rotationOverLifetime: any
-        /** Script interface for the Particle System Rotation by Speed  module.
+        /** Script interface for the RotationBySpeedModule of a Particle System.
          */
         readonly rotationBySpeed: any
-        /** Script interface for the Particle System external forces module.
+        /** Script interface for the ExternalForcesModule of a Particle System.
          */
         readonly externalForces: any
-        /** Script interface for the Particle System Noise module.
+        /** Script interface for the NoiseModule of a Particle System.
          */
         readonly noise: any
-        /** Script interface for the Particle System collision module.
+        /** Script interface for the CollisionModule of a Particle System.
          */
         readonly collision: any
-        /** Script interface for the Particle System Trigger module.
+        /** Script interface for the TriggerModule of a Particle System.
          */
         readonly trigger: any
-        /** Script interface for the Particle System Sub Emitters module.
+        /** Script interface for the SubEmittersModule of a Particle System.
          */
         readonly subEmitters: any
-        /** Script interface for the Particle System Texture Sheet Animation module.
+        /** Script interface for the TextureSheetAnimationModule of a Particle System.
          */
         readonly textureSheetAnimation: any
-        /** Script interface for the Particle System Lights module.
+        /** Script interface for the LightsModule of a Particle System.
          */
         readonly lights: any
-        /** Script interface for the Particle System Trails module.
+        /** Script interface for the TrailsModule of a Particle System.
          */
         readonly trails: any
-        /** Script interface for the Particle System Custom Data module.
+        /** Script interface for the CustomDataModule of a Particle System.
          */
         readonly customData: any
     }
@@ -21276,47 +21818,47 @@ declare module "UnityEngine" {
 declare module "UnityEngine" {
     import * as jsb from "jsb";
     import { Enum, Array, Object as Object1 } from "System";
-    /** Renders particles on to the screen.
+    /** Use this class to render particles on to the screen.
      */
     class ParticleSystemRenderer extends Renderer {
         constructor()
-        /** Get the array of meshes to be used as particles.
-         * @param meshes This array will be populated with the list of meshes being used for particle rendering.
-         * @returns The number of meshes actually written to the destination array. 
+        /** Get the array of Meshes to be used as particles.
+         * @param meshes This array is populated with the list of Meshes being used for particle rendering.
+         * @returns The number of Meshes actually written to the destination array. 
          */
         GetMeshes(meshes: Array<any>): number
-        /** Set an array of meshes to be used as particles when the ParticleSystemRenderer.renderMode is set to ParticleSystemRenderMode.Mesh.
-         * @param meshes Array of meshes to be used.
-         * @param size Number of elements from the mesh array to be applied.
+        /** Set an array of Meshes to use as particles when the ParticleSystemRenderer.renderMode is set to ParticleSystemRenderMode.Mesh.
+         * @param meshes Array of Meshes to use.
+         * @param size Number of elements from the Mesh array to apply.
          */
         SetMeshes(meshes: Array<any>, size: number): void
-        /** Set an array of meshes to be used as particles when the ParticleSystemRenderer.renderMode is set to ParticleSystemRenderMode.Mesh.
-         * @param meshes Array of meshes to be used.
-         * @param size Number of elements from the mesh array to be applied.
+        /** Set an array of Meshes to use as particles when the ParticleSystemRenderer.renderMode is set to ParticleSystemRenderMode.Mesh.
+         * @param meshes Array of Meshes to use.
+         * @param size Number of elements from the Mesh array to apply.
          */
         SetMeshes(meshes: Array<any>): void
         /** Creates a snapshot of ParticleSystemRenderer and stores it in mesh.
-         * @param mesh A static mesh that will receive the snapshot of the particles.
-         * @param camera The camera used for determining which way camera-space particles will face.
-         * @param useTransform Include the rotation and scale of the Transform in the baked mesh.
+         * @param mesh A static Mesh to receive the snapshot of the particles.
+         * @param camera The Camera used to determine which way camera-space particles face.
+         * @param useTransform Specifies whether to include the rotation and scale of the Transform in the baked Mesh.
          */
         BakeMesh(mesh: any, camera: Camera, useTransform: boolean): void
         /** Creates a snapshot of ParticleSystemRenderer and stores it in mesh.
-         * @param mesh A static mesh that will receive the snapshot of the particles.
-         * @param camera The camera used for determining which way camera-space particles will face.
-         * @param useTransform Include the rotation and scale of the Transform in the baked mesh.
+         * @param mesh A static Mesh to receive the snapshot of the particles.
+         * @param camera The Camera used to determine which way camera-space particles face.
+         * @param useTransform Specifies whether to include the rotation and scale of the Transform in the baked Mesh.
          */
         BakeMesh(mesh: any, useTransform: boolean): void
         /** Creates a snapshot of ParticleSystem Trails and stores them in mesh.
-         * @param mesh A static mesh that will receive the snapshot of the particle trails.
-         * @param camera The camera used for determining which way camera-space trails will face.
-         * @param useTransform Include the rotation and scale of the Transform in the baked mesh.
+         * @param mesh A static Mesh to receive the snapshot of the particle trails.
+         * @param camera The Camera used to determine which way camera-space trails face.
+         * @param useTransform Specifies whether to include the rotation and scale of the Transform in the baked Mesh.
          */
         BakeTrailsMesh(mesh: any, camera: Camera, useTransform: boolean): void
         /** Creates a snapshot of ParticleSystem Trails and stores them in mesh.
-         * @param mesh A static mesh that will receive the snapshot of the particle trails.
-         * @param camera The camera used for determining which way camera-space trails will face.
-         * @param useTransform Include the rotation and scale of the Transform in the baked mesh.
+         * @param mesh A static Mesh to receive the snapshot of the particle trails.
+         * @param camera The Camera used to determine which way camera-space trails face.
+         * @param useTransform Specifies whether to include the rotation and scale of the Transform in the baked Mesh.
          */
         BakeTrailsMesh(mesh: any, useTransform: boolean): void
         SetActiveVertexStreams(streams: any): void
@@ -21324,22 +21866,22 @@ declare module "UnityEngine" {
         /** Control the direction that particles face.
          */
         alignment: any
-        /** How particles are drawn.
+        /** Specifies how the system draws particles.
          */
         renderMode: any
-        /** Sort particles within a system.
+        /** Specifies how to sort particles within a system.
          */
         sortMode: any
         /** How much are the particles stretched in their direction of motion.
          */
         lengthScale: number
-        /** How much are the particles stretched depending on "how fast they move".
+        /** Specifies how much particles stretch depending on their velocity.
          */
         velocityScale: number
-        /** How much are the particles stretched depending on the Camera's speed.
+        /** How much do the particles stretch depending on the Camera's speed.
          */
         cameraVelocityScale: number
-        /** How much are billboard particle normals oriented towards the camera.
+        /** Specifies how much a billboard particle orients its normals towards the Camera.
          */
         normalDirection: number
         /** Apply a shadow bias to prevent self-shadowing artifacts. The specified value is the proportion of the particle size.
@@ -21363,24 +21905,27 @@ declare module "UnityEngine" {
         /** Specifies how the Particle System Renderer interacts with SpriteMask.
          */
         maskInteraction: any
-        /** Set the material used by the Trail module for attaching trails to particles.
+        /** Set the Material that the TrailModule uses to attach trails to particles.
          */
         trailMaterial: Material
-        /** Enables GPU Instancing on platforms where it is supported.
+        /** Enables GPU Instancing on platforms that support it.
          */
         enableGPUInstancing: boolean
-        /** Allow billboard particles to roll around their Z axis.
+        /** Allow billboard particles to roll around their z-axis.
          */
         allowRoll: boolean
-        /** Mesh used as particle instead of billboarded texture.
+        /** The Mesh that the particle uses instead of a billboarded Texture.
          */
         mesh: any
-        /** The number of meshes being used for particle rendering.
+        /** The number of Meshes the system uses for particle rendering.
          */
         readonly meshCount: number
         /** The number of currently active custom vertex streams.
          */
         readonly activeVertexStreamsCount: number
+        /** Determines whether the Particle System can be rendered using GPU Instancing.
+         */
+        readonly supportsMeshInstancing: boolean
     }
 }
 declare module "UnityEngine" {
@@ -22351,491 +22896,5 @@ declare module "QuickJS.IO" {
         readerIndex: number
         readonly maxCapacity: number
         readonly isWritable: boolean
-    }
-}
-declare module "TreeEditor" {
-    import * as jsb from "jsb";
-    import { ScriptableObject, Object, Material, Matrix4x4 } from "UnityEngine";
-    import { Array, Object as Object1 } from "System";
-    class TreeData extends ScriptableObject {
-        constructor()
-        GetGroup(id: number): TreeGroup
-        GetNode(id: number): TreeNode
-        ValidateReferences(): void
-        ClearReferences(): void
-        AddGroup(parent: TreeGroup, type: any): TreeGroup
-        DuplicateGroup(g: TreeGroup): TreeGroup
-        DeleteGroup(g: TreeGroup): void
-        SetGroupParent(g: TreeGroup, parent: TreeGroup): void
-        LockGroup(g: TreeGroup): void
-        UnlockGroup(g: TreeGroup): void
-        IsAncestor(ancestor: TreeGroup, g: TreeGroup): boolean
-        AddNode(g: TreeGroup, parent: TreeNode, validate: boolean): TreeNode
-        AddNode(g: TreeGroup, parent: TreeNode): TreeNode
-        SetNodeParent(n: TreeNode, parent: TreeNode): void
-        DeleteNode(n: TreeNode, validate: boolean): void
-        DeleteNode(n: TreeNode): void
-        DuplicateNode(n: TreeNode): TreeNode
-        Initialize(): void
-        UpdateSeed(id: number): void
-        UpdateFrequency(id: number): void
-        UpdateDistribution(id: number): void
-        PreviewMesh(worldToLocalMatrix: Matrix4x4, outMaterials: jsb.Out<Array<Material>>): void
-        UpdateMesh(matrix: Matrix4x4, materials: any, verts: any, tris: any, aoSpheres: any, buildFlags: number, adaptiveQuality: number, aoDensity: number): void
-        UpdateMesh(worldToLocalMatrix: Matrix4x4, outMaterials: jsb.Out<Array<Material>>): void
-        OptimizeMaterial(materials: any, vertices: any, triangles: any): boolean
-        CheckExternalChanges(): boolean
-        static GetAdaptiveHeightSegments(h: number, adaptiveQuality: number): number
-        static GetAdaptiveRadialSegments(r: number, adaptiveQuality: number): number
-        static GetAdaptiveSamples(group: TreeGroup, node: TreeNode, adaptiveQuality: number): any
-        materialHash: string
-        root: TreeGroupRoot
-        branchGroups: Array<TreeGroupBranch>
-        leafGroups: Array<TreeGroupLeaf>
-        nodes: Array<TreeNode>
-        mesh: any
-        optimizedSolidMaterial: Material
-        optimizedCutoutMaterial: Material
-        isInPreviewMode: boolean
-    }
-}
-declare module "UnityEngine" {
-    import { Object as Object1 } from "System";
-    /** A class you can derive from if you want to create objects that don't need to be attached to game objects.
-     */
-    class ScriptableObject extends Object {
-        constructor()
-        /** Creates an instance of a scriptable object.
-         * @param className The type of the ScriptableObject to create, as the name of the type.
-         * @param type The type of the ScriptableObject to create, as a System.Type instance.
-         * @returns The created ScriptableObject. 
-         */
-        static CreateInstance(className: string): ScriptableObject
-        /** Creates an instance of a scriptable object.
-         * @param className The type of the ScriptableObject to create, as the name of the type.
-         * @param type The type of the ScriptableObject to create, as a System.Type instance.
-         * @returns The created ScriptableObject. 
-         */
-        static CreateInstance(type: any): ScriptableObject
-    }
-}
-declare module "TreeEditor" {
-    import { Object } from "System";
-    import { Object as Object1, GUIContent, Material } from "UnityEngine";
-    class TreeEditorHelper extends Object {
-        constructor()
-        OnEnable(treeData: TreeData): void
-        AreShadersCorrect(): boolean
-        GUITooManyShaders(): boolean
-        GUIWrongShader(uniqueID: string, value: Material, nodeType: TreeEditorHelper.NodeType): boolean
-        RefreshAllTreeShaders(): void
-        NodeHasWrongMaterial(group: TreeGroup): boolean
-        static GetOptimizedShaderName(shader: any): string
-        static IsTreeLeafShader(shader: any): boolean
-        static IsTreeBarkShader(shader: any): boolean
-        static GetGUIContent(id: string): GUIContent
-        static ExtractLabel(uiString: string): string
-        static ExtractTooltip(uiString: string): string
-    }
-}
-declare module "TreeEditor" {
-    import { Enum } from "System";
-    namespace TreeEditorHelper {
-        enum NodeType {
-            BarkNode = 0,
-            LeafNode = 1,
-        }
-    }
-}
-declare module "TreeEditor" {
-    import { Object } from "System";
-    import { Vector3 } from "UnityEngine";
-    class SmoothRandom extends Object {
-        constructor()
-        static GetVector3(speed: number): Vector3
-        static Get(speed: number): number
-    }
-}
-declare module "TreeEditor" {
-    import { Object } from "System";
-    class Perlin extends Object {
-        constructor()
-        Noise(x: number, y: number, z: number): number
-        Noise(x: number, y: number): number
-        Noise(arg: number): number
-        SetSeed(seed: number): void
-    }
-}
-declare module "TreeEditor" {
-    import { Object } from "System";
-    class FractalNoise extends Object {
-        constructor(inH: number, inLacunarity: number, inOctaves: number, noise: Perlin)
-        constructor(inH: number, inLacunarity: number, inOctaves: number)
-        HybridMultifractal(x: number, y: number, offset: number): number
-        RidgedMultifractal(x: number, y: number, offset: number, gain: number): number
-        BrownianMotion(x: number, y: number): number
-    }
-}
-declare module "TreeEditor" {
-    import { Object } from "System";
-    import { Matrix4x4 } from "UnityEngine";
-    class RingLoop extends Object {
-        constructor()
-        Clone(): RingLoop
-        Reset(r: number, m: Matrix4x4, bOffset: number, segs: number): void
-        SetSurfaceAngle(angleDeg: number): void
-        SetAnimationProperties(primaryFactor: number, secondaryFactor: number, edgeFactor: number, phase: number): void
-        SetSpread(top: number, bottom: number): void
-        SetNoise(scale: number, scaleU: number, scaleV: number): void
-        SetFlares(radius: number, noise: number): void
-        BuildVertices(verts: any): void
-        Cap(sphereFactor: number, noise: number, mappingMode: number, mappingScale: number, verts: any, tris: any, materialIndex: number): void
-        Connect(other: RingLoop, tris: any, materialIndex: number, flipTris: boolean, lowres: boolean): void
-        static SetNoiseSeed(seed: number): void
-        radius: number
-        baseOffset: number
-    }
-}
-declare module "TreeEditor" {
-    import { Object } from "System";
-    import { Vector3, Quaternion } from "UnityEngine";
-    class SplineNode extends Object {
-        constructor(p: Vector3, t: number)
-        constructor(o: SplineNode)
-        point: Vector3
-        rot: Quaternion
-        normal: Vector3
-        tangent: Vector3
-        time: number
-    }
-}
-declare module "TreeEditor" {
-    import * as jsb from "jsb";
-    import { Object, Array } from "System";
-    import { Texture2D, Color, Vector2, Rect } from "UnityEngine";
-    class TextureAtlas extends Object {
-        constructor()
-        GetHashCode(): number
-        AddTexture(name: string, diffuse: Texture2D, diffuseColor: Color, normal: Texture2D, gloss: Texture2D, transtex: Texture2D, shadowOffsetTex: Texture2D, shininess: number, scale: Vector2, tileV: boolean, uvTiling: Vector2): void
-        GetTexTiling(name: string): Vector2
-        GetUVRect(name: string): Rect
-        Pack(targetWidth: jsb.Ref<number>, targetHeight: number, padding: number, correctPow2: boolean): void
-        atlasWidth: number
-        atlasHeight: number
-        atlasPadding: number
-        nodes: any
-    }
-}
-declare module "TreeEditor" {
-    import { Object } from "System";
-    import { Texture2D, Color, Vector2, Rect } from "UnityEngine";
-    namespace TextureAtlas {
-        class TextureNode extends Object {
-            constructor()
-            CompareTo(b: TextureAtlas.TextureNode): number
-            static Overlap(a: TextureAtlas.TextureNode, b: TextureAtlas.TextureNode): boolean
-            name: string
-            diffuseTexture: Texture2D
-            diffuseColor: Color
-            normalTexture: Texture2D
-            glossTexture: Texture2D
-            translucencyTexture: Texture2D
-            shadowOffsetTexture: Texture2D
-            shininess: number
-            scale: Vector2
-            tileV: boolean
-            uvTiling: Vector2
-            sourceRect: Rect
-            packedRect: Rect
-            uvRect: Rect
-        }
-    }
-}
-declare module "TreeEditor" {
-    import { Object } from "System";
-    import { Vector3 } from "UnityEngine";
-    class TreeAOSphere extends Object {
-        constructor(pos: Vector3, radius: number, density: number)
-        PointOcclusion(pos: Vector3, nor: Vector3): number
-        flag: boolean
-        area: number
-        radius: number
-        density: number
-        position: Vector3
-    }
-}
-declare module "TreeEditor" {
-    import * as jsb from "jsb";
-    import { Object, Array } from "System";
-    import { AnimationCurve, Vector2, Matrix4x4 } from "UnityEngine";
-    class TreeGroup extends Object {
-        constructor()
-        GetRadiusAtTime(node: TreeNode, t: number, includeModifications: boolean): number
-        CanHaveSubGroups(): boolean
-        Lock(): void
-        Unlock(): void
-        CheckExternalChanges(): boolean
-        UpdateFrequency(owner: TreeData): void
-        UpdateSeed(): void
-        ComputeWindFactor(node: TreeNode, offset: number): Vector2
-        GetRootSpread(): number
-        GetRootMatrix(): Matrix4x4
-        UpdateDistribution(completeUpdate: boolean, updateSubGroups: boolean): void
-        UpdateParameters(): void
-        BuildAOSpheres(aoSpheres: any): void
-        UpdateMesh(materials: any, verts: any, tris: any, aoSpheres: any, buildFlags: number, adaptiveQuality: number, aoDensity: number): void
-        UpdateMatrix(): void
-        uniqueID: number
-        seed: number
-        distributionFrequency: number
-        distributionMode: TreeGroup.DistributionMode
-        distributionCurve: AnimationCurve
-        distributionNodes: number
-        distributionTwirl: number
-        distributionPitch: number
-        distributionPitchCurve: AnimationCurve
-        distributionScale: number
-        distributionScaleCurve: AnimationCurve
-        showAnimationProps: boolean
-        animationPrimary: number
-        animationSecondary: number
-        animationEdge: number
-        visible: boolean
-        lockFlags: number
-        nodeIDs: Array<number>
-        parentGroupID: number
-        childGroupIDs: Array<number>
-    }
-}
-declare module "TreeEditor" {
-    import { Enum } from "System";
-    namespace TreeGroup {
-        enum LockFlag {
-            LockPosition = 1,
-            LockAlignment = 2,
-            LockShape = 4,
-        }
-    }
-}
-declare module "TreeEditor" {
-    import { Enum } from "System";
-    namespace TreeGroup {
-        enum BuildFlag {
-            BuildAmbientOcclusion = 1,
-            BuildWeldParts = 2,
-        }
-    }
-}
-declare module "TreeEditor" {
-    import { Enum } from "System";
-    namespace TreeGroup {
-        enum DistributionMode {
-            Random = 0,
-            Alternate = 1,
-            Opposite = 2,
-            Whorled = 3,
-        }
-    }
-}
-declare module "TreeEditor" {
-    import { Material, Vector2, AnimationCurve } from "UnityEngine";
-    import { Object } from "System";
-    class TreeGroupBranch extends TreeGroup {
-        constructor()
-        GetRadiusAtTime(node: TreeNode, time: number, includeModifications: boolean): number
-        UpdateParameters(): void
-        UpdateSplines(): void
-        UpdateMatrix(): void
-        BuildAOSpheres(aoSpheres: any): void
-        UpdateMesh(materials: any, verts: any, tris: any, aoSpheres: any, buildFlags: number, adaptiveQuality: number, aoDensity: number): void
-        UpdateSpline(node: TreeNode): void
-        lodQualityMultiplier: number
-        geometryMode: TreeGroupBranch.GeometryMode
-        materialBranch: Material
-        materialBreak: Material
-        materialFrond: Material
-        height: Vector2
-        radius: number
-        radiusCurve: AnimationCurve
-        radiusMode: boolean
-        capSmoothing: number
-        crinklyness: number
-        crinkCurve: AnimationCurve
-        seekBlend: number
-        seekCurve: AnimationCurve
-        noise: number
-        noiseCurve: AnimationCurve
-        noiseScaleU: number
-        noiseScaleV: number
-        flareSize: number
-        flareHeight: number
-        flareNoise: number
-        weldHeight: number
-        weldSpreadTop: number
-        weldSpreadBottom: number
-        breakingChance: number
-        breakingSpot: Vector2
-        frondCount: number
-        frondWidth: number
-        frondCurve: AnimationCurve
-        frondRange: Vector2
-        frondRotation: number
-        frondCrease: number
-    }
-}
-declare module "TreeEditor" {
-    import { Enum } from "System";
-    namespace TreeGroupBranch {
-        enum GeometryMode {
-            Branch = 0,
-            BranchFrond = 1,
-            Frond = 2,
-        }
-    }
-}
-declare module "TreeEditor" {
-    import { Material, GameObject, Vector2 } from "UnityEngine";
-    import { Object } from "System";
-    class TreeGroupLeaf extends TreeGroup {
-        constructor()
-        CanHaveSubGroups(): boolean
-        UpdateParameters(): void
-        UpdateMatrix(): void
-        BuildAOSpheres(aoSpheres: any): void
-        UpdateMesh(materials: any, verts: any, tris: any, aoSpheres: any, buildFlags: number, adaptiveQuality: number, aoDensity: number): void
-        geometryMode: number
-        materialLeaf: Material
-        instanceMesh: GameObject
-        size: Vector2
-        perpendicularAlign: number
-        horizontalAlign: number
-    }
-}
-declare module "TreeEditor" {
-    import { Enum } from "System";
-    namespace TreeGroupLeaf {
-        enum GeometryMode {
-            PLANE = 0,
-            CROSS = 1,
-            TRI_CROSS = 2,
-            BILLBOARD = 3,
-            MESH = 4,
-        }
-    }
-}
-declare module "TreeEditor" {
-    import { Matrix4x4 } from "UnityEngine";
-    class TreeGroupRoot extends TreeGroup {
-        constructor()
-        SetRootMatrix(m: Matrix4x4): void
-        CanHaveSubGroups(): boolean
-        UpdateParameters(): void
-        adaptiveLODQuality: number
-        shadowTextureQuality: number
-        enableWelding: boolean
-        enableAmbientOcclusion: boolean
-        enableMaterialOptimize: boolean
-        aoDensity: number
-        rootSpread: number
-        groundOffset: number
-        rootMatrix: Matrix4x4
-    }
-}
-declare module "TreeEditor" {
-    import { Object } from "System";
-    import { Material } from "UnityEngine";
-    class TreeMaterial extends Object {
-        constructor()
-        material: Material
-        tileV: boolean
-    }
-}
-declare module "TreeEditor" {
-    import * as jsb from "jsb";
-    import { Object, Array } from "System";
-    import { Quaternion, Matrix4x4, Vector3 } from "UnityEngine";
-    class TreeNode extends Object {
-        constructor()
-        GetScale(): number
-        GetSurfaceAngleAtTime(time: number): number
-        GetRadiusAtTime(time: number): number
-        GetPropertiesAtTime(time: number, pos: jsb.Out<Vector3>, rot: jsb.Out<Quaternion>, rad: jsb.Out<number>): void
-        GetLocalMatrixAtTime(time: number): Matrix4x4
-        uniqueID: number
-        spline: TreeSpline
-        seed: number
-        animSeed: number
-        visible: boolean
-        triStart: number
-        triEnd: number
-        vertStart: number
-        vertEnd: number
-        capRange: number
-        breakOffset: number
-        size: number
-        scale: number
-        offset: number
-        baseAngle: number
-        angle: number
-        pitch: number
-        rotation: Quaternion
-        matrix: Matrix4x4
-        parentID: number
-        groupID: number
-    }
-}
-declare module "TreeEditor" {
-    import * as jsb from "jsb";
-    import { Object, Array } from "System";
-    import { Vector3, Quaternion } from "UnityEngine";
-    class TreeSpline extends Object {
-        constructor(o: TreeSpline)
-        constructor()
-        Reset(): void
-        GetNodeCount(): number
-        SetNodeCount(c: number): void
-        RemoveNode(c: number): void
-        GetNodes(): Array<SplineNode>
-        AddPoint(pos: Vector3, timeInSeconds: number): void
-        GetApproximateLength(): number
-        UpdateTime(): void
-        UpdateRotations(): void
-        GetRotationAtTime(timeParam: number): Quaternion
-        GetPositionAtTime(timeParam: number): Vector3
-        nodes: Array<SplineNode>
-        tension: number
-    }
-}
-declare module "TreeEditor" {
-    import * as jsb from "jsb";
-    import { Object, Array } from "System";
-    class TreeTriangle extends Object {
-        constructor(material: number, v0: number, v1: number, v2: number, isBillboard: boolean, tileV: boolean, isCutout: boolean)
-        constructor(material: number, v0: number, v1: number, v2: number, isBillboard: boolean)
-        constructor(material: number, v0: number, v1: number, v2: number)
-        flip(): void
-        tileV: boolean
-        isBillboard: boolean
-        isCutout: boolean
-        materialIndex: number
-        v: Array<number>
-    }
-}
-declare module "TreeEditor" {
-    import * as jsb from "jsb";
-    import { Object, Array } from "System";
-    import { Vector3, Vector4, Vector2, Color } from "UnityEngine";
-    class TreeVertex extends Object {
-        constructor()
-        SetAnimationProperties(primaryFactor: number, secondaryFactor: number, edgeFactor: number, phase: number): void
-        SetAmbientOcclusion(ao: number): void
-        Lerp4(tv: Array<TreeVertex>, factor: Vector2): void
-        pos: Vector3
-        nor: Vector3
-        tangent: Vector4
-        uv0: Vector2
-        uv1: Vector2
-        color: Color
-        flag: boolean
     }
 }

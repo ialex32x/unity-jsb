@@ -1,9 +1,8 @@
-import { Animator, Input, KeyCode, SpriteRenderer, Time, Vector3 } from "UnityEngine";
+import { Animator, Input, KeyCode, MonoBehaviour, SpriteRenderer, Time, Vector3 } from "UnityEngine";
 import { ScriptType, ScriptNumber, ScriptObject } from "../plover/editor/editor_decorators";
-import { JSBehaviourBase } from "./js_behaviour_base";
 
 @ScriptType()
-export class KingHumanController extends JSBehaviourBase {
+export class KingHumanController extends MonoBehaviour {
     @ScriptObject({editorOnly: true})
     animator: Animator;
 

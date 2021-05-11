@@ -1,11 +1,15 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.SerializationUtil = exports.EditorUtil = exports.DefaultEditor = exports.ScriptProperty = exports.ScriptObject = exports.ScriptString = exports.ScriptNumber = exports.ScriptInteger = exports.ScriptEditor = exports.ScriptType = void 0;
+exports.SerializationUtil = exports.EditorUtil = exports.DefaultEditor = exports.ScriptProperty = exports.ScriptObject = exports.ScriptString = exports.ScriptNumber = exports.ScriptInteger = exports.ScriptEditor = exports.ScriptType = exports.ScriptAsset = void 0;
 const UnityEditor_1 = require("UnityEditor");
 const UnityEngine_1 = require("UnityEngine");
 let Symbol_SerializedFields = Symbol.for("SerializedFields");
 let Symbol_PropertiesTouched = Symbol.for("PropertiesTouched");
 let Symbol_CustomEditor = Symbol.for("CustomEditor");
+function ScriptAsset(meta) {
+    return ScriptType(meta);
+}
+exports.ScriptAsset = ScriptAsset;
 // expose this script class type to JSBehaviour, so you can put it on a prefab gameObject
 function ScriptType(meta) {
     return function (target) {

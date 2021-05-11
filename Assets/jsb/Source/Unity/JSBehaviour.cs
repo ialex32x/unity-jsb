@@ -26,6 +26,8 @@ namespace QuickJS.Unity
         // unsafe, internal use only
         public JSContext ctx { get { return _ctx; } }
 
+        private bool _isScriptInstanced = false;
+
         public bool isScriptInstanced => _isScriptInstanced;
 
 #if UNITY_EDITOR
@@ -33,8 +35,6 @@ namespace QuickJS.Unity
         private bool _isStandaloneScript = false;
         public bool isStandaloneScript => _isStandaloneScript;
 #endif
-
-        private bool _isScriptInstanced = false;
 
         private JSContext _ctx = JSContext.Null;
 
