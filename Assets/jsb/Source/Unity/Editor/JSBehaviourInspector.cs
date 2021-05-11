@@ -7,6 +7,10 @@ namespace QuickJS.Unity
     [CustomEditor(typeof(JSBehaviour))]
     public class JSBehaviourInspector : JSInspectorBase<JSBehaviour>
     {
+        protected override JSScriptClassType GetScriptClassType()
+        {
+            return JSScriptClassType.MonoBehaviour;
+        }
     }
 }
 

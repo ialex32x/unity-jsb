@@ -13,6 +13,10 @@ namespace QuickJS.Unity
     // [CustomEditor(typeof(JSScriptableObject))]
     // public class JSScriptableObjectInspector : JSInspectorBase<JSScriptableObject>
     // {
+    //     protected override JSScriptClassType GetScriptClassType()
+    //     {
+    //         return JSScriptClassType.ScriptableObject;
+    //     }
     // }
 }
 #endif

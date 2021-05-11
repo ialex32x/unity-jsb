@@ -7,7 +7,8 @@ namespace QuickJS.Unity
         None = 0,
         MonoBehaviour = 1,
         Editor = 2,
-        // EditorWindow,
+        ScriptableObject = 4,
+        EditorWindow = 8,
     }
 
     public struct JSScriptClassPathHint

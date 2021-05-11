@@ -9,10 +9,11 @@ namespace QuickJS.Unity
     using UnityEngine;
     using Native;
 
-    public class JSInspectorBase<T> : Editor
+    public abstract class JSInspectorBase<T> : Editor
     where T : Object, IScriptEditorSupport
     {
         private T _target;
+        protected JSScriptClassType _classType;
         private bool _psView;
         private bool _foldoutSourceRef;
 
@@ -36,7 +37,10 @@ namespace QuickJS.Unity
         void Awake()
         {
             _target = target as T;
+            _classType = GetScriptClassType();
         }
+
+        protected abstract JSScriptClassType GetScriptClassType();
 
         private void CallJSFunc(JSValue func_obj)
         {
@@ -359,7 +363,7 @@ namespace QuickJS.Unity
                 if (GUILayout.Button("F", GUILayout.Width(20f)))
                 {
                     sourceFileRect.y += 10f;
-                    if (JSScriptSearchWindow.Show(sourceFileRect, string.Empty, OnSelectedScript))
+                    if (JSScriptSearchWindow.Show(sourceFileRect, string.Empty, _classType, OnSelectedScript))
                     {
                         GUIUtility.ExitGUI();
                     }

@@ -17,6 +17,9 @@ namespace QuickJS.Unity
         private int _selectedSearchResultIndex;
         private int _maxSearchResults = 30;
         private string _searchString = "string.Empty";
+
+        private JSScriptClassType _searchType;
+
         private List<JSScriptClassPathHint> _searchResults = new List<JSScriptClassPathHint>();
         private SearchField _searchField;
 
@@ -84,12 +87,13 @@ namespace QuickJS.Unity
             }
         }
 
-        public static bool Show(Rect rect, string searchString, Action<JSScriptClassPathHint> selectCallback)
+        public static bool Show(Rect rect, string searchString, JSScriptClassType searchType, Action<JSScriptClassPathHint> selectCallback)
         {
             CloseAllOpenWindows<JSScriptSearchWindow>();
             var window = ScriptableObject.CreateInstance<JSScriptSearchWindow>();
             window._searchString = searchString;
             window._selectCallback = selectCallback;
+            window._searchType = searchType;
             window.Init(rect);
             return true;
         }
@@ -101,7 +105,7 @@ namespace QuickJS.Unity
             ShowAsDropDown(screenRect, CalculateWindowSize(rect));
             
             _searchResults.Clear();
-            JSScriptFinder.GetInstance().Search(_searchString, JSScriptClassType.MonoBehaviour, _searchResults);
+            JSScriptFinder.GetInstance().Search(_searchString, _searchType, _searchResults);
         }
         
         private Vector2 CalculateWindowSize(Rect buttonRect)
@@ -139,7 +143,7 @@ namespace QuickJS.Unity
             {
                 _searchString = result;
                 _searchResults.Clear();
-                JSScriptFinder.GetInstance().Search(_searchString, JSScriptClassType.MonoBehaviour, _searchResults);
+                JSScriptFinder.GetInstance().Search(_searchString, _searchType, _searchResults);
             }
 
             rect.y += 18;
