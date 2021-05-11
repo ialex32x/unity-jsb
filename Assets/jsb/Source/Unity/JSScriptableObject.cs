@@ -39,9 +39,6 @@ namespace QuickJS.Unity
         private JSContext _ctx = JSContext.Null;
         private JSValue _this_obj = JSApi.JS_UNDEFINED;
 
-        private bool _awakeValid;
-        private JSValue _awakeFunc = JSApi.JS_UNDEFINED;
-
         private bool _onDestroyValid;
         private JSValue _onDestroyFunc = JSApi.JS_UNDEFINED;
 
@@ -68,10 +65,6 @@ namespace QuickJS.Unity
                 JSApi.JS_FreeValue(_ctx, _onDestroyFunc);
                 _onDestroyFunc = JSApi.JS_UNDEFINED;
                 _onDestroyValid = false;
-
-                JSApi.JS_FreeValue(_ctx, _awakeFunc);
-                _awakeFunc = JSApi.JS_UNDEFINED;
-                _awakeValid = false;
 
                 JSApi.JS_FreeValue(_ctx, _onBeforeSerializeFunc);
                 _onBeforeSerializeFunc = JSApi.JS_UNDEFINED;
@@ -259,14 +252,7 @@ namespace QuickJS.Unity
                 _onDestroyFunc = JSApi.JS_GetProperty(ctx, this_obj, context.GetAtom("OnDestroy"));
                 _onDestroyValid = JSApi.JS_IsFunction(ctx, _onDestroyFunc) == 1;
 
-                _awakeFunc = JSApi.JS_GetProperty(ctx, this_obj, context.GetAtom("Awake"));
-                _awakeValid = JSApi.JS_IsFunction(ctx, _awakeFunc) == 1;
-
                 this._OnScriptingAfterDeserialize();
-                if (execAwake)
-                {
-                    CallJSFunc(_awakeFunc);
-                }
             }
         }
 
@@ -292,25 +278,6 @@ namespace QuickJS.Unity
         {
             _isScriptInstanced = false;
             ReleaseJSValues();
-        }
-
-        void Awake()
-        {
-#if UNITY_EDITOR
-            _isStandaloneScript = true;
-#endif
-            CreateScriptInstance();
-            // _OnScriptingAfterDeserialize();
-
-            if (_awakeValid)
-            {
-                var rval = JSApi.JS_Call(_ctx, _awakeFunc, _this_obj);
-                if (rval.IsException())
-                {
-                    _ctx.print_exception();
-                }
-                JSApi.JS_FreeValue(_ctx, rval);
-            }
         }
 
         void OnDisable()
@@ -368,7 +335,14 @@ namespace QuickJS.Unity
 
         public void OnAfterDeserialize()
         {
-            // intentionally skipped
+        }
+
+        void Awake()
+        {
+#if UNITY_EDITOR
+            _isStandaloneScript = true;
+#endif
+            CreateScriptInstance();
         }
 
         public void _OnScriptingAfterDeserialize()

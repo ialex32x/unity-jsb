@@ -211,12 +211,16 @@ class SerializationUtil {
             }
         }
     }
-    static serialize(target, ps) {
+    // 当不需要默认行为时, 调用此函数将序列化状态标记为已完成, 以便跳过默认的 serialize/deserialize 行为
+    static markAsReady(target) {
         target[Symbol_PropertiesTouched] = true;
+    }
+    static serialize(target, ps) {
+        this.markAsReady(target);
         this.forEach(target, ps, (propertyKey, slot, self, extra) => {
             if (slot.serializable) {
                 let value = self[propertyKey];
-                // console.log("serializing", slot.propertyKey, value);
+                // console.log("serializing", propertyKey, value);
                 switch (slot.type) {
                     case "integer": {
                         extra.SetInteger(slot.name, typeof value === "number" ? value : 0);
@@ -239,7 +243,7 @@ class SerializationUtil {
         });
     }
     static deserialize(target, ps) {
-        target[Symbol_PropertiesTouched] = true;
+        this.markAsReady(target);
         this.forEach(target, ps, (propertyKey, slot, self, extra) => {
             if (slot.serializable) {
                 let value = null;
@@ -262,8 +266,8 @@ class SerializationUtil {
                     }
                 }
                 self[propertyKey] = value;
+                // console.log("deserialize", propertyKey, value);
             }
-            // console.log("deserialize", slot.propertyKey, value);
         });
     }
 }
