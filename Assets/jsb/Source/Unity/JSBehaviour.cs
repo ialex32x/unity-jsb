@@ -34,6 +34,8 @@ namespace QuickJS.Unity
         // self controlled script instance lifetime 
         private bool _isStandaloneScript = false;
         public bool isStandaloneScript => _isStandaloneScript;
+#else
+        public bool isStandaloneScript => true;
 #endif
 
         private JSContext _ctx = JSContext.Null;

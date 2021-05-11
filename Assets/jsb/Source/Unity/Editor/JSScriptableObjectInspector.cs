@@ -17,6 +17,14 @@ namespace QuickJS.Unity
         {
             return JSScriptClassType.ScriptableObject;
         }
+
+        protected override void OnWaitingForScriptInstancing()
+        {
+            if (_target.enabled)
+            {
+                _target.CreateScriptInstance();
+            }
+        }
     }
 }
 #endif

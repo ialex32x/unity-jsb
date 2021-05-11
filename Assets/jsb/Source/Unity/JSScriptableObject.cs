@@ -8,6 +8,9 @@ namespace QuickJS.Unity
     using UnityEngine;
     using UnityEngine.Serialization;
 
+    //TODO: 因为 ScriptableObject.OnEnable 的触发可能早于 Runtime 初始化, 需要一个地方补充一次脚本创建
+    //TODO: 相关临时代码目前位于 Values_push_class.cs: public static JSValue js_push_classvalue(JSContext ctx, UnityEngine.Object o)
+
     [CreateAssetMenu(fileName = "js_data", menuName = "JSScriptableObject Asset", order = 100)]
     public class JSScriptableObject : ScriptableObject, ISerializationCallbackReceiver, IScriptEditorSupport
     {
@@ -22,15 +25,16 @@ namespace QuickJS.Unity
         // internal use only
         public JSScriptProperties properties => _properties;
 
+        private bool _enabled;
+
+        public bool enabled => _enabled;
+
         private bool _isScriptInstanced = false;
 
         public bool isScriptInstanced => _isScriptInstanced;
 
-#if UNITY_EDITOR
         // self controlled script instance lifetime 
-        private bool _isStandaloneScript = false;
-        public bool isStandaloneScript => _isStandaloneScript;
-#endif
+        public bool isStandaloneScript => true;
 
         JSScriptRef IScriptEditorSupport.scriptRef { get { return _scriptRef; } set { _scriptRef = value; } }
 
@@ -38,9 +42,6 @@ namespace QuickJS.Unity
 
         private JSContext _ctx = JSContext.Null;
         private JSValue _this_obj = JSApi.JS_UNDEFINED;
-
-        private bool _onDestroyValid;
-        private JSValue _onDestroyFunc = JSApi.JS_UNDEFINED;
 
         private bool _onBeforeSerializeValid;
         private JSValue _onBeforeSerializeFunc = JSApi.JS_UNDEFINED;
@@ -60,12 +61,10 @@ namespace QuickJS.Unity
 
         public void ReleaseJSValues()
         {
+            var context = ScriptEngine.GetContext(_ctx);
+
             if (!_this_obj.IsNullish())
             {
-                JSApi.JS_FreeValue(_ctx, _onDestroyFunc);
-                _onDestroyFunc = JSApi.JS_UNDEFINED;
-                _onDestroyValid = false;
-
                 JSApi.JS_FreeValue(_ctx, _onBeforeSerializeFunc);
                 _onBeforeSerializeFunc = JSApi.JS_UNDEFINED;
                 _onBeforeSerializeValid = false;
@@ -77,8 +76,8 @@ namespace QuickJS.Unity
                 JSApi.JS_FreeValue(_ctx, _this_obj);
                 _this_obj = JSApi.JS_UNDEFINED;
             }
+
             _isScriptInstanced = false;
-            var context = ScriptEngine.GetContext(_ctx);
             _ctx = JSContext.Null;
 
             if (context != null)
@@ -153,7 +152,7 @@ namespace QuickJS.Unity
                     }
                     else
                     {
-                        Debug.LogError("script runtime not ready");
+                        // Debug.LogError("script runtime not ready");
                     }
                 }
                 else
@@ -249,9 +248,6 @@ namespace QuickJS.Unity
                 _onAfterDeserializeFunc = JSApi.JS_GetProperty(ctx, this_obj, context.GetAtom("OnAfterDeserialize"));
                 _onAfterDeserializeValid = JSApi.JS_IsFunction(ctx, _onAfterDeserializeFunc) == 1;
 
-                _onDestroyFunc = JSApi.JS_GetProperty(ctx, this_obj, context.GetAtom("OnDestroy"));
-                _onDestroyValid = JSApi.JS_IsFunction(ctx, _onDestroyFunc) == 1;
-
                 this._OnScriptingAfterDeserialize();
             }
         }
@@ -280,29 +276,6 @@ namespace QuickJS.Unity
             ReleaseJSValues();
         }
 
-        void OnDisable()
-        {
-#if UNITY_EDITOR
-            if (UnityEditor.EditorApplication.isCompiling)
-            {
-                ReleaseJSValues();
-            }
-#endif
-        }
-
-        void OnDestroy()
-        {
-            if (_onDestroyValid)
-            {
-                var rval = JSApi.JS_Call(_ctx, _onDestroyFunc, _this_obj);
-                if (rval.IsException())
-                {
-                    _ctx.print_exception();
-                }
-                JSApi.JS_FreeValue(_ctx, rval);
-            }
-            ReleaseJSValues();
-        }
         public void OnBeforeSerialize()
         {
             if (_onBeforeSerializeValid)
@@ -337,12 +310,16 @@ namespace QuickJS.Unity
         {
         }
 
-        void Awake()
+        void OnEnable()
         {
-#if UNITY_EDITOR
-            _isStandaloneScript = true;
-#endif
+            _enabled = true;
             CreateScriptInstance();
+        }
+
+        void OnDisable()
+        {
+            _enabled = false;
+            ReleaseJSValues();
         }
 
         public void _OnScriptingAfterDeserialize()

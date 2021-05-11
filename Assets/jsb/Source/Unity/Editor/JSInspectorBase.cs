@@ -12,7 +12,7 @@ namespace QuickJS.Unity
     public abstract class JSInspectorBase<T> : Editor
     where T : Object, IScriptEditorSupport
     {
-        private T _target;
+        protected T _target;
         protected JSScriptClassType _classType;
 
         private string[] _tabViews = new string[] { "Editor", "Source", "Primitive" };
@@ -445,12 +445,17 @@ namespace QuickJS.Unity
             else
             {
                 EditorGUILayout.HelpBox("Waiting for script instancing...", MessageType.Warning);
+                OnWaitingForScriptInstancing();
             }
+        }
+
+        protected virtual void OnWaitingForScriptInstancing()
+        {
         }
 
         public override void OnInspectorGUI()
         {
-            if (UnityEditor.EditorApplication.isCompiling)
+            if (EditorApplication.isCompiling || (!EditorApplication.isPlaying && EditorApplication.isPlayingOrWillChangePlaymode))
             {
                 Release();
                 EditorGUILayout.HelpBox("Temporarily unavailable in the script compilation process", MessageType.Warning);

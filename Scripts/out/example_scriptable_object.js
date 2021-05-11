@@ -9,9 +9,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.MyScriptableObject = void 0;
 const UnityEngine_1 = require("UnityEngine");
 const editor_decorators_1 = require("./plover/editor/editor_decorators");
-console.warn("此功能未完成");
-console.warn("此功能未完成");
-console.warn("此功能未完成");
 let MyScriptableObject = class MyScriptableObject extends UnityEngine_1.ScriptableObject {
     constructor() {
         super(...arguments);
@@ -29,12 +26,14 @@ MyScriptableObject = __decorate([
     editor_decorators_1.ScriptAsset()
 ], MyScriptableObject);
 exports.MyScriptableObject = MyScriptableObject;
-let js_data = UnityEngine_1.Resources.Load("data/js_data");
-if (js_data) {
-    console.log("type check:", js_data instanceof MyScriptableObject);
-    console.log("type values:", js_data.value1, js_data.value2);
-}
-else {
-    console.error("failed to load js_data, please create the asset at first.");
+if (require.main == module) {
+    let js_data = UnityEngine_1.Resources.Load("data/js_data");
+    if (js_data) {
+        console.log("type check:", js_data instanceof MyScriptableObject);
+        console.log("type values:", js_data.value1, js_data.value2);
+    }
+    else {
+        console.error("failed to load js_data, please create the asset at first.");
+    }
 }
 //# sourceMappingURL=example_scriptable_object.js.map
