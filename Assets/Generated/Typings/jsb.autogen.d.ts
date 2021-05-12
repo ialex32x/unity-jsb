@@ -3541,8 +3541,10 @@ declare module "UnityEngine" {
     }
 }
 declare module "QuickJS.Unity" {
-    import { Object } from "System";
+    import * as jsb from "jsb";
+    import { Object, Array } from "System";
     import { Object as Object1 } from "UnityEngine";
+    import { ByteBuffer } from "QuickJS.IO";
     class JSScriptProperties extends Object {
         constructor()
         ForEach(cb: (arg1: string, arg2: Object1) => void): void
@@ -3557,8 +3559,10 @@ declare module "QuickJS.Unity" {
         GetInteger(key: string): number
         SetNumber(key: string, value: number): void
         GetNumber(key: string): number
+        SetGenericValue(buffer: ByteBuffer): void
         Clear(): void
-        readonly Count: number
+        readonly IsEmpty: boolean
+        genericValueData: Array<jsb.byte>
     }
 }
 declare module "UnityEngine" {
@@ -22853,6 +22857,8 @@ declare module "QuickJS.IO" {
     import { Object, Array } from "System";
     class ByteBuffer extends Object {
         constructor(initialCapacity: number, maxCapacity: number, allocator: any)
+        constructor(data: Array<jsb.byte>, maxCapacity: number)
+        constructor(data: Array<jsb.byte>)
         toString(): string
         Release(): void
         Retain(): ByteBuffer
@@ -22866,6 +22872,7 @@ declare module "QuickJS.IO" {
         ReadAllBytes(): Array<jsb.byte>
         ReadSingle(): number
         ReadDouble(): number
+        ReadString(): string
         ReadInt16(): number
         ReadUInt16(): number
         ReadInt32(): number
@@ -22889,6 +22896,7 @@ declare module "QuickJS.IO" {
         WriteUInt64(value: number): void
         WriteSingle(value: number): void
         WriteDouble(value: number): void
+        WriteString(value: string): void
         readonly data: Array<jsb.byte>
         readonly capacity: number
         writerIndex: number

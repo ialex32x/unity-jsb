@@ -9,11 +9,13 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.MyScriptableObject = void 0;
 const UnityEngine_1 = require("UnityEngine");
 const editor_decorators_1 = require("./plover/editor/editor_decorators");
+const serialize_1 = require("./plover/editor/serialize");
 let MyScriptableObject = class MyScriptableObject extends UnityEngine_1.ScriptableObject {
     constructor() {
         super(...arguments);
         this.value1 = 1;
         this.value2 = "hello";
+        this.value3 = UnityEngine_1.Vector3.zero;
     }
 };
 __decorate([
@@ -22,6 +24,9 @@ __decorate([
 __decorate([
     editor_decorators_1.ScriptString()
 ], MyScriptableObject.prototype, "value2", void 0);
+__decorate([
+    editor_decorators_1.ScriptProperty({ type: serialize_1.As.Vector3 })
+], MyScriptableObject.prototype, "value3", void 0);
 MyScriptableObject = __decorate([
     editor_decorators_1.ScriptAsset()
 ], MyScriptableObject);

@@ -1,6 +1,8 @@
+import { ByteBuffer } from "QuickJS.IO";
 import { JSScriptProperties } from "QuickJS.Unity";
-import { Editor, EditorApplication, EditorGUI, EditorGUILayout, EditorUtility } from "UnityEditor";
-import { Object } from "UnityEngine";
+import { Editor, EditorApplication, EditorGUI, EditorGUILayout, EditorUtility, MessageType } from "UnityEditor";
+import { Object, Vector3 } from "UnityEngine";
+import { ValueTypeSerializer } from "./serialize";
 
 let Symbol_SerializedFields = Symbol.for("SerializedFields");
 let Symbol_PropertiesTouched = Symbol.for("PropertiesTouched");
@@ -13,6 +15,8 @@ export interface PropertyMetaInfo {
      * slot name in property table
      */
     name?: string;
+
+    propertyKey?: string;
 
     /**
      * (默认编辑器行为中) 是否可见
@@ -34,7 +38,7 @@ export interface PropertyMetaInfo {
      */
     serializable?: boolean;
 
-    type?: PropertyTypeID;
+    type?: PropertyTypeID | ValueTypeSerializer;
 
     label?: string;
 
@@ -55,24 +59,24 @@ export function ScriptAsset(meta?: any) {
 export function ScriptType(meta?: ClassMetaInfo) {
     return function (target: any) {
         let OnBeforeSerialize: Function = target.prototype["OnBeforeSerialize"];
-        target.prototype["OnBeforeSerialize"] = function (ps) {
+        target.prototype["OnBeforeSerialize"] = function (ps, buffer) {
             this[Symbol_PropertiesTouched] = false;
             if (typeof OnBeforeSerialize === "function") {
-                OnBeforeSerialize.call(this, ps);
+                OnBeforeSerialize.call(this, ps, buffer);
             }
             if (!this[Symbol_PropertiesTouched]) {
-                SerializationUtil.serialize(this, ps);
+                SerializationUtil.serialize(this, ps, buffer);
             }
         }
 
         let OnAfterDeserialize: Function = target.prototype["OnAfterDeserialize"];
-        target.prototype["OnAfterDeserialize"] = function (ps) {
+        target.prototype["OnAfterDeserialize"] = function (ps, buffer) {
             this[Symbol_PropertiesTouched] = false;
             if (typeof OnAfterDeserialize === "function") {
-                OnAfterDeserialize.call(this, ps);
+                OnAfterDeserialize.call(this, ps, buffer);
             }
             if (!this[Symbol_PropertiesTouched]) {
-                SerializationUtil.deserialize(this, ps);
+                SerializationUtil.deserialize(this, ps, buffer);
             }
         }
 
@@ -132,6 +136,7 @@ export function ScriptProperty(meta?: PropertyMetaInfo) {
 
         let slot = slots[propertyKey] = meta || {};
 
+        slot.propertyKey = propertyKey;
         if (typeof slot.serializable !== "boolean") {
             slot.serializable = true;
         }
@@ -168,79 +173,91 @@ export class EditorUtil {
         SerializationUtil.forEach(target, extra, (propertyKey, slot, self, extra) => {
             if (slot.visible) {
                 let label = slot.label || propertyKey;
-                let editablePE = !slot.editorOnly || !EditorApplication.isPlaying;
+                let editablePE = slot.editable && (!slot.editorOnly || !EditorApplication.isPlaying);
 
-                switch (slot.type) {
-                    case "integer": {
-                        let oldValue: number = self[propertyKey];
-                        if (slot.editable && editablePE) {
-                            let newValue = EditorGUILayout.IntField(label, oldValue);
-                            if (newValue != oldValue) {
-                                self[propertyKey] = newValue;
-                                EditorUtility.SetDirty(self);
-                            }
-                        } else {
-                            EditorGUI.BeginDisabledGroup(true);
-                            EditorGUILayout.IntField(label, oldValue);
-                            EditorGUI.EndDisabledGroup();
-                        }
-                        break;
+                if (typeof slot.type === "object") {
+                    if (typeof slot.type.draw === "function") {
+                        slot.type.draw(target, slot, label, editablePE);
+                    } else {
+                        EditorGUILayout.LabelField(label);
+                        EditorGUILayout.HelpBox("no draw operation for this type", MessageType.Warning);
                     }
-                    case "float": {
-                        let oldValue: number = self[propertyKey];
-                        if (slot.editable && editablePE) {
-                            let newValue = EditorGUILayout.FloatField(label, oldValue);
-                            if (newValue != oldValue) {
-                                self[propertyKey] = newValue;
-                                EditorUtility.SetDirty(self);
+                } else if (typeof slot.type === "string") {
+                    switch (slot.type) {
+                        case "integer": {
+                            let oldValue: number = self[propertyKey];
+                            if (editablePE) {
+                                let newValue = EditorGUILayout.IntField(label, oldValue);
+                                if (newValue != oldValue) {
+                                    self[propertyKey] = newValue;
+                                    EditorUtility.SetDirty(self);
+                                }
+                            } else {
+                                EditorGUI.BeginDisabledGroup(true);
+                                EditorGUILayout.IntField(label, oldValue);
+                                EditorGUI.EndDisabledGroup();
                             }
-                        } else {
-                            EditorGUI.BeginDisabledGroup(true);
-                            EditorGUILayout.FloatField(label, oldValue);
-                            EditorGUI.EndDisabledGroup();
+                            break;
                         }
-                        break;
-                    }
-                    case "string": {
-                        let oldValue: string = self[propertyKey];
-                        if (typeof oldValue !== "string") {
-                            oldValue = "" + oldValue;
-                        }
-                        if (slot.editable && editablePE) {
-                            let newValue = EditorGUILayout.TextField(label, oldValue);
-                            if (newValue != oldValue) {
-                                self[propertyKey] = newValue;
-                                EditorUtility.SetDirty(self);
+                        case "float": {
+                            let oldValue: number = self[propertyKey];
+                            if (editablePE) {
+                                let newValue = EditorGUILayout.FloatField(label, oldValue);
+                                if (newValue != oldValue) {
+                                    self[propertyKey] = newValue;
+                                    EditorUtility.SetDirty(self);
+                                }
+                            } else {
+                                EditorGUI.BeginDisabledGroup(true);
+                                EditorGUILayout.FloatField(label, oldValue);
+                                EditorGUI.EndDisabledGroup();
                             }
-                        } else {
-                            EditorGUI.BeginDisabledGroup(true);
-                            EditorGUILayout.TextField(label, oldValue);
-                            EditorGUI.EndDisabledGroup();
+                            break;
                         }
-                        break;
-                    }
-                    case "object": {
-                        let oldValue: Object = self[propertyKey];
-                        if (typeof oldValue !== "object") {
-                            oldValue = null;
+                        case "string": {
+                            let oldValue: string = self[propertyKey];
+                            if (typeof oldValue !== "string") {
+                                oldValue = "" + oldValue;
+                            }
+                            if (editablePE) {
+                                let newValue = EditorGUILayout.TextField(label, oldValue);
+                                if (newValue != oldValue) {
+                                    self[propertyKey] = newValue;
+                                    EditorUtility.SetDirty(self);
+                                }
+                            } else {
+                                EditorGUI.BeginDisabledGroup(true);
+                                EditorGUILayout.TextField(label, oldValue);
+                                EditorGUI.EndDisabledGroup();
+                            }
+                            break;
                         }
-                        if (slot.editable && editablePE) {
-                            let allowSceneObjects = slot.extra && slot.extra.allowSceneObjects;
-                            let newValue = EditorGUILayout.ObjectField(label, oldValue,
-                                slot.extra && slot.extra.type || Object,
-                                typeof allowSceneObjects === "boolean" ? allowSceneObjects : true);
+                        case "object": {
+                            let oldValue: Object = self[propertyKey];
+                            if (typeof oldValue !== "object") {
+                                oldValue = null;
+                            }
+                            if (editablePE) {
+                                let allowSceneObjects = slot.extra && slot.extra.allowSceneObjects;
+                                let newValue = EditorGUILayout.ObjectField(label, oldValue,
+                                    slot.extra && slot.extra.type || Object,
+                                    typeof allowSceneObjects === "boolean" ? allowSceneObjects : true);
 
-                            if (newValue != oldValue) {
-                                self[propertyKey] = newValue;
-                                EditorUtility.SetDirty(self);
+                                if (newValue != oldValue) {
+                                    self[propertyKey] = newValue;
+                                    EditorUtility.SetDirty(self);
+                                }
+                            } else {
+                                EditorGUI.BeginDisabledGroup(true);
+                                EditorGUILayout.ObjectField(label, oldValue, Object, false);
+                                EditorGUI.EndDisabledGroup();
                             }
-                        } else {
-                            EditorGUI.BeginDisabledGroup(true);
-                            EditorGUILayout.ObjectField(label, oldValue, Object, false);
-                            EditorGUI.EndDisabledGroup();
+                            break;
                         }
-                        break;
                     }
+                } else {
+                    EditorGUILayout.LabelField(label);
+                    EditorGUILayout.HelpBox("unsupported type", MessageType.Warning);
                 }
             }
         });
@@ -262,62 +279,86 @@ export class SerializationUtil {
         target[Symbol_PropertiesTouched] = true;
     }
 
-    static serialize(target: any, ps: JSScriptProperties) {
+    static serialize(target: any, ps: JSScriptProperties, buffer: ByteBuffer) {
         this.markAsReady(target);
         this.forEach(target, ps, (propertyKey, slot, self, extra: JSScriptProperties) => {
             if (slot.serializable) {
                 let value = self[propertyKey];
 
                 // console.log("serializing", propertyKey, value);
-                switch (slot.type) {
-                    case "integer": {
-                        extra.SetInteger(slot.name, typeof value === "number" ? value : 0);
-                        break;
-                    }
-                    case "float": {
-                        extra.SetNumber(slot.name, typeof value === "number" ? value : 0);
-                        break;
-                    }
-                    case "string": {
-                        extra.SetString(slot.name, value);
-                        break;
-                    }
-                    case "object": {
-                        extra.SetObject(slot.name, value);
-                        break;
+                if (typeof slot.type === "object") {
+                    buffer.WriteString(slot.name);
+                    slot.type.serialize(buffer, value);
+                } else {
+                    switch (slot.type) {
+                        case "integer": {
+                            extra.SetInteger(slot.name, typeof value === "number" ? value : 0);
+                            break;
+                        }
+                        case "float": {
+                            extra.SetNumber(slot.name, typeof value === "number" ? value : 0);
+                            break;
+                        }
+                        case "string": {
+                            extra.SetString(slot.name, value);
+                            break;
+                        }
+                        case "object": {
+                            extra.SetObject(slot.name, value);
+                            break;
+                        }
                     }
                 }
             }
         });
     }
 
-    static deserialize(target: any, ps: JSScriptProperties) {
+    static deserialize(target: any, ps: JSScriptProperties, buffer: ByteBuffer) {
         this.markAsReady(target);
-        this.forEach(target, ps, (propertyKey, slot, self, extra: JSScriptProperties) => {
-            if (slot.serializable) {
-                let value = null;
-
-                switch (slot.type) {
-                    case "integer": {
-                        value = extra.GetInteger(slot.name);
-                        break;
+        let slots: {} = target[Symbol_SerializedFields];
+        if (typeof slots !== "undefined") {
+            let slotByName = {};
+            for (let propertyKey in slots) {
+                let slot: PropertyMetaInfo = slots[propertyKey];
+                if (slot.serializable) {
+                    if (typeof slot.type === "object") {
+                        slotByName[slot.name] = slot;
+                    } else {
+                        let value = null;
+                        switch (slot.type) {
+                            case "integer": {
+                                value = ps.GetInteger(slot.name);
+                                break;
+                            }
+                            case "float": {
+                                value = ps.GetNumber(slot.name);
+                                break;
+                            }
+                            case "string": {
+                                value = ps.GetString(slot.name);
+                                break;
+                            }
+                            case "object": {
+                                value = ps.GetObject(slot.name);
+                                break;
+                            }
+                        }
+                        target[propertyKey] = value;
                     }
-                    case "float": {
-                        value = extra.GetNumber(slot.name);
-                        break;
-                    }
-                    case "string": {
-                        value = extra.GetString(slot.name);
-                        break;
-                    }
-                    case "object": {
-                        value = extra.GetObject(slot.name);
-                        break;
-                    }
+                    // console.log("deserialize", propertyKey, value);
                 }
-                self[propertyKey] = value;
-                // console.log("deserialize", propertyKey, value);
             }
-        });
+
+            while (buffer.readableBytes > 0) {
+                let name = buffer.ReadString();
+                let slot: PropertyMetaInfo = slotByName[name];
+                if (slot) {
+                    target[slot.propertyKey] = (<ValueTypeSerializer>slot.type).deserilize(buffer);
+                } else {
+                    let size = buffer.ReadInt32();
+                    buffer.ReadBytes(size);
+                }
+            }
+        }
     }
 }

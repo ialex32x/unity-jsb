@@ -76,8 +76,8 @@ namespace QuickJS.IO
         public ByteBuffer(byte[] data, int maxCapacity)
         {
             _data = data;
-            _maxCapacity = maxCapacity > data.Length ? maxCapacity : data.Length;
-            _writePosition = _data.Length;
+            _writePosition = _data != null ? _data.Length : 0;
+            _maxCapacity = maxCapacity > _writePosition ? maxCapacity : _writePosition;
             _readPosition = 0;
             _allocator = null;
         }
@@ -246,6 +246,19 @@ namespace QuickJS.IO
             var v = BitConverter.ToDouble(_data, _readPosition);
             _readPosition += sizeof(double);
             return v;
+        }
+
+        public string ReadString()
+        {
+            var length = ReadInt32();
+            if (length == 0)
+            {
+                return string.Empty;
+            }
+
+            var bytes = new byte[length];
+            ReadBytes(bytes, 0, length);
+            return System.Text.Encoding.UTF8.GetString(bytes);
         }
 
         public short ReadInt16()
@@ -444,6 +457,20 @@ namespace QuickJS.IO
         public void WriteDouble(double value)
         {
             WriteBytes(BitConverter.GetBytes(value));
+        }
+
+        public void WriteString(string value)
+        {
+            if (string.IsNullOrEmpty(value))
+            {
+                WriteInt32(0);
+            }
+            else
+            {
+                var bytes = System.Text.Encoding.UTF8.GetBytes(value);
+                WriteInt32(bytes.Length);
+                WriteBytes(bytes);
+            }
         }
 
         #endregion

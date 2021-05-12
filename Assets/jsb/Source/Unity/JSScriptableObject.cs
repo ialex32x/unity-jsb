@@ -8,7 +8,7 @@ namespace QuickJS.Unity
     using UnityEngine;
     using UnityEngine.Serialization;
 
-    //TODO: 因为 ScriptableObject.OnEnable 的触发可能早于 Runtime 初始化, 需要一个地方补充一次脚本创建
+    //TODO: 因为 ScriptableObject.OnEnable 的触发可能早于 Runtime 初始化, 需要一个地方补充一次脚本创建 
     //TODO: 相关临时代码目前位于 Values_push_class.cs: public static JSValue js_push_classvalue(JSContext ctx, UnityEngine.Object o)
 
     [CreateAssetMenu(fileName = "js_data", menuName = "JSScriptableObject Asset", order = 100)]
@@ -289,11 +289,48 @@ namespace QuickJS.Unity
                     _properties.Clear();
                 }
 
+                var buffer = ScriptEngine.AllocByteBuffer(_ctx, 512);
+
                 unsafe
                 {
-                    var argv = stackalloc[] { Binding.Values.js_push_var(_ctx, _properties) };
-                    var rval = JSApi.JS_Call(_ctx, _onBeforeSerializeFunc, _this_obj, 1, argv);
+                    var argv = stackalloc[] { Binding.Values.js_push_classvalue(_ctx, _properties), Binding.Values.js_push_classvalue(_ctx, buffer) };
+                    var rval = JSApi.JS_Call(_ctx, _onBeforeSerializeFunc, _this_obj, 2, argv);
                     JSApi.JS_FreeValue(_ctx, argv[0]);
+                    JSApi.JS_FreeValue(_ctx, argv[1]);
+                    if (rval.IsException())
+                    {
+                        _ctx.print_exception();
+                    }
+                    else
+                    {
+                        JSApi.JS_FreeValue(_ctx, rval);
+                    }
+                }
+                _properties.SetGenericValue(buffer);
+            }
+        }
+
+        public void OnAfterDeserialize()
+        {
+        }
+
+        public void _OnScriptingAfterDeserialize()
+        {
+            if (_onAfterDeserializeValid)
+            {
+                if (_properties == null)
+                {
+                    _properties = new JSScriptProperties();
+                }
+
+                var buffer = new IO.ByteBuffer(_properties.genericValueData);
+
+                unsafe
+                {
+                    var argv = stackalloc[] { Binding.Values.js_push_classvalue(_ctx, _properties), Binding.Values.js_push_classvalue(_ctx, buffer) };
+                    var rval = JSApi.JS_Call(_ctx, _onAfterDeserializeFunc, _this_obj, 2, argv);
+                    JSApi.JS_FreeValue(_ctx, argv[0]);
+                    JSApi.JS_FreeValue(_ctx, argv[1]);
                     if (rval.IsException())
                     {
                         _ctx.print_exception();
@@ -304,10 +341,6 @@ namespace QuickJS.Unity
                     }
                 }
             }
-        }
-
-        public void OnAfterDeserialize()
-        {
         }
 
         void OnEnable()
@@ -320,32 +353,6 @@ namespace QuickJS.Unity
         {
             _enabled = false;
             ReleaseJSValues();
-        }
-
-        public void _OnScriptingAfterDeserialize()
-        {
-            if (_onAfterDeserializeValid)
-            {
-                if (_properties == null)
-                {
-                    _properties = new JSScriptProperties();
-                }
-
-                unsafe
-                {
-                    var argv = stackalloc[] { Binding.Values.js_push_var(_ctx, _properties) };
-                    var rval = JSApi.JS_Call(_ctx, _onAfterDeserializeFunc, _this_obj, 1, argv);
-                    JSApi.JS_FreeValue(_ctx, argv[0]);
-                    if (rval.IsException())
-                    {
-                        _ctx.print_exception();
-                    }
-                    else
-                    {
-                        JSApi.JS_FreeValue(_ctx, rval);
-                    }
-                }
-            }
         }
     }
 }

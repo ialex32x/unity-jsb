@@ -46,19 +46,23 @@ namespace QuickJS.Unity
 
         [SerializeField]
         private List<IntegerKeyValuePair> _integers;
-        
+
         [SerializeField]
         private List<NumberKeyValuePair> _numbers;
 
-        public int Count
+        [SerializeField]
+        public byte[] genericValueData;
+
+        public bool IsEmpty
         {
-            get { return ObjectCount + StringCount + NumberCount + IntegerCount; }
+            get { return ObjectCount + StringCount + NumberCount + IntegerCount + GenericCount == 0; }
         }
 
         private int ObjectCount => _objects != null ? _objects.Count : 0;
         private int StringCount => _strings != null ? _strings.Count : 0;
         private int IntegerCount => _integers != null ? _integers.Count : 0;
         private int NumberCount => _numbers != null ? _numbers.Count : 0;
+        private int GenericCount => genericValueData != null ? genericValueData.Length : 0;
 
         public void ForEach(Action<string, Object> cb)
         {
@@ -198,6 +202,26 @@ namespace QuickJS.Unity
         public float GetNumber(string key)
         {
             return _numbers?.Find(pair => pair.key == key)?.value ?? 0.0f;
+        }
+
+        public void SetGenericValue(IO.ByteBuffer buffer)
+        {
+            if (buffer != null)
+            {
+                if (genericValueData == null)
+                {
+                    genericValueData = new byte[buffer.readableBytes];
+                    buffer.ReadBytes(genericValueData, 0, buffer.readableBytes);
+                }
+                else
+                {
+                    if (genericValueData.Length < buffer.readableBytes)
+                    {
+                        Array.Resize(ref genericValueData, buffer.readableBytes);
+                    }
+                    buffer.ReadBytes(genericValueData, 0, buffer.readableBytes);
+                }
+            }
         }
 
         public void Clear()

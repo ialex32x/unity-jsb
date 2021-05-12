@@ -822,11 +822,7 @@ namespace QuickJS
 
             // poll here;
             _timerManager.Update(ms);
-
-            if (_autorelease != null)
-            {
-                _autorelease.Drain();
-            }
+            _autorelease.Drain();
         }
 
         public void ExecutePendingJob()

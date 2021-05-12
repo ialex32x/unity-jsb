@@ -380,7 +380,7 @@ namespace QuickJS.Unity
         private void DrawPrimitiveView()
         {
             var ps = _target.properties;
-            if (ps == null || ps.Count == 0)
+            if (ps == null || ps.IsEmpty)
             {
                 EditorGUILayout.HelpBox("Empty Properties View", MessageType.Info);
                 return;

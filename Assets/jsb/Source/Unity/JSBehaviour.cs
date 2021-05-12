@@ -620,11 +620,49 @@ namespace QuickJS.Unity
                     _properties.Clear();
                 }
 
+                var buffer = ScriptEngine.AllocByteBuffer(_ctx, 512);
+
                 unsafe
                 {
-                    var argv = stackalloc[] { Binding.Values.js_push_var(_ctx, _properties) };
-                    var rval = JSApi.JS_Call(_ctx, _onBeforeSerializeFunc, _this_obj, 1, argv);
+                    var argv = stackalloc[] { Binding.Values.js_push_classvalue(_ctx, _properties), Binding.Values.js_push_classvalue(_ctx, buffer) };
+                    var rval = JSApi.JS_Call(_ctx, _onBeforeSerializeFunc, _this_obj, 2, argv);
                     JSApi.JS_FreeValue(_ctx, argv[0]);
+                    JSApi.JS_FreeValue(_ctx, argv[1]);
+                    if (rval.IsException())
+                    {
+                        _ctx.print_exception();
+                    }
+                    else
+                    {
+                        JSApi.JS_FreeValue(_ctx, rval);
+                    }
+                }
+                _properties.SetGenericValue(buffer);
+            }
+        }
+
+        public void OnAfterDeserialize()
+        {
+            // intentionally skipped
+        }
+
+        public void _OnScriptingAfterDeserialize()
+        {
+            if (_onAfterDeserializeValid)
+            {
+                if (_properties == null)
+                {
+                    _properties = new JSScriptProperties();
+                }
+
+                var buffer = new IO.ByteBuffer(_properties.genericValueData);
+
+                unsafe
+                {
+                    var argv = stackalloc[] { Binding.Values.js_push_classvalue(_ctx, _properties), Binding.Values.js_push_classvalue(_ctx, buffer) };
+                    var rval = JSApi.JS_Call(_ctx, _onAfterDeserializeFunc, _this_obj, 2, argv);
+                    JSApi.JS_FreeValue(_ctx, argv[0]);
+                    JSApi.JS_FreeValue(_ctx, argv[1]);
                     if (rval.IsException())
                     {
                         _ctx.print_exception();
@@ -635,11 +673,6 @@ namespace QuickJS.Unity
                     }
                 }
             }
-        }
-
-        public void OnAfterDeserialize()
-        {
-            // intentionally skipped
         }
 
         // 通过 scriptRef 还原脚本绑定关系
@@ -690,32 +723,6 @@ namespace QuickJS.Unity
             }
 
             return _isScriptInstanced;
-        }
-
-        public void _OnScriptingAfterDeserialize()
-        {
-            if (_onAfterDeserializeValid)
-            {
-                if (_properties == null)
-                {
-                    _properties = new JSScriptProperties();
-                }
-
-                unsafe
-                {
-                    var argv = stackalloc[] { Binding.Values.js_push_var(_ctx, _properties) };
-                    var rval = JSApi.JS_Call(_ctx, _onAfterDeserializeFunc, _this_obj, 1, argv);
-                    JSApi.JS_FreeValue(_ctx, argv[0]);
-                    if (rval.IsException())
-                    {
-                        _ctx.print_exception();
-                    }
-                    else
-                    {
-                        JSApi.JS_FreeValue(_ctx, rval);
-                    }
-                }
-            }
         }
     }
 }
