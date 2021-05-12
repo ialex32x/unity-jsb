@@ -69,6 +69,19 @@ namespace QuickJS.IO
             return string.Format("<ByteBuffer offset: {0} remain: {1} #{2}>", readerIndex, readableBytes, _data.Length);
         }
 
+        public ByteBuffer(byte[] data) : this(data, int.MaxValue)
+        {
+        }
+
+        public ByteBuffer(byte[] data, int maxCapacity)
+        {
+            _data = data;
+            _maxCapacity = maxCapacity > data.Length ? maxCapacity : data.Length;
+            _writePosition = _data.Length;
+            _readPosition = 0;
+            _allocator = null;
+        }
+
         public ByteBuffer(int initialCapacity, int maxCapacity, IByteBufferAllocator allocator)
         {
             _data = new byte[initialCapacity];
