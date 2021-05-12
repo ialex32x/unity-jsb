@@ -17,12 +17,6 @@ namespace QuickJS.Binding
                 return JSApi.JS_UNDEFINED;
             }
 
-            //TODO: 因为 ScriptableObject.OnEnable 的触发可能早于 Runtime 初始化, 需要一个地方补充一次脚本创建, 放在这里不合适
-            if (o is Unity.JSScriptableObject)
-            {
-                (o as Unity.JSScriptableObject).CreateScriptInstance();
-            }
-
             return js_push_object(ctx, (object)o);
         }
 #endif

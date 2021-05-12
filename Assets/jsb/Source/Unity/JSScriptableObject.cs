@@ -8,8 +8,8 @@ namespace QuickJS.Unity
     using UnityEngine;
     using UnityEngine.Serialization;
 
-    //TODO: 因为 ScriptableObject.OnEnable 的触发可能早于 Runtime 初始化, 需要一个地方补充一次脚本创建 
-    //TODO: 相关临时代码目前位于 Values_push_class.cs: public static JSValue js_push_classvalue(JSContext ctx, UnityEngine.Object o)
+    // 实际 ScriptableObject.OnAfterDeserialize/OnEnable 可能早于 Runtime 初始化
+    // 脚本回调与 C# 版本不完全一致
 
     [CreateAssetMenu(fileName = "js_data", menuName = "JSScriptableObject Asset", order = 100)]
     public class JSScriptableObject : ScriptableObject, ISerializationCallbackReceiver, IScriptEditorSupport
@@ -30,6 +30,8 @@ namespace QuickJS.Unity
         public bool enabled => _enabled;
 
         private bool _isScriptInstanced = false;
+
+        private bool _isWaitingRuntime = false;
 
         public bool isScriptInstanced => _isScriptInstanced;
 
@@ -61,8 +63,6 @@ namespace QuickJS.Unity
 
         public void ReleaseJSValues()
         {
-            var context = ScriptEngine.GetContext(_ctx);
-
             if (!_this_obj.IsNullish())
             {
                 JSApi.JS_FreeValue(_ctx, _onBeforeSerializeFunc);
@@ -77,7 +77,13 @@ namespace QuickJS.Unity
                 _this_obj = JSApi.JS_UNDEFINED;
             }
 
+            var context = ScriptEngine.GetContext(_ctx);
             _isScriptInstanced = false;
+            if (_isWaitingRuntime)
+            {
+                _isWaitingRuntime = false;
+                ScriptEngine.RuntimeCreated -= OnRuntimeCreated;
+            }
             _ctx = JSContext.Null;
 
             if (context != null)
@@ -122,9 +128,9 @@ namespace QuickJS.Unity
                 if (!string.IsNullOrEmpty(_scriptRef.modulePath) && !string.IsNullOrEmpty(_scriptRef.className))
                 {
                     var runtime = ScriptEngine.GetRuntime();
-                    if (runtime != null && runtime.isInitialized)
+                    if (runtime != null)
                     {
-                        var context = runtime.GetMainContext();
+                        var context = runtime.isInitialized ? runtime.GetMainContext() : null;
                         if (context != null)
                         {
                             var ctx = (JSContext)context;
@@ -152,6 +158,11 @@ namespace QuickJS.Unity
                     }
                     else
                     {
+                        if (!_isWaitingRuntime)
+                        {
+                            _isWaitingRuntime = true;
+                            ScriptEngine.RuntimeCreated += OnRuntimeCreated;
+                        }
                         // Debug.LogError("script runtime not ready");
                     }
                 }
@@ -162,6 +173,25 @@ namespace QuickJS.Unity
             }
 
             return _isScriptInstanced;
+        }
+
+        private void OnRuntimeCreated(ScriptRuntime runtime)
+        {
+            if (_isWaitingRuntime)
+            {
+                runtime.OnInitialized += OnRuntimeInitialized;
+            }
+        }
+
+        private void OnRuntimeInitialized(ScriptRuntime runtime)
+        {
+            if (_isWaitingRuntime)
+            {
+                _isWaitingRuntime = false;
+                ScriptEngine.RuntimeCreated -= OnRuntimeCreated;
+                runtime.OnInitialized -= OnRuntimeInitialized;
+                CreateScriptInstance();
+            }
         }
 
         // 在当前 JSBehaviour 实例上创建一个脚本实例并与之绑定
@@ -265,7 +295,7 @@ namespace QuickJS.Unity
             }
         }
 
-        public void SetUnresolvedScriptInstance()
+        private void SetUnresolvedScriptInstance()
         {
             _isScriptInstanced = true;
         }
