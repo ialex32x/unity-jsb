@@ -371,6 +371,13 @@ namespace QuickJS.Unity
                     EditorGUILayout.HelpBox("Source file is missing", MessageType.Warning);
                 }
             }
+            else
+            {
+                if (EditorApplication.isPlaying)
+                {
+                    EditorGUILayout.HelpBox("Script instance without relevant script reference info?", MessageType.Warning);
+                }
+            }
 
             EditorGUILayout.LabelField("Module Path", _target.scriptRef.modulePath);
             EditorGUILayout.LabelField("Class Name", _target.scriptRef.className);

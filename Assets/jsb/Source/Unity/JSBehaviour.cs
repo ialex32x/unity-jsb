@@ -38,18 +38,9 @@ namespace QuickJS.Unity
         public bool isStandaloneScript => true;
 #endif
 
-        private JSContext _ctx = JSContext.Null;
+        protected JSContext _ctx = JSContext.Null;
 
-        private JSValue _this_obj = JSApi.JS_UNDEFINED;
-
-        private bool _updateValid;
-        private JSValue _updateFunc = JSApi.JS_UNDEFINED;
-
-        private bool _lateUpdateValid;
-        private JSValue _lateUpdateFunc = JSApi.JS_UNDEFINED;
-
-        private bool _fixedUpdateValid;
-        private JSValue _fixedUpdateFunc = JSApi.JS_UNDEFINED;
+        protected JSValue _this_obj = JSApi.JS_UNDEFINED;
 
         private bool _startValid;
         private JSValue _startFunc = JSApi.JS_UNDEFINED;
@@ -166,7 +157,20 @@ namespace QuickJS.Unity
                 var header = JSApi.jsb_get_payload_header(ctor);
                 if (header.type_id == BridgeObjectType.None) // it's a plain js value
                 {
-                    var bridge = gameObject.AddComponent<JSBehaviour>();
+                    var fullCap = false;
+                    var prototype = JSApi.JS_GetProperty(ctx, ctor, JSApi.JS_ATOM_prototype);
+                    if (!prototype.IsException())
+                    {
+                        var context = ScriptEngine.GetContext(ctx);
+                        if (context != null)
+                        {
+                            fullCap = prototype.CheckFuncProperty(context, "Update")
+                                || prototype.CheckFuncProperty(context, "LateUpdate")
+                                || prototype.CheckFuncProperty(context, "FixedUpdate");
+                        }
+                    }
+                    JSApi.JS_FreeValue(ctx, prototype);
+                    var bridge = fullCap ? gameObject.AddComponent<JSBehaviourFull>() : gameObject.AddComponent<JSBehaviour>();
                     return bridge.SetScriptInstance(ctx, ctor, execAwake);
                 }
             }
@@ -269,15 +273,6 @@ namespace QuickJS.Unity
                 _onAfterDeserializeFunc = JSApi.JS_GetProperty(ctx, this_obj, context.GetAtom("OnAfterDeserialize"));
                 _onAfterDeserializeValid = JSApi.JS_IsFunction(ctx, _onAfterDeserializeFunc) == 1;
 
-                _updateFunc = JSApi.JS_GetProperty(ctx, this_obj, context.GetAtom("Update"));
-                _updateValid = JSApi.JS_IsFunction(ctx, _updateFunc) == 1;
-
-                _lateUpdateFunc = JSApi.JS_GetProperty(ctx, this_obj, context.GetAtom("LateUpdate"));
-                _lateUpdateValid = JSApi.JS_IsFunction(ctx, _lateUpdateFunc) == 1;
-
-                _fixedUpdateFunc = JSApi.JS_GetProperty(ctx, this_obj, context.GetAtom("FixedUpdate"));
-                _fixedUpdateValid = JSApi.JS_IsFunction(ctx, _fixedUpdateFunc) == 1;
-
                 _startFunc = JSApi.JS_GetProperty(ctx, this_obj, context.GetAtom("Start"));
                 _startValid = JSApi.JS_IsFunction(ctx, _startFunc) == 1;
 
@@ -308,6 +303,7 @@ namespace QuickJS.Unity
                 _awakeFunc = JSApi.JS_GetProperty(ctx, this_obj, context.GetAtom("Awake"));
                 _awakeValid = JSApi.JS_IsFunction(ctx, _awakeFunc) == 1;
 
+                this.OnBindingJSFuncs();
                 this._OnScriptingAfterDeserialize();
                 if (execAwake)
                 {
@@ -318,6 +314,14 @@ namespace QuickJS.Unity
                     }
                 }
             }
+        }
+
+        protected virtual void OnBindingJSFuncs()
+        {
+        }
+
+        protected virtual void OnUnbindingJSFuncs()
+        {
         }
 
         private void CallJSFunc(JSValue func_obj)
@@ -361,18 +365,6 @@ namespace QuickJS.Unity
         {
             if (!_this_obj.IsNullish())
             {
-                JSApi.JS_FreeValue(_ctx, _updateFunc);
-                _updateFunc = JSApi.JS_UNDEFINED;
-                _updateValid = false;
-
-                JSApi.JS_FreeValue(_ctx, _lateUpdateFunc);
-                _lateUpdateFunc = JSApi.JS_UNDEFINED;
-                _lateUpdateValid = false;
-
-                JSApi.JS_FreeValue(_ctx, _fixedUpdateFunc);
-                _fixedUpdateFunc = JSApi.JS_UNDEFINED;
-                _fixedUpdateValid = false;
-
                 JSApi.JS_FreeValue(_ctx, _startFunc);
                 _startFunc = JSApi.JS_UNDEFINED;
                 _startValid = false;
@@ -419,6 +411,8 @@ namespace QuickJS.Unity
                 _onAfterDeserializeFunc = JSApi.JS_UNDEFINED;
                 _onAfterDeserializeValid = false;
 
+                this.OnUnbindingJSFuncs();
+
                 JSApi.JS_FreeValue(_ctx, _this_obj);
                 _this_obj = JSApi.JS_UNDEFINED;
             }
@@ -433,45 +427,6 @@ namespace QuickJS.Unity
                 context.OnScriptReloading -= OnScriptReloading;
                 context.OnScriptReloaded -= OnScriptReloaded;
 #endif
-            }
-        }
-
-        void Update()
-        {
-            if (_updateValid)
-            {
-                var rval = JSApi.JS_Call(_ctx, _updateFunc, _this_obj);
-                if (rval.IsException())
-                {
-                    _ctx.print_exception();
-                }
-                JSApi.JS_FreeValue(_ctx, rval);
-            }
-        }
-
-        void LateUpdate()
-        {
-            if (_lateUpdateValid)
-            {
-                var rval = JSApi.JS_Call(_ctx, _lateUpdateFunc, _this_obj);
-                if (rval.IsException())
-                {
-                    _ctx.print_exception();
-                }
-                JSApi.JS_FreeValue(_ctx, rval);
-            }
-        }
-
-        void FixedUpdate()
-        {
-            if (_fixedUpdateValid)
-            {
-                var rval = JSApi.JS_Call(_ctx, _fixedUpdateFunc, _this_obj);
-                if (rval.IsException())
-                {
-                    _ctx.print_exception();
-                }
-                JSApi.JS_FreeValue(_ctx, rval);
             }
         }
 

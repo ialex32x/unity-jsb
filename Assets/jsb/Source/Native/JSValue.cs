@@ -69,6 +69,20 @@ namespace QuickJS.Native
             return tag == JSApi.JS_TAG_OBJECT;
         }
 
+        public bool CheckFuncProperty(ScriptContext context, string name)
+        {
+            if (context == null)
+            {
+                return false;
+            }
+
+            var ctx = (JSContext)context;
+            var val_Update = JSApi.JS_GetProperty(ctx, this, context.GetAtom("Update"));
+            var res = JSApi.JS_IsFunction(context, val_Update) == 1;
+            JSApi.JS_FreeValue(ctx, val_Update);
+            return res;
+        }
+
         public override int GetHashCode()
         {
             return u.int32 << 2 | (int)tag;

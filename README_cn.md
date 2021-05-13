@@ -14,7 +14,7 @@
     * 支持 JS 实现 MonoBehaviour (支持 Prefab)
     * 支持 JS 实现 编辑器窗口 (EditorWindow)
     * 支持 JS 实现 Inspector 编辑器 (Editor)
-    * [未完成] 支持 JS 实现 ScriptableObject
+    * 支持 JS 实现 ScriptableObject
 * 开发过程中无需生成绑定代码
 * [初步] 支持 JS Worker (limited support)
 * [初步] 支持未导出的C#类型的 JS 交互
