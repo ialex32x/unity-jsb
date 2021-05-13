@@ -72,13 +72,13 @@ namespace QuickJS.Unity
                 _onBeforeSerializeFunc = JSApi.JS_UNDEFINED;
                 _onBeforeSerializeValid = false;
 
-                JSApi.JS_FreeValue(_ctx, _resetFunc);
-                _resetFunc = JSApi.JS_UNDEFINED;
-                _resetValid = false;
-
                 JSApi.JS_FreeValue(_ctx, _onAfterDeserializeFunc);
                 _onAfterDeserializeFunc = JSApi.JS_UNDEFINED;
                 _onAfterDeserializeValid = false;
+
+                JSApi.JS_FreeValue(_ctx, _resetFunc);
+                _resetFunc = JSApi.JS_UNDEFINED;
+                _resetValid = false;
 
                 JSApi.JS_FreeValue(_ctx, _this_obj);
                 _this_obj = JSApi.JS_UNDEFINED;
@@ -282,11 +282,11 @@ namespace QuickJS.Unity
                 _onBeforeSerializeFunc = JSApi.JS_GetProperty(ctx, this_obj, context.GetAtom("OnBeforeSerialize"));
                 _onBeforeSerializeValid = JSApi.JS_IsFunction(ctx, _onBeforeSerializeFunc) == 1;
 
-                _resetFunc = JSApi.JS_GetProperty(ctx, this_obj, context.GetAtom("Reset"));
-                _resetValid = JSApi.JS_IsFunction(ctx, _resetFunc) == 1;
-
                 _onAfterDeserializeFunc = JSApi.JS_GetProperty(ctx, this_obj, context.GetAtom("OnAfterDeserialize"));
                 _onAfterDeserializeValid = JSApi.JS_IsFunction(ctx, _onAfterDeserializeFunc) == 1;
+
+                _resetFunc = JSApi.JS_GetProperty(ctx, this_obj, context.GetAtom("Reset"));
+                _resetValid = JSApi.JS_IsFunction(ctx, _resetFunc) == 1;
 
                 this._OnScriptingAfterDeserialize();
             }

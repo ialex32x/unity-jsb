@@ -45,6 +45,9 @@ namespace QuickJS.Unity
         private bool _startValid;
         private JSValue _startFunc = JSApi.JS_UNDEFINED;
 
+        private bool _resetValid;
+        private JSValue _resetFunc = JSApi.JS_UNDEFINED;
+
         private bool _onEnableValid;
         private JSValue _onEnableFunc = JSApi.JS_UNDEFINED;
 
@@ -276,6 +279,9 @@ namespace QuickJS.Unity
                 _startFunc = JSApi.JS_GetProperty(ctx, this_obj, context.GetAtom("Start"));
                 _startValid = JSApi.JS_IsFunction(ctx, _startFunc) == 1;
 
+                _resetFunc = JSApi.JS_GetProperty(ctx, this_obj, context.GetAtom("Reset"));
+                _resetValid = JSApi.JS_IsFunction(ctx, _resetFunc) == 1;
+
                 _onEnableFunc = JSApi.JS_GetProperty(ctx, this_obj, context.GetAtom("OnEnable"));
                 _onEnableValid = JSApi.JS_IsFunction(ctx, _onEnableFunc) == 1;
 
@@ -369,6 +375,10 @@ namespace QuickJS.Unity
                 _startFunc = JSApi.JS_UNDEFINED;
                 _startValid = false;
 
+                JSApi.JS_FreeValue(_ctx, _resetFunc);
+                _resetFunc = JSApi.JS_UNDEFINED;
+                _resetValid = false;
+
                 JSApi.JS_FreeValue(_ctx, _onEnableFunc);
                 _onEnableFunc = JSApi.JS_UNDEFINED;
                 _onEnableValid = false;
@@ -454,6 +464,19 @@ namespace QuickJS.Unity
             if (_startValid)
             {
                 var rval = JSApi.JS_Call(_ctx, _startFunc, _this_obj);
+                if (rval.IsException())
+                {
+                    _ctx.print_exception();
+                }
+                JSApi.JS_FreeValue(_ctx, rval);
+            }
+        }
+
+        public void Reset()
+        {
+            if (_resetValid)
+            {
+                var rval = JSApi.JS_Call(_ctx, _resetFunc, _this_obj);
                 if (rval.IsException())
                 {
                     _ctx.print_exception();
