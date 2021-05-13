@@ -357,6 +357,7 @@ export class SerializationUtil {
                 } else {
                     let size = buffer.ReadInt32();
                     buffer.ReadBytes(size);
+                    target[slot.propertyKey] = null;
                 }
             }
         }
