@@ -17,6 +17,11 @@ let MyScriptableObject = class MyScriptableObject extends UnityEngine_1.Scriptab
         this.value2 = "hello";
         this.value3 = UnityEngine_1.Vector3.zero;
     }
+    Reset() {
+        this.value1 = 0;
+        this.value2 = "";
+        this.value3 = UnityEngine_1.Vector3.zero;
+    }
 };
 __decorate([
     editor_decorators_1.ScriptNumber()

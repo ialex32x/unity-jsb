@@ -12,6 +12,12 @@ export class MyScriptableObject extends ScriptableObject {
 
     @ScriptProperty({ type: As.Vector3 })
     value3 = Vector3.zero;
+
+    Reset() {
+        this.value1 = 0;
+        this.value2 = "";
+        this.value3 = Vector3.zero;
+    }
 }
 
 if (require.main == module) {

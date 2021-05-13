@@ -45,6 +45,9 @@ namespace QuickJS.Unity
         private JSContext _ctx = JSContext.Null;
         private JSValue _this_obj = JSApi.JS_UNDEFINED;
 
+        private bool _resetValid;
+        private JSValue _resetFunc = JSApi.JS_UNDEFINED;
+
         private bool _onBeforeSerializeValid;
         private JSValue _onBeforeSerializeFunc = JSApi.JS_UNDEFINED;
 
@@ -68,6 +71,10 @@ namespace QuickJS.Unity
                 JSApi.JS_FreeValue(_ctx, _onBeforeSerializeFunc);
                 _onBeforeSerializeFunc = JSApi.JS_UNDEFINED;
                 _onBeforeSerializeValid = false;
+
+                JSApi.JS_FreeValue(_ctx, _resetFunc);
+                _resetFunc = JSApi.JS_UNDEFINED;
+                _resetValid = false;
 
                 JSApi.JS_FreeValue(_ctx, _onAfterDeserializeFunc);
                 _onAfterDeserializeFunc = JSApi.JS_UNDEFINED;
@@ -275,23 +282,13 @@ namespace QuickJS.Unity
                 _onBeforeSerializeFunc = JSApi.JS_GetProperty(ctx, this_obj, context.GetAtom("OnBeforeSerialize"));
                 _onBeforeSerializeValid = JSApi.JS_IsFunction(ctx, _onBeforeSerializeFunc) == 1;
 
+                _resetFunc = JSApi.JS_GetProperty(ctx, this_obj, context.GetAtom("Reset"));
+                _resetValid = JSApi.JS_IsFunction(ctx, _resetFunc) == 1;
+
                 _onAfterDeserializeFunc = JSApi.JS_GetProperty(ctx, this_obj, context.GetAtom("OnAfterDeserialize"));
                 _onAfterDeserializeValid = JSApi.JS_IsFunction(ctx, _onAfterDeserializeFunc) == 1;
 
                 this._OnScriptingAfterDeserialize();
-            }
-        }
-
-        private void CallJSFunc(JSValue func_obj)
-        {
-            if (!_this_obj.IsNullish() && JSApi.JS_IsFunction(_ctx, func_obj) == 1)
-            {
-                var rval = JSApi.JS_Call(_ctx, func_obj, _this_obj);
-                if (rval.IsException())
-                {
-                    _ctx.print_exception();
-                }
-                JSApi.JS_FreeValue(_ctx, rval);
             }
         }
 
@@ -304,6 +301,19 @@ namespace QuickJS.Unity
         {
             _isScriptInstanced = false;
             ReleaseJSValues();
+        }
+
+        public void Reset()
+        {
+            if (_resetValid)
+            {
+                var rval = JSApi.JS_Call(_ctx, _resetFunc, _this_obj);
+                if (rval.IsException())
+                {
+                    _ctx.print_exception();
+                }
+                JSApi.JS_FreeValue(_ctx, rval);
+            }
         }
 
         public void OnBeforeSerialize()
