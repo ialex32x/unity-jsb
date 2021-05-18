@@ -43,6 +43,11 @@ namespace jsb.Editor
         public override void OnPreExporting(BindingManager bindingManager)
         {
         }
+        
+        public override void OnPostExporting(BindingManager bindingManager)
+        {
+            bindingManager.ExportTypesInAssembly(typeof(UnityEngine.UI.Text).Assembly, true);
+        }
     }
 }
 #endif

@@ -1,11 +1,12 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.SerializationUtil = exports.EditorUtil = exports.DefaultEditor = exports.ScriptProperty = exports.ScriptObject = exports.ScriptString = exports.ScriptNumber = exports.ScriptInteger = exports.ScriptEditor = exports.ScriptType = exports.ScriptAsset = void 0;
+exports.SerializationUtil = exports.EditorUtil = exports.DefaultEditor = exports.ScriptProperty = exports.ScriptObject = exports.ScriptString = exports.ScriptNumber = exports.ScriptInteger = exports.ScriptEditor = exports.ScriptFunction = exports.ScriptType = exports.ScriptAsset = void 0;
 const UnityEditor_1 = require("UnityEditor");
 const UnityEngine_1 = require("UnityEngine");
 let Symbol_SerializedFields = Symbol.for("SerializedFields");
 let Symbol_PropertiesTouched = Symbol.for("PropertiesTouched");
 let Symbol_CustomEditor = Symbol.for("CustomEditor");
+let Symbol_MemberFuncs = Symbol.for("MemberFuncs");
 function ScriptAsset(meta) {
     return ScriptType(meta);
 }
@@ -37,6 +38,16 @@ function ScriptType(meta) {
     };
 }
 exports.ScriptType = ScriptType;
+function ScriptFunction(meta) {
+    return function (target, propertyKey) {
+        let funcMap = target[Symbol_MemberFuncs];
+        if (typeof funcMap === "undefined") {
+            funcMap = target[Symbol_MemberFuncs] = {};
+        }
+        funcMap[propertyKey] = propertyKey;
+    };
+}
+exports.ScriptFunction = ScriptFunction;
 function ScriptEditor(forType) {
     return function (editorType) {
         forType.prototype[Symbol_CustomEditor] = editorType;
@@ -45,43 +56,47 @@ function ScriptEditor(forType) {
 }
 exports.ScriptEditor = ScriptEditor;
 function ScriptInteger(meta) {
-    if (typeof meta === "undefined") {
-        meta = { type: "integer" };
+    let meta_t = meta;
+    if (typeof meta_t === "undefined") {
+        meta_t = { type: "integer" };
     }
     else {
-        meta.type = "integer";
+        meta_t.type = "integer";
     }
-    return ScriptProperty(meta);
+    return ScriptProperty(meta_t);
 }
 exports.ScriptInteger = ScriptInteger;
 function ScriptNumber(meta) {
-    if (typeof meta === "undefined") {
-        meta = { type: "float" };
+    let meta_t = meta;
+    if (typeof meta_t === "undefined") {
+        meta_t = { type: "float" };
     }
     else {
-        meta.type = "float";
+        meta_t.type = "float";
     }
-    return ScriptProperty(meta);
+    return ScriptProperty(meta_t);
 }
 exports.ScriptNumber = ScriptNumber;
 function ScriptString(meta) {
-    if (typeof meta === "undefined") {
-        meta = { type: "string" };
+    let meta_t = meta;
+    if (typeof meta_t === "undefined") {
+        meta_t = { type: "string" };
     }
     else {
-        meta.type = "string";
+        meta_t.type = "string";
     }
-    return ScriptProperty(meta);
+    return ScriptProperty(meta_t);
 }
 exports.ScriptString = ScriptString;
 function ScriptObject(meta) {
-    if (typeof meta === "undefined") {
-        meta = { type: "object" };
+    let meta_t = meta;
+    if (typeof meta_t === "undefined") {
+        meta_t = { type: "object" };
     }
     else {
-        meta.type = "object";
+        meta_t.type = "object";
     }
-    return ScriptProperty(meta);
+    return ScriptProperty(meta_t);
 }
 exports.ScriptObject = ScriptObject;
 function ScriptProperty(meta) {
@@ -90,7 +105,7 @@ function ScriptProperty(meta) {
         if (typeof slots === "undefined") {
             slots = target[Symbol_SerializedFields] = {};
         }
-        let slot = slots[propertyKey] = meta || {};
+        let slot = slots[propertyKey] = meta || { type: "object" };
         slot.propertyKey = propertyKey;
         if (typeof slot.serializable !== "boolean") {
             slot.serializable = true;

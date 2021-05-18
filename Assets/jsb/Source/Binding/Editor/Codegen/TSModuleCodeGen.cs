@@ -63,6 +63,11 @@ namespace QuickJS.Binding
 
             AddModuleAlias(typeBindingInfo.super);
 
+            foreach (var @interface in typeBindingInfo.interfaces)
+            {
+                AddModuleAlias(@interface);
+            }
+
             foreach (var entry in typeBindingInfo.fields)
             {
                 AddModuleAlias(entry.Value.fieldType);
@@ -214,6 +219,8 @@ namespace QuickJS.Binding
                 {
                     AddModuleAlias(g);
                 }
+                
+                AddModuleAlias(type.GetGenericTypeDefinition());
             }
 
             if (type.IsArray || type.IsByRef)
@@ -420,9 +427,9 @@ namespace QuickJS.Binding
                 var delegateBindingInfo = this.cg.bindingManager.GetDelegateBindingInfo(type);
                 if (delegateBindingInfo != null)
                 {
-                    var nargs = delegateBindingInfo.parameters.Length;
+                    // var nargs = delegateBindingInfo.parameters.Length;
                     var ret = GetTSTypeFullName(delegateBindingInfo.returnType);
-                    var t_arglist = (nargs > 0 ? ", " : "") + GetTSArglistTypes(delegateBindingInfo.parameters, false);
+                    // var t_arglist = (nargs > 0 ? ", " : "") + GetTSArglistTypes(delegateBindingInfo.parameters, false);
                     var v_arglist = GetTSArglistTypes(delegateBindingInfo.parameters, true);
                     // return $"{CodeGenerator.NamespaceOfInternalScriptTypes}.Delegate{nargs}<{ret}{t_arglist}> | (({v_arglist}) => {ret})";
                     return $"({v_arglist}) => {ret}";

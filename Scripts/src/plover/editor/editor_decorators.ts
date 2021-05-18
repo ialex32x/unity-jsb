@@ -7,10 +7,11 @@ import { ValueTypeSerializer } from "./serialize";
 let Symbol_SerializedFields = Symbol.for("SerializedFields");
 let Symbol_PropertiesTouched = Symbol.for("PropertiesTouched");
 let Symbol_CustomEditor = Symbol.for("CustomEditor");
+let Symbol_MemberFuncs = Symbol.for("MemberFuncs");
 
 type PropertyTypeID = "integer" | "float" | "string" | "object";
 
-export interface PropertyMetaInfo {
+export interface WeakPropertyMetaInfo {
     /**
      * slot name in property table
      */
@@ -38,13 +39,27 @@ export interface PropertyMetaInfo {
      */
     serializable?: boolean;
 
-    type?: PropertyTypeID | ValueTypeSerializer;
-
     label?: string;
 
     tooltip?: string;
 
     extra?: any;
+
+    /**
+     * UGUI, 自动绑定界面组件
+     */
+    bind?: {
+        name?: string;
+        widget?: Function;
+    };
+}
+
+export interface PropertyMetaInfo extends WeakPropertyMetaInfo {
+    type: PropertyTypeID | ValueTypeSerializer;
+}
+
+export interface FunctionMetaInfo {
+
 }
 
 export interface ClassMetaInfo {
@@ -84,6 +99,17 @@ export function ScriptType(meta?: ClassMetaInfo) {
     }
 }
 
+export function ScriptFunction(meta?: any) {
+    return function (target: any, propertyKey: string) {
+        let funcMap = target[Symbol_MemberFuncs]; 
+        if (typeof funcMap === "undefined") {
+            funcMap = target[Symbol_MemberFuncs] = {};
+        }
+
+        funcMap[propertyKey] = propertyKey;
+    }
+}
+
 export function ScriptEditor(forType: any) {
     return function (editorType: any) {
         forType.prototype[Symbol_CustomEditor] = editorType;
@@ -91,40 +117,44 @@ export function ScriptEditor(forType: any) {
     }
 }
 
-export function ScriptInteger(meta?: PropertyMetaInfo) {
-    if (typeof meta === "undefined") {
-        meta = { type: "integer" };
+export function ScriptInteger(meta?: WeakPropertyMetaInfo) {
+    let meta_t = <PropertyMetaInfo>meta;
+    if (typeof meta_t === "undefined") {
+        meta_t = { type: "integer" };
     } else {
-        meta.type = "integer";
+        meta_t.type = "integer";
     }
-    return ScriptProperty(meta);
+    return ScriptProperty(meta_t);
 }
 
-export function ScriptNumber(meta?: PropertyMetaInfo) {
-    if (typeof meta === "undefined") {
-        meta = { type: "float" };
+export function ScriptNumber(meta?: WeakPropertyMetaInfo) {
+    let meta_t = <PropertyMetaInfo>meta;
+    if (typeof meta_t === "undefined") {
+        meta_t = { type: "float" };
     } else {
-        meta.type = "float";
+        meta_t.type = "float";
     }
-    return ScriptProperty(meta);
+    return ScriptProperty(meta_t);
 }
 
-export function ScriptString(meta?: PropertyMetaInfo) {
-    if (typeof meta === "undefined") {
-        meta = { type: "string" };
+export function ScriptString(meta?: WeakPropertyMetaInfo) {
+    let meta_t = <PropertyMetaInfo>meta;
+    if (typeof meta_t === "undefined") {
+        meta_t = { type: "string" };
     } else {
-        meta.type = "string";
+        meta_t.type = "string";
     }
-    return ScriptProperty(meta);
+    return ScriptProperty(meta_t);
 }
 
-export function ScriptObject(meta?: PropertyMetaInfo) {
-    if (typeof meta === "undefined") {
-        meta = { type: "object" };
+export function ScriptObject(meta?: WeakPropertyMetaInfo) {
+    let meta_t = <PropertyMetaInfo>meta;
+    if (typeof meta_t === "undefined") {
+        meta_t = { type: "object" };
     } else {
-        meta.type = "object";
+        meta_t.type = "object";
     }
-    return ScriptProperty(meta);
+    return ScriptProperty(meta_t);
 }
 
 export function ScriptProperty(meta?: PropertyMetaInfo) {
@@ -134,7 +164,7 @@ export function ScriptProperty(meta?: PropertyMetaInfo) {
             slots = target[Symbol_SerializedFields] = {};
         }
 
-        let slot = slots[propertyKey] = meta || {};
+        let slot = slots[propertyKey] = meta || { type: "object" };
 
         slot.propertyKey = propertyKey;
         if (typeof slot.serializable !== "boolean") {

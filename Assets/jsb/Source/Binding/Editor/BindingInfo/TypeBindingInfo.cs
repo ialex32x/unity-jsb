@@ -42,6 +42,8 @@ namespace QuickJS.Binding
         // 父类类型
         public Type super => type.BaseType;
 
+        public Type[] interfaces => type.GetInterfaces();
+
         /// <summary>
         /// 跳过此类型的导出
         /// </summary>

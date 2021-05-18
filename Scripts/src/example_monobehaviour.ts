@@ -1,7 +1,22 @@
 import { MonoBehaviour, WaitForSeconds, Object, Input, Camera, GameObject, PrimitiveType, Vector3, Quaternion, Physics, LayerMask, RaycastHit, Transform, Time, ParticleSystem, ParticleSystemSimulationSpace } from "UnityEngine";
 import * as jsb from "jsb";
-import { ScriptNumber, ScriptType, ScriptInteger } from "./plover/editor/editor_decorators";
+import { ScriptNumber, ScriptType, ScriptInteger, ScriptFunction, ScriptProperty } from "./plover/editor/editor_decorators";
 import { Out } from "jsb";
+import { As } from "./plover/editor/serialize";
+import { Button } from "UnityEngine.UI";
+
+@ScriptType()
+export class ASimpleGuiDialog extends MonoBehaviour {
+    //TODO: [此功能未完成] 自动绑定界面组件
+    @ScriptProperty({ type: "object", bind: { widget: Button } })
+    nameLabel: Button;
+
+    //TODO: [此功能未完成] 使 UnityEvent 识别并接受脚本函数作为回调
+    @ScriptFunction()
+    onClicked() {
+        console.log("you clicked the button");
+    }
+}
 
 @ScriptType()
 export class MyClass extends MonoBehaviour {
@@ -29,7 +44,7 @@ export class MyClass extends MonoBehaviour {
     OnDestroy() {
         console.log("MyClass.OnDestroy", this._tick++);
     }
-    
+
     speak(text: string) {
         console.log("modified", text);
     }

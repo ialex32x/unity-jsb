@@ -6,10 +6,27 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.Something5Behaviour = exports.RotateBehaviour = exports.MySubClass = exports.MyClass = void 0;
+exports.Something5Behaviour = exports.RotateBehaviour = exports.MySubClass = exports.MyClass = exports.ASimpleGuiDialog = void 0;
 const UnityEngine_1 = require("UnityEngine");
 const jsb = require("jsb");
 const editor_decorators_1 = require("./plover/editor/editor_decorators");
+const UnityEngine_UI_1 = require("UnityEngine.UI");
+let ASimpleGuiDialog = class ASimpleGuiDialog extends UnityEngine_1.MonoBehaviour {
+    //TODO: [此功能未完成] 使 UnityEvent 识别并接受脚本函数作为回调
+    onClicked() {
+        console.log("you clicked the button");
+    }
+};
+__decorate([
+    editor_decorators_1.ScriptProperty({ type: "object", bind: { widget: UnityEngine_UI_1.Button } })
+], ASimpleGuiDialog.prototype, "nameLabel", void 0);
+__decorate([
+    editor_decorators_1.ScriptFunction()
+], ASimpleGuiDialog.prototype, "onClicked", null);
+ASimpleGuiDialog = __decorate([
+    editor_decorators_1.ScriptType()
+], ASimpleGuiDialog);
+exports.ASimpleGuiDialog = ASimpleGuiDialog;
 let MyClass = class MyClass extends UnityEngine_1.MonoBehaviour {
     constructor() {
         super(...arguments);
