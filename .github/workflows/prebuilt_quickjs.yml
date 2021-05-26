@@ -47,9 +47,12 @@ jobs:
       - name: Build
         run: |
           sudo apt install mingw-w64
+          sudo apt install g++
           cd jsb_build/quickjs
           chmod 744 make_jsb_win.sh
+          chmod 744 make_jsb_linux.sh
           ./make_jsb_win.sh
+          ./make_jsb_linux.sh
       - name: Upload
         uses: actions/upload-artifact@v2
         with:
