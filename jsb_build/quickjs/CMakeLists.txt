@@ -101,6 +101,8 @@ if (APPLE)
     endif ()
 elseif (ANDROID)
     add_library(quickjs SHARED ${QJS_SRCS})
+elseif (UNIX)
+    add_library(quickjs SHARED ${QJS_SRCS})
 else () # WINDOWS
     add_library(quickjs SHARED ${QJS_SRCS})
     set_target_properties(quickjs PROPERTIES SUFFIX ".dll")
