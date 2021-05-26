@@ -11,6 +11,7 @@ on:
       - jsb_build/quickjs/make_jsb_ios.sh
       - jsb_build/quickjs/make_jsb_macos.sh
       - jsb_build/quickjs/make_jsb_win.sh
+      - jsb_build/quickjs/make_jsb_linux.sh
       - .github/workflows/prebuilt_quickjs.yml
 
 jobs:
