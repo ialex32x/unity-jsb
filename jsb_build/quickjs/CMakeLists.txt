@@ -62,6 +62,13 @@ if (CONFIG_LTO)
     add_definitions(-DCONFIG_LTO)
 endif ()
 
+if (CONFIG_WIN32)
+    add_definitions(
+        -D__USE_MINGW_ANSI_STDIO
+        -D_GNU_SOURCE
+    )
+endif ()
+
 add_definitions(
     -DCONFIG_DISABLE_STACK_CHECK
     -DCONFIG_BIGNUM
