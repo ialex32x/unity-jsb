@@ -99,14 +99,13 @@ if (APPLE)
         set_target_properties(quickjs PROPERTIES MACOSX_BUNDLE TRUE)
         set_target_properties(quickjs PROPERTIES BUNDLE TRUE)
     endif ()
-elseif (ANDROID)
+else () # WINDOWS ANDROID LINUX
     add_library(quickjs SHARED ${QJS_SRCS})
-elseif (UNIX)
-    add_library(quickjs SHARED ${QJS_SRCS})
-else () # WINDOWS
-    add_library(quickjs SHARED ${QJS_SRCS})
-    set_target_properties(quickjs PROPERTIES SUFFIX ".dll")
 endif ()
+
+if (CONFIG_WIN32) 
+    set_target_properties(quickjs PROPERTIES SUFFIX ".dll")
+endif()
 
 target_link_libraries(quickjs ${QJS_LIBS})
 
