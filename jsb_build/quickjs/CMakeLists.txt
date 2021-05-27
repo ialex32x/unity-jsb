@@ -60,20 +60,23 @@ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fPIC -shared -Wall -Wno-array-bounds -Wno-f
 
 if (CONFIG_LTO)
     add_definitions(-DCONFIG_LTO)
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -flto -O2")
+    set(LDFLAGS "${LDFLAGS} -flto -g")
 endif ()
 
 if (CONFIG_WIN32)
     add_definitions(
         -D__USE_MINGW_ANSI_STDIO
-        -D_GNU_SOURCE
     )
+else ()
+    set(LDFLAGS "${LDFLAGS} -rdynamic")
 endif ()
 
 add_definitions(
     -DCONFIG_DISABLE_STACK_CHECK
     -DCONFIG_BIGNUM
     -DCONFIG_VERSION="${QJS_VERSION}"
-    # -D_GNU_SOURCE # ok?
+    -D_GNU_SOURCE # ok?
 
     # do not throw error when set typed array out of bound index
     -DJSB_TYPED_ARRAY_NO_THROW
@@ -96,17 +99,20 @@ endif ()
 if (APPLE) 
     if (IOS)
         set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fembed-bitcode")
+        set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} ${LDFLAGS}")
         set(IOS_PLATFORM OS64)
         set(ENABLE_BITCODE 1)
         add_library(quickjs STATIC ${QJS_SRCS})
         set_xcode_property (quickjs IPHONEOS_DEPLOYMENT_TARGET "8.0" "all")
     else ()
+        set(CMAKE_MODULE_LINKER_FLAGS "${CMAKE_MODULE_LINKER_FLAGS} ${LDFLAGS}")
         add_library(quickjs MODULE ${QJS_SRCS})
         set(CMAKE_OSX_ARCHITECTURES "$(ARCHS_STANDARD_64_BIT)")
         set_target_properties(quickjs PROPERTIES MACOSX_BUNDLE TRUE)
         set_target_properties(quickjs PROPERTIES BUNDLE TRUE)
     endif ()
 else () # WINDOWS ANDROID LINUX
+    set(CMAKE_STATIC_LINKER_FLAGS "${CMAKE_STATIC_LINKER_FLAGS} ${LDFLAGS}")
     add_library(quickjs SHARED ${QJS_SRCS})
 endif ()
 
