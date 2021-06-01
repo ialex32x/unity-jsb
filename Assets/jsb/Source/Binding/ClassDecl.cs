@@ -68,6 +68,7 @@ namespace QuickJS.Binding
             }
         }
 
+#if !JSB_NO_BIGNUM
         public void AddSelfOperator(string op, IDynamicMethod func)
         {
             _register.RegisterOperator(_type, op, func);
@@ -97,6 +98,7 @@ namespace QuickJS.Binding
         {
             _register.RegisterOperator(_type, op, func, length, false, type);
         }
+#endif
 
         public void AddFunction(string name, JSCFunctionMagic func, int length, int magic)
         {

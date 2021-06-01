@@ -13,8 +13,8 @@ make
 #include "quickjs.h"
 #endif
 
-#if !defined(EMSCRIPTEN)
-#if !defined(CONFIG_ATOMICS)
+#ifndef EMSCRIPTEN
+#ifndef CONFIG_ATOMICS
 #define CONFIG_ATOMICS
 #endif
 #endif

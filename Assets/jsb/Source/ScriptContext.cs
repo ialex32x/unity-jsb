@@ -65,6 +65,7 @@ namespace QuickJS
             _functionConstructor = JSApi.JS_GetProperty(_ctx, _globalObject, JSApi.JS_ATOM_Function);
             _operatorCreate = JSApi.JS_UNDEFINED;
 
+#if !JSB_NO_BIGNUM
             var operators = JSApi.JS_GetProperty(_ctx, _globalObject, JSApi.JS_ATOM_Operators);
             if (!operators.IsNullish())
             {
@@ -96,6 +97,7 @@ namespace QuickJS
                     }
                 }
             }
+#endif
         }
 
         public void ReleaseTypeRegister(TypeRegister register)
@@ -119,6 +121,7 @@ namespace QuickJS
 
         private unsafe void CreateDefaultOperators(JSValue constructor)
         {
+#if !JSB_NO_BIGNUM
             var rval = JSApi.JS_Call(_ctx, _operatorCreate);
             if (rval.IsException())
             {
@@ -129,6 +132,7 @@ namespace QuickJS
             {
                 JSApi.JS_DefinePropertyValue(_ctx, constructor, JSApi.JS_ATOM_Symbol_operatorSet, rval, JSPropFlags.DEFAULT);
             }
+#endif
         }
 
         public bool IsValid()
