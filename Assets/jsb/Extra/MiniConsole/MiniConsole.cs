@@ -7,12 +7,7 @@ using System.Text;
 
 namespace QuickJS.Extra
 {
-    using QuickJS;
-    using QuickJS.IO;
     using QuickJS.Utils;
-    using QuickJS.Native;
-    using QuickJS.Binding;
-    using QuickJS.Extra.WebSockets;
     using UnityEngine;
     using UnityEngine.UI;
 
