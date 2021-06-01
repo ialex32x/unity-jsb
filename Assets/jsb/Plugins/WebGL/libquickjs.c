@@ -1,6 +1,11 @@
 
+#ifndef UNITY_WEBGL
 #define UNITY_WEBGL
+#endif
+
+#ifndef EMSCRIPTEN
 #define EMSCRIPTEN
+#endif
 
 // #define DUMP_MEM
 // #define CONFIG_BIGNUM
