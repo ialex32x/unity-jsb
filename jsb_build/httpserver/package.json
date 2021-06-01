@@ -21,7 +21,7 @@
     "morgan": "^1.9.1",
     "multer": "^1.3.0",
     "protobufjs": "^6.7.3",
-    "pug": "^2.0.0-rc.3",
+    "pug": "^3.0.1",
     "ts-node": "^3.0.2",
     "typescript": "^2.2.2"
   }
