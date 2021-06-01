@@ -1,0 +1,6 @@
+**/node_modules
+js-out
+build
+upload
+public
+.vscode

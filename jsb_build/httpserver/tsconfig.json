@@ -1,0 +1,13 @@
+{
+    "include": [
+        "./src"
+    ],
+    "compilerOptions": {
+        "module": "commonjs",
+        "target": "es5",
+        "outDir": "js-out",
+        "declaration": false,
+        "noImplicitAny": false,
+        "sourceMap": false
+    }
+}
