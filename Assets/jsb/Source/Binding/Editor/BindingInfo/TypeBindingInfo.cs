@@ -829,6 +829,7 @@ namespace QuickJS.Binding
                 // proxyModuleRegister.MarkAsCritical();
             }
 
+#if !JSB_NO_BIGNUM
             foreach (var operatorBindingInfo in operators)
             {
                 var dynamicMethod = new Binding.DynamicMethod(dynamicType, operatorBindingInfo.methodInfo);
@@ -857,6 +858,7 @@ namespace QuickJS.Binding
                     cls.AddSelfOperator(regName, dynamicMethod);
                 } while (false);
             }
+#endif
 
             return cls;
         }

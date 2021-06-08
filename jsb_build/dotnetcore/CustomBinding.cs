@@ -18,6 +18,7 @@ namespace Example.Editor
         
         public override void OnPostExporting(BindingManager bindingManager)
         {
+            bindingManager.ExportTypesInAssembly(typeof(System.Threading.Thread).Assembly, true);
             bindingManager.ExportTypesInAssembly(typeof(System.Console).Assembly, true);
         }
     }

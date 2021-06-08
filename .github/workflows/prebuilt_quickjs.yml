@@ -11,6 +11,7 @@ on:
       - jsb_build/quickjs/make_jsb_ios.sh
       - jsb_build/quickjs/make_jsb_macos.sh
       - jsb_build/quickjs/make_jsb_win.sh
+      - jsb_build/quickjs/make_jsb_linux.sh
       - .github/workflows/prebuilt_quickjs.yml
 
 jobs:
@@ -49,6 +50,23 @@ jobs:
           cd jsb_build/quickjs
           chmod 744 make_jsb_win.sh
           ./make_jsb_win.sh
+      - name: Upload
+        uses: actions/upload-artifact@v2
+        with:
+          path: ./jsb_build/prebuilt/Plugins/**/*
+          name: prebuilt_quickjs_libs
+
+  linux:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: lukka/get-cmake@v3.19.0
+      - name: Build
+        run: |
+          sudo apt install g++
+          cd jsb_build/quickjs
+          chmod 744 make_jsb_linux.sh
+          ./make_jsb_linux.sh
       - name: Upload
         uses: actions/upload-artifact@v2
         with:

@@ -69,6 +69,7 @@ namespace Example
             _rt.AddModuleResolvers();
             _rt.extraBinding = (runtime, register) =>
             {
+#if !UNITY_WEBGL
                 FSWatcher.Bind(register);
                 QuickJS.Extra.WebSocket.Bind(register);
                 QuickJS.Extra.XMLHttpRequest.Bind(register);
@@ -78,6 +79,7 @@ namespace Example
                     QuickJS.Extra.DOMCompatibleLayer.Bind(register, uri);
                     QuickJS.Extra.NodeCompatibleLayer.Bind(register);
                 }
+#endif
             };
             _rt.Initialize(new ScriptRuntimeArgs
             {

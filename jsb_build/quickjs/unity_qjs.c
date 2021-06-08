@@ -9,16 +9,20 @@ sudo apt-get install mingw32
 make
 */
 
+#ifndef UNITY_WEBGL
 #include "quickjs.h"
+#endif
 
-#if !defined(EMSCRIPTEN)
-#if !defined(CONFIG_ATOMICS)
+#ifndef EMSCRIPTEN
+#ifndef CONFIG_ATOMICS
 #define CONFIG_ATOMICS
 #endif
 #endif
 
 #define byte unsigned char
-#define JS_HIDDEN_PROP(s) ("\xFF" s)
+// #define JS_HIDDEN_PROP(s) ("\xFF" s)
+
+#ifndef UNITY_WEBGL
 
 #ifndef FALSE
 enum
@@ -26,7 +30,7 @@ enum
     FALSE = 0,
     TRUE = 1,
 };
-#endif
+#endif // !FALSE
 
 enum
 {
@@ -41,6 +45,8 @@ enum
     JSAtom JSB_ATOM_##name() { return JS_ATOM_##name; }
 #include "quickjs-atom.h"
 #undef DEF
+
+#endif // !UNITY_WEBGL
 
 JSValue JSB_NewEmptyString(JSContext *ctx)
 {

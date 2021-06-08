@@ -180,10 +180,10 @@ namespace QuickJS.Native
         public static extern JSContext JS_NewContext(JSRuntime rt);
 
         [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern void JS_FreeContext(JSContext ctx);
+        public static extern JSContext JS_NewContextRaw(JSRuntime rt);
 
         [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern void JS_AddIntrinsicOperators(JSContext ctx);
+        public static extern void JS_FreeContext(JSContext ctx);
 
         [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern JSValue JS_GetGlobalObject(JSContext ctx);
@@ -906,20 +906,28 @@ namespace QuickJS.Native
 
         public static readonly JSAtom JS_ATOM_Error = JSB_ATOM_Error();
 
+#if !JSB_NO_BIGNUM
         [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern JSAtom JSB_ATOM_Symbol_operatorSet();
-
-        public static readonly JSAtom JS_ATOM_Symbol_operatorSet = JSB_ATOM_Symbol_operatorSet();
-
-        [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern JSAtom JSB_ATOM_name();
-
-        public static readonly JSAtom JS_ATOM_name = JSB_ATOM_name();
+        public static extern void JS_AddIntrinsicOperators(JSContext ctx);
 
         [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern JSAtom JSB_ATOM_Operators();
 
         public static readonly JSAtom JS_ATOM_Operators = JSB_ATOM_Operators();
+
+        [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern JSAtom JSB_ATOM_Symbol_operatorSet();
+
+        // only available CONFIG_BIGNUM
+        public static readonly JSAtom JS_ATOM_Symbol_operatorSet = JSB_ATOM_Symbol_operatorSet();
+#else 
+        public static void JS_AddIntrinsicOperators(JSContext ctx) {}
+#endif
+
+        [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern JSAtom JSB_ATOM_name();
+
+        public static readonly JSAtom JS_ATOM_name = JSB_ATOM_name();
 
         [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern JSAtom JSB_ATOM_message();
@@ -1020,8 +1028,8 @@ namespace QuickJS.Native
         #region critical
 
         /* return < 0, 0 or > 0 */
-        [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern int js_string_compare(JSContext ctx, /*const JSString*/ IntPtr p1, /*const JSString*/ IntPtr p2);
+        // [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
+        // public static extern int js_string_compare(JSContext ctx, /*const JSString*/ IntPtr p1, /*const JSString*/ IntPtr p2);
 
         [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern unsafe IntPtr js_strndup(JSContext ctx, byte* s, size_t n);

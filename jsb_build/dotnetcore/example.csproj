@@ -18,6 +18,7 @@
 
   <Target Name="CopyQuickJS" AfterTargets="AfterBuild">
     <Copy SourceFiles="../../Assets/jsb/Plugins/x64/quickjs.dll" DestinationFolder="$(OutDir)" SkipUnchangedFiles="true" OverwriteReadOnlyFiles="true" />
+    <Copy SourceFiles="../../Assets/jsb/Plugins/x64/libquickjs.so" DestinationFolder="$(OutDir)" SkipUnchangedFiles="true" OverwriteReadOnlyFiles="true" />
     <Copy SourceFiles="../../Assets/jsb/Plugins/quickjs.bundle/Contents/MacOS/quickjs" DestinationFolder="$(OutDir)" SkipUnchangedFiles="true" OverwriteReadOnlyFiles="true" />
   </Target>
 </Project>

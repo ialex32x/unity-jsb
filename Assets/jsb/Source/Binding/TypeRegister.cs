@@ -16,8 +16,10 @@ namespace QuickJS.Binding
         private AtomCache _atoms;
 
         private List<Type> _pendingTypes = new List<Type>();
+#if !JSB_NO_BIGNUM
         private List<OperatorDecl> _operatorDecls = new List<OperatorDecl>();
         private Dictionary<Type, int> _operatorDeclIndex = new Dictionary<Type, int>();
+#endif
 
         private List<ClassDecl> _pendingClasses = new List<ClassDecl>();
 
@@ -187,6 +189,7 @@ namespace QuickJS.Binding
             return _db.AddType(type, proto);
         }
 
+#if !JSB_NO_BIGNUM
         private void SubmitOperators()
         {
             // 提交运算符重载
@@ -219,35 +222,7 @@ namespace QuickJS.Binding
             _operatorDecls.Add(decl);
             return decl;
         }
-
-        // 返回值已经过 DupValue
-        public JSValue GetConstructor(Type type)
-        {
-            if (type == typeof(JSFunction))
-            {
-                return _context.GetFunctionConstructor();
-            }
-
-            if (type == typeof(string) || type == typeof(char))
-            {
-                return _context.GetStringConstructor();
-            }
-
-            if (type.IsValueType && (type.IsPrimitive || type.IsEnum))
-            {
-                return _context.GetNumberConstructor();
-            }
-
-            var val = _db.FindChainedPrototypeOf(type);
-            return JSApi.JS_GetProperty(_context, val, JSApi.JS_ATOM_constructor);
-        }
-
-        public JSValue FindChainedPrototypeOf(Type type)
-        {
-            var val = _db.FindChainedPrototypeOf(type);
-            return val;
-        }
-
+        
         public void RegisterOperator(Type type, string op, JSCFunction func, int length)
         {
             RegisterOperator(type, op, JSApi.JS_NewCFunction(_context, func, op, length));
@@ -301,6 +276,36 @@ namespace QuickJS.Binding
             }
         }
 
+#endif
+
+        // 返回值已经过 DupValue
+        public JSValue GetConstructor(Type type)
+        {
+            if (type == typeof(JSFunction))
+            {
+                return _context.GetFunctionConstructor();
+            }
+
+            if (type == typeof(string) || type == typeof(char))
+            {
+                return _context.GetStringConstructor();
+            }
+
+            if (type.IsValueType && (type.IsPrimitive || type.IsEnum))
+            {
+                return _context.GetNumberConstructor();
+            }
+
+            var val = _db.FindChainedPrototypeOf(type);
+            return JSApi.JS_GetProperty(_context, val, JSApi.JS_ATOM_constructor);
+        }
+
+        public JSValue FindChainedPrototypeOf(Type type)
+        {
+            var val = _db.FindChainedPrototypeOf(type);
+            return val;
+        }
+
         public void Finish()
         {
             _refCount--;
@@ -308,7 +313,9 @@ namespace QuickJS.Binding
             if (_refCount == 0)
             {
                 _context.ReleaseTypeRegister(this);
+#if !JSB_NO_BIGNUM
                 SubmitOperators();
+#endif
                 _atoms.Clear();
                 var ctx = (JSContext)_context;
 

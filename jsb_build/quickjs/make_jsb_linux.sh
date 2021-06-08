@@ -9,6 +9,6 @@ echo building...
 cmake --build linux_release --config Release
 mkdir -p ../../prebuilt/Plugins/x64/
 pwd
-ls -l ./linux_release/Release/x64/
-cp ./linux_release/Release/x64/libquickjs.so ../../prebuilt/Plugins/x64/
+ls -l ./linux_release/
+cp ./linux_release/libquickjs.so ../../prebuilt/Plugins/x64/
 cd ..
