@@ -319,4 +319,4 @@ Open this project directory in VSCode, select ```dotnetcore example``` in ```Run
 * [mbedtls](https://github.com/ARMmbed/mbedtls)
 * [zlib](https://zlib.net/)
 * [sqlite3](https://sqlite.org/index.html)
-
+* [quickjspp](https://github.com/c-smile/quickjspp)
