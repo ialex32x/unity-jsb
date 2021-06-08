@@ -11,6 +11,7 @@ on:
       - jsb_build/quickjs/make_jsb_ios.sh
       - jsb_build/quickjs/make_jsb_macos.sh
       - jsb_build/quickjs/make_jsb_win.sh
+      - jsb_build/quickjs/make_jsb_wsa.bat
       - jsb_build/quickjs/make_jsb_linux.sh
       - .github/workflows/prebuilt_quickjs.yml
 
@@ -33,6 +34,22 @@ jobs:
           cd jsb_build/quickjs
           chmod 744 make_jsb_android.sh
           ./make_jsb_android.sh
+      - name: Upload
+        uses: actions/upload-artifact@v2
+        with:
+          path: ./jsb_build/prebuilt/Plugins/**/*
+          name: prebuilt_quickjs_libs
+
+  wsa:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Add MSBuild to PATH
+        uses: microsoft/setup-msbuild@v1.0.2
+      - name: Build
+        run: |
+          cd jsb_build\quickjs
+          .\make_jsb_wsa.bat
       - name: Upload
         uses: actions/upload-artifact@v2
         with:
