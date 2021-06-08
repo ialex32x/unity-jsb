@@ -35,28 +35,58 @@ project(unity-jsb)
 
 set(TOP_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 set(OUT_DIR ${TOP_DIR}/build)
-set(QJS_DIR ${TOP_DIR}/quickjs-latest)
-
-if (CONFIG_WIN32)
-    if (CONFIG_WIN32_64)
-        set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -m64")
-    else ()
-        set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -m32")
-    endif ()
-    set(QJS_LIBS -lm -static-libgcc -static-libstdc++ -Wl,-Bstatic -lstdc++ -lpthread -Wl,-Bdynamic)
-else ()
-    set(QJS_LIBS -lm -ldl)
-endif ()
 
 if (CONFIG_WSA)
     # set(QJS_LIBS ${QJS_LIBS} -lwinstorecompat)
-endif ()
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /wd\"4146\" /wd\"4703\"")
 
-if (JSB_DEBUG)
-    add_definitions(-DJSB_DEBUG)
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g")
+    add_definitions(
+        -D_CRT_SECURE_NO_WARNINGS
+    )
+
+    set(QJS_DIR ${TOP_DIR}/quickjs-wsa)
+    include_directories(${QJS_DIR})
+    set(QJS_SRCS 
+        ${QJS_DIR}/quickjs.c
+        ${QJS_DIR}/libregexp.c
+        ${QJS_DIR}/libunicode.c
+        ${QJS_DIR}/cutils.c
+        ${QJS_DIR}/../unity_qjs.c
+    )
+else ()
+    if (CONFIG_WIN32)
+        if (CONFIG_WIN32_64)
+            set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -m64")
+        else ()
+            set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -m32")
+        endif ()
+        set(QJS_LIBS -lm -static-libgcc -static-libstdc++ -Wl,-Bstatic -lstdc++ -lpthread -Wl,-Bdynamic)
+    else ()
+        set(QJS_LIBS -lm -ldl)
+    endif ()
+
+    if (JSB_DEBUG)
+        add_definitions(-DJSB_DEBUG)
+        set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g")
+    endif ()
+
+    add_definitions(
+        -DCONFIG_BIGNUM
+    )
+    
+    set(QJS_DIR ${TOP_DIR}/quickjs-latest)
+    include_directories(${QJS_DIR})
+    set(QJS_SRCS 
+        ${QJS_DIR}/quickjs.c
+        ${QJS_DIR}/libregexp.c
+        ${QJS_DIR}/libunicode.c
+        ${QJS_DIR}/cutils.c
+        ${QJS_DIR}/libbf.c
+        ${QJS_DIR}/../unity_qjs.c
+    )
+    
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fPIC -shared -Wall -Wno-array-bounds -Wno-format-truncation")
 endif ()
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fPIC -shared -Wall -Wno-array-bounds -Wno-format-truncation")
 
 if (CONFIG_LTO)
     add_definitions(-DCONFIG_LTO)
@@ -64,22 +94,11 @@ endif ()
 
 add_definitions(
     -DCONFIG_DISABLE_STACK_CHECK
-    -DCONFIG_BIGNUM
     -DCONFIG_VERSION="${QJS_VERSION}"
     # -D_GNU_SOURCE # ok?
 
     # do not throw error when set typed array out of bound index
     -DJSB_TYPED_ARRAY_NO_THROW
-)
-
-include_directories(${QJS_DIR})
-set(QJS_SRCS 
-    ${QJS_DIR}/quickjs.c
-    ${QJS_DIR}/libregexp.c
-    ${QJS_DIR}/libunicode.c
-    ${QJS_DIR}/cutils.c
-    ${QJS_DIR}/libbf.c
-    ${QJS_DIR}/../unity_qjs.c
 )
 
 if (JSB_DEF_LOG2)
