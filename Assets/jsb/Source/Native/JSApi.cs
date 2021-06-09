@@ -17,72 +17,72 @@ namespace QuickJS.Native
     using int64_t = Int64;
     using uint64_t = UInt64;
 
-#if UNITY_EDITOR_WIN || UNITY_STANDALONE_WIN || JSB_UNITYLESS
+#if UNITY_EDITOR_WIN || UNITY_STANDALONE_WIN || JSB_UNITYLESS || (UNITY_WSA && !UNITY_EDITOR)
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
 #endif
     public delegate int JSInterruptHandler(JSRuntime rt, IntPtr opaque);
 
     /* is_handled = TRUE means that the rejection is handled */
-#if UNITY_EDITOR_WIN || UNITY_STANDALONE_WIN || JSB_UNITYLESS
+#if UNITY_EDITOR_WIN || UNITY_STANDALONE_WIN || JSB_UNITYLESS || (UNITY_WSA && !UNITY_EDITOR)
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
 #endif
     public delegate void JSHostPromiseRejectionTracker(JSContext ctx, JSValueConst promise,
                                             JSValueConst reason,
                                             JS_BOOL is_handled, IntPtr opaque);
 
-#if UNITY_EDITOR_WIN || UNITY_STANDALONE_WIN || JSB_UNITYLESS
+#if UNITY_EDITOR_WIN || UNITY_STANDALONE_WIN || JSB_UNITYLESS || (UNITY_WSA && !UNITY_EDITOR)
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
 #endif
     public unsafe delegate IntPtr JSModuleNormalizeFunc(JSContext ctx,
         [MarshalAs(UnmanagedType.LPStr)] string module_base_name, [MarshalAs(UnmanagedType.LPStr)] string module_name,
         IntPtr opaque);
 
-#if UNITY_EDITOR_WIN || UNITY_STANDALONE_WIN || JSB_UNITYLESS
+#if UNITY_EDITOR_WIN || UNITY_STANDALONE_WIN || JSB_UNITYLESS || (UNITY_WSA && !UNITY_EDITOR)
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
 #endif
     public delegate JSModuleDef JSModuleLoaderFunc(JSContext ctx, [MarshalAs(UnmanagedType.LPStr)] string module_name,
         IntPtr opaque);
 
-#if UNITY_EDITOR_WIN || UNITY_STANDALONE_WIN || JSB_UNITYLESS
+#if UNITY_EDITOR_WIN || UNITY_STANDALONE_WIN || JSB_UNITYLESS || (UNITY_WSA && !UNITY_EDITOR)
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
 #endif
     public delegate void JSClassFinalizer(JSRuntime rt, JSValue val);
 
-#if UNITY_EDITOR_WIN || UNITY_STANDALONE_WIN || JSB_UNITYLESS
+#if UNITY_EDITOR_WIN || UNITY_STANDALONE_WIN || JSB_UNITYLESS || (UNITY_WSA && !UNITY_EDITOR)
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
 #endif
     public delegate JSValue JSCFunction(JSContext ctx, JSValueConst this_val, int argc,
         [MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 2)]
         JSValueConst[] argv);
 
-#if UNITY_EDITOR_WIN || UNITY_STANDALONE_WIN || JSB_UNITYLESS
+#if UNITY_EDITOR_WIN || UNITY_STANDALONE_WIN || JSB_UNITYLESS || (UNITY_WSA && !UNITY_EDITOR)
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
 #endif
     public delegate JSValue JSSetterCFunction(JSContext ctx, JSValueConst this_val, JSValueConst val);
 
-#if UNITY_EDITOR_WIN || UNITY_STANDALONE_WIN || JSB_UNITYLESS
+#if UNITY_EDITOR_WIN || UNITY_STANDALONE_WIN || JSB_UNITYLESS || (UNITY_WSA && !UNITY_EDITOR)
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
 #endif
     public delegate JSValue JSSetterCFunctionMagic(JSContext ctx, JSValueConst this_val, JSValueConst val, int magic);
 
-#if UNITY_EDITOR_WIN || UNITY_STANDALONE_WIN || JSB_UNITYLESS
+#if UNITY_EDITOR_WIN || UNITY_STANDALONE_WIN || JSB_UNITYLESS || (UNITY_WSA && !UNITY_EDITOR)
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
 #endif
     public delegate JSValue JSGetterCFunction(JSContext ctx, JSValueConst this_val);
 
-#if UNITY_EDITOR_WIN || UNITY_STANDALONE_WIN || JSB_UNITYLESS
+#if UNITY_EDITOR_WIN || UNITY_STANDALONE_WIN || JSB_UNITYLESS || (UNITY_WSA && !UNITY_EDITOR)
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
 #endif
     public delegate JSValue JSGetterCFunctionMagic(JSContext ctx, JSValueConst this_val, int magic);
 
-#if UNITY_EDITOR_WIN || UNITY_STANDALONE_WIN || JSB_UNITYLESS
+#if UNITY_EDITOR_WIN || UNITY_STANDALONE_WIN || JSB_UNITYLESS || (UNITY_WSA && !UNITY_EDITOR)
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
 #endif
     public delegate JSValue JSCFunctionMagic(JSContext ctx, JSValueConst this_val, int argc,
         [MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 2)]
         JSValueConst[] argv, int magic);
 
-#if UNITY_EDITOR_WIN || UNITY_STANDALONE_WIN || JSB_UNITYLESS
+#if UNITY_EDITOR_WIN || UNITY_STANDALONE_WIN || JSB_UNITYLESS || (UNITY_WSA && !UNITY_EDITOR)
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
 #endif
     public unsafe delegate JSValue JSCFunctionData(JSContext ctx, JSValueConst this_val, int argc,
@@ -202,7 +202,7 @@ namespace QuickJS.Native
 
         public static void JS_SetHostPromiseRejectionTracker(JSRuntime rt, JSHostPromiseRejectionTracker cb, IntPtr opaque)
         {
-#if JSB_UNITYLESS
+#if JSB_UNITYLESS || (UNITY_WSA && !UNITY_EDITOR)
             GCHandle.Alloc(cb);
 #endif
             var fn = Marshal.GetFunctionPointerForDelegate(cb);
@@ -520,7 +520,7 @@ namespace QuickJS.Native
         public static JSValue JSB_NewCFunction(JSContext ctx, JSCFunction func, JSAtom atom, int length,
             JSCFunctionEnum cproto, int magic)
         {
-#if JSB_UNITYLESS
+#if JSB_UNITYLESS || (UNITY_WSA && !UNITY_EDITOR)
             GCHandle.Alloc(func);
 #endif
             var fn = Marshal.GetFunctionPointerForDelegate(func);
@@ -530,7 +530,7 @@ namespace QuickJS.Native
         public static JSValue JSB_NewCFunction(JSContext ctx, JSCFunctionMagic func, JSAtom atom, int length,
             JSCFunctionEnum cproto, int magic)
         {
-#if JSB_UNITYLESS
+#if JSB_UNITYLESS || (UNITY_WSA && !UNITY_EDITOR)
             GCHandle.Alloc(func);
 #endif
             var fn = Marshal.GetFunctionPointerForDelegate(func);
@@ -539,7 +539,7 @@ namespace QuickJS.Native
 
         public static JSValue JSB_NewCFunction(JSContext ctx, JSGetterCFunction func, JSAtom atom)
         {
-#if JSB_UNITYLESS
+#if JSB_UNITYLESS || (UNITY_WSA && !UNITY_EDITOR)
             GCHandle.Alloc(func);
 #endif
             var fn = Marshal.GetFunctionPointerForDelegate(func);
@@ -548,7 +548,7 @@ namespace QuickJS.Native
 
         public static JSValue JSB_NewCFunction(JSContext ctx, JSSetterCFunction func, JSAtom atom)
         {
-#if JSB_UNITYLESS
+#if JSB_UNITYLESS || (UNITY_WSA && !UNITY_EDITOR)
             GCHandle.Alloc(func);
 #endif
             var fn = Marshal.GetFunctionPointerForDelegate(func);
@@ -557,7 +557,7 @@ namespace QuickJS.Native
 
         public static JSValue JSB_NewCFunction(JSContext ctx, JSGetterCFunctionMagic func, JSAtom atom, int magic)
         {
-#if JSB_UNITYLESS
+#if JSB_UNITYLESS || (UNITY_WSA && !UNITY_EDITOR)
             GCHandle.Alloc(func);
 #endif
             var fn = Marshal.GetFunctionPointerForDelegate(func);
@@ -566,7 +566,7 @@ namespace QuickJS.Native
 
         public static JSValue JSB_NewCFunction(JSContext ctx, JSSetterCFunctionMagic func, JSAtom atom, int magic)
         {
-#if JSB_UNITYLESS
+#if JSB_UNITYLESS || (UNITY_WSA && !UNITY_EDITOR)
             GCHandle.Alloc(func);
 #endif
             var fn = Marshal.GetFunctionPointerForDelegate(func);
@@ -576,7 +576,7 @@ namespace QuickJS.Native
         public static JSValue JSB_NewCFunctionMagic(JSContext ctx, JSCFunctionMagic func, JSAtom atom, int length,
             JSCFunctionEnum cproto, int magic)
         {
-#if JSB_UNITYLESS
+#if JSB_UNITYLESS || (UNITY_WSA && !UNITY_EDITOR)
             GCHandle.Alloc(func);
 #endif
             var fn = Marshal.GetFunctionPointerForDelegate(func);
@@ -587,7 +587,7 @@ namespace QuickJS.Native
             [MarshalAs(UnmanagedType.LPStr)] string name,
             int length, JSCFunctionEnum cproto, int magic)
         {
-#if JSB_UNITYLESS
+#if JSB_UNITYLESS || (UNITY_WSA && !UNITY_EDITOR)
             GCHandle.Alloc(func);
 #endif
             var fn = Marshal.GetFunctionPointerForDelegate(func);
@@ -597,7 +597,7 @@ namespace QuickJS.Native
         public static JSValue JS_NewCFunction2(JSContext ctx, JSCFunction func, string name, int length,
             JSCFunctionEnum cproto, int magic)
         {
-#if JSB_UNITYLESS
+#if JSB_UNITYLESS || (UNITY_WSA && !UNITY_EDITOR)
             GCHandle.Alloc(func);
 #endif
             var fn = Marshal.GetFunctionPointerForDelegate(func);
@@ -606,7 +606,7 @@ namespace QuickJS.Native
 
         public static JSValue JS_NewCFunction(JSContext ctx, JSCFunction func, string name, int length)
         {
-#if JSB_UNITYLESS
+#if JSB_UNITYLESS || (UNITY_WSA && !UNITY_EDITOR)
             GCHandle.Alloc(func);
 #endif
             var fn = Marshal.GetFunctionPointerForDelegate(func);
@@ -971,7 +971,7 @@ namespace QuickJS.Native
 
         public static JSClassID JS_NewClass(JSRuntime rt, JSClassFinalizer class_finalizer)
         {
-#if JSB_UNITYLESS
+#if JSB_UNITYLESS || (UNITY_WSA && !UNITY_EDITOR)
             GCHandle.Alloc(class_finalizer);
 #endif
             var fn_ptr = Marshal.GetFunctionPointerForDelegate(class_finalizer);
@@ -1007,7 +1007,7 @@ namespace QuickJS.Native
             JSModuleNormalizeFunc module_normalize,
             JSModuleLoaderFunc module_loader, IntPtr opaque)
         {
-#if JSB_UNITYLESS
+#if JSB_UNITYLESS || (UNITY_WSA && !UNITY_EDITOR)
             GCHandle.Alloc(module_normalize);
             GCHandle.Alloc(module_loader);
 #endif
@@ -1065,7 +1065,7 @@ namespace QuickJS.Native
 
         public static void JS_SetInterruptHandler(JSRuntime rt, JSInterruptHandler cb, IntPtr opaque)
         {
-#if JSB_UNITYLESS
+#if JSB_UNITYLESS || (UNITY_WSA && !UNITY_EDITOR)
             GCHandle.Alloc(cb);
 #endif
             var fn = Marshal.GetFunctionPointerForDelegate(cb);

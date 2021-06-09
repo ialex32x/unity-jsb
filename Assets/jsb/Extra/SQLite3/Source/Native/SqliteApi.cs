@@ -66,12 +66,12 @@ namespace QuickJS.Extra.Sqlite.Native
             TEXT = 3,
         }
 
-#if UNITY_EDITOR_WIN || UNITY_STANDALONE_WIN || JSB_UNITYLESS
+#if UNITY_EDITOR_WIN || UNITY_STANDALONE_WIN || JSB_UNITYLESS || (UNITY_WSA && !UNITY_EDITOR)
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
 #endif
         public unsafe delegate void SqliteActionCallback(IntPtr ptr);
 
-#if UNITY_EDITOR_WIN || UNITY_STANDALONE_WIN || JSB_UNITYLESS
+#if UNITY_EDITOR_WIN || UNITY_STANDALONE_WIN || JSB_UNITYLESS || (UNITY_WSA && !UNITY_EDITOR)
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
 #endif
         public unsafe delegate int SqliteExecCallback(IntPtr ptr, int col_count, IntPtr pp1, IntPtr pp2);
