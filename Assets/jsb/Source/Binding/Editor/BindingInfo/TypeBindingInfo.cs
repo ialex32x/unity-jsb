@@ -823,42 +823,43 @@ namespace QuickJS.Binding
             }
 
             // 注册运算符
-            if (operators.Count > 0)
+            if (Native.JSApi.JS_ATOM_Operators.IsValid)
             {
-                //TODO: 目前运算符必须在同一个 TypeRegister 实例中注册
-                // proxyModuleRegister.MarkAsCritical();
-            }
-
-#if !JSB_NO_BIGNUM
-            foreach (var operatorBindingInfo in operators)
-            {
-                var dynamicMethod = new Binding.DynamicMethod(dynamicType, operatorBindingInfo.methodInfo);
-                var regName = operatorBindingInfo.jsName;
-                var parameters = operatorBindingInfo.methodInfo.GetParameters();
-                var declaringType = operatorBindingInfo.methodInfo.DeclaringType;
-
-                do
+                if (operators.Count > 0)
                 {
-                    if (parameters.Length == 2)
-                    {
-                        if (parameters[0].ParameterType != declaringType)
-                        {
-                            var leftType = parameters[0].ParameterType;
-                            cls.AddLeftOperator(regName, dynamicMethod, leftType);
-                            break;
-                        }
-                        else if (parameters[1].ParameterType != declaringType)
-                        {
-                            var rightType = parameters[1].ParameterType;
-                            cls.AddRightOperator(regName, dynamicMethod, rightType);
-                            break;
-                        }
-                    }
+                    //TODO: 目前运算符必须在同一个 TypeRegister 实例中注册
+                    // proxyModuleRegister.MarkAsCritical();
+                }
 
-                    cls.AddSelfOperator(regName, dynamicMethod);
-                } while (false);
+                foreach (var operatorBindingInfo in operators)
+                {
+                    var dynamicMethod = new Binding.DynamicMethod(dynamicType, operatorBindingInfo.methodInfo);
+                    var regName = operatorBindingInfo.jsName;
+                    var parameters = operatorBindingInfo.methodInfo.GetParameters();
+                    var declaringType = operatorBindingInfo.methodInfo.DeclaringType;
+
+                    do
+                    {
+                        if (parameters.Length == 2)
+                        {
+                            if (parameters[0].ParameterType != declaringType)
+                            {
+                                var leftType = parameters[0].ParameterType;
+                                cls.AddLeftOperator(regName, dynamicMethod, leftType);
+                                break;
+                            }
+                            else if (parameters[1].ParameterType != declaringType)
+                            {
+                                var rightType = parameters[1].ParameterType;
+                                cls.AddRightOperator(regName, dynamicMethod, rightType);
+                                break;
+                            }
+                        }
+
+                        cls.AddSelfOperator(regName, dynamicMethod);
+                    } while (false);
+                }
             }
-#endif
 
             return cls;
         }

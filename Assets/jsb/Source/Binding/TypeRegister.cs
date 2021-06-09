@@ -16,10 +16,8 @@ namespace QuickJS.Binding
         private AtomCache _atoms;
 
         private List<Type> _pendingTypes = new List<Type>();
-#if !JSB_NO_BIGNUM
         private List<OperatorDecl> _operatorDecls = new List<OperatorDecl>();
         private Dictionary<Type, int> _operatorDeclIndex = new Dictionary<Type, int>();
-#endif
 
         private List<ClassDecl> _pendingClasses = new List<ClassDecl>();
 
@@ -189,7 +187,6 @@ namespace QuickJS.Binding
             return _db.AddType(type, proto);
         }
 
-#if !JSB_NO_BIGNUM
         private void SubmitOperators()
         {
             // 提交运算符重载
@@ -276,8 +273,6 @@ namespace QuickJS.Binding
             }
         }
 
-#endif
-
         // 返回值已经过 DupValue
         public JSValue GetConstructor(Type type)
         {
@@ -313,9 +308,7 @@ namespace QuickJS.Binding
             if (_refCount == 0)
             {
                 _context.ReleaseTypeRegister(this);
-#if !JSB_NO_BIGNUM
                 SubmitOperators();
-#endif
                 _atoms.Clear();
                 var ctx = (JSContext)_context;
 

@@ -906,7 +906,11 @@ namespace QuickJS.Native
 
         public static readonly JSAtom JS_ATOM_Error = JSB_ATOM_Error();
 
-#if !JSB_NO_BIGNUM
+#if JSB_NO_BIGNUM || (UNITY_WSA && !UNITY_EDITOR)
+        public static void JS_AddIntrinsicOperators(JSContext ctx) {}
+        public static readonly JSAtom JS_ATOM_Operators;
+        public static readonly JSAtom JS_ATOM_Symbol_operatorSet;
+#else 
         [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern void JS_AddIntrinsicOperators(JSContext ctx);
 
@@ -920,8 +924,6 @@ namespace QuickJS.Native
 
         // only available CONFIG_BIGNUM
         public static readonly JSAtom JS_ATOM_Symbol_operatorSet = JSB_ATOM_Symbol_operatorSet();
-#else 
-        public static void JS_AddIntrinsicOperators(JSContext ctx) {}
 #endif
 
         [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
