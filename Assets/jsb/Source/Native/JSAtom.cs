@@ -5,7 +5,11 @@ namespace QuickJS.Native
     [StructLayout(LayoutKind.Sequential)]
     public struct JSAtom
     {
+        public static readonly JSAtom Null;
+        
         private int _value;
+
+        public bool IsValid => _value != 0;
 
         /// <inheritdoc/>
         public override int GetHashCode()

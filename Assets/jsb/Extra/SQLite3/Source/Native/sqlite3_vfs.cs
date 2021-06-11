@@ -4,19 +4,19 @@ using System.Runtime.InteropServices;
 
 namespace QuickJS.Extra.Sqlite.Native
 {
-#if UNITY_EDITOR_WIN || UNITY_STANDALONE_WIN || JSB_UNITYLESS
+#if UNITY_EDITOR_WIN || UNITY_STANDALONE_WIN || JSB_UNITYLESS || (UNITY_WSA && !UNITY_EDITOR)
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
 #endif
     public unsafe delegate int xOpenDelegate(sqlite3_vfs* vfs, IntPtr zName, sqlite3_file* file, int flags, ref int pOutFlags);
-#if UNITY_EDITOR_WIN || UNITY_STANDALONE_WIN || JSB_UNITYLESS
+#if UNITY_EDITOR_WIN || UNITY_STANDALONE_WIN || JSB_UNITYLESS || (UNITY_WSA && !UNITY_EDITOR)
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
 #endif
     public unsafe delegate int xDeleteDelegate(sqlite3_vfs* vfs, IntPtr zName, int syncDir);
-#if UNITY_EDITOR_WIN || UNITY_STANDALONE_WIN || JSB_UNITYLESS
+#if UNITY_EDITOR_WIN || UNITY_STANDALONE_WIN || JSB_UNITYLESS || (UNITY_WSA && !UNITY_EDITOR)
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
 #endif
     public unsafe delegate int xAccessDelegate(sqlite3_vfs* vfs, IntPtr zName, int flags, ref int pResOut);
-#if UNITY_EDITOR_WIN || UNITY_STANDALONE_WIN || JSB_UNITYLESS
+#if UNITY_EDITOR_WIN || UNITY_STANDALONE_WIN || JSB_UNITYLESS || (UNITY_WSA && !UNITY_EDITOR)
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
 #endif
     public unsafe delegate int xFullPathnameDelegate(sqlite3_vfs* vfs, IntPtr zName, int nOut, IntPtr zOut);

@@ -1,5 +1,4 @@
-﻿#if !JSB_NO_BIGNUM
-using System;
+﻿using System;
 using System.Collections.Generic;
 using QuickJS.Native;
 
@@ -119,4 +118,3 @@ namespace QuickJS.Binding
         }
     }
 }
-#endif
