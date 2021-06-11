@@ -11,6 +11,11 @@ declare function print(...args: any[]): void;
 declare function postMessage(data: any): void;
 
 /**
+ * [experimental]
+ */
+declare function jsx(type: string, attributes: any, content?: any): any;
+
+/**
  * jsb 模块为内部提供的工具支持
  */
 declare module "jsb" {

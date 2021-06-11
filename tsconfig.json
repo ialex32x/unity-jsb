@@ -24,6 +24,10 @@
         // "skipLibCheck": true,
         // "strictNullChecks": true,
         "allowJs": true,
+        "jsx": "react",
+        "jsxFactory": "jsx",
+        // "jsxFragmentFactory": "React.Fragment",
+        // "jsxImportSource": "react-jsb",
         "inlineSourceMap": false,
         "sourceMap": true
     },
@@ -31,8 +35,9 @@
     "include": [
         "Assets/jsb/Typings/**/*.ts",
         "Assets/Generated/**/*.ts",
-        "Scripts/types/**/*.ts", 
-        "Scripts/src/**/*.ts"
+        "Scripts/types/**/*.ts",
+        "Scripts/src/**/*.ts",
+        "Scripts/src/**/*.tsx"
     ],
     "exclude": [
         "Assets/Examples/Scripts/out/**/*"
