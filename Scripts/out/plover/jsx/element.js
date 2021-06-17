@@ -1,27 +1,24 @@
-import { Component, GameObject, MonoBehaviour, Transform } from "UnityEngine";
-import { Text } from "UnityEngine.UI";
-import { JSXWidgetBridge } from "./bridge";
-import { IViewModelWatcher, ViewModel } from "./vue";
-
-export interface Activator<T = JSXNode> {
-    new(): T;
-}
-
-let elementActivators: { [key: string]: Activator } = {};
-
-export abstract class JSXNode {
-    private _parent: JSXNode;
-
+"use strict";
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.JSXText = exports.JSXWidget = exports.JSXCompoundNode = exports.registerElement = exports.createElement = exports.element = exports.findUIComponent = exports.JSXNode = void 0;
+const UnityEngine_UI_1 = require("UnityEngine.UI");
+const vue_1 = require("./vue");
+let elementActivators = {};
+class JSXNode {
     get parent() { return this._parent; }
-
-    set parent(value: JSXNode) {
+    set parent(value) {
         if (this._parent != value) {
             this._parent = value;
             this.onParentSet();
         }
     }
-
-    get widget(): JSXWidget {
+    get widget() {
         let p = this._parent;
         while (p) {
             if (p instanceof JSXWidget) {
@@ -30,74 +27,58 @@ export abstract class JSXNode {
             p = p._parent;
         }
     }
-
-    protected abstract onParentSet();
-
-    abstract init(attributes: any, ...children: Array<JSXNode>);
-    abstract evaluate();
-    abstract destroy();
 }
-
-export function findUIComponent<T extends Component>(transform: Transform, name: string, type: { new(): T }): T {
+exports.JSXNode = JSXNode;
+function findUIComponent(transform, name, type) {
     let n = transform.childCount;
     for (let i = 0; i < n; i++) {
         let child = transform.GetChild(i);
-
         if (child.name == name) {
             let com = child.GetComponent(type);
             if (com) {
                 return com;
             }
         }
-
         let com = findUIComponent(child, name, type);
         if (com) {
             return com;
         }
     }
 }
-
-export function element(name: string) {
+exports.findUIComponent = findUIComponent;
+function element(name) {
     return function (target) {
         registerElement(name, target);
-    }
+    };
 }
-
-export function createElement(name: string, attributes: any, ...children: Array<JSXNode>): JSXNode {
+exports.element = element;
+function createElement(name, attributes, ...children) {
     let act = elementActivators[name];
-
     if (typeof act !== "undefined") {
         let element = new act();
         element.init(attributes, ...children);
         return element;
     }
 }
-
-export function registerElement(name: string, activator: Activator) {
+exports.createElement = createElement;
+function registerElement(name, activator) {
     elementActivators[name] = activator;
 }
-
-export abstract class JSXCompoundNode extends JSXNode {
-    private _children: Array<JSXNode>;
-
-    init(attributes: any, ...children: Array<JSXNode>) {
+exports.registerElement = registerElement;
+class JSXCompoundNode extends JSXNode {
+    init(attributes, ...children) {
         this._children = children;
-
         for (let i = 0; i < this._children.length; i++) {
             let child = this._children[i];
-
             child.parent = this;
         }
     }
-
     evaluate() {
         for (let i = 0; i < this._children.length; i++) {
             let child = this._children[i];
-
             child.evaluate();
         }
     }
-
     destroy() {
         for (let i = 0; i < this._children.length; i++) {
             let child = this._children[i];
@@ -105,62 +86,53 @@ export abstract class JSXCompoundNode extends JSXNode {
         }
     }
 }
-
+exports.JSXCompoundNode = JSXCompoundNode;
 // export interface IWidgetInstance {
 //     readonly gameObject: GameObject;
 //     readonly data: any;
 // }
-
-@element("widget")
-export class JSXWidget extends JSXCompoundNode {
-    private _instance: JSXWidgetBridge;
-
+let JSXWidget = class JSXWidget extends JSXCompoundNode {
     get instance() { return this._instance; }
-
     get data() { return this._instance.data; }
-
-    init(attributes: any, ...children: Array<JSXNode>) {
+    init(attributes, ...children) {
         this._instance = attributes.class;
         super.init(attributes, ...children);
     }
-
-    protected onParentSet() {
+    onParentSet() {
     }
-}
-
-@element("text")
-export class JSXText extends JSXNode {
-    private _name: string;
-    private _text: string;
-    private _component: Text;
-    private _watcher: IViewModelWatcher;
-
-    init(attributes: any, ...children: Array<JSXNode>) {
+};
+JSXWidget = __decorate([
+    element("widget")
+], JSXWidget);
+exports.JSXWidget = JSXWidget;
+let JSXText = class JSXText extends JSXNode {
+    init(attributes, ...children) {
         if (attributes) {
             this._name = attributes.name;
             this._text = attributes.text;
         }
     }
-
-    protected onParentSet() {
-        this._component = findUIComponent(this.widget.instance.transform, this._name, Text);
-        this._watcher = ViewModel.expression(this.widget.data, this._text, this.onValueChanged.bind(this));
+    onParentSet() {
+        this._component = findUIComponent(this.widget.instance.transform, this._name, UnityEngine_UI_1.Text);
+        this._watcher = vue_1.ViewModel.expression(this.widget.data, this._text, this.onValueChanged.bind(this));
     }
-
-    private onValueChanged(value) {
+    onValueChanged(value) {
         this._component.text = value;
     }
-
     evaluate() {
         if (this._watcher) {
             this._watcher.evaluate();
         }
     }
-
     destroy() {
         if (this._watcher) {
             this._watcher.teardown();
             this._watcher = null;
         }
     }
-}
+};
+JSXText = __decorate([
+    element("text")
+], JSXText);
+exports.JSXText = JSXText;
+//# sourceMappingURL=element.js.map

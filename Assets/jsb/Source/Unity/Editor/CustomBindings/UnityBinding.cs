@@ -96,6 +96,7 @@ namespace jsb.Editor
             bindingManager.AddExportedType(typeof(GameObject), true);
             bindingManager.AddExportedType(typeof(Camera), true);
             bindingManager.AddExportedType(typeof(Transform), true);
+            bindingManager.AddExportedType(typeof(RectTransform), true);
             bindingManager.AddExportedType(typeof(MonoBehaviour), true);
             bindingManager.AddExportedType(typeof(ScriptableObject), true);
             bindingManager.AddExportedType(typeof(Sprite), true);

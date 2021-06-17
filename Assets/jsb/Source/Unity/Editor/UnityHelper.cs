@@ -401,7 +401,7 @@ namespace QuickJS.Unity
             }
 
             normalizedPath = sourceFile;
-            if (!sourceFile.EndsWith(".ts"))
+            if (!sourceFile.EndsWith(".ts") && !sourceFile.EndsWith(".tsx"))
             {
                 // invalid 
                 modulePath = null;

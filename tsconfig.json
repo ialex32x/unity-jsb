@@ -25,7 +25,7 @@
         // "strictNullChecks": true,
         "allowJs": true,
         "jsx": "react",
-        "jsxFactory": "jsx",
+        "jsxFactory": "JSX.createElement",
         // "jsxFragmentFactory": "React.Fragment",
         // "jsxImportSource": "react-jsb",
         "inlineSourceMap": false,

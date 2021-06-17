@@ -2054,6 +2054,54 @@ declare module "UnityEngine" {
     }
 }
 declare module "UnityEngine" {
+    import * as jsb from "jsb";
+    import { Array, Enum } from "System";
+    /** Position, size, anchor and pivot information for a rectangle.
+     */
+    class RectTransform extends Transform {
+        constructor()
+        ForceUpdateRectTransforms(): void
+        /** Get the corners of the calculated rectangle in the local space of its Transform.
+         * @param fourCornersArray The array that corners are filled into.
+         */
+        GetLocalCorners(fourCornersArray: Array<Vector3>): void
+        /** Get the corners of the calculated rectangle in world space.
+         * @param fourCornersArray The array that corners are filled into.
+         */
+        GetWorldCorners(fourCornersArray: Array<Vector3>): void
+        SetInsetAndSizeFromParentEdge(edge: any, inset: number, size: number): void
+        SetSizeWithCurrentAnchors(axis: any, size: number): void
+        /** The calculated rectangle in the local space of the Transform.
+         */
+        readonly rect: Rect
+        /** The normalized position in the parent RectTransform that the lower left corner is anchored to.
+         */
+        anchorMin: Vector2
+        /** The normalized position in the parent RectTransform that the upper right corner is anchored to.
+         */
+        anchorMax: Vector2
+        /** The position of the pivot of this RectTransform relative to the anchor reference point.
+         */
+        anchoredPosition: Vector2
+        /** The size of this RectTransform relative to the distances between the anchors.
+         */
+        sizeDelta: Vector2
+        /** The normalized position in this RectTransform that it rotates around.
+         */
+        pivot: Vector2
+        /** The 3D position of the pivot of this RectTransform relative to the anchor reference point.
+         */
+        anchoredPosition3D: Vector3
+        /** The offset of the lower left corner of the rectangle relative to the lower left anchor.
+         */
+        offsetMin: Vector2
+        /** The offset of the upper right corner of the rectangle relative to the upper right anchor.
+         */
+        offsetMax: Vector2
+        static reapplyDrivenProperties(op: "add" | "remove", fn: (driven: RectTransform) => void): void
+    }
+}
+declare module "UnityEngine" {
     import { Object as Object1 } from "System";
     import { IEnumerator } from "System.Collections";
     /** MonoBehaviour is the base class from which every Unity script derives.
@@ -24536,7 +24584,7 @@ declare module "UnityEngine.UI" {
 }
 declare module "UnityEngine.UI" {
     import { IEventSystemHandler, IPointerEnterHandler, ISelectHandler, IPointerExitHandler, IDeselectHandler, IPointerDownHandler, IPointerUpHandler, IMoveHandler, ISubmitHandler, IPointerClickHandler, ICancelHandler, PointerEventData, BaseEventData } from "UnityEngine.EventSystems";
-    import { Transform, Sprite } from "UnityEngine";
+    import { RectTransform, Sprite } from "UnityEngine";
     import { List } from "System.Collections.Generic";
     import { Object } from "System";
     /** A standard dropdown that presents a list of options when clicked, of which one can be chosen.
@@ -24567,7 +24615,7 @@ declare module "UnityEngine.UI" {
         /*protected*/ constructor()
         /** The Rect Transform of the template for the dropdown list.
          */
-        template: any
+        template: RectTransform
         /** The Text component to hold the text of the currently selected option.
          */
         captionText: Text
@@ -24696,7 +24744,7 @@ declare module "UnityEngine.UI" {
 }
 declare module "UnityEngine.UI" {
     import { UIBehaviour } from "UnityEngine.EventSystems";
-    import { Material, Color, Transform, Behaviour, Component, Texture, Vector2, Camera, Rect } from "UnityEngine";
+    import { Material, Color, RectTransform, Behaviour, Component, Texture, Vector2, Camera, Rect } from "UnityEngine";
     /** Base class for all visual UI Component.
      */
     abstract class Graphic extends UIBehaviour implements ICanvasElement {
@@ -24771,7 +24819,7 @@ declare module "UnityEngine.UI" {
         readonly depth: number
         /** The RectTransform component used by the Graphic.
          */
-        readonly rectTransform: any
+        readonly rectTransform: RectTransform
         /** A reference to the Canvas this Graphic is rendering to.
          */
         readonly canvas: any
@@ -25280,7 +25328,7 @@ declare module "UnityEngine.UI" {
 }
 declare module "UnityEngine.UI" {
     import { UIBehaviour } from "UnityEngine.EventSystems";
-    import { Transform, Vector2, Camera, Material } from "UnityEngine";
+    import { RectTransform, Vector2, Camera, Material } from "UnityEngine";
     /** A component for masking children elements.
      */
     class Mask extends UIBehaviour implements IMaterialModifier {
@@ -25294,7 +25342,7 @@ declare module "UnityEngine.UI" {
         /*protected*/ constructor()
         /** Cached RectTransform.
          */
-        readonly rectTransform: any
+        readonly rectTransform: RectTransform
         /** Show the graphic that is associated with the Mask render area.
          */
         showMaskGraphic: boolean
@@ -25412,7 +25460,7 @@ declare module "UnityEngine.UI" {
 }
 declare module "UnityEngine.UI" {
     import { UIBehaviour } from "UnityEngine.EventSystems";
-    import { Rect, Transform, Vector2, Camera } from "UnityEngine";
+    import { Rect, RectTransform, Vector2, Camera } from "UnityEngine";
     /** A 2D rectangular mask that allows for clipping / masking of areas outside the mask.
      */
     class RectMask2D extends UIBehaviour implements IClipper {
@@ -25432,12 +25480,12 @@ declare module "UnityEngine.UI" {
         readonly canvasRect: Rect
         /** Get the RectTransform for the mask.
          */
-        readonly rectTransform: any
+        readonly rectTransform: RectTransform
     }
 }
 declare module "UnityEngine.UI" {
     import { IEventSystemHandler, IPointerEnterHandler, ISelectHandler, IPointerExitHandler, IDeselectHandler, IPointerDownHandler, IPointerUpHandler, IMoveHandler, IBeginDragHandler, IInitializePotentialDragHandler, IDragHandler, PointerEventData, AxisEventData } from "UnityEngine.EventSystems";
-    import { Transform } from "UnityEngine";
+    import { RectTransform } from "UnityEngine";
     /** A standard scrollbar with a variable sized handle that can be dragged between 0 and 1.
      */
     class Scrollbar extends Selectable implements IEventSystemHandler, IPointerEnterHandler, ISelectHandler, IPointerExitHandler, IDeselectHandler, IPointerDownHandler, ICanvasElement, IPointerUpHandler, IMoveHandler, IBeginDragHandler, IInitializePotentialDragHandler, IDragHandler {
@@ -25476,7 +25524,7 @@ declare module "UnityEngine.UI" {
         /*protected*/ constructor()
         /** The RectTransform to use for the handle.
          */
-        handleRect: any
+        handleRect: RectTransform
         /** The direction of the scrollbar from minimum to maximum value.
          */
         direction: Scrollbar.Direction
@@ -25522,7 +25570,7 @@ declare module "UnityEngine.Events" {
 }
 declare module "UnityEngine.UI" {
     import { UIBehaviour, IEndDragHandler, IScrollHandler, IEventSystemHandler, IBeginDragHandler, IInitializePotentialDragHandler, IDragHandler, PointerEventData } from "UnityEngine.EventSystems";
-    import { Transform, Vector2 } from "UnityEngine";
+    import { RectTransform, Vector2 } from "UnityEngine";
     /** A component for making a child RectTransform scroll.
      */
     class ScrollRect extends UIBehaviour implements IEndDragHandler, IScrollHandler, IEventSystemHandler, ICanvasElement, ILayoutElement, ILayoutController, IBeginDragHandler, IInitializePotentialDragHandler, IDragHandler {
@@ -25557,7 +25605,7 @@ declare module "UnityEngine.UI" {
         /*protected*/ constructor()
         /** The content that can be scrolled. It should be a child of the GameObject with ScrollRect on it.
          */
-        content: any
+        content: RectTransform
         /** Should horizontal scrolling be enabled?
          */
         horizontal: boolean
@@ -25581,7 +25629,7 @@ declare module "UnityEngine.UI" {
         scrollSensitivity: number
         /** Reference to the viewport RectTransform that is the parent of the content RectTransform.
          */
-        viewport: any
+        viewport: RectTransform
         /** Optional Scrollbar object linked to the horizontal scrolling of the ScrollRect.
          */
         horizontalScrollbar: Scrollbar
@@ -25688,7 +25736,7 @@ declare module "UnityEngine.UI" {
 }
 declare module "UnityEngine.UI" {
     import { IEventSystemHandler, IPointerEnterHandler, ISelectHandler, IPointerExitHandler, IDeselectHandler, IPointerDownHandler, IPointerUpHandler, IMoveHandler, IInitializePotentialDragHandler, IDragHandler, PointerEventData, AxisEventData } from "UnityEngine.EventSystems";
-    import { Transform } from "UnityEngine";
+    import { RectTransform } from "UnityEngine";
     /** A standard slider that can be moved between a minimum and maximum value.
      */
     class Slider extends Selectable implements IEventSystemHandler, IPointerEnterHandler, ISelectHandler, IPointerExitHandler, IDeselectHandler, IPointerDownHandler, ICanvasElement, IPointerUpHandler, IMoveHandler, IInitializePotentialDragHandler, IDragHandler {
@@ -25719,10 +25767,10 @@ declare module "UnityEngine.UI" {
         /*protected*/ constructor()
         /** Optional RectTransform to use as fill for the slider.
          */
-        fillRect: any
+        fillRect: RectTransform
         /** Optional RectTransform to use as a handle for the slider.
          */
-        handleRect: any
+        handleRect: RectTransform
         /** The direction of the slider, from minimum to maximum value.
          */
         direction: Slider.Direction
@@ -25999,7 +26047,7 @@ declare module "UnityEngine.UI" {
     }
 }
 declare module "UnityEngine.UI" {
-    import { GameObject, Transform, Rect } from "UnityEngine";
+    import { GameObject, RectTransform, Rect } from "UnityEngine";
     interface IClippable {
         RecalculateClipping(): void
         /** Clip and cull the IClippable given the clipRect.
@@ -26015,7 +26063,7 @@ declare module "UnityEngine.UI" {
         readonly gameObject: GameObject
         /** RectTransform of the clippable.
          */
-        readonly rectTransform: any
+        readonly rectTransform: RectTransform
     }
 }
 declare module "UnityEngine.UI" {
@@ -26357,7 +26405,7 @@ declare module "UnityEngine.UI" {
 }
 declare module "UnityEngine.UI" {
     import { Object } from "System";
-    import { Transform } from "UnityEngine";
+    import { Transform, RectTransform } from "UnityEngine";
     /** Wrapper class for managing layout rebuilding of CanvasElement.
      */
     class LayoutRebuilder extends Object implements ICanvasElement {
@@ -26374,11 +26422,11 @@ declare module "UnityEngine.UI" {
         /** Forces an immediate rebuild of the layout element and child layout elements affected by the calculations.
          * @param layoutRoot The layout element to perform the layout rebuild on.
          */
-        static ForceRebuildLayoutImmediate(layoutRoot: any): void
+        static ForceRebuildLayoutImmediate(layoutRoot: RectTransform): void
         /** Mark the given RectTransform as needing it's layout to be recalculated during the next layout pass.
          * @param rect Rect to rebuild.
          */
-        static MarkLayoutForRebuild(rect: any): void
+        static MarkLayoutForRebuild(rect: RectTransform): void
         /** See ICanvasElement.
          */
         readonly transform: Transform
@@ -26387,7 +26435,7 @@ declare module "UnityEngine.UI" {
 declare module "UnityEngine.UI" {
     import * as jsb from "jsb";
     import { Object, Array } from "System";
-    import { Transform } from "UnityEngine";
+    import { RectTransform } from "UnityEngine";
     /** Utility functions for querying layout elements for their minimum, preferred, and flexible sizes.
      */
     abstract class LayoutUtility extends Object {
@@ -26395,43 +26443,43 @@ declare module "UnityEngine.UI" {
          * @param rect The RectTransform of the layout element to query.
          * @param axis The axis to query. This can be 0 or 1.
          */
-        static GetMinSize(rect: any, axis: number): number
+        static GetMinSize(rect: RectTransform, axis: number): number
         /** Returns the preferred size of the layout element.
          * @param rect The RectTransform of the layout element to query.
          * @param axis The axis to query. This can be 0 or 1.
          */
-        static GetPreferredSize(rect: any, axis: number): number
+        static GetPreferredSize(rect: RectTransform, axis: number): number
         /** Returns the flexible size of the layout element.
          * @param rect The RectTransform of the layout element to query.
          * @param axis The axis to query. This can be 0 or 1.
          */
-        static GetFlexibleSize(rect: any, axis: number): number
+        static GetFlexibleSize(rect: RectTransform, axis: number): number
         /** Returns the minimum width of the layout element.
          * @param rect The RectTransform of the layout element to query.
          */
-        static GetMinWidth(rect: any): number
+        static GetMinWidth(rect: RectTransform): number
         /** Returns the preferred width of the layout element.
          * @param rect The RectTransform of the layout element to query.
          */
-        static GetPreferredWidth(rect: any): number
+        static GetPreferredWidth(rect: RectTransform): number
         /** Returns the flexible width of the layout element.
          * @param rect The RectTransform of the layout element to query.
          */
-        static GetFlexibleWidth(rect: any): number
+        static GetFlexibleWidth(rect: RectTransform): number
         /** Returns the minimum height of the layout element.
          * @param rect The RectTransform of the layout element to query.
          */
-        static GetMinHeight(rect: any): number
+        static GetMinHeight(rect: RectTransform): number
         /** Returns the preferred height of the layout element.
          * @param rect The RectTransform of the layout element to query.
          */
-        static GetPreferredHeight(rect: any): number
+        static GetPreferredHeight(rect: RectTransform): number
         /** Returns the flexible height of the layout element.
          * @param rect The RectTransform of the layout element to query.
          */
-        static GetFlexibleHeight(rect: any): number
-        static GetLayoutProperty(rect: any, property: (arg: ILayoutElement) => number, defaultValue: number, source: jsb.Out<ILayoutElement>): number
-        static GetLayoutProperty(rect: any, property: (arg: ILayoutElement) => number, defaultValue: number): number
+        static GetFlexibleHeight(rect: RectTransform): number
+        static GetLayoutProperty(rect: RectTransform, property: (arg: ILayoutElement) => number, defaultValue: number, source: jsb.Out<ILayoutElement>): number
+        static GetLayoutProperty(rect: RectTransform, property: (arg: ILayoutElement) => number, defaultValue: number): number
     }
 }
 declare module "UnityEngine.UI" {
