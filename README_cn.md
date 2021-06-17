@@ -358,6 +358,42 @@ npm install
 ### Example for dotnetcore
 使用 VSCode 打开此项目根目录, 在 ```Run And Debug``` 页签中选择 ```dotnetcore example``` 直接启动即可运行示例.
 
+# 其他尝试
+## JSX
+
+```tsx
+export interface TestData {
+    name: string,
+    tick: number;
+}
+
+@ScriptType()
+export class MyWidgetTest extends JSXWidgetBridge {
+    private _data: TestData;
+    private _timer: any;
+
+    get data() { return this._data; }
+
+    Awake() {
+        this._data = ViewModel.create({ name: "Unity", tick: 0 });
+        this._widget =
+            <widget class={this}>
+                <text name="label" text="Hello {{this.name}} {{this.tick}}" />
+            </widget>
+
+        this._timer = setInterval(() => {
+            this._data.tick++;
+        }, 1000);
+        this._data.tick++;
+    }
+
+    OnDestroy() {
+        super.OnDestroy();
+        clearInterval(this._timer);
+    }
+}
+```
+
 # 多线程
 > 单个运行时不支持多线程使用. 
 > JS 环境下通过 Worker 支持多线程脚本运行.
@@ -385,4 +421,4 @@ npm install
 * [zlib](https://zlib.net/)
 * [sqlite3](https://sqlite.org/index.html)
 * [quickjspp](https://github.com/c-smile/quickjspp)
-
+* [Vue.js](https://github.com/vuejs/vue)
