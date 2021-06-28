@@ -54101,7 +54101,7 @@ static JSValue JSB_ThrowError2(JSContext *ctx, JSErrorEnum error_num,
     return ret;
 }
 
-JSValue JSB_ThrowError(JSContext *ctx, const char *buf, size_t buf_len)
+JS_EXPORT JSValue JSB_ThrowError(JSContext *ctx, const char *buf, size_t buf_len)
 {
     JSRuntime *rt = ctx->rt;
     JSStackFrame *sf;

@@ -13,6 +13,10 @@ make
 #include "quickjs.h"
 #endif
 
+#ifndef JS_EXPORT
+#define JS_EXPORT
+#endif
+
 #ifndef EMSCRIPTEN
 #ifndef CONFIG_ATOMICS
 #define CONFIG_ATOMICS
@@ -36,92 +40,93 @@ enum
 {
     __JS_ATOM_NULL = JS_ATOM_NULL,
 #define DEF(name, str) JS_ATOM_##name,
+#define SSR
 #include "quickjs-atom.h"
 #undef DEF
     JS_ATOM_END,
 };
 
 #define DEF(name, str) \
-    JSAtom JSB_ATOM_##name() { return JS_ATOM_##name; }
+    JS_EXPORT JSAtom JSB_ATOM_##name() { return JS_ATOM_##name; }
 #include "quickjs-atom.h"
 #undef DEF
 
 #endif // !UNITY_WEBGL
 
-JSValue JSB_NewEmptyString(JSContext *ctx)
+JS_EXPORT JSValue JSB_NewEmptyString(JSContext *ctx)
 {
     return JS_NewStringLen(ctx, "", 0);
 }
 
-JSValue JSB_NewInt64(JSContext *ctx, int64_t val)
+JS_EXPORT JSValue JSB_NewInt64(JSContext *ctx, int64_t val)
 {
     return JS_NewInt64(ctx, val);
 }
 
-int JSB_ToUint32(JSContext *ctx, uint32_t *pres, JSValueConst val)
+JS_EXPORT int JSB_ToUint32(JSContext *ctx, uint32_t *pres, JSValueConst val)
 {
     return JS_ToInt32(ctx, (int32_t *)pres, val);
 }
 
-uint32_t JSB_ToUint32z(JSContext *ctx, JSValueConst val)
+JS_EXPORT uint32_t JSB_ToUint32z(JSContext *ctx, JSValueConst val)
 {
     uint32_t pres = 0;
     JS_ToInt32(ctx, (int32_t *)&pres, val);
     return pres;
 }
 
-JSValue JSB_NewFloat64(JSContext *ctx, double d)
+JS_EXPORT JSValue JSB_NewFloat64(JSContext *ctx, double d)
 {
     return JS_NewFloat64(ctx, d);
 }
 
-JSValue JSB_ThrowTypeError(JSContext *ctx, const char *msg)
+JS_EXPORT JSValue JSB_ThrowTypeError(JSContext *ctx, const char *msg)
 {
     return JS_ThrowTypeError(ctx, "%s", msg);
 }
 
-JSValue JSB_ThrowInternalError(JSContext *ctx, const char *msg)
+JS_EXPORT JSValue JSB_ThrowInternalError(JSContext *ctx, const char *msg)
 {
     return JS_ThrowInternalError(ctx, "%s", msg);
 }
 
-JSValue JSB_ThrowRangeError(JSContext *ctx, const char *msg)
+JS_EXPORT JSValue JSB_ThrowRangeError(JSContext *ctx, const char *msg)
 {
     return JS_ThrowRangeError(ctx, "%s", msg);
 }
 
-JSValue JSB_ThrowReferenceError(JSContext *ctx, const char *msg)
+JS_EXPORT JSValue JSB_ThrowReferenceError(JSContext *ctx, const char *msg)
 {
     return JS_ThrowReferenceError(ctx, "%s", msg);
 }
 
-void JSB_FreeValue(JSContext *ctx, JSValue v)
+JS_EXPORT void JSB_FreeValue(JSContext *ctx, JSValue v)
 {
     JS_FreeValue(ctx, v);
 }
 
-void JSB_FreeValueRT(JSRuntime *rt, JSValue v)
+JS_EXPORT void JSB_FreeValueRT(JSRuntime *rt, JSValue v)
 {
     JS_FreeValueRT(rt, v);
 }
 
-JSValue JSB_DupValue(JSContext *ctx, JSValueConst v)
+JS_EXPORT JSValue JSB_DupValue(JSContext *ctx, JSValueConst v)
 {
     return JS_DupValue(ctx, v);
 }
 
-JSValue JSB_DupValueRT(JSRuntime *rt, JSValueConst v)
+JS_EXPORT JSValue JSB_DupValueRT(JSRuntime *rt, JSValueConst v)
 {
     return JS_DupValueRT(rt, v);
 }
 
-JSValue JSB_Eval(JSContext *ctx, const char *input, int input_len,
+JS_EXPORT JSValue JSB_Eval(JSContext *ctx, const char *input, int input_len,
                  const char *filename, int eval_flags)
 {
     return JS_Eval(ctx, input, input_len, filename, eval_flags);
 }
 
-JSValue JSB_NewCFunction(JSContext *ctx, JSCFunction *func, JSAtom atom, int length, JSCFunctionEnum cproto, int magic)
+JS_EXPORT JSValue JSB_NewCFunction(JSContext *ctx, JSCFunction *func, JSAtom atom, int length, JSCFunctionEnum cproto, int magic)
 {
     const char *name = JS_AtomToCString(ctx, atom);
     if (!name)
@@ -133,7 +138,7 @@ JSValue JSB_NewCFunction(JSContext *ctx, JSCFunction *func, JSAtom atom, int len
     return funcVal;
 }
 
-JSValue JSB_NewCFunctionMagic(JSContext *ctx, JSCFunctionMagic *func, JSAtom atom, int length, JSCFunctionEnum cproto, int magic)
+JS_EXPORT JSValue JSB_NewCFunctionMagic(JSContext *ctx, JSCFunctionMagic *func, JSAtom atom, int length, JSCFunctionEnum cproto, int magic)
 {
     const char *name = JS_AtomToCString(ctx, atom);
     if (!name)
@@ -145,7 +150,7 @@ JSValue JSB_NewCFunctionMagic(JSContext *ctx, JSCFunctionMagic *func, JSAtom ato
     return funcVal;
 }
 
-JSValue JSB_NewPropertyObject(JSContext *ctx, JSValueConst this_obj, JSAtom atom, int flags)
+JS_EXPORT JSValue JSB_NewPropertyObject(JSContext *ctx, JSValueConst this_obj, JSAtom atom, int flags)
 {
     JSValue p = JS_GetProperty(ctx, this_obj, atom);
     if (JS_IsObject(p))
@@ -159,7 +164,7 @@ JSValue JSB_NewPropertyObject(JSContext *ctx, JSValueConst this_obj, JSAtom atom
     return p;
 }
 
-JSValue JSB_NewPropertyObjectStr(JSContext *ctx, JSValueConst this_obj, const char *name, int flags)
+JS_EXPORT JSValue JSB_NewPropertyObjectStr(JSContext *ctx, JSValueConst this_obj, const char *name, int flags)
 {
     JSValue p = JS_GetPropertyStr(ctx, this_obj, name);
     if (JS_IsObject(p))
@@ -173,7 +178,7 @@ JSValue JSB_NewPropertyObjectStr(JSContext *ctx, JSValueConst this_obj, const ch
     return p;
 }
 
-JSClassID JSB_NewClass(JSRuntime *rt, JSClassID class_id, const char *class_name, JSClassFinalizer *finalizer)
+JS_EXPORT JSClassID JSB_NewClass(JSRuntime *rt, JSClassID class_id, const char *class_name, JSClassFinalizer *finalizer)
 {
     if (JS_IsRegisteredClass(rt, class_id))
     {
@@ -196,12 +201,12 @@ static JSClassID js_class_id_begin = 0;
 static JSClassID js_bridge_class_id = 0;
 
 // quickjs 内置 class id 之后的第一个可用 id
-JSClassID JSB_GetClassID()
+JS_EXPORT JSClassID JSB_GetClassID()
 {
     return js_class_id_begin;
 }
 
-JSClassID JSB_GetBridgeClassID()
+JS_EXPORT JSClassID JSB_GetBridgeClassID()
 {
     return js_bridge_class_id;
 }
@@ -226,7 +231,7 @@ typedef struct JSPayload
 } JSPayload;
 
 // added: v1
-JS_BOOL jsb_set_payload(JSContext *ctx, JSValue obj, int32_t type_id, int32_t value, int32_t size)
+JS_EXPORT JS_BOOL jsb_set_payload(JSContext *ctx, JSValue obj, int32_t type_id, int32_t value, int32_t size)
 {
     JSPayload *sv = (JSPayload *)js_mallocz(ctx, sizeof(JSPayloadHeader) + size);
     sv->header.type_id = type_id;
@@ -235,7 +240,7 @@ JS_BOOL jsb_set_payload(JSContext *ctx, JSValue obj, int32_t type_id, int32_t va
     return TRUE;
 }
 
-JSValue jsb_construct_bridge_object(JSContext *ctx, JSValue proto, int32_t object_id)
+JS_EXPORT JSValue jsb_construct_bridge_object(JSContext *ctx, JSValue proto, int32_t object_id)
 {
     JSValue obj = JS_CallConstructor(ctx, proto, 0, NULL);
     if (!JS_IsException(obj))
@@ -249,7 +254,7 @@ JSValue jsb_construct_bridge_object(JSContext *ctx, JSValue proto, int32_t objec
     return obj;
 }
 
-JSValue jsb_new_bridge_object(JSContext *ctx, JSValue proto, int32_t object_id/*, int32_t type_id = JS_BO_OBJECT */)
+JS_EXPORT JSValue jsb_new_bridge_object(JSContext *ctx, JSValue proto, int32_t object_id/*, int32_t type_id = JS_BO_OBJECT */)
 {
     JSValue obj = JS_NewObjectProtoClass(ctx, proto, js_bridge_class_id);
     if (!JS_IsException(obj))
@@ -264,7 +269,7 @@ JSValue jsb_new_bridge_object(JSContext *ctx, JSValue proto, int32_t object_id/*
 }
 
 // for constructor new_target
-JSValue JSB_NewBridgeClassObject(JSContext *ctx, JSValue new_target, int32_t object_id/*, int32_t type_id = JS_BO_OBJECT */)
+JS_EXPORT JSValue JSB_NewBridgeClassObject(JSContext *ctx, JSValue new_target, int32_t object_id/*, int32_t type_id = JS_BO_OBJECT */)
 {
     JSValue proto = JS_GetProperty(ctx, new_target, JS_ATOM_prototype);
     if (!JS_IsException(proto))
@@ -277,7 +282,7 @@ JSValue JSB_NewBridgeClassObject(JSContext *ctx, JSValue new_target, int32_t obj
     return proto;
 }
 
-JSValue jsb_new_bridge_value(JSContext *ctx, JSValue proto, int32_t size)
+JS_EXPORT JSValue jsb_new_bridge_value(JSContext *ctx, JSValue proto, int32_t size)
 {
     JSValue obj = JS_NewObjectProtoClass(ctx, proto, js_bridge_class_id);
     if (!JS_IsException(obj))
@@ -291,7 +296,7 @@ JSValue jsb_new_bridge_value(JSContext *ctx, JSValue proto, int32_t size)
     return obj;
 }
 
-JSValue JSB_NewBridgeClassValue(JSContext *ctx, JSValue new_target, int32_t size)
+JS_EXPORT JSValue JSB_NewBridgeClassValue(JSContext *ctx, JSValue new_target, int32_t size)
 {
     JSValue proto = JS_GetProperty(ctx, new_target, JS_ATOM_prototype);
     if (!JS_IsException(proto))
@@ -305,7 +310,7 @@ JSValue JSB_NewBridgeClassValue(JSContext *ctx, JSValue new_target, int32_t size
 }
 
 // 释放数据, 返回头信息副本
-JSPayloadHeader JSB_FreePayload(JSContext *ctx, JSValue val)
+JS_EXPORT JSPayloadHeader JSB_FreePayload(JSContext *ctx, JSValue val)
 {
     void *sv = JS_GetOpaque(val, js_bridge_class_id);
     if (sv)
@@ -318,7 +323,7 @@ JSPayloadHeader JSB_FreePayload(JSContext *ctx, JSValue val)
     return _null_payload;
 }
 
-JSPayloadHeader JSB_FreePayloadRT(JSRuntime *rt, JSValue val)
+JS_EXPORT JSPayloadHeader JSB_FreePayloadRT(JSRuntime *rt, JSValue val)
 {
     void *sv = JS_GetOpaque(val, js_bridge_class_id);
     if (sv)
@@ -331,7 +336,7 @@ JSPayloadHeader JSB_FreePayloadRT(JSRuntime *rt, JSValue val)
     return _null_payload;
 }
 
-JSPayloadHeader jsb_get_payload_header(JSValue val)
+JS_EXPORT JSPayloadHeader jsb_get_payload_header(JSValue val)
 {
     JSPayloadHeader *sv = JS_GetOpaque(val, js_bridge_class_id);
     if (sv)
@@ -341,7 +346,7 @@ JSPayloadHeader jsb_get_payload_header(JSValue val)
     return _null_payload;
 }
 
-JSPayload *jsb_get_payload(JSValue val)
+JS_EXPORT JSPayload *jsb_get_payload(JSValue val)
 {
     JSPayload *sv = JS_GetOpaque(val, js_bridge_class_id);
     if (sv)
@@ -351,7 +356,7 @@ JSPayload *jsb_get_payload(JSValue val)
     return 0;
 }
 
-JS_BOOL jsb_get_floats(JSValue val, int n, float *v0)
+JS_EXPORT JS_BOOL jsb_get_floats(JSValue val, int n, float *v0)
 {
     JSPayload *sv = JS_GetOpaque(val, js_bridge_class_id);
     if (sv && sv->header.type_id == JS_BO_VALUE && sv->header.value == sizeof(float) * n)
@@ -366,7 +371,7 @@ JS_BOOL jsb_get_floats(JSValue val, int n, float *v0)
     return FALSE;
 }
 
-JS_BOOL jsb_set_floats(JSValue val, int n, float *v0)
+JS_EXPORT JS_BOOL jsb_set_floats(JSValue val, int n, float *v0)
 {
     JSPayload *sv = JS_GetOpaque(val, js_bridge_class_id);
     if (sv && sv->header.type_id == JS_BO_VALUE && sv->header.value == sizeof(float) * n)
@@ -381,7 +386,7 @@ JS_BOOL jsb_set_floats(JSValue val, int n, float *v0)
     return FALSE;
 }
 
-JS_BOOL jsb_get_float_2(JSValue val, float *v0, float *v1)
+JS_EXPORT JS_BOOL jsb_get_float_2(JSValue val, float *v0, float *v1)
 {
     JSPayload *sv = JS_GetOpaque(val, js_bridge_class_id);
     if (sv && sv->header.type_id == JS_BO_VALUE && sv->header.value == sizeof(float) * 2)
@@ -394,7 +399,7 @@ JS_BOOL jsb_get_float_2(JSValue val, float *v0, float *v1)
     return FALSE;
 }
 
-JS_BOOL jsb_set_float_2(JSValue val, float v0, float v1)
+JS_EXPORT JS_BOOL jsb_set_float_2(JSValue val, float v0, float v1)
 {
     JSPayload *sv = JS_GetOpaque(val, js_bridge_class_id);
     if (sv && sv->header.type_id == JS_BO_VALUE && sv->header.value == sizeof(float) * 2)
@@ -407,7 +412,7 @@ JS_BOOL jsb_set_float_2(JSValue val, float v0, float v1)
     return FALSE;
 }
 
-JS_BOOL jsb_get_float_3(JSValue val, float *v0, float *v1, float *v2)
+JS_EXPORT JS_BOOL jsb_get_float_3(JSValue val, float *v0, float *v1, float *v2)
 {
     JSPayload *sv = JS_GetOpaque(val, js_bridge_class_id);
     if (sv && sv->header.type_id == JS_BO_VALUE && sv->header.value == sizeof(float) * 3)
@@ -421,7 +426,7 @@ JS_BOOL jsb_get_float_3(JSValue val, float *v0, float *v1, float *v2)
     return FALSE;
 }
 
-JS_BOOL jsb_set_float_3(JSValue val, float v0, float v1, float v2)
+JS_EXPORT JS_BOOL jsb_set_float_3(JSValue val, float v0, float v1, float v2)
 {
     JSPayload *sv = JS_GetOpaque(val, js_bridge_class_id);
     if (sv && sv->header.type_id == JS_BO_VALUE && sv->header.value == sizeof(float) * 3)
@@ -435,7 +440,7 @@ JS_BOOL jsb_set_float_3(JSValue val, float v0, float v1, float v2)
     return FALSE;
 }
 
-JS_BOOL jsb_get_float_4(JSValue val, float *v0, float *v1, float *v2, float *v3)
+JS_EXPORT JS_BOOL jsb_get_float_4(JSValue val, float *v0, float *v1, float *v2, float *v3)
 {
     JSPayload *sv = JS_GetOpaque(val, js_bridge_class_id);
     if (sv && sv->header.type_id == JS_BO_VALUE && sv->header.value == sizeof(float) * 4)
@@ -450,7 +455,7 @@ JS_BOOL jsb_get_float_4(JSValue val, float *v0, float *v1, float *v2, float *v3)
     return FALSE;
 }
 
-JS_BOOL jsb_set_float_4(JSValue val, float v0, float v1, float v2, float v3)
+JS_EXPORT JS_BOOL jsb_set_float_4(JSValue val, float v0, float v1, float v2, float v3)
 {
     JSPayload *sv = JS_GetOpaque(val, js_bridge_class_id);
     if (sv && sv->header.type_id == JS_BO_VALUE && sv->header.value == sizeof(float) * 4)
@@ -465,7 +470,7 @@ JS_BOOL jsb_set_float_4(JSValue val, float v0, float v1, float v2, float v3)
     return FALSE;
 }
 
-JS_BOOL jsb_get_ints(JSValue val, int n, int *v0)
+JS_EXPORT JS_BOOL jsb_get_ints(JSValue val, int n, int *v0)
 {
     JSPayload *sv = JS_GetOpaque(val, js_bridge_class_id);
     if (sv && sv->header.type_id == JS_BO_VALUE && sv->header.value == sizeof(int) * n)
@@ -480,7 +485,7 @@ JS_BOOL jsb_get_ints(JSValue val, int n, int *v0)
     return FALSE;
 }
 
-JS_BOOL jsb_set_ints(JSValue val, int n, int *v0)
+JS_EXPORT JS_BOOL jsb_set_ints(JSValue val, int n, int *v0)
 {
     JSPayload *sv = JS_GetOpaque(val, js_bridge_class_id);
     if (sv && sv->header.type_id == JS_BO_VALUE && sv->header.value == sizeof(int) * n)
@@ -495,7 +500,7 @@ JS_BOOL jsb_set_ints(JSValue val, int n, int *v0)
     return FALSE;
 }
 
-JS_BOOL jsb_get_int_1(JSValue val, int *v0)
+JS_EXPORT JS_BOOL jsb_get_int_1(JSValue val, int *v0)
 {
     JSPayload *sv = JS_GetOpaque(val, js_bridge_class_id);
     if (sv && sv->header.type_id == JS_BO_VALUE && sv->header.value == sizeof(int))
@@ -507,7 +512,7 @@ JS_BOOL jsb_get_int_1(JSValue val, int *v0)
     return FALSE;
 }
 
-JS_BOOL jsb_set_int_1(JSValue val, int v0)
+JS_EXPORT JS_BOOL jsb_set_int_1(JSValue val, int v0)
 {
     JSPayload *sv = JS_GetOpaque(val, js_bridge_class_id);
     if (sv && sv->header.type_id == JS_BO_VALUE && sv->header.value == sizeof(int))
@@ -519,7 +524,7 @@ JS_BOOL jsb_set_int_1(JSValue val, int v0)
     return FALSE;
 }
 
-JS_BOOL jsb_get_int_2(JSValue val, int *v0, int *v1)
+JS_EXPORT JS_BOOL jsb_get_int_2(JSValue val, int *v0, int *v1)
 {
     JSPayload *sv = JS_GetOpaque(val, js_bridge_class_id);
     if (sv && sv->header.type_id == JS_BO_VALUE && sv->header.value == sizeof(int) * 2)
@@ -532,7 +537,7 @@ JS_BOOL jsb_get_int_2(JSValue val, int *v0, int *v1)
     return FALSE;
 }
 
-JS_BOOL jsb_set_int_2(JSValue val, int v0, int v1)
+JS_EXPORT JS_BOOL jsb_set_int_2(JSValue val, int v0, int v1)
 {
     JSPayload *sv = JS_GetOpaque(val, js_bridge_class_id);
     if (sv && sv->header.type_id == JS_BO_VALUE && sv->header.value == sizeof(int) * 2)
@@ -545,7 +550,7 @@ JS_BOOL jsb_set_int_2(JSValue val, int v0, int v1)
     return FALSE;
 }
 
-JS_BOOL jsb_get_int_3(JSValue val, int *v0, int *v1, int *v2)
+JS_EXPORT JS_BOOL jsb_get_int_3(JSValue val, int *v0, int *v1, int *v2)
 {
     JSPayload *sv = JS_GetOpaque(val, js_bridge_class_id);
     if (sv && sv->header.type_id == JS_BO_VALUE && sv->header.value == sizeof(int) * 3)
@@ -559,7 +564,7 @@ JS_BOOL jsb_get_int_3(JSValue val, int *v0, int *v1, int *v2)
     return FALSE;
 }
 
-JS_BOOL jsb_set_int_3(JSValue val, int v0, int v1, int v2)
+JS_EXPORT JS_BOOL jsb_set_int_3(JSValue val, int v0, int v1, int v2)
 {
     JSPayload *sv = JS_GetOpaque(val, js_bridge_class_id);
     if (sv && sv->header.type_id == JS_BO_VALUE && sv->header.value == sizeof(int) * 3)
@@ -573,7 +578,7 @@ JS_BOOL jsb_set_int_3(JSValue val, int v0, int v1, int v2)
     return FALSE;
 }
 
-JS_BOOL jsb_get_int_4(JSValue val, int *v0, int *v1, int *v2, int *v3)
+JS_EXPORT JS_BOOL jsb_get_int_4(JSValue val, int *v0, int *v1, int *v2, int *v3)
 {
     JSPayload *sv = JS_GetOpaque(val, js_bridge_class_id);
     if (sv && sv->header.type_id == JS_BO_VALUE && sv->header.value == sizeof(int) * 4)
@@ -588,7 +593,7 @@ JS_BOOL jsb_get_int_4(JSValue val, int *v0, int *v1, int *v2, int *v3)
     return FALSE;
 }
 
-JS_BOOL jsb_set_int_4(JSValue val, int v0, int v1, int v2, int v3)
+JS_EXPORT JS_BOOL jsb_set_int_4(JSValue val, int v0, int v1, int v2, int v3)
 {
     JSPayload *sv = JS_GetOpaque(val, js_bridge_class_id);
     if (sv && sv->header.type_id == JS_BO_VALUE && sv->header.value == sizeof(int) * 4)
@@ -603,7 +608,7 @@ JS_BOOL jsb_set_int_4(JSValue val, int v0, int v1, int v2, int v3)
     return FALSE;
 }
 
-JS_BOOL jsb_get_bytes(JSValue val, int n, byte *v0)
+JS_EXPORT JS_BOOL jsb_get_bytes(JSValue val, int n, byte *v0)
 {
     JSPayload *sv = JS_GetOpaque(val, js_bridge_class_id);
     if (sv && sv->header.type_id == JS_BO_VALUE && sv->header.value == sizeof(byte) * n)
@@ -618,7 +623,7 @@ JS_BOOL jsb_get_bytes(JSValue val, int n, byte *v0)
     return FALSE;
 }
 
-JS_BOOL jsb_set_bytes(JSValue val, int n, byte *v0)
+JS_EXPORT JS_BOOL jsb_set_bytes(JSValue val, int n, byte *v0)
 {
     JSPayload *sv = JS_GetOpaque(val, js_bridge_class_id);
     if (sv && sv->header.type_id == JS_BO_VALUE && sv->header.value == sizeof(byte) * n)
@@ -633,7 +638,7 @@ JS_BOOL jsb_set_bytes(JSValue val, int n, byte *v0)
     return FALSE;
 }
 
-JS_BOOL jsb_get_byte_4(JSValue val, byte *v0, byte *v1, byte *v2, byte *v3)
+JS_EXPORT JS_BOOL jsb_get_byte_4(JSValue val, byte *v0, byte *v1, byte *v2, byte *v3)
 {
     JSPayload *sv = JS_GetOpaque(val, js_bridge_class_id);
     if (sv && sv->header.type_id == JS_BO_VALUE && sv->header.value == sizeof(byte) * 4)
@@ -648,7 +653,7 @@ JS_BOOL jsb_get_byte_4(JSValue val, byte *v0, byte *v1, byte *v2, byte *v3)
     return FALSE;
 }
 
-JS_BOOL jsb_set_byte_4(JSValue val, byte v0, byte v1, byte v2, byte v3)
+JS_EXPORT JS_BOOL jsb_set_byte_4(JSValue val, byte v0, byte v1, byte v2, byte v3)
 {
     JSPayload *sv = JS_GetOpaque(val, js_bridge_class_id);
     if (sv && sv->header.type_id == JS_BO_VALUE && sv->header.value == sizeof(byte) * 4)
@@ -663,7 +668,7 @@ JS_BOOL jsb_set_byte_4(JSValue val, byte v0, byte v1, byte v2, byte v3)
     return FALSE;
 }
 
-int JSB_Init()
+JS_EXPORT int JSB_Init()
 {
     if (js_class_id_begin == 0)
     {
