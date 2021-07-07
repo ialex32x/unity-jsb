@@ -331,6 +331,7 @@ namespace QuickJS
             }
         }
 
+        [MonoPInvokeCallback(typeof(JSCFunctionMagic))]
         private static JSValue _js_worker_ctor(JSContext ctx, JSValue new_target, int argc, JSValue[] argv, int magic)
         {
             if (argc < 1 || !argv[0].IsString())
@@ -357,6 +358,7 @@ namespace QuickJS
         }
 
         // main thread post message to worker
+        [MonoPInvokeCallback(typeof(JSCFunction))]
         private static JSValue _js_worker_postMessage(JSContext ctx, JSValue this_obj, int argc, JSValue[] argv)
         {
             try
@@ -408,6 +410,7 @@ namespace QuickJS
             }
         }
 
+        [MonoPInvokeCallback(typeof(JSCFunction))]
         private static JSValue _js_worker_terminate(JSContext ctx, JSValue this_obj, int argc, JSValue[] argv)
         {
             try
