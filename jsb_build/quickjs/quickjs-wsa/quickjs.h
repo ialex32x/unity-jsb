@@ -1045,6 +1045,8 @@ JS_EXPORT int JS_SetModuleExport(JSContext *ctx, JSModuleDef *m, const char *exp
                        JSValue val);
 JS_EXPORT int JS_SetModuleExportList(JSContext *ctx, JSModuleDef *m,
                            const JSCFunctionListEntry *tab, int len);
+JS_EXPORT JSValueConst JS_GetActiveFunction(JSContext *ctx);
+JS_EXPORT JSValue JSB_ThrowError(JSContext *ctx, const char *buf, size_t buf_len);
 
 #undef js_unlikely
 #undef js_force_inline
