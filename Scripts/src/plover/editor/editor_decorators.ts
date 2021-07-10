@@ -66,6 +66,10 @@ export interface ClassMetaInfo {
 
 }
 
+export interface EditorWindowMetaInfo {
+
+}
+
 export function ScriptAsset(meta?: any) {
     return ScriptType(meta);
 }
@@ -114,6 +118,12 @@ export function ScriptEditor(forType: any) {
     return function (editorType: any) {
         forType.prototype[Symbol_CustomEditor] = editorType;
         return editorType;
+    }
+}
+
+export function ScriptEditorWindow(meta?: EditorWindowMetaInfo) {
+    return function (target: any) {
+        return target;
     }
 }
 

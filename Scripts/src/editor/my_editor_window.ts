@@ -1,8 +1,9 @@
 import { DateTime } from "System";
 import { EditorWindow, EditorGUILayout, MessageType, SceneView, Handles, GenericMenu, HandleUtility, EditorApplication } from "UnityEditor";
 import { FocusType, GUIContent, GUILayout, GUIUtility, Rect, Event, GUIStyle, GUI, Vector2, GUILayoutUtility, EventType, Vector3, Quaternion } from "UnityEngine";
+import { ScriptEditorWindow } from "../plover/editor/editor_decorators";
 
-// @jsb.Shortcut("Window/JS/MyEditorWindow")
+@ScriptEditorWindow()
 export class MyEditorWindow extends EditorWindow {
     private _onSceneGui: (sv: SceneView) => void;
     private _onMenuTest: () => void;
