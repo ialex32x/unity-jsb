@@ -173,10 +173,16 @@ namespace QuickJS.Unity
             QuickJS.Unity.EditorRuntime.ShowWindow("plover/editor/js_console", "JSConsole");
         }
 
-        [MenuItem("JS Bridge/Javascript Module View", false, 5003)]
+        [MenuItem("JS Bridge/Javascript Module View", false, 5004)]
         public static void ShowJSModuleView()
         {
             QuickJS.Unity.EditorRuntime.ShowWindow("plover/editor/js_module_view", "JSModuleView");
+        }
+
+        [MenuItem("JS Bridge/Script Editor Window Launcher", false, 5005)]
+        public static void ShowScriptEditorWindowLauncher()
+        {
+            EditorWindow.GetWindow<ScriptEditorWindowLauncher>().Show();
         }
 
         public static string GetPlatform()
@@ -386,6 +392,7 @@ namespace QuickJS.Unity
         public static Regex JSBehaviourClassNameRegex = new Regex(@"@ScriptType\s*\([\s\w\{\})]*\)[\n\s]*export\s+class\s+(\w+)\s+extends", RegexOptions.Multiline | RegexOptions.Compiled);
         public static Regex JSAssetClassNameRegex = new Regex(@"@ScriptAsset\s*\([\s\w\{\})]*\)[\n\s]*export\s+class\s+(\w+)\s+extends", RegexOptions.Multiline | RegexOptions.Compiled);
         public static Regex JSCustomEditorClassNameRegex = new Regex(@"^\s*@ScriptEditor\s*\([\s\w\{\})]*\)[\n\s]*export\s+class\s+(\w+)\s+extends", RegexOptions.Multiline | RegexOptions.Compiled);
+        public static Regex JSEditorWindowClassNameRegex = new Regex(@"^\s*@ScriptEditorWindow\s*\([\s\w\{\})]*\)[\n\s]*export\s+class\s+(\w+)\s+extends", RegexOptions.Multiline | RegexOptions.Compiled);
 
         public static string NormalizePathString(string path)
         {
@@ -465,7 +472,12 @@ namespace QuickJS.Unity
 
             foreach (Match m in JSCustomEditorClassNameRegex.Matches(text))
             {
-                hints.Add(new JSScriptClassPathHint(sourceFile, modulePath, m.Groups[1].Value, JSScriptClassType.Editor));
+                hints.Add(new JSScriptClassPathHint(sourceFile, modulePath, m.Groups[1].Value, JSScriptClassType.CustomEditor));
+            }
+            
+            foreach (Match m in JSEditorWindowClassNameRegex.Matches(text))
+            {
+                hints.Add(new JSScriptClassPathHint(sourceFile, modulePath, m.Groups[1].Value, JSScriptClassType.EditorWindow));
             }
         }
 

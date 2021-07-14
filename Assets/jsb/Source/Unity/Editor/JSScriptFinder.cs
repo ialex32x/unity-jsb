@@ -23,6 +23,7 @@ namespace QuickJS.Unity
         private Dictionary<string, WatcherChangeTypes> _cachedChanges = new Dictionary<string, WatcherChangeTypes>();
 
         public event Action<string, JSScriptClassType> ModuleSourceChanged;
+        public event Action ScriptClassPathsUpdated;
 
         public static JSScriptFinder GetInstance()
         {
@@ -80,6 +81,7 @@ namespace QuickJS.Unity
             _scriptClassPaths.Clear();
             SearchDirectory(_baseDir);
             _isRefreshing = false;
+            ScriptClassPathsUpdated?.Invoke();
         }
 
         private void SearchDirectory(string dir)
@@ -207,6 +209,7 @@ namespace QuickJS.Unity
                     }
                     _cachedChanges.Clear();
                     _cachedChangesDirty = false;
+                    ScriptClassPathsUpdated?.Invoke();
                 }
             }
         }

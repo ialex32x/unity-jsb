@@ -153,7 +153,7 @@ namespace QuickJS.Unity
 
             var editorScripts = new List<JSScriptClassPathHint>();
             JSScriptFinder.GetInstance().ModuleSourceChanged += OnModuleSourceChanged;
-            JSScriptFinder.GetInstance().Search(JSScriptClassType.Editor, editorScripts);
+            JSScriptFinder.GetInstance().Search(JSScriptClassType.CustomEditor, editorScripts);
             foreach (var editorScript in editorScripts)
             {
                 runtime.ResolveModule(editorScript.modulePath);
@@ -162,7 +162,7 @@ namespace QuickJS.Unity
 
         private void OnModuleSourceChanged(string modulePath, JSScriptClassType classTypes)
         {
-            if ((classTypes & JSScriptClassType.Editor) != 0)
+            if ((classTypes & JSScriptClassType.CustomEditor) != 0)
             {
                 if (_runtime != null && _runtime.isValid && !EditorApplication.isCompiling)
                 {
