@@ -1,11 +1,18 @@
 "use strict";
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var MyEditorWindow_1;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.MyEditorWindow = void 0;
 const System_1 = require("System");
 const UnityEditor_1 = require("UnityEditor");
 const UnityEngine_1 = require("UnityEngine");
-// @jsb.Shortcut("Window/JS/MyEditorWindow")
-class MyEditorWindow extends UnityEditor_1.EditorWindow {
+const editor_decorators_1 = require("../plover/editor/editor_decorators");
+let MyEditorWindow = MyEditorWindow_1 = class MyEditorWindow extends UnityEditor_1.EditorWindow {
     constructor() {
         super(...arguments);
         this._parentWindowRect = new UnityEngine_1.Rect(0, 0, 0, 0);
@@ -92,7 +99,7 @@ class MyEditorWindow extends UnityEditor_1.EditorWindow {
             console.log("Thanks!", System_1.DateTime.Now);
         }
         if (UnityEngine_1.GUILayout.Button("CreateWindow")) {
-            UnityEditor_1.EditorWindow.CreateWindow(MyEditorWindow);
+            UnityEditor_1.EditorWindow.CreateWindow(MyEditorWindow_1);
         }
         let w = this.position.width;
         let h = this.position.height;
@@ -113,6 +120,9 @@ class MyEditorWindow extends UnityEditor_1.EditorWindow {
         UnityEditor_1.EditorGUILayout.IntField(this._lastSecond);
         UnityEditor_1.EditorGUILayout.EndHorizontal();
     }
-}
+};
+MyEditorWindow = MyEditorWindow_1 = __decorate([
+    editor_decorators_1.ScriptEditorWindow()
+], MyEditorWindow);
 exports.MyEditorWindow = MyEditorWindow;
 //# sourceMappingURL=my_editor_window.js.map

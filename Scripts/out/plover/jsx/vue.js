@@ -1082,8 +1082,8 @@ class ViewModel {
                     data[key] = val;
                 },
             });
-            observe(data);
         }
+        observe(data, true);
     }
     static $toString(v) {
         return new String(v);

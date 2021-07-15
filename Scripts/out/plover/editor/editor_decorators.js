@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.SerializationUtil = exports.EditorUtil = exports.DefaultEditor = exports.ScriptProperty = exports.ScriptObject = exports.ScriptString = exports.ScriptNumber = exports.ScriptInteger = exports.ScriptEditor = exports.ScriptFunction = exports.ScriptType = exports.ScriptAsset = void 0;
+exports.SerializationUtil = exports.EditorUtil = exports.DefaultEditor = exports.ScriptProperty = exports.ScriptObject = exports.ScriptString = exports.ScriptNumber = exports.ScriptInteger = exports.ScriptEditorWindow = exports.ScriptEditor = exports.ScriptFunction = exports.ScriptType = exports.ScriptAsset = void 0;
 const UnityEditor_1 = require("UnityEditor");
 const UnityEngine_1 = require("UnityEngine");
 let Symbol_SerializedFields = Symbol.for("SerializedFields");
@@ -55,6 +55,12 @@ function ScriptEditor(forType) {
     };
 }
 exports.ScriptEditor = ScriptEditor;
+function ScriptEditorWindow(meta) {
+    return function (target) {
+        return target;
+    };
+}
+exports.ScriptEditorWindow = ScriptEditorWindow;
 function ScriptInteger(meta) {
     let meta_t = meta;
     if (typeof meta_t === "undefined") {

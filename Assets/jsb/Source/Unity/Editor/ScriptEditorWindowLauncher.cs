@@ -18,9 +18,7 @@ namespace QuickJS.Unity
 
         void Awake()
         {
-            JSScriptFinder.GetInstance().ScriptClassPathsUpdated += OnScriptClassPathsUpdated;
-            _classPaths = new List<JSScriptClassPathHint>();
-            JSScriptFinder.GetInstance().Search(JSScriptClassType.EditorWindow, _classPaths);
+            Reset();
         }
 
         void OnDestroy()
@@ -51,8 +49,20 @@ namespace QuickJS.Unity
             EditorGUILayout.LabelField(classPath.className);
         }
 
+        private void Reset()
+        {
+            JSScriptFinder.GetInstance().ScriptClassPathsUpdated -= OnScriptClassPathsUpdated;
+            JSScriptFinder.GetInstance().ScriptClassPathsUpdated += OnScriptClassPathsUpdated;
+            _classPaths = new List<JSScriptClassPathHint>();
+            JSScriptFinder.GetInstance().Search(JSScriptClassType.EditorWindow, _classPaths);
+        }
+
         protected override void OnPaint()
         {
+            if (_classPaths == null) {
+                Reset();
+            }
+            
             var size = _classPaths.Count;
             EditorGUILayout.HelpBox("ScriptEditorWindowLauncher is an experimental unfinished feature. it could be used to open editor windows implemented in typescript, we need this because there is no open api in Unity to dynamically create menu item at the moment.", MessageType.Warning);
             EditorGUILayout.HelpBox(string.Format("{0} EditorWindow Scripts", size), MessageType.Info);
