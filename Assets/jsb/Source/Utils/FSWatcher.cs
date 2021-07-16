@@ -52,19 +52,28 @@ namespace QuickJS.Utils
             }
         }
 
+        private static string GetFullPath(string filePath)
+        {
+#if UNITY_EDITOR_OSX || UNITY_STANDALONE_OSX
+            return new FileInfo(filePath).FullName;
+#else
+            return filePath;
+#endif
+        }
+
         private void _JSActionCallback(ScriptRuntime runtime, JSAction action)
         {
             var e = (FileSystemEventArgs)action.args;
             switch (e.ChangeType)
             {
                 case WatcherChangeTypes.Changed:
-                    Call(_onchange, e.Name, e.FullPath);
+                    Call(_onchange, e.Name, GetFullPath(e.FullPath));
                     break;
                 case WatcherChangeTypes.Created:
-                    Call(_oncreate, e.Name, e.FullPath);
+                    Call(_oncreate, e.Name, GetFullPath(e.FullPath));
                     break;
                 case WatcherChangeTypes.Deleted:
-                    Call(_ondelete, e.Name, e.FullPath);
+                    Call(_ondelete, e.Name, GetFullPath(e.FullPath));
                     break;
             }
         }
