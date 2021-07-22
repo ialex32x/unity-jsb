@@ -26,7 +26,7 @@
         "webpack": "^4.43.0",
         "webpack-cli": "^3.3.12",
         "webpack-dev-server": "^3.11.0",
-        "xlsx": "^0.16.6"
+        "xlsx": "^0.17.0"
     },
     "scripts": {
         "pack-res": "gulp",
