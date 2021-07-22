@@ -179,6 +179,25 @@ namespace QuickJS.Native
             }
         }
 
+        public static string GetNonNullString(JSContext ctx, JSValue val)
+        {
+            size_t len;
+            var pstr = JSApi.JS_ToCStringLen(ctx, out len, val);
+            if (pstr == IntPtr.Zero)
+            {
+                return string.Empty;
+            }
+
+            try
+            {
+                return JSApi.GetString(ctx, pstr, len) ?? string.Empty;
+            }
+            finally
+            {
+                JSApi.JS_FreeCString(ctx, pstr);
+            }
+        }
+
         public static unsafe void MemoryCopy(void* source, void* destination, long destinationSizeInBytes, long sourceBytesToCopy)
         {
 #if JSB_COMPATIBLE

@@ -30,6 +30,7 @@ namespace QuickJS.Unity
             public int delegateCount;
             public int scriptValueCount;
             public int scriptPromiseCount;
+            public int stringCount;
             public int timeNow;
             public List<TimerInfo> activeTimers = new List<TimerInfo>();
         }
@@ -125,11 +126,14 @@ namespace QuickJS.Unity
                 snapshot.exportedTypes = typeDB.Count;
 
                 var objectCache = rt.GetObjectCache();
+                var stringCache = rt.GetMainContext().GetStringCache();
+
                 snapshot.managedObjectCount = objectCache.GetManagedObjectCount();
                 snapshot.jSObjectCount = objectCache.GetJSObjectCount();
                 snapshot.delegateCount = objectCache.GetDelegateCount();
                 snapshot.scriptValueCount = objectCache.GetScriptValueCount();
                 snapshot.scriptPromiseCount = objectCache.GetScriptPromiseCount();
+                snapshot.stringCount = stringCache.GetStringCount();
 
                 var timeManager = rt.GetTimerManager();
                 snapshot.activeTimers.Clear();
@@ -185,6 +189,7 @@ namespace QuickJS.Unity
                 EditorGUILayout.IntField("Delegate Mapping Count", snapshot.delegateCount);
                 EditorGUILayout.IntField("ScriptValue Mapping Count", snapshot.scriptValueCount);
                 EditorGUILayout.IntField("ScriptPromise Mapping Count", snapshot.scriptPromiseCount);
+                EditorGUILayout.IntField("Cached String Count", snapshot.stringCount);
             });
 
             Block("Timer", () =>

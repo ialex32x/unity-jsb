@@ -41,6 +41,10 @@ namespace QuickJS.Utils
             Clear();
         }
 
+        public int GetStringCount() {
+            return _strMap.Count;
+        }
+
         public void Clear()
         {
             foreach (var kv in _strMap)
@@ -56,7 +60,7 @@ namespace QuickJS.Utils
 
         public void RemoveValue(string o)
         {
-            if (_disposed || string.IsNullOrEmpty(o))
+            if (_disposed || o == null)
             {
                 return;
             }
@@ -80,7 +84,7 @@ namespace QuickJS.Utils
         /// </summary>
         public bool AddValue(string stringValue, out JSValue jsValue)
         {
-            if (_disposed || string.IsNullOrEmpty(stringValue))
+            if (_disposed || stringValue == null)
             {
                 jsValue = JSApi.JS_UNDEFINED;
                 return false;
@@ -103,8 +107,8 @@ namespace QuickJS.Utils
                 return false;
             }
 
-            stringValue = JSApi.GetString(_ctx, jsValue);
-            if (!string.IsNullOrEmpty(stringValue))
+            stringValue = JSApi.GetNonNullString(_ctx, jsValue);
+            if (stringValue != null)
             {
                 return _AddPair(JSApi.JS_DupValue(_ctx, jsValue), stringValue) >= 0;
             }
@@ -164,7 +168,7 @@ namespace QuickJS.Utils
 
         public bool TryGetValue(string stringValue, out JSValue jsValue)
         {
-            if (!_disposed && !string.IsNullOrEmpty(stringValue))
+            if (!_disposed && stringValue != null)
             {
                 int slotIndex;
                 if (_strMap.TryGetValue(stringValue, out slotIndex))
@@ -181,7 +185,7 @@ namespace QuickJS.Utils
 
         public bool GetValue(string stringValue, out JSValue jsValue)
         {
-            if (!_disposed && !string.IsNullOrEmpty(stringValue))
+            if (!_disposed && stringValue != null)
             {
                 int slotIndex;
                 if (_strMap.TryGetValue(stringValue, out slotIndex))
