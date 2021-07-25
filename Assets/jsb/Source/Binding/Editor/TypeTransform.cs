@@ -59,6 +59,8 @@ namespace QuickJS.Binding
         // private Func<MethodInfo, bool> _filterMethodInfo;
 
         private Dictionary<MemberInfo, string> _memberNameRules = new Dictionary<MemberInfo, string>();
+        
+        private Dictionary<MemberInfo, string> _memberNameAlias = new Dictionary<MemberInfo, string>();
 
         /// <summary>
         /// 是否需要 UNITY_EDITOR 条件
@@ -137,6 +139,12 @@ namespace QuickJS.Binding
             }
             var t = (Func<T, bool>)d;
             return t(info);
+        }
+
+        public string GetNameAlias(MemberInfo info)
+        {
+            string alias;
+            return _memberNameAlias.TryGetValue(info, out alias) ? alias : info.Name;
         }
 
         public string GetNameRule(MemberInfo info)
@@ -360,7 +368,7 @@ namespace QuickJS.Binding
             var method = _type.GetMethod(name, parameters);
             if (method != null)
             {
-                _memberNameRules[method] = jsName;
+                _memberNameAlias[method] = jsName;
             }
 
             return this;

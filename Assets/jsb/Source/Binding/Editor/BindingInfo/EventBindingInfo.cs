@@ -33,7 +33,7 @@ namespace QuickJS.Binding
                 this.name = "BindEvent_" + eventInfo.Name;
             }
 
-            this.regName = typeBindingInfo.bindingManager.GetNamingAttribute(eventInfo);
+            this.regName = typeBindingInfo.bindingManager.GetNamingAttribute(typeBindingInfo.transform, eventInfo);
         }
     }
 }

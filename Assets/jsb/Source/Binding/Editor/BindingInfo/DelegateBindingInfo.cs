@@ -44,7 +44,7 @@ namespace QuickJS.Binding
                 }
             } while (false);
 
-            this.regName = typeBindingInfo.bindingManager.GetNamingAttribute(fieldInfo);
+            this.regName = typeBindingInfo.bindingManager.GetNamingAttribute(typeBindingInfo.transform, fieldInfo);
         }
 
         public DelegateBindingInfo(TypeBindingInfo typeBindingInfo, PropertyInfo propertyInfo)
@@ -69,7 +69,7 @@ namespace QuickJS.Binding
                 this.name = "BindDelegate_" + propertyInfo.Name;
             }
 
-            this.regName = typeBindingInfo.bindingManager.GetNamingAttribute(propertyInfo);
+            this.regName = typeBindingInfo.bindingManager.GetNamingAttribute(typeBindingInfo.transform, propertyInfo);
         }
     }
 }

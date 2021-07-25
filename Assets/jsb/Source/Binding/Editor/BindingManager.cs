@@ -1080,12 +1080,12 @@ namespace QuickJS.Binding
                 }
             }
 
-            return ApplyNameRule(transform.GetNameRule(info), info.Name);
+            return ApplyNameRule(transform.GetNameRule(info), transform.GetNameAlias(info));
         }
 
-        public string GetNamingAttribute(MemberInfo info)
+        public string GetNamingAttribute(TypeTransform transform, MemberInfo info)
         {
-            return info.Name;
+            return ApplyNameRule(transform.GetNameRule(info), transform.GetNameAlias(info));
         }
 
         public TypeBindingInfo GetExportedType(Type type)

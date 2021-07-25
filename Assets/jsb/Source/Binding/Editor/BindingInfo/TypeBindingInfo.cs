@@ -229,6 +229,7 @@ namespace QuickJS.Binding
 
             var methodCSName = methodInfo.Name;
             var methodJSName = this.bindingManager.GetNamingAttribute(this.transform, methodInfo);
+            
             if (IsOperatorOverloadingEnabled(methodInfo))
             {
                 var parameters = methodInfo.GetParameters();
@@ -316,10 +317,10 @@ namespace QuickJS.Binding
 
             var group = isStatic ? staticMethods : methods;
             MethodBindingInfo methodBindingInfo;
-            if (!group.TryGetValue(methodCSName, out methodBindingInfo))
+            if (!group.TryGetValue(methodJSName, out methodBindingInfo))
             {
                 methodBindingInfo = new MethodBindingInfo(bindingManager, isStatic, methodCSName, methodJSName);
-                group.Add(methodCSName, methodBindingInfo);
+                group.Add(methodJSName, methodBindingInfo);
             }
 
             if (!methodBindingInfo.Add(methodInfo, isExtension))

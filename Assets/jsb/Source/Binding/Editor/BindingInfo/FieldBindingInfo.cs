@@ -88,7 +88,7 @@ namespace QuickJS.Binding
                 }
             } while (false);
 
-            this.regName = typeBindingInfo.bindingManager.GetNamingAttribute(fieldInfo);
+            this.regName = typeBindingInfo.bindingManager.GetNamingAttribute(typeBindingInfo.transform, fieldInfo);
             this.fieldInfo = fieldInfo;
         }
     }

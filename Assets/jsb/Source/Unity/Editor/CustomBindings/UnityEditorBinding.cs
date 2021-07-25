@@ -102,7 +102,11 @@ namespace jsb.Editor
             bindingManager.AddExportedType(typeof(EditorUtility)).EditorRuntime().SetAllConstructorsBlocked();
             bindingManager.AddExportedType(typeof(EditorGUI)).EditorRuntime().SetAllConstructorsBlocked();
             bindingManager.AddExportedType(typeof(EditorGUIUtility)).EditorRuntime().SetAllConstructorsBlocked();
-            bindingManager.AddExportedType(typeof(EditorGUILayout)).EditorRuntime().SetAllConstructorsBlocked();
+            bindingManager.AddExportedType(typeof(EditorGUILayout)).EditorRuntime().SetAllConstructorsBlocked()
+                // note: it's easy to confuse a bunch of overloads in typescript (you need to add '<any>' before every argument or 'ts-ignore' when the ts compiler can't guess the correct candidate)
+                // note: so you'd prefer to rename some of them it another totally different name like this: .SetMethodJSName("Popup_sis", "Popup", typeof(string), typeof(int), typeof(string[]), typeof(GUILayoutOption[]))
+                // .SetMethodJSName("Popup_sis", "Popup", typeof(string), typeof(int), typeof(string[]), typeof(GUILayoutOption[]))
+            ;
             bindingManager.AddExportedType(typeof(EditorApplication)).EditorRuntime().SetAllConstructorsBlocked();
             bindingManager.AddExportedType(typeof(Editor)).EditorRuntime()
                 .WriteCrossBindingConstructor();
