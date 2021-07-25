@@ -80,7 +80,7 @@ namespace QuickJS.Binding
 
                 var context = ScriptEngine.GetContext(ctx);
                 var type_id = JSApi.JSB_GetBridgeType(ctx, jsValue, context.GetAtom(Values.KeyForCSharpTypeID)); // 通常来自 prototype
-                if (type_id >= 0)
+                if (type_id > 0)
                 {
                     var types = context.GetTypeDB();
                     var o = types.GetType(type_id);
@@ -120,6 +120,11 @@ namespace QuickJS.Binding
 
                             break;
                         }
+                }
+
+                if (type.IsArray)
+                {
+                    return JSApi.JS_IsArray(ctx, jsValue) == 1;
                 }
 
                 return type.IsSubclassOf(typeof(ScriptValue));

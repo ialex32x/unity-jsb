@@ -14,13 +14,15 @@ let MyTestEditorWindow = class MyTestEditorWindow extends UnityEditor_1.EditorWi
     constructor() {
         super(...arguments);
         this._testString = "";
+        this._sel = 0;
     }
     Awake() {
         jsb_1.AddCacheString("Test");
         jsb_1.AddCacheString("");
     }
     OnGUI() {
-        this._testString = UnityEditor_1.EditorGUILayout.TextField("Test", this._testString) || "";
+        this._testString = UnityEditor_1.EditorGUILayout.TextField("Test", this._testString || "");
+        this._sel = UnityEditor_1.EditorGUILayout.Popup("A", this._sel, ["1", "2", "3"]);
     }
 };
 MyTestEditorWindow = __decorate([
