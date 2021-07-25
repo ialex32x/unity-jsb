@@ -352,6 +352,20 @@ namespace QuickJS.Binding
             return this;
         }
 
+        /// <summary>
+        /// specify the method name in JS instead of it's C# name
+        /// </summary>
+        public TypeTransform SetMethodJSName(string jsName, string name, params Type[] parameters)
+        {
+            var method = _type.GetMethod(name, parameters);
+            if (method != null)
+            {
+                _memberNameRules[method] = jsName;
+            }
+
+            return this;
+        }
+
         // TS: 为指定类型的匹配方法添加声明映射 (仅用于优化代码提示体验)
         public TypeTransform AddTSMethodDeclaration(string spec, string name, params Type[] parameters)
         {
