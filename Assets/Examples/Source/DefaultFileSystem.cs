@@ -47,23 +47,6 @@ namespace Example
                 return null;
             }
         }
-
-        public string ReadAllText(string path)
-        {
-            try
-            {
-                var asset = Resources.Load<TextAsset>(path);
-                return asset.text;
-            }
-            catch (Exception exception)
-            {
-                if (_logger != null)
-                {
-                    _logger.Write(LogLevel.Error, "{0}: {1}\n{2}", path, exception.Message, exception.StackTrace);
-                }
-                return null;
-            }
-        }
     }
 
     public class HttpFileSystem : IFileSystem
@@ -117,23 +100,6 @@ namespace Example
             {
                 var asset = GetRemote(path);
                 return Encoding.UTF8.GetBytes(asset);
-            }
-            catch (Exception exception)
-            {
-                if (_logger != null)
-                {
-                    _logger.Write(LogLevel.Error, "{0}: {1}\n{2}", path, exception.Message, exception.StackTrace);
-                }
-                return null;
-            }
-        }
-
-        public string ReadAllText(string path)
-        {
-            try
-            {
-                var asset = GetRemote(path);
-                return asset;
             }
             catch (Exception exception)
             {

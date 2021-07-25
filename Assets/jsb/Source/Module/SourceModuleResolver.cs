@@ -56,9 +56,10 @@ namespace QuickJS.Module
 
             if (_jsonConv != null && pathResolver.ResolvePath(fileSystem, PathUtils.Combine(fileName, "package.json"), out searchPath, out resolvedFileName))
             {
-                var packageData = fileSystem.ReadAllText(resolvedFileName);
-                if (packageData != null)
+                var packageDataBytes = fileSystem.ReadAllBytes(resolvedFileName);
+                if (packageDataBytes != null)
                 {
+                    var packageData = System.Text.Encoding.UTF8.GetString(packageDataBytes);
                     var packageConfig = _jsonConv.Deserialize(packageData, typeof(PackageConfig)) as PackageConfig;
                     if (packageConfig != null)
                     {
