@@ -307,6 +307,10 @@ onmessage = function (data) {
 
 > 当 JSBehaviour 关联脚本热加载时, 将触发一次 OnBeforeSerialize, 然后替换为更新后的脚本实例, 并触发 OnAfterDeserialize
 
+## Editor in Scripts
+![JS Module Viewer](jsb_build/res/js_module_viewer.png)
+> 这是一个用于查看当前载入的 commonjs 模块的完全由 typescript 代码实现的工具窗口, 可以作为在脚本中实现 EditorWindow 写法的例子.
+
 ## Hotfix
 初步功能, 尚未实现完整流程.
 

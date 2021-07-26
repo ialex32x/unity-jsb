@@ -255,6 +255,10 @@ onmessage = function (data) {
 ## Hotload
 ![Code Hotload](jsb_build/res/hotload.gif)
 
+## Editor in Scripts
+![JS Module Viewer](jsb_build/res/js_module_viewer.png)
+> This is a built-in tool implemented in typescript to checkout all loaded commonjs modules in javascript runtime, also an example for implementing EditorWindow in scripts.
+
 ## Hotfix
 > This feature is unfinished.
 
