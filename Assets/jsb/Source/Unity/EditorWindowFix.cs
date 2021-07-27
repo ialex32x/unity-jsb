@@ -189,7 +189,7 @@ namespace QuickJS.Unity
         {
             for (int i = 0, len = array.Length; i < len; i++)
             {
-                var ew = (JSEditorWindow)array[0];
+                var ew = (JSEditorWindow)array[i];
                 if (ew.IsInstanceOf(ctor) == 1)
                 {
                     return ew;
