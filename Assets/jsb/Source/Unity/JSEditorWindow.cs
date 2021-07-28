@@ -17,6 +17,10 @@ namespace QuickJS.Unity
     {
         private bool _released;
         private bool _destroyed;
+
+        private string _moduleId;
+        private string _className;
+
         private JSContext _ctx;
         private JSValue _this_obj;
 
@@ -56,39 +60,6 @@ namespace QuickJS.Unity
             return JSApi.JS_DupValue(_ctx, _this_obj);
         }
 
-        public unsafe void ForEachProperty(Action<JSContext, JSAtom, JSValue> callback)
-        {
-            if (_released)
-            {
-                return;
-            }
-            JSPropertyEnum* ptab;
-            uint plen;
-            if (JSApi.JS_GetOwnPropertyNames(_ctx, out ptab, out plen, _this_obj, JSGPNFlags.JS_GPN_STRING_MASK) < 0)
-            {
-                // failed
-                return;
-            }
-
-            for (var i = 0; i < plen; i++)
-            {
-                var prop = JSApi.JS_GetProperty(_ctx, _this_obj, ptab[i].atom);
-                try
-                {
-                    callback(_ctx, ptab[i].atom, prop);
-                }
-                catch (Exception)
-                {
-                }
-                JSApi.JS_FreeValue(_ctx, prop);
-            }
-
-            for (var i = 0; i < plen; i++)
-            {
-                JSApi.JS_FreeAtom(_ctx, ptab[i].atom);
-            }
-        }
-
         public void SetBridge(JSContext ctx, JSValue this_obj, JSValue ctor)
         {
             var context = ScriptEngine.GetContext(ctx);
@@ -97,7 +68,28 @@ namespace QuickJS.Unity
                 return;
             }
 
+            _moduleId = null;
+            _className = null;
+            context.ForEachModuleExport((mod_id_atom, exp_id_atom, exp_obj) =>
+            {
+                if (exp_obj == ctor)
+                {
+                    _moduleId = JSApi.GetString(ctx, mod_id_atom);
+                    _className = JSApi.GetString(ctx, exp_id_atom);
+                    return true;
+                }
+
+                return false;
+            });
+
             context.OnDestroy += OnContextDestroy;
+#if UNITY_EDITOR
+            if (!string.IsNullOrEmpty(_moduleId) && !string.IsNullOrEmpty(_className))
+            {
+                context.OnScriptReloading += OnScriptReloading;
+                context.OnScriptReloaded += OnScriptReloaded;
+            }
+#endif
             _released = false;
             _ctx = ctx;
             _this_obj = JSApi.JS_DupValue(ctx, this_obj);
@@ -143,6 +135,32 @@ namespace QuickJS.Unity
             }
         }
 
+#if UNITY_EDITOR
+        private void OnScriptReloading(ScriptContext context, string resolved_id)
+        {
+            if (_moduleId == resolved_id)
+            {
+
+            }
+        }
+
+        private void OnScriptReloaded(ScriptContext context, string resolved_id)
+        {
+            if (_moduleId == resolved_id)
+            {
+                //TODO: reload editor window script. prefer to replace this_obj's prototype instead of recreate the whole instance.
+                // if it works, MonoBehaviour and ScriptableObject scripting should be similar.
+                
+                // pseudocode:
+                // NewClass = moduleCache[module_id][class_name];
+                // Object.setPrototypeOf(this, NewClass.prototype);
+                Debug.LogWarning("NOT_IMPLEMENTED: reload editor window script");
+                // ReleaseJSValues();
+                // CreateScriptInstance();
+            }
+        }
+#endif
+
         private void OnContextDestroy(ScriptContext context)
         {
             Release();
@@ -174,6 +192,10 @@ namespace QuickJS.Unity
             if (context != null)
             {
                 context.OnDestroy -= OnContextDestroy;
+#if UNITY_EDITOR
+                context.OnScriptReloading -= OnScriptReloading;
+                context.OnScriptReloaded -= OnScriptReloaded;
+#endif
             }
 
             if (!_destroyed)

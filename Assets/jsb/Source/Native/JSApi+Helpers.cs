@@ -160,6 +160,14 @@ namespace QuickJS.Native
             return JSApi.JS_ThrowInternalError(ctx, "dynamic field not found");
         }
 
+        public static string GetString(JSContext ctx, JSAtom atom)
+        {
+            var strValue = JSApi.JS_AtomToString(ctx, atom);
+            var str = strValue.IsString() ? GetString(ctx, strValue) : null;
+            JSApi.JS_FreeValue(ctx, strValue);
+            return str;
+        }
+
         public static string GetString(JSContext ctx, JSValue val)
         {
             size_t len;
@@ -239,6 +247,44 @@ namespace QuickJS.Native
             }
 
             return null;
+        }
+
+        public static unsafe bool ForEachProperty(JSContext ctx, JSValue this_obj, Func<JSAtom, JSValue, bool> callback)
+        {
+            JSPropertyEnum* ptab;
+            uint plen;
+            if (JSApi.JS_GetOwnPropertyNames(ctx, out ptab, out plen, this_obj, JSGPNFlags.JS_GPN_STRING_MASK) < 0)
+            {
+                // failed
+                return false;
+            }
+
+            var stop = false;
+            for (var i = 0; i < plen; i++)
+            {
+                var prop = JSApi.JS_GetProperty(ctx, this_obj, ptab[i].atom);
+                try
+                {
+                    if (callback(ptab[i].atom, prop))
+                    {
+                        stop = true;
+                        break;
+                    }
+                }
+                catch (Exception)
+                {
+                }
+                finally
+                {
+                    JSApi.JS_FreeValue(ctx, prop);
+                }
+            }
+
+            for (var i = 0; i < plen; i++)
+            {
+                JSApi.JS_FreeAtom(ctx, ptab[i].atom);
+            }
+            return stop;
         }
     }
 }

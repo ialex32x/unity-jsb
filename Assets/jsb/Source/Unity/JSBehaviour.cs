@@ -118,39 +118,6 @@ namespace QuickJS.Unity
             return JSApi.JS_GetPropertyStr(_ctx, _this_obj, key);
         }
 
-        public unsafe void ForEachProperty(Action<JSContext, JSAtom, JSValue> callback)
-        {
-            if (!IsValid())
-            {
-                return;
-            }
-            JSPropertyEnum* ptab;
-            uint plen;
-            if (JSApi.JS_GetOwnPropertyNames(_ctx, out ptab, out plen, _this_obj, JSGPNFlags.JS_GPN_STRING_MASK) < 0)
-            {
-                // failed
-                return;
-            }
-
-            for (var i = 0; i < plen; i++)
-            {
-                var prop = JSApi.JS_GetProperty(_ctx, _this_obj, ptab[i].atom);
-                try
-                {
-                    callback(_ctx, ptab[i].atom, prop);
-                }
-                catch (Exception)
-                {
-                }
-                JSApi.JS_FreeValue(_ctx, prop);
-            }
-
-            for (var i = 0; i < plen; i++)
-            {
-                JSApi.JS_FreeAtom(_ctx, ptab[i].atom);
-            }
-        }
-
         // 在 gameObject 上创建一个新的脚本组件实例
         // ctor: js class
         public static JSValue SetScriptInstance(GameObject gameObject, JSContext ctx, JSValue ctor, bool execAwake)
