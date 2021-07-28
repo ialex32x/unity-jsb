@@ -44,7 +44,6 @@ namespace QuickJS.Binding
 
         // 针对特定方法的 ts 声明优化
         private Dictionary<MethodBase, string> _tsMethodDeclarations = new Dictionary<MethodBase, string>();
-        private Dictionary<MethodBase, Func<string, CodeGenerator, object, bool>> _csMethodWriter = new Dictionary<MethodBase, Func<string, CodeGenerator, object, bool>>();
         private Dictionary<string, Native.JSCFunction> _csMethodOverride = new Dictionary<string, Native.JSCFunction>();
         private Native.JSCFunctionMagic _csConstructorOverride = null;
 
@@ -399,36 +398,9 @@ namespace QuickJS.Binding
             return _tsMethodDeclarations.TryGetValue(method, out code);
         }
 
-        [Obsolete("此方法不利于统一反射模式绑定逻辑，将被移除")]
-        public TypeTransform WriteCSConstructorBinding(Func<string, CodeGenerator, object, bool> writer, params Type[] parameters)
-        {
-            var ctor = _type.GetConstructor(parameters);
-            if (ctor != null)
-            {
-                _csMethodWriter[ctor] = writer;
-            }
-
-            return this;
-        }
-
         public TypeTransform WriteCrossBindingConstructor(params Type[] parameters)
         {
             _csConstructorOverride = CommonFix.CrossBindConstructor;
-            return this;
-        }
-
-        /// <summary>
-        /// 替换静态绑定代码中的部分执行逻辑 (考虑废弃, 更难维护静态绑定与反射绑定的一致性)
-        /// </summary>
-        [Obsolete("此方法不利于统一反射模式绑定逻辑，将被移除")]
-        public TypeTransform WriteCSMethodBinding(Func<string, CodeGenerator, object, bool> writer, string methodName, params Type[] parameters)
-        {
-            var method = _type.GetMethod(methodName, parameters);
-            if (method != null)
-            {
-                _csMethodWriter[method] = writer;
-            }
-
             return this;
         }
 
@@ -441,17 +413,6 @@ namespace QuickJS.Binding
         public Native.JSCFunction GetCSMethodOverrideBinding(string methodName)
         {
             return _csMethodOverride.TryGetValue(methodName, out var func) ? func : null;
-        }
-
-        public bool OnBinding(string bindPoint, MethodBase method, CodeGenerator cg, object info = null)
-        {
-            Func<string, CodeGenerator, object, bool> act;
-            if (_csMethodWriter.TryGetValue(method, out act))
-            {
-                return act(bindPoint, cg, info);
-            }
-
-            return false;
         }
     }
 }

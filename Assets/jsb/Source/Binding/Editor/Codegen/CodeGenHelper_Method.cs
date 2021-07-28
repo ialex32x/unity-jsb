@@ -523,12 +523,12 @@ namespace QuickJS.Binding
                 cg.bindingManager.Info($"WriteCSMethodBinding: {method.Name} {isExtension}");
             }
 
-            // 是否接管 cs 绑定代码生成
-            var transform = cg.bindingManager.GetTypeTransform(method.DeclaringType);
-            if (transform != null && transform.OnBinding(BindingPoints.METHOD_BINDING_FULL, method, cg))
-            {
-                return;
-            }
+            // // 是否接管 cs 绑定代码生成
+            // var transform = cg.bindingManager.GetTypeTransform(method.DeclaringType);
+            // if (transform != null && transform.OnBinding(BindingPoints.METHOD_BINDING_FULL, method, cg))
+            // {
+            //     return;
+            // }
 
             // var isRaw = method.IsDefined(typeof(JSCFunctionAttribute));
             var parameters = method.GetParameters();
@@ -632,11 +632,11 @@ namespace QuickJS.Binding
         {
             var arglist = Concat(AppendGetParameters(hasParams, nargs, method, parameters));
             var decalringTypeName = this.cg.bindingManager.GetCSTypeFullName(this.methodBindingInfo.decalringType);
-            // 方法本身有返回值
-            var transform = cg.bindingManager.GetTypeTransform(method.DeclaringType);
-            if (transform == null || !transform.OnBinding(BindingPoints.METHOD_BINDING_BEFORE_INVOKE, method, cg, arglist))
-            {
-            }
+            // // 方法本身有返回值
+            // var transform = cg.bindingManager.GetTypeTransform(method.DeclaringType);
+            // if (transform == null || !transform.OnBinding(BindingPoints.METHOD_BINDING_BEFORE_INVOKE, method, cg, arglist))
+            // {
+            // }
             return $"var o = new {decalringTypeName}({arglist})";
         }
 
@@ -745,12 +745,11 @@ namespace QuickJS.Binding
             var paramsToGet = isExtension ? parameters.Skip(1).ToArray() : parameters;
             var arglist = AppendGetParameters(hasParams, nargs, method, paramsToGet);
             var arglistSig = Concat(arglist);
-            var transform = cg.bindingManager.GetTypeTransform(method.DeclaringType);
-
-            // 在生成调用前插入代码 
-            if (transform == null || !transform.OnBinding(BindingPoints.METHOD_BINDING_BEFORE_INVOKE, method, cg))
-            {
-            }
+            // var transform = cg.bindingManager.GetTypeTransform(method.DeclaringType);
+            // // 在生成调用前插入代码 
+            // if (transform == null || !transform.OnBinding(BindingPoints.METHOD_BINDING_BEFORE_INVOKE, method, cg))
+            // {
+            // }
 
             // 扩展方法调用实际静态类方法
             if (isExtension)
