@@ -1,5 +1,6 @@
 import { AddCacheString } from "jsb";
 import { EditorGUILayout, EditorWindow } from "UnityEditor";
+import { GUILayout } from "UnityEngine";
 import { ScriptEditorWindow } from "../plover/editor/editor_decorators";
 
 @ScriptEditorWindow()

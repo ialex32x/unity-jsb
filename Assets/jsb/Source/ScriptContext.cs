@@ -405,6 +405,27 @@ namespace QuickJS
             });
         }
 
+        public bool LoadModuleCacheExports(string module_id, string key, out JSValue value)
+        {
+            JSValue mod_obj;
+
+            value = JSApi.JS_UNDEFINED;
+            if (LoadModuleCache(module_id, out mod_obj))
+            {
+                var exports = JSApi.JS_GetProperty(_ctx, mod_obj, GetAtom("exports"));
+                
+                if (exports.IsObject())
+                {
+                    value = JSApi.JS_GetProperty(_ctx, exports, GetAtom(key));
+                }
+
+                JSApi.JS_FreeValue(_ctx, exports);
+                JSApi.JS_FreeValue(_ctx, mod_obj);
+            }
+
+            return !value.IsUndefined();
+        }
+
         public bool LoadModuleCache(string module_id, out JSValue value)
         {
             var prop = GetAtom(module_id);

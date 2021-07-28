@@ -94,23 +94,7 @@ namespace QuickJS.Unity
             _ctx = ctx;
             _this_obj = JSApi.JS_DupValue(ctx, this_obj);
 
-            _updateFunc = JSApi.JS_GetProperty(ctx, this_obj, context.GetAtom("Update"));
-            _updateValid = JSApi.JS_IsFunction(ctx, _updateFunc) == 1;
-
-            _onEnableFunc = JSApi.JS_GetProperty(ctx, this_obj, context.GetAtom("OnEnable"));
-            _onEnableValid = JSApi.JS_IsFunction(ctx, _onEnableFunc) == 1;
-
-            _onDisableFunc = JSApi.JS_GetProperty(ctx, this_obj, context.GetAtom("OnDisable"));
-            _onDisableValid = JSApi.JS_IsFunction(ctx, _onDisableFunc) == 1;
-
-            _onDestroyFunc = JSApi.JS_GetProperty(ctx, this_obj, context.GetAtom("OnDestroy"));
-            _onDestroyValid = JSApi.JS_IsFunction(ctx, _onDestroyFunc) == 1;
-
-            _onGUIFunc = JSApi.JS_GetProperty(ctx, this_obj, context.GetAtom("OnGUI"));
-            _onGUIValid = JSApi.JS_IsFunction(ctx, _onGUIFunc) == 1;
-
-            _addItemsToMenuFunc = JSApi.JS_GetProperty(ctx, this_obj, context.GetAtom("AddItemsToMenu"));
-            _addItemsToMenuValid = JSApi.JS_IsFunction(ctx, _addItemsToMenuFunc) == 1;
+            BindJSMembers(context);
 
             var awake_obj = JSApi.JS_GetProperty(ctx, this_obj, context.GetAtom("Awake"));
 
@@ -120,6 +104,56 @@ namespace QuickJS.Unity
             {
                 Call(_onEnableFunc);
             }
+        }
+
+        private void BindJSMembers(ScriptContext context)
+        {
+            var ctx = (JSContext)context;
+
+            _updateFunc = JSApi.JS_GetProperty(ctx, _this_obj, context.GetAtom("Update"));
+            _updateValid = JSApi.JS_IsFunction(ctx, _updateFunc) == 1;
+
+            _onEnableFunc = JSApi.JS_GetProperty(ctx, _this_obj, context.GetAtom("OnEnable"));
+            _onEnableValid = JSApi.JS_IsFunction(ctx, _onEnableFunc) == 1;
+
+            _onDisableFunc = JSApi.JS_GetProperty(ctx, _this_obj, context.GetAtom("OnDisable"));
+            _onDisableValid = JSApi.JS_IsFunction(ctx, _onDisableFunc) == 1;
+
+            _onDestroyFunc = JSApi.JS_GetProperty(ctx, _this_obj, context.GetAtom("OnDestroy"));
+            _onDestroyValid = JSApi.JS_IsFunction(ctx, _onDestroyFunc) == 1;
+
+            _onGUIFunc = JSApi.JS_GetProperty(ctx, _this_obj, context.GetAtom("OnGUI"));
+            _onGUIValid = JSApi.JS_IsFunction(ctx, _onGUIFunc) == 1;
+
+            _addItemsToMenuFunc = JSApi.JS_GetProperty(ctx, _this_obj, context.GetAtom("AddItemsToMenu"));
+            _addItemsToMenuValid = JSApi.JS_IsFunction(ctx, _addItemsToMenuFunc) == 1;
+        }
+
+        private void UnbindJSMembers()
+        {
+            JSApi.JS_FreeValue(_ctx, _updateFunc);
+            _updateFunc = JSApi.JS_UNDEFINED;
+            _updateValid = false;
+
+            JSApi.JS_FreeValue(_ctx, _onEnableFunc);
+            _onEnableFunc = JSApi.JS_UNDEFINED;
+            _onEnableValid = false;
+
+            JSApi.JS_FreeValue(_ctx, _onDisableFunc);
+            _onDisableFunc = JSApi.JS_UNDEFINED;
+            _onDisableValid = false;
+
+            JSApi.JS_FreeValue(_ctx, _onDestroyFunc);
+            _onDestroyFunc = JSApi.JS_UNDEFINED;
+            _onDestroyValid = false;
+
+            JSApi.JS_FreeValue(_ctx, _onGUIFunc);
+            _onGUIFunc = JSApi.JS_UNDEFINED;
+            _onGUIValid = false;
+
+            JSApi.JS_FreeValue(_ctx, _addItemsToMenuFunc);
+            _addItemsToMenuFunc = JSApi.JS_UNDEFINED;
+            _addItemsToMenuValid = false;
         }
 
         private void Call(JSValue func_obj)
@@ -148,15 +182,24 @@ namespace QuickJS.Unity
         {
             if (_moduleId == resolved_id)
             {
-                //TODO: reload editor window script. prefer to replace this_obj's prototype instead of recreate the whole instance.
-                // if it works, MonoBehaviour and ScriptableObject scripting should be similar.
-                
-                // pseudocode:
-                // NewClass = moduleCache[module_id][class_name];
-                // Object.setPrototypeOf(this, NewClass.prototype);
-                Debug.LogWarning("NOT_IMPLEMENTED: reload editor window script");
-                // ReleaseJSValues();
-                // CreateScriptInstance();
+                //NOTE: now the EditorWindow use different mechanism to reload script, 
+                // Editor/MonoBehaviour/ScriptObject will be updated to the same later soon.
+
+                JSValue newClass;
+                if (context.LoadModuleCacheExports(resolved_id, _className, out newClass))
+                {
+                    var prototype = JSApi.JS_GetProperty(context, newClass, context.GetAtom("prototype"));
+
+                    if (prototype.IsObject())
+                    {
+                        UnbindJSMembers();
+                        JSApi.JS_SetPrototype(context, _this_obj, prototype);
+                        BindJSMembers(context);
+                    }
+
+                    JSApi.JS_FreeValue(context, prototype);
+                    JSApi.JS_FreeValue(context, newClass);
+                }
             }
         }
 #endif
@@ -174,18 +217,8 @@ namespace QuickJS.Unity
             }
 
             _released = true;
-            JSApi.JS_FreeValue(_ctx, _updateFunc);
-            _updateValid = false;
-            JSApi.JS_FreeValue(_ctx, _onEnableFunc);
-            _onEnableValid = false;
-            JSApi.JS_FreeValue(_ctx, _onDisableFunc);
-            _onDisableValid = false;
-            JSApi.JS_FreeValue(_ctx, _onDestroyFunc);
-            _onDestroyValid = false;
-            JSApi.JS_FreeValue(_ctx, _onGUIFunc);
-            _onGUIValid = false;
-            JSApi.JS_FreeValue(_ctx, _addItemsToMenuFunc);
-            _addItemsToMenuValid = false;
+
+            UnbindJSMembers();
             JSApi.JS_FreeValue(_ctx, _this_obj);
 
             var context = ScriptEngine.GetContext(_ctx);
