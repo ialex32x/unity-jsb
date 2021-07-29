@@ -14,10 +14,14 @@ namespace QuickJS.Unity
 
     public class ScriptEditorWindowLauncher : BaseEditorWindow
     {
+        private GUIContent _scriptIcon;
+        private Vector2 _sv;
         private List<JSScriptClassPathHint> _classPaths;
 
         void Awake()
         {
+            var image = (Texture)AssetDatabase.LoadAssetAtPath("Assets/jsb/Editor/Icons/JsScript.png", typeof(Texture));
+            _scriptIcon = new GUIContent(image);
             Reset();
         }
 
@@ -41,8 +45,7 @@ namespace QuickJS.Unity
 
         private void DrawScriptItem(JSScriptClassPathHint classPath)
         {
-            var scriptIcon = EditorGUIUtility.IconContent("d_Js Script Icon");
-            if (GUILayout.Button(scriptIcon, GUILayout.Width(64f), GUILayout.Height(64f)))
+            if (GUILayout.Button(_scriptIcon, GUILayout.Width(64f), GUILayout.Height(64f)))
             {
                 EditorRuntime.ShowWindow(classPath.modulePath, classPath.className);
             }
@@ -66,12 +69,15 @@ namespace QuickJS.Unity
             var size = _classPaths.Count;
             EditorGUILayout.HelpBox("ScriptEditorWindowLauncher is an experimental unfinished feature. it could be used to open editor windows implemented in typescript, we need this because there is no open api in Unity to dynamically create menu item at the moment.", MessageType.Warning);
             EditorGUILayout.HelpBox(string.Format("{0} EditorWindow Scripts", size), MessageType.Info);
+
+            _sv = EditorGUILayout.BeginScrollView(_sv);
             for (var i = 0; i < size; i++)
             {
                 var item = _classPaths[i];
 
                 DrawScriptItem(item);
             }
+            EditorGUILayout.EndScrollView();
         }
     }
 }
