@@ -29,20 +29,6 @@ namespace Example.Editor
             // bindingManager.AddExportedType(typeof(System.Net.IPAddress));
             // bindingManager.AddExportedType(typeof(System.Net.IPEndPoint));
 
-            bindingManager.AddExportedType(typeof(WaitForSeconds), true);
-            bindingManager.AddExportedType(typeof(WaitForEndOfFrame), true);
-            bindingManager.AddExportedType(typeof(Time));
-            bindingManager.AddExportedType(typeof(Random));
-            bindingManager.AddExportedType(typeof(Input));
-            bindingManager.AddExportedType(typeof(Debug));
-            bindingManager.AddExportedType(typeof(Ray));
-            bindingManager.AddExportedType(typeof(Rect));
-            bindingManager.AddExportedType(typeof(RaycastHit));
-            bindingManager.AddExportedType(typeof(Physics));
-            bindingManager.AddExportedType(typeof(Collider));
-            bindingManager.AddExportedType(typeof(BoxCollider));
-            bindingManager.AddExportedType(typeof(SphereCollider));
-            bindingManager.AddExportedType(typeof(Rigidbody));
             bindingManager.AddExportedType(typeof(ParticleSystem));
             bindingManager.AddExportedType(typeof(ParticleSystemRenderer));
             bindingManager.AddExportedType(typeof(ParticleSystem.MainModule));
@@ -50,7 +36,6 @@ namespace Example.Editor
             bindingManager.AddExportedType(typeof(System.Net.IPHostEntry)).SystemRuntime();
 
             bindingManager.AddExportedType(typeof(System.DateTime)).SystemRuntime().EnableOperatorOverloading(false);
-            bindingManager.AddExportedType(typeof(System.Enum)).SystemRuntime();
             bindingManager.AddExportedType(typeof(System.IO.FileInfo)).SystemRuntime()
                 .SetMemberBlocked("GetAccessControl")
                 .SetMemberBlocked("SetAccessControl");

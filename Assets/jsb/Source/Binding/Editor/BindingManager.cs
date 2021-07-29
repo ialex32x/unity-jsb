@@ -1534,6 +1534,7 @@ namespace QuickJS.Binding
                 .SetMemberBlocked("CreateDelegate")
             ;
 
+            AddExportedType(typeof(System.Enum)).SystemRuntime();
             AddExportedType(typeof(QuickJS.IO.ByteBuffer));
         }
 

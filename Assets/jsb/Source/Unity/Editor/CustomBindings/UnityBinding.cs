@@ -87,12 +87,16 @@ namespace jsb.Editor
             bindingManager.AddExportedType(typeof(Vector3));
             bindingManager.AddExportedType(typeof(Vector3Int));
             bindingManager.AddExportedType(typeof(Vector4));
+            bindingManager.AddExportedType(typeof(Rect));
             bindingManager.AddExportedType(typeof(Quaternion));
             bindingManager.AddExportedType(typeof(Matrix4x4));
             bindingManager.AddExportedType(typeof(PrimitiveType));
+
             bindingManager.AddExportedType(typeof(UnityEngine.Object))
                 .EnableOperatorOverloading(false)
                 ;
+            bindingManager.AddExportedType(typeof(Time));
+            bindingManager.AddExportedType(typeof(Random));
             bindingManager.AddExportedType(typeof(GameObject), true);
             bindingManager.AddExportedType(typeof(Camera), true);
             bindingManager.AddExportedType(typeof(Transform), true);
@@ -106,6 +110,18 @@ namespace jsb.Editor
             bindingManager.AddExportedType(typeof(Animator), true);
             bindingManager.AddExportedType(typeof(AnimationState), true);
             bindingManager.AddExportedType(typeof(WrapMode), true);
+            bindingManager.AddExportedType(typeof(Debug));
+            bindingManager.AddExportedType(typeof(WaitForSeconds), true);
+            bindingManager.AddExportedType(typeof(WaitForEndOfFrame), true);
+            bindingManager.AddExportedType(typeof(Input));
+
+            bindingManager.AddExportedType(typeof(Ray));
+            bindingManager.AddExportedType(typeof(RaycastHit));
+            bindingManager.AddExportedType(typeof(Physics));
+            bindingManager.AddExportedType(typeof(Collider));
+            bindingManager.AddExportedType(typeof(BoxCollider));
+            bindingManager.AddExportedType(typeof(SphereCollider));
+            bindingManager.AddExportedType(typeof(Rigidbody));
 
             bindingManager.AddExportedType(typeof(Resources)).SetAllConstructorsBlocked();
             bindingManager.AddExportedType(typeof(QuickJS.Unity.JSScriptProperties));
