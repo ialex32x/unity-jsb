@@ -403,8 +403,10 @@ namespace QuickJS.Binding
             }
         }
 
-        // 增加导出类型 (需要在 Collect 阶段进行)
-        //NOTE: editor mscorlib 与 runtime 存在差异, 需要手工 block 差异
+        /// <summary>
+        /// Add the type to the typelist for binding. (do it before Collect())
+        /// </summary>
+        /// <param name="importBaseType">whether to process the base type or not</param>
         public TypeTransform AddExportedType(Type type, bool importBaseType = false)
         {
             var typeTransform = TransformType(type);
@@ -1342,8 +1344,6 @@ namespace QuickJS.Binding
                 }
             }
         }
-
-
 
         public void Collect()
         {

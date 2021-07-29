@@ -761,6 +761,9 @@ namespace QuickJS
             }
         }
 
+        /// <summary>
+        /// load and run the main module
+        /// </summary>
         public void EvalMain(string fileName)
         {
             EvalMain(fileName, typeof(void));

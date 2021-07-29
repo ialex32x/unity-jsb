@@ -58,7 +58,7 @@ namespace QuickJS.Binding
         // private Func<MethodInfo, bool> _filterMethodInfo;
 
         private Dictionary<MemberInfo, string> _memberNameRules = new Dictionary<MemberInfo, string>();
-        
+
         private Dictionary<MemberInfo, string> _memberNameAlias = new Dictionary<MemberInfo, string>();
 
         /// <summary>
@@ -88,8 +88,9 @@ namespace QuickJS.Binding
         }
 
         /// <summary>
-        /// 标记此类型完全由 JS 托管 (JS对象释放时, CS对象即释放).
-        /// 该设置只针对由 JS 构造产生的此类型对象实例.
+        /// let this type's lifetime totally managed by JS.
+        /// it means the underlying C# object will be automatically disposed after JS object's releasing.
+        /// NOTE: it's only valid for the objects created by JS ('new XXX()' in JS).
         /// </summary>
         public TypeTransform SetDisposable()
         {
@@ -97,13 +98,16 @@ namespace QuickJS.Binding
             return this;
         }
 
+        /// <summary>
+        /// the generated static binding code for this type will be guarded by UNITY_EDITOR
+        /// </summary>
         public TypeTransform EditorRuntime()
         {
             return AddRequiredDefines("UNITY_EDITOR");
         }
 
         /// <summary>
-        /// 
+        /// let this type binding only available with specified C# DefineConstants
         /// </summary>
         public TypeTransform AddRequiredDefines(params string[] defines)
         {
@@ -115,7 +119,8 @@ namespace QuickJS.Binding
         }
 
         /// <summary>
-        /// 标记此类型不限制于目标平台编译
+        /// this type will not guarded by unity target platform define constants (UNITY_ANDROID, UNITY_IOS etc.)
+        /// it's only used for generating static binding code.
         /// </summary>
         public TypeTransform SystemRuntime()
         {
@@ -123,6 +128,9 @@ namespace QuickJS.Binding
             return this;
         }
 
+        /// <summary>
+        /// filter out the member if the callback returns true.
+        /// </summary>
         public TypeTransform OnFilter<T>(Func<T, bool> callback)
         {
             _filters[typeof(T)] = callback;
@@ -303,6 +311,10 @@ namespace QuickJS.Binding
             return _memberBlacklist.Contains(memeberName);
         }
 
+        /// <summary>
+        /// mark any member as blocked with specific name. 
+        /// </summary>
+        /// <param name="memberName">the name of member you want to block</param>
         public TypeTransform SetMemberBlocked(string memberName)
         {
             _memberBlacklist.Add(memberName);
@@ -321,7 +333,7 @@ namespace QuickJS.Binding
         }
 
         /// <summary>
-        /// 屏蔽所有构造函数
+        /// block all of the constructors 
         /// </summary>
         public TypeTransform SetAllConstructorsBlocked()
         {
@@ -334,7 +346,7 @@ namespace QuickJS.Binding
         }
 
         /// <summary>
-        /// 屏蔽指定签名的构造方法
+        /// block the constructors with specific parameters
         /// </summary>
         public TypeTransform SetConstructorBlocked(params Type[] parameters)
         {

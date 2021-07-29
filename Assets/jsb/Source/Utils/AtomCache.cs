@@ -3,6 +3,9 @@ using QuickJS.Native;
 
 namespace QuickJS.Utils
 {
+    /// <summary>
+    /// a cache for JSAtom (preventing repeatedly gc alloc of string => bytes convertion)
+    /// </summary>
     public class AtomCache
     {
         private JSContext _ctx;
@@ -30,6 +33,9 @@ namespace QuickJS.Utils
             return atom;
         }
 
+        /// <summary>
+        /// Clear the atom cache. It's safe to clear the cache for memory shrinking, the atom will be re-cached at next GetAtom() call.
+        /// </summary>
         public void Clear()
         {
             foreach (var kv in _atoms)

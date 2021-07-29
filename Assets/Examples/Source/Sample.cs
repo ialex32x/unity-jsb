@@ -25,7 +25,7 @@ namespace Example
         public string baseUrl = "http://127.0.0.1:8183";
         [ExampleScriptsHint("Scripts/out")]
         public string entryFileName = "example_main.js";
-        [ExampleToggleHint("启用 ReflectBind")]
+        [ExampleToggleHint("ReflectBind Mode")]
         public bool useReflectBind;
         public bool sourceMap;
         public bool stacktrace;
@@ -45,16 +45,19 @@ namespace Example
             if (fileLoader == FileLoader.Resources)
             {
                 fileSystem = new ResourcesFileSystem(_mConsole);
-                pathResolver.AddSearchPath("dist"); // 这里的路径相对于 Unity Resources 空间
+                
+                // it's the relative path under Unity Resources directory space
+                pathResolver.AddSearchPath("dist"); 
             }
             else if (fileLoader == FileLoader.HMR)
             {
-                Debug.LogWarningFormat("功能未完成");
+                Debug.LogWarningFormat("!!! not implemented feature !!!");
                 fileSystem = new HttpFileSystem(_mConsole, baseUrl);
             }
             else
             {
-                // 演示了一般文件系统的访问, 实际项目中典型的情况需要自行实现基于 AssetBundle(或 7z/zip) 的文件访问层
+                // the DefaultFileSystem only demonstrates the minimalistic implementation of file access, it's usually enough for development in editor.
+                // you should implement your own filesystem layer for the device-end runtime (based on AssetBundle or zip)
                 fileSystem = new DefaultFileSystem(_mConsole);
                 pathResolver.AddSearchPath("Scripts/out");
                 // pathResolver.AddSearchPath("../Scripts/out");

@@ -47,7 +47,7 @@ namespace QuickJS.Binding
         }
 
         /// <summary>
-        /// 获取 Constructor (增加引用计数)
+        /// obtain the raw JS constructor (already duplicated)
         /// </summary>
         public JSValue GetConstructor()
         {
@@ -237,7 +237,7 @@ namespace QuickJS.Binding
             JSApi.JS_DefinePropertyValue(_context, _ctor, nameAtom, v, JSPropFlags.CONST_VALUE);
         }
 
-        #region 常量 (静态)
+        #region Registration for const values
         public void AddConstValue(string name, bool v)
         {
             var val = JSApi.JS_NewBool(_context, v);

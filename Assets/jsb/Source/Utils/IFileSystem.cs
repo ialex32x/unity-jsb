@@ -10,7 +10,7 @@ namespace QuickJS.Utils
         string GetFullPath(string path);
 
         /// <summary>
-        /// 读取文件内容, 无法读取时返回 null (不应该抛异常)
+        /// the content of file, return null if any error occurs (do not throw exception)
         /// </summary>
         byte[] ReadAllBytes(string path);
     }

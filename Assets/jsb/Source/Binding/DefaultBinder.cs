@@ -7,6 +7,9 @@ namespace QuickJS.Binding
 
     public static class DefaultBinder
     {
+        /// <summary>
+        /// determine which type binding mode to use (between staticbind and reflectbind)
+        /// </summary>
         public static BindAction GetBinder(bool useReflectBind)
         {
             return useReflectBind ? (BindAction)ReflectBind : StaticBind;

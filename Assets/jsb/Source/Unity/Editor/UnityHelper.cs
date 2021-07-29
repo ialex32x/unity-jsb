@@ -13,33 +13,6 @@ namespace QuickJS.Unity
     using System.Reflection;
     using QuickJS.Binding;
 
-    [Serializable]
-    public class TSConfig
-    {
-        [Serializable]
-        public class CompilerOptions
-        {
-            public string module;
-            public string target;
-            public string sourceRoot;
-            public string outDir;
-            public string outFile;
-            public string[] typeRoots;
-            public string moduleResolution;
-            public string[] types;
-            public bool listEmittedFiles;
-            public bool experimentalDecorators;
-            public bool noImplicitAny;
-            public bool allowJs;
-            public bool inlineSourceMap;
-            public bool sourceMap;
-        }
-        public CompilerOptions compilerOptions;
-        public bool compileOnSave;
-        public string[] include;
-        public string[] exclude;
-    }
-
     [InitializeOnLoad]
     public static class UnityHelper
     {
@@ -196,9 +169,11 @@ namespace QuickJS.Unity
                 case BuildTarget.StandaloneWindows:
                 case BuildTarget.StandaloneWindows64: return "Windows";
                 case BuildTarget.StandaloneOSX: return "OSX";
+#if !UNITY_2019_2_OR_NEWER
                 case BuildTarget.StandaloneLinux:
-                case BuildTarget.StandaloneLinux64:
-                case BuildTarget.StandaloneLinuxUniversal: return "Linux";
+                case BuildTarget.StandaloneLinuxUniversal: 
+#endif
+                case BuildTarget.StandaloneLinux64: return "Linux";
                 case BuildTarget.Switch: return "Switch";
                 case BuildTarget.PS4: return "PS4";
                 default: return buildTarget.ToString();
@@ -323,7 +298,7 @@ namespace QuickJS.Unity
             if (File.Exists(tsconfigPath))
             {
                 var text = Utils.TextUtils.NormalizeJson(File.ReadAllText(tsconfigPath));
-                var tsconfig = JsonUtility.FromJson<TSConfig>(text);
+                var tsconfig = JsonUtility.FromJson<Utils.TSConfig>(text);
                 var module = tsconfig.compilerOptions.module;
                 if (module == "commonjs")
                 {
@@ -438,7 +413,7 @@ namespace QuickJS.Unity
                         {
                             var sourceSubPathNorm = sourcePathNorm[0] == '/' ? sourcePathNorm.Substring(appPathNorm.Length + 1) : sourcePathNorm.Substring(appPathNorm.Length);
                             var offset = sourceSubPathNorm[0] == '/' ? 1 : 0;
-                            
+
                             modulePath = sourceSubPathNorm.Substring(offset, sourceSubPathNorm.Length - sourceExt.Length - offset);
                             GetJSScriptClasses(sourceFile, modulePath, hints);
                             return true;
@@ -474,7 +449,7 @@ namespace QuickJS.Unity
             {
                 hints.Add(new JSScriptClassPathHint(sourceFile, modulePath, m.Groups[1].Value, JSScriptClassType.CustomEditor));
             }
-            
+
             foreach (Match m in JSEditorWindowClassNameRegex.Matches(text))
             {
                 hints.Add(new JSScriptClassPathHint(sourceFile, modulePath, m.Groups[1].Value, JSScriptClassType.EditorWindow));
