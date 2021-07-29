@@ -27,6 +27,7 @@ namespace jsb.Editor
         {
             bindingManager.SetTypeBlocked(typeof(UnityEngine.UI.ILayoutGroup));
             bindingManager.SetTypeBlocked(typeof(UnityEngine.UI.ILayoutSelfController));
+            bindingManager.SetTypeBlocked(typeof(UnityEngine.UI.GraphicRebuildTracker));
             
             bindingManager.TransformType(typeof(UnityEngine.UI.PositionAsUV1))
                 .SetMemberBlocked("ModifyMesh");
