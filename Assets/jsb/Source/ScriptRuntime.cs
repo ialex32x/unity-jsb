@@ -791,7 +791,12 @@ namespace QuickJS
                 }
             }
 
-            return null;
+            throw new UnexpectedException("<invalid file name>", "can not resolve file path");
+        }
+
+        public void EvalEmptyMain()
+        {
+            _mainContext.EvalEmptyMain();
         }
 
         public bool IsMainThread()

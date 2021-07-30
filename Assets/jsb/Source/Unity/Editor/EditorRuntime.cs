@@ -144,7 +144,14 @@ namespace QuickJS.Unity
                 runtime.AddSearchPath(tsconfig.compilerOptions.outDir);
             }
 
-            runtime.EvalMain(_prefs.editorEntryPoint);
+            if (!string.IsNullOrEmpty(_prefs.editorEntryPoint))
+            {
+                runtime.EvalMain(_prefs.editorEntryPoint);
+            }
+            else 
+            {
+                runtime.EvalEmptyMain();
+            }
 
             foreach (var module in _prefs.editorRequires)
             {
