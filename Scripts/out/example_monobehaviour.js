@@ -9,8 +9,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.Something5Behaviour = exports.RotateBehaviour = exports.MySubClass = exports.MyClass = exports.ASimpleGuiDialog = void 0;
 const UnityEngine_1 = require("UnityEngine");
 const jsb = require("jsb");
-const editor_decorators_1 = require("./plover/editor/editor_decorators");
 const UnityEngine_UI_1 = require("UnityEngine.UI");
+const class_decorators_1 = require("./plover/runtime/class_decorators");
 let ASimpleGuiDialog = class ASimpleGuiDialog extends UnityEngine_1.MonoBehaviour {
     //TODO: [此功能未完成] 使 UnityEvent 识别并接受脚本函数作为回调
     onClicked() {
@@ -18,13 +18,13 @@ let ASimpleGuiDialog = class ASimpleGuiDialog extends UnityEngine_1.MonoBehaviou
     }
 };
 __decorate([
-    editor_decorators_1.ScriptProperty({ type: "object", bind: { widget: UnityEngine_UI_1.Button } })
+    class_decorators_1.ScriptProperty({ type: "object", bind: { widget: UnityEngine_UI_1.Button } })
 ], ASimpleGuiDialog.prototype, "nameLabel", void 0);
 __decorate([
-    editor_decorators_1.ScriptFunction()
+    class_decorators_1.ScriptFunction()
 ], ASimpleGuiDialog.prototype, "onClicked", null);
 ASimpleGuiDialog = __decorate([
-    editor_decorators_1.ScriptType()
+    class_decorators_1.ScriptType()
 ], ASimpleGuiDialog);
 exports.ASimpleGuiDialog = ASimpleGuiDialog;
 let MyClass = class MyClass extends UnityEngine_1.MonoBehaviour {
@@ -57,13 +57,13 @@ let MyClass = class MyClass extends UnityEngine_1.MonoBehaviour {
     }
 };
 __decorate([
-    editor_decorators_1.ScriptNumber()
+    class_decorators_1.ScriptNumber()
 ], MyClass.prototype, "vv", void 0);
 __decorate([
-    editor_decorators_1.ScriptInteger({ editable: false, serializable: false })
+    class_decorators_1.ScriptInteger({ editable: false, serializable: false })
 ], MyClass.prototype, "_tick", void 0);
 MyClass = __decorate([
-    editor_decorators_1.ScriptType()
+    class_decorators_1.ScriptType()
 ], MyClass);
 exports.MyClass = MyClass;
 let MySubClass = class MySubClass extends MyClass {
@@ -87,7 +87,7 @@ let MySubClass = class MySubClass extends MyClass {
     }
 };
 MySubClass = __decorate([
-    editor_decorators_1.ScriptType()
+    class_decorators_1.ScriptType()
 ], MySubClass);
 exports.MySubClass = MySubClass;
 let RotateBehaviour = class RotateBehaviour extends UnityEngine_1.MonoBehaviour {
@@ -115,16 +115,16 @@ let RotateBehaviour = class RotateBehaviour extends UnityEngine_1.MonoBehaviour 
     }
 };
 __decorate([
-    editor_decorators_1.ScriptNumber({ serializable: false })
+    class_decorators_1.ScriptNumber({ serializable: false })
 ], RotateBehaviour.prototype, "rotationSpeed", void 0);
 RotateBehaviour = __decorate([
-    editor_decorators_1.ScriptType()
+    class_decorators_1.ScriptType()
 ], RotateBehaviour);
 exports.RotateBehaviour = RotateBehaviour;
 let Something5Behaviour = class Something5Behaviour extends UnityEngine_1.MonoBehaviour {
 };
 Something5Behaviour = __decorate([
-    editor_decorators_1.ScriptType()
+    class_decorators_1.ScriptType()
 ], Something5Behaviour);
 exports.Something5Behaviour = Something5Behaviour;
 if (module == require.main) {

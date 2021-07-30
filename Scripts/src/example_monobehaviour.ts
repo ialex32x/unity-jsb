@@ -1,9 +1,8 @@
 import { MonoBehaviour, WaitForSeconds, Object, Input, Camera, GameObject, PrimitiveType, Vector3, Quaternion, Physics, LayerMask, RaycastHit, Transform, Time, ParticleSystem, ParticleSystemSimulationSpace } from "UnityEngine";
 import * as jsb from "jsb";
-import { ScriptNumber, ScriptType, ScriptInteger, ScriptFunction, ScriptProperty } from "./plover/editor/editor_decorators";
 import { Out } from "jsb";
-import { As } from "./plover/editor/serialize";
 import { Button } from "UnityEngine.UI";
+import { ScriptType, ScriptProperty, ScriptFunction, ScriptNumber, ScriptInteger } from "./plover/runtime/class_decorators";
 
 @ScriptType()
 export class ASimpleGuiDialog extends MonoBehaviour {

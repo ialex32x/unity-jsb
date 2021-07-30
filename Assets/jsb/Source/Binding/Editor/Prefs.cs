@@ -69,9 +69,17 @@ namespace QuickJS.Binding
         /// </summary>
         public string editorEntryPoint = "editor/main";
 
+        /// <summary>
+        /// Asset Postprocessor(s) implemented in scripts
+        /// </summary>
+        public List<string> assetPostProcessors = new List<string>(new string[]
+        {
+            "editor/asset_postprocessor",
+        });
+
         public List<string> editorRequires = new List<string>(new string[]
         {
-            "plover/editor/js_reload"
+            "plover/editor/js_reload",
         });
 
         /// <summary>

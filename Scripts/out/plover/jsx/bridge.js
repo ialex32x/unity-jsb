@@ -8,7 +8,7 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.JSXWidgetBridge = void 0;
 const UnityEngine_1 = require("UnityEngine");
-const editor_decorators_1 = require("../editor/editor_decorators");
+const class_decorators_1 = require("../runtime/class_decorators");
 let JSXWidgetBridge = class JSXWidgetBridge extends UnityEngine_1.MonoBehaviour {
     get data() { return null; }
     OnDestroy() {
@@ -18,7 +18,7 @@ let JSXWidgetBridge = class JSXWidgetBridge extends UnityEngine_1.MonoBehaviour 
     }
 };
 JSXWidgetBridge = __decorate([
-    editor_decorators_1.ScriptType()
+    class_decorators_1.ScriptType()
 ], JSXWidgetBridge);
 exports.JSXWidgetBridge = JSXWidgetBridge;
 //# sourceMappingURL=bridge.js.map

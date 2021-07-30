@@ -3,6 +3,8 @@ import { Array } from "System";
 import { AssetPostprocessor } from "UnityEditor";
 import { AudioClip, GameObject, Material, Sprite, Texture2D } from "UnityEngine";
 
+// You need to register this script into assetPostProcessors in js-bridge.json (or Prefs.cs) to activate these callbacks
+
 export function OnPostprocessTexture(processor: AssetPostprocessor, tex: Texture2D) {
     // console.log("OnPostprocessTexture", processor.assetPath);
 }

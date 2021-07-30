@@ -1,5 +1,5 @@
 import { Animator, Input, KeyCode, MonoBehaviour, SpriteRenderer, Time, Vector3 } from "UnityEngine";
-import { ScriptType, ScriptNumber, ScriptObject } from "../plover/editor/editor_decorators";
+import { ScriptType, ScriptObject, ScriptNumber } from "../plover/runtime/class_decorators";
 
 @ScriptType()
 export class KingHumanController extends MonoBehaviour {

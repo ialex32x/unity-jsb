@@ -40,6 +40,11 @@ namespace QuickJS.Unity
             }
         }
 
+        public static Prefs GetPrefs()
+        {
+            return _instance?._prefs;
+        }
+
         public static EditorRuntime GetInstance()
         {
             return _instance;
@@ -148,7 +153,7 @@ namespace QuickJS.Unity
             {
                 runtime.EvalMain(_prefs.editorEntryPoint);
             }
-            else 
+            else
             {
                 runtime.EvalEmptyMain();
             }
@@ -159,17 +164,24 @@ namespace QuickJS.Unity
             }
 
             var editorScripts = new List<JSScriptClassPathHint>();
+
             JSScriptFinder.GetInstance().ModuleSourceChanged += OnModuleSourceChanged;
             JSScriptFinder.GetInstance().Search(JSScriptClassType.CustomEditor, editorScripts);
+
             foreach (var editorScript in editorScripts)
             {
                 runtime.ResolveModule(editorScript.modulePath);
+            }
+
+            foreach (var assetPostProcessor in _prefs.assetPostProcessors)
+            {
+                runtime.ResolveModule(assetPostProcessor);
             }
         }
 
         private void OnModuleSourceChanged(string modulePath, JSScriptClassType classTypes)
         {
-            if ((classTypes & JSScriptClassType.CustomEditor) != 0)
+            if ((classTypes & JSScriptClassType.CustomEditor) != 0 || _prefs.assetPostProcessors.Contains(modulePath))
             {
                 if (_runtime != null && _runtime.isValid && !EditorApplication.isCompiling)
                 {

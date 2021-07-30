@@ -44,67 +44,83 @@ namespace QuickJS.Unity
 
         private static void CallJavascript(AssetPostprocessor proc, string funcName, params object[] args)
         {
+            var prefs = EditorRuntime.GetPrefs();
+            if (prefs != null && prefs.assetPostProcessors != null)
+            {
+                foreach (var postprocessor in prefs.assetPostProcessors)
+                {
+                    CallJavascript(postprocessor, proc, funcName, args);
+                }
+            }
+        }
+
+        private static void CallJavascript(string module_id, AssetPostprocessor proc, string funcName, params object[] args)
+        {
             var rt = EditorRuntime.GetRuntime();
             if (rt != null)
             {
                 var context = rt.GetMainContext();
                 var ctx = (JSContext)context;
-                var globalThis = context.GetGlobalObject();
-                var func = JSApi.JS_GetProperty(ctx, globalThis, context.GetAtom(funcName));
 
-                if (JSApi.JS_IsFunction(ctx, func) == 1)
+                JSValue func;
+                if (context.LoadModuleCacheExports(module_id, funcName, out func))
                 {
-                    var arglist = new List<JSValue>();
-                    do
+                    var globalThis = context.GetGlobalObject();
+
+                    if (JSApi.JS_IsFunction(ctx, func) == 1)
                     {
-                        if (proc != null)
+                        var arglist = new List<JSValue>();
+                        do
                         {
-                            var val = Values.js_push_var(ctx, proc);
-                            if (val.IsException())
+                            if (proc != null)
                             {
-                                ctx.print_exception();
+                                var val = Values.js_push_var(ctx, proc);
+                                if (val.IsException())
+                                {
+                                    ctx.print_exception();
+                                    break;
+                                }
+                                arglist.Add(val);
+                            }
+
+                            var err = false;
+                            for (var i = 0; i < args.Length; i++)
+                            {
+                                var val = Values.js_push_var(ctx, args[i]);
+                                if (val.IsException())
+                                {
+                                    ctx.print_exception();
+                                    err = true;
+                                    break;
+                                }
+                                arglist.Add(val);
+                            }
+
+                            if (err)
+                            {
                                 break;
                             }
-                            arglist.Add(val);
-                        }
 
-                        var err = false;
-                        for (var i = 0; i < args.Length; i++)
-                        {
-                            var val = Values.js_push_var(ctx, args[i]);
-                            if (val.IsException())
+                            var argv = arglist.ToArray();
+                            var rval = JSApi.JS_Call(ctx, func, globalThis, argv.Length, argv);
+
+                            if (rval.IsException())
                             {
                                 ctx.print_exception();
-                                err = true;
-                                break;
                             }
-                            arglist.Add(val);
-                        }
 
-                        if (err)
+                            JSApi.JS_FreeValue(ctx, rval);
+                        } while (false);
+
+                        for (var i = 0; i < arglist.Count; i++)
                         {
-                            break;
+                            JSApi.JS_FreeValue(ctx, arglist[i]);
                         }
-
-                        var argv = arglist.ToArray();
-                        var rval = JSApi.JS_Call(ctx, func, globalThis, argv.Length, argv);
-
-                        if (rval.IsException())
-                        {
-                            ctx.print_exception();
-                        }
-
-                        JSApi.JS_FreeValue(ctx, rval);
-                    } while (false);
-                    
-                    for (var i = 0; i < arglist.Count; i++)
-                    {
-                        JSApi.JS_FreeValue(ctx, arglist[i]);
                     }
-                }
 
-                JSApi.JS_FreeValue(ctx, func);
-                JSApi.JS_FreeValue(ctx, globalThis);
+                    JSApi.JS_FreeValue(ctx, globalThis);
+                    JSApi.JS_FreeValue(ctx, func);
+                }
             }
         }
     }

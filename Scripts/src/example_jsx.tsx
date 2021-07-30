@@ -1,8 +1,8 @@
 import { Object, GameObject, Resources, RectTransform, Vector2 } from "UnityEngine";
-import { ScriptType } from "./plover/editor/editor_decorators";
 import { JSXWidgetBridge } from "./plover/jsx/bridge";
 import * as JSX from "./plover/jsx/element";
 import { ViewModel } from "./plover/jsx/vue";
+import { ScriptType } from "./plover/runtime/class_decorators";
 
 export interface TestData {
     name: string,

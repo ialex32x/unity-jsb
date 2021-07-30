@@ -1,5 +1,5 @@
 import { MonoBehaviour } from "UnityEngine";
-import { ScriptType } from "../editor/editor_decorators";
+import { ScriptType } from "../runtime/class_decorators";
 import * as JSX from "./element";
 
 @ScriptType()

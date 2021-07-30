@@ -1,6 +1,5 @@
 import { Resources, ScriptableObject, Vector3 } from "UnityEngine";
-import { ScriptAsset, ScriptNumber, ScriptProperty, ScriptString } from "./plover/editor/editor_decorators";
-import { As } from "./plover/editor/serialize";
+import { ScriptAsset, ScriptNumber, ScriptString, ScriptProperty } from "./plover/runtime/class_decorators";
 
 @ScriptAsset()
 export class MyScriptableObject extends ScriptableObject {
@@ -10,7 +9,7 @@ export class MyScriptableObject extends ScriptableObject {
     @ScriptString()
     value2 = "hello";
 
-    @ScriptProperty({ type: As.Vector3 })
+    @ScriptProperty({ type: "Vector3" })
     value3 = Vector3.zero;
 
     Reset() {

@@ -8,10 +8,10 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.MyWidgetTest = void 0;
 const UnityEngine_1 = require("UnityEngine");
-const editor_decorators_1 = require("./plover/editor/editor_decorators");
 const bridge_1 = require("./plover/jsx/bridge");
 const JSX = require("./plover/jsx/element");
 const vue_1 = require("./plover/jsx/vue");
+const class_decorators_1 = require("./plover/runtime/class_decorators");
 let MyWidgetTest = class MyWidgetTest extends bridge_1.JSXWidgetBridge {
     get data() { return this._data; }
     Awake() {
@@ -30,7 +30,7 @@ let MyWidgetTest = class MyWidgetTest extends bridge_1.JSXWidgetBridge {
     }
 };
 MyWidgetTest = __decorate([
-    editor_decorators_1.ScriptType()
+    class_decorators_1.ScriptType()
 ], MyWidgetTest);
 exports.MyWidgetTest = MyWidgetTest;
 let parent = UnityEngine_1.GameObject.Find("/Canvas").transform;
