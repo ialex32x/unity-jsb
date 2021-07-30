@@ -19,22 +19,26 @@ namespace QuickJS.Unity
         private bool _fixedUpdateValid;
         private JSValue _fixedUpdateFunc = JSApi.JS_UNDEFINED;
 
-        protected override void OnBindingJSFuncs()
+        protected override void OnBindingJSFuncs(ScriptContext context)
         {
-            var context = ScriptEngine.GetContext(_ctx);
+            base.OnBindingJSFuncs(context);
 
-            _updateFunc = JSApi.JS_GetProperty(_ctx, _this_obj, context.GetAtom("Update"));
-            _updateValid = JSApi.JS_IsFunction(_ctx, _updateFunc) == 1;
+            var ctx = (JSContext)context;
 
-            _lateUpdateFunc = JSApi.JS_GetProperty(_ctx, _this_obj, context.GetAtom("LateUpdate"));
-            _lateUpdateValid = JSApi.JS_IsFunction(_ctx, _lateUpdateFunc) == 1;
+            _updateFunc = JSApi.JS_GetProperty(ctx, _this_obj, context.GetAtom("Update"));
+            _updateValid = JSApi.JS_IsFunction(ctx, _updateFunc) == 1;
 
-            _fixedUpdateFunc = JSApi.JS_GetProperty(_ctx, _this_obj, context.GetAtom("FixedUpdate"));
-            _fixedUpdateValid = JSApi.JS_IsFunction(_ctx, _fixedUpdateFunc) == 1;
+            _lateUpdateFunc = JSApi.JS_GetProperty(ctx, _this_obj, context.GetAtom("LateUpdate"));
+            _lateUpdateValid = JSApi.JS_IsFunction(ctx, _lateUpdateFunc) == 1;
+
+            _fixedUpdateFunc = JSApi.JS_GetProperty(ctx, _this_obj, context.GetAtom("FixedUpdate"));
+            _fixedUpdateValid = JSApi.JS_IsFunction(ctx, _fixedUpdateFunc) == 1;
         }
 
         protected override void OnUnbindingJSFuncs()
         {
+            base.OnUnbindingJSFuncs();
+
             JSApi.JS_FreeValue(_ctx, _updateFunc);
             _updateFunc = JSApi.JS_UNDEFINED;
             _updateValid = false;

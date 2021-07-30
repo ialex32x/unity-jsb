@@ -182,9 +182,6 @@ namespace QuickJS.Unity
         {
             if (_moduleId == resolved_id)
             {
-                //NOTE: now the EditorWindow use different mechanism to reload script, 
-                // Editor/MonoBehaviour/ScriptObject will be updated to the same later soon.
-
                 JSValue newClass;
                 if (context.LoadModuleCacheExports(resolved_id, _className, out newClass))
                 {

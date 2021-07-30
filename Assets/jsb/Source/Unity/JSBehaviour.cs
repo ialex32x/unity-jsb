@@ -224,7 +224,6 @@ namespace QuickJS.Unity
             }
 
             ReleaseJSValues();
-
             _ctx = ctx;
             context.OnDestroy += OnContextDestroy;
 #if UNITY_EDITOR
@@ -237,46 +236,7 @@ namespace QuickJS.Unity
 
             if (!_this_obj.IsNullish())
             {
-                _onBeforeSerializeFunc = JSApi.JS_GetProperty(ctx, this_obj, context.GetAtom("OnBeforeSerialize"));
-                _onBeforeSerializeValid = JSApi.JS_IsFunction(ctx, _onBeforeSerializeFunc) == 1;
-
-                _onAfterDeserializeFunc = JSApi.JS_GetProperty(ctx, this_obj, context.GetAtom("OnAfterDeserialize"));
-                _onAfterDeserializeValid = JSApi.JS_IsFunction(ctx, _onAfterDeserializeFunc) == 1;
-
-                _startFunc = JSApi.JS_GetProperty(ctx, this_obj, context.GetAtom("Start"));
-                _startValid = JSApi.JS_IsFunction(ctx, _startFunc) == 1;
-
-                _resetFunc = JSApi.JS_GetProperty(ctx, this_obj, context.GetAtom("Reset"));
-                _resetValid = JSApi.JS_IsFunction(ctx, _resetFunc) == 1;
-
-                _onEnableFunc = JSApi.JS_GetProperty(ctx, this_obj, context.GetAtom("OnEnable"));
-                _onEnableValid = JSApi.JS_IsFunction(ctx, _onEnableFunc) == 1;
-
-                _onDisableFunc = JSApi.JS_GetProperty(ctx, this_obj, context.GetAtom("OnDisable"));
-                _onDisableValid = JSApi.JS_IsFunction(ctx, _onDisableFunc) == 1;
-
-                _onApplicationFocusFunc = JSApi.JS_GetProperty(ctx, this_obj, context.GetAtom("OnApplicationFocus"));
-                _onApplicationFocusValid = JSApi.JS_IsFunction(ctx, _onApplicationFocusFunc) == 1;
-
-#if UNITY_EDITOR
-                _onDrawGizmosFunc = JSApi.JS_GetProperty(ctx, this_obj, context.GetAtom("OnDrawGizmos"));
-                _onDrawGizmosValid = JSApi.JS_IsFunction(ctx, _onDrawGizmosFunc) == 1;
-#endif
-
-                _onApplicationPauseFunc =
-                    JSApi.JS_GetProperty(ctx, this_obj, context.GetAtom("OnApplicationPause"));
-                _onApplicationPauseValid = JSApi.JS_IsFunction(ctx, _onApplicationPauseFunc) == 1;
-
-                _onApplicationQuitFunc = JSApi.JS_GetProperty(ctx, this_obj, context.GetAtom("OnApplicationQuit"));
-                _onApplicationQuitValid = JSApi.JS_IsFunction(ctx, _onApplicationQuitFunc) == 1;
-
-                _onDestroyFunc = JSApi.JS_GetProperty(ctx, this_obj, context.GetAtom("OnDestroy"));
-                _onDestroyValid = JSApi.JS_IsFunction(ctx, _onDestroyFunc) == 1;
-
-                _awakeFunc = JSApi.JS_GetProperty(ctx, this_obj, context.GetAtom("Awake"));
-                _awakeValid = JSApi.JS_IsFunction(ctx, _awakeFunc) == 1;
-
-                this.OnBindingJSFuncs();
+                this.OnBindingJSFuncs(context);
                 this._OnScriptingAfterDeserialize();
                 if (execAwake)
                 {
@@ -289,12 +249,99 @@ namespace QuickJS.Unity
             }
         }
 
-        protected virtual void OnBindingJSFuncs()
+        protected virtual void OnBindingJSFuncs(ScriptContext context)
         {
+            _onBeforeSerializeFunc = JSApi.JS_GetProperty(ctx, _this_obj, context.GetAtom("OnBeforeSerialize"));
+            _onBeforeSerializeValid = JSApi.JS_IsFunction(ctx, _onBeforeSerializeFunc) == 1;
+
+            _onAfterDeserializeFunc = JSApi.JS_GetProperty(ctx, _this_obj, context.GetAtom("OnAfterDeserialize"));
+            _onAfterDeserializeValid = JSApi.JS_IsFunction(ctx, _onAfterDeserializeFunc) == 1;
+
+            _startFunc = JSApi.JS_GetProperty(ctx, _this_obj, context.GetAtom("Start"));
+            _startValid = JSApi.JS_IsFunction(ctx, _startFunc) == 1;
+
+            _resetFunc = JSApi.JS_GetProperty(ctx, _this_obj, context.GetAtom("Reset"));
+            _resetValid = JSApi.JS_IsFunction(ctx, _resetFunc) == 1;
+
+            _onEnableFunc = JSApi.JS_GetProperty(ctx, _this_obj, context.GetAtom("OnEnable"));
+            _onEnableValid = JSApi.JS_IsFunction(ctx, _onEnableFunc) == 1;
+
+            _onDisableFunc = JSApi.JS_GetProperty(ctx, _this_obj, context.GetAtom("OnDisable"));
+            _onDisableValid = JSApi.JS_IsFunction(ctx, _onDisableFunc) == 1;
+
+            _onApplicationFocusFunc = JSApi.JS_GetProperty(ctx, _this_obj, context.GetAtom("OnApplicationFocus"));
+            _onApplicationFocusValid = JSApi.JS_IsFunction(ctx, _onApplicationFocusFunc) == 1;
+
+#if UNITY_EDITOR
+            _onDrawGizmosFunc = JSApi.JS_GetProperty(ctx, _this_obj, context.GetAtom("OnDrawGizmos"));
+            _onDrawGizmosValid = JSApi.JS_IsFunction(ctx, _onDrawGizmosFunc) == 1;
+#endif
+
+            _onApplicationPauseFunc =
+                JSApi.JS_GetProperty(ctx, _this_obj, context.GetAtom("OnApplicationPause"));
+            _onApplicationPauseValid = JSApi.JS_IsFunction(ctx, _onApplicationPauseFunc) == 1;
+
+            _onApplicationQuitFunc = JSApi.JS_GetProperty(ctx, _this_obj, context.GetAtom("OnApplicationQuit"));
+            _onApplicationQuitValid = JSApi.JS_IsFunction(ctx, _onApplicationQuitFunc) == 1;
+
+            _onDestroyFunc = JSApi.JS_GetProperty(ctx, _this_obj, context.GetAtom("OnDestroy"));
+            _onDestroyValid = JSApi.JS_IsFunction(ctx, _onDestroyFunc) == 1;
+
+            _awakeFunc = JSApi.JS_GetProperty(ctx, _this_obj, context.GetAtom("Awake"));
+            _awakeValid = JSApi.JS_IsFunction(ctx, _awakeFunc) == 1;
         }
 
         protected virtual void OnUnbindingJSFuncs()
         {
+            JSApi.JS_FreeValue(_ctx, _startFunc);
+            _startFunc = JSApi.JS_UNDEFINED;
+            _startValid = false;
+
+            JSApi.JS_FreeValue(_ctx, _resetFunc);
+            _resetFunc = JSApi.JS_UNDEFINED;
+            _resetValid = false;
+
+            JSApi.JS_FreeValue(_ctx, _onEnableFunc);
+            _onEnableFunc = JSApi.JS_UNDEFINED;
+            _onEnableValid = false;
+
+            JSApi.JS_FreeValue(_ctx, _onDisableFunc);
+            _onDisableFunc = JSApi.JS_UNDEFINED;
+            _onDisableValid = false;
+
+            JSApi.JS_FreeValue(_ctx, _onApplicationFocusFunc);
+            _onApplicationFocusFunc = JSApi.JS_UNDEFINED;
+            _onApplicationFocusValid = false;
+#if UNITY_EDITOR
+
+            JSApi.JS_FreeValue(_ctx, _onDrawGizmosFunc);
+            _onDrawGizmosFunc = JSApi.JS_UNDEFINED;
+            _onDrawGizmosValid = false;
+#endif
+
+            JSApi.JS_FreeValue(_ctx, _onApplicationPauseFunc);
+            _onApplicationPauseFunc = JSApi.JS_UNDEFINED;
+            _onApplicationPauseValid = false;
+
+            JSApi.JS_FreeValue(_ctx, _onApplicationQuitFunc);
+            _onApplicationQuitFunc = JSApi.JS_UNDEFINED;
+            _onApplicationQuitValid = false;
+
+            JSApi.JS_FreeValue(_ctx, _onDestroyFunc);
+            _onDestroyFunc = JSApi.JS_UNDEFINED;
+            _onDestroyValid = false;
+
+            JSApi.JS_FreeValue(_ctx, _awakeFunc);
+            _awakeFunc = JSApi.JS_UNDEFINED;
+            _awakeValid = false;
+
+            JSApi.JS_FreeValue(_ctx, _onBeforeSerializeFunc);
+            _onBeforeSerializeFunc = JSApi.JS_UNDEFINED;
+            _onBeforeSerializeValid = false;
+
+            JSApi.JS_FreeValue(_ctx, _onAfterDeserializeFunc);
+            _onAfterDeserializeFunc = JSApi.JS_UNDEFINED;
+            _onAfterDeserializeValid = false;
         }
 
         private void CallJSFunc(JSValue func_obj)
@@ -328,6 +375,30 @@ namespace QuickJS.Unity
         {
             if (context.CheckModuleId(_scriptRef, resolved_id))
             {
+                if (!_this_obj.IsNullish())
+                {
+                    JSValue newClass;
+                    if (context.LoadModuleCacheExports(resolved_id, _scriptRef.className, out newClass))
+                    {
+                        var prototype = JSApi.JS_GetProperty(context, newClass, context.GetAtom("prototype"));
+
+                        if (prototype.IsObject())
+                        {
+                            OnUnbindingJSFuncs();
+                            JSApi.JS_SetPrototype(context, _this_obj, prototype);
+                            OnBindingJSFuncs(context);
+
+                            JSApi.JS_FreeValue(context, prototype);
+                            JSApi.JS_FreeValue(context, newClass);
+                            return;
+                        }
+
+                        JSApi.JS_FreeValue(context, prototype);
+                        JSApi.JS_FreeValue(context, newClass);
+                        // fallback to recreate script instance
+                    }
+                }
+
                 ReleaseJSValues();
                 CreateScriptInstance();
             }
@@ -338,61 +409,11 @@ namespace QuickJS.Unity
         {
             if (!_this_obj.IsNullish())
             {
-                JSApi.JS_FreeValue(_ctx, _startFunc);
-                _startFunc = JSApi.JS_UNDEFINED;
-                _startValid = false;
-
-                JSApi.JS_FreeValue(_ctx, _resetFunc);
-                _resetFunc = JSApi.JS_UNDEFINED;
-                _resetValid = false;
-
-                JSApi.JS_FreeValue(_ctx, _onEnableFunc);
-                _onEnableFunc = JSApi.JS_UNDEFINED;
-                _onEnableValid = false;
-
-                JSApi.JS_FreeValue(_ctx, _onDisableFunc);
-                _onDisableFunc = JSApi.JS_UNDEFINED;
-                _onDisableValid = false;
-
-                JSApi.JS_FreeValue(_ctx, _onApplicationFocusFunc);
-                _onApplicationFocusFunc = JSApi.JS_UNDEFINED;
-                _onApplicationFocusValid = false;
-#if UNITY_EDITOR
-
-                JSApi.JS_FreeValue(_ctx, _onDrawGizmosFunc);
-                _onDrawGizmosFunc = JSApi.JS_UNDEFINED;
-                _onDrawGizmosValid = false;
-#endif
-
-                JSApi.JS_FreeValue(_ctx, _onApplicationPauseFunc);
-                _onApplicationPauseFunc = JSApi.JS_UNDEFINED;
-                _onApplicationPauseValid = false;
-
-                JSApi.JS_FreeValue(_ctx, _onApplicationQuitFunc);
-                _onApplicationQuitFunc = JSApi.JS_UNDEFINED;
-                _onApplicationQuitValid = false;
-
-                JSApi.JS_FreeValue(_ctx, _onDestroyFunc);
-                _onDestroyFunc = JSApi.JS_UNDEFINED;
-                _onDestroyValid = false;
-
-                JSApi.JS_FreeValue(_ctx, _awakeFunc);
-                _awakeFunc = JSApi.JS_UNDEFINED;
-                _awakeValid = false;
-
-                JSApi.JS_FreeValue(_ctx, _onBeforeSerializeFunc);
-                _onBeforeSerializeFunc = JSApi.JS_UNDEFINED;
-                _onBeforeSerializeValid = false;
-
-                JSApi.JS_FreeValue(_ctx, _onAfterDeserializeFunc);
-                _onAfterDeserializeFunc = JSApi.JS_UNDEFINED;
-                _onAfterDeserializeValid = false;
-
                 this.OnUnbindingJSFuncs();
-
                 JSApi.JS_FreeValue(_ctx, _this_obj);
                 _this_obj = JSApi.JS_UNDEFINED;
             }
+
             _isScriptInstanced = false;
             var context = ScriptEngine.GetContext(_ctx);
             _ctx = JSContext.Null;
