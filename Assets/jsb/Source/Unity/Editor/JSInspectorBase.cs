@@ -77,21 +77,7 @@ namespace QuickJS.Unity
         {
             if (!_this_obj.IsNullish())
             {
-                JSApi.JS_FreeValue(_ctx, _onDestroyFunc);
-                _onDestroyFunc = JSApi.JS_UNDEFINED;
-                _onDestroyValid = false;
-
-                JSApi.JS_FreeValue(_ctx, _onEnableFunc);
-                _onEnableFunc = JSApi.JS_UNDEFINED;
-                _onEnableValid = false;
-
-                JSApi.JS_FreeValue(_ctx, _onDisableFunc);
-                _onDisableFunc = JSApi.JS_UNDEFINED;
-                _onDisableValid = false;
-
-                JSApi.JS_FreeValue(_ctx, _onInspectorGUIFunc);
-                _onInspectorGUIFunc = JSApi.JS_UNDEFINED;
-                _onInspectorGUIValid = false;
+                OnUnbindingJSMembers();
 
                 JSApi.JS_FreeValue(_ctx, _this_obj);
                 _this_obj = JSApi.JS_UNDEFINED;
@@ -131,23 +117,49 @@ namespace QuickJS.Unity
 
             if (!_this_obj.IsNullish())
             {
-                _onDestroyFunc = JSApi.JS_GetProperty(ctx, this_obj, context.GetAtom("OnDestroy"));
-                _onDestroyValid = JSApi.JS_IsFunction(ctx, _onDestroyFunc) == 1;
-
-                _onEnableFunc = JSApi.JS_GetProperty(ctx, this_obj, context.GetAtom("OnEnable"));
-                _onEnableValid = JSApi.JS_IsFunction(ctx, _onEnableFunc) == 1;
-
-                _onDisableFunc = JSApi.JS_GetProperty(ctx, this_obj, context.GetAtom("OnDisable"));
-                _onDisableValid = JSApi.JS_IsFunction(ctx, _onDisableFunc) == 1;
-
-                _onInspectorGUIFunc = JSApi.JS_GetProperty(ctx, this_obj, context.GetAtom("OnInspectorGUI"));
-                _onInspectorGUIValid = JSApi.JS_IsFunction(ctx, _onInspectorGUIFunc) == 1;
+                OnBindindJSMembers(context);
 
                 var awakeFunc = JSApi.JS_GetProperty(ctx, this_obj, context.GetAtom("Awake"));
 
                 CallJSFunc(awakeFunc);
                 JSApi.JS_FreeValue(_ctx, awakeFunc);
             }
+        }
+
+        private void OnBindindJSMembers(ScriptContext context)
+        {
+            var ctx = (JSContext)context;
+
+            _onDestroyFunc = JSApi.JS_GetProperty(ctx, _this_obj, context.GetAtom("OnDestroy"));
+            _onDestroyValid = JSApi.JS_IsFunction(ctx, _onDestroyFunc) == 1;
+
+            _onEnableFunc = JSApi.JS_GetProperty(ctx, _this_obj, context.GetAtom("OnEnable"));
+            _onEnableValid = JSApi.JS_IsFunction(ctx, _onEnableFunc) == 1;
+
+            _onDisableFunc = JSApi.JS_GetProperty(ctx, _this_obj, context.GetAtom("OnDisable"));
+            _onDisableValid = JSApi.JS_IsFunction(ctx, _onDisableFunc) == 1;
+
+            _onInspectorGUIFunc = JSApi.JS_GetProperty(ctx, _this_obj, context.GetAtom("OnInspectorGUI"));
+            _onInspectorGUIValid = JSApi.JS_IsFunction(ctx, _onInspectorGUIFunc) == 1;
+        }
+
+        private void OnUnbindingJSMembers()
+        {
+            JSApi.JS_FreeValue(_ctx, _onDestroyFunc);
+            _onDestroyFunc = JSApi.JS_UNDEFINED;
+            _onDestroyValid = false;
+
+            JSApi.JS_FreeValue(_ctx, _onEnableFunc);
+            _onEnableFunc = JSApi.JS_UNDEFINED;
+            _onEnableValid = false;
+
+            JSApi.JS_FreeValue(_ctx, _onDisableFunc);
+            _onDisableFunc = JSApi.JS_UNDEFINED;
+            _onDisableValid = false;
+
+            JSApi.JS_FreeValue(_ctx, _onInspectorGUIFunc);
+            _onInspectorGUIFunc = JSApi.JS_UNDEFINED;
+            _onInspectorGUIValid = false;
         }
 
         private void CreateScriptInstance()
