@@ -75,6 +75,12 @@ namespace QuickJS.Unity
         private bool _onAfterDeserializeValid;
         private JSValue _onAfterDeserializeFunc = JSApi.JS_UNDEFINED;
 
+        private bool _onBeforeScriptReloadValid;
+        private JSValue _onBeforeScriptReloadFunc = JSApi.JS_UNDEFINED;
+
+        private bool _onAfterScriptReloadValid;
+        private JSValue _onAfterScriptReloadFunc = JSApi.JS_UNDEFINED;
+
 #if UNITY_EDITOR
         private bool _onDrawGizmosValid;
         private JSValue _onDrawGizmosFunc = JSApi.JS_UNDEFINED;
@@ -257,6 +263,12 @@ namespace QuickJS.Unity
             _onAfterDeserializeFunc = JSApi.JS_GetProperty(ctx, _this_obj, context.GetAtom("OnAfterDeserialize"));
             _onAfterDeserializeValid = JSApi.JS_IsFunction(ctx, _onAfterDeserializeFunc) == 1;
 
+            _onBeforeScriptReloadFunc = JSApi.JS_GetProperty(ctx, _this_obj, context.GetAtom("OnBeforeScriptReload"));
+            _onBeforeScriptReloadValid = JSApi.JS_IsFunction(ctx, _onBeforeScriptReloadFunc) == 1;
+
+            _onAfterScriptReloadFunc = JSApi.JS_GetProperty(ctx, _this_obj, context.GetAtom("OnAfterScriptReload"));
+            _onAfterScriptReloadValid = JSApi.JS_IsFunction(ctx, _onAfterScriptReloadFunc) == 1;
+
             _startFunc = JSApi.JS_GetProperty(ctx, _this_obj, context.GetAtom("Start"));
             _startValid = JSApi.JS_IsFunction(ctx, _startFunc) == 1;
 
@@ -342,6 +354,14 @@ namespace QuickJS.Unity
             JSApi.JS_FreeValue(_ctx, _onAfterDeserializeFunc);
             _onAfterDeserializeFunc = JSApi.JS_UNDEFINED;
             _onAfterDeserializeValid = false;
+
+            JSApi.JS_FreeValue(_ctx, _onBeforeScriptReloadFunc);
+            _onBeforeScriptReloadFunc = JSApi.JS_UNDEFINED;
+            _onBeforeScriptReloadValid = false;
+
+            JSApi.JS_FreeValue(_ctx, _onAfterScriptReloadFunc);
+            _onAfterScriptReloadFunc = JSApi.JS_UNDEFINED;
+            _onAfterScriptReloadValid = false;
         }
 
         private void CallJSFunc(JSValue func_obj)
@@ -367,7 +387,15 @@ namespace QuickJS.Unity
         {
             if (context.CheckModuleId(_scriptRef, resolved_id))
             {
-                OnBeforeSerialize();
+                if (_onBeforeScriptReloadValid)
+                {
+                    var rval = JSApi.JS_Call(_ctx, _onBeforeScriptReloadFunc, _this_obj);
+                    if (rval.IsException())
+                    {
+                        _ctx.print_exception();
+                    }
+                    JSApi.JS_FreeValue(_ctx, rval);
+                }
             }
         }
 
@@ -388,19 +416,21 @@ namespace QuickJS.Unity
                             JSApi.JS_SetPrototype(context, _this_obj, prototype);
                             OnBindingJSFuncs(context);
 
-                            JSApi.JS_FreeValue(context, prototype);
-                            JSApi.JS_FreeValue(context, newClass);
-                            return;
+                            if (_onAfterScriptReloadValid)
+                            {
+                                var rval = JSApi.JS_Call(_ctx, _onAfterScriptReloadFunc, _this_obj);
+                                if (rval.IsException())
+                                {
+                                    _ctx.print_exception();
+                                }
+                                JSApi.JS_FreeValue(_ctx, rval);
+                            }
                         }
 
                         JSApi.JS_FreeValue(context, prototype);
                         JSApi.JS_FreeValue(context, newClass);
-                        // fallback to recreate script instance
                     }
                 }
-
-                ReleaseJSValues();
-                CreateScriptInstance();
             }
         }
 #endif

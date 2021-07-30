@@ -22,25 +22,32 @@ namespace QuickJS.Unity
         private string _className;
 
         private JSContext _ctx;
-        private JSValue _this_obj;
+
+        private JSValue _this_obj = JSApi.JS_UNDEFINED;
 
         private bool _updateValid;
-        private JSValue _updateFunc;
+        private JSValue _updateFunc = JSApi.JS_UNDEFINED;
 
         private bool _onEnableValid;
-        private JSValue _onEnableFunc;
+        private JSValue _onEnableFunc = JSApi.JS_UNDEFINED;
 
         private bool _onDisableValid;
-        private JSValue _onDisableFunc;
+        private JSValue _onDisableFunc = JSApi.JS_UNDEFINED;
 
         private bool _onDestroyValid;
-        private JSValue _onDestroyFunc;
+        private JSValue _onDestroyFunc = JSApi.JS_UNDEFINED;
 
         private bool _onGUIValid;
-        private JSValue _onGUIFunc;
+        private JSValue _onGUIFunc = JSApi.JS_UNDEFINED;
 
         private bool _addItemsToMenuValid;
-        private JSValue _addItemsToMenuFunc;
+        private JSValue _addItemsToMenuFunc = JSApi.JS_UNDEFINED;
+
+        private bool _onBeforeScriptReloadValid;
+        private JSValue _onBeforeScriptReloadFunc = JSApi.JS_UNDEFINED;
+
+        private bool _onAfterScriptReloadValid;
+        private JSValue _onAfterScriptReloadFunc = JSApi.JS_UNDEFINED;
 
         public int IsInstanceOf(JSValue ctor)
         {
@@ -127,6 +134,12 @@ namespace QuickJS.Unity
 
             _addItemsToMenuFunc = JSApi.JS_GetProperty(ctx, _this_obj, context.GetAtom("AddItemsToMenu"));
             _addItemsToMenuValid = JSApi.JS_IsFunction(ctx, _addItemsToMenuFunc) == 1;
+
+            _onBeforeScriptReloadFunc = JSApi.JS_GetProperty(ctx, _this_obj, context.GetAtom("OnBeforeScriptReload"));
+            _onBeforeScriptReloadValid = JSApi.JS_IsFunction(ctx, _onBeforeScriptReloadFunc) == 1;
+
+            _onAfterScriptReloadFunc = JSApi.JS_GetProperty(ctx, _this_obj, context.GetAtom("OnAfterScriptReload"));
+            _onAfterScriptReloadValid = JSApi.JS_IsFunction(ctx, _onAfterScriptReloadFunc) == 1;
         }
 
         private void UnbindJSMembers()
@@ -154,6 +167,14 @@ namespace QuickJS.Unity
             JSApi.JS_FreeValue(_ctx, _addItemsToMenuFunc);
             _addItemsToMenuFunc = JSApi.JS_UNDEFINED;
             _addItemsToMenuValid = false;
+
+            JSApi.JS_FreeValue(_ctx, _onBeforeScriptReloadFunc);
+            _onBeforeScriptReloadFunc = JSApi.JS_UNDEFINED;
+            _onBeforeScriptReloadValid = false;
+
+            JSApi.JS_FreeValue(_ctx, _onAfterScriptReloadFunc);
+            _onAfterScriptReloadFunc = JSApi.JS_UNDEFINED;
+            _onAfterScriptReloadValid = false;
         }
 
         private void Call(JSValue func_obj)
@@ -174,7 +195,15 @@ namespace QuickJS.Unity
         {
             if (_moduleId == resolved_id)
             {
-
+                if (_onBeforeScriptReloadValid)
+                {
+                    var rval = JSApi.JS_Call(_ctx, _onBeforeScriptReloadFunc, _this_obj);
+                    if (rval.IsException())
+                    {
+                        _ctx.print_exception();
+                    }
+                    JSApi.JS_FreeValue(_ctx, rval);
+                }
             }
         }
 
@@ -192,6 +221,16 @@ namespace QuickJS.Unity
                         UnbindJSMembers();
                         JSApi.JS_SetPrototype(context, _this_obj, prototype);
                         BindJSMembers(context);
+                        
+                        if (_onAfterScriptReloadValid)
+                        {
+                            var rval = JSApi.JS_Call(_ctx, _onAfterScriptReloadFunc, _this_obj);
+                            if (rval.IsException())
+                            {
+                                _ctx.print_exception();
+                            }
+                            JSApi.JS_FreeValue(_ctx, rval);
+                        }
                     }
 
                     JSApi.JS_FreeValue(context, prototype);

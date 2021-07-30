@@ -54,6 +54,12 @@ namespace QuickJS.Unity
         private bool _onAfterDeserializeValid;
         private JSValue _onAfterDeserializeFunc = JSApi.JS_UNDEFINED;
 
+        private bool _onBeforeScriptReloadValid;
+        private JSValue _onBeforeScriptReloadFunc = JSApi.JS_UNDEFINED;
+
+        private bool _onAfterScriptReloadValid;
+        private JSValue _onAfterScriptReloadFunc = JSApi.JS_UNDEFINED;
+
         public JSValue ToValue()
         {
             return _this_obj;
@@ -67,12 +73,18 @@ namespace QuickJS.Unity
         private void OnBindingJSFuncs(ScriptContext context)
         {
             var ctx = (JSContext)context;
-            
+
             _onBeforeSerializeFunc = JSApi.JS_GetProperty(ctx, _this_obj, context.GetAtom("OnBeforeSerialize"));
             _onBeforeSerializeValid = JSApi.JS_IsFunction(ctx, _onBeforeSerializeFunc) == 1;
 
             _onAfterDeserializeFunc = JSApi.JS_GetProperty(ctx, _this_obj, context.GetAtom("OnAfterDeserialize"));
             _onAfterDeserializeValid = JSApi.JS_IsFunction(ctx, _onAfterDeserializeFunc) == 1;
+
+            _onBeforeScriptReloadFunc = JSApi.JS_GetProperty(ctx, _this_obj, context.GetAtom("OnBeforeScriptReload"));
+            _onBeforeScriptReloadValid = JSApi.JS_IsFunction(ctx, _onBeforeScriptReloadFunc) == 1;
+
+            _onAfterScriptReloadFunc = JSApi.JS_GetProperty(ctx, _this_obj, context.GetAtom("OnAfterScriptReload"));
+            _onAfterScriptReloadValid = JSApi.JS_IsFunction(ctx, _onAfterScriptReloadFunc) == 1;
 
             _resetFunc = JSApi.JS_GetProperty(ctx, _this_obj, context.GetAtom("Reset"));
             _resetValid = JSApi.JS_IsFunction(ctx, _resetFunc) == 1;
@@ -87,6 +99,14 @@ namespace QuickJS.Unity
             JSApi.JS_FreeValue(_ctx, _onAfterDeserializeFunc);
             _onAfterDeserializeFunc = JSApi.JS_UNDEFINED;
             _onAfterDeserializeValid = false;
+
+            JSApi.JS_FreeValue(_ctx, _onBeforeScriptReloadFunc);
+            _onBeforeScriptReloadFunc = JSApi.JS_UNDEFINED;
+            _onBeforeScriptReloadValid = false;
+
+            JSApi.JS_FreeValue(_ctx, _onAfterScriptReloadFunc);
+            _onAfterScriptReloadFunc = JSApi.JS_UNDEFINED;
+            _onAfterScriptReloadValid = false;
 
             JSApi.JS_FreeValue(_ctx, _resetFunc);
             _resetFunc = JSApi.JS_UNDEFINED;
@@ -126,7 +146,15 @@ namespace QuickJS.Unity
         {
             if (context.CheckModuleId(_scriptRef, resolved_id))
             {
-                OnBeforeSerialize();
+                if (_onBeforeScriptReloadValid)
+                {
+                    var rval = JSApi.JS_Call(_ctx, _onBeforeScriptReloadFunc, _this_obj);
+                    if (rval.IsException())
+                    {
+                        _ctx.print_exception();
+                    }
+                    JSApi.JS_FreeValue(_ctx, rval);
+                }
             }
         }
 
@@ -146,20 +174,22 @@ namespace QuickJS.Unity
                             OnUnbindingJSFuncs();
                             JSApi.JS_SetPrototype(context, _this_obj, prototype);
                             OnBindingJSFuncs(context);
-
-                            JSApi.JS_FreeValue(context, prototype);
-                            JSApi.JS_FreeValue(context, newClass);
-                            return;
+                            
+                            if (_onAfterScriptReloadValid)
+                            {
+                                var rval = JSApi.JS_Call(_ctx, _onAfterScriptReloadFunc, _this_obj);
+                                if (rval.IsException())
+                                {
+                                    _ctx.print_exception();
+                                }
+                                JSApi.JS_FreeValue(_ctx, rval);
+                            }
                         }
 
                         JSApi.JS_FreeValue(context, prototype);
                         JSApi.JS_FreeValue(context, newClass);
-                        // fallback to recreate script instance
                     }
                 }
-
-                ReleaseJSValues();
-                CreateScriptInstance();
             }
         }
 #endif
