@@ -91,7 +91,7 @@ jobs:
           name: prebuilt_quickjs_libs
 
   ios:
-    runs-on: macos-10.15
+    runs-on: macos-latest
     steps:
       - uses: actions/checkout@v2
       - uses: lukka/get-cmake@v3.19.0
@@ -105,7 +105,7 @@ jobs:
           path: ./jsb_build/prebuilt/Plugins/**/*
           name: prebuilt_quickjs_libs
   osx:
-    runs-on: macos-10.15
+    runs-on: macos-latest
     steps:
       - uses: actions/checkout@v2
       - uses: lukka/get-cmake@v3.19.0
