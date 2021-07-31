@@ -27,7 +27,7 @@ namespace Example
         public string entryFileName = "example_main.js";
         [ExampleToggleHint("ReflectBind Mode")]
         public bool useReflectBind;
-        public bool sourceMap;
+        // public bool sourceMap; // temporarily removed
         public bool stacktrace;
         private ScriptRuntime _rt;
         private MiniConsole _mConsole;
@@ -65,10 +65,10 @@ namespace Example
             }
 
             _rt.withStacktrace = stacktrace;
-            if (sourceMap)
-            {
-                _rt.EnableSourceMap();
-            }
+            // if (sourceMap)
+            // {
+                // _rt.EnableSourceMap();
+            // }
             _rt.AddModuleResolvers();
             _rt.extraBinding = (runtime, register) =>
             {

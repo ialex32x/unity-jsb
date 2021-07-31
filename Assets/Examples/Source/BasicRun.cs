@@ -28,6 +28,7 @@ namespace Example
                 JSApi.JS_FreeContext(ctx);
                 JSApi.JS_FreeRuntime(rt);
                 Debug.Log("it's a good day");
+                GameObject.CreatePrimitive(PrimitiveType.Cube);
             }
         }
     }
