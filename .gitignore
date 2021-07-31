@@ -91,3 +91,5 @@ WSA*.pfx
 /External/UIProject/*
 !/External/UIProject/plugins
 jsb-modules.json
+
+**/.DS_Store
