@@ -33,8 +33,7 @@ namespace QuickJS.Unity
         protected override void OnEnable()
         {
             base.OnEnable();
-            var scriptIcon = EditorGUIUtility.IconContent("d_Js Script Icon");
-            titleContent = new GUIContent("EditorWindow Launcher", scriptIcon?.image);
+            titleContent = new GUIContent("Launchpad", _scriptIcon.image);
         }
 
         private void OnScriptClassPathsUpdated()
