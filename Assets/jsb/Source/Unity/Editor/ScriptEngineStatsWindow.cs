@@ -26,6 +26,8 @@ namespace QuickJS.Unity
             public Native.JSMemoryUsage memoryUsage;
             public int exportedTypes;
             public int managedObjectCount;
+            public bool fetchManagedObjectRefs;
+            public List<WeakReference<object>> managedObjectRefs = new List<WeakReference<object>>();
             public int jSObjectCount;
             public int delegateCount;
             public int scriptValueCount;
@@ -37,6 +39,7 @@ namespace QuickJS.Unity
 
         private Vector2 _sv;
         private int _alive;
+        private bool _fetchManagedObjectRefs = false;
         private bool _autoCap = true;
         private float _time;
         private float _timeCap = 5f;
@@ -106,6 +109,7 @@ namespace QuickJS.Unity
 
             var snapshot = GetSnapshot(runtime.id);
             snapshot.alive = true;
+            snapshot.fetchManagedObjectRefs = _fetchManagedObjectRefs;
             runtime.EnqueueAction(OnSnapshotRequest, snapshot);
         }
 
@@ -129,6 +133,14 @@ namespace QuickJS.Unity
                 var stringCache = rt.GetMainContext().GetStringCache();
 
                 snapshot.managedObjectCount = objectCache.GetManagedObjectCount();
+                snapshot.managedObjectRefs.Clear();
+                if (snapshot.fetchManagedObjectRefs)
+                {
+                    objectCache.ForEachManagedObject(obj =>
+                    {
+                        snapshot.managedObjectRefs.Add(new WeakReference<object>(obj));
+                    });
+                }
                 snapshot.jSObjectCount = objectCache.GetJSObjectCount();
                 snapshot.delegateCount = objectCache.GetDelegateCount();
                 snapshot.scriptValueCount = objectCache.GetScriptValueCount();
@@ -145,6 +157,18 @@ namespace QuickJS.Unity
                     deadline = deadline,
                     once = once,
                 }));
+            }
+        }
+
+        private string GetDescription(object obj)
+        {
+            try
+            {
+                return obj.ToString();
+            }
+            catch (Exception e)
+            {
+                return "[Error] " + e.Message;
             }
         }
 
@@ -185,6 +209,25 @@ namespace QuickJS.Unity
             {
                 EditorGUILayout.IntField("Exported Types", snapshot.exportedTypes);
                 EditorGUILayout.IntField("ManagedObject Count", snapshot.managedObjectCount);
+                _fetchManagedObjectRefs = EditorGUILayout.Toggle("Details", _fetchManagedObjectRefs);
+                if (snapshot.fetchManagedObjectRefs)
+                {
+                    for (int i = 0, count = snapshot.managedObjectRefs.Count; i < count;)
+                    {
+                        var objRef = snapshot.managedObjectRefs[i];
+                        object obj;
+                        if (objRef.TryGetTarget(out obj))
+                        {
+                            EditorGUILayout.LabelField(i.ToString(), GetDescription(obj));
+                            ++i;
+                        }
+                        else
+                        {
+                            snapshot.managedObjectRefs.RemoveAt(i);
+                            --count;
+                        }
+                    }
+                }
                 EditorGUILayout.IntField("JSObject Count", snapshot.jSObjectCount);
                 EditorGUILayout.IntField("Delegate Mapping Count", snapshot.delegateCount);
                 EditorGUILayout.IntField("ScriptValue Mapping Count", snapshot.scriptValueCount);
@@ -257,6 +300,9 @@ namespace QuickJS.Unity
             Block("Control", () =>
             {
                 _autoCap = EditorGUILayout.Toggle("Auto", _autoCap);
+                EditorGUI.BeginDisabledGroup(!_autoCap);
+                _timeCap = EditorGUILayout.Slider("Interval", _timeCap, 1f, 30f);
+                EditorGUI.EndDisabledGroup();
 
                 if (GUILayout.Button("GC (mono)"))
                 {

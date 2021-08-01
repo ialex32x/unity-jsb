@@ -18,6 +18,7 @@ namespace QuickJS.Utils
         private int _freeIndex = -1;
 
         // id => host object
+        private int _activeMapSlotCount = 0;
         private List<ObjectRef> _map = new List<ObjectRef>();
 
         // host object => jsvalue heapptr (dangerous, no ref count)
@@ -35,9 +36,21 @@ namespace QuickJS.Utils
             _logger = logger;
         }
 
+        public void ForEachManagedObject(Action<object> callback)
+        {
+            for (int i = 0, count = _map.Count; i < count; ++i)
+            {
+                var item = _map[i];
+                if (item.next == -1) 
+                {
+                    callback(item.target);
+                }
+            }
+        }
+
         public int GetManagedObjectCount()
         {
-            return _map.Count;
+            return _activeMapSlotCount;
         }
 
         public int GetJSObjectCount()
@@ -68,6 +81,7 @@ namespace QuickJS.Utils
             }
             _disposed = true;
             _freeIndex = 0;
+            _activeMapSlotCount = 0;
             _map.Clear();
             _rmap.Clear();
             _delegateMap.Clear();
@@ -129,6 +143,7 @@ namespace QuickJS.Utils
                     var freeEntry = new ObjectRef();
                     var id = _map.Count;
                     _map.Add(freeEntry);
+                    ++_activeMapSlotCount;
                     freeEntry.next = -1;
                     freeEntry.target = o;
                     freeEntry.disposable = disposable;
@@ -139,6 +154,7 @@ namespace QuickJS.Utils
                     var id = _freeIndex;
                     var freeEntry = _map[id];
                     _freeIndex = freeEntry.next;
+                    ++_activeMapSlotCount;
                     freeEntry.next = -1;
                     freeEntry.target = o;
                     freeEntry.disposable = disposable;
@@ -159,7 +175,7 @@ namespace QuickJS.Utils
                     return true;
                 }
             }
-            
+
             return false;
         }
 
@@ -193,6 +209,7 @@ namespace QuickJS.Utils
                 entry.next = _freeIndex;
                 entry.target = null;
                 _freeIndex = id;
+                --_activeMapSlotCount;
                 RemoveJSValue(o);
                 if (disposable)
                 {
