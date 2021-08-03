@@ -356,7 +356,7 @@ namespace QuickJS.Unity
             }
         }
 
-        private void DrawSourceView()
+        protected virtual void DrawSourceView()
         {
             // EditorGUI.BeginDisabledGroup(_target.isStandaloneScript);
             EditorGUILayout.BeginHorizontal();
