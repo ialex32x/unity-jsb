@@ -379,7 +379,13 @@ namespace QuickJS.Unity
 
         private void OnContextDestroy(ScriptContext context)
         {
-            ReleaseJSValues();
+            // it's dangerous, more protection are required during the process of context-destroying
+
+            if (enabled)
+            {
+                OnDisable();
+            }
+            OnDestroy();
         }
 
 #if UNITY_EDITOR
