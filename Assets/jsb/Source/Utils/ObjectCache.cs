@@ -53,6 +53,11 @@ namespace QuickJS.Utils
             return _activeMapSlotCount;
         }
 
+        public int GetManagedObjectCap()
+        {
+            return _map.Count;
+        }
+
         public int GetJSObjectCount()
         {
             return _rmap.Count;

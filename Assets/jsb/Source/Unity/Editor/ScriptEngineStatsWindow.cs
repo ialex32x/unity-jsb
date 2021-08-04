@@ -26,6 +26,7 @@ namespace QuickJS.Unity
             public Native.JSMemoryUsage memoryUsage;
             public int exportedTypes;
             public int managedObjectCount;
+            public int managedObjectCap;
             public bool fetchManagedObjectRefs;
             public List<WeakReference<object>> managedObjectRefs = new List<WeakReference<object>>();
             public int jSObjectCount;
@@ -133,6 +134,7 @@ namespace QuickJS.Unity
                 var stringCache = rt.GetMainContext().GetStringCache();
 
                 snapshot.managedObjectCount = objectCache.GetManagedObjectCount();
+                snapshot.managedObjectCap = objectCache.GetManagedObjectCap();
                 snapshot.managedObjectRefs.Clear();
                 if (snapshot.fetchManagedObjectRefs)
                 {
@@ -208,7 +210,16 @@ namespace QuickJS.Unity
             Block("Misc.", () =>
             {
                 EditorGUILayout.IntField("Exported Types", snapshot.exportedTypes);
-                EditorGUILayout.IntField("ManagedObject Count", snapshot.managedObjectCount);
+                EditorGUILayout.BeginHorizontal();
+                EditorGUILayout.TextField("ManagedObject Count", snapshot.managedObjectCount + "/" + snapshot.managedObjectCap, GUILayout.ExpandWidth(false));
+                var pr = EditorGUILayout.GetControlRect();
+                EditorGUI.DrawRect(pr, new Color(42f / 255f, 42f / 255f, 42f / 255f, 1));
+                pr.x += 1f;
+                pr.y += 1f;
+                pr.height -= 2f;
+                pr.width = (pr.width - 2f) * snapshot.managedObjectCount / snapshot.managedObjectCap;
+                EditorGUI.DrawRect(pr, Color.gray);
+                EditorGUILayout.EndHorizontal();
                 _fetchManagedObjectRefs = EditorGUILayout.Toggle("Details", _fetchManagedObjectRefs);
                 if (snapshot.fetchManagedObjectRefs)
                 {
