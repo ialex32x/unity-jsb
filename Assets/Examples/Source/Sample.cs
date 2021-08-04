@@ -45,9 +45,9 @@ namespace Example
             if (fileLoader == FileLoader.Resources)
             {
                 fileSystem = new ResourcesFileSystem(_mConsole);
-                
+
                 // it's the relative path under Unity Resources directory space
-                pathResolver.AddSearchPath("dist"); 
+                pathResolver.AddSearchPath("dist");
             }
             else if (fileLoader == FileLoader.HMR)
             {
@@ -67,7 +67,7 @@ namespace Example
             _rt.withStacktrace = stacktrace;
             // if (sourceMap)
             // {
-                // _rt.EnableSourceMap();
+            // _rt.EnableSourceMap();
             // }
             _rt.AddModuleResolvers();
             _rt.extraBinding = (runtime, register) =>
@@ -76,12 +76,8 @@ namespace Example
                 FSWatcher.Bind(register);
                 QuickJS.Extra.WebSocket.Bind(register);
                 QuickJS.Extra.XMLHttpRequest.Bind(register);
-                if (!runtime.isWorker)
-                {
-                    var uri = new Uri(baseUrl);
-                    QuickJS.Extra.DOMCompatibleLayer.Bind(register, uri);
-                    QuickJS.Extra.NodeCompatibleLayer.Bind(register);
-                }
+                QuickJS.Extra.DOMCompatibleLayer.Bind(register, baseUrl);
+                QuickJS.Extra.NodeCompatibleLayer.Bind(register);
 #endif
             };
             _rt.Initialize(new ScriptRuntimeArgs

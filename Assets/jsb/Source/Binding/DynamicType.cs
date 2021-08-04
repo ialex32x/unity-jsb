@@ -175,7 +175,7 @@ namespace QuickJS.Binding
             }
             else
             {
-                cls = register.CreateClass(_type, proto);
+                cls = register.CreateClassWithPrototype(_type, proto);
             }
 
             #region BindMethods(register, flags);

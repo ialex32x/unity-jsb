@@ -67,7 +67,7 @@ namespace QuickJS.Binding
         }
 
         // 覆盖现有定义
-        public ClassDecl CreateClass(Type type, JSValue protoVal)
+        public ClassDecl CreateClassWithPrototype(Type type, JSValue protoVal)
         {
             JSContext ctx = _context;
             var ctorVal = JSApi.JS_GetProperty(_context, protoVal, JSApi.JS_ATOM_constructor);
@@ -93,6 +93,17 @@ namespace QuickJS.Binding
             var decl = CreateClass(globalObject, typename, type, ctorFunc);
             JSApi.JS_FreeValue(_context, globalObject);
             return decl;
+        }
+
+        public bool IsGlobalRegistered(string typename)
+        {
+            JSContext ctx = _context;
+            var globalObject = _context.GetGlobalObject();
+            var prop = JSApi.JS_GetProperty(ctx, globalObject, GetAtom(typename));
+            var retVal = !prop.IsNullish();
+            JSApi.JS_FreeValue(_context, prop);
+            JSApi.JS_FreeValue(_context, globalObject);
+            return retVal;
         }
 
         /// <summary>
