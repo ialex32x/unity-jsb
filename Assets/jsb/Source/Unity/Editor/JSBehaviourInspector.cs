@@ -1,4 +1,5 @@
 ﻿#if !JSB_UNITYLESS
+using System;
 
 namespace QuickJS.Unity
 {
@@ -21,19 +22,18 @@ namespace QuickJS.Unity
 
             if (updatableNew != updatableOld)
             {
-                var mb = _target;
-                var name = typeof(JSBehaviour).Name;
-                var assetGuids = AssetDatabase.FindAssets($"t:Script {name}");
-                foreach (var assetGuid in assetGuids)
-                {
-                    var assetPath = AssetDatabase.GUIDToAssetPath(assetGuid);
-                    var asset = AssetDatabase.LoadAssetAtPath<MonoScript>(assetPath);
-                    UnityEngine.Debug.LogFormat("{0} {1} {2}", asset.GetType(), asset.name, asset.GetClass() == typeof(JSBehaviour));
-                }
-                // var ms = MonoScript.FromMonoBehaviour(mb);
-                // var prop = serializedObject.FindProperty("m_Script");
-                // serializedObject.Update();
-                // prop.objectReferenceValue = monoScript;
+                this.ReleaseJSValues();
+                _target.ReleaseScriptInstance();
+
+                var type = updatableNew ? typeof(JSBehaviourFull) : typeof(JSBehaviour);
+                var monoScript = UnityHelper.GetMonoScript(type);
+                var prop = serializedObject.FindProperty("m_Script");
+                serializedObject.Update();
+                prop.objectReferenceValue = monoScript;
+
+                // this editor instance (and _target) reference will be invalid after this call, 
+                // do not access anything relating to the old references
+                serializedObject.ApplyModifiedProperties();
             }
         }
     }

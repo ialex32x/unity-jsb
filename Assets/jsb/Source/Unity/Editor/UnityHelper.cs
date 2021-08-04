@@ -85,6 +85,26 @@ namespace QuickJS.Unity
             return defaultPrefs;
         }
 
+        /// <summary>
+        /// Get MonoScript by type
+        /// </summary>
+        public static MonoScript GetMonoScript(Type type)
+        {
+            var name = type.Name;
+            var assetGuids = AssetDatabase.FindAssets($"t:Script {name}");
+            foreach (var assetGuid in assetGuids)
+            {
+                var assetPath = AssetDatabase.GUIDToAssetPath(assetGuid);
+                var asset = AssetDatabase.LoadAssetAtPath<MonoScript>(assetPath);
+                if (asset && asset.GetClass() == type)
+                {
+                    return asset;
+                }
+            }
+
+            return null;
+        }
+
         public static bool IsReflectBindingSupported()
         {
             return LoadPrefs().reflectBinding;

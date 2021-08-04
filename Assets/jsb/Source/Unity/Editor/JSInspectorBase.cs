@@ -73,7 +73,7 @@ namespace QuickJS.Unity
             Release();
         }
 
-        private void ReleaseJSValues()
+        protected void ReleaseJSValues()
         {
             if (!_this_obj.IsNullish())
             {
@@ -102,7 +102,7 @@ namespace QuickJS.Unity
             ReleaseJSValues();
         }
 
-        private void CreateScriptInstance(JSContext ctx, JSValue this_obj, JSValue ctor)
+        protected void CreateScriptInstance(JSContext ctx, JSValue this_obj, JSValue ctor)
         {
             var context = ScriptEngine.GetContext(ctx);
             if (context == null || !context.IsValid())
@@ -162,7 +162,7 @@ namespace QuickJS.Unity
             _onInspectorGUIValid = false;
         }
 
-        private void CreateScriptInstance()
+        protected void CreateScriptInstance()
         {
             ReleaseJSValues();
 

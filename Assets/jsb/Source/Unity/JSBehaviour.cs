@@ -124,6 +124,13 @@ namespace QuickJS.Unity
             return JSApi.JS_GetPropertyStr(_ctx, _this_obj, key);
         }
 
+        public static bool IsUpdatable(ScriptContext context, JSValue prototype)
+        {
+            return prototype.CheckFuncProperty(context, "Update")
+                || prototype.CheckFuncProperty(context, "LateUpdate")
+                || prototype.CheckFuncProperty(context, "FixedUpdate");
+        }
+
         // 在 gameObject 上创建一个新的脚本组件实例
         // ctor: js class
         public static JSValue SetScriptInstance(GameObject gameObject, JSContext ctx, JSValue ctor, bool execAwake)
@@ -140,9 +147,7 @@ namespace QuickJS.Unity
                         var context = ScriptEngine.GetContext(ctx);
                         if (context != null)
                         {
-                            fullCap = prototype.CheckFuncProperty(context, "Update")
-                                || prototype.CheckFuncProperty(context, "LateUpdate")
-                                || prototype.CheckFuncProperty(context, "FixedUpdate");
+                            fullCap = IsUpdatable(context, prototype);
                         }
                     }
                     JSApi.JS_FreeValue(ctx, prototype);
