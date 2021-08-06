@@ -9,6 +9,11 @@ namespace QuickJS.Binding
 
     public partial class Values
     {
+        public static JSValue js_push_primitive(JSContext ctx, JSValue o)
+        {
+            return JSApi.JS_DupValue(ctx, o);
+        }
+
         public static JSValue js_push_primitive(JSContext ctx, IntPtr o)
         {
             return js_push_classvalue(ctx, o);
