@@ -29,6 +29,19 @@ public class SampleBehaviour : MonoBehaviour
         return _p;
     }
 
+    public AnyScriptPromise AnotherWait(ScriptContext ctx, int t)
+    {
+        var p = new AnyScriptPromise(ctx);
+        StartCoroutine(_WaitForResolve(() => p.Resolve()));
+        return p;
+    }
+
+    private System.Collections.IEnumerator _WaitForResolve(System.Action p)
+    {
+        yield return new WaitForSeconds(3f);
+        p();
+    }
+
     void OnGUI()
     {
         var p = _p;
@@ -36,7 +49,7 @@ public class SampleBehaviour : MonoBehaviour
         {
             return;
         }
-        
+
         if (GUILayout.Button("Resolve"))
         {
             _p = null;

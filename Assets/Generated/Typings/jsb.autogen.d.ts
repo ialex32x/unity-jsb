@@ -148,6 +148,8 @@ declare module "UnityEngine" {
      */
     class Color32 extends ValueType {
         constructor(r: jsb.byte, g: jsb.byte, b: jsb.byte, a: jsb.byte)
+        $GetValue(index: number): jsb.byte
+        $SetValue(index: number, value: jsb.byte): void
         /** Returns a nicely formatted string of this color.
          */
         toString(format: string): string
@@ -375,10 +377,13 @@ declare module "UnityEngine" {
          */
         static RoundToInt(v: Vector2): Vector2Int
         static op_Inequality(lhs: Vector2Int, rhs: Vector2Int): boolean
+        // js_op_overloading: static neg(v: Vector2Int): Vector2Int
         // js_op_overloading: static +(a: Vector2Int, b: Vector2Int): Vector2Int
         // js_op_overloading: static -(a: Vector2Int, b: Vector2Int): Vector2Int
         // js_op_overloading: static *(a: Vector2Int, b: Vector2Int): Vector2Int
+        // js_op_overloading: static *(a: number, b: Vector2Int): Vector2Int
         // js_op_overloading: static *(a: Vector2Int, b: number): Vector2Int
+        // js_op_overloading: static /(a: Vector2Int, b: number): Vector2Int
         // js_op_overloading: static ==(lhs: Vector2Int, rhs: Vector2Int): boolean
         /** X component of the vector.
          */
@@ -453,12 +458,16 @@ declare module "UnityEngine" {
         /** Rotates a vector current towards target.
          * @param current The vector being managed.
          * @param target The vector.
-         * @param maxRadiansDelta The distance between the two vectors  in radians.
-         * @param maxMagnitudeDelta The length of the radian.
+         * @param maxRadiansDelta The maximum angle in radians allowed for this rotation.
+         * @param maxMagnitudeDelta The maximum allowed change in vector magnitude for this rotation.
          * @returns The location that RotateTowards generates. 
          */
         static RotateTowards(current: Vector3, target: Vector3, maxRadiansDelta: number, maxMagnitudeDelta: number): Vector3
-        /** Linearly interpolates between two vectors.
+        /** Linearly interpolates between two points.
+         * @param a Start value, returned when t = 0.
+         * @param b End value, returned when t = 1.
+         * @param t Value used to interpolate between a and b.
+         * @returns Interpolated value, equals to a + (b - a) * t. 
          */
         static Lerp(a: Vector3, b: Vector3, t: number): Vector3
         /** Linearly interpolates between two vectors.
@@ -517,6 +526,9 @@ declare module "UnityEngine" {
          */
         static Project(vector: Vector3, onNormal: Vector3): Vector3
         /** Projects a vector onto a plane defined by a normal orthogonal to the plane.
+         * @param planeNormal The direction from the vector towards the plane.
+         * @param vector The location of the vector above the plane.
+         * @returns The location of the vector on the plane. 
          */
         static ProjectOnPlane(vector: Vector3, planeNormal: Vector3): Vector3
         /** Returns the angle in degrees between from and to.
@@ -658,7 +670,10 @@ declare module "UnityEngine" {
         // js_op_overloading: static +(a: Vector3Int, b: Vector3Int): Vector3Int
         // js_op_overloading: static -(a: Vector3Int, b: Vector3Int): Vector3Int
         // js_op_overloading: static *(a: Vector3Int, b: Vector3Int): Vector3Int
+        // js_op_overloading: static neg(a: Vector3Int): Vector3Int
         // js_op_overloading: static *(a: Vector3Int, b: number): Vector3Int
+        // js_op_overloading: static *(a: number, b: Vector3Int): Vector3Int
+        // js_op_overloading: static /(a: Vector3Int, b: number): Vector3Int
         // js_op_overloading: static ==(lhs: Vector3Int, rhs: Vector3Int): boolean
         /** X component of the vector.
          */
@@ -800,6 +815,116 @@ declare module "UnityEngine" {
     }
 }
 declare module "UnityEngine" {
+    import { ValueType, Object as Object1 } from "System";
+    /** A 2D Rectangle defined by X and Y position, width and height.
+     */
+    class Rect extends ValueType {
+        constructor(x: number, y: number, width: number, height: number)
+        constructor(position: Vector2, size: Vector2)
+        constructor(source: Rect)
+        /** Set components of an existing Rect.
+         */
+        Set(x: number, y: number, width: number, height: number): void
+        /** Returns true if the x and y components of point is a point inside this rectangle. If allowInverse is present and true, the width and height of the Rect are allowed to take negative values (ie, the min value is greater than the max), and the test will still work.
+         * @param point Point to test.
+         * @param allowInverse Does the test allow the Rect's width and height to be negative?
+         * @returns True if the point lies within the specified rectangle. 
+         */
+        Contains(point: Vector3, allowInverse: boolean): boolean
+        /** Returns true if the x and y components of point is a point inside this rectangle. If allowInverse is present and true, the width and height of the Rect are allowed to take negative values (ie, the min value is greater than the max), and the test will still work.
+         * @param point Point to test.
+         * @param allowInverse Does the test allow the Rect's width and height to be negative?
+         * @returns True if the point lies within the specified rectangle. 
+         */
+        Contains(point: Vector2): boolean
+        /** Returns true if the x and y components of point is a point inside this rectangle. If allowInverse is present and true, the width and height of the Rect are allowed to take negative values (ie, the min value is greater than the max), and the test will still work.
+         * @param point Point to test.
+         * @param allowInverse Does the test allow the Rect's width and height to be negative?
+         * @returns True if the point lies within the specified rectangle. 
+         */
+        Contains(point: Vector3): boolean
+        /** Returns true if the other rectangle overlaps this one. If allowInverse is present and true, the widths and heights of the Rects are allowed to take negative values (ie, the min value is greater than the max), and the test will still work.
+         * @param other Other rectangle to test overlapping with.
+         * @param allowInverse Does the test allow the widths and heights of the Rects to be negative?
+         */
+        Overlaps(other: Rect, allowInverse: boolean): boolean
+        /** Returns true if the other rectangle overlaps this one. If allowInverse is present and true, the widths and heights of the Rects are allowed to take negative values (ie, the min value is greater than the max), and the test will still work.
+         * @param other Other rectangle to test overlapping with.
+         * @param allowInverse Does the test allow the widths and heights of the Rects to be negative?
+         */
+        Overlaps(other: Rect): boolean
+        GetHashCode(): number
+        Equals(other: Object1): boolean
+        Equals(other: Rect): boolean
+        /** Returns a nicely formatted string for this Rect.
+         */
+        toString(format: string): string
+        toString(): string
+        /** Creates a rectangle from min/max coordinate values.
+         * @param xmin The minimum X coordinate.
+         * @param ymin The minimum Y coordinate.
+         * @param xmax The maximum X coordinate.
+         * @param ymax The maximum Y coordinate.
+         * @returns A rectangle matching the specified coordinates. 
+         */
+        static MinMaxRect(xmin: number, ymin: number, xmax: number, ymax: number): Rect
+        /** Returns a point inside a rectangle, given normalized coordinates.
+         * @param rectangle Rectangle to get a point inside.
+         * @param normalizedRectCoordinates Normalized coordinates to get a point for.
+         */
+        static NormalizedToPoint(rectangle: Rect, normalizedRectCoordinates: Vector2): Vector2
+        /** Returns the normalized coordinates cooresponding the the point.
+         * @param rectangle Rectangle to get normalized coordinates inside.
+         * @param point A point inside the rectangle to get normalized coordinates for.
+         */
+        static PointToNormalized(rectangle: Rect, point: Vector2): Vector2
+        static op_Inequality(lhs: Rect, rhs: Rect): boolean
+        // js_op_overloading: static ==(lhs: Rect, rhs: Rect): boolean
+        /** Shorthand for writing new Rect(0,0,0,0).
+         */
+        static readonly zero: Rect
+        /** The X coordinate of the rectangle.
+         */
+        x: number
+        /** The Y coordinate of the rectangle.
+         */
+        y: number
+        /** The X and Y position of the rectangle.
+         */
+        position: Vector2
+        /** The position of the center of the rectangle.
+         */
+        center: Vector2
+        /** The position of the minimum corner of the rectangle.
+         */
+        min: Vector2
+        /** The position of the maximum corner of the rectangle.
+         */
+        max: Vector2
+        /** The width of the rectangle, measured from the X position.
+         */
+        width: number
+        /** The height of the rectangle, measured from the Y position.
+         */
+        height: number
+        /** The width and height of the rectangle.
+         */
+        size: Vector2
+        /** The minimum X coordinate of the rectangle.
+         */
+        xMin: number
+        /** The minimum Y coordinate of the rectangle.
+         */
+        yMin: number
+        /** The maximum X coordinate of the rectangle.
+         */
+        xMax: number
+        /** The maximum Y coordinate of the rectangle.
+         */
+        yMax: number
+    }
+}
+declare module "UnityEngine" {
     import * as jsb from "jsb";
     import { ValueType, Array, Object as Object1 } from "System";
     /** Quaternions are used to represent rotations.
@@ -841,7 +966,11 @@ declare module "UnityEngine" {
         /** Returns the Inverse of rotation.
          */
         static Inverse(rotation: Quaternion): Quaternion
-        /** Spherically interpolates between a and b by t. The parameter t is clamped to the range [0, 1].
+        /** Spherically interpolates between quaternions a and b by ratio t. The parameter t is clamped to the range [0, 1].
+         * @param a Start value, returned when t = 0.
+         * @param b End value, returned when t = 1.
+         * @param t Interpolation ratio.
+         * @returns A quaternion spherically interpolated between quaternions a and b. 
          */
         static Slerp(a: Quaternion, b: Quaternion, t: number): Quaternion
         /** Spherically interpolates between a and b by t. The parameter t is not clamped.
@@ -873,7 +1002,7 @@ declare module "UnityEngine" {
         /** Returns the angle in degrees between two rotations a and b.
          */
         static Angle(a: Quaternion, b: Quaternion): number
-        /** Returns a rotation that rotates z degrees around the z axis, x degrees around the x axis, and y degrees around the y axis.
+        /** Returns a rotation that rotates z degrees around the z axis, x degrees around the x axis, and y degrees around the y axis; applied in that order.
          */
         static Euler(x: number, y: number, z: number): Quaternion
         /** Returns a rotation that rotates z degrees around the z axis, x degrees around the x axis, and y degrees around the y axis.
@@ -913,7 +1042,8 @@ declare module "UnityEngine" {
     }
 }
 declare module "UnityEngine" {
-    import { ValueType, Object as Object1 } from "System";
+    import * as jsb from "jsb";
+    import { ValueType, Array, Object as Object1 } from "System";
     /** A standard 4x4 transformation matrix.
      */
     class Matrix4x4 extends ValueType {
@@ -961,15 +1091,33 @@ declare module "UnityEngine" {
         /** Creates a translation, rotation and scaling matrix.
          */
         static TRS(pos: Vector3, q: Quaternion, s: Vector3): Matrix4x4
+        /** Computes the inverse of a 3D affine matrix.
+         * @param input Input matrix to invert.
+         * @param result The result of the inversion. Equal to the input matrix if the function fails.
+         * @returns Returns true and a valid result if the function succeeds, false and a copy of the input matrix if the function fails. 
+         */
+        static Inverse3DAffine(input: Matrix4x4, result: jsb.Ref<Matrix4x4>): boolean
         static Inverse(m: Matrix4x4): Matrix4x4
         static Transpose(m: Matrix4x4): Matrix4x4
-        /** Creates an orthogonal projection matrix.
+        /** Create an orthogonal projection matrix.
+         * @param left Left-side x-coordinate.
+         * @param right Right-side x-coordinate.
+         * @param bottom Bottom y-coordinate.
+         * @param top Top y-coordinate.
+         * @param zNear Near depth clipping plane value.
+         * @param zFar Far depth clipping plane value.
+         * @returns The projection matrix. 
          */
         static Ortho(left: number, right: number, bottom: number, top: number, zNear: number, zFar: number): Matrix4x4
-        /** Creates a perspective projection matrix.
+        /** Create a perspective projection matrix.
+         * @param fov Vertical field-of-view in degrees.
+         * @param aspect Aspect ratio (width divided by height).
+         * @param zNear Near depth clipping plane value.
+         * @param zFar Far depth clipping plane value.
+         * @returns The projection matrix. 
          */
         static Perspective(fov: number, aspect: number, zNear: number, zFar: number): Matrix4x4
-        /** Given a source point, a target point, and an up vector, computes a transformation matrix that corresponds to a camera viewing the target from the source, such that the right-hand vector is perpendicular to the up vector.
+        /** Create a "look at" matrix.
          * @param from The source point.
          * @param to The target point.
          * @param up The vector describing the up direction (typically Vector3.up).
@@ -1014,19 +1162,19 @@ declare module "UnityEngine" {
         /** Attempts to get a rotation quaternion from this matrix.
          */
         readonly rotation: Quaternion
-        /** Attempts to get a scale value from the matrix.
+        /** Attempts to get a scale value from the matrix. (Read Only)
          */
         readonly lossyScale: Vector3
-        /** Is this the identity matrix?
+        /** Checks whether this is an identity matrix. (Read Only)
          */
         readonly isIdentity: boolean
-        /** The determinant of the matrix.
+        /** The determinant of the matrix. (Read Only)
          */
         readonly determinant: number
         /** This property takes a projection matrix and returns the six plane coordinates that define a projection frustum.
          */
         readonly decomposeProjection: any
-        /** The inverse of this matrix (Read Only).
+        /** The inverse of this matrix. (Read Only)
          */
         readonly inverse: Matrix4x4
         /** Returns the transpose of this matrix (Read Only).
@@ -1098,7 +1246,7 @@ declare module "UnityEngine" {
          * @param position Position for the new object.
          * @param rotation Orientation of the new object.
          * @param parent Parent that will be assigned to the new object.
-         * @param instantiateInWorldSpace Pass true when assigning a parent Object to maintain the world position of the Object, instead of setting its position relative to the new parent. Pass false to set the Object's position relative to its new parent.
+         * @param instantiateInWorldSpace When you assign a parent Object, pass true to position the new object directly in world space. Pass false to set the Object’s position relative to its new parent..
          * @returns The instantiated clone. 
          */
         static Instantiate(original: Object, position: Vector3, rotation: Quaternion, parent: Transform): Object
@@ -1107,7 +1255,7 @@ declare module "UnityEngine" {
          * @param position Position for the new object.
          * @param rotation Orientation of the new object.
          * @param parent Parent that will be assigned to the new object.
-         * @param instantiateInWorldSpace Pass true when assigning a parent Object to maintain the world position of the Object, instead of setting its position relative to the new parent. Pass false to set the Object's position relative to its new parent.
+         * @param instantiateInWorldSpace When you assign a parent Object, pass true to position the new object directly in world space. Pass false to set the Object’s position relative to its new parent..
          * @returns The instantiated clone. 
          */
         static Instantiate(original: Object, position: Vector3, rotation: Quaternion): Object
@@ -1116,7 +1264,7 @@ declare module "UnityEngine" {
          * @param position Position for the new object.
          * @param rotation Orientation of the new object.
          * @param parent Parent that will be assigned to the new object.
-         * @param instantiateInWorldSpace Pass true when assigning a parent Object to maintain the world position of the Object, instead of setting its position relative to the new parent. Pass false to set the Object's position relative to its new parent.
+         * @param instantiateInWorldSpace When you assign a parent Object, pass true to position the new object directly in world space. Pass false to set the Object’s position relative to its new parent..
          * @returns The instantiated clone. 
          */
         static Instantiate(original: Object, parent: Transform, instantiateInWorldSpace: boolean): Object
@@ -1125,7 +1273,7 @@ declare module "UnityEngine" {
          * @param position Position for the new object.
          * @param rotation Orientation of the new object.
          * @param parent Parent that will be assigned to the new object.
-         * @param instantiateInWorldSpace Pass true when assigning a parent Object to maintain the world position of the Object, instead of setting its position relative to the new parent. Pass false to set the Object's position relative to its new parent.
+         * @param instantiateInWorldSpace When you assign a parent Object, pass true to position the new object directly in world space. Pass false to set the Object’s position relative to its new parent..
          * @returns The instantiated clone. 
          */
         static Instantiate(original: Object, parent: Transform): Object
@@ -1134,16 +1282,16 @@ declare module "UnityEngine" {
          * @param position Position for the new object.
          * @param rotation Orientation of the new object.
          * @param parent Parent that will be assigned to the new object.
-         * @param instantiateInWorldSpace Pass true when assigning a parent Object to maintain the world position of the Object, instead of setting its position relative to the new parent. Pass false to set the Object's position relative to its new parent.
+         * @param instantiateInWorldSpace When you assign a parent Object, pass true to position the new object directly in world space. Pass false to set the Object’s position relative to its new parent..
          * @returns The instantiated clone. 
          */
         static Instantiate(original: Object): Object
-        /** Removes a gameobject, component or asset.
+        /** Removes a GameObject, component or asset.
          * @param obj The object to destroy.
          * @param t The optional amount of time to delay before destroying the object.
          */
         static Destroy(obj: Object, t: number): void
-        /** Removes a gameobject, component or asset.
+        /** Removes a GameObject, component or asset.
          * @param obj The object to destroy.
          * @param t The optional amount of time to delay before destroying the object.
          */
@@ -1158,18 +1306,18 @@ declare module "UnityEngine" {
          * @param allowDestroyingAssets Set to true to allow assets to be destroyed.
          */
         static DestroyImmediate(obj: Object): void
-        /** Returns a list of all active loaded objects of Type type.
+        /** The older, non-generic version of this method. In most cases you should use the generic version of this method.
          * @param type The type of object to find.
-         * @returns The array of objects found matching the type specified. 
+         * @returns Returns an array of all active loaded objects of Type type. 
          */
         static FindObjectsOfType(type: any): Array<Object>
         /** Do not destroy the target Object when loading a new Scene.
          * @param target An Object not destroyed on Scene change.
          */
         static DontDestroyOnLoad(target: Object): void
-        /** Returns the first active loaded object of Type type.
+        /** The older, non-generic version of this method. In most cases you should use the generic version of this method.
          * @param type The type of object to find.
-         * @returns This returns the  Object that matches the specified type. It returns null if no Object matches the type. 
+         * @returns Returns an array of all active loaded objects of Type type. 
          */
         static FindObjectOfType(type: any): Object
         static op_Equality(x: Object, y: Object): boolean
@@ -1180,6 +1328,157 @@ declare module "UnityEngine" {
         /** Should the object be hidden, saved with the Scene or modifiable by the user?
          */
         hideFlags: any
+    }
+}
+declare module "UnityEngine" {
+    import { Object as Object1 } from "System";
+    /** The interface to get time information from Unity.
+     */
+    class Time extends Object1 {
+        constructor()
+        /** The time at the beginning of this frame (Read Only). This is the time in seconds since the start of the game.
+         */
+        static readonly time: number
+        /** The time this frame has started (Read Only). This is the time in seconds since the last level has been loaded.
+         */
+        static readonly timeSinceLevelLoad: number
+        /** The completion time in seconds since the last frame (Read Only).
+         */
+        static readonly deltaTime: number
+        /** The time the latest MonoBehaviour.FixedUpdate has started (Read Only). This is the time in seconds since the start of the game.
+         */
+        static readonly fixedTime: number
+        /** The timeScale-independant time for this frame (Read Only). This is the time in seconds since the start of the game.
+         */
+        static readonly unscaledTime: number
+        /** The TimeScale-independant time the latest MonoBehaviour.FixedUpdate has started (Read Only). This is the time in seconds since the start of the game.
+         */
+        static readonly fixedUnscaledTime: number
+        /** The timeScale-independent interval in seconds from the last frame to the current one (Read Only).
+         */
+        static readonly unscaledDeltaTime: number
+        /** The timeScale-independent interval in seconds from the last fixed frame to the current one (Read Only).
+         */
+        static readonly fixedUnscaledDeltaTime: number
+        /** The interval in seconds at which physics and other fixed frame rate updates (like MonoBehaviour's MonoBehaviour.FixedUpdate) are performed.
+         */
+        static fixedDeltaTime: number
+        /** The maximum time a frame can take. Physics and other fixed frame rate updates (like MonoBehaviour's MonoBehaviour.FixedUpdate) will be performed only for this duration of time per frame.
+         */
+        static maximumDeltaTime: number
+        /** A smoothed out Time.deltaTime (Read Only).
+         */
+        static readonly smoothDeltaTime: number
+        /** The maximum time a frame can spend on particle updates. If the frame takes longer than this, then updates are split into multiple smaller updates.
+         */
+        static maximumParticleDeltaTime: number
+        /** The scale at which time passes. This can be used for slow motion effects.
+         */
+        static timeScale: number
+        /** The total number of frames that have passed (Read Only).
+         */
+        static readonly frameCount: number
+        static readonly renderedFrameCount: number
+        /** The real time in seconds since the game started (Read Only).
+         */
+        static readonly realtimeSinceStartup: number
+        /** Slows game playback time to allow screenshots to be saved between frames.
+         */
+        static captureDeltaTime: number
+        /** The reciprocal of Time.captureDeltaTime.
+         */
+        static captureFramerate: number
+        /** Returns true if called inside a fixed time step callback (like MonoBehaviour's MonoBehaviour.FixedUpdate), otherwise returns false.
+         */
+        static readonly inFixedTimeStep: boolean
+    }
+}
+declare module "UnityEngine" {
+    import { Object as Object1, ValueType } from "System";
+    /** Class for generating random data.
+     */
+    class Random extends Object1 {
+        constructor()
+        /** Initializes the random number generator state with a seed.
+         * @param seed Seed used to initialize the random number generator.
+         */
+        static InitState(seed: number): void
+        /** Return a random float number between min [inclusive] and max [inclusive] (Read Only).
+         */
+        static Range(min: number, max: number): number
+        /** Return a random integer number between min [inclusive] and max [exclusive] (Read Only).
+         */
+        static Range(min: number, max: number): number
+        /** Generates a random color from HSV and alpha ranges.
+         * @param hueMin Minimum hue [0..1].
+         * @param hueMax Maximum hue [0..1].
+         * @param saturationMin Minimum saturation [0..1].
+         * @param saturationMax Maximum saturation[0..1].
+         * @param valueMin Minimum value [0..1].
+         * @param valueMax Maximum value [0..1].
+         * @param alphaMin Minimum alpha [0..1].
+         * @param alphaMax Maximum alpha [0..1].
+         * @returns A random color with HSV and alpha values in the input ranges. 
+         */
+        static ColorHSV(hueMin: number, hueMax: number, saturationMin: number, saturationMax: number, valueMin: number, valueMax: number, alphaMin: number, alphaMax: number): Color
+        /** Generates a random color from HSV and alpha ranges.
+         * @param hueMin Minimum hue [0..1].
+         * @param hueMax Maximum hue [0..1].
+         * @param saturationMin Minimum saturation [0..1].
+         * @param saturationMax Maximum saturation[0..1].
+         * @param valueMin Minimum value [0..1].
+         * @param valueMax Maximum value [0..1].
+         * @param alphaMin Minimum alpha [0..1].
+         * @param alphaMax Maximum alpha [0..1].
+         * @returns A random color with HSV and alpha values in the input ranges. 
+         */
+        static ColorHSV(hueMin: number, hueMax: number, saturationMin: number, saturationMax: number, valueMin: number, valueMax: number): Color
+        /** Generates a random color from HSV and alpha ranges.
+         * @param hueMin Minimum hue [0..1].
+         * @param hueMax Maximum hue [0..1].
+         * @param saturationMin Minimum saturation [0..1].
+         * @param saturationMax Maximum saturation[0..1].
+         * @param valueMin Minimum value [0..1].
+         * @param valueMax Maximum value [0..1].
+         * @param alphaMin Minimum alpha [0..1].
+         * @param alphaMax Maximum alpha [0..1].
+         * @returns A random color with HSV and alpha values in the input ranges. 
+         */
+        static ColorHSV(hueMin: number, hueMax: number, saturationMin: number, saturationMax: number): Color
+        /** Generates a random color from HSV and alpha ranges.
+         * @param hueMin Minimum hue [0..1].
+         * @param hueMax Maximum hue [0..1].
+         * @param saturationMin Minimum saturation [0..1].
+         * @param saturationMax Maximum saturation[0..1].
+         * @param valueMin Minimum value [0..1].
+         * @param valueMax Maximum value [0..1].
+         * @param alphaMin Minimum alpha [0..1].
+         * @param alphaMax Maximum alpha [0..1].
+         * @returns A random color with HSV and alpha values in the input ranges. 
+         */
+        static ColorHSV(hueMin: number, hueMax: number): Color
+        static ColorHSV(): Color
+        /** Gets/Sets the full internal state of the random number generator.
+         */
+        static state: any
+        /** Returns a random number between 0.0 [inclusive] and 1.0 [inclusive] (Read Only).
+         */
+        static readonly value: number
+        /** Returns a random point inside a sphere with radius 1 (Read Only).
+         */
+        static readonly insideUnitSphere: Vector3
+        /** Returns a random point inside a circle with radius 1 (Read Only).
+         */
+        static readonly insideUnitCircle: Vector2
+        /** Returns a random point on the surface of a sphere with radius 1 (Read Only).
+         */
+        static readonly onUnitSphere: Vector3
+        /** Returns a random rotation (Read Only).
+         */
+        static readonly rotation: Quaternion
+        /** Returns a random rotation with uniform distribution (Read Only).
+         */
+        static readonly rotationUniform: Quaternion
     }
 }
 declare module "UnityEngine" {
@@ -1210,13 +1509,14 @@ declare module "UnityEngine" {
          * @returns A component of the matching type, if found. 
          */
         GetComponentInChildren<T extends Component>(type: { new(): T }): T
-        /** Returns the component of Type type in the GameObject or any of its parents.
+        /** Retrieves the component of Type type in the GameObject or any of its parents.
          * @param type Type of component to find.
+         * @returns Returns a component if a component matching the type is found. Returns null otherwise. 
          */
         GetComponentInParent<T extends Component>(type: { new(): T }): T
         GetComponents(type: any, results: any): void
         /** Returns all components of Type type in the GameObject.
-         * @param type The type of Component to retrieve.
+         * @param type The type of component to retrieve.
          */
         GetComponents<T extends Component>(type: { new(): T }): T[]
         /** Returns all components of Type type in the GameObject or any of its children.
@@ -1235,6 +1535,12 @@ declare module "UnityEngine" {
          */
         GetComponentsInParent<T extends Component>(type: { new(): T }, includeInactive: boolean): T[]
         GetComponentsInParent<T extends Component>(type: { new(): T }): T[]
+        /** Gets the component of the specified type, if it exists.
+         * @param type The type of component to retrieve.
+         * @param component The output argument that will contain the component or null.
+         * @returns Returns true if the component is found, false otherwise. 
+         */
+        TryGetComponent(type: any, component: jsb.Out<Component>): boolean
         /** Calls the method named methodName on every MonoBehaviour in this game object and on every ancestor of the behaviour.
          * @param methodName The name of the method to call.
          * @param value An optional parameter value to pass to the called method.
@@ -1303,7 +1609,7 @@ declare module "UnityEngine" {
          */
         static FindWithTag(tag: string): GameObject
         static FindGameObjectWithTag(tag: string): GameObject
-        /** Returns a list of active GameObjects tagged tag. Returns empty array if no GameObject was found.
+        /** Returns an array of active GameObjects tagged tag. Returns empty array if no GameObject was found.
          * @param tag The name of the tag to search GameObjects for.
          */
         static FindGameObjectsWithTag(tag: string): Array<GameObject>
@@ -1322,7 +1628,7 @@ declare module "UnityEngine" {
         /** Defines whether the GameObject is active in the Scene.
          */
         readonly activeInHierarchy: boolean
-        /** Editor only API that specifies if a game object is static.
+        /** Gets and sets the GameObject's StaticEditorFlags.
          */
         isStatic: boolean
         /** The tag of this game object.
@@ -1331,6 +1637,9 @@ declare module "UnityEngine" {
         /** Scene that the GameObject is part of.
          */
         readonly scene: any
+        /** Scene culling mask Unity uses to determine which scene to render the GameObject in.
+         */
+        readonly sceneCullingMask: number
         readonly gameObject: GameObject
     }
 }
@@ -1385,7 +1694,10 @@ declare module "UnityEngine" {
          */
         ViewportToWorldPoint(position: Vector3): Vector3
         ScreenToWorldPoint(position: Vector3, eye: any): Vector3
-        /** Transforms position from screen space into world space.
+        /** Transforms a point from screen space into world space, where world space is defined as the coordinate system at the very top of your game's hierarchy.
+         * @param position A screen space position (often mouse x, y), plus a z position for depth (for example, a camera clipping plane).
+         * @param eye By default, Camera.MonoOrStereoscopicEye.Mono. Can be set to Camera.MonoOrStereoscopicEye.Left or Camera.MonoOrStereoscopicEye.Right for use in stereoscopic rendering (e.g., for VR).
+         * @returns The worldspace point created by converting the screen space point at the provided distance z from the camera plane. 
          */
         ScreenToWorldPoint(position: Vector3): Vector3
         /** Transforms position from screen space into viewport space.
@@ -1503,10 +1815,10 @@ declare module "UnityEngine" {
          */
         static GetAllCameras(cameras: Array<Camera>): number
         static SetupCurrent(cur: Camera): void
-        /** The near clipping plane distance.
+        /** The distance of the near clipping plane from the the Camera, in world units.
          */
         nearClipPlane: number
-        /** The far clipping plane distance.
+        /** The distance of the far clipping plane from the Camera, in world units.
          */
         farClipPlane: number
         /** The field of view of the camera in degrees.
@@ -1563,7 +1875,7 @@ declare module "UnityEngine" {
         /** How to perform per-layer culling for a Camera.
          */
         layerCullSpherical: boolean
-        /** Identifies what kind of camera this is.
+        /** Identifies what kind of camera this is, using the CameraType enum.
          */
         cameraType: any
         /** Sets the culling maks used to determine which objects from which Scenes to draw.
@@ -1651,7 +1963,7 @@ See EditorSceneManager.SetSceneCullingMask.
         /** Get the view projection matrix used on the last frame.
          */
         readonly previousViewProjectionMatrix: Matrix4x4
-        /** The first enabled camera tagged "MainCamera" (Read Only).
+        /** The first enabled Camera component that is tagged "MainCamera" (Read Only).
          */
         static readonly main: Camera
         /** The camera we are currently rendering with, for low-level render control only (Read Only).
@@ -1731,6 +2043,12 @@ declare module "UnityEngine" {
         /** Returns the component with name type if the game object has one attached, null if it doesn't.
          */
         GetComponent(type: string): Component
+        /** Gets the component of the specified type, if it exists.
+         * @param type The type of the component to retrieve.
+         * @param component The output argument that will contain the component or null.
+         * @returns Returns true if the component is found, false otherwise. 
+         */
+        TryGetComponent(type: any, component: jsb.Out<Component>): boolean
         GetComponentInChildren<T extends Component>(type: { new(): T }, includeInactive: boolean): T
         /** Returns the component of Type type in the GameObject or any of its children using depth first search.
          * @param t The type of Component to retrieve.
@@ -1855,16 +2173,12 @@ declare module "UnityEngine" {
     class Transform extends Component {
         /** Set the parent of the transform.
          * @param parent The parent Transform to use.
-         * @param worldPositionStays If true, the parent-relative position, scale and
-        rotation are modified such that the object keeps the same world space position,
-        rotation and scale as before.
+         * @param worldPositionStays If true, the parent-relative position, scale and rotation are modified such that the object keeps the same world space position, rotation and scale as before.
          */
         SetParent(parent: Transform, worldPositionStays: boolean): void
         /** Set the parent of the transform.
          * @param parent The parent Transform to use.
-         * @param worldPositionStays If true, the parent-relative position, scale and
-        rotation are modified such that the object keeps the same world space position,
-        rotation and scale as before.
+         * @param worldPositionStays If true, the parent-relative position, scale and rotation are modified such that the object keeps the same world space position, rotation and scale as before.
          */
         SetParent(p: Transform): void
         /** Sets the world space position and rotation of the Transform component.
@@ -1888,13 +2202,18 @@ declare module "UnityEngine" {
         /** Moves the transform in the direction and distance of translation.
          */
         Translate(translation: Vector3): void
-        /** Applies a rotation of zAngle degrees around the z axis, xAngle degrees around the x axis, and yAngle degrees around the y axis (in that order).
-         * @param relativeTo Determines whether to rotate the GameObject either is locally to the GameObject or relative to the Scene in world space.
+        /** The implementation of this method applies a rotation of zAngle degrees around the z axis, xAngle degrees around the x axis, and yAngle degrees around the y axis (in that order).
+         * @param relativeTo Determines whether to rotate the GameObject either locally to the GameObject or relative to the Scene in world space.
          * @param xAngle Degrees to rotate the GameObject around the X axis.
          * @param yAngle Degrees to rotate the GameObject around the Y axis.
          * @param zAngle Degrees to rotate the GameObject around the Z axis.
          */
         Rotate(xAngle: number, yAngle: number, zAngle: number, relativeTo: any): void
+        /** The implementation of this method applies a rotation of zAngle degrees around the z axis, xAngle degrees around the x axis, and yAngle degrees around the y axis (in that order).
+         * @param xAngle Degrees to rotate the GameObject around the X axis.
+         * @param yAngle Degrees to rotate the GameObject around the Y axis.
+         * @param zAngle Degrees to rotate the GameObject around the Z axis.
+         */
         Rotate(xAngle: number, yAngle: number, zAngle: number): void
         /** Rotates the object around the given axis by the number of degrees defined by the given angle.
          * @param angle The degrees of rotation to apply.
@@ -1903,11 +2222,18 @@ declare module "UnityEngine" {
          */
         Rotate(axis: Vector3, angle: number, relativeTo: any): void
         /** Applies a rotation of eulerAngles.z degrees around the z-axis, eulerAngles.x degrees around the x-axis, and eulerAngles.y degrees around the y-axis (in that order).
-         * @param eulers The rotation to apply.
+         * @param eulers The rotation to apply in euler angles.
          * @param relativeTo Determines whether to rotate the GameObject either locally to  the GameObject or relative to the Scene in world space.
          */
         Rotate(eulers: Vector3, relativeTo: any): void
+        /** Rotates the object around the given axis by the number of degrees defined by the given angle.
+         * @param axis The axis to apply rotation to.
+         * @param angle The degrees of rotation to apply.
+         */
         Rotate(axis: Vector3, angle: number): void
+        /** Applies a rotation of eulerAngles.z degrees around the z-axis, eulerAngles.x degrees around the x-axis, and eulerAngles.y degrees around the y-axis (in that order).
+         * @param eulers The rotation to apply in euler angles.
+         */
         Rotate(eulers: Vector3): void
         /** Rotates the transform about axis passing through point in world coordinates by angle degrees.
          */
@@ -2012,16 +2338,16 @@ declare module "UnityEngine" {
         /** The green axis of the transform in world space.
          */
         up: Vector3
-        /** The blue axis of the transform in world space.
+        /** Returns a normalized vector representing the blue axis of the transform in world space.
          */
         forward: Vector3
-        /** The rotation of the transform in world space stored as a Quaternion.
+        /** A Quaternion that stores the rotation of the Transform in world space.
          */
         rotation: Quaternion
         /** The rotation of the transform relative to the transform rotation of the parent.
          */
         localRotation: Quaternion
-        /** The scale of the transform relative to the parent.
+        /** The scale of the transform relative to the GameObjects parent.
          */
         localScale: Vector3
         /** The parent of the transform.
@@ -2128,7 +2454,7 @@ declare module "UnityEngine" {
         /** Starts a coroutine named methodName.
          */
         StartCoroutine(methodName: string): Coroutine
-        /** Starts a coroutine.
+        /** Starts a Coroutine.
          */
         StartCoroutine(routine: IEnumerator): Coroutine
         /** Stops the first coroutine named methodName, or the coroutine stored in routine running on this behaviour.
@@ -2177,7 +2503,7 @@ declare module "UnityEngine" {
 }
 declare module "UnityEngine" {
     import * as jsb from "jsb";
-    import { Enum, Array, Object as Object1 } from "System";
+    import { Enum, Array, Object as Object1, ValueType } from "System";
     import { List, IList } from "System.Collections.Generic";
     /** Represents a Sprite object for use in 2D gameplay.
      */
@@ -2195,6 +2521,35 @@ declare module "UnityEngine" {
          * @param triangles Array of sprite mesh triangle indices.
          */
         OverrideGeometry(vertices: Array<Vector2>, triangles: Array<number>): void
+        /** Returns an array of BindPoses.
+         * @param sprite The sprite to retrieve the bind pose from.
+         * @returns A list of bind poses for this sprite. There is no need to dispose the returned NativeArray. 
+         */
+        GetBindPoses(): any
+        SetBindPoses(src: any): void
+        /** Returns a list of indices. This is the same as Sprite.triangle.
+         * @returns A read-only list of indices indicating how the triangles are formed between the vertices. The array is marked as undisposable. 
+         */
+        GetIndices(): any
+        SetIndices(src: any): void
+        /** Returns a list of SpriteBone in this Sprite.
+         * @param sprite The sprite to get the list of SpriteBone from.
+         * @returns An array of SpriteBone that belongs to this Sprite. 
+         */
+        GetBones(): Array<any>
+        /** Sets the SpriteBones for this Sprite.
+         */
+        SetBones(src: Array<any>): void
+        /** Checks if a specific channel exists for this Sprite.
+         * @returns True if the channel exists. 
+         */
+        HasVertexAttribute(channel: any): boolean
+        /** Sets the vertex count. This resizes the internal buffer. It also preserves any configurations of VertexAttributes.
+         */
+        SetVertexCount(count: number): void
+        /** Returns the number of vertices in this Sprite.
+         */
+        GetVertexCount(): number
         /** Create a new Sprite object.
          * @param texture Texture from which to obtain the sprite graphic.
          * @param rect Rectangular section of the texture to use for the sprite.
@@ -2320,6 +2675,9 @@ declare module "UnityEngine" {
      */
     class SpriteRenderer extends Renderer {
         constructor()
+        /** Stop using the deformable buffer to render the Sprite and use the original mesh instead.
+         */
+        DeactivateDeformableBuffer(): void
         /** The Sprite to render.
          */
         sprite: Sprite
@@ -2402,6 +2760,9 @@ declare module "UnityEngine" {
         /** Does this object receive shadows?
          */
         receiveShadows: boolean
+        /** Allows turning off rendering for a specific component.
+         */
+        forceRenderingOff: boolean
         /** Specifies the mode for motion vector rendering.
          */
         motionVectorGenerationMode: any
@@ -2417,6 +2778,9 @@ declare module "UnityEngine" {
         /** This value sorts renderers by priority. Lower values are rendered first and higher values are rendered last.
          */
         rendererPriority: number
+        /** Describes how this renderer is updated for ray tracing.
+         */
+        rayTracingMode: any
         /** Name of the Renderer's sorting layer.
          */
         sortingLayerName: string
@@ -2968,6 +3332,7 @@ declare module "UnityEngine" {
         /** See AnimatorController.parameters.
          */
         GetParameter(index: number): any
+        MatchTarget(matchPosition: Vector3, matchRotation: Quaternion, targetBodyPart: any, weightMask: any, startNormalizedTime: number, targetNormalizedTime: number, completeMatch: boolean): void
         /** Automatically adjust the GameObject position and rotation.
          * @param matchPosition The position we want the body part to reach.
          * @param matchRotation The rotation in which we want the body part to be.
@@ -2975,6 +3340,7 @@ declare module "UnityEngine" {
          * @param weightMask Structure that contains weights for matching position and rotation.
          * @param startNormalizedTime Start time within the animation clip (0 - beginning of clip, 1 - end of clip).
          * @param targetNormalizedTime End time within the animation clip (0 - beginning of clip, 1 - end of clip), values greater than 1 can be set to trigger a match after a certain number of loops. Ex: 2.3 means at 30% of 2nd loop.
+         * @param completeMatch Allows you to specify what should happen if the MatchTarget function is interrupted. A value of true causes the GameObject to immediately move to the matchPosition if interrupted. A value of false causes the GameObject to stay at its current position if interrupted.
          */
         MatchTarget(matchPosition: Vector3, matchRotation: Quaternion, targetBodyPart: any, weightMask: any, startNormalizedTime: number, targetNormalizedTime: number): void
         MatchTarget(matchPosition: Vector3, matchRotation: Quaternion, targetBodyPart: any, weightMask: any, startNormalizedTime: number): void
@@ -3095,6 +3461,85 @@ declare module "UnityEngine" {
         Update(deltaTime: number): void
         Rebind(): void
         ApplyBuiltinRootMotion(): void
+        /** Creates a dependency between animator jobs and the job represented by the supplied job handle. To add multiple job dependencies, call this method for each job that need to run before the Animator's jobs.
+         * @param animator The Animator instance that calls this method.
+         * @param jobHandle The JobHandle of the job that needs to run before animator jobs.
+         */
+        AddJobDependency(jobHandle: any): void
+        /** Create a TransformStreamHandle representing the new binding between the Animator and a Transform already bound to the Animator.
+         * @param animator The Animator instance that calls this method.
+         * @param transform The Transform to bind.
+         * @returns Returns the TransformStreamHandle that represents the new binding. 
+         */
+        BindStreamTransform(transform: Transform): any
+        /** Create a PropertyStreamHandle representing the new binding on the Component property of a Transform already bound to the Animator.
+         * @param animator The Animator instance that calls this method.
+         * @param transform The Transform to target.
+         * @param type The Component type.
+         * @param property The property to bind.
+         * @param isObjectReference isObjectReference need to be set to true if the property to bind does animate an Object like SpriteRenderer.sprite.
+         * @returns Returns the PropertyStreamHandle that represents the new binding. 
+         */
+        BindStreamProperty(transform: Transform, type: any, property: string, isObjectReference: boolean): any
+        /** Create a PropertyStreamHandle representing the new binding on the Component property of a Transform already bound to the Animator.
+         * @param animator The Animator instance that calls this method.
+         * @param transform The Transform to target.
+         * @param type The Component type.
+         * @param property The property to bind.
+         * @param isObjectReference isObjectReference need to be set to true if the property to bind does animate an Object like SpriteRenderer.sprite.
+         * @returns Returns the PropertyStreamHandle that represents the new binding. 
+         */
+        BindStreamProperty(transform: Transform, type: any, property: string): any
+        /** Create a custom property in the AnimationStream to pass extra data to downstream animation jobs in your graph. Custom properties created in the AnimationStream do not exist in the scene.
+         * @param animator The Animator instance that calls this method.
+         * @param name The name of the property.
+         * @param type The type of property to create (float, integer or boolean).
+         * @returns Returns the PropertyStreamHandle that represents the new binding. 
+         */
+        BindCustomStreamProperty(property: string, type: any): any
+        /** Create a TransformSceneHandle representing the new binding between the Animator and a Transform in the Scene.
+         * @param animator The Animator instance that calls this method.
+         * @param transform The Transform to bind.
+         * @returns Returns the TransformSceneHandle that represents the new binding. 
+         */
+        BindSceneTransform(transform: Transform): any
+        /** Create a PropertySceneHandle representing the new binding on the Component property of a Transform in the Scene.
+         * @param animator The Animator instance that calls this method.
+         * @param transform The Transform to target.
+         * @param type The Component type.
+         * @param property The property to bind.
+         * @param isObjectReference isObjectReference need to be set to true if the property to bind does access an Object like SpriteRenderer.sprite.
+         * @returns Returns the PropertySceneHandle that represents the new binding. 
+         */
+        BindSceneProperty(transform: Transform, type: any, property: string, isObjectReference: boolean): any
+        /** Create a PropertySceneHandle representing the new binding on the Component property of a Transform in the Scene.
+         * @param animator The Animator instance that calls this method.
+         * @param transform The Transform to target.
+         * @param type The Component type.
+         * @param property The property to bind.
+         * @param isObjectReference isObjectReference need to be set to true if the property to bind does access an Object like SpriteRenderer.sprite.
+         * @returns Returns the PropertySceneHandle that represents the new binding. 
+         */
+        BindSceneProperty(transform: Transform, type: any, property: string): any
+        /** Open a new stream on the Animator.
+         * @param animator The Animator instance that calls this method.
+         * @param stream The new stream.
+         * @returns Returns whether or not the stream has been opened. 
+         */
+        OpenAnimationStream(stream: jsb.Ref<any>): boolean
+        /** Close a stream that has been opened using OpenAnimationStream.
+         * @param animator The Animator instance that calls this method.
+         * @param stream The stream to close.
+         */
+        CloseAnimationStream(stream: jsb.Ref<any>): void
+        /** Newly created handles are always resolved lazily on the next access when the jobs are run. To avoid a cpu spike while evaluating the jobs you can manually resolve all handles from the main thread.
+         * @param animator The Animator instance that calls this method.
+         */
+        ResolveAllStreamHandles(): void
+        /** Newly created handles are always resolved lazily on the next access when the jobs are run. To avoid a cpu spike while evaluating the jobs you can manually resolve all handles from the main thread.
+         * @param animator The Animator instance that calls this method.
+         */
+        ResolveAllSceneHandles(): void
         /** Generates an parameter id from a string.
          * @param name The string to convert to Id.
          */
@@ -3364,23 +3809,1341 @@ declare module "System" {
 }
 declare module "UnityEngine" {
     import * as jsb from "jsb";
+    import { Object as Object1, Enum, Array } from "System";
+    /** Class containing methods to ease debugging while developing a game.
+     */
+    class Debug extends Object1 {
+        constructor()
+        /** Draws a line between specified start and end points.
+         * @param start Point in world space where the line should start.
+         * @param end Point in world space where the line should end.
+         * @param color Color of the line.
+         * @param duration How long the line should be visible for.
+         * @param depthTest Should the line be obscured by objects closer to the camera?
+         */
+        static DrawLine(start: Vector3, end: Vector3, color: Color, duration: number, depthTest: boolean): void
+        /** Draws a line between specified start and end points.
+         * @param start Point in world space where the line should start.
+         * @param end Point in world space where the line should end.
+         * @param color Color of the line.
+         * @param duration How long the line should be visible for.
+         * @param depthTest Should the line be obscured by objects closer to the camera?
+         */
+        static DrawLine(start: Vector3, end: Vector3, color: Color, duration: number): void
+        /** Draws a line between specified start and end points.
+         * @param start Point in world space where the line should start.
+         * @param end Point in world space where the line should end.
+         * @param color Color of the line.
+         * @param duration How long the line should be visible for.
+         * @param depthTest Should the line be obscured by objects closer to the camera?
+         */
+        static DrawLine(start: Vector3, end: Vector3, color: Color): void
+        /** Draws a line between specified start and end points.
+         * @param start Point in world space where the line should start.
+         * @param end Point in world space where the line should end.
+         * @param color Color of the line.
+         * @param duration How long the line should be visible for.
+         * @param depthTest Should the line be obscured by objects closer to the camera?
+         */
+        static DrawLine(start: Vector3, end: Vector3): void
+        /** Draws a line from start to start + dir in world coordinates.
+         * @param start Point in world space where the ray should start.
+         * @param dir Direction and length of the ray.
+         * @param color Color of the drawn line.
+         * @param duration How long the line will be visible for (in seconds).
+         * @param depthTest Should the line be obscured by other objects closer to the camera?
+         */
+        static DrawRay(start: Vector3, dir: Vector3, color: Color, duration: number, depthTest: boolean): void
+        /** Draws a line from start to start + dir in world coordinates.
+         * @param start Point in world space where the ray should start.
+         * @param dir Direction and length of the ray.
+         * @param color Color of the drawn line.
+         * @param duration How long the line will be visible for (in seconds).
+         * @param depthTest Should the line be obscured by other objects closer to the camera?
+         */
+        static DrawRay(start: Vector3, dir: Vector3, color: Color, duration: number): void
+        /** Draws a line from start to start + dir in world coordinates.
+         * @param start Point in world space where the ray should start.
+         * @param dir Direction and length of the ray.
+         * @param color Color of the drawn line.
+         * @param duration How long the line will be visible for (in seconds).
+         * @param depthTest Should the line be obscured by other objects closer to the camera?
+         */
+        static DrawRay(start: Vector3, dir: Vector3, color: Color): void
+        /** Draws a line from start to start + dir in world coordinates.
+         * @param start Point in world space where the ray should start.
+         * @param dir Direction and length of the ray.
+         * @param color Color of the drawn line.
+         * @param duration How long the line will be visible for (in seconds).
+         * @param depthTest Should the line be obscured by other objects closer to the camera?
+         */
+        static DrawRay(start: Vector3, dir: Vector3): void
+        static Break(): void
+        static DebugBreak(): void
+        /** Logs a message to the Unity Console.
+         * @param message String or object to be converted to string representation for display.
+         * @param context Object to which the message applies.
+         */
+        static Log(message: Object1, context: Object): void
+        /** Logs a message to the Unity Console.
+         * @param message String or object to be converted to string representation for display.
+         * @param context Object to which the message applies.
+         */
+        static Log(message: Object1): void
+        /** Logs a formatted message to the Unity Console.
+         * @param format A composite format string.
+         * @param args Format arguments.
+         * @param context Object to which the message applies.
+         * @param logType Type of message e.g. warn or error etc.
+         * @param logOptions Option flags to treat the log message special.
+         */
+        static LogFormat(logType: any, logOptions: any, context: Object, format: string, ...args: Object1[]): void
+        /** Logs a formatted message to the Unity Console.
+         * @param format A composite format string.
+         * @param args Format arguments.
+         * @param context Object to which the message applies.
+         * @param logType Type of message e.g. warn or error etc.
+         * @param logOptions Option flags to treat the log message special.
+         */
+        static LogFormat(context: Object, format: string, ...args: Object1[]): void
+        /** Logs a formatted message to the Unity Console.
+         * @param format A composite format string.
+         * @param args Format arguments.
+         * @param context Object to which the message applies.
+         * @param logType Type of message e.g. warn or error etc.
+         * @param logOptions Option flags to treat the log message special.
+         */
+        static LogFormat(format: string, ...args: Object1[]): void
+        /** A variant of Debug.Log that logs an error message to the console.
+         * @param message String or object to be converted to string representation for display.
+         * @param context Object to which the message applies.
+         */
+        static LogError(message: Object1, context: Object): void
+        /** A variant of Debug.Log that logs an error message to the console.
+         * @param message String or object to be converted to string representation for display.
+         * @param context Object to which the message applies.
+         */
+        static LogError(message: Object1): void
+        /** Logs a formatted error message to the Unity console.
+         * @param format A composite format string.
+         * @param args Format arguments.
+         * @param context Object to which the message applies.
+         */
+        static LogErrorFormat(context: Object, format: string, ...args: Object1[]): void
+        /** Logs a formatted error message to the Unity console.
+         * @param format A composite format string.
+         * @param args Format arguments.
+         * @param context Object to which the message applies.
+         */
+        static LogErrorFormat(format: string, ...args: Object1[]): void
+        static ClearDeveloperConsole(): void
+        /** A variant of Debug.Log that logs an error message to the console.
+         * @param context Object to which the message applies.
+         * @param exception Runtime Exception.
+         */
+        static LogException(exception: any, context: Object): void
+        /** A variant of Debug.Log that logs an error message to the console.
+         * @param context Object to which the message applies.
+         * @param exception Runtime Exception.
+         */
+        static LogException(exception: any): void
+        /** A variant of Debug.Log that logs a warning message to the console.
+         * @param message String or object to be converted to string representation for display.
+         * @param context Object to which the message applies.
+         */
+        static LogWarning(message: Object1, context: Object): void
+        /** A variant of Debug.Log that logs a warning message to the console.
+         * @param message String or object to be converted to string representation for display.
+         * @param context Object to which the message applies.
+         */
+        static LogWarning(message: Object1): void
+        /** Logs a formatted warning message to the Unity Console.
+         * @param format A composite format string.
+         * @param args Format arguments.
+         * @param context Object to which the message applies.
+         */
+        static LogWarningFormat(context: Object, format: string, ...args: Object1[]): void
+        /** Logs a formatted warning message to the Unity Console.
+         * @param format A composite format string.
+         * @param args Format arguments.
+         * @param context Object to which the message applies.
+         */
+        static LogWarningFormat(format: string, ...args: Object1[]): void
+        /** Assert a condition and logs an error message to the Unity console on failure.
+         * @param condition Condition you expect to be true.
+         * @param context Object to which the message applies.
+         * @param message String or object to be converted to string representation for display.
+         */
+        static Assert(condition: boolean, message: Object1, context: Object): void
+        static Assert(condition: boolean, message: string, context: Object): void
+        /** Assert a condition and logs an error message to the Unity console on failure.
+         * @param condition Condition you expect to be true.
+         * @param context Object to which the message applies.
+         * @param message String or object to be converted to string representation for display.
+         */
+        static Assert(condition: boolean, context: Object): void
+        /** Assert a condition and logs an error message to the Unity console on failure.
+         * @param condition Condition you expect to be true.
+         * @param context Object to which the message applies.
+         * @param message String or object to be converted to string representation for display.
+         */
+        static Assert(condition: boolean, message: Object1): void
+        static Assert(condition: boolean, message: string): void
+        /** Assert a condition and logs an error message to the Unity console on failure.
+         * @param condition Condition you expect to be true.
+         * @param context Object to which the message applies.
+         * @param message String or object to be converted to string representation for display.
+         */
+        static Assert(condition: boolean): void
+        /** Assert a condition and logs a formatted error message to the Unity console on failure.
+         * @param condition Condition you expect to be true.
+         * @param format A composite format string.
+         * @param args Format arguments.
+         * @param context Object to which the message applies.
+         */
+        static AssertFormat(condition: boolean, context: Object, format: string, ...args: Object1[]): void
+        /** Assert a condition and logs a formatted error message to the Unity console on failure.
+         * @param condition Condition you expect to be true.
+         * @param format A composite format string.
+         * @param args Format arguments.
+         * @param context Object to which the message applies.
+         */
+        static AssertFormat(condition: boolean, format: string, ...args: Object1[]): void
+        /** A variant of Debug.Log that logs an assertion message to the console.
+         * @param message String or object to be converted to string representation for display.
+         * @param context Object to which the message applies.
+         */
+        static LogAssertion(message: Object1, context: Object): void
+        /** A variant of Debug.Log that logs an assertion message to the console.
+         * @param message String or object to be converted to string representation for display.
+         * @param context Object to which the message applies.
+         */
+        static LogAssertion(message: Object1): void
+        /** Logs a formatted assertion message to the Unity console.
+         * @param format A composite format string.
+         * @param args Format arguments.
+         * @param context Object to which the message applies.
+         */
+        static LogAssertionFormat(context: Object, format: string, ...args: Object1[]): void
+        /** Logs a formatted assertion message to the Unity console.
+         * @param format A composite format string.
+         * @param args Format arguments.
+         * @param context Object to which the message applies.
+         */
+        static LogAssertionFormat(format: string, ...args: Object1[]): void
+        /** Get default debug logger.
+         */
+        static readonly unityLogger: any
+        /** Reports whether the development console is visible. The development console cannot be made to appear using:
+         */
+        static developerConsoleVisible: boolean
+        /** In the Build Settings dialog there is a check box called "Development Build".
+         */
+        static readonly isDebugBuild: boolean
+    }
+}
+declare module "UnityEngine" {
+    /** Suspends the coroutine execution for the given amount of seconds using scaled time.
+     */
+    class WaitForSeconds extends YieldInstruction {
+        constructor(seconds: number)
+    }
+}
+declare module "UnityEngine" {
+    import { Object as Object1 } from "System";
+    /** Base class for all yield instructions.
+     */
+    class YieldInstruction extends Object1 {
+        constructor()
+    }
+}
+declare module "UnityEngine" {
+    /** Waits until the end of the frame after Unity has rendererd every Camera and GUI, just before displaying the frame on screen.
+     */
+    class WaitForEndOfFrame extends YieldInstruction {
+        constructor()
+    }
+}
+declare module "UnityEngine" {
+    import * as jsb from "jsb";
+    import { Object as Object1, Enum, Array, ValueType } from "System";
+    /** Interface into the Input system.
+     */
+    class Input extends Object1 {
+        constructor()
+        /** Returns the value of the virtual axis identified by axisName.
+         */
+        static GetAxis(axisName: string): number
+        /** Returns the value of the virtual axis identified by axisName with no smoothing filtering applied.
+         */
+        static GetAxisRaw(axisName: string): number
+        /** Returns true while the virtual button identified by buttonName is held down.
+         * @param buttonName The name of the button such as Jump.
+         * @returns True when an axis has been pressed and not released. 
+         */
+        static GetButton(buttonName: string): boolean
+        /** Returns true during the frame the user pressed down the virtual button identified by buttonName.
+         */
+        static GetButtonDown(buttonName: string): boolean
+        /** Returns true the first frame the user releases the virtual button identified by buttonName.
+         */
+        static GetButtonUp(buttonName: string): boolean
+        /** Returns whether the given mouse button is held down.
+         */
+        static GetMouseButton(button: number): boolean
+        /** Returns true during the frame the user pressed the given mouse button.
+         */
+        static GetMouseButtonDown(button: number): boolean
+        /** Returns true during the frame the user releases the given mouse button.
+         */
+        static GetMouseButtonUp(button: number): boolean
+        static ResetInputAxes(): void
+        static GetJoystickNames(): Array<string>
+        /** Call Input.GetTouch to obtain a Touch struct.
+         * @param index The touch input on the device screen.
+         * @returns Touch details in the struct. 
+         */
+        static GetTouch(index: number): any
+        /** Returns specific acceleration measurement which occurred during last frame. (Does not allocate temporary variables).
+         */
+        static GetAccelerationEvent(index: number): any
+        /** Returns true while the user holds down the key identified by the key KeyCode enum parameter.
+         */
+        static GetKey(key: KeyCode): boolean
+        /** Returns true while the user holds down the key identified by name.
+         */
+        static GetKey(name: string): boolean
+        /** Returns true during the frame the user releases the key identified by the key KeyCode enum parameter.
+         */
+        static GetKeyUp(key: KeyCode): boolean
+        /** Returns true during the frame the user releases the key identified by name.
+         */
+        static GetKeyUp(name: string): boolean
+        /** Returns true during the frame the user starts pressing down the key identified by the key KeyCode enum parameter.
+         */
+        static GetKeyDown(key: KeyCode): boolean
+        /** Returns true during the frame the user starts pressing down the key identified by name.
+         */
+        static GetKeyDown(name: string): boolean
+        /** Enables/Disables mouse simulation with touches. By default this option is enabled.
+         */
+        static simulateMouseWithTouches: boolean
+        /** Is any key or mouse button currently held down? (Read Only)
+         */
+        static readonly anyKey: boolean
+        /** Returns true the first frame the user hits any key or mouse button. (Read Only)
+         */
+        static readonly anyKeyDown: boolean
+        /** Returns the keyboard input entered this frame. (Read Only)
+         */
+        static readonly inputString: string
+        /** The current mouse position in pixel coordinates. (Read Only)
+         */
+        static readonly mousePosition: Vector3
+        /** The current mouse scroll delta. (Read Only)
+         */
+        static readonly mouseScrollDelta: Vector2
+        /** Controls enabling and disabling of IME input composition.
+         */
+        static imeCompositionMode: any
+        /** The current IME composition string being typed by the user.
+         */
+        static readonly compositionString: string
+        /** Does the user have an IME keyboard input source selected?
+         */
+        static readonly imeIsSelected: boolean
+        /** The current text input position used by IMEs to open windows.
+         */
+        static compositionCursorPos: Vector2
+        /** Indicates if a mouse device is detected.
+         */
+        static readonly mousePresent: boolean
+        /** Number of touches. Guaranteed not to change throughout the frame. (Read Only)
+         */
+        static readonly touchCount: number
+        /** Bool value which let's users check if touch pressure is supported.
+         */
+        static readonly touchPressureSupported: boolean
+        /** Returns true when Stylus Touch is supported by a device or platform.
+         */
+        static readonly stylusTouchSupported: boolean
+        /** Returns whether the device on which application is currently running supports touch input.
+         */
+        static readonly touchSupported: boolean
+        /** Property indicating whether the system handles multiple touches.
+         */
+        static multiTouchEnabled: boolean
+        /** Device physical orientation as reported by OS. (Read Only)
+         */
+        static readonly deviceOrientation: any
+        /** Last measured linear acceleration of a device in three-dimensional space. (Read Only)
+         */
+        static readonly acceleration: Vector3
+        /** This property controls if input sensors should be compensated for screen orientation.
+         */
+        static compensateSensors: boolean
+        /** Number of acceleration measurements which occurred during last frame.
+         */
+        static readonly accelerationEventCount: number
+        /** Should  Back button quit the application?
+
+Only usable on Android, Windows Phone or Windows Tablets.
+         */
+        static backButtonLeavesApp: boolean
+        /** Property for accessing device location (handheld devices only). (Read Only)
+         */
+        static readonly location: any
+        /** Property for accessing compass (handheld devices only). (Read Only)
+         */
+        static readonly compass: any
+        /** Returns default gyroscope.
+         */
+        static readonly gyro: any
+        /** Returns list of objects representing status of all touches during last frame. (Read Only) (Allocates temporary variables).
+         */
+        static readonly touches: Array<any>
+        /** Returns list of acceleration measurements which occurred during the last frame. (Read Only) (Allocates temporary variables).
+         */
+        static readonly accelerationEvents: Array<any>
+    }
+}
+declare module "UnityEngine" {
+    import { ValueType } from "System";
+    /** Representation of rays.
+     */
+    class Ray extends ValueType {
+        constructor(origin: Vector3, direction: Vector3)
+        /** Returns a point at distance units along the ray.
+         */
+        GetPoint(distance: number): Vector3
+        /** Returns a nicely formatted string for this ray.
+         */
+        toString(format: string): string
+        toString(): string
+        /** The origin point of the ray.
+         */
+        origin: Vector3
+        /** The direction of the ray.
+         */
+        direction: Vector3
+    }
+}
+declare module "UnityEngine" {
+    import { ValueType } from "System";
+    /** Structure used to get information back from a raycast.
+     */
+    class RaycastHit extends ValueType {
+        constructor()
+        /** The Collider that was hit.
+         */
+        readonly collider: Collider
+        /** The impact point in world space where the ray hit the collider.
+         */
+        point: Vector3
+        /** The normal of the surface the ray hit.
+         */
+        normal: Vector3
+        /** The barycentric coordinate of the triangle we hit.
+         */
+        barycentricCoordinate: Vector3
+        /** The distance from the ray's origin to the impact point.
+         */
+        distance: number
+        /** The index of the triangle that was hit.
+         */
+        readonly triangleIndex: number
+        /** The uv texture coordinate at the collision location.
+         */
+        readonly textureCoord: Vector2
+        /** The secondary uv texture coordinate at the impact point.
+         */
+        readonly textureCoord2: Vector2
+        /** The Transform of the rigidbody or collider that was hit.
+         */
+        readonly transform: Transform
+        /** The Rigidbody of the collider that was hit. If the collider is not attached to a rigidbody then it is null.
+         */
+        readonly rigidbody: Rigidbody
+        /** The uv lightmap coordinate at the impact point.
+         */
+        readonly lightmapCoord: Vector2
+    }
+}
+declare module "UnityEngine" {
+    import * as jsb from "jsb";
+    import { Object as Object1, ValueType, Array, Enum } from "System";
+    /** Global physics properties and helper methods.
+     */
+    class Physics extends Object1 {
+        constructor()
+        /** Makes the collision detection system ignore all collisions between collider1 and collider2.
+         * @param collider1 Any collider.
+         * @param collider2 Another collider you want to have collider1 to start or stop ignoring collisions with.
+         * @param ignore Whether or not the collisions between the two colliders should be ignored or not.
+         */
+        static IgnoreCollision(collider1: Collider, collider2: Collider, ignore: boolean): void
+        static IgnoreCollision(collider1: Collider, collider2: Collider): void
+        /** Makes the collision detection system ignore all collisions between any collider in layer1 and any collider in layer2.
+
+Note that IgnoreLayerCollision will reset the trigger state of affected colliders, so you might receive OnTriggerExit and OnTriggerEnter messages in response to calling this.
+         */
+        static IgnoreLayerCollision(layer1: number, layer2: number, ignore: boolean): void
+        static IgnoreLayerCollision(layer1: number, layer2: number): void
+        /** Are collisions between layer1 and layer2 being ignored?
+         */
+        static GetIgnoreLayerCollision(layer1: number, layer2: number): boolean
+        /** Checks whether the collision detection system will ignore all collisionstriggers between collider1 and collider2/ or not.
+         * @param collider1 The first collider to compare to collider2.
+         * @param collider2 The second collider to compare to collider1.
+         * @returns Whether the collision detection system will ignore all collisionstriggers between collider1 and collider2/ or not. 
+         */
+        static GetIgnoreCollision(collider1: Collider, collider2: Collider): boolean
+        /** Casts a ray against all colliders in the Scene and returns detailed information on what was hit.
+         * @param origin The starting point of the ray in world coordinates.
+         * @param direction The direction of the ray.
+         * @param hitInfo If true is returned, hitInfo will contain more information about where the closest collider was hit. (See Also: RaycastHit).
+         * @param maxDistance The max distance the ray should check for collisions.
+         * @param layerMask A that is used to selectively ignore colliders when casting a ray.
+         * @param queryTriggerInteraction Specifies whether this query should hit Triggers.
+         * @returns Returns true when the ray intersects any collider, otherwise false. 
+         */
+        static Raycast(origin: Vector3, direction: Vector3, hitInfo: jsb.Out<RaycastHit>, maxDistance: number, layerMask: number, queryTriggerInteraction: any): boolean
+        /** Casts a ray, from point origin, in direction direction, of length maxDistance, against all colliders in the Scene.
+         * @param origin The starting point of the ray in world coordinates.
+         * @param direction The direction of the ray.
+         * @param maxDistance The max distance the ray should check for collisions.
+         * @param layerMask A that is used to selectively ignore Colliders when casting a ray.
+         * @param queryTriggerInteraction Specifies whether this query should hit Triggers.
+         * @returns Returns true if the ray intersects with a Collider, otherwise false. 
+         */
+        static Raycast(origin: Vector3, direction: Vector3, maxDistance: number, layerMask: number, queryTriggerInteraction: any): boolean
+        static Raycast(origin: Vector3, direction: Vector3, hitInfo: jsb.Out<RaycastHit>, maxDistance: number, layerMask: number): boolean
+        /** Same as above using ray.origin and ray.direction instead of origin and direction.
+         * @param ray The starting point and direction of the ray.
+         * @param hitInfo If true is returned, hitInfo will contain more information about where the closest collider was hit. (See Also: RaycastHit).
+         * @param maxDistance The max distance the ray should check for collisions.
+         * @param layerMask A that is used to selectively ignore colliders when casting a ray.
+         * @param queryTriggerInteraction Specifies whether this query should hit Triggers.
+         * @returns Returns true when the ray intersects any collider, otherwise false. 
+         */
+        static Raycast(ray: Ray, hitInfo: jsb.Out<RaycastHit>, maxDistance: number, layerMask: number, queryTriggerInteraction: any): boolean
+        static Raycast(origin: Vector3, direction: Vector3, maxDistance: number, layerMask: number): boolean
+        static Raycast(origin: Vector3, direction: Vector3, hitInfo: jsb.Out<RaycastHit>, maxDistance: number): boolean
+        /** Same as above using ray.origin and ray.direction instead of origin and direction.
+         * @param ray The starting point and direction of the ray.
+         * @param maxDistance The max distance the ray should check for collisions.
+         * @param layerMask A that is used to selectively ignore colliders when casting a ray.
+         * @param queryTriggerInteraction Specifies whether this query should hit Triggers.
+         * @returns Returns true when the ray intersects any collider, otherwise false. 
+         */
+        static Raycast(ray: Ray, maxDistance: number, layerMask: number, queryTriggerInteraction: any): boolean
+        static Raycast(ray: Ray, hitInfo: jsb.Out<RaycastHit>, maxDistance: number, layerMask: number): boolean
+        static Raycast(origin: Vector3, direction: Vector3, maxDistance: number): boolean
+        static Raycast(origin: Vector3, direction: Vector3, hitInfo: jsb.Out<RaycastHit>): boolean
+        static Raycast(ray: Ray, maxDistance: number, layerMask: number): boolean
+        static Raycast(ray: Ray, hitInfo: jsb.Out<RaycastHit>, maxDistance: number): boolean
+        static Raycast(origin: Vector3, direction: Vector3): boolean
+        static Raycast(ray: Ray, maxDistance: number): boolean
+        static Raycast(ray: Ray, hitInfo: jsb.Out<RaycastHit>): boolean
+        static Raycast(ray: Ray): boolean
+        /** Returns true if there is any collider intersecting the line between start and end.
+         * @param start Start point.
+         * @param end End point.
+         * @param layerMask A that is used to selectively ignore colliders when casting a ray.
+         * @param queryTriggerInteraction Specifies whether this query should hit Triggers.
+         * @param hitInfo If true is returned, hitInfo will contain more information about where the collider was hit. (See Also: RaycastHit).
+         */
+        static Linecast(start: Vector3, end: Vector3, hitInfo: jsb.Out<RaycastHit>, layerMask: number, queryTriggerInteraction: any): boolean
+        /** Returns true if there is any collider intersecting the line between start and end.
+         * @param start Start point.
+         * @param end End point.
+         * @param layerMask A that is used to selectively ignore colliders when casting a ray.
+         * @param queryTriggerInteraction Specifies whether this query should hit Triggers.
+         */
+        static Linecast(start: Vector3, end: Vector3, layerMask: number, queryTriggerInteraction: any): boolean
+        static Linecast(start: Vector3, end: Vector3, hitInfo: jsb.Out<RaycastHit>, layerMask: number): boolean
+        static Linecast(start: Vector3, end: Vector3, layerMask: number): boolean
+        static Linecast(start: Vector3, end: Vector3, hitInfo: jsb.Out<RaycastHit>): boolean
+        static Linecast(start: Vector3, end: Vector3): boolean
+        /**
+         * @param point1 The center of the sphere at the start of the capsule.
+         * @param point2 The center of the sphere at the end of the capsule.
+         * @param radius The radius of the capsule.
+         * @param direction The direction into which to sweep the capsule.
+         * @param maxDistance The max length of the sweep.
+         * @param hitInfo If true is returned, hitInfo will contain more information about where the collider was hit. (See Also: RaycastHit).
+         * @param layerMask A that is used to selectively ignore colliders when casting a capsule.
+         * @param queryTriggerInteraction Specifies whether this query should hit Triggers.
+         */
+        static CapsuleCast(point1: Vector3, point2: Vector3, radius: number, direction: Vector3, hitInfo: jsb.Out<RaycastHit>, maxDistance: number, layerMask: number, queryTriggerInteraction: any): boolean
+        /** Casts a capsule against all colliders in the Scene and returns detailed information on what was hit.
+         * @param point1 The center of the sphere at the start of the capsule.
+         * @param point2 The center of the sphere at the end of the capsule.
+         * @param radius The radius of the capsule.
+         * @param direction The direction into which to sweep the capsule.
+         * @param maxDistance The max length of the sweep.
+         * @param layerMask A that is used to selectively ignore colliders when casting a capsule.
+         * @param queryTriggerInteraction Specifies whether this query should hit Triggers.
+         * @returns True when the capsule sweep intersects any collider, otherwise false. 
+         */
+        static CapsuleCast(point1: Vector3, point2: Vector3, radius: number, direction: Vector3, maxDistance: number, layerMask: number, queryTriggerInteraction: any): boolean
+        static CapsuleCast(point1: Vector3, point2: Vector3, radius: number, direction: Vector3, hitInfo: jsb.Out<RaycastHit>, maxDistance: number, layerMask: number): boolean
+        static CapsuleCast(point1: Vector3, point2: Vector3, radius: number, direction: Vector3, maxDistance: number, layerMask: number): boolean
+        static CapsuleCast(point1: Vector3, point2: Vector3, radius: number, direction: Vector3, hitInfo: jsb.Out<RaycastHit>, maxDistance: number): boolean
+        static CapsuleCast(point1: Vector3, point2: Vector3, radius: number, direction: Vector3, maxDistance: number): boolean
+        static CapsuleCast(point1: Vector3, point2: Vector3, radius: number, direction: Vector3, hitInfo: jsb.Out<RaycastHit>): boolean
+        static CapsuleCast(point1: Vector3, point2: Vector3, radius: number, direction: Vector3): boolean
+        /** Casts a sphere along a ray and returns detailed information on what was hit.
+         * @param origin The center of the sphere at the start of the sweep.
+         * @param radius The radius of the sphere.
+         * @param direction The direction into which to sweep the sphere.
+         * @param hitInfo If true is returned, hitInfo will contain more information about where the collider was hit. (See Also: RaycastHit).
+         * @param maxDistance The max length of the cast.
+         * @param layerMask A that is used to selectively ignore colliders when casting a capsule.
+         * @param queryTriggerInteraction Specifies whether this query should hit Triggers.
+         * @returns True when the sphere sweep intersects any collider, otherwise false. 
+         */
+        static SphereCast(origin: Vector3, radius: number, direction: Vector3, hitInfo: jsb.Out<RaycastHit>, maxDistance: number, layerMask: number, queryTriggerInteraction: any): boolean
+        static SphereCast(origin: Vector3, radius: number, direction: Vector3, hitInfo: jsb.Out<RaycastHit>, maxDistance: number, layerMask: number): boolean
+        /**
+         * @param ray The starting point and direction of the ray into which the sphere sweep is cast.
+         * @param radius The radius of the sphere.
+         * @param hitInfo If true is returned, hitInfo will contain more information about where the collider was hit. (See Also: RaycastHit).
+         * @param maxDistance The max length of the cast.
+         * @param layerMask A that is used to selectively ignore colliders when casting a capsule.
+         * @param queryTriggerInteraction Specifies whether this query should hit Triggers.
+         */
+        static SphereCast(ray: Ray, radius: number, hitInfo: jsb.Out<RaycastHit>, maxDistance: number, layerMask: number, queryTriggerInteraction: any): boolean
+        static SphereCast(origin: Vector3, radius: number, direction: Vector3, hitInfo: jsb.Out<RaycastHit>, maxDistance: number): boolean
+        /** Casts a sphere along a ray and returns detailed information on what was hit.
+         * @param ray The starting point and direction of the ray into which the sphere sweep is cast.
+         * @param radius The radius of the sphere.
+         * @param maxDistance The max length of the cast.
+         * @param layerMask A that is used to selectively ignore colliders when casting a capsule.
+         * @param queryTriggerInteraction Specifies whether this query should hit Triggers.
+         * @returns True when the sphere sweep intersects any collider, otherwise false. 
+         */
+        static SphereCast(ray: Ray, radius: number, maxDistance: number, layerMask: number, queryTriggerInteraction: any): boolean
+        static SphereCast(ray: Ray, radius: number, hitInfo: jsb.Out<RaycastHit>, maxDistance: number, layerMask: number): boolean
+        static SphereCast(origin: Vector3, radius: number, direction: Vector3, hitInfo: jsb.Out<RaycastHit>): boolean
+        static SphereCast(ray: Ray, radius: number, maxDistance: number, layerMask: number): boolean
+        static SphereCast(ray: Ray, radius: number, hitInfo: jsb.Out<RaycastHit>, maxDistance: number): boolean
+        static SphereCast(ray: Ray, radius: number, maxDistance: number): boolean
+        static SphereCast(ray: Ray, radius: number, hitInfo: jsb.Out<RaycastHit>): boolean
+        static SphereCast(ray: Ray, radius: number): boolean
+        /** Casts the box along a ray and returns detailed information on what was hit.
+         * @param center Center of the box.
+         * @param halfExtents Half the size of the box in each dimension.
+         * @param direction The direction in which to cast the box.
+         * @param hitInfo If true is returned, hitInfo will contain more information about where the collider was hit. (See Also: RaycastHit).
+         * @param orientation Rotation of the box.
+         * @param maxDistance The max length of the cast.
+         * @param layerMask A that is used to selectively ignore colliders when casting a capsule.
+         * @param queryTriggerInteraction Specifies whether this query should hit Triggers.
+         * @returns True, if any intersections were found. 
+         */
+        static BoxCast(center: Vector3, halfExtents: Vector3, direction: Vector3, hitInfo: jsb.Out<RaycastHit>, orientation: Quaternion, maxDistance: number, layerMask: number, queryTriggerInteraction: any): boolean
+        /** Casts the box along a ray and returns detailed information on what was hit.
+         * @param center Center of the box.
+         * @param halfExtents Half the size of the box in each dimension.
+         * @param direction The direction in which to cast the box.
+         * @param orientation Rotation of the box.
+         * @param maxDistance The max length of the cast.
+         * @param layerMask A that is used to selectively ignore colliders when casting a capsule.
+         * @param queryTriggerInteraction Specifies whether this query should hit Triggers.
+         * @returns True, if any intersections were found. 
+         */
+        static BoxCast(center: Vector3, halfExtents: Vector3, direction: Vector3, orientation: Quaternion, maxDistance: number, layerMask: number, queryTriggerInteraction: any): boolean
+        static BoxCast(center: Vector3, halfExtents: Vector3, direction: Vector3, hitInfo: jsb.Out<RaycastHit>, orientation: Quaternion, maxDistance: number, layerMask: number): boolean
+        static BoxCast(center: Vector3, halfExtents: Vector3, direction: Vector3, orientation: Quaternion, maxDistance: number, layerMask: number): boolean
+        static BoxCast(center: Vector3, halfExtents: Vector3, direction: Vector3, hitInfo: jsb.Out<RaycastHit>, orientation: Quaternion, maxDistance: number): boolean
+        static BoxCast(center: Vector3, halfExtents: Vector3, direction: Vector3, orientation: Quaternion, maxDistance: number): boolean
+        static BoxCast(center: Vector3, halfExtents: Vector3, direction: Vector3, hitInfo: jsb.Out<RaycastHit>, orientation: Quaternion): boolean
+        static BoxCast(center: Vector3, halfExtents: Vector3, direction: Vector3, orientation: Quaternion): boolean
+        static BoxCast(center: Vector3, halfExtents: Vector3, direction: Vector3, hitInfo: jsb.Out<RaycastHit>): boolean
+        static BoxCast(center: Vector3, halfExtents: Vector3, direction: Vector3): boolean
+        /** See Also: Raycast.
+         * @param origin The starting point of the ray in world coordinates.
+         * @param direction The direction of the ray.
+         * @param maxDistance The max distance the rayhit is allowed to be from the start of the ray.
+         * @param layermask A that is used to selectively ignore colliders when casting a ray.
+         * @param queryTriggerInteraction Specifies whether this query should hit Triggers.
+         */
+        static RaycastAll(origin: Vector3, direction: Vector3, maxDistance: number, layerMask: number, queryTriggerInteraction: any): Array<RaycastHit>
+        static RaycastAll(origin: Vector3, direction: Vector3, maxDistance: number, layerMask: number): Array<RaycastHit>
+        /** Casts a ray through the Scene and returns all hits. Note that order of the results is undefined.
+         * @param ray The starting point and direction of the ray.
+         * @param maxDistance The max distance the rayhit is allowed to be from the start of the ray.
+         * @param layerMask A that is used to selectively ignore colliders when casting a ray.
+         * @param queryTriggerInteraction Specifies whether this query should hit Triggers.
+         * @returns An array of RaycastHit objects. Note that the order of the results is undefined. 
+         */
+        static RaycastAll(ray: Ray, maxDistance: number, layerMask: number, queryTriggerInteraction: any): Array<RaycastHit>
+        static RaycastAll(origin: Vector3, direction: Vector3, maxDistance: number): Array<RaycastHit>
+        static RaycastAll(ray: Ray, maxDistance: number, layerMask: number): Array<RaycastHit>
+        static RaycastAll(origin: Vector3, direction: Vector3): Array<RaycastHit>
+        static RaycastAll(ray: Ray, maxDistance: number): Array<RaycastHit>
+        static RaycastAll(ray: Ray): Array<RaycastHit>
+        /** Cast a ray through the Scene and store the hits into the buffer.
+         * @param origin The starting point and direction of the ray.
+         * @param results The buffer to store the hits into.
+         * @param direction The direction of the ray.
+         * @param maxDistance The max distance the rayhit is allowed to be from the start of the ray.
+         * @param queryTriggerInteraction Specifies whether this query should hit Triggers.
+         * @param layerMask A that is used to selectively ignore colliders when casting a ray.
+         * @returns The amount of hits stored into the results buffer. 
+         */
+        static RaycastNonAlloc(origin: Vector3, direction: Vector3, results: Array<RaycastHit>, maxDistance: number, layerMask: number, queryTriggerInteraction: any): number
+        /** Cast a ray through the Scene and store the hits into the buffer.
+         * @param ray The starting point and direction of the ray.
+         * @param results The buffer to store the hits into.
+         * @param maxDistance The max distance the rayhit is allowed to be from the start of the ray.
+         * @param layerMask A that is used to selectively ignore colliders when casting a ray.
+         * @param queryTriggerInteraction Specifies whether this query should hit Triggers.
+         * @returns The amount of hits stored into the results buffer. 
+         */
+        static RaycastNonAlloc(ray: Ray, results: Array<RaycastHit>, maxDistance: number, layerMask: number, queryTriggerInteraction: any): number
+        static RaycastNonAlloc(origin: Vector3, direction: Vector3, results: Array<RaycastHit>, maxDistance: number, layerMask: number): number
+        static RaycastNonAlloc(ray: Ray, results: Array<RaycastHit>, maxDistance: number, layerMask: number): number
+        static RaycastNonAlloc(origin: Vector3, direction: Vector3, results: Array<RaycastHit>, maxDistance: number): number
+        static RaycastNonAlloc(ray: Ray, results: Array<RaycastHit>, maxDistance: number): number
+        static RaycastNonAlloc(origin: Vector3, direction: Vector3, results: Array<RaycastHit>): number
+        static RaycastNonAlloc(ray: Ray, results: Array<RaycastHit>): number
+        /** Like Physics.CapsuleCast, but this function will return all hits the capsule sweep intersects.
+         * @param point1 The center of the sphere at the start of the capsule.
+         * @param point2 The center of the sphere at the end of the capsule.
+         * @param radius The radius of the capsule.
+         * @param direction The direction into which to sweep the capsule.
+         * @param maxDistance The max length of the sweep.
+         * @param layermask A that is used to selectively ignore colliders when casting a capsule.
+         * @param queryTriggerInteraction Specifies whether this query should hit Triggers.
+         * @returns An array of all colliders hit in the sweep. 
+         */
+        static CapsuleCastAll(point1: Vector3, point2: Vector3, radius: number, direction: Vector3, maxDistance: number, layerMask: number, queryTriggerInteraction: any): Array<RaycastHit>
+        static CapsuleCastAll(point1: Vector3, point2: Vector3, radius: number, direction: Vector3, maxDistance: number, layerMask: number): Array<RaycastHit>
+        static CapsuleCastAll(point1: Vector3, point2: Vector3, radius: number, direction: Vector3, maxDistance: number): Array<RaycastHit>
+        static CapsuleCastAll(point1: Vector3, point2: Vector3, radius: number, direction: Vector3): Array<RaycastHit>
+        /** Like Physics.SphereCast, but this function will return all hits the sphere sweep intersects.
+         * @param origin The center of the sphere at the start of the sweep.
+         * @param radius The radius of the sphere.
+         * @param direction The direction in which to sweep the sphere.
+         * @param maxDistance The max length of the sweep.
+         * @param layerMask A that is used to selectively ignore colliders when casting a sphere.
+         * @param queryTriggerInteraction Specifies whether this query should hit Triggers.
+         * @returns An array of all colliders hit in the sweep. 
+         */
+        static SphereCastAll(origin: Vector3, radius: number, direction: Vector3, maxDistance: number, layerMask: number, queryTriggerInteraction: any): Array<RaycastHit>
+        static SphereCastAll(origin: Vector3, radius: number, direction: Vector3, maxDistance: number, layerMask: number): Array<RaycastHit>
+        /** Like Physics.SphereCast, but this function will return all hits the sphere sweep intersects.
+         * @param ray The starting point and direction of the ray into which the sphere sweep is cast.
+         * @param radius The radius of the sphere.
+         * @param maxDistance The max length of the sweep.
+         * @param layerMask A that is used to selectively ignore colliders when casting a sphere.
+         * @param queryTriggerInteraction Specifies whether this query should hit Triggers.
+         */
+        static SphereCastAll(ray: Ray, radius: number, maxDistance: number, layerMask: number, queryTriggerInteraction: any): Array<RaycastHit>
+        static SphereCastAll(origin: Vector3, radius: number, direction: Vector3, maxDistance: number): Array<RaycastHit>
+        static SphereCastAll(ray: Ray, radius: number, maxDistance: number, layerMask: number): Array<RaycastHit>
+        static SphereCastAll(origin: Vector3, radius: number, direction: Vector3): Array<RaycastHit>
+        static SphereCastAll(ray: Ray, radius: number, maxDistance: number): Array<RaycastHit>
+        static SphereCastAll(ray: Ray, radius: number): Array<RaycastHit>
+        /** Check the given capsule against the physics world and return all overlapping colliders.
+         * @param point0 The center of the sphere at the start of the capsule.
+         * @param point1 The center of the sphere at the end of the capsule.
+         * @param radius The radius of the capsule.
+         * @param layerMask A that is used to selectively ignore colliders when casting a capsule.
+         * @param queryTriggerInteraction Specifies whether this query should hit Triggers.
+         * @returns Colliders touching or inside the capsule. 
+         */
+        static OverlapCapsule(point0: Vector3, point1: Vector3, radius: number, layerMask: number, queryTriggerInteraction: any): Array<Collider>
+        static OverlapCapsule(point0: Vector3, point1: Vector3, radius: number, layerMask: number): Array<Collider>
+        static OverlapCapsule(point0: Vector3, point1: Vector3, radius: number): Array<Collider>
+        /** Computes and stores colliders touching or inside the sphere.
+         * @param position Center of the sphere.
+         * @param radius Radius of the sphere.
+         * @param layerMask A defines which layers of colliders to include in the query.
+         * @param queryTriggerInteraction Specifies whether this query should hit Triggers.
+         * @returns Returns an array with all colliders touching or inside the sphere. 
+         */
+        static OverlapSphere(position: Vector3, radius: number, layerMask: number, queryTriggerInteraction: any): Array<Collider>
+        static OverlapSphere(position: Vector3, radius: number, layerMask: number): Array<Collider>
+        static OverlapSphere(position: Vector3, radius: number): Array<Collider>
+        /** Simulate physics in the Scene.
+         * @param step The time to advance physics by.
+         */
+        static Simulate(step: number): void
+        static SyncTransforms(): void
+        /** Compute the minimal translation required to separate the given colliders apart at specified poses.
+         * @param colliderA The first collider.
+         * @param positionA Position of the first collider.
+         * @param rotationA Rotation of the first collider.
+         * @param colliderB The second collider.
+         * @param positionB Position of the second collider.
+         * @param rotationB Rotation of the second collider.
+         * @param direction Direction along which the translation required to separate the colliders apart is minimal.
+         * @param distance The distance along direction that is required to separate the colliders apart.
+         * @returns True, if the colliders overlap at the given poses. 
+         */
+        static ComputePenetration(colliderA: Collider, positionA: Vector3, rotationA: Quaternion, colliderB: Collider, positionB: Vector3, rotationB: Quaternion, direction: jsb.Out<Vector3>, distance: jsb.Out<number>): boolean
+        /** Returns a point on the given collider that is closest to the specified location.
+         * @param point Location you want to find the closest point to.
+         * @param collider The collider that you find the closest point on.
+         * @param position The position of the collider.
+         * @param rotation The rotation of the collider.
+         * @returns The point on the collider that is closest to the specified location. 
+         */
+        static ClosestPoint(point: Vector3, collider: Collider, position: Vector3, rotation: Quaternion): Vector3
+        /** Computes and stores colliders touching or inside the sphere into the provided buffer.
+         * @param position Center of the sphere.
+         * @param radius Radius of the sphere.
+         * @param results The buffer to store the results into.
+         * @param layerMask A defines which layers of colliders to include in the query.
+         * @param queryTriggerInteraction Specifies whether this query should hit Triggers.
+         * @returns Returns the amount of colliders stored into the results buffer. 
+         */
+        static OverlapSphereNonAlloc(position: Vector3, radius: number, results: Array<Collider>, layerMask: number, queryTriggerInteraction: any): number
+        static OverlapSphereNonAlloc(position: Vector3, radius: number, results: Array<Collider>, layerMask: number): number
+        static OverlapSphereNonAlloc(position: Vector3, radius: number, results: Array<Collider>): number
+        /** Returns true if there are any colliders overlapping the sphere defined by position and radius in world coordinates.
+         * @param position Center of the sphere.
+         * @param radius Radius of the sphere.
+         * @param layerMask A that is used to selectively ignore colliders when casting a capsule.
+         * @param queryTriggerInteraction Specifies whether this query should hit Triggers.
+         */
+        static CheckSphere(position: Vector3, radius: number, layerMask: number, queryTriggerInteraction: any): boolean
+        static CheckSphere(position: Vector3, radius: number, layerMask: number): boolean
+        static CheckSphere(position: Vector3, radius: number): boolean
+        /** Casts a capsule against all colliders in the Scene and returns detailed information on what was hit into the buffer.
+         * @param point1 The center of the sphere at the start of the capsule.
+         * @param point2 The center of the sphere at the end of the capsule.
+         * @param radius The radius of the capsule.
+         * @param direction The direction into which to sweep the capsule.
+         * @param results The buffer to store the hits into.
+         * @param maxDistance The max length of the sweep.
+         * @param layerMask A that is used to selectively ignore colliders when casting a capsule.
+         * @param queryTriggerInteraction Specifies whether this query should hit Triggers.
+         * @returns The amount of hits stored into the buffer. 
+         */
+        static CapsuleCastNonAlloc(point1: Vector3, point2: Vector3, radius: number, direction: Vector3, results: Array<RaycastHit>, maxDistance: number, layerMask: number, queryTriggerInteraction: any): number
+        static CapsuleCastNonAlloc(point1: Vector3, point2: Vector3, radius: number, direction: Vector3, results: Array<RaycastHit>, maxDistance: number, layerMask: number): number
+        static CapsuleCastNonAlloc(point1: Vector3, point2: Vector3, radius: number, direction: Vector3, results: Array<RaycastHit>, maxDistance: number): number
+        static CapsuleCastNonAlloc(point1: Vector3, point2: Vector3, radius: number, direction: Vector3, results: Array<RaycastHit>): number
+        /** Cast sphere along the direction and store the results into buffer.
+         * @param origin The center of the sphere at the start of the sweep.
+         * @param radius The radius of the sphere.
+         * @param direction The direction in which to sweep the sphere.
+         * @param results The buffer to save the hits into.
+         * @param maxDistance The max length of the sweep.
+         * @param layerMask A that is used to selectively ignore colliders when casting a sphere.
+         * @param queryTriggerInteraction Specifies whether this query should hit Triggers.
+         * @returns The amount of hits stored into the results buffer. 
+         */
+        static SphereCastNonAlloc(origin: Vector3, radius: number, direction: Vector3, results: Array<RaycastHit>, maxDistance: number, layerMask: number, queryTriggerInteraction: any): number
+        static SphereCastNonAlloc(origin: Vector3, radius: number, direction: Vector3, results: Array<RaycastHit>, maxDistance: number, layerMask: number): number
+        /** Cast sphere along the direction and store the results into buffer.
+         * @param ray The starting point and direction of the ray into which the sphere sweep is cast.
+         * @param radius The radius of the sphere.
+         * @param results The buffer to save the results to.
+         * @param maxDistance The max length of the sweep.
+         * @param layerMask A that is used to selectively ignore colliders when casting a sphere.
+         * @param queryTriggerInteraction Specifies whether this query should hit Triggers.
+         * @returns The amount of hits stored into the results buffer. 
+         */
+        static SphereCastNonAlloc(ray: Ray, radius: number, results: Array<RaycastHit>, maxDistance: number, layerMask: number, queryTriggerInteraction: any): number
+        static SphereCastNonAlloc(origin: Vector3, radius: number, direction: Vector3, results: Array<RaycastHit>, maxDistance: number): number
+        static SphereCastNonAlloc(ray: Ray, radius: number, results: Array<RaycastHit>, maxDistance: number, layerMask: number): number
+        static SphereCastNonAlloc(origin: Vector3, radius: number, direction: Vector3, results: Array<RaycastHit>): number
+        static SphereCastNonAlloc(ray: Ray, radius: number, results: Array<RaycastHit>, maxDistance: number): number
+        static SphereCastNonAlloc(ray: Ray, radius: number, results: Array<RaycastHit>): number
+        /** Checks if any colliders overlap a capsule-shaped volume in world space.
+         * @param start The center of the sphere at the start of the capsule.
+         * @param end The center of the sphere at the end of the capsule.
+         * @param radius The radius of the capsule.
+         * @param layermask A that is used to selectively ignore colliders when casting a capsule.
+         * @param queryTriggerInteraction Specifies whether this query should hit Triggers.
+         */
+        static CheckCapsule(start: Vector3, end: Vector3, radius: number, layerMask: number, queryTriggerInteraction: any): boolean
+        static CheckCapsule(start: Vector3, end: Vector3, radius: number, layerMask: number): boolean
+        static CheckCapsule(start: Vector3, end: Vector3, radius: number): boolean
+        /** Check whether the given box overlaps with other colliders or not.
+         * @param center Center of the box.
+         * @param halfExtents Half the size of the box in each dimension.
+         * @param orientation Rotation of the box.
+         * @param layermask A that is used to selectively ignore colliders when casting a ray.
+         * @param queryTriggerInteraction Specifies whether this query should hit Triggers.
+         * @returns True, if the box overlaps with any colliders. 
+         */
+        static CheckBox(center: Vector3, halfExtents: Vector3, orientation: Quaternion, layermask: number, queryTriggerInteraction: any): boolean
+        static CheckBox(center: Vector3, halfExtents: Vector3, orientation: Quaternion, layerMask: number): boolean
+        static CheckBox(center: Vector3, halfExtents: Vector3, orientation: Quaternion): boolean
+        static CheckBox(center: Vector3, halfExtents: Vector3): boolean
+        /** Find all colliders touching or inside of the given box.
+         * @param center Center of the box.
+         * @param halfExtents Half of the size of the box in each dimension.
+         * @param orientation Rotation of the box.
+         * @param layerMask A that is used to selectively ignore colliders when casting a ray.
+         * @param queryTriggerInteraction Specifies whether this query should hit Triggers.
+         * @returns Colliders that overlap with the given box. 
+         */
+        static OverlapBox(center: Vector3, halfExtents: Vector3, orientation: Quaternion, layerMask: number, queryTriggerInteraction: any): Array<Collider>
+        static OverlapBox(center: Vector3, halfExtents: Vector3, orientation: Quaternion, layerMask: number): Array<Collider>
+        static OverlapBox(center: Vector3, halfExtents: Vector3, orientation: Quaternion): Array<Collider>
+        static OverlapBox(center: Vector3, halfExtents: Vector3): Array<Collider>
+        /** Find all colliders touching or inside of the given box, and store them into the buffer.
+         * @param center Center of the box.
+         * @param halfExtents Half of the size of the box in each dimension.
+         * @param results The buffer to store the results in.
+         * @param orientation Rotation of the box.
+         * @param layerMask A that is used to selectively ignore colliders when casting a ray.
+         * @param queryTriggerInteraction Specifies whether this query should hit Triggers.
+         * @returns The amount of colliders stored in results. 
+         */
+        static OverlapBoxNonAlloc(center: Vector3, halfExtents: Vector3, results: Array<Collider>, orientation: Quaternion, mask: number, queryTriggerInteraction: any): number
+        static OverlapBoxNonAlloc(center: Vector3, halfExtents: Vector3, results: Array<Collider>, orientation: Quaternion, mask: number): number
+        static OverlapBoxNonAlloc(center: Vector3, halfExtents: Vector3, results: Array<Collider>, orientation: Quaternion): number
+        static OverlapBoxNonAlloc(center: Vector3, halfExtents: Vector3, results: Array<Collider>): number
+        /** Cast the box along the direction, and store hits in the provided buffer.
+         * @param center Center of the box.
+         * @param halfExtents Half the size of the box in each dimension.
+         * @param direction The direction in which to cast the box.
+         * @param results The buffer to store the results in.
+         * @param orientation Rotation of the box.
+         * @param maxDistance The max length of the cast.
+         * @param layermask A that is used to selectively ignore colliders when casting a capsule.
+         * @param queryTriggerInteraction Specifies whether this query should hit Triggers.
+         * @returns The amount of hits stored to the results buffer. 
+         */
+        static BoxCastNonAlloc(center: Vector3, halfExtents: Vector3, direction: Vector3, results: Array<RaycastHit>, orientation: Quaternion, maxDistance: number, layerMask: number, queryTriggerInteraction: any): number
+        static BoxCastNonAlloc(center: Vector3, halfExtents: Vector3, direction: Vector3, results: Array<RaycastHit>, orientation: Quaternion, maxDistance: number, layerMask: number): number
+        static BoxCastNonAlloc(center: Vector3, halfExtents: Vector3, direction: Vector3, results: Array<RaycastHit>, orientation: Quaternion, maxDistance: number): number
+        static BoxCastNonAlloc(center: Vector3, halfExtents: Vector3, direction: Vector3, results: Array<RaycastHit>, orientation: Quaternion): number
+        static BoxCastNonAlloc(center: Vector3, halfExtents: Vector3, direction: Vector3, results: Array<RaycastHit>): number
+        /** Like Physics.BoxCast, but returns all hits.
+         * @param center Center of the box.
+         * @param halfExtents Half the size of the box in each dimension.
+         * @param direction The direction in which to cast the box.
+         * @param orientation Rotation of the box.
+         * @param maxDistance The max length of the cast.
+         * @param layermask A that is used to selectively ignore colliders when casting a capsule.
+         * @param queryTriggerInteraction Specifies whether this query should hit Triggers.
+         * @returns All colliders that were hit. 
+         */
+        static BoxCastAll(center: Vector3, halfExtents: Vector3, direction: Vector3, orientation: Quaternion, maxDistance: number, layerMask: number, queryTriggerInteraction: any): Array<RaycastHit>
+        static BoxCastAll(center: Vector3, halfExtents: Vector3, direction: Vector3, orientation: Quaternion, maxDistance: number, layerMask: number): Array<RaycastHit>
+        static BoxCastAll(center: Vector3, halfExtents: Vector3, direction: Vector3, orientation: Quaternion, maxDistance: number): Array<RaycastHit>
+        static BoxCastAll(center: Vector3, halfExtents: Vector3, direction: Vector3, orientation: Quaternion): Array<RaycastHit>
+        static BoxCastAll(center: Vector3, halfExtents: Vector3, direction: Vector3): Array<RaycastHit>
+        /** Check the given capsule against the physics world and return all overlapping colliders in the user-provided buffer.
+         * @param point0 The center of the sphere at the start of the capsule.
+         * @param point1 The center of the sphere at the end of the capsule.
+         * @param radius The radius of the capsule.
+         * @param results The buffer to store the results into.
+         * @param layerMask A that is used to selectively ignore colliders when casting a capsule.
+         * @param queryTriggerInteraction Specifies whether this query should hit Triggers.
+         * @returns The amount of entries written to the buffer. 
+         */
+        static OverlapCapsuleNonAlloc(point0: Vector3, point1: Vector3, radius: number, results: Array<Collider>, layerMask: number, queryTriggerInteraction: any): number
+        static OverlapCapsuleNonAlloc(point0: Vector3, point1: Vector3, radius: number, results: Array<Collider>, layerMask: number): number
+        static OverlapCapsuleNonAlloc(point0: Vector3, point1: Vector3, radius: number, results: Array<Collider>): number
+        /** Rebuild the broadphase interest regions as well as set the world boundaries.
+         * @param worldBounds Boundaries of the physics world.
+         * @param subdivisions How many cells to create along x and z axis.
+         */
+        static RebuildBroadphaseRegions(worldBounds: Bounds, subdivisions: number): void
+        /** Prepares the Mesh for use with a MeshCollider.
+         * @param meshID The instance ID of the Mesh to bake collision data from.
+         * @param convex A flag to indicate whether to bake convex geometry or not.
+         */
+        static BakeMesh(meshID: number, convex: boolean): void
+        /** The gravity applied to all rigid bodies in the Scene.
+         */
+        static gravity: Vector3
+        /** The default contact offset of the newly created colliders.
+         */
+        static defaultContactOffset: number
+        /** The mass-normalized energy threshold, below which objects start going to sleep.
+         */
+        static sleepThreshold: number
+        /** Specifies whether queries (raycasts, spherecasts, overlap tests, etc.) hit Triggers by default.
+         */
+        static queriesHitTriggers: boolean
+        /** Whether physics queries should hit back-face triangles.
+         */
+        static queriesHitBackfaces: boolean
+        /** Two colliding objects with a relative velocity below this will not bounce (default 2). Must be positive.
+         */
+        static bounceThreshold: number
+        /** The defaultSolverIterations determines how accurately Rigidbody joints and collision contacts are resolved. (default 6). Must be positive.
+         */
+        static defaultSolverIterations: number
+        /** The defaultSolverVelocityIterations affects how accurately the Rigidbody joints and collision contacts are resolved. (default 1). Must be positive.
+         */
+        static defaultSolverVelocityIterations: number
+        /** Default maximum angular speed of the dynamic Rigidbody, in radians (default 50).
+         */
+        static defaultMaxAngularSpeed: number
+        /** The PhysicsScene automatically created when Unity starts.
+         */
+        static readonly defaultPhysicsScene: any
+        /** Sets whether the physics should be simulated automatically or not.
+         */
+        static autoSimulation: boolean
+        /** Whether or not to automatically sync transform changes with the physics system whenever a Transform component changes.
+         */
+        static autoSyncTransforms: boolean
+        /** Determines whether the garbage collector should reuse only a single instance of a Collision type for all collision callbacks.
+         */
+        static reuseCollisionCallbacks: boolean
+        /** Sets the minimum separation distance for cloth inter-collision.
+         */
+        static interCollisionDistance: number
+        /** Sets the cloth inter-collision stiffness.
+         */
+        static interCollisionStiffness: number
+        static interCollisionSettingsToggle: boolean
+        /** Cloth Gravity setting.
+Set gravity for all cloth components.
+         */
+        static clothGravity: Vector3
+        /** Layer mask constant to select ignore raycast layer.
+         */
+        static readonly IgnoreRaycastLayer: number
+        /** Layer mask constant to select default raycast layers.
+         */
+        static readonly DefaultRaycastLayers: number
+        /** Layer mask constant to select all layers.
+         */
+        static readonly AllLayers: number
+    }
+}
+declare module "UnityEngine" {
+    import * as jsb from "jsb";
+    import { Array } from "System";
+    /** A base class of all colliders.
+     */
+    class Collider extends Component {
+        constructor()
+        /** Returns a point on the collider that is closest to a given location.
+         * @param position Location you want to find the closest point to.
+         * @returns The point on the collider that is closest to the specified location. 
+         */
+        ClosestPoint(position: Vector3): Vector3
+        /** Casts a Ray that ignores all Colliders except this one.
+         * @param ray The starting point and direction of the ray.
+         * @param hitInfo If true is returned, hitInfo will contain more information about where the collider was hit.
+         * @param maxDistance The max length of the ray.
+         * @returns True when the ray intersects the collider, otherwise false. 
+         */
+        Raycast(ray: Ray, hitInfo: jsb.Out<RaycastHit>, maxDistance: number): boolean
+        /** The closest point to the bounding box of the attached collider.
+         */
+        ClosestPointOnBounds(position: Vector3): Vector3
+        /** Enabled Colliders will collide with other Colliders, disabled Colliders won't.
+         */
+        enabled: boolean
+        /** The rigidbody the collider is attached to.
+         */
+        readonly attachedRigidbody: Rigidbody
+        /** Is the collider a trigger?
+         */
+        isTrigger: boolean
+        /** Contact offset value of this collider.
+         */
+        contactOffset: number
+        /** The world space bounding volume of the collider (Read Only).
+         */
+        readonly bounds: Bounds
+        /** The shared physic material of this collider.
+         */
+        sharedMaterial: any
+        /** The material used by the collider.
+         */
+        material: any
+    }
+}
+declare module "UnityEngine" {
+    /** A box-shaped primitive collider.
+     */
+    class BoxCollider extends Collider {
+        constructor()
+        /** The center of the box, measured in the object's local space.
+         */
+        center: Vector3
+        /** The size of the box, measured in the object's local space.
+         */
+        size: Vector3
+    }
+}
+declare module "UnityEngine" {
+    /** A sphere-shaped primitive collider.
+     */
+    class SphereCollider extends Collider {
+        constructor()
+        /** The center of the sphere in the object's local space.
+         */
+        center: Vector3
+        /** The radius of the sphere measured in the object's local space.
+         */
+        radius: number
+    }
+}
+declare module "UnityEngine" {
+    import * as jsb from "jsb";
+    import { Enum, Array } from "System";
+    /** Control of an object's position through physics simulation.
+     */
+    class Rigidbody extends Component {
+        constructor()
+        /** Sets the mass based on the attached colliders assuming a constant density.
+         */
+        SetDensity(density: number): void
+        /** Moves the kinematic Rigidbody towards position.
+         * @param position Provides the new position for the Rigidbody object.
+         */
+        MovePosition(position: Vector3): void
+        /** Rotates the rigidbody to rotation.
+         * @param rot The new rotation for the Rigidbody.
+         */
+        MoveRotation(rot: Quaternion): void
+        Sleep(): void
+        IsSleeping(): boolean
+        WakeUp(): void
+        ResetCenterOfMass(): void
+        ResetInertiaTensor(): void
+        /** The velocity relative to the rigidbody at the point relativePoint.
+         */
+        GetRelativePointVelocity(relativePoint: Vector3): Vector3
+        /** The velocity of the rigidbody at the point worldPoint in global space.
+         */
+        GetPointVelocity(worldPoint: Vector3): Vector3
+        /** Adds a force to the Rigidbody.
+         * @param x Size of force along the world x-axis.
+         * @param y Size of force along the world y-axis.
+         * @param z Size of force along the world z-axis.
+         * @param mode Type of force to apply.
+         */
+        AddForce(x: number, y: number, z: number, mode: any): void
+        /** Adds a force to the Rigidbody.
+         * @param x Size of force along the world x-axis.
+         * @param y Size of force along the world y-axis.
+         * @param z Size of force along the world z-axis.
+         * @param mode Type of force to apply.
+         */
+        AddForce(x: number, y: number, z: number): void
+        /** Adds a force to the Rigidbody.
+         * @param force Force vector in world coordinates.
+         * @param mode Type of force to apply.
+         */
+        AddForce(force: Vector3, mode: any): void
+        /** Adds a force to the Rigidbody.
+         * @param force Force vector in world coordinates.
+         * @param mode Type of force to apply.
+         */
+        AddForce(force: Vector3): void
+        /** Adds a force to the rigidbody relative to its coordinate system.
+         * @param x Size of force along the local x-axis.
+         * @param y Size of force along the local y-axis.
+         * @param z Size of force along the local z-axis.
+         */
+        AddRelativeForce(x: number, y: number, z: number, mode: any): void
+        /** Adds a force to the rigidbody relative to its coordinate system.
+         * @param x Size of force along the local x-axis.
+         * @param y Size of force along the local y-axis.
+         * @param z Size of force along the local z-axis.
+         */
+        AddRelativeForce(x: number, y: number, z: number): void
+        /** Adds a force to the rigidbody relative to its coordinate system.
+         * @param force Force vector in local coordinates.
+         */
+        AddRelativeForce(force: Vector3, mode: any): void
+        /** Adds a force to the rigidbody relative to its coordinate system.
+         * @param force Force vector in local coordinates.
+         */
+        AddRelativeForce(force: Vector3): void
+        /** Adds a torque to the rigidbody.
+         * @param x Size of torque along the world x-axis.
+         * @param y Size of torque along the world y-axis.
+         * @param z Size of torque along the world z-axis.
+         */
+        AddTorque(x: number, y: number, z: number, mode: any): void
+        /** Adds a torque to the rigidbody.
+         * @param x Size of torque along the world x-axis.
+         * @param y Size of torque along the world y-axis.
+         * @param z Size of torque along the world z-axis.
+         */
+        AddTorque(x: number, y: number, z: number): void
+        /** Adds a torque to the rigidbody.
+         * @param torque Torque vector in world coordinates.
+         */
+        AddTorque(torque: Vector3, mode: any): void
+        /** Adds a torque to the rigidbody.
+         * @param torque Torque vector in world coordinates.
+         */
+        AddTorque(torque: Vector3): void
+        /** Adds a torque to the rigidbody relative to its coordinate system.
+         * @param x Size of torque along the local x-axis.
+         * @param y Size of torque along the local y-axis.
+         * @param z Size of torque along the local z-axis.
+         */
+        AddRelativeTorque(x: number, y: number, z: number, mode: any): void
+        /** Adds a torque to the rigidbody relative to its coordinate system.
+         * @param x Size of torque along the local x-axis.
+         * @param y Size of torque along the local y-axis.
+         * @param z Size of torque along the local z-axis.
+         */
+        AddRelativeTorque(x: number, y: number, z: number): void
+        /** Adds a torque to the rigidbody relative to its coordinate system.
+         * @param torque Torque vector in local coordinates.
+         */
+        AddRelativeTorque(torque: Vector3, mode: any): void
+        /** Adds a torque to the rigidbody relative to its coordinate system.
+         * @param torque Torque vector in local coordinates.
+         */
+        AddRelativeTorque(torque: Vector3): void
+        /** Applies force at position. As a result this will apply a torque and force on the object.
+         * @param force Force vector in world coordinates.
+         * @param position Position in world coordinates.
+         */
+        AddForceAtPosition(force: Vector3, position: Vector3, mode: any): void
+        /** Applies force at position. As a result this will apply a torque and force on the object.
+         * @param force Force vector in world coordinates.
+         * @param position Position in world coordinates.
+         */
+        AddForceAtPosition(force: Vector3, position: Vector3): void
+        /** Applies a force to a rigidbody that simulates explosion effects.
+         * @param explosionForce The force of the explosion (which may be modified by distance).
+         * @param explosionPosition The centre of the sphere within which the explosion has its effect.
+         * @param explosionRadius The radius of the sphere within which the explosion has its effect.
+         * @param upwardsModifier Adjustment to the apparent position of the explosion to make it seem to lift objects.
+         * @param mode The method used to apply the force to its targets.
+         */
+        AddExplosionForce(explosionForce: number, explosionPosition: Vector3, explosionRadius: number, upwardsModifier: number, mode: any): void
+        /** Applies a force to a rigidbody that simulates explosion effects.
+         * @param explosionForce The force of the explosion (which may be modified by distance).
+         * @param explosionPosition The centre of the sphere within which the explosion has its effect.
+         * @param explosionRadius The radius of the sphere within which the explosion has its effect.
+         * @param upwardsModifier Adjustment to the apparent position of the explosion to make it seem to lift objects.
+         * @param mode The method used to apply the force to its targets.
+         */
+        AddExplosionForce(explosionForce: number, explosionPosition: Vector3, explosionRadius: number, upwardsModifier: number): void
+        /** Applies a force to a rigidbody that simulates explosion effects.
+         * @param explosionForce The force of the explosion (which may be modified by distance).
+         * @param explosionPosition The centre of the sphere within which the explosion has its effect.
+         * @param explosionRadius The radius of the sphere within which the explosion has its effect.
+         * @param upwardsModifier Adjustment to the apparent position of the explosion to make it seem to lift objects.
+         * @param mode The method used to apply the force to its targets.
+         */
+        AddExplosionForce(explosionForce: number, explosionPosition: Vector3, explosionRadius: number): void
+        /** The closest point to the bounding box of the attached colliders.
+         */
+        ClosestPointOnBounds(position: Vector3): Vector3
+        /** Tests if a rigidbody would collide with anything, if it was moved through the Scene.
+         * @param direction The direction into which to sweep the rigidbody.
+         * @param hitInfo If true is returned, hitInfo will contain more information about where the collider was hit (See Also: RaycastHit).
+         * @param maxDistance The length of the sweep.
+         * @param queryTriggerInteraction Specifies whether this query should hit Triggers.
+         * @returns True when the rigidbody sweep intersects any collider, otherwise false. 
+         */
+        SweepTest(direction: Vector3, hitInfo: jsb.Out<RaycastHit>, maxDistance: number, queryTriggerInteraction: any): boolean
+        SweepTest(direction: Vector3, hitInfo: jsb.Out<RaycastHit>, maxDistance: number): boolean
+        SweepTest(direction: Vector3, hitInfo: jsb.Out<RaycastHit>): boolean
+        /** Like Rigidbody.SweepTest, but returns all hits.
+         * @param direction The direction into which to sweep the rigidbody.
+         * @param maxDistance The length of the sweep.
+         * @param queryTriggerInteraction Specifies whether this query should hit Triggers.
+         * @returns An array of all colliders hit in the sweep. 
+         */
+        SweepTestAll(direction: Vector3, maxDistance: number, queryTriggerInteraction: any): Array<RaycastHit>
+        SweepTestAll(direction: Vector3, maxDistance: number): Array<RaycastHit>
+        SweepTestAll(direction: Vector3): Array<RaycastHit>
+        /** The velocity vector of the rigidbody. It represents the rate of change of Rigidbody position.
+         */
+        velocity: Vector3
+        /** The angular velocity vector of the rigidbody measured in radians per second.
+         */
+        angularVelocity: Vector3
+        /** The drag of the object.
+         */
+        drag: number
+        /** The angular drag of the object.
+         */
+        angularDrag: number
+        /** The mass of the rigidbody.
+         */
+        mass: number
+        /** Controls whether gravity affects this rigidbody.
+         */
+        useGravity: boolean
+        /** Maximum velocity of a rigidbody when moving out of penetrating state.
+         */
+        maxDepenetrationVelocity: number
+        /** Controls whether physics affects the rigidbody.
+         */
+        isKinematic: boolean
+        /** Controls whether physics will change the rotation of the object.
+         */
+        freezeRotation: boolean
+        /** Controls which degrees of freedom are allowed for the simulation of this Rigidbody.
+         */
+        constraints: any
+        /** The Rigidbody's collision detection mode.
+         */
+        collisionDetectionMode: any
+        /** The center of mass relative to the transform's origin.
+         */
+        centerOfMass: Vector3
+        /** The center of mass of the rigidbody in world space (Read Only).
+         */
+        readonly worldCenterOfMass: Vector3
+        /** The rotation of the inertia tensor.
+         */
+        inertiaTensorRotation: Quaternion
+        /** The diagonal inertia tensor of mass relative to the center of mass.
+         */
+        inertiaTensor: Vector3
+        /** Should collision detection be enabled? (By default always enabled).
+         */
+        detectCollisions: boolean
+        /** The position of the rigidbody.
+         */
+        position: Vector3
+        /** The rotation of the Rigidbody.
+         */
+        rotation: Quaternion
+        /** Interpolation allows you to smooth out the effect of running physics at a fixed frame rate.
+         */
+        interpolation: any
+        /** The solverIterations determines how accurately Rigidbody joints and collision contacts are resolved. Overrides Physics.defaultSolverIterations. Must be positive.
+         */
+        solverIterations: number
+        /** The mass-normalized energy threshold, below which objects start going to sleep.
+         */
+        sleepThreshold: number
+        /** The maximimum angular velocity of the rigidbody measured in radians per second. (Default 7) range { 0, infinity }.
+         */
+        maxAngularVelocity: number
+        /** The solverVelocityIterations affects how how accurately Rigidbody joints and collision contacts are resolved. Overrides Physics.defaultSolverVelocityIterations. Must be positive.
+         */
+        solverVelocityIterations: number
+    }
+}
+declare module "UnityEngine" {
+    import * as jsb from "jsb";
     import { Object as Object1, Array } from "System";
     /** The Resources class allows you to find and access Objects including assets.
      */
     class Resources extends Object1 {
         /** Returns a list of all objects of Type type.
-         * @param type Type of the class to match while searching.
-         * @returns An array of objects whose class is type or is derived from type. 
          */
         static FindObjectsOfTypeAll(type: any): Array<Object>
         /** Loads an asset stored at path in a Resources folder.
-         * @param path Pathname of the target folder. When using the empty string (i.e., ""), the function will load the entire contents of the Resources folder.
+         * @param path Path to the target resource to load. When using an empty string (i.e., ""), the function loads the entire contents of the Resources folder.
          * @param systemTypeInstance Type filter for objects returned.
          * @returns The requested asset returned as an Object. 
          */
         static Load(path: string, systemTypeInstance: any): Object
         /** Loads an asset stored at path in a Resources folder.
-         * @param path Pathname of the target folder. When using the empty string (i.e., ""), the function will load the entire contents of the Resources folder.
+         * @param path Path to the target resource to load. When using an empty string (i.e., ""), the function loads the entire contents of the Resources folder.
          * @param systemTypeInstance Type filter for objects returned.
          * @returns The requested asset returned as an Object. 
          */
@@ -4039,6 +5802,7 @@ declare module "UnityEngine" {
          * @returns The index of the selected button. 
          */
         static SelectionGrid(position: Rect, selected: number, content: Array<GUIContent>, xCount: number): number
+        static HorizontalSlider(position: Rect, value: number, leftValue: number, rightValue: number, slider: GUIStyle, thumb: GUIStyle, thumbExtent: GUIStyle): number
         /** A horizontal slider the user can drag to change a value between a min and a max.
          * @param position Rectangle on the screen to use for the slider.
          * @param value The value the slider shows. This determines the position of the draggable thumb.
@@ -4059,6 +5823,7 @@ declare module "UnityEngine" {
          * @returns The value that has been set by the user. 
          */
         static HorizontalSlider(position: Rect, value: number, leftValue: number, rightValue: number): number
+        static VerticalSlider(position: Rect, value: number, topValue: number, bottomValue: number, slider: GUIStyle, thumb: GUIStyle, thumbExtent: GUIStyle): number
         /** A vertical slider the user can drag to change a value between a min and a max.
          * @param position Rectangle on the screen to use for the slider.
          * @param value The value the slider shows. This determines the position of the draggable thumb.
@@ -4079,7 +5844,7 @@ declare module "UnityEngine" {
          * @returns The value that has been set by the user. 
          */
         static VerticalSlider(position: Rect, value: number, topValue: number, bottomValue: number): number
-        static Slider(position: Rect, value: number, size: number, start: number, end: number, slider: GUIStyle, thumb: GUIStyle, horiz: boolean, id: number): number
+        static Slider(position: Rect, value: number, size: number, start: number, end: number, slider: GUIStyle, thumb: GUIStyle, horiz: boolean, id: number, thumbExtent: GUIStyle): number
         /** Make a horizontal scrollbar. Scrollbars are what you use to scroll through a document. Most likely, you want to use scrollViews instead.
          * @param position Rectangle on the screen to use for the scrollbar.
          * @param value The position between min and max.
@@ -5527,7 +7292,7 @@ declare module "UnityEngine" {
         /** Style used by default for GUI.Toggle controls.
          */
         toggle: GUIStyle
-        /** Style used by default for Window controls (SA GUI.Window).
+        /** Style used by default for Window controls (See Also: GUI.Window).
          */
         window: GUIStyle
         /** Style used by default for the background part of GUI.HorizontalSlider controls.
@@ -5630,9 +7395,6 @@ declare module "UnityEngine" {
         CalcMinMaxWidth(content: GUIContent, minWidth: jsb.Out<number>, maxWidth: jsb.Out<number>): void
         toString(): string
         static op_Implicit(str: string): GUIStyle
-        /** The name of this GUIStyle. Used for getting them based on name.
-         */
-        name: string
         /** The font to use for rendering. If null, the default font for the current GUISkin is used instead.
          */
         font: any
@@ -5672,6 +7434,9 @@ declare module "UnityEngine" {
         /** Enable HTML-style tags for Text Formatting Markup.
          */
         richText: boolean
+        /** The name of this GUIStyle. Used for getting them based on name.
+         */
+        name: string
         /** Rendering settings for when the component is displayed normally.
          */
         normal: any
@@ -5855,10 +7620,14 @@ declare module "UnityEngine" {
         ClampToBounds(bounds: RectInt): void
         /** Returns true if the given position is within the RectInt.
          * @param position Position to check.
-         * @param inclusive Whether the max limits are included in the check.
          * @returns Whether the position is within the RectInt. 
          */
         Contains(position: Vector2Int): boolean
+        /** RectInts overlap if each RectInt Contains a shared point.
+         * @param other Other rectangle to test overlapping with.
+         * @returns True if the other rectangle overlaps this one. 
+         */
+        Overlaps(other: RectInt): boolean
         toString(): string
         /** Returns true if the given RectInt is equal to this RectInt.
          */
@@ -6159,7 +7928,7 @@ declare module "UnityEngine" {
     }
 }
 declare module "UnityEngine" {
-    import { Object as Object1 } from "System";
+    import { Object as Object1, Enum } from "System";
     /** A UnityGUI event.
      */
     class Event extends Object1 {
@@ -6189,12 +7958,17 @@ declare module "UnityEngine" {
         /** The relative movement of the mouse compared to last event.
          */
         delta: Vector2
+        /** The type of pointer that created this event (for example, mouse, touch screen, pen).
+         */
+        pointerType: any
         /** Which mouse button was pressed.
          */
         button: number
         /** Which modifier keys are held down.
          */
         modifiers: EventModifiers
+        /** How hard stylus pressure is applied.
+         */
         pressure: number
         /** How many consecutive mouse clicks have we received.
          */
@@ -6417,6 +8191,9 @@ declare module "UnityEditor" {
         /** Style for word wrapped label.
          */
         static readonly wordWrappedLabel: GUIStyle
+        /** Style used for links.
+         */
+        static readonly linkLabel: GUIStyle
         /** Style for white label.
          */
         static readonly whiteLabel: GUIStyle
@@ -6715,20 +8492,6 @@ declare module "UnityEditor" {
 }
 declare module "UnityEditor" {
     import * as jsb from "jsb";
-    import { Enum } from "System";
-    /** Available scripting runtimes to be used by the Editor and Players.
-     */
-    enum ScriptingRuntimeVersion {
-        /** Use the stable version of the scripting runtime.
-         */
-        Legacy = 0,
-        /** Use the most recent version of the scripting runtime available.
-         */
-        Latest = 1,
-    }
-}
-declare module "UnityEditor" {
-    import * as jsb from "jsb";
     import { Object } from "System";
     import { Object as Object1 } from "UnityEngine";
     /** AssetPostprocessor lets you hook into the import pipeline and run scripts prior or after importing assets.
@@ -6829,9 +8592,6 @@ declare module "UnityEditor" {
          * @returns Returns true if the materials have been successfly remapped, otherwise false. 
          */
         SearchAndRemapMaterials(nameOption: any, searchOption: any): boolean
-        /** Import materials from file.
-         */
-        importMaterials: boolean
         /** Material naming setting.
          */
         materialName: any
@@ -6853,6 +8613,9 @@ declare module "UnityEditor" {
         /** Detect file units and import as 1FileUnit=1UnityUnit, otherwise it will import as 1cm=1UnityUnit.
          */
         useFileUnits: boolean
+        /** Scaling factor used when useFileScale is set to true (Read-only).
+         */
+        readonly fileScale: number
         /** Use FileScale when importing.
          */
         useFileScale: boolean
@@ -7014,6 +8777,9 @@ Notes:
         /** The path of the transform used to generation the motion of the animation.
          */
         motionNodeName: string
+        /** The Avatar generation of the imported model.
+         */
+        avatarSetup: any
         /** Imports the HumanDescription from the given Avatar.
          */
         sourceAvatar: any
@@ -7030,6 +8796,15 @@ Notes:
 The default value is true.
          */
         useSRGBMaterialColor: boolean
+        /** Sorts the gameObject hierarchy by name.
+         */
+        sortHierarchyByName: boolean
+        /** Material creation options.
+         */
+        materialImportMode: any
+        /** Generate auto mapping if no avatarSetup is provided when importing humanoid animation.
+         */
+        autoGenerateAvatarMappingIfUnspecified: boolean
     }
 }
 declare module "UnityEditor" {
@@ -7134,15 +8909,6 @@ declare module "UnityEditor" {
          * @returns Returns true if the settings for both VideoClipImporters match. Returns false otherwise. 
          */
         Equals(rhs: VideoClipImporter): boolean
-        /** Used in legacy import mode.  Same as MovieImport.quality.
-         */
-        quality: number
-        /** Used in legacy import mode.  Same as MovieImport.linearTexture.
-         */
-        linearColor: boolean
-        /** True to import a MovieTexture (deprecated), false for a VideoClip (preferred).
-         */
-        useLegacyImporter: boolean
         /** Size in bytes of the file before importing.
          */
         readonly sourceFileSize: number
@@ -7173,6 +8939,9 @@ declare module "UnityEditor" {
         /** Import audio tracks from source file.
          */
         importAudio: boolean
+        /** Whether the imported clip contains sRGB color data.
+         */
+        sRGBClip: boolean
         /** Default values for the platform-specific import settings.
          */
         defaultTargetSettings: any
@@ -7256,6 +9025,19 @@ declare module "UnityEditor" {
          */
         SetTextureSettings(src: any): void
         ReadTextureImportInstructions(target: BuildTarget, desiredFormat: jsb.Out<any>, colorSpace: jsb.Out<any>, compressionQuality: jsb.Out<number>): void
+        /** Validates TextureImporterFormat based on a specified import type (TextureImporterType) and a specified build target (BuildTarget.).
+         * @param textureType The TextureImporterType that the importer uses.
+         * @param target The platform that the setting targets, referred to as the BuilTarget.
+         * @param currentFormat The TextureImporterFormat to validate.
+         * @returns Returns true if TextureImporterFormat is valid and can be set. Returns false otherwise. 
+         */
+        static IsPlatformTextureFormatValid(textureType: any, target: BuildTarget, currentFormat: any): boolean
+        /** Validates TextureImporterFormat based on the type of the current format (TextureImporterType) and the default platform.
+         * @param currentFormat The TextureImporterType that the importer uses.
+         * @param textureType The TextureImporterFormat to validate.
+         * @returns Returns true if TextureImporterFormat is valid and can be set. Returns false otherwise. 
+         */
+        static IsDefaultPlatformTextureFormatValid(textureType: any, currentFormat: any): boolean
         /** Maximum texture size.
          */
         maxTextureSize: number
@@ -7295,10 +9077,10 @@ declare module "UnityEditor" {
         /** Generate Mip Maps.
          */
         mipmapEnabled: boolean
-        /** Keep texture borders the same when generating mipmaps?
+        /** Keeps texture borders the same when generating mipmaps.
          */
         borderMipmap: boolean
-        /** Is texture storing color data?
+        /** Determines whether this texture stores color data.
          */
         sRGBTexture: boolean
         /** Enables or disables coverage-preserving alpha MIP mapping.
@@ -7310,7 +9092,7 @@ declare module "UnityEditor" {
         /** Mipmap filtering mode.
          */
         mipmapFilter: any
-        /** Fade out mip levels to gray color?
+        /** Fades out mip levels to a gray color.
          */
         fadeout: boolean
         /** Mip level where texture begins to fade out.
@@ -7319,7 +9101,7 @@ declare module "UnityEditor" {
         /** Mip level where texture is faded out completely.
          */
         mipmapFadeDistanceEnd: number
-        /** Convert heightmap to normal map?
+        /** Converts heightmaps to normal maps.
          */
         convertToNormalmap: boolean
         /** Normal map filtering mode.
@@ -7537,8 +9319,6 @@ declare module "UnityEditor" {
      */
     enum StatusQueryOptions {
         /** Force a refresh of the version control system status of the file. This is slow but accurate.
-
-See Also: AssetDatabase.IsOpenForEdit, AssetDatabase.IsMetaFileOpenForEdit.
          */
         ForceUpdate = 0,
         /** This option sets the status query to first use the latest valid version control system status of the file and query for a valid status synchronously if otherwise.
@@ -7736,6 +9516,13 @@ See PrefabUtility.IsDefaultOverride for more information.
         /** Value of an object reference property.
          */
         objectReferenceValue: Object1
+        managedReferenceValue: Object
+        /** String corresponding to the value of the managed reference object (dynamic) full type string.
+         */
+        readonly managedReferenceFullTypename: string
+        /** String corresponding to the value of the managed reference field full type string.
+         */
+        readonly managedReferenceFieldTypename: string
         objectReferenceInstanceIDValue: number
         /** Enum index of an enum property.
          */
@@ -7868,6 +9655,9 @@ declare module "UnityEditor" {
         /** Bounds with Integer values property.
          */
         BoundsInt = 23,
+        /** Managed reference property.
+         */
+        ManagedReference = 24,
         Generic = -1,
     }
 }
@@ -7947,6 +9737,10 @@ declare module "UnityEditor" {
         /** Disables Asset Bundle LoadAsset by file name with extension.
          */
         DisableLoadAssetByFileNameWithExtension = 8192,
+        /** Removes the Unity Version number in the Archive File & Serialized File headers during the build.
+         */
+        AssetBundleStripUnityVersion = 32768,
+        EnableProtection = 65536,
     }
 }
 declare module "UnityEditor" {
@@ -8023,6 +9817,12 @@ declare module "UnityEditor" {
          */
         Switch = 38,
         Lumin = 39,
+        /** Build a Stadia standalone.
+         */
+        Stadia = 40,
+        /** Build a CloudRendering standalone.
+         */
+        CloudRendering = 41,
         NoTarget = -2,
         /** OBSOLETE: Use iOS. Build an iOS player.
          */
@@ -8219,9 +10019,9 @@ declare module "UnityEditor" {
          * @returns The static editor flags of the GameObject specified. 
          */
         static GetStaticEditorFlags(go: GameObject): any
-        /** Sets the static editor flags on the specified GameObject.
-         * @param go The GameObject whose static editor flags you want to set.
-         * @param flags The flags to set on the GameObject.
+        /** Sets the StaticEditorFlags of the specified GameObject.
+         * @param go The GameObject whose Static Editor Flags you want to set.
+         * @param flags The StaticEditorFlags to set on the GameObject.
          */
         static SetStaticEditorFlags(go: GameObject, flags: any): void
         /** Returns true if the passed in StaticEditorFlags are set on the GameObject specified.
@@ -8349,7 +10149,7 @@ declare module "UnityEditor" {
 declare module "UnityEditor" {
     import * as jsb from "jsb";
     import { Object, Enum, Array } from "System";
-    import { Color, Matrix4x4, Camera, Vector3, Quaternion, EventType, Vector2, Texture2D, Rect, GUIStyle, GUIContent, Texture } from "UnityEngine";
+    import { Color, Matrix4x4, Camera, Vector3, Quaternion, EventType, Vector2, Transform, Texture2D, Rect, GUIStyle, GUIContent, Texture } from "UnityEngine";
     /** Custom 3D GUI controls and drawing in the Scene view.
      */
     @jsb.RequiredDefines("UNITY_EDITOR")
@@ -8575,10 +10375,29 @@ Note: Use HandleUtility.GetHandleSize where you might want to have constant scre
          * @returns The new value modified by the user's interaction with the handle. If the user has not moved the handle, it will return the same value as you passed into the function. 
          */
         static ScaleSlider(scale: number, position: Vector3, direction: Vector3, rotation: Quaternion, size: number, snap: number): number
-        /** Rounds the value val to the closest multiple of snap (snap can only be positive).
-         * @returns The rounded value, if snap is positive, and val otherwise. 
+        /** Rounds value to the closest multiple of snap if snapping is active. Note that snap can only be positive.
+         * @param value The value to snap.
+         * @param snap The increment to snap to.
+         * @returns If snapping is active, rounds value to the closest multiple of snap (snap can only be positive). 
          */
-        static SnapValue(val: number, snap: number): number
+        static SnapValue(value: number, snap: number): number
+        /** Rounds value to the closest multiple of snap if snapping is active. Note that snap can only be positive.
+         * @param value The value to snap.
+         * @param snap The increment to snap to.
+         * @returns If snapping is active, rounds value to the closest multiple of snap (snap can only be positive). 
+         */
+        static SnapValue(value: Vector2, snap: Vector2): Vector2
+        /** Rounds value to the closest multiple of snap if snapping is active. Note that snap can only be positive.
+         * @param value The value to snap.
+         * @param snap The increment to snap to.
+         * @returns If snapping is active, rounds value to the closest multiple of snap (snap can only be positive). 
+         */
+        static SnapValue(value: Vector3, snap: Vector3): Vector3
+        /** Rounds each Transform.position to the closest multiple of EditorSnap.move.
+         * @param transforms The transforms to snap.
+         * @param axis The axes on which to apply snapping.
+         */
+        static SnapToGrid(transforms: Array<Transform>, axis: any): void
         static SelectionFrame(controlID: number, position: Vector3, rotation: Quaternion, size: number): void
         /** Draw anti-aliased line specified with point array and width.
          * @param lineTex The AA texture used for rendering.
@@ -8951,8 +10770,8 @@ declare module "UnityEditor" {
 }
 declare module "UnityEditor" {
     import * as jsb from "jsb";
+    import { Color, Quaternion, Camera, Vector3, Object as Object1, Transform, Bounds } from "UnityEngine";
     import { ValueType, Object, Array, Enum } from "System";
-    import { Quaternion, Camera, Vector3, Object as Object1, Transform, Bounds } from "UnityEngine";
     /** Use this class to manage SceneView settings, change the SceneView camera properties, subscribe to events, call SceneView methods, and render open scenes.
      */
     @jsb.RequiredDefines("UNITY_EDITOR")
@@ -9062,6 +10881,9 @@ declare module "UnityEditor" {
         /** The SceneView that is being drawn.
          */
         static readonly currentDrawingSceneView: SceneView
+        /** Gets the Color of selected outline.
+         */
+        static readonly selectedOutlineColor: Color
         /** Sets the visibility of all Gizmos in the Scene view.
          */
         drawGizmos: boolean
@@ -9086,6 +10908,9 @@ declare module "UnityEditor" {
         /** Use SceneViewState to set the debug options for the Scene view.
          */
         sceneViewState: any
+        /** Gets or sets whether to enable the grid for an instance of the SceneView.
+         */
+        showGrid: boolean
         /** Use CameraSettings to set the properties for the SceneView Camera.
          */
         cameraSettings: any
@@ -9115,6 +10940,7 @@ declare module "UnityEditor" {
         orthographic: boolean
         onValidateCameraMode(op: "add" | "remove", fn: (arg: any) => boolean): void
         onCameraModeChanged(op: "add" | "remove", fn: (obj: any) => void): void
+        gridVisibilityChanged(op: "add" | "remove", fn: (obj: boolean) => void): void
         static beforeSceneGui(op: "add" | "remove", fn: (obj: SceneView) => void): void
         static duringSceneGui(op: "add" | "remove", fn: (obj: SceneView) => void): void
     }
@@ -9513,6 +11339,9 @@ declare module "UnityEditor.Build.Reporting" {
         /** The StrippingInfo object for the build.
          */
         readonly strippingInfo: any
+        /** An array of all the PackedAssets generated by the build process.
+         */
+        readonly packedAssets: Array<any>
     }
 }
 declare module "UnityEngine" {
@@ -9551,8 +11380,14 @@ declare module "UnityEditor" {
     @jsb.RequiredDefines("UNITY_EDITOR")
     class BuildPipeline extends Object {
         static GetBuildTargetGroup(platform: BuildTarget): any
+        /** Given a BuildTarget will return the well known string representation for the build target platform.
+         * @param targetPlatform An instance of the BuildTarget enum.
+         * @returns Target platform name represented by the passed in BuildTarget. 
+         */
+        static GetBuildTargetName(targetPlatform: BuildTarget): string
+        static SetAssetBundleEncryptKey(password: string): void
         /** Builds a player. These overloads are still supported, but will be replaced. Please use BuildPlayer (BuildPlayerOptions buildPlayerOptions)  instead.
-         * @param levels The Scenes to be included in the build. If empty, the currently open Scene will be built. Paths are relative to the project folder (AssetsMyLevelsMyScene.unity).
+         * @param scenes The Scenes to include in the build. If empty, the build only includes the currently open Scene. Paths are relative to the project folder (AssetsMyLevelsMyScene.unity).
          * @param locationPathName The path where the application will be built.
          * @param target The BuildTarget to build.
          * @param options Additional BuildOptions, like whether to run the built player.
@@ -9560,7 +11395,7 @@ declare module "UnityEditor" {
          */
         static BuildPlayer(levels: Array<any>, locationPathName: string, target: BuildTarget, options: any): BuildReport
         /** Builds a player. These overloads are still supported, but will be replaced. Please use BuildPlayer (BuildPlayerOptions buildPlayerOptions)  instead.
-         * @param levels The Scenes to be included in the build. If empty, the currently open Scene will be built. Paths are relative to the project folder (AssetsMyLevelsMyScene.unity).
+         * @param scenes The Scenes to include in the build. If empty, the build only includes the currently open Scene. Paths are relative to the project folder (AssetsMyLevelsMyScene.unity).
          * @param locationPathName The path where the application will be built.
          * @param target The BuildTarget to build.
          * @param options Additional BuildOptions, like whether to run the built player.
@@ -9623,40 +11458,83 @@ In some cases the player directory path can be affected by BuildOptions.Developm
 declare module "UnityEditor" {
     import * as jsb from "jsb";
     import { Object, Array } from "System";
-    import { IEnumerable } from "System.Collections.Generic";
+    import { List, IEnumerable } from "System.Collections.Generic";
     import { Object as Object1, Hash128, Texture } from "UnityEngine";
     /** An Interface for accessing assets and performing operations on assets.
      */
     @jsb.RequiredDefines("UNITY_EDITOR")
     class AssetDatabase extends Object {
-        static ForceReserializeAssets(assetPaths: IEnumerable<string>, options: ForceReserializeAssetsOptions): void
-        static ForceReserializeAssets(): void
-        /** Warning Use the overload with a long localId parameter. Using the overload with an integer localId parameter can cause an integer overflow in localId. This can happen when the object passed to the API is part of a Prefab.
-
-Get the GUID and local file id from an object instance id.
-         * @param instanceID InstanceID of the object to retrieve information for.
-         * @param obj The object to retrieve GUID and File Id for.
-         * @param guid The GUID of the asset.
-         * @param localId The local file identifier of this asset.
-         * @returns True if the guid and file id were successfully found, false if not. 
+        static IsOpenForEdit(assetOrMetaFilePaths: Array<string>, outNotEditablePaths: List<string>, statusQueryOptions: StatusQueryOptions): void
+        /** Query whether an Asset file is open for editing in version control.
+         * @param assetObject Object representing the asset whose status you wish to query.
+         * @param assetOrMetaFilePath Path to the asset file or its .meta file on disk, relative to project folder.
+         * @param message Returns a reason for the asset not being open for edit.
+         * @param statusOptions Options for how the version control system should be queried. These options can effect the speed and accuracy of the query. Default is StatusQueryOptions.UseCachedIfPossible.
+         * @returns True if the asset is considered open for edit by the selected version control system. 
          */
-        static TryGetGUIDAndLocalFileIdentifier(obj: Object1, guid: jsb.Out<string>, localId: jsb.Out<number>): boolean
-        /** Warning Use the overload with a long localId parameter. Using the overload with an integer localId parameter can cause an integer overflow in localId. This can happen when the object passed to the API is part of a Prefab.
-
-Get the GUID and local file id from an object instance id.
-         * @param instanceID InstanceID of the object to retrieve information for.
-         * @param obj The object to retrieve GUID and File Id for.
-         * @param guid The GUID of the asset.
-         * @param localId The local file identifier of this asset.
-         * @returns True if the guid and file id were successfully found, false if not. 
+        static IsOpenForEdit(assetObject: Object1, message: jsb.Out<string>, statusOptions: StatusQueryOptions): boolean
+        /** Query whether an Asset file is open for editing in version control.
+         * @param assetObject Object representing the asset whose status you wish to query.
+         * @param assetOrMetaFilePath Path to the asset file or its .meta file on disk, relative to project folder.
+         * @param message Returns a reason for the asset not being open for edit.
+         * @param statusOptions Options for how the version control system should be queried. These options can effect the speed and accuracy of the query. Default is StatusQueryOptions.UseCachedIfPossible.
+         * @returns True if the asset is considered open for edit by the selected version control system. 
          */
-        static TryGetGUIDAndLocalFileIdentifier(instanceID: number, guid: jsb.Out<string>, localId: jsb.Out<number>): boolean
-        /** Removes object from its asset (See Also: AssetDatabase.AddObjectToAsset).
+        static IsOpenForEdit(assetOrMetaFilePath: string, message: jsb.Out<string>, statusOptions: StatusQueryOptions): boolean
+        /** Query whether an Asset file is open for editing in version control.
+         * @param assetObject Object representing the asset whose status you wish to query.
+         * @param assetOrMetaFilePath Path to the asset file or its .meta file on disk, relative to project folder.
+         * @param message Returns a reason for the asset not being open for edit.
+         * @param statusOptions Options for how the version control system should be queried. These options can effect the speed and accuracy of the query. Default is StatusQueryOptions.UseCachedIfPossible.
+         * @returns True if the asset is considered open for edit by the selected version control system. 
          */
-        static RemoveObjectFromAsset(objectToRemove: Object1): void
-        /** Imports package at packagePath into the current project.
+        static IsOpenForEdit(assetObject: Object1, statusOptions: StatusQueryOptions): boolean
+        /** Query whether an Asset file is open for editing in version control.
+         * @param assetObject Object representing the asset whose status you wish to query.
+         * @param assetOrMetaFilePath Path to the asset file or its .meta file on disk, relative to project folder.
+         * @param message Returns a reason for the asset not being open for edit.
+         * @param statusOptions Options for how the version control system should be queried. These options can effect the speed and accuracy of the query. Default is StatusQueryOptions.UseCachedIfPossible.
+         * @returns True if the asset is considered open for edit by the selected version control system. 
          */
-        static ImportPackage(packagePath: string, interactive: boolean): void
+        static IsOpenForEdit(assetOrMetaFilePath: string, statusOptions: StatusQueryOptions): boolean
+        /** Query whether an Asset file is open for editing in version control.
+         * @param assetObject Object representing the asset whose status you wish to query.
+         * @param assetOrMetaFilePath Path to the asset file or its .meta file on disk, relative to project folder.
+         * @param message Returns a reason for the asset not being open for edit.
+         * @param statusOptions Options for how the version control system should be queried. These options can effect the speed and accuracy of the query. Default is StatusQueryOptions.UseCachedIfPossible.
+         * @returns True if the asset is considered open for edit by the selected version control system. 
+         */
+        static IsOpenForEdit(assetObject: Object1, message: jsb.Out<string>): boolean
+        /** Query whether an Asset file is open for editing in version control.
+         * @param assetObject Object representing the asset whose status you wish to query.
+         * @param assetOrMetaFilePath Path to the asset file or its .meta file on disk, relative to project folder.
+         * @param message Returns a reason for the asset not being open for edit.
+         * @param statusOptions Options for how the version control system should be queried. These options can effect the speed and accuracy of the query. Default is StatusQueryOptions.UseCachedIfPossible.
+         * @returns True if the asset is considered open for edit by the selected version control system. 
+         */
+        static IsOpenForEdit(assetOrMetaFilePath: string, message: jsb.Out<string>): boolean
+        /** Query whether an Asset file is open for editing in version control.
+         * @param assetObject Object representing the asset whose status you wish to query.
+         * @param assetOrMetaFilePath Path to the asset file or its .meta file on disk, relative to project folder.
+         * @param message Returns a reason for the asset not being open for edit.
+         * @param statusOptions Options for how the version control system should be queried. These options can effect the speed and accuracy of the query. Default is StatusQueryOptions.UseCachedIfPossible.
+         * @returns True if the asset is considered open for edit by the selected version control system. 
+         */
+        static IsOpenForEdit(assetObject: Object1): boolean
+        /** Query whether an Asset file is open for editing in version control.
+         * @param assetObject Object representing the asset whose status you wish to query.
+         * @param assetOrMetaFilePath Path to the asset file or its .meta file on disk, relative to project folder.
+         * @param message Returns a reason for the asset not being open for edit.
+         * @param statusOptions Options for how the version control system should be queried. These options can effect the speed and accuracy of the query. Default is StatusQueryOptions.UseCachedIfPossible.
+         * @returns True if the asset is considered open for edit by the selected version control system. 
+         */
+        static IsOpenForEdit(assetOrMetaFilePath: string): boolean
+        static MakeEditable(paths: Array<string>, prompt: string, outNotEditablePaths: List<string>): boolean
+        /** Makes a file open for editing in version control.
+         * @param path Specifies the path to a file relative to the project root.
+         * @returns true if Unity successfully made the file editable in the version control system. Otherwise, returns false. 
+         */
+        static MakeEditable(path: string): boolean
         /** Search the asset database using the search filter string.
          * @param filter The filter string can contain search data.  See below for details about this string.
          * @param searchInFolders The folders where the search will start.
@@ -9675,10 +11553,12 @@ Get the GUID and local file id from an object instance id.
         /** Is object an asset?
          */
         static Contains(instanceID: number): boolean
-        /** Create a new folder.
-         * @param parentFolder The name of the parent folder.
+        /** Creates a new folder, in the specified parent folder.
+
+The parent folder string must start with the "Assets" folder, and all folders within the parent folder string must already exist. For example, when specifying "AssetsParentFolder1Parentfolder2/", the new folder will be created in "ParentFolder2" only if ParentFolder1 and ParentFolder2 already exist.
+         * @param parentFolder The path to the parent folder. Must start with "Assets/".
          * @param newFolderName The name of the new folder.
-         * @returns The GUID of the newly created folder. 
+         * @returns The GUID of the newly created folder, if the folder was created successfully. Otherwise returns an empty string. 
          */
         static CreateFolder(parentFolder: string, newFolderName: string): string
         /** Is asset a main asset in the project window?
@@ -9687,7 +11567,6 @@ Get the GUID and local file id from an object instance id.
         /** Is asset a main asset in the project window?
          */
         static IsMainAsset(instanceID: number): boolean
-        static GetCurrentCacheServerIp(): string
         /** Does the asset form part of another asset?
          * @param obj The asset Object to query.
          * @param instanceID Instance ID of the asset Object to query.
@@ -9710,6 +11589,7 @@ Get the GUID and local file id from an object instance id.
         /** Determines whether the Asset is a native Asset.
          */
         static IsNativeAsset(instanceID: number): boolean
+        static GetCurrentCacheServerIp(): string
         /** Creates a new unique path for an asset.
          */
         static GenerateUniqueAssetPath(path: string): string
@@ -9756,6 +11636,7 @@ Get the GUID and local file id from an object instance id.
         /** Duplicates the asset at path and stores it at newPath.
          * @param path Filesystem path of the source asset.
          * @param newPath Filesystem path of the new asset to create.
+         * @returns Returns true if the copy operation is successful or false if part of the process fails. 
          */
         static CopyAsset(path: string, newPath: string): boolean
         /** Writes the import settings to disk.
@@ -9844,6 +11725,12 @@ Get the GUID and local file id from an object instance id.
         static Refresh(): void
         /** Opens the asset with associated application.
          */
+        static OpenAsset(instanceID: number, lineNumber: number, columnNumber: number): boolean
+        /** Opens the asset with associated application.
+         */
+        static OpenAsset(target: Object1, lineNumber: number, columnNumber: number): boolean
+        /** Opens the asset with associated application.
+         */
         static OpenAsset(instanceID: number, lineNumber: number): boolean
         /** Opens the asset with associated application.
          */
@@ -9862,7 +11749,7 @@ Get the GUID and local file id from an object instance id.
          * @returns GUID. 
          */
         static AssetPathToGUID(path: string): string
-        /** Translate a GUID to its current asset path.
+        /** Gets the corresponding asset path for the supplied guid, or an empty string if the GUID can't be found.
          */
         static GUIDToAssetPath(guid: string): string
         /** Returns the hash of all the dependencies of an asset.
@@ -9891,7 +11778,7 @@ Get the GUID and local file id from an object instance id.
          */
         static RemoveAssetBundleName(assetBundleName: string, forceRemove: boolean): boolean
         static RemoveUnusedAssetBundleNames(): void
-        /** Get the paths of the assets which have been marked with the given assetBundle name.
+        /** Returns an array containing the paths of all assets marked with the specified Asset Bundle name.
          */
         static GetAssetPathsFromAssetBundle(assetBundleName: string): Array<string>
         /** Get the Asset paths for all Assets tagged with assetBundleName and
@@ -9914,27 +11801,35 @@ Get the GUID and local file id from an object instance id.
          * @returns The names of all AssetBundles that the input depends on. 
          */
         static GetAssetBundleDependencies(assetBundleName: string, recursive: boolean): Array<string>
-        /** Given a pathName, returns the list of all assets that it depends on.
+        /** Returns an array of all the assets that are dependencies of the asset at the specified pathName.
+
+Note: GetDependencies() gets the Assets that are referenced by other Assets. For example, a Scene could contain many GameObjects with a Material attached to them. In this case,  GetDependencies() will return the path to the Material Assets, but not the GameObjects as those are not Assets on your disk.
          * @param pathName The path to the asset for which dependencies are required.
-         * @param recursive If false, return only assets which are direct dependencies of the input; if true, include all indirect dependencies of the input. Defaults to true.
+         * @param recursive Controls whether this method recursively checks and returns all dependencies including indirect dependencies (when set to true), or whether it only returns direct dependencies (when set to false).
          * @returns The paths of all assets that the input depends on. 
          */
         static GetDependencies(pathName: string, recursive: boolean): Array<string>
-        /** Given an array of pathNames, returns the list of all assets that the input depend on.
+        /** Returns an array of the paths of assets that are dependencies of all the assets in the list of pathNames that you provide.
+
+Note: GetDependencies() gets the Assets that are referenced by other Assets. For example, a Scene could contain many GameObjects with a Material attached to them. In this case,  GetDependencies() will return the path to the Material Assets, but not the GameObjects as those are not Assets on your disk.
          * @param pathNames The path to the assets for which dependencies are required.
-         * @param recursive If false, return only assets which are direct dependencies of the input; if true, include all indirect dependencies of the input. Defaults to true.
+         * @param recursive Controls whether this method recursively checks and returns all dependencies including indirect dependencies (when set to true), or whether it only returns direct dependencies (when set to false).
          * @returns The paths of all assets that the input depends on. 
          */
         static GetDependencies(pathNames: Array<string>, recursive: boolean): Array<string>
-        /** Given a pathName, returns the list of all assets that it depends on.
+        /** Returns an array of all the assets that are dependencies of the asset at the specified pathName.
+
+Note: GetDependencies() gets the Assets that are referenced by other Assets. For example, a Scene could contain many GameObjects with a Material attached to them. In this case,  GetDependencies() will return the path to the Material Assets, but not the GameObjects as those are not Assets on your disk.
          * @param pathName The path to the asset for which dependencies are required.
-         * @param recursive If false, return only assets which are direct dependencies of the input; if true, include all indirect dependencies of the input. Defaults to true.
+         * @param recursive Controls whether this method recursively checks and returns all dependencies including indirect dependencies (when set to true), or whether it only returns direct dependencies (when set to false).
          * @returns The paths of all assets that the input depends on. 
          */
         static GetDependencies(pathName: string): Array<string>
-        /** Given an array of pathNames, returns the list of all assets that the input depend on.
+        /** Returns an array of the paths of assets that are dependencies of all the assets in the list of pathNames that you provide.
+
+Note: GetDependencies() gets the Assets that are referenced by other Assets. For example, a Scene could contain many GameObjects with a Material attached to them. In this case,  GetDependencies() will return the path to the Material Assets, but not the GameObjects as those are not Assets on your disk.
          * @param pathNames The path to the assets for which dependencies are required.
-         * @param recursive If false, return only assets which are direct dependencies of the input; if true, include all indirect dependencies of the input. Defaults to true.
+         * @param recursive Controls whether this method recursively checks and returns all dependencies including indirect dependencies (when set to true), or whether it only returns direct dependencies (when set to false).
          * @returns The paths of all assets that the input depends on. 
          */
         static GetDependencies(pathNames: Array<string>): Array<string>
@@ -9950,53 +11845,67 @@ Get the GUID and local file id from an object instance id.
         /** Exports the assets identified by assetPathNames to a unitypackage file in fileName.
          */
         static ExportPackage(assetPathNames: Array<string>, fileName: string): void
-        /** Query whether an asset file is open for edit in version control.
-         * @param assetObject Object representing the asset whose status you wish to query.
-         * @param assetOrMetaFilePath Path to the asset file or its .meta file on disk, relative to project folder.
-         * @param message Returns a reason for the asset not being open for edit.
-         * @param StatusQueryOptions Options for how the version control system should be queried. These options can effect the speed and accuracy of the query.
-         * @returns True if the asset is considered open for edit by the selected version control system. 
-         */
-        static IsOpenForEdit(assetObject: Object1, message: jsb.Out<string>, statusOptions: StatusQueryOptions): boolean
-        /** Query whether an asset file is open for edit in version control.
-         * @param assetObject Object representing the asset whose status you wish to query.
-         * @param assetOrMetaFilePath Path to the asset file or its .meta file on disk, relative to project folder.
-         * @param message Returns a reason for the asset not being open for edit.
-         * @param StatusQueryOptions Options for how the version control system should be queried. These options can effect the speed and accuracy of the query.
-         * @returns True if the asset is considered open for edit by the selected version control system. 
-         */
-        static IsOpenForEdit(assetOrMetaFilePath: string, message: jsb.Out<string>, statusOptions: StatusQueryOptions): boolean
-        /** Query whether an asset file is open for edit in version control.
-         * @param assetObject Object representing the asset whose status you wish to query.
-         * @param assetOrMetaFilePath Path to the asset file or its .meta file on disk, relative to project folder.
-         * @param message Returns a reason for the asset not being open for edit.
-         * @param StatusQueryOptions Options for how the version control system should be queried. These options can effect the speed and accuracy of the query.
-         * @returns True if the asset is considered open for edit by the selected version control system. 
-         */
-        static IsOpenForEdit(assetObject: Object1, StatusQueryOptions: StatusQueryOptions): boolean
-        /** Query whether an asset file is open for edit in version control.
-         * @param assetObject Object representing the asset whose status you wish to query.
-         * @param assetOrMetaFilePath Path to the asset file or its .meta file on disk, relative to project folder.
-         * @param message Returns a reason for the asset not being open for edit.
-         * @param StatusQueryOptions Options for how the version control system should be queried. These options can effect the speed and accuracy of the query.
-         * @returns True if the asset is considered open for edit by the selected version control system. 
-         */
-        static IsOpenForEdit(assetOrMetaFilePath: string, StatusQueryOptions: StatusQueryOptions): boolean
         /** Query whether an asset's metadata (.meta) file is open for edit in version control.
          * @param assetObject Object representing the asset whose metadata status you wish to query.
          * @param message Returns a reason for the asset metadata not being open for edit.
-         * @param StatusQueryOptions Options for how the version control system should be queried. These options can effect the speed and accuracy of the query.
+         * @param statusOptions Options for how the version control system should be queried. These options can effect the speed and accuracy of the query. Default is StatusQueryOptions.UseCachedIfPossible.
          * @returns True if the asset's metadata is considered open for edit by the selected version control system. 
          */
         static IsMetaFileOpenForEdit(assetObject: Object1, message: jsb.Out<string>, statusOptions: StatusQueryOptions): boolean
         /** Query whether an asset's metadata (.meta) file is open for edit in version control.
          * @param assetObject Object representing the asset whose metadata status you wish to query.
          * @param message Returns a reason for the asset metadata not being open for edit.
-         * @param StatusQueryOptions Options for how the version control system should be queried. These options can effect the speed and accuracy of the query.
+         * @param statusOptions Options for how the version control system should be queried. These options can effect the speed and accuracy of the query. Default is StatusQueryOptions.UseCachedIfPossible.
          * @returns True if the asset's metadata is considered open for edit by the selected version control system. 
          */
         static IsMetaFileOpenForEdit(assetObject: Object1, statusOptions: StatusQueryOptions): boolean
+        /** Query whether an asset's metadata (.meta) file is open for edit in version control.
+         * @param assetObject Object representing the asset whose metadata status you wish to query.
+         * @param message Returns a reason for the asset metadata not being open for edit.
+         * @param statusOptions Options for how the version control system should be queried. These options can effect the speed and accuracy of the query. Default is StatusQueryOptions.UseCachedIfPossible.
+         * @returns True if the asset's metadata is considered open for edit by the selected version control system. 
+         */
+        static IsMetaFileOpenForEdit(assetObject: Object1, message: jsb.Out<string>): boolean
+        /** Query whether an asset's metadata (.meta) file is open for edit in version control.
+         * @param assetObject Object representing the asset whose metadata status you wish to query.
+         * @param message Returns a reason for the asset metadata not being open for edit.
+         * @param statusOptions Options for how the version control system should be queried. These options can effect the speed and accuracy of the query. Default is StatusQueryOptions.UseCachedIfPossible.
+         * @returns True if the asset's metadata is considered open for edit by the selected version control system. 
+         */
+        static IsMetaFileOpenForEdit(assetObject: Object1): boolean
         static GetBuiltinExtraResource(type: any, path: string): Object1
+        static ForceReserializeAssets(assetPaths: IEnumerable<string>, options: ForceReserializeAssetsOptions): void
+        static ForceReserializeAssets(): void
+        /** Warning Use the overload with a long localId parameter. Using the overload with an integer localId parameter can cause an integer overflow in localId. This can happen when the object passed to the API is part of a Prefab.
+
+Get the GUID and local file id from an object instance id.
+         * @param instanceID InstanceID of the object to retrieve information for.
+         * @param obj The object to retrieve GUID and File Id for.
+         * @param assetRef The asset reference to retrieve GUID and File Id for.
+         * @param guid The GUID of the asset.
+         * @param localId The local file identifier of this asset.
+         * @returns True if the guid and file id were successfully found, false if not. 
+         */
+        static TryGetGUIDAndLocalFileIdentifier(obj: Object1, guid: jsb.Out<string>, localId: jsb.Out<number>): boolean
+        /** Warning Use the overload with a long localId parameter. Using the overload with an integer localId parameter can cause an integer overflow in localId. This can happen when the object passed to the API is part of a Prefab.
+
+Get the GUID and local file id from an object instance id.
+         * @param instanceID InstanceID of the object to retrieve information for.
+         * @param obj The object to retrieve GUID and File Id for.
+         * @param assetRef The asset reference to retrieve GUID and File Id for.
+         * @param guid The GUID of the asset.
+         * @param localId The local file identifier of this asset.
+         * @returns True if the guid and file id were successfully found, false if not. 
+         */
+        static TryGetGUIDAndLocalFileIdentifier(instanceID: number, guid: jsb.Out<string>, localId: jsb.Out<number>): boolean
+        /** Removes object from its asset (See Also: AssetDatabase.AddObjectToAsset).
+         */
+        static RemoveObjectFromAsset(objectToRemove: Object1): void
+        /** Imports package at packagePath into the current project.
+         */
+        static ImportPackage(packagePath: string, interactive: boolean): void
+        static DisallowAutoRefresh(): void
+        static AllowAutoRefresh(): void
         protected constructor()
         static importPackageStarted(op: "add" | "remove", fn: (packageName: string) => void): void
         static importPackageCompleted(op: "add" | "remove", fn: (packageName: string) => void): void
@@ -10012,10 +11921,11 @@ declare module "UnityEditor" {
      */
     @jsb.RequiredDefines("UNITY_EDITOR")
     class ShaderUtil extends Object {
-        /** Get the number of properties in Shader s.
-         * @param s The shader to check against.
+        /** Determines whether the specified Shader contains a valid Procedural Instancing variant.
+         * @param s The Shader to check.
+         * @returns Returns true if the Shader has a valid Procedural Instancing variant. Returns false otherwise. 
          */
-        static GetPropertyCount(s: any): number
+        static HasProceduralInstancing(s: any): boolean
         /** Returns the number of errors and warnings generated by the Unity Shader Compiler for the given Shader.
          * @param s The Shader instance to check for messages.
          * @returns The number of errors and warnings generated by the Unity Shader Compiler. 
@@ -10039,55 +11949,98 @@ declare module "UnityEditor" {
          * @returns An array of ShaderMessage structs containing the generated messages. 
          */
         static GetComputeShaderMessages(s: any): Array<any>
-        /** Get the name of the shader propery at index propertyIdx of Shader s.
-         * @param s The shader to check against.
-         * @param propertyIdx The property index to use.
+        /** Returns the number of errors and warnings generated by the Shader Compiler for the given RayTracingShader.
+         * @param s The RayTracingShader instance to check for messages.
+         * @returns The number of errors and warnings generated by the Shader Compiler. 
          */
-        static GetPropertyName(s: any, propertyIdx: number): string
-        /** Get the ShaderProperyType of the shader propery at index propertyIdx of Shader s.
-         * @param s The shader to check against.
-         * @param propertyIdx The property index to use.
+        static GetRayTracingShaderMessageCount(s: any): number
+        /** Returns each error and warning generated by the Shader Compiler for the given RayTracingShader.
+         * @param s The RayTracingShader instance to check for messages.
+         * @returns An array of ShaderMessage structs containing the generated messages. 
          */
-        static GetPropertyType(s: any, propertyIdx: number): any
-        /** Get the description of the shader propery at index propertyIdx of Shader s.
-         * @param s The shader to check against.
-         * @param propertyIdx The property index to use.
+        static GetRayTracingShaderMessages(s: any): Array<any>
+        /** Returns the number of ray generation Shaders defined whitin a given RayTracingShader.
+         * @param s The RayTracingShader instance.
+         * @returns The number of ray generation Shaders defined in the RayTracingShader instance passed as argument. 
          */
-        static GetPropertyDescription(s: any, propertyIdx: number): string
-        /** Get Limits for a range property at index propertyIdx of Shader s.
-         * @param defminmax Which value to get: 0 = default, 1 = min, 2 = max.
-         * @param s The shader to check against.
-         * @param propertyIdx The property index to use.
+        static GetRayGenerationShaderCount(s: any): number
+        /** Returns the name of a user-defined ray generation Shader from within a RayTracingShader.
+         * @param s The RayTracingShader instance.
+         * @param shaderIndex The ray generation Shader index for which to retrieve the name. The ray generation Shaders defined in a RayTracingShader are sorted alphabetically by the Shader compiler.
+         * @returns The name of the ray generation Shader at the index passed using the "shaderIndex" argument. 
          */
-        static GetRangeLimits(s: any, propertyIdx: number, defminmax: number): number
-        /** Gets texture dimension of a shader property.
-         * @param s The shader to get the property from.
-         * @param propertyIdx The property index to use.
-         * @returns Texture dimension. 
+        static GetRayGenerationShaderName(s: any, shaderIndex: number): string
+        /** Returns the number of miss Shaders defined whitin a given RayTracingShader.
+         * @param s The RayTracingShader instance.
+         * @returns The number of miss Shaders defined in the RayTracingShader instance passed as argument. 
          */
-        static GetTexDim(s: any, propertyIdx: number): any
-        /** Is the shader propery at index propertyIdx of Shader s hidden?
-         * @param s The shader to check against.
-         * @param propertyIdx The property index to use.
+        static GetMissShaderCount(s: any): number
+        /** Returns the name of a user-defined miss Shader from within a RayTracingShader.
+         * @param s The RayTracingShader instance.
+         * @param shaderIndex The miss Shader index for which to retrieve the name. The miss Shaders defined in a RayTracingShader are sorted alphabetically by the Shader compiler.
+         * @returns The name of the miss Shader at the index passed using the "shaderIndex" argument. 
          */
-        static IsShaderPropertyHidden(s: any, propertyIdx: number): boolean
-        /** Is the shader propery at index propertyIdx of Shader s a NonModifiableTextureProperty?
-         * @param s The shader to check against.
-         * @param propertyIdx The property index to use.
+        static GetMissShaderName(s: any, shaderIndex: number): string
+        /** Returns the ray payload size of a user-defined miss Shader from within a RayTracingShader.
+         * @param s The RayTracingShader instance.
+         * @param shaderIndex The miss Shader index for which to retrieve the ray payload size.
+         * @returns The ray payload size in bytes. 
          */
-        static IsShaderPropertyNonModifiableTexureProperty(s: any, propertyIdx: number): boolean
+        static GetMissShaderRayPayloadSize(s: any, shaderIndex: number): number
+        /** Returns the number of callable Shaders defined whitin a given RayTracingShader.
+         * @param s The RayTracingShader instance.
+         * @returns The number of callable Shaders defined in the RayTracingShader instance passed as argument. 
+         */
+        static GetCallableShaderCount(s: any): number
+        /** Returns the name of a user-defined callable Shader from within a RayTracingShader.
+         * @param s The RayTracingShader instance.
+         * @param shaderIndex The callable Shader index for which to retrieve the name. The callable Shaders defined in a RayTracingShader are sorted alphabetically by the Shader compiler.
+         * @returns The name of the callable Shader at the index passed using the "shaderIndex" argument. 
+         */
+        static GetCallableShaderName(s: any, shaderIndex: number): string
+        /** Returns the parameter size of a user-defined callable Shader from within a RayTracingShader.
+         * @param s The RayTracingShader instance.
+         * @param shaderIndex The callable Shader index for which to retrieve the parameter size.
+         * @returns The parameter size in bytes. 
+         */
+        static GetCallableShaderParamSize(s: any, shaderIndex: number): number
         /** Clears all internally-cached data that was generated for the given shader, such as errors and compilation info.
          */
         static ClearCachedData(s: any): void
+        /** Creates a new Shader object from the provided source code string. You can use this method alongside the ScriptedImporter to create custom shader generation tools in the Editor.
+         * @param context A context object that the asset system needs to register shader dependencies properly.
+         * @param source A string that contains a shader written in code.
+         * @param compileInitialShaderVariants Set to true to compile the code contained in the source string; otherwise false.
+         */
+        static CreateShaderAsset(context: any, source: string, compileInitialShaderVariants: boolean): any
+        /** Creates a new Shader object from the provided source code string. You can use this method alongside the ScriptedImporter to create custom shader generation tools in the Editor.
+         * @param context A context object that the asset system needs to register shader dependencies properly.
+         * @param source A string that contains a shader written in code.
+         * @param compileInitialShaderVariants Set to true to compile the code contained in the source string; otherwise false.
+         */
         static CreateShaderAsset(source: string, compileInitialShaderVariants: boolean): any
+        /** Creates a new Shader object from the provided source code string. You can use this method alongside the ScriptedImporter to create custom shader generation tools in the Editor.
+         * @param context A context object that the asset system needs to register shader dependencies properly.
+         * @param source A string that contains a shader written in code.
+         * @param compileInitialShaderVariants Set to true to compile the code contained in the source string; otherwise false.
+         */
         static CreateShaderAsset(source: string): any
-        /** Replaces the existing source code in the specified shader with the source code in the supplied string. The override provides a boolean that specifies whether the shader should be recompiled.
+        /** Replaces the existing source code in the specified shader with the source code in the supplied string.
+         * @param context A context object that the asset system needs to register shader dependencies properly.
+         * @param source A string that contains a shader written in code.
+         * @param compileInitialShaderVariants Set to true to compile the code contained in the source string; otherwise false.
+         * @param shader The Shader to update.
+         */
+        static UpdateShaderAsset(context: any, shader: any, source: string, compileInitialShaderVariants: boolean): void
+        /** Replaces the existing source code in the specified shader with the source code in the supplied string.
+         * @param context A context object that the asset system needs to register shader dependencies properly.
          * @param source A string that contains a shader written in code.
          * @param compileInitialShaderVariants Set to true to compile the code contained in the source string; otherwise false.
          * @param shader The Shader to update.
          */
         static UpdateShaderAsset(shader: any, source: string, compileInitialShaderVariants: boolean): void
-        /** Replaces the existing source code in the specified shader with the source code in the supplied string. The override provides a boolean that specifies whether the shader should be recompiled.
+        /** Replaces the existing source code in the specified shader with the source code in the supplied string.
+         * @param context A context object that the asset system needs to register shader dependencies properly.
          * @param source A string that contains a shader written in code.
          * @param compileInitialShaderVariants Set to true to compile the code contained in the source string; otherwise false.
          * @param shader The Shader to update.
@@ -10117,6 +12070,48 @@ declare module "UnityEditor" {
          * @param forceSync Forces the script execution to wait until the compilation has finished. Optional.
          */
         static CompilePass(material: Material, pass: number, forceSync: boolean): void
+        /** Get the number of properties in Shader s.
+         * @param s The shader to check against.
+         */
+        static GetPropertyCount(s: any): number
+        /** Get the name of the shader propery at index propertyIdx of Shader s.
+         * @param s The shader to check against.
+         * @param propertyIdx The property index to use.
+         */
+        static GetPropertyName(s: any, propertyIdx: number): string
+        /** Get the ShaderProperyType of the shader propery at index propertyIdx of Shader s.
+         * @param s The shader to check against.
+         * @param propertyIdx The property index to use.
+         */
+        static GetPropertyType(s: any, propertyIdx: number): any
+        /** Get the description of the shader propery at index propertyIdx of Shader s.
+         * @param s The shader to check against.
+         * @param propertyIdx The property index to use.
+         * @returns Returns the description of the given shader property. 
+         */
+        static GetPropertyDescription(s: any, propertyIdx: number): string
+        /** Get Limits for a range property at index propertyIdx of Shader s.
+         * @param defminmax Which value to get: 0 = default, 1 = min, 2 = max.
+         * @param s The shader to check against.
+         * @param propertyIdx The property index to use.
+         */
+        static GetRangeLimits(s: any, propertyIdx: number, defminmax: number): number
+        /** Gets texture dimension of a shader property.
+         * @param s The shader to get the property from.
+         * @param propertyIdx The property index to use.
+         * @returns Texture dimension. 
+         */
+        static GetTexDim(s: any, propertyIdx: number): any
+        /** Is the shader propery at index propertyIdx of Shader s hidden?
+         * @param s The shader to check against.
+         * @param propertyIdx The property index to use.
+         */
+        static IsShaderPropertyHidden(s: any, propertyIdx: number): boolean
+        /** Is the shader propery at index propertyIdx of Shader s a NonModifiableTextureProperty?
+         * @param s The shader to check against.
+         * @param propertyIdx The property index to use.
+         */
+        static IsShaderPropertyNonModifiableTexureProperty(s: any, propertyIdx: number): boolean
         /** Get the shader data for a specific shader.
          * @param shader The shader to get data from.
          * @returns The shader data for the provided shader. 
@@ -10127,9 +12122,6 @@ declare module "UnityEditor" {
          * @returns True if the Shader generated errors, false if there were no errors. 
          */
         static ShaderHasError(shader: any): boolean
-        /** Clears compile time messages for the given shader.
-         */
-        static ClearShaderErrors(s: any): void
         protected constructor()
         /** Does the current hardware support render textues.
          */
@@ -10160,18 +12152,40 @@ declare module "UnityEditor" {
          */
         static OpenFilePanelWithFilters(title: string, directory: string, filters: Array<string>): string
         static RevealInFinder(path: string): void
-        /** Displays a modal dialog.
+        /** This method displays a modal dialog that lets the user opt-out of being shown the current dialog box again.
          * @param title The title of the message box.
          * @param message The text of the message.
          * @param ok Label displayed on the OK dialog button.
          * @param cancel Label displayed on the Cancel dialog button.
+         * @param dialogOptOutDecisionType The type of opt-out decision a user can make.
+         * @param dialogOptOutDecisionStorageKey The unique key setting to store the decision under.
+         * @returns true if the user clicks the ok button, or previously opted out. Returns false if the user cancels or closes the dialog without making a decision. 
+         */
+        static DisplayDialog(title: string, message: string, ok: string, cancel: string, dialogOptOutDecisionType: any, dialogOptOutDecisionStorageKey: string): boolean
+        /** This method displays a modal dialog that lets the user opt-out of being shown the current dialog box again.
+         * @param title The title of the message box.
+         * @param message The text of the message.
+         * @param ok Label displayed on the OK dialog button.
+         * @param cancel Label displayed on the Cancel dialog button.
+         * @param dialogOptOutDecisionType The type of opt-out decision a user can make.
+         * @param dialogOptOutDecisionStorageKey The unique key setting to store the decision under.
+         * @returns true if the user clicks the ok button, or previously opted out. Returns false if the user cancels or closes the dialog without making a decision. 
+         */
+        static DisplayDialog(title: string, message: string, ok: string, dialogOptOutDecisionType: any, dialogOptOutDecisionStorageKey: string): boolean
+        /** This method displays a modal dialog.
+         * @param title The title of the message box.
+         * @param message The text of the message.
+         * @param ok Label displayed on the OK dialog button.
+         * @param cancel Label displayed on the Cancel dialog button.
+         * @returns Returns true if the user clicks the OK button. Returns false otherwise. 
          */
         static DisplayDialog(title: string, message: string, ok: string, cancel: string): boolean
-        /** Displays a modal dialog.
+        /** This method displays a modal dialog.
          * @param title The title of the message box.
          * @param message The text of the message.
          * @param ok Label displayed on the OK dialog button.
          * @param cancel Label displayed on the Cancel dialog button.
+         * @returns Returns true if the user clicks the OK button. Returns false otherwise. 
          */
         static DisplayDialog(title: string, message: string, ok: string): boolean
         /** Displays a modal dialog with three buttons.
@@ -10180,7 +12194,7 @@ declare module "UnityEditor" {
          * @param ok Dialog function chosen.
          * @param cancel Close dialog with no operation.
          * @param alt Choose alternative dialog purpose.
-         * @returns The id of the chosen button. 
+         * @returns Returns the id of the chosen button. The ids are 0, 1 or 2 corresponding to the ok, cancel and alt buttons respectively. 
          */
         static DisplayDialogComplex(title: string, message: string, ok: string, cancel: string, alt: string): number
         /** Displays the "open folder" dialog and returns the selected path name.
@@ -10218,6 +12232,9 @@ declare module "UnityEditor" {
          * @param target The object to mark as dirty.
          */
         static SetDirty(target: Object1): void
+        /** Clear target's dirty flag.
+         */
+        static ClearDirty(target: Object1): void
         static InvokeDiffTool(leftTitle: string, leftFile: string, rightTitle: string, rightFile: string, ancestorTitle: string, ancestorFile: string): string
         /** Copy all settings of a Unity Object.
          */
@@ -10255,9 +12272,6 @@ declare module "UnityEditor" {
         /** Set the Scene View selected display mode for this Renderer.
          */
         static SetSelectedRenderState(renderer: Renderer, renderState: any): void
-        /** Saves an AudioClip or MovieTexture to a file.
-         */
-        static ExtractOggFile(obj: Object1, path: string): boolean
         static OpenWithDefaultApp(fileName: string): void
         /** Sets this camera to allow animation of materials in the Editor.
          */
@@ -10292,6 +12306,8 @@ declare module "UnityEditor" {
          */
         static IsDirty(target: Object1): boolean
         static FocusProjectWindow(): void
+        static RequestScriptReload(): void
+        static IsRunningUnderCPUEmulation(): boolean
         static LoadWindowLayout(path: string): boolean
         static SaveFilePanelInProject(title: string, defaultName: string, extension: string, message: string, path: string): string
         /** Displays the "save file" dialog in the Assets folder of the project and returns the selected path name.
@@ -10302,6 +12318,18 @@ declare module "UnityEditor" {
         static CopySerializedIfDifferent(source: Object1, dest: Object1): void
         static UnloadUnusedAssetsImmediate(includeMonoReferencesAsRoots: boolean): void
         static UnloadUnusedAssetsImmediate(): void
+        /** This method displays a modal dialog that lets the user opt-out of being shown the current dialog box again.
+         * @param dialogOptOutDecisionType The type of opt-out decision a user can make.
+         * @param dialogOptOutDecisionStorageKey The unique key setting to store the decision under.
+         * @returns true if the user previously opted out of seeing the dialog associated with dialogOptOutDecisionStorageKey. Returns false if the user did not yet opt out. 
+         */
+        static GetDialogOptOutDecision(dialogOptOutDecisionType: any, dialogOptOutDecisionStorageKey: string): boolean
+        /** This method displays a modal dialog that lets the user opt-out of being shown the current dialog box again.
+         * @param dialogOptOutDecisionType The type of opt-out decision a user can make.
+         * @param dialogOptOutDecisionStorageKey The unique key setting to store the decision under.
+         * @param optOutDecision The unique key setting to store the decision under.
+         */
+        static SetDialogOptOutDecision(dialogOptOutDecisionType: any, dialogOptOutDecisionStorageKey: string, optOutDecision: boolean): void
         /** Displays a popup menu.
          */
         static DisplayPopupMenu(position: Rect, menuItemPath: string, command: any): void
@@ -12410,7 +14438,7 @@ declare module "UnityEditor" {
          * @param foldout The shown foldout state.
          * @param content The label to show.
          * @param style Optional GUIStyle.
-         * @param toggleOnLabelClick Whether to toggle the foldout state when the label is clicked.
+         * @param toggleOnLabelClick Specifies whether clicking the label toggles the foldout state. The default value is false. Set to true to include the label in the clickable area.
          * @returns The foldout state selected by the user. If true, you should render sub-objects. 
          */
         static Foldout(foldout: boolean, content: string, toggleOnLabelClick: boolean, style: GUIStyle): boolean
@@ -12418,7 +14446,7 @@ declare module "UnityEditor" {
          * @param foldout The shown foldout state.
          * @param content The label to show.
          * @param style Optional GUIStyle.
-         * @param toggleOnLabelClick Whether to toggle the foldout state when the label is clicked.
+         * @param toggleOnLabelClick Specifies whether clicking the label toggles the foldout state. The default value is false. Set to true to include the label in the clickable area.
          * @returns The foldout state selected by the user. If true, you should render sub-objects. 
          */
         static Foldout(foldout: boolean, content: GUIContent, toggleOnLabelClick: boolean, style: GUIStyle): boolean
@@ -12426,7 +14454,7 @@ declare module "UnityEditor" {
          * @param foldout The shown foldout state.
          * @param content The label to show.
          * @param style Optional GUIStyle.
-         * @param toggleOnLabelClick Whether to toggle the foldout state when the label is clicked.
+         * @param toggleOnLabelClick Specifies whether clicking the label toggles the foldout state. The default value is false. Set to true to include the label in the clickable area.
          * @returns The foldout state selected by the user. If true, you should render sub-objects. 
          */
         static Foldout(foldout: boolean, content: string, style: GUIStyle): boolean
@@ -12434,7 +14462,7 @@ declare module "UnityEditor" {
          * @param foldout The shown foldout state.
          * @param content The label to show.
          * @param style Optional GUIStyle.
-         * @param toggleOnLabelClick Whether to toggle the foldout state when the label is clicked.
+         * @param toggleOnLabelClick Specifies whether clicking the label toggles the foldout state. The default value is false. Set to true to include the label in the clickable area.
          * @returns The foldout state selected by the user. If true, you should render sub-objects. 
          */
         static Foldout(foldout: boolean, content: GUIContent, style: GUIStyle): boolean
@@ -12444,7 +14472,7 @@ declare module "UnityEditor" {
          * @param foldout The shown foldout state.
          * @param content The label to show.
          * @param style Optional GUIStyle.
-         * @param toggleOnLabelClick Whether to toggle the foldout state when the label is clicked.
+         * @param toggleOnLabelClick Specifies whether clicking the label toggles the foldout state. The default value is false. Set to true to include the label in the clickable area.
          * @returns The foldout state selected by the user. If true, you should render sub-objects. 
          */
         static Foldout(foldout: boolean, content: string): boolean
@@ -12452,7 +14480,7 @@ declare module "UnityEditor" {
          * @param foldout The shown foldout state.
          * @param content The label to show.
          * @param style Optional GUIStyle.
-         * @param toggleOnLabelClick Whether to toggle the foldout state when the label is clicked.
+         * @param toggleOnLabelClick Specifies whether clicking the label toggles the foldout state. The default value is false. Set to true to include the label in the clickable area.
          * @returns The foldout state selected by the user. If true, you should render sub-objects. 
          */
         static Foldout(foldout: boolean, content: GUIContent): boolean
@@ -13549,6 +15577,17 @@ GUILayout.MaxHeight, GUILayout.ExpandWidth, GUILayout.ExpandHeight.
          * @returns The index of the option that has been selected by the user. 
          */
         static Popup(selectedIndex: number, displayedOptions: Array<GUIContent>, style: GUIStyle, ...options: GUILayoutOption[]): number
+        /** Make a generic popup selection field.
+         * @param label Optional label in front of the field.
+         * @param selectedIndex The index of the option the field shows.
+         * @param displayedOptions An array with the options shown in the popup.
+         * @param style Optional GUIStyle.
+         * @param options An optional list of layout options that specify extra layout properties. Any values passed in here will override settings defined by the style.<br>
+See Also: GUILayout.Width, GUILayout.Height, GUILayout.MinWidth, GUILayout.MaxWidth, GUILayout.MinHeight,
+GUILayout.MaxHeight, GUILayout.ExpandWidth, GUILayout.ExpandHeight.
+         * @returns The index of the option that has been selected by the user. 
+         */
+        static Popup(label: string, selectedIndex: number, displayedOptions: Array<string>, ...options: GUILayoutOption[]): number
         static Popup(label: GUIContent, selectedIndex: number, displayedOptions: Array<string>, ...options: GUILayoutOption[]): number
         /** Make a generic popup selection field.
          * @param label Optional label in front of the field.
@@ -13583,17 +15622,6 @@ GUILayout.MaxHeight, GUILayout.ExpandWidth, GUILayout.ExpandHeight.
          * @returns The index of the option that has been selected by the user. 
          */
         static Popup(selectedIndex: number, displayedOptions: Array<GUIContent>, ...options: GUILayoutOption[]): number
-        /** Make a generic popup selection field.
-         * @param label Optional label in front of the field.
-         * @param selectedIndex The index of the option the field shows.
-         * @param displayedOptions An array with the options shown in the popup.
-         * @param style Optional GUIStyle.
-         * @param options An optional list of layout options that specify extra layout properties. Any values passed in here will override settings defined by the style.<br>
-See Also: GUILayout.Width, GUILayout.Height, GUILayout.MinWidth, GUILayout.MaxWidth, GUILayout.MinHeight,
-GUILayout.MaxHeight, GUILayout.ExpandWidth, GUILayout.ExpandHeight.
-         * @returns The index of the option that has been selected by the user. 
-         */
-        static Popup_sis(label: string, selectedIndex: number, displayedOptions: Array<string>, ...options: GUILayoutOption[]): number
         static EnumPopup(label: GUIContent, selected: Enum, checkEnabled: (arg: Enum) => boolean, includeObsolete: boolean, style: GUIStyle, ...options: GUILayoutOption[]): Enum
         static EnumPopup(label: GUIContent, selected: Enum, checkEnabled: (arg: Enum) => boolean, includeObsolete: boolean, ...options: GUILayoutOption[]): Enum
         /** Make an enum popup selection field.
@@ -14472,6 +16500,8 @@ GUILayout.MaxHeight, GUILayout.ExpandWidth, GUILayout.ExpandHeight.
          */
         static HelpBox(message: string, type: MessageType): void
         static HelpBox(content: GUIContent, wide: boolean): void
+        static Space(width: number, expand: boolean): void
+        static Space(width: number): void
         static Space(): void
         static Separator(): void
         /** Begin a vertical group with a toggle to enable or disable all the controls within at once.
@@ -14705,6 +16735,12 @@ GUILayout.MaxHeight, GUILayout.ExpandWidth, GUILayout.ExpandHeight.
         static Knob(knobSize: Vector2, value: number, minValue: number, maxValue: number, unit: string, backgroundColor: Color, activeColor: Color, showValue: boolean, ...options: GUILayoutOption[]): number
         /** Makes a toolbar populated with the collection of editor tools that match the EditorToolAttribute of the target object.
          * @param target The target object.
+         * @param content An optional prefix label.
+         */
+        static EditorToolbarForTarget(content: GUIContent, target: Object1): void
+        /** Makes a toolbar populated with the collection of editor tools that match the EditorToolAttribute of the target object.
+         * @param target The target object.
+         * @param content An optional prefix label.
          */
         static EditorToolbarForTarget(target: Object1): void
         /** Makes a toolbar populated with the specified collection of editor tools.
@@ -14767,9 +16803,6 @@ declare module "UnityEditor" {
         /** Is editor currently connected to Unity Remote 4 client app.
          */
         static readonly isRemoteConnected: boolean
-        /** Returns the scripting runtime version currently used by the Editor.
-         */
-        static readonly scriptingRuntimeVersion: ScriptingRuntimeVersion
         /** Path to the Unity editor contents folder. (Read Only)
          */
         static readonly applicationContentsPath: string
@@ -14836,7 +16869,7 @@ declare module "UnityEditor" {
          * @returns Generated texture or null. 
          */
         RenderStaticPreview(assetPath: string, subAssets: Array<Object>, width: number, height: number): Texture2D
-        /** Implement to create your own custom preview for the preview area of the inspector, primary editor headers and the object selector.
+        /** Implement to create your own custom preview for the preview area of the inspector, the headers of the primary editor, and the object selector.
          * @param r Rectangle in which to draw the preview.
          * @param background Background image.
          */
@@ -14897,6 +16930,11 @@ declare module "UnityEditor" {
          * @param objects All objects must be of the same type.
          */
         static CreateEditor(targetObjects: Array<Object>): Editor
+        /** Draws the inspector GUI with a foldout header for target.
+         * @param target The object to display the Inspector for.
+         * @param editor The reference to a variable of type Editor.
+         */
+        static DrawFoldoutInspector(target: Object, editor: jsb.Ref<Editor>): void
         /** The object being inspected.
          */
         target: Object
@@ -14913,6 +16951,7 @@ declare module "UnityEditor" {
     import * as jsb from "jsb";
     import { ScriptableObject, Vector2, GUIContent, Rect, Event } from "UnityEngine";
     import { Object } from "System";
+    import { IEnumerable } from "System.Collections.Generic";
     /** Derive from this class to create an editor window.
      */
     @jsb.RequiredDefines("UNITY_EDITOR")
@@ -14947,11 +16986,13 @@ declare module "UnityEditor" {
         Show(immediateDisplay: boolean): void
         Show(): void
         ShowAuxWindow(): void
+        ShowModal(): void
         Close(): void
         Repaint(): void
         /** Sends an Event to a window.
          */
         SendEvent(e: Event): boolean
+        GetExtraPaneTypes(): any
         /** Returns the first EditorWindow of type t which is currently on the screen.
          * @param t The type of the window. Must derive from EditorWindow.
          * @param utility Set this to true, to create a floating utility window, false to create a normal window.
@@ -17411,13 +19452,14 @@ declare module "UnityEngine" {
          */
         LoadAllAssetsAsync(type: any): any
         LoadAllAssetsAsync(): any
-        /** Unloads all assets in the bundle.
+        /** Unloads an AssetBundle freeing its data.
+         * @param unloadAllLoadedObjects Determines whether the current instances of objects loaded from the AssetBundle will also be unloaded.
          */
         Unload(unloadAllLoadedObjects: boolean): void
         GetAllAssetNames(): Array<string>
         GetAllScenePaths(): Array<string>
-        /** Unloads all currently loaded Asset Bundles.
-         * @param unloadAllObjects Determines whether the current instances of objects loaded from Asset Bundles will also be unloaded.
+        /** Unloads all currently loaded AssetBundles.
+         * @param unloadAllObjects Determines whether the current instances of objects loaded from AssetBundles will also be unloaded.
          */
         static UnloadAllAssetBundles(unloadAllObjects: boolean): void
         static GetAllLoadedAssetBundles(): any
@@ -17471,11 +19513,12 @@ declare module "UnityEngine" {
         static LoadFromStream(stream: any, crc: number, managedReadBufferSize: number): AssetBundle
         static LoadFromStream(stream: any, crc: number): AssetBundle
         static LoadFromStream(stream: any): AssetBundle
+        static SetAssetBundleDecryptKey(password: string): void
         /** Asynchronously recompress a downloaded/stored AssetBundle from one BuildCompression to another.
          * @param inputPath Path to the AssetBundle to recompress.
          * @param outputPath Path to the recompressed AssetBundle to be generated. Can be the same as inputPath.
          * @param method The compression method, level and blocksize to use during recompression. Only some BuildCompression types are supported (see note).
-         * @param expectedCRC CRC of the AssetBundle to test against. Testing this requires additional file reading and computation. Pass in 0 to skip this check.
+         * @param expectedCRC CRC of the AssetBundle to test against. Testing this requires additional file reading and computation. Pass in 0 to skip this check. Unity does not compute a CRC when the source and destination BuildCompression are the same, so no CRC verification takes place (see note).
          * @param priority The priority at which the recompression operation should run. This sets thread priority during the operation and does not effect the order in which operations are performed. Recompression operations run on a background worker thread.
          */
         static RecompressAssetBundleAsync(inputPath: string, outputPath: string, method: any, expectedCRC: number, priority: any): any
@@ -17487,7 +19530,7 @@ declare module "UnityEngine" {
 }
 declare module "UnityEngine" {
     import { Enum } from "System";
-    /** Base class for texture handling. Contains functionality that is common to both Texture2D and RenderTexture classes.
+    /** Base class for texture handling.
      */
     class Texture extends Object {
         GetNativeTexturePtr(): any
@@ -17498,6 +19541,9 @@ declare module "UnityEngine" {
         static SetStreamingTextureMaterialDebugProperties(): void
         protected constructor()
         static masterTextureLimit: number
+        /** How many mipmap levels are in this texture (Read Only).
+         */
+        readonly mipmapCount: number
         static anisotropicFiltering: any
         /** Returns the GraphicsFormat format or color format of a texture object.
          */
@@ -17581,15 +19627,20 @@ declare module "UnityEngine" {
         /** Allow texture creation to occur on any thread (rather than the dedicated render thread).
          */
         static allowThreadedTextureCreation: boolean
+        /** Can be used with texture constructors that take a mip count to indicate that all mips should be generated.  The value of this field is -1.
+         */
+        static readonly GenerateAllMips: number
     }
 }
 declare module "UnityEngine" {
     import * as jsb from "jsb";
     import { Enum, Array, Object as Object1 } from "System";
     import { List } from "System.Collections.Generic";
-    /** Class for texture handling.
+    /** Class that represents textures in C# code.
      */
     class Texture2D extends Texture {
+        constructor(width: number, height: number, format: any, mipCount: number, flags: any)
+        constructor(width: number, height: number, textureFormat: any, mipCount: number, linear: boolean)
         constructor(width: number, height: number, textureFormat: any, mipChain: boolean, linear: boolean)
         constructor(width: number, height: number, format: any, flags: any)
         constructor(width: number, height: number, format: any, flags: any)
@@ -17600,6 +19651,7 @@ declare module "UnityEngine" {
         Compress(highQuality: boolean): void
         ClearRequestedMipmapLevel(): void
         IsRequestedMipmapLevelLoaded(): boolean
+        ClearMinimumMipmapLevel(): void
         /** Updates Unity texture to use different native texture object.
          * @param nativeTex Native 2D texture object.
          */
@@ -17717,7 +19769,7 @@ declare module "UnityEngine" {
         EncodeToJPG(): Array<jsb.byte>
         EncodeToEXR(flags: any): Array<jsb.byte>
         EncodeToEXR(): Array<jsb.byte>
-        /** Loads PNG/JPG image byte array into a texture.
+        /** Loads PNG/JPG (or supported format) image byte array into a texture.
          * @param data The byte array containing the image data to load.
          * @param markNonReadable Set to false by default, pass true to optionally mark the texture as non-readable.
          * @param tex The texture to load the image into.
@@ -17735,40 +19787,52 @@ declare module "UnityEngine" {
          */
         static CreateExternalTexture(width: number, height: number, format: any, mipChain: boolean, linear: boolean, nativeTex: any): Texture2D
         static GenerateAtlas(sizes: Array<Vector2>, padding: number, atlasSize: number, results: any): boolean
-        /** How many mipmap levels are in this texture (Read Only).
-         */
-        readonly mipmapCount: number
         /** The format of the pixel data in the texture (Read Only).
          */
         readonly format: any
-        /** Get a small texture with all white pixels.
+        /** Gets a small Texture with all white pixels.
          */
         static readonly whiteTexture: Texture2D
-        /** Get a small texture with all black pixels.
+        /** Gets a small Texture with all black pixels.
          */
         static readonly blackTexture: Texture2D
-        /** Gets a small texture with pixels that represent surface normal vectors at a neutral position.
+        /** Gets a small Texture with all red pixels.
+         */
+        static readonly redTexture: Texture2D
+        /** Gets a small Texture with all gray pixels.
+         */
+        static readonly grayTexture: Texture2D
+        /** Gets a small Texture with all gray pixels.
+         */
+        static readonly linearGrayTexture: Texture2D
+        /** Gets a small Texture with pixels that represent surface normal vectors at a neutral position.
          */
         static readonly normalTexture: Texture2D
         /** Returns true if the Read/Write Enabled checkbox was checked when the texture was imported; otherwise returns false. For a dynamic Texture created from script, always returns true. For additional information, see TextureImporter.isReadable.
          */
         readonly isReadable: boolean
-        /** Has mipmap streaming been enabled for this texture.
+        /** Determines whether mipmap streaming is enabled for this Texture.
          */
         readonly streamingMipmaps: boolean
-        /** Relative priority for this texture when reducing memory size in order to hit the memory budget.
+        /** Sets the relative priority for this Texture when reducing memory size to fit within the memory budget.
          */
         readonly streamingMipmapsPriority: number
         /** The mipmap level to load.
          */
         requestedMipmapLevel: number
-        /** The mipmap level which would have been loaded by the streaming system before memory budgets are applied.
+        /** Restricts the mipmap streaming system to a minimum mip level for this Texture.
+         */
+        minimumMipmapLevel: number
+        /** The mipmap level calculated by the streaming system, which takes into account the streaming Cameras and the location of the objects containing this Texture. This is unaffected by requestedMipmapLevel or minimumMipmapLevel.
+         */
+        readonly calculatedMipmapLevel: number
+        /** The mipmap level that the streaming system would load before memory budgets are applied.
          */
         readonly desiredMipmapLevel: number
-        /** Which mipmap level is in the process of being loaded by the mipmap streaming system.
+        /** The mipmap level that the mipmap streaming system is in the process of loading.
          */
         readonly loadingMipmapLevel: number
-        /** Which mipmap level is currently loaded by the streaming system.
+        /** The mipmap level that is currently loaded by the streaming system.
          */
         readonly loadedMipmapLevel: number
     }
@@ -17908,12 +19972,28 @@ declare module "UnityEngine" {
          * @param nameID Property name ID, use Shader.PropertyToID to get it.
          * @param name Property name, e.g. "_MainTex".
          * @param value Texture to set.
+         * @param element Optional parameter that specifies the type of data from the render texture to set.
+         */
+        SetTexture(name: string, value: any, element: any): void
+        /** Sets a named texture.
+         * @param nameID Property name ID, use Shader.PropertyToID to get it.
+         * @param name Property name, e.g. "_MainTex".
+         * @param value Texture to set.
+         * @param element Optional parameter that specifies the type of data from the render texture to set.
+         */
+        SetTexture(nameID: number, value: any, element: any): void
+        /** Sets a named texture.
+         * @param nameID Property name ID, use Shader.PropertyToID to get it.
+         * @param name Property name, e.g. "_MainTex".
+         * @param value Texture to set.
+         * @param element Optional parameter that specifies the type of data from the render texture to set.
          */
         SetTexture(name: string, value: Texture): void
         /** Sets a named texture.
          * @param nameID Property name ID, use Shader.PropertyToID to get it.
          * @param name Property name, e.g. "_MainTex".
          * @param value Texture to set.
+         * @param element Optional parameter that specifies the type of data from the render texture to set.
          */
         SetTexture(nameID: number, value: Texture): void
         /** Sets a named ComputeBuffer value.
@@ -18155,16 +20235,16 @@ declare module "UnityEngine" {
         /** The shader used by the material.
          */
         shader: any
-        /** The main material's color.
+        /** The main color of the Material.
          */
         color: Color
-        /** The material's texture.
+        /** The main texture.
          */
         mainTexture: Texture
-        /** The texture offset of the main texture.
+        /** The offset of the main texture.
          */
         mainTextureOffset: Vector2
-        /** The texture scale of the main texture.
+        /** The scale of the main texture.
          */
         mainTextureScale: Vector2
         /** Render queue of this material.
@@ -19594,1592 +21674,31 @@ declare module "System.Collections.Generic" {
     }
 }
 declare module "UnityEngine" {
-    /** Suspends the coroutine execution for the given amount of seconds using scaled time.
-     */
-    class WaitForSeconds extends YieldInstruction {
-        constructor(seconds: number)
-    }
-}
-declare module "UnityEngine" {
-    import { Object as Object1 } from "System";
-    /** Base class for all yield instructions.
-     */
-    class YieldInstruction extends Object1 {
-        constructor()
-    }
-}
-declare module "UnityEngine" {
-    /** Waits until the end of the frame after all cameras and GUI is rendered, just before displaying the frame on screen.
-     */
-    class WaitForEndOfFrame extends YieldInstruction {
-        constructor()
-    }
-}
-declare module "UnityEngine" {
-    import { Object as Object1 } from "System";
-    /** The interface to get time information from Unity.
-     */
-    class Time extends Object1 {
-        constructor()
-        /** The time at the beginning of this frame (Read Only). This is the time in seconds since the start of the game.
-         */
-        static readonly time: number
-        /** The time this frame has started (Read Only). This is the time in seconds since the last level has been loaded.
-         */
-        static readonly timeSinceLevelLoad: number
-        /** The completion time in seconds since the last frame (Read Only).
-         */
-        static readonly deltaTime: number
-        /** The time the latest MonoBehaviour.FixedUpdate has started (Read Only). This is the time in seconds since the start of the game.
-         */
-        static readonly fixedTime: number
-        /** The timeScale-independant time for this frame (Read Only). This is the time in seconds since the start of the game.
-         */
-        static readonly unscaledTime: number
-        /** The TimeScale-independant time the latest MonoBehaviour.FixedUpdate has started (Read Only). This is the time in seconds since the start of the game.
-         */
-        static readonly fixedUnscaledTime: number
-        /** The timeScale-independent interval in seconds from the last frame to the current one (Read Only).
-         */
-        static readonly unscaledDeltaTime: number
-        /** The timeScale-independent interval in seconds from the last fixed frame to the current one (Read Only).
-         */
-        static readonly fixedUnscaledDeltaTime: number
-        /** The interval in seconds at which physics and other fixed frame rate updates (like MonoBehaviour's MonoBehaviour.FixedUpdate) are performed.
-         */
-        static fixedDeltaTime: number
-        /** The maximum time a frame can take. Physics and other fixed frame rate updates (like MonoBehaviour's MonoBehaviour.FixedUpdate) will be performed only for this duration of time per frame.
-         */
-        static maximumDeltaTime: number
-        /** A smoothed out Time.deltaTime (Read Only).
-         */
-        static readonly smoothDeltaTime: number
-        /** The maximum time a frame can spend on particle updates. If the frame takes longer than this, then updates are split into multiple smaller updates.
-         */
-        static maximumParticleDeltaTime: number
-        /** The scale at which the time is passing. This can be used for slow motion effects.
-         */
-        static timeScale: number
-        /** The total number of frames that have passed (Read Only).
-         */
-        static readonly frameCount: number
-        static readonly renderedFrameCount: number
-        /** The real time in seconds since the game started (Read Only).
-         */
-        static readonly realtimeSinceStartup: number
-        /** Slows game playback time to allow screenshots to be saved between frames.
-         */
-        static captureFramerate: number
-        /** Returns true if called inside a fixed time step callback (like MonoBehaviour's MonoBehaviour.FixedUpdate), otherwise returns false.
-         */
-        static readonly inFixedTimeStep: boolean
-    }
-}
-declare module "UnityEngine" {
-    import { Object as Object1, ValueType } from "System";
-    /** Class for generating random data.
-     */
-    class Random extends Object1 {
-        constructor()
-        /** Initializes the random number generator state with a seed.
-         * @param seed Seed used to initialize the random number generator.
-         */
-        static InitState(seed: number): void
-        /** Return a random float number between min [inclusive] and max [inclusive] (Read Only).
-         */
-        static Range(min: number, max: number): number
-        /** Return a random integer number between min [inclusive] and max [exclusive] (Read Only).
-         */
-        static Range(min: number, max: number): number
-        /** Generates a random color from HSV and alpha ranges.
-         * @param hueMin Minimum hue [0..1].
-         * @param hueMax Maximum hue [0..1].
-         * @param saturationMin Minimum saturation [0..1].
-         * @param saturationMax Maximum saturation[0..1].
-         * @param valueMin Minimum value [0..1].
-         * @param valueMax Maximum value [0..1].
-         * @param alphaMin Minimum alpha [0..1].
-         * @param alphaMax Maximum alpha [0..1].
-         * @returns A random color with HSV and alpha values in the input ranges. 
-         */
-        static ColorHSV(hueMin: number, hueMax: number, saturationMin: number, saturationMax: number, valueMin: number, valueMax: number, alphaMin: number, alphaMax: number): Color
-        /** Generates a random color from HSV and alpha ranges.
-         * @param hueMin Minimum hue [0..1].
-         * @param hueMax Maximum hue [0..1].
-         * @param saturationMin Minimum saturation [0..1].
-         * @param saturationMax Maximum saturation[0..1].
-         * @param valueMin Minimum value [0..1].
-         * @param valueMax Maximum value [0..1].
-         * @param alphaMin Minimum alpha [0..1].
-         * @param alphaMax Maximum alpha [0..1].
-         * @returns A random color with HSV and alpha values in the input ranges. 
-         */
-        static ColorHSV(hueMin: number, hueMax: number, saturationMin: number, saturationMax: number, valueMin: number, valueMax: number): Color
-        /** Generates a random color from HSV and alpha ranges.
-         * @param hueMin Minimum hue [0..1].
-         * @param hueMax Maximum hue [0..1].
-         * @param saturationMin Minimum saturation [0..1].
-         * @param saturationMax Maximum saturation[0..1].
-         * @param valueMin Minimum value [0..1].
-         * @param valueMax Maximum value [0..1].
-         * @param alphaMin Minimum alpha [0..1].
-         * @param alphaMax Maximum alpha [0..1].
-         * @returns A random color with HSV and alpha values in the input ranges. 
-         */
-        static ColorHSV(hueMin: number, hueMax: number, saturationMin: number, saturationMax: number): Color
-        /** Generates a random color from HSV and alpha ranges.
-         * @param hueMin Minimum hue [0..1].
-         * @param hueMax Maximum hue [0..1].
-         * @param saturationMin Minimum saturation [0..1].
-         * @param saturationMax Maximum saturation[0..1].
-         * @param valueMin Minimum value [0..1].
-         * @param valueMax Maximum value [0..1].
-         * @param alphaMin Minimum alpha [0..1].
-         * @param alphaMax Maximum alpha [0..1].
-         * @returns A random color with HSV and alpha values in the input ranges. 
-         */
-        static ColorHSV(hueMin: number, hueMax: number): Color
-        static ColorHSV(): Color
-        /** Gets/Sets the full internal state of the random number generator.
-         */
-        static state: any
-        /** Returns a random number between 0.0 [inclusive] and 1.0 [inclusive] (Read Only).
-         */
-        static readonly value: number
-        /** Returns a random point inside a sphere with radius 1 (Read Only).
-         */
-        static readonly insideUnitSphere: Vector3
-        /** Returns a random point inside a circle with radius 1 (Read Only).
-         */
-        static readonly insideUnitCircle: Vector2
-        /** Returns a random point on the surface of a sphere with radius 1 (Read Only).
-         */
-        static readonly onUnitSphere: Vector3
-        /** Returns a random rotation (Read Only).
-         */
-        static readonly rotation: Quaternion
-        /** Returns a random rotation with uniform distribution (Read Only).
-         */
-        static readonly rotationUniform: Quaternion
-    }
-}
-declare module "UnityEngine" {
-    import * as jsb from "jsb";
-    import { Object as Object1, Enum, Array, ValueType } from "System";
-    /** Interface into the Input system.
-     */
-    class Input extends Object1 {
-        constructor()
-        /** Returns the value of the virtual axis identified by axisName.
-         */
-        static GetAxis(axisName: string): number
-        /** Returns the value of the virtual axis identified by axisName with no smoothing filtering applied.
-         */
-        static GetAxisRaw(axisName: string): number
-        /** Returns true while the virtual button identified by buttonName is held down.
-         * @param buttonName The name of the button such as Jump.
-         * @returns True when an axis has been pressed and not released. 
-         */
-        static GetButton(buttonName: string): boolean
-        /** Returns true during the frame the user pressed down the virtual button identified by buttonName.
-         */
-        static GetButtonDown(buttonName: string): boolean
-        /** Returns true the first frame the user releases the virtual button identified by buttonName.
-         */
-        static GetButtonUp(buttonName: string): boolean
-        /** Returns whether the given mouse button is held down.
-         */
-        static GetMouseButton(button: number): boolean
-        /** Returns true during the frame the user pressed the given mouse button.
-         */
-        static GetMouseButtonDown(button: number): boolean
-        /** Returns true during the frame the user releases the given mouse button.
-         */
-        static GetMouseButtonUp(button: number): boolean
-        static ResetInputAxes(): void
-        static GetJoystickNames(): Array<string>
-        /** Call Input.GetTouch to obtain a Touch struct.
-         * @param index The touch input on the device screen.
-         * @returns Touch details in the struct. 
-         */
-        static GetTouch(index: number): any
-        /** Returns specific acceleration measurement which occurred during last frame. (Does not allocate temporary variables).
-         */
-        static GetAccelerationEvent(index: number): any
-        /** Returns true while the user holds down the key identified by the key KeyCode enum parameter.
-         */
-        static GetKey(key: KeyCode): boolean
-        /** Returns true while the user holds down the key identified by name.
-         */
-        static GetKey(name: string): boolean
-        /** Returns true during the frame the user releases the key identified by the key KeyCode enum parameter.
-         */
-        static GetKeyUp(key: KeyCode): boolean
-        /** Returns true during the frame the user releases the key identified by name.
-         */
-        static GetKeyUp(name: string): boolean
-        /** Returns true during the frame the user starts pressing down the key identified by the key KeyCode enum parameter.
-         */
-        static GetKeyDown(key: KeyCode): boolean
-        /** Returns true during the frame the user starts pressing down the key identified by name.
-         */
-        static GetKeyDown(name: string): boolean
-        /** Enables/Disables mouse simulation with touches. By default this option is enabled.
-         */
-        static simulateMouseWithTouches: boolean
-        /** Is any key or mouse button currently held down? (Read Only)
-         */
-        static readonly anyKey: boolean
-        /** Returns true the first frame the user hits any key or mouse button. (Read Only)
-         */
-        static readonly anyKeyDown: boolean
-        /** Returns the keyboard input entered this frame. (Read Only)
-         */
-        static readonly inputString: string
-        /** The current mouse position in pixel coordinates. (Read Only)
-         */
-        static readonly mousePosition: Vector3
-        /** The current mouse scroll delta. (Read Only)
-         */
-        static readonly mouseScrollDelta: Vector2
-        /** Controls enabling and disabling of IME input composition.
-         */
-        static imeCompositionMode: any
-        /** The current IME composition string being typed by the user.
-         */
-        static readonly compositionString: string
-        /** Does the user have an IME keyboard input source selected?
-         */
-        static readonly imeIsSelected: boolean
-        /** The current text input position used by IMEs to open windows.
-         */
-        static compositionCursorPos: Vector2
-        /** Indicates if a mouse device is detected.
-         */
-        static readonly mousePresent: boolean
-        /** Number of touches. Guaranteed not to change throughout the frame. (Read Only)
-         */
-        static readonly touchCount: number
-        /** Bool value which let's users check if touch pressure is supported.
-         */
-        static readonly touchPressureSupported: boolean
-        /** Returns true when Stylus Touch is supported by a device or platform.
-         */
-        static readonly stylusTouchSupported: boolean
-        /** Returns whether the device on which application is currently running supports touch input.
-         */
-        static readonly touchSupported: boolean
-        /** Property indicating whether the system handles multiple touches.
-         */
-        static multiTouchEnabled: boolean
-        /** Device physical orientation as reported by OS. (Read Only)
-         */
-        static readonly deviceOrientation: any
-        /** Last measured linear acceleration of a device in three-dimensional space. (Read Only)
-         */
-        static readonly acceleration: Vector3
-        /** This property controls if input sensors should be compensated for screen orientation.
-         */
-        static compensateSensors: boolean
-        /** Number of acceleration measurements which occurred during last frame.
-         */
-        static readonly accelerationEventCount: number
-        /** Should  Back button quit the application?
-
-Only usable on Android, Windows Phone or Windows Tablets.
-         */
-        static backButtonLeavesApp: boolean
-        /** Property for accessing device location (handheld devices only). (Read Only)
-         */
-        static readonly location: any
-        /** Property for accessing compass (handheld devices only). (Read Only)
-         */
-        static readonly compass: any
-        /** Returns default gyroscope.
-         */
-        static readonly gyro: any
-        /** Returns list of objects representing status of all touches during last frame. (Read Only) (Allocates temporary variables).
-         */
-        static readonly touches: Array<any>
-        /** Returns list of acceleration measurements which occurred during the last frame. (Read Only) (Allocates temporary variables).
-         */
-        static readonly accelerationEvents: Array<any>
-    }
-}
-declare module "UnityEngine" {
-    import * as jsb from "jsb";
-    import { Object as Object1, Enum, Array } from "System";
-    /** Class containing methods to ease debugging while developing a game.
-     */
-    class Debug extends Object1 {
-        constructor()
-        /** Draws a line between specified start and end points.
-         * @param start Point in world space where the line should start.
-         * @param end Point in world space where the line should end.
-         * @param color Color of the line.
-         * @param duration How long the line should be visible for.
-         * @param depthTest Should the line be obscured by objects closer to the camera?
-         */
-        static DrawLine(start: Vector3, end: Vector3, color: Color, duration: number, depthTest: boolean): void
-        /** Draws a line between specified start and end points.
-         * @param start Point in world space where the line should start.
-         * @param end Point in world space where the line should end.
-         * @param color Color of the line.
-         * @param duration How long the line should be visible for.
-         * @param depthTest Should the line be obscured by objects closer to the camera?
-         */
-        static DrawLine(start: Vector3, end: Vector3, color: Color, duration: number): void
-        /** Draws a line between specified start and end points.
-         * @param start Point in world space where the line should start.
-         * @param end Point in world space where the line should end.
-         * @param color Color of the line.
-         * @param duration How long the line should be visible for.
-         * @param depthTest Should the line be obscured by objects closer to the camera?
-         */
-        static DrawLine(start: Vector3, end: Vector3, color: Color): void
-        /** Draws a line between specified start and end points.
-         * @param start Point in world space where the line should start.
-         * @param end Point in world space where the line should end.
-         * @param color Color of the line.
-         * @param duration How long the line should be visible for.
-         * @param depthTest Should the line be obscured by objects closer to the camera?
-         */
-        static DrawLine(start: Vector3, end: Vector3): void
-        /** Draws a line from start to start + dir in world coordinates.
-         * @param start Point in world space where the ray should start.
-         * @param dir Direction and length of the ray.
-         * @param color Color of the drawn line.
-         * @param duration How long the line will be visible for (in seconds).
-         * @param depthTest Should the line be obscured by other objects closer to the camera?
-         */
-        static DrawRay(start: Vector3, dir: Vector3, color: Color, duration: number, depthTest: boolean): void
-        /** Draws a line from start to start + dir in world coordinates.
-         * @param start Point in world space where the ray should start.
-         * @param dir Direction and length of the ray.
-         * @param color Color of the drawn line.
-         * @param duration How long the line will be visible for (in seconds).
-         * @param depthTest Should the line be obscured by other objects closer to the camera?
-         */
-        static DrawRay(start: Vector3, dir: Vector3, color: Color, duration: number): void
-        /** Draws a line from start to start + dir in world coordinates.
-         * @param start Point in world space where the ray should start.
-         * @param dir Direction and length of the ray.
-         * @param color Color of the drawn line.
-         * @param duration How long the line will be visible for (in seconds).
-         * @param depthTest Should the line be obscured by other objects closer to the camera?
-         */
-        static DrawRay(start: Vector3, dir: Vector3, color: Color): void
-        /** Draws a line from start to start + dir in world coordinates.
-         * @param start Point in world space where the ray should start.
-         * @param dir Direction and length of the ray.
-         * @param color Color of the drawn line.
-         * @param duration How long the line will be visible for (in seconds).
-         * @param depthTest Should the line be obscured by other objects closer to the camera?
-         */
-        static DrawRay(start: Vector3, dir: Vector3): void
-        static Break(): void
-        static DebugBreak(): void
-        /** Logs a message to the Unity Console.
-         * @param message String or object to be converted to string representation for display.
-         * @param context Object to which the message applies.
-         */
-        static Log(message: Object1, context: Object): void
-        /** Logs a message to the Unity Console.
-         * @param message String or object to be converted to string representation for display.
-         * @param context Object to which the message applies.
-         */
-        static Log(message: Object1): void
-        /** Logs a formatted message to the Unity Console.
-         * @param format A composite format string.
-         * @param args Format arguments.
-         * @param context Object to which the message applies.
-         * @param logType Type of message e.g. warn or error etc.
-         * @param logOptions Option flags to treat the log message special.
-         */
-        static LogFormat(logType: any, logOptions: any, context: Object, format: string, ...args: Object1[]): void
-        /** Logs a formatted message to the Unity Console.
-         * @param format A composite format string.
-         * @param args Format arguments.
-         * @param context Object to which the message applies.
-         * @param logType Type of message e.g. warn or error etc.
-         * @param logOptions Option flags to treat the log message special.
-         */
-        static LogFormat(context: Object, format: string, ...args: Object1[]): void
-        /** Logs a formatted message to the Unity Console.
-         * @param format A composite format string.
-         * @param args Format arguments.
-         * @param context Object to which the message applies.
-         * @param logType Type of message e.g. warn or error etc.
-         * @param logOptions Option flags to treat the log message special.
-         */
-        static LogFormat(format: string, ...args: Object1[]): void
-        /** A variant of Debug.Log that logs an error message to the console.
-         * @param message String or object to be converted to string representation for display.
-         * @param context Object to which the message applies.
-         */
-        static LogError(message: Object1, context: Object): void
-        /** A variant of Debug.Log that logs an error message to the console.
-         * @param message String or object to be converted to string representation for display.
-         * @param context Object to which the message applies.
-         */
-        static LogError(message: Object1): void
-        /** Logs a formatted error message to the Unity console.
-         * @param format A composite format string.
-         * @param args Format arguments.
-         * @param context Object to which the message applies.
-         */
-        static LogErrorFormat(context: Object, format: string, ...args: Object1[]): void
-        /** Logs a formatted error message to the Unity console.
-         * @param format A composite format string.
-         * @param args Format arguments.
-         * @param context Object to which the message applies.
-         */
-        static LogErrorFormat(format: string, ...args: Object1[]): void
-        static ClearDeveloperConsole(): void
-        /** A variant of Debug.Log that logs an error message to the console.
-         * @param context Object to which the message applies.
-         * @param exception Runtime Exception.
-         */
-        static LogException(exception: any, context: Object): void
-        /** A variant of Debug.Log that logs an error message to the console.
-         * @param context Object to which the message applies.
-         * @param exception Runtime Exception.
-         */
-        static LogException(exception: any): void
-        /** A variant of Debug.Log that logs a warning message to the console.
-         * @param message String or object to be converted to string representation for display.
-         * @param context Object to which the message applies.
-         */
-        static LogWarning(message: Object1, context: Object): void
-        /** A variant of Debug.Log that logs a warning message to the console.
-         * @param message String or object to be converted to string representation for display.
-         * @param context Object to which the message applies.
-         */
-        static LogWarning(message: Object1): void
-        /** Logs a formatted warning message to the Unity Console.
-         * @param format A composite format string.
-         * @param args Format arguments.
-         * @param context Object to which the message applies.
-         */
-        static LogWarningFormat(context: Object, format: string, ...args: Object1[]): void
-        /** Logs a formatted warning message to the Unity Console.
-         * @param format A composite format string.
-         * @param args Format arguments.
-         * @param context Object to which the message applies.
-         */
-        static LogWarningFormat(format: string, ...args: Object1[]): void
-        /** Assert a condition and logs an error message to the Unity console on failure.
-         * @param condition Condition you expect to be true.
-         * @param context Object to which the message applies.
-         * @param message String or object to be converted to string representation for display.
-         */
-        static Assert(condition: boolean, message: Object1, context: Object): void
-        static Assert(condition: boolean, message: string, context: Object): void
-        /** Assert a condition and logs an error message to the Unity console on failure.
-         * @param condition Condition you expect to be true.
-         * @param context Object to which the message applies.
-         * @param message String or object to be converted to string representation for display.
-         */
-        static Assert(condition: boolean, context: Object): void
-        /** Assert a condition and logs an error message to the Unity console on failure.
-         * @param condition Condition you expect to be true.
-         * @param context Object to which the message applies.
-         * @param message String or object to be converted to string representation for display.
-         */
-        static Assert(condition: boolean, message: Object1): void
-        static Assert(condition: boolean, message: string): void
-        /** Assert a condition and logs an error message to the Unity console on failure.
-         * @param condition Condition you expect to be true.
-         * @param context Object to which the message applies.
-         * @param message String or object to be converted to string representation for display.
-         */
-        static Assert(condition: boolean): void
-        /** Assert a condition and logs a formatted error message to the Unity console on failure.
-         * @param condition Condition you expect to be true.
-         * @param format A composite format string.
-         * @param args Format arguments.
-         * @param context Object to which the message applies.
-         */
-        static AssertFormat(condition: boolean, context: Object, format: string, ...args: Object1[]): void
-        /** Assert a condition and logs a formatted error message to the Unity console on failure.
-         * @param condition Condition you expect to be true.
-         * @param format A composite format string.
-         * @param args Format arguments.
-         * @param context Object to which the message applies.
-         */
-        static AssertFormat(condition: boolean, format: string, ...args: Object1[]): void
-        /** A variant of Debug.Log that logs an assertion message to the console.
-         * @param message String or object to be converted to string representation for display.
-         * @param context Object to which the message applies.
-         */
-        static LogAssertion(message: Object1, context: Object): void
-        /** A variant of Debug.Log that logs an assertion message to the console.
-         * @param message String or object to be converted to string representation for display.
-         * @param context Object to which the message applies.
-         */
-        static LogAssertion(message: Object1): void
-        /** Logs a formatted assertion message to the Unity console.
-         * @param format A composite format string.
-         * @param args Format arguments.
-         * @param context Object to which the message applies.
-         */
-        static LogAssertionFormat(context: Object, format: string, ...args: Object1[]): void
-        /** Logs a formatted assertion message to the Unity console.
-         * @param format A composite format string.
-         * @param args Format arguments.
-         * @param context Object to which the message applies.
-         */
-        static LogAssertionFormat(format: string, ...args: Object1[]): void
-        /** Get default debug logger.
-         */
-        static readonly unityLogger: any
-        /** Reports whether the development console is visible. The development console cannot be made to appear using:
-         */
-        static developerConsoleVisible: boolean
-        /** In the Build Settings dialog there is a check box called "Development Build".
-         */
-        static readonly isDebugBuild: boolean
-    }
-}
-declare module "UnityEngine" {
-    import { ValueType } from "System";
-    /** Representation of rays.
-     */
-    class Ray extends ValueType {
-        constructor(origin: Vector3, direction: Vector3)
-        /** Returns a point at distance units along the ray.
-         */
-        GetPoint(distance: number): Vector3
-        /** Returns a nicely formatted string for this ray.
-         */
-        toString(format: string): string
-        toString(): string
-        /** The origin point of the ray.
-         */
-        origin: Vector3
-        /** The direction of the ray.
-         */
-        direction: Vector3
-    }
-}
-declare module "UnityEngine" {
-    import { ValueType, Object as Object1 } from "System";
-    /** A 2D Rectangle defined by X and Y position, width and height.
-     */
-    class Rect extends ValueType {
-        constructor(x: number, y: number, width: number, height: number)
-        constructor(position: Vector2, size: Vector2)
-        constructor(source: Rect)
-        /** Set components of an existing Rect.
-         */
-        Set(x: number, y: number, width: number, height: number): void
-        /** Returns true if the x and y components of point is a point inside this rectangle. If allowInverse is present and true, the width and height of the Rect are allowed to take negative values (ie, the min value is greater than the max), and the test will still work.
-         * @param point Point to test.
-         * @param allowInverse Does the test allow the Rect's width and height to be negative?
-         * @returns True if the point lies within the specified rectangle. 
-         */
-        Contains(point: Vector3, allowInverse: boolean): boolean
-        /** Returns true if the x and y components of point is a point inside this rectangle. If allowInverse is present and true, the width and height of the Rect are allowed to take negative values (ie, the min value is greater than the max), and the test will still work.
-         * @param point Point to test.
-         * @param allowInverse Does the test allow the Rect's width and height to be negative?
-         * @returns True if the point lies within the specified rectangle. 
-         */
-        Contains(point: Vector2): boolean
-        /** Returns true if the x and y components of point is a point inside this rectangle. If allowInverse is present and true, the width and height of the Rect are allowed to take negative values (ie, the min value is greater than the max), and the test will still work.
-         * @param point Point to test.
-         * @param allowInverse Does the test allow the Rect's width and height to be negative?
-         * @returns True if the point lies within the specified rectangle. 
-         */
-        Contains(point: Vector3): boolean
-        /** Returns true if the other rectangle overlaps this one. If allowInverse is present and true, the widths and heights of the Rects are allowed to take negative values (ie, the min value is greater than the max), and the test will still work.
-         * @param other Other rectangle to test overlapping with.
-         * @param allowInverse Does the test allow the widths and heights of the Rects to be negative?
-         */
-        Overlaps(other: Rect, allowInverse: boolean): boolean
-        /** Returns true if the other rectangle overlaps this one. If allowInverse is present and true, the widths and heights of the Rects are allowed to take negative values (ie, the min value is greater than the max), and the test will still work.
-         * @param other Other rectangle to test overlapping with.
-         * @param allowInverse Does the test allow the widths and heights of the Rects to be negative?
-         */
-        Overlaps(other: Rect): boolean
-        GetHashCode(): number
-        Equals(other: Object1): boolean
-        Equals(other: Rect): boolean
-        /** Returns a nicely formatted string for this Rect.
-         */
-        toString(format: string): string
-        toString(): string
-        /** Creates a rectangle from min/max coordinate values.
-         * @param xmin The minimum X coordinate.
-         * @param ymin The minimum Y coordinate.
-         * @param xmax The maximum X coordinate.
-         * @param ymax The maximum Y coordinate.
-         * @returns A rectangle matching the specified coordinates. 
-         */
-        static MinMaxRect(xmin: number, ymin: number, xmax: number, ymax: number): Rect
-        /** Returns a point inside a rectangle, given normalized coordinates.
-         * @param rectangle Rectangle to get a point inside.
-         * @param normalizedRectCoordinates Normalized coordinates to get a point for.
-         */
-        static NormalizedToPoint(rectangle: Rect, normalizedRectCoordinates: Vector2): Vector2
-        /** Returns the normalized coordinates cooresponding the the point.
-         * @param rectangle Rectangle to get normalized coordinates inside.
-         * @param point A point inside the rectangle to get normalized coordinates for.
-         */
-        static PointToNormalized(rectangle: Rect, point: Vector2): Vector2
-        static op_Inequality(lhs: Rect, rhs: Rect): boolean
-        // js_op_overloading: static ==(lhs: Rect, rhs: Rect): boolean
-        /** Shorthand for writing new Rect(0,0,0,0).
-         */
-        static readonly zero: Rect
-        /** The X coordinate of the rectangle.
-         */
-        x: number
-        /** The Y coordinate of the rectangle.
-         */
-        y: number
-        /** The X and Y position of the rectangle.
-         */
-        position: Vector2
-        /** The position of the center of the rectangle.
-         */
-        center: Vector2
-        /** The position of the minimum corner of the rectangle.
-         */
-        min: Vector2
-        /** The position of the maximum corner of the rectangle.
-         */
-        max: Vector2
-        /** The width of the rectangle, measured from the X position.
-         */
-        width: number
-        /** The height of the rectangle, measured from the Y position.
-         */
-        height: number
-        /** The width and height of the rectangle.
-         */
-        size: Vector2
-        /** The minimum X coordinate of the rectangle.
-         */
-        xMin: number
-        /** The minimum Y coordinate of the rectangle.
-         */
-        yMin: number
-        /** The maximum X coordinate of the rectangle.
-         */
-        xMax: number
-        /** The maximum Y coordinate of the rectangle.
-         */
-        yMax: number
-    }
-}
-declare module "UnityEngine" {
-    import { ValueType } from "System";
-    /** Structure used to get information back from a raycast.
-     */
-    class RaycastHit extends ValueType {
-        constructor()
-        /** The Collider that was hit.
-         */
-        readonly collider: Collider
-        /** The impact point in world space where the ray hit the collider.
-         */
-        point: Vector3
-        /** The normal of the surface the ray hit.
-         */
-        normal: Vector3
-        /** The barycentric coordinate of the triangle we hit.
-         */
-        barycentricCoordinate: Vector3
-        /** The distance from the ray's origin to the impact point.
-         */
-        distance: number
-        /** The index of the triangle that was hit.
-         */
-        readonly triangleIndex: number
-        /** The uv texture coordinate at the collision location.
-         */
-        readonly textureCoord: Vector2
-        /** The secondary uv texture coordinate at the impact point.
-         */
-        readonly textureCoord2: Vector2
-        /** The Transform of the rigidbody or collider that was hit.
-         */
-        readonly transform: Transform
-        /** The Rigidbody of the collider that was hit. If the collider is not attached to a rigidbody then it is null.
-         */
-        readonly rigidbody: Rigidbody
-        /** The uv lightmap coordinate at the impact point.
-         */
-        readonly lightmapCoord: Vector2
-    }
-}
-declare module "UnityEngine" {
-    import * as jsb from "jsb";
-    import { Object as Object1, ValueType, Array, Enum } from "System";
-    /** Global physics properties and helper methods.
-     */
-    class Physics extends Object1 {
-        constructor()
-        /** Makes the collision detection system ignore all collisions between collider1 and collider2.
-         * @param collider1 Any collider.
-         * @param collider2 Another collider you want to have collider1 to start or stop ignoring collisions with.
-         * @param ignore Whether or not the collisions between the two colliders should be ignored or not.
-         */
-        static IgnoreCollision(collider1: Collider, collider2: Collider, ignore: boolean): void
-        static IgnoreCollision(collider1: Collider, collider2: Collider): void
-        /** Makes the collision detection system ignore all collisions between any collider in layer1 and any collider in layer2.
-
-Note that IgnoreLayerCollision will reset the trigger state of affected colliders, so you might receive OnTriggerExit and OnTriggerEnter messages in response to calling this.
-         */
-        static IgnoreLayerCollision(layer1: number, layer2: number, ignore: boolean): void
-        static IgnoreLayerCollision(layer1: number, layer2: number): void
-        /** Are collisions between layer1 and layer2 being ignored?
-         */
-        static GetIgnoreLayerCollision(layer1: number, layer2: number): boolean
-        /** Checks whether the collision detection system will ignore all collisionstriggers between collider1 and collider2/ or not.
-         * @param collider1 The first collider to compare to collider2.
-         * @param collider2 The second collider to compare to collider1.
-         * @returns Whether the collision detection system will ignore all collisionstriggers between collider1 and collider2/ or not. 
-         */
-        static GetIgnoreCollision(collider1: Collider, collider2: Collider): boolean
-        /** Casts a ray against all colliders in the Scene and returns detailed information on what was hit.
-         * @param origin The starting point of the ray in world coordinates.
-         * @param direction The direction of the ray.
-         * @param hitInfo If true is returned, hitInfo will contain more information about where the collider was hit. (See Also: RaycastHit).
-         * @param maxDistance The max distance the ray should check for collisions.
-         * @param layerMask A that is used to selectively ignore colliders when casting a ray.
-         * @param queryTriggerInteraction Specifies whether this query should hit Triggers.
-         * @returns True when the ray intersects any collider, otherwise false. 
-         */
-        static Raycast(origin: Vector3, direction: Vector3, hitInfo: jsb.Out<RaycastHit>, maxDistance: number, layerMask: number, queryTriggerInteraction: any): boolean
-        /** Casts a ray, from point origin, in direction direction, of length maxDistance, against all colliders in the Scene.
-         * @param origin The starting point of the ray in world coordinates.
-         * @param direction The direction of the ray.
-         * @param maxDistance The max distance the ray should check for collisions.
-         * @param layerMask A that is used to selectively ignore Colliders when casting a ray.
-         * @param queryTriggerInteraction Specifies whether this query should hit Triggers.
-         * @returns True if the ray intersects with a Collider, otherwise false. 
-         */
-        static Raycast(origin: Vector3, direction: Vector3, maxDistance: number, layerMask: number, queryTriggerInteraction: any): boolean
-        static Raycast(origin: Vector3, direction: Vector3, hitInfo: jsb.Out<RaycastHit>, maxDistance: number, layerMask: number): boolean
-        /** Same as above using ray.origin and ray.direction instead of origin and direction.
-         * @param ray The starting point and direction of the ray.
-         * @param hitInfo If true is returned, hitInfo will contain more information about where the collider was hit. (See Also: RaycastHit).
-         * @param maxDistance The max distance the ray should check for collisions.
-         * @param layerMask A that is used to selectively ignore colliders when casting a ray.
-         * @param queryTriggerInteraction Specifies whether this query should hit Triggers.
-         * @returns True when the ray intersects any collider, otherwise false. 
-         */
-        static Raycast(ray: Ray, hitInfo: jsb.Out<RaycastHit>, maxDistance: number, layerMask: number, queryTriggerInteraction: any): boolean
-        static Raycast(origin: Vector3, direction: Vector3, maxDistance: number, layerMask: number): boolean
-        static Raycast(origin: Vector3, direction: Vector3, hitInfo: jsb.Out<RaycastHit>, maxDistance: number): boolean
-        /** Same as above using ray.origin and ray.direction instead of origin and direction.
-         * @param ray The starting point and direction of the ray.
-         * @param maxDistance The max distance the ray should check for collisions.
-         * @param layerMask A that is used to selectively ignore colliders when casting a ray.
-         * @param queryTriggerInteraction Specifies whether this query should hit Triggers.
-         * @returns True when the ray intersects any collider, otherwise false. 
-         */
-        static Raycast(ray: Ray, maxDistance: number, layerMask: number, queryTriggerInteraction: any): boolean
-        static Raycast(ray: Ray, hitInfo: jsb.Out<RaycastHit>, maxDistance: number, layerMask: number): boolean
-        static Raycast(origin: Vector3, direction: Vector3, maxDistance: number): boolean
-        static Raycast(origin: Vector3, direction: Vector3, hitInfo: jsb.Out<RaycastHit>): boolean
-        static Raycast(ray: Ray, maxDistance: number, layerMask: number): boolean
-        static Raycast(ray: Ray, hitInfo: jsb.Out<RaycastHit>, maxDistance: number): boolean
-        static Raycast(origin: Vector3, direction: Vector3): boolean
-        static Raycast(ray: Ray, maxDistance: number): boolean
-        static Raycast(ray: Ray, hitInfo: jsb.Out<RaycastHit>): boolean
-        static Raycast(ray: Ray): boolean
-        /** Returns true if there is any collider intersecting the line between start and end.
-         * @param start Start point.
-         * @param end End point.
-         * @param layerMask A that is used to selectively ignore colliders when casting a ray.
-         * @param queryTriggerInteraction Specifies whether this query should hit Triggers.
-         * @param hitInfo If true is returned, hitInfo will contain more information about where the collider was hit. (See Also: RaycastHit).
-         */
-        static Linecast(start: Vector3, end: Vector3, hitInfo: jsb.Out<RaycastHit>, layerMask: number, queryTriggerInteraction: any): boolean
-        /** Returns true if there is any collider intersecting the line between start and end.
-         * @param start Start point.
-         * @param end End point.
-         * @param layerMask A that is used to selectively ignore colliders when casting a ray.
-         * @param queryTriggerInteraction Specifies whether this query should hit Triggers.
-         */
-        static Linecast(start: Vector3, end: Vector3, layerMask: number, queryTriggerInteraction: any): boolean
-        static Linecast(start: Vector3, end: Vector3, hitInfo: jsb.Out<RaycastHit>, layerMask: number): boolean
-        static Linecast(start: Vector3, end: Vector3, layerMask: number): boolean
-        static Linecast(start: Vector3, end: Vector3, hitInfo: jsb.Out<RaycastHit>): boolean
-        static Linecast(start: Vector3, end: Vector3): boolean
-        /**
-         * @param point1 The center of the sphere at the start of the capsule.
-         * @param point2 The center of the sphere at the end of the capsule.
-         * @param radius The radius of the capsule.
-         * @param direction The direction into which to sweep the capsule.
-         * @param maxDistance The max length of the sweep.
-         * @param hitInfo If true is returned, hitInfo will contain more information about where the collider was hit. (See Also: RaycastHit).
-         * @param layerMask A that is used to selectively ignore colliders when casting a capsule.
-         * @param queryTriggerInteraction Specifies whether this query should hit Triggers.
-         */
-        static CapsuleCast(point1: Vector3, point2: Vector3, radius: number, direction: Vector3, hitInfo: jsb.Out<RaycastHit>, maxDistance: number, layerMask: number, queryTriggerInteraction: any): boolean
-        /** Casts a capsule against all colliders in the Scene and returns detailed information on what was hit.
-         * @param point1 The center of the sphere at the start of the capsule.
-         * @param point2 The center of the sphere at the end of the capsule.
-         * @param radius The radius of the capsule.
-         * @param direction The direction into which to sweep the capsule.
-         * @param maxDistance The max length of the sweep.
-         * @param layerMask A that is used to selectively ignore colliders when casting a capsule.
-         * @param queryTriggerInteraction Specifies whether this query should hit Triggers.
-         * @returns True when the capsule sweep intersects any collider, otherwise false. 
-         */
-        static CapsuleCast(point1: Vector3, point2: Vector3, radius: number, direction: Vector3, maxDistance: number, layerMask: number, queryTriggerInteraction: any): boolean
-        static CapsuleCast(point1: Vector3, point2: Vector3, radius: number, direction: Vector3, hitInfo: jsb.Out<RaycastHit>, maxDistance: number, layerMask: number): boolean
-        static CapsuleCast(point1: Vector3, point2: Vector3, radius: number, direction: Vector3, maxDistance: number, layerMask: number): boolean
-        static CapsuleCast(point1: Vector3, point2: Vector3, radius: number, direction: Vector3, hitInfo: jsb.Out<RaycastHit>, maxDistance: number): boolean
-        static CapsuleCast(point1: Vector3, point2: Vector3, radius: number, direction: Vector3, maxDistance: number): boolean
-        static CapsuleCast(point1: Vector3, point2: Vector3, radius: number, direction: Vector3, hitInfo: jsb.Out<RaycastHit>): boolean
-        static CapsuleCast(point1: Vector3, point2: Vector3, radius: number, direction: Vector3): boolean
-        /** Casts a sphere along a ray and returns detailed information on what was hit.
-         * @param origin The center of the sphere at the start of the sweep.
-         * @param radius The radius of the sphere.
-         * @param direction The direction into which to sweep the sphere.
-         * @param hitInfo If true is returned, hitInfo will contain more information about where the collider was hit. (See Also: RaycastHit).
-         * @param maxDistance The max length of the cast.
-         * @param layerMask A that is used to selectively ignore colliders when casting a capsule.
-         * @param queryTriggerInteraction Specifies whether this query should hit Triggers.
-         * @returns True when the sphere sweep intersects any collider, otherwise false. 
-         */
-        static SphereCast(origin: Vector3, radius: number, direction: Vector3, hitInfo: jsb.Out<RaycastHit>, maxDistance: number, layerMask: number, queryTriggerInteraction: any): boolean
-        static SphereCast(origin: Vector3, radius: number, direction: Vector3, hitInfo: jsb.Out<RaycastHit>, maxDistance: number, layerMask: number): boolean
-        /**
-         * @param ray The starting point and direction of the ray into which the sphere sweep is cast.
-         * @param radius The radius of the sphere.
-         * @param hitInfo If true is returned, hitInfo will contain more information about where the collider was hit. (See Also: RaycastHit).
-         * @param maxDistance The max length of the cast.
-         * @param layerMask A that is used to selectively ignore colliders when casting a capsule.
-         * @param queryTriggerInteraction Specifies whether this query should hit Triggers.
-         */
-        static SphereCast(ray: Ray, radius: number, hitInfo: jsb.Out<RaycastHit>, maxDistance: number, layerMask: number, queryTriggerInteraction: any): boolean
-        static SphereCast(origin: Vector3, radius: number, direction: Vector3, hitInfo: jsb.Out<RaycastHit>, maxDistance: number): boolean
-        /** Casts a sphere along a ray and returns detailed information on what was hit.
-         * @param ray The starting point and direction of the ray into which the sphere sweep is cast.
-         * @param radius The radius of the sphere.
-         * @param maxDistance The max length of the cast.
-         * @param layerMask A that is used to selectively ignore colliders when casting a capsule.
-         * @param queryTriggerInteraction Specifies whether this query should hit Triggers.
-         * @returns True when the sphere sweep intersects any collider, otherwise false. 
-         */
-        static SphereCast(ray: Ray, radius: number, maxDistance: number, layerMask: number, queryTriggerInteraction: any): boolean
-        static SphereCast(ray: Ray, radius: number, hitInfo: jsb.Out<RaycastHit>, maxDistance: number, layerMask: number): boolean
-        static SphereCast(origin: Vector3, radius: number, direction: Vector3, hitInfo: jsb.Out<RaycastHit>): boolean
-        static SphereCast(ray: Ray, radius: number, maxDistance: number, layerMask: number): boolean
-        static SphereCast(ray: Ray, radius: number, hitInfo: jsb.Out<RaycastHit>, maxDistance: number): boolean
-        static SphereCast(ray: Ray, radius: number, maxDistance: number): boolean
-        static SphereCast(ray: Ray, radius: number, hitInfo: jsb.Out<RaycastHit>): boolean
-        static SphereCast(ray: Ray, radius: number): boolean
-        /** Casts the box along a ray and returns detailed information on what was hit.
-         * @param center Center of the box.
-         * @param halfExtents Half the size of the box in each dimension.
-         * @param direction The direction in which to cast the box.
-         * @param hitInfo If true is returned, hitInfo will contain more information about where the collider was hit. (See Also: RaycastHit).
-         * @param orientation Rotation of the box.
-         * @param maxDistance The max length of the cast.
-         * @param layerMask A that is used to selectively ignore colliders when casting a capsule.
-         * @param queryTriggerInteraction Specifies whether this query should hit Triggers.
-         * @returns True, if any intersections were found. 
-         */
-        static BoxCast(center: Vector3, halfExtents: Vector3, direction: Vector3, hitInfo: jsb.Out<RaycastHit>, orientation: Quaternion, maxDistance: number, layerMask: number, queryTriggerInteraction: any): boolean
-        /** Casts the box along a ray and returns detailed information on what was hit.
-         * @param center Center of the box.
-         * @param halfExtents Half the size of the box in each dimension.
-         * @param direction The direction in which to cast the box.
-         * @param orientation Rotation of the box.
-         * @param maxDistance The max length of the cast.
-         * @param layerMask A that is used to selectively ignore colliders when casting a capsule.
-         * @param queryTriggerInteraction Specifies whether this query should hit Triggers.
-         * @returns True, if any intersections were found. 
-         */
-        static BoxCast(center: Vector3, halfExtents: Vector3, direction: Vector3, orientation: Quaternion, maxDistance: number, layerMask: number, queryTriggerInteraction: any): boolean
-        static BoxCast(center: Vector3, halfExtents: Vector3, direction: Vector3, hitInfo: jsb.Out<RaycastHit>, orientation: Quaternion, maxDistance: number, layerMask: number): boolean
-        static BoxCast(center: Vector3, halfExtents: Vector3, direction: Vector3, orientation: Quaternion, maxDistance: number, layerMask: number): boolean
-        static BoxCast(center: Vector3, halfExtents: Vector3, direction: Vector3, hitInfo: jsb.Out<RaycastHit>, orientation: Quaternion, maxDistance: number): boolean
-        static BoxCast(center: Vector3, halfExtents: Vector3, direction: Vector3, orientation: Quaternion, maxDistance: number): boolean
-        static BoxCast(center: Vector3, halfExtents: Vector3, direction: Vector3, hitInfo: jsb.Out<RaycastHit>, orientation: Quaternion): boolean
-        static BoxCast(center: Vector3, halfExtents: Vector3, direction: Vector3, orientation: Quaternion): boolean
-        static BoxCast(center: Vector3, halfExtents: Vector3, direction: Vector3, hitInfo: jsb.Out<RaycastHit>): boolean
-        static BoxCast(center: Vector3, halfExtents: Vector3, direction: Vector3): boolean
-        /** See Also: Raycast.
-         * @param origin The starting point of the ray in world coordinates.
-         * @param direction The direction of the ray.
-         * @param maxDistance The max distance the rayhit is allowed to be from the start of the ray.
-         * @param layermask A that is used to selectively ignore colliders when casting a ray.
-         * @param queryTriggerInteraction Specifies whether this query should hit Triggers.
-         */
-        static RaycastAll(origin: Vector3, direction: Vector3, maxDistance: number, layerMask: number, queryTriggerInteraction: any): Array<RaycastHit>
-        static RaycastAll(origin: Vector3, direction: Vector3, maxDistance: number, layerMask: number): Array<RaycastHit>
-        /** Casts a ray through the Scene and returns all hits. Note that order is not guaranteed.
-         * @param ray The starting point and direction of the ray.
-         * @param maxDistance The max distance the rayhit is allowed to be from the start of the ray.
-         * @param layerMask A that is used to selectively ignore colliders when casting a ray.
-         * @param queryTriggerInteraction Specifies whether this query should hit Triggers.
-         */
-        static RaycastAll(ray: Ray, maxDistance: number, layerMask: number, queryTriggerInteraction: any): Array<RaycastHit>
-        static RaycastAll(origin: Vector3, direction: Vector3, maxDistance: number): Array<RaycastHit>
-        static RaycastAll(ray: Ray, maxDistance: number, layerMask: number): Array<RaycastHit>
-        static RaycastAll(origin: Vector3, direction: Vector3): Array<RaycastHit>
-        static RaycastAll(ray: Ray, maxDistance: number): Array<RaycastHit>
-        static RaycastAll(ray: Ray): Array<RaycastHit>
-        /** Cast a ray through the Scene and store the hits into the buffer.
-         * @param origin The starting point and direction of the ray.
-         * @param results The buffer to store the hits into.
-         * @param direction The direction of the ray.
-         * @param maxDistance The max distance the rayhit is allowed to be from the start of the ray.
-         * @param layermask A that is used to selectively ignore colliders when casting a ray.
-         * @param queryTriggerInteraction Specifies whether this query should hit Triggers.
-         * @returns The amount of hits stored into the results buffer. 
-         */
-        static RaycastNonAlloc(origin: Vector3, direction: Vector3, results: Array<RaycastHit>, maxDistance: number, layerMask: number, queryTriggerInteraction: any): number
-        /** Cast a ray through the Scene and store the hits into the buffer.
-         * @param ray The starting point and direction of the ray.
-         * @param results The buffer to store the hits into.
-         * @param maxDistance The max distance the rayhit is allowed to be from the start of the ray.
-         * @param layerMask A that is used to selectively ignore colliders when casting a ray.
-         * @param queryTriggerInteraction Specifies whether this query should hit Triggers.
-         * @returns The amount of hits stored into the results buffer. 
-         */
-        static RaycastNonAlloc(ray: Ray, results: Array<RaycastHit>, maxDistance: number, layerMask: number, queryTriggerInteraction: any): number
-        static RaycastNonAlloc(origin: Vector3, direction: Vector3, results: Array<RaycastHit>, maxDistance: number, layerMask: number): number
-        static RaycastNonAlloc(ray: Ray, results: Array<RaycastHit>, maxDistance: number, layerMask: number): number
-        static RaycastNonAlloc(origin: Vector3, direction: Vector3, results: Array<RaycastHit>, maxDistance: number): number
-        static RaycastNonAlloc(ray: Ray, results: Array<RaycastHit>, maxDistance: number): number
-        static RaycastNonAlloc(origin: Vector3, direction: Vector3, results: Array<RaycastHit>): number
-        static RaycastNonAlloc(ray: Ray, results: Array<RaycastHit>): number
-        /** Like Physics.CapsuleCast, but this function will return all hits the capsule sweep intersects.
-         * @param point1 The center of the sphere at the start of the capsule.
-         * @param point2 The center of the sphere at the end of the capsule.
-         * @param radius The radius of the capsule.
-         * @param direction The direction into which to sweep the capsule.
-         * @param maxDistance The max length of the sweep.
-         * @param layermask A that is used to selectively ignore colliders when casting a capsule.
-         * @param queryTriggerInteraction Specifies whether this query should hit Triggers.
-         * @returns An array of all colliders hit in the sweep. 
-         */
-        static CapsuleCastAll(point1: Vector3, point2: Vector3, radius: number, direction: Vector3, maxDistance: number, layerMask: number, queryTriggerInteraction: any): Array<RaycastHit>
-        static CapsuleCastAll(point1: Vector3, point2: Vector3, radius: number, direction: Vector3, maxDistance: number, layerMask: number): Array<RaycastHit>
-        static CapsuleCastAll(point1: Vector3, point2: Vector3, radius: number, direction: Vector3, maxDistance: number): Array<RaycastHit>
-        static CapsuleCastAll(point1: Vector3, point2: Vector3, radius: number, direction: Vector3): Array<RaycastHit>
-        /** Like Physics.SphereCast, but this function will return all hits the sphere sweep intersects.
-         * @param origin The center of the sphere at the start of the sweep.
-         * @param radius The radius of the sphere.
-         * @param direction The direction in which to sweep the sphere.
-         * @param maxDistance The max length of the sweep.
-         * @param layerMask A that is used to selectively ignore colliders when casting a sphere.
-         * @param queryTriggerInteraction Specifies whether this query should hit Triggers.
-         * @returns An array of all colliders hit in the sweep. 
-         */
-        static SphereCastAll(origin: Vector3, radius: number, direction: Vector3, maxDistance: number, layerMask: number, queryTriggerInteraction: any): Array<RaycastHit>
-        static SphereCastAll(origin: Vector3, radius: number, direction: Vector3, maxDistance: number, layerMask: number): Array<RaycastHit>
-        /** Like Physics.SphereCast, but this function will return all hits the sphere sweep intersects.
-         * @param ray The starting point and direction of the ray into which the sphere sweep is cast.
-         * @param radius The radius of the sphere.
-         * @param maxDistance The max length of the sweep.
-         * @param layerMask A that is used to selectively ignore colliders when casting a sphere.
-         * @param queryTriggerInteraction Specifies whether this query should hit Triggers.
-         */
-        static SphereCastAll(ray: Ray, radius: number, maxDistance: number, layerMask: number, queryTriggerInteraction: any): Array<RaycastHit>
-        static SphereCastAll(origin: Vector3, radius: number, direction: Vector3, maxDistance: number): Array<RaycastHit>
-        static SphereCastAll(ray: Ray, radius: number, maxDistance: number, layerMask: number): Array<RaycastHit>
-        static SphereCastAll(origin: Vector3, radius: number, direction: Vector3): Array<RaycastHit>
-        static SphereCastAll(ray: Ray, radius: number, maxDistance: number): Array<RaycastHit>
-        static SphereCastAll(ray: Ray, radius: number): Array<RaycastHit>
-        /** Check the given capsule against the physics world and return all overlapping colliders.
-         * @param point0 The center of the sphere at the start of the capsule.
-         * @param point1 The center of the sphere at the end of the capsule.
-         * @param radius The radius of the capsule.
-         * @param layerMask A that is used to selectively ignore colliders when casting a capsule.
-         * @param queryTriggerInteraction Specifies whether this query should hit Triggers.
-         * @returns Colliders touching or inside the capsule. 
-         */
-        static OverlapCapsule(point0: Vector3, point1: Vector3, radius: number, layerMask: number, queryTriggerInteraction: any): Array<Collider>
-        static OverlapCapsule(point0: Vector3, point1: Vector3, radius: number, layerMask: number): Array<Collider>
-        static OverlapCapsule(point0: Vector3, point1: Vector3, radius: number): Array<Collider>
-        /** Returns an array with all colliders touching or inside the sphere.
-         * @param position Center of the sphere.
-         * @param radius Radius of the sphere.
-         * @param layerMask A that is used to selectively ignore colliders when casting a ray.
-         * @param queryTriggerInteraction Specifies whether this query should hit Triggers.
-         */
-        static OverlapSphere(position: Vector3, radius: number, layerMask: number, queryTriggerInteraction: any): Array<Collider>
-        static OverlapSphere(position: Vector3, radius: number, layerMask: number): Array<Collider>
-        static OverlapSphere(position: Vector3, radius: number): Array<Collider>
-        /** Simulate physics in the Scene.
-         * @param step The time to advance physics by.
-         */
-        static Simulate(step: number): void
-        static SyncTransforms(): void
-        /** Compute the minimal translation required to separate the given colliders apart at specified poses.
-         * @param colliderA The first collider.
-         * @param positionA Position of the first collider.
-         * @param rotationA Rotation of the first collider.
-         * @param colliderB The second collider.
-         * @param positionB Position of the second collider.
-         * @param rotationB Rotation of the second collider.
-         * @param direction Direction along which the translation required to separate the colliders apart is minimal.
-         * @param distance The distance along direction that is required to separate the colliders apart.
-         * @returns True, if the colliders overlap at the given poses. 
-         */
-        static ComputePenetration(colliderA: Collider, positionA: Vector3, rotationA: Quaternion, colliderB: Collider, positionB: Vector3, rotationB: Quaternion, direction: jsb.Out<Vector3>, distance: jsb.Out<number>): boolean
-        /** Returns a point on the given collider that is closest to the specified location.
-         * @param point Location you want to find the closest point to.
-         * @param collider The collider that you find the closest point on.
-         * @param position The position of the collider.
-         * @param rotation The rotation of the collider.
-         * @returns The point on the collider that is closest to the specified location. 
-         */
-        static ClosestPoint(point: Vector3, collider: Collider, position: Vector3, rotation: Quaternion): Vector3
-        /** Computes and stores colliders touching or inside the sphere into the provided buffer.
-         * @param position Center of the sphere.
-         * @param radius Radius of the sphere.
-         * @param results The buffer to store the results into.
-         * @param layerMask A that is used to selectively ignore colliders when casting a ray.
-         * @param queryTriggerInteraction Specifies whether this query should hit Triggers.
-         * @returns The amount of colliders stored into the results buffer. 
-         */
-        static OverlapSphereNonAlloc(position: Vector3, radius: number, results: Array<Collider>, layerMask: number, queryTriggerInteraction: any): number
-        static OverlapSphereNonAlloc(position: Vector3, radius: number, results: Array<Collider>, layerMask: number): number
-        static OverlapSphereNonAlloc(position: Vector3, radius: number, results: Array<Collider>): number
-        /** Returns true if there are any colliders overlapping the sphere defined by position and radius in world coordinates.
-         * @param position Center of the sphere.
-         * @param radius Radius of the sphere.
-         * @param layerMask A that is used to selectively ignore colliders when casting a capsule.
-         * @param queryTriggerInteraction Specifies whether this query should hit Triggers.
-         */
-        static CheckSphere(position: Vector3, radius: number, layerMask: number, queryTriggerInteraction: any): boolean
-        static CheckSphere(position: Vector3, radius: number, layerMask: number): boolean
-        static CheckSphere(position: Vector3, radius: number): boolean
-        /** Casts a capsule against all colliders in the Scene and returns detailed information on what was hit into the buffer.
-         * @param point1 The center of the sphere at the start of the capsule.
-         * @param point2 The center of the sphere at the end of the capsule.
-         * @param radius The radius of the capsule.
-         * @param direction The direction into which to sweep the capsule.
-         * @param results The buffer to store the hits into.
-         * @param maxDistance The max length of the sweep.
-         * @param layerMask A that is used to selectively ignore colliders when casting a capsule.
-         * @param queryTriggerInteraction Specifies whether this query should hit Triggers.
-         * @returns The amount of hits stored into the buffer. 
-         */
-        static CapsuleCastNonAlloc(point1: Vector3, point2: Vector3, radius: number, direction: Vector3, results: Array<RaycastHit>, maxDistance: number, layerMask: number, queryTriggerInteraction: any): number
-        static CapsuleCastNonAlloc(point1: Vector3, point2: Vector3, radius: number, direction: Vector3, results: Array<RaycastHit>, maxDistance: number, layerMask: number): number
-        static CapsuleCastNonAlloc(point1: Vector3, point2: Vector3, radius: number, direction: Vector3, results: Array<RaycastHit>, maxDistance: number): number
-        static CapsuleCastNonAlloc(point1: Vector3, point2: Vector3, radius: number, direction: Vector3, results: Array<RaycastHit>): number
-        /** Cast sphere along the direction and store the results into buffer.
-         * @param origin The center of the sphere at the start of the sweep.
-         * @param radius The radius of the sphere.
-         * @param direction The direction in which to sweep the sphere.
-         * @param results The buffer to save the hits into.
-         * @param maxDistance The max length of the sweep.
-         * @param layerMask A that is used to selectively ignore colliders when casting a sphere.
-         * @param queryTriggerInteraction Specifies whether this query should hit Triggers.
-         * @returns The amount of hits stored into the results buffer. 
-         */
-        static SphereCastNonAlloc(origin: Vector3, radius: number, direction: Vector3, results: Array<RaycastHit>, maxDistance: number, layerMask: number, queryTriggerInteraction: any): number
-        static SphereCastNonAlloc(origin: Vector3, radius: number, direction: Vector3, results: Array<RaycastHit>, maxDistance: number, layerMask: number): number
-        /** Cast sphere along the direction and store the results into buffer.
-         * @param ray The starting point and direction of the ray into which the sphere sweep is cast.
-         * @param radius The radius of the sphere.
-         * @param results The buffer to save the results to.
-         * @param maxDistance The max length of the sweep.
-         * @param layerMask A that is used to selectively ignore colliders when casting a sphere.
-         * @param queryTriggerInteraction Specifies whether this query should hit Triggers.
-         * @returns The amount of hits stored into the results buffer. 
-         */
-        static SphereCastNonAlloc(ray: Ray, radius: number, results: Array<RaycastHit>, maxDistance: number, layerMask: number, queryTriggerInteraction: any): number
-        static SphereCastNonAlloc(origin: Vector3, radius: number, direction: Vector3, results: Array<RaycastHit>, maxDistance: number): number
-        static SphereCastNonAlloc(ray: Ray, radius: number, results: Array<RaycastHit>, maxDistance: number, layerMask: number): number
-        static SphereCastNonAlloc(origin: Vector3, radius: number, direction: Vector3, results: Array<RaycastHit>): number
-        static SphereCastNonAlloc(ray: Ray, radius: number, results: Array<RaycastHit>, maxDistance: number): number
-        static SphereCastNonAlloc(ray: Ray, radius: number, results: Array<RaycastHit>): number
-        /** Checks if any colliders overlap a capsule-shaped volume in world space.
-         * @param start The center of the sphere at the start of the capsule.
-         * @param end The center of the sphere at the end of the capsule.
-         * @param radius The radius of the capsule.
-         * @param layermask A that is used to selectively ignore colliders when casting a capsule.
-         * @param queryTriggerInteraction Specifies whether this query should hit Triggers.
-         */
-        static CheckCapsule(start: Vector3, end: Vector3, radius: number, layerMask: number, queryTriggerInteraction: any): boolean
-        static CheckCapsule(start: Vector3, end: Vector3, radius: number, layerMask: number): boolean
-        static CheckCapsule(start: Vector3, end: Vector3, radius: number): boolean
-        /** Check whether the given box overlaps with other colliders or not.
-         * @param center Center of the box.
-         * @param halfExtents Half the size of the box in each dimension.
-         * @param orientation Rotation of the box.
-         * @param layermask A that is used to selectively ignore colliders when casting a ray.
-         * @param queryTriggerInteraction Specifies whether this query should hit Triggers.
-         * @returns True, if the box overlaps with any colliders. 
-         */
-        static CheckBox(center: Vector3, halfExtents: Vector3, orientation: Quaternion, layermask: number, queryTriggerInteraction: any): boolean
-        static CheckBox(center: Vector3, halfExtents: Vector3, orientation: Quaternion, layerMask: number): boolean
-        static CheckBox(center: Vector3, halfExtents: Vector3, orientation: Quaternion): boolean
-        static CheckBox(center: Vector3, halfExtents: Vector3): boolean
-        /** Find all colliders touching or inside of the given box.
-         * @param center Center of the box.
-         * @param halfExtents Half of the size of the box in each dimension.
-         * @param orientation Rotation of the box.
-         * @param layerMask A that is used to selectively ignore colliders when casting a ray.
-         * @param queryTriggerInteraction Specifies whether this query should hit Triggers.
-         * @returns Colliders that overlap with the given box. 
-         */
-        static OverlapBox(center: Vector3, halfExtents: Vector3, orientation: Quaternion, layerMask: number, queryTriggerInteraction: any): Array<Collider>
-        static OverlapBox(center: Vector3, halfExtents: Vector3, orientation: Quaternion, layerMask: number): Array<Collider>
-        static OverlapBox(center: Vector3, halfExtents: Vector3, orientation: Quaternion): Array<Collider>
-        static OverlapBox(center: Vector3, halfExtents: Vector3): Array<Collider>
-        /** Find all colliders touching or inside of the given box, and store them into the buffer.
-         * @param center Center of the box.
-         * @param halfExtents Half of the size of the box in each dimension.
-         * @param results The buffer to store the results in.
-         * @param orientation Rotation of the box.
-         * @param layerMask A that is used to selectively ignore colliders when casting a ray.
-         * @param queryTriggerInteraction Specifies whether this query should hit Triggers.
-         * @returns The amount of colliders stored in results. 
-         */
-        static OverlapBoxNonAlloc(center: Vector3, halfExtents: Vector3, results: Array<Collider>, orientation: Quaternion, mask: number, queryTriggerInteraction: any): number
-        static OverlapBoxNonAlloc(center: Vector3, halfExtents: Vector3, results: Array<Collider>, orientation: Quaternion, mask: number): number
-        static OverlapBoxNonAlloc(center: Vector3, halfExtents: Vector3, results: Array<Collider>, orientation: Quaternion): number
-        static OverlapBoxNonAlloc(center: Vector3, halfExtents: Vector3, results: Array<Collider>): number
-        /** Cast the box along the direction, and store hits in the provided buffer.
-         * @param center Center of the box.
-         * @param halfExtents Half the size of the box in each dimension.
-         * @param direction The direction in which to cast the box.
-         * @param results The buffer to store the results in.
-         * @param orientation Rotation of the box.
-         * @param maxDistance The max length of the cast.
-         * @param layermask A that is used to selectively ignore colliders when casting a capsule.
-         * @param queryTriggerInteraction Specifies whether this query should hit Triggers.
-         * @returns The amount of hits stored to the results buffer. 
-         */
-        static BoxCastNonAlloc(center: Vector3, halfExtents: Vector3, direction: Vector3, results: Array<RaycastHit>, orientation: Quaternion, maxDistance: number, layerMask: number, queryTriggerInteraction: any): number
-        static BoxCastNonAlloc(center: Vector3, halfExtents: Vector3, direction: Vector3, results: Array<RaycastHit>, orientation: Quaternion, maxDistance: number, layerMask: number): number
-        static BoxCastNonAlloc(center: Vector3, halfExtents: Vector3, direction: Vector3, results: Array<RaycastHit>, orientation: Quaternion, maxDistance: number): number
-        static BoxCastNonAlloc(center: Vector3, halfExtents: Vector3, direction: Vector3, results: Array<RaycastHit>, orientation: Quaternion): number
-        static BoxCastNonAlloc(center: Vector3, halfExtents: Vector3, direction: Vector3, results: Array<RaycastHit>): number
-        /** Like Physics.BoxCast, but returns all hits.
-         * @param center Center of the box.
-         * @param halfExtents Half the size of the box in each dimension.
-         * @param direction The direction in which to cast the box.
-         * @param orientation Rotation of the box.
-         * @param maxDistance The max length of the cast.
-         * @param layermask A that is used to selectively ignore colliders when casting a capsule.
-         * @param queryTriggerInteraction Specifies whether this query should hit Triggers.
-         * @returns All colliders that were hit. 
-         */
-        static BoxCastAll(center: Vector3, halfExtents: Vector3, direction: Vector3, orientation: Quaternion, maxDistance: number, layerMask: number, queryTriggerInteraction: any): Array<RaycastHit>
-        static BoxCastAll(center: Vector3, halfExtents: Vector3, direction: Vector3, orientation: Quaternion, maxDistance: number, layerMask: number): Array<RaycastHit>
-        static BoxCastAll(center: Vector3, halfExtents: Vector3, direction: Vector3, orientation: Quaternion, maxDistance: number): Array<RaycastHit>
-        static BoxCastAll(center: Vector3, halfExtents: Vector3, direction: Vector3, orientation: Quaternion): Array<RaycastHit>
-        static BoxCastAll(center: Vector3, halfExtents: Vector3, direction: Vector3): Array<RaycastHit>
-        /** Check the given capsule against the physics world and return all overlapping colliders in the user-provided buffer.
-         * @param point0 The center of the sphere at the start of the capsule.
-         * @param point1 The center of the sphere at the end of the capsule.
-         * @param radius The radius of the capsule.
-         * @param results The buffer to store the results into.
-         * @param layerMask A that is used to selectively ignore colliders when casting a capsule.
-         * @param queryTriggerInteraction Specifies whether this query should hit Triggers.
-         * @returns The amount of entries written to the buffer. 
-         */
-        static OverlapCapsuleNonAlloc(point0: Vector3, point1: Vector3, radius: number, results: Array<Collider>, layerMask: number, queryTriggerInteraction: any): number
-        static OverlapCapsuleNonAlloc(point0: Vector3, point1: Vector3, radius: number, results: Array<Collider>, layerMask: number): number
-        static OverlapCapsuleNonAlloc(point0: Vector3, point1: Vector3, radius: number, results: Array<Collider>): number
-        /** Rebuild the broadphase interest regions as well as set the world boundaries.
-         * @param worldBounds Boundaries of the physics world.
-         * @param subdivisions How many cells to create along x and z axis.
-         */
-        static RebuildBroadphaseRegions(worldBounds: Bounds, subdivisions: number): void
-        /** The gravity applied to all rigid bodies in the Scene.
-         */
-        static gravity: Vector3
-        /** The default contact offset of the newly created colliders.
-         */
-        static defaultContactOffset: number
-        /** The mass-normalized energy threshold, below which objects start going to sleep.
-         */
-        static sleepThreshold: number
-        /** Specifies whether queries (raycasts, spherecasts, overlap tests, etc.) hit Triggers by default.
-         */
-        static queriesHitTriggers: boolean
-        /** Whether physics queries should hit back-face triangles.
-         */
-        static queriesHitBackfaces: boolean
-        /** Two colliding objects with a relative velocity below this will not bounce (default 2). Must be positive.
-         */
-        static bounceThreshold: number
-        /** The defaultSolverIterations determines how accurately Rigidbody joints and collision contacts are resolved. (default 6). Must be positive.
-         */
-        static defaultSolverIterations: number
-        /** The defaultSolverVelocityIterations affects how accurately the Rigidbody joints and collision contacts are resolved. (default 1). Must be positive.
-         */
-        static defaultSolverVelocityIterations: number
-        /** Default maximum angular speed of the dynamic Rigidbody, in radians (default 50).
-         */
-        static defaultMaxAngularSpeed: number
-        /** The PhysicsScene automatically created when Unity starts.
-         */
-        static readonly defaultPhysicsScene: any
-        /** Sets whether the physics should be simulated automatically or not.
-         */
-        static autoSimulation: boolean
-        /** Whether or not to automatically sync transform changes with the physics system whenever a Transform component changes.
-         */
-        static autoSyncTransforms: boolean
-        /** Determines whether the garbage collector should reuse only a single instance of a Collision type for all collision callbacks.
-         */
-        static reuseCollisionCallbacks: boolean
-        /** Sets the minimum separation distance for cloth inter-collision.
-         */
-        static interCollisionDistance: number
-        /** Sets the cloth inter-collision stiffness.
-         */
-        static interCollisionStiffness: number
-        static interCollisionSettingsToggle: boolean
-        /** Cloth Gravity setting.
-Set gravity for all cloth components.
-         */
-        static clothGravity: Vector3
-        /** Layer mask constant to select ignore raycast layer.
-         */
-        static readonly IgnoreRaycastLayer: number
-        /** Layer mask constant to select default raycast layers.
-         */
-        static readonly DefaultRaycastLayers: number
-        /** Layer mask constant to select all layers.
-         */
-        static readonly AllLayers: number
-    }
-}
-declare module "UnityEngine" {
-    import * as jsb from "jsb";
-    import { Array } from "System";
-    /** A base class of all colliders.
-     */
-    class Collider extends Component {
-        constructor()
-        /** Returns a point on the collider that is closest to a given location.
-         * @param position Location you want to find the closest point to.
-         * @returns The point on the collider that is closest to the specified location. 
-         */
-        ClosestPoint(position: Vector3): Vector3
-        /** Casts a Ray that ignores all Colliders except this one.
-         * @param ray The starting point and direction of the ray.
-         * @param hitInfo If true is returned, hitInfo will contain more information about where the collider was hit.
-         * @param maxDistance The max length of the ray.
-         * @returns True when the ray intersects the collider, otherwise false. 
-         */
-        Raycast(ray: Ray, hitInfo: jsb.Out<RaycastHit>, maxDistance: number): boolean
-        /** The closest point to the bounding box of the attached collider.
-         */
-        ClosestPointOnBounds(position: Vector3): Vector3
-        /** Enabled Colliders will collide with other Colliders, disabled Colliders won't.
-         */
-        enabled: boolean
-        /** The rigidbody the collider is attached to.
-         */
-        readonly attachedRigidbody: Rigidbody
-        /** Is the collider a trigger?
-         */
-        isTrigger: boolean
-        /** Contact offset value of this collider.
-         */
-        contactOffset: number
-        /** The world space bounding volume of the collider (Read Only).
-         */
-        readonly bounds: Bounds
-        /** The shared physic material of this collider.
-         */
-        sharedMaterial: any
-        /** The material used by the collider.
-         */
-        material: any
-    }
-}
-declare module "UnityEngine" {
-    /** A box-shaped primitive collider.
-     */
-    class BoxCollider extends Collider {
-        constructor()
-        /** The center of the box, measured in the object's local space.
-         */
-        center: Vector3
-        /** The size of the box, measured in the object's local space.
-         */
-        size: Vector3
-    }
-}
-declare module "UnityEngine" {
-    /** A sphere-shaped primitive collider.
-     */
-    class SphereCollider extends Collider {
-        constructor()
-        /** The center of the sphere in the object's local space.
-         */
-        center: Vector3
-        /** The radius of the sphere measured in the object's local space.
-         */
-        radius: number
-    }
-}
-declare module "UnityEngine" {
-    import * as jsb from "jsb";
-    import { Enum, Array } from "System";
-    /** Control of an object's position through physics simulation.
-     */
-    class Rigidbody extends Component {
-        constructor()
-        /** Sets the mass based on the attached colliders assuming a constant density.
-         */
-        SetDensity(density: number): void
-        /** Moves the rigidbody to position.
-         * @param position The new position for the Rigidbody object.
-         */
-        MovePosition(position: Vector3): void
-        /** Rotates the rigidbody to rotation.
-         * @param rot The new rotation for the Rigidbody.
-         */
-        MoveRotation(rot: Quaternion): void
-        Sleep(): void
-        IsSleeping(): boolean
-        WakeUp(): void
-        ResetCenterOfMass(): void
-        ResetInertiaTensor(): void
-        /** The velocity relative to the rigidbody at the point relativePoint.
-         */
-        GetRelativePointVelocity(relativePoint: Vector3): Vector3
-        /** The velocity of the rigidbody at the point worldPoint in global space.
-         */
-        GetPointVelocity(worldPoint: Vector3): Vector3
-        /** Adds a force to the Rigidbody.
-         * @param x Size of force along the world x-axis.
-         * @param y Size of force along the world y-axis.
-         * @param z Size of force along the world z-axis.
-         * @param mode Type of force to apply.
-         */
-        AddForce(x: number, y: number, z: number, mode: any): void
-        /** Adds a force to the Rigidbody.
-         * @param x Size of force along the world x-axis.
-         * @param y Size of force along the world y-axis.
-         * @param z Size of force along the world z-axis.
-         * @param mode Type of force to apply.
-         */
-        AddForce(x: number, y: number, z: number): void
-        /** Adds a force to the Rigidbody.
-         * @param force Force vector in world coordinates.
-         * @param mode Type of force to apply.
-         */
-        AddForce(force: Vector3, mode: any): void
-        /** Adds a force to the Rigidbody.
-         * @param force Force vector in world coordinates.
-         * @param mode Type of force to apply.
-         */
-        AddForce(force: Vector3): void
-        /** Adds a force to the rigidbody relative to its coordinate system.
-         * @param x Size of force along the local x-axis.
-         * @param y Size of force along the local y-axis.
-         * @param z Size of force along the local z-axis.
-         */
-        AddRelativeForce(x: number, y: number, z: number, mode: any): void
-        /** Adds a force to the rigidbody relative to its coordinate system.
-         * @param x Size of force along the local x-axis.
-         * @param y Size of force along the local y-axis.
-         * @param z Size of force along the local z-axis.
-         */
-        AddRelativeForce(x: number, y: number, z: number): void
-        /** Adds a force to the rigidbody relative to its coordinate system.
-         * @param force Force vector in local coordinates.
-         */
-        AddRelativeForce(force: Vector3, mode: any): void
-        /** Adds a force to the rigidbody relative to its coordinate system.
-         * @param force Force vector in local coordinates.
-         */
-        AddRelativeForce(force: Vector3): void
-        /** Adds a torque to the rigidbody.
-         * @param x Size of torque along the world x-axis.
-         * @param y Size of torque along the world y-axis.
-         * @param z Size of torque along the world z-axis.
-         */
-        AddTorque(x: number, y: number, z: number, mode: any): void
-        /** Adds a torque to the rigidbody.
-         * @param x Size of torque along the world x-axis.
-         * @param y Size of torque along the world y-axis.
-         * @param z Size of torque along the world z-axis.
-         */
-        AddTorque(x: number, y: number, z: number): void
-        /** Adds a torque to the rigidbody.
-         * @param torque Torque vector in world coordinates.
-         */
-        AddTorque(torque: Vector3, mode: any): void
-        /** Adds a torque to the rigidbody.
-         * @param torque Torque vector in world coordinates.
-         */
-        AddTorque(torque: Vector3): void
-        /** Adds a torque to the rigidbody relative to its coordinate system.
-         * @param x Size of torque along the local x-axis.
-         * @param y Size of torque along the local y-axis.
-         * @param z Size of torque along the local z-axis.
-         */
-        AddRelativeTorque(x: number, y: number, z: number, mode: any): void
-        /** Adds a torque to the rigidbody relative to its coordinate system.
-         * @param x Size of torque along the local x-axis.
-         * @param y Size of torque along the local y-axis.
-         * @param z Size of torque along the local z-axis.
-         */
-        AddRelativeTorque(x: number, y: number, z: number): void
-        /** Adds a torque to the rigidbody relative to its coordinate system.
-         * @param torque Torque vector in local coordinates.
-         */
-        AddRelativeTorque(torque: Vector3, mode: any): void
-        /** Adds a torque to the rigidbody relative to its coordinate system.
-         * @param torque Torque vector in local coordinates.
-         */
-        AddRelativeTorque(torque: Vector3): void
-        /** Applies force at position. As a result this will apply a torque and force on the object.
-         * @param force Force vector in world coordinates.
-         * @param position Position in world coordinates.
-         */
-        AddForceAtPosition(force: Vector3, position: Vector3, mode: any): void
-        /** Applies force at position. As a result this will apply a torque and force on the object.
-         * @param force Force vector in world coordinates.
-         * @param position Position in world coordinates.
-         */
-        AddForceAtPosition(force: Vector3, position: Vector3): void
-        /** Applies a force to a rigidbody that simulates explosion effects.
-         * @param explosionForce The force of the explosion (which may be modified by distance).
-         * @param explosionPosition The centre of the sphere within which the explosion has its effect.
-         * @param explosionRadius The radius of the sphere within which the explosion has its effect.
-         * @param upwardsModifier Adjustment to the apparent position of the explosion to make it seem to lift objects.
-         * @param mode The method used to apply the force to its targets.
-         */
-        AddExplosionForce(explosionForce: number, explosionPosition: Vector3, explosionRadius: number, upwardsModifier: number, mode: any): void
-        /** Applies a force to a rigidbody that simulates explosion effects.
-         * @param explosionForce The force of the explosion (which may be modified by distance).
-         * @param explosionPosition The centre of the sphere within which the explosion has its effect.
-         * @param explosionRadius The radius of the sphere within which the explosion has its effect.
-         * @param upwardsModifier Adjustment to the apparent position of the explosion to make it seem to lift objects.
-         * @param mode The method used to apply the force to its targets.
-         */
-        AddExplosionForce(explosionForce: number, explosionPosition: Vector3, explosionRadius: number, upwardsModifier: number): void
-        /** Applies a force to a rigidbody that simulates explosion effects.
-         * @param explosionForce The force of the explosion (which may be modified by distance).
-         * @param explosionPosition The centre of the sphere within which the explosion has its effect.
-         * @param explosionRadius The radius of the sphere within which the explosion has its effect.
-         * @param upwardsModifier Adjustment to the apparent position of the explosion to make it seem to lift objects.
-         * @param mode The method used to apply the force to its targets.
-         */
-        AddExplosionForce(explosionForce: number, explosionPosition: Vector3, explosionRadius: number): void
-        /** The closest point to the bounding box of the attached colliders.
-         */
-        ClosestPointOnBounds(position: Vector3): Vector3
-        /** Tests if a rigidbody would collide with anything, if it was moved through the Scene.
-         * @param direction The direction into which to sweep the rigidbody.
-         * @param hitInfo If true is returned, hitInfo will contain more information about where the collider was hit (See Also: RaycastHit).
-         * @param maxDistance The length of the sweep.
-         * @param queryTriggerInteraction Specifies whether this query should hit Triggers.
-         * @returns True when the rigidbody sweep intersects any collider, otherwise false. 
-         */
-        SweepTest(direction: Vector3, hitInfo: jsb.Out<RaycastHit>, maxDistance: number, queryTriggerInteraction: any): boolean
-        SweepTest(direction: Vector3, hitInfo: jsb.Out<RaycastHit>, maxDistance: number): boolean
-        SweepTest(direction: Vector3, hitInfo: jsb.Out<RaycastHit>): boolean
-        /** Like Rigidbody.SweepTest, but returns all hits.
-         * @param direction The direction into which to sweep the rigidbody.
-         * @param maxDistance The length of the sweep.
-         * @param queryTriggerInteraction Specifies whether this query should hit Triggers.
-         * @returns An array of all colliders hit in the sweep. 
-         */
-        SweepTestAll(direction: Vector3, maxDistance: number, queryTriggerInteraction: any): Array<RaycastHit>
-        SweepTestAll(direction: Vector3, maxDistance: number): Array<RaycastHit>
-        SweepTestAll(direction: Vector3): Array<RaycastHit>
-        /** The velocity vector of the rigidbody.
-         */
-        velocity: Vector3
-        /** The angular velocity vector of the rigidbody measured in radians per second.
-         */
-        angularVelocity: Vector3
-        /** The drag of the object.
-         */
-        drag: number
-        /** The angular drag of the object.
-         */
-        angularDrag: number
-        /** The mass of the rigidbody.
-         */
-        mass: number
-        /** Controls whether gravity affects this rigidbody.
-         */
-        useGravity: boolean
-        /** Maximum velocity of a rigidbody when moving out of penetrating state.
-         */
-        maxDepenetrationVelocity: number
-        /** Controls whether physics affects the rigidbody.
-         */
-        isKinematic: boolean
-        /** Controls whether physics will change the rotation of the object.
-         */
-        freezeRotation: boolean
-        /** Controls which degrees of freedom are allowed for the simulation of this Rigidbody.
-         */
-        constraints: any
-        /** The Rigidbody's collision detection mode.
-         */
-        collisionDetectionMode: any
-        /** The center of mass relative to the transform's origin.
-         */
-        centerOfMass: Vector3
-        /** The center of mass of the rigidbody in world space (Read Only).
-         */
-        readonly worldCenterOfMass: Vector3
-        /** The rotation of the inertia tensor.
-         */
-        inertiaTensorRotation: Quaternion
-        /** The diagonal inertia tensor of mass relative to the center of mass.
-         */
-        inertiaTensor: Vector3
-        /** Should collision detection be enabled? (By default always enabled).
-         */
-        detectCollisions: boolean
-        /** The position of the rigidbody.
-         */
-        position: Vector3
-        /** The rotation of the rigidbody.
-         */
-        rotation: Quaternion
-        /** Interpolation allows you to smooth out the effect of running physics at a fixed frame rate.
-         */
-        interpolation: any
-        /** The solverIterations determines how accurately Rigidbody joints and collision contacts are resolved. Overrides Physics.defaultSolverIterations. Must be positive.
-         */
-        solverIterations: number
-        /** The mass-normalized energy threshold, below which objects start going to sleep.
-         */
-        sleepThreshold: number
-        /** The maximimum angular velocity of the rigidbody measured in radians per second. (Default 7) range { 0, infinity }.
-         */
-        maxAngularVelocity: number
-        /** The solverVelocityIterations affects how how accurately Rigidbody joints and collision contacts are resolved. Overrides Physics.defaultSolverVelocityIterations. Must be positive.
-         */
-        solverVelocityIterations: number
-    }
-}
-declare module "UnityEngine" {
     import * as jsb from "jsb";
     import { ValueType, Array, Object as Object1, Enum } from "System";
     import { List } from "System.Collections.Generic";
-    /** Script interface for Particle Systems.
+    /** Script interface for ParticleSystem. Unity's powerful and versatile particle system implementation.
      */
     class ParticleSystem extends Component {
         constructor()
         SetParticles(particles: Array<any>, size: number, offset: number): void
+        SetParticles(particles: any, size: number, offset: number): void
         SetParticles(particles: Array<any>, size: number): void
+        SetParticles(particles: any, size: number): void
         SetParticles(particles: Array<any>): void
+        SetParticles(particles: any): void
         GetParticles(particles: Array<any>, size: number, offset: number): number
+        GetParticles(particles: any, size: number, offset: number): number
         GetParticles(particles: Array<any>, size: number): number
+        GetParticles(particles: any, size: number): number
         GetParticles(particles: Array<any>): number
+        GetParticles(particles: any): number
         SetCustomParticleData(customData: any, streamIndex: any): void
         GetCustomParticleData(customData: any, streamIndex: any): number
+        GetPlaybackState(): any
+        SetPlaybackState(playbackState: any): void
+        GetTrails(): any
+        SetTrails(trailData: any): void
         /** Fast-forwards the Particle System by simulating particles over the given period of time, then pauses it.
          * @param t Time period in seconds to advance the ParticleSystem simulation by. If restart is true, the ParticleSystem will be reset to 0 time, and then advanced by this value. If restart is false, the ParticleSystem simulation will be advanced in time from its current state by this value.
          * @param withChildren Fast-forward all child Particle Systems as well.
@@ -21251,7 +21770,6 @@ declare module "UnityEngine" {
          * @param subEmitterIndex Index of the sub emitter to trigger.
          */
         TriggerSubEmitter(subEmitterIndex: number): void
-        ClearJob(): void
         /** Safe array size for use with ParticleSystem.GetCollisionEvents.
          */
         GetSafeCollisionEventSize(): number
@@ -21266,13 +21784,18 @@ declare module "UnityEngine" {
         SetTriggerParticles(type: any, particles: any, offset: number, count: number): void
         SetTriggerParticles(type: any, particles: any): void
         static ResetPreMappedBufferMemory(): void
+        /** Limits the amount of graphics memory Unity reserves for efficient rendering of Particle Systems.
+         * @param vertexBuffersCount The maximum number of cached vertex buffers.
+         * @param indexBuffersCount The maximum number of cached index buffers.
+         */
+        static SetMaximumPreMappedBufferCounts(vertexBuffersCount: number, indexBuffersCount: number): void
         /** Determines whether the Particle System is playing.
          */
         readonly isPlaying: boolean
         /** Determines whether the Particle System is emitting particles. A Particle System may stop emitting when its emission module has finished, it has been paused or if the system has been stopped using ParticleSystem.Stop|Stop with the ParticleSystemStopBehavior.StopEmitting|StopEmitting flag. Resume emitting by calling ParticleSystem.Play|Play.
          */
         readonly isEmitting: boolean
-        /** Determines whether the Particle System is stopped.
+        /** Determines whether the Particle System is in the stopped state.
          */
         readonly isStopped: boolean
         /** Determines whether the Particle System is paused.
@@ -21296,67 +21819,67 @@ declare module "UnityEngine" {
         /** Access the main Particle System settings.
          */
         readonly main: ParticleSystem.MainModule
-        /** Script interface for the Particle System emission module.
+        /** Script interface for the EmissionModule of a Particle System.
          */
         readonly emission: any
-        /** Script interface for the Particle System Shape module.
+        /** Script interface for the ShapeModule of a Particle System. 
          */
         readonly shape: any
-        /** Script interface for the Particle System Velocity over Lifetime module.
+        /** Script interface for the VelocityOverLifetimeModule of a Particle System.
          */
         readonly velocityOverLifetime: any
-        /** Script interface for the Particle System Limit Velocity over Lifetime module.
+        /** Script interface for the LimitVelocityOverLifetimeModule of a Particle System. .
          */
         readonly limitVelocityOverLifetime: any
-        /** Script interface for the Particle System velocity inheritance module.
+        /** Script interface for the InheritVelocityModule of a Particle System.
          */
         readonly inheritVelocity: any
-        /** Script interface for the Particle System force over lifetime module.
+        /** Script interface for the ForceOverLifetimeModule of a Particle System.
          */
         readonly forceOverLifetime: any
-        /** Script interface for the Particle System color over lifetime module.
+        /** Script interface for the ColorOverLifetimeModule of a Particle System.
          */
         readonly colorOverLifetime: any
-        /** Script interface for the Particle System color by lifetime module.
+        /** Script interface for the ColorByLifetimeModule of a Particle System.
          */
         readonly colorBySpeed: any
-        /** Script interface for the Particle System Size over Lifetime module.
+        /** Script interface for the SizeOverLifetimeModule of a Particle System. 
          */
         readonly sizeOverLifetime: any
-        /** Script interface for the Particle System Size by Speed module.
+        /** Script interface for the SizeBySpeedModule of a Particle System.
          */
         readonly sizeBySpeed: any
-        /** Script interface for the Particle System Rotation over Lifetime module.
+        /** Script interface for the RotationOverLifetimeModule of a Particle System.
          */
         readonly rotationOverLifetime: any
-        /** Script interface for the Particle System Rotation by Speed  module.
+        /** Script interface for the RotationBySpeedModule of a Particle System.
          */
         readonly rotationBySpeed: any
-        /** Script interface for the Particle System external forces module.
+        /** Script interface for the ExternalForcesModule of a Particle System.
          */
         readonly externalForces: any
-        /** Script interface for the Particle System Noise module.
+        /** Script interface for the NoiseModule of a Particle System.
          */
         readonly noise: any
-        /** Script interface for the Particle System collision module.
+        /** Script interface for the CollisionModule of a Particle System.
          */
         readonly collision: any
-        /** Script interface for the Particle System Trigger module.
+        /** Script interface for the TriggerModule of a Particle System.
          */
         readonly trigger: any
-        /** Script interface for the Particle System Sub Emitters module.
+        /** Script interface for the SubEmittersModule of a Particle System.
          */
         readonly subEmitters: any
-        /** Script interface for the Particle System Texture Sheet Animation module.
+        /** Script interface for the TextureSheetAnimationModule of a Particle System.
          */
         readonly textureSheetAnimation: any
-        /** Script interface for the Particle System Lights module.
+        /** Script interface for the LightsModule of a Particle System.
          */
         readonly lights: any
-        /** Script interface for the Particle System Trails module.
+        /** Script interface for the TrailsModule of a Particle System.
          */
         readonly trails: any
-        /** Script interface for the Particle System Custom Data module.
+        /** Script interface for the CustomDataModule of a Particle System.
          */
         readonly customData: any
     }
@@ -21365,47 +21888,47 @@ declare module "UnityEngine" {
     import * as jsb from "jsb";
     import { Enum, Array, Object as Object1 } from "System";
     import { List } from "System.Collections.Generic";
-    /** Renders particles on to the screen.
+    /** Use this class to render particles on to the screen.
      */
     class ParticleSystemRenderer extends Renderer {
         constructor()
-        /** Get the array of meshes to be used as particles.
-         * @param meshes This array will be populated with the list of meshes being used for particle rendering.
-         * @returns The number of meshes actually written to the destination array. 
+        /** Get the array of Meshes to be used as particles.
+         * @param meshes This array is populated with the list of Meshes being used for particle rendering.
+         * @returns The number of Meshes actually written to the destination array. 
          */
         GetMeshes(meshes: Array<any>): number
-        /** Set an array of meshes to be used as particles when the ParticleSystemRenderer.renderMode is set to ParticleSystemRenderMode.Mesh.
-         * @param meshes Array of meshes to be used.
-         * @param size Number of elements from the mesh array to be applied.
+        /** Set an array of Meshes to use as particles when the ParticleSystemRenderer.renderMode is set to ParticleSystemRenderMode.Mesh.
+         * @param meshes Array of Meshes to use.
+         * @param size Number of elements from the Mesh array to apply.
          */
         SetMeshes(meshes: Array<any>, size: number): void
-        /** Set an array of meshes to be used as particles when the ParticleSystemRenderer.renderMode is set to ParticleSystemRenderMode.Mesh.
-         * @param meshes Array of meshes to be used.
-         * @param size Number of elements from the mesh array to be applied.
+        /** Set an array of Meshes to use as particles when the ParticleSystemRenderer.renderMode is set to ParticleSystemRenderMode.Mesh.
+         * @param meshes Array of Meshes to use.
+         * @param size Number of elements from the Mesh array to apply.
          */
         SetMeshes(meshes: Array<any>): void
         /** Creates a snapshot of ParticleSystemRenderer and stores it in mesh.
-         * @param mesh A static mesh that will receive the snapshot of the particles.
-         * @param camera The camera used for determining which way camera-space particles will face.
-         * @param useTransform Include the rotation and scale of the Transform in the baked mesh.
+         * @param mesh A static Mesh to receive the snapshot of the particles.
+         * @param camera The Camera used to determine which way camera-space particles face.
+         * @param useTransform Specifies whether to include the rotation and scale of the Transform in the baked Mesh.
          */
         BakeMesh(mesh: any, camera: Camera, useTransform: boolean): void
         /** Creates a snapshot of ParticleSystemRenderer and stores it in mesh.
-         * @param mesh A static mesh that will receive the snapshot of the particles.
-         * @param camera The camera used for determining which way camera-space particles will face.
-         * @param useTransform Include the rotation and scale of the Transform in the baked mesh.
+         * @param mesh A static Mesh to receive the snapshot of the particles.
+         * @param camera The Camera used to determine which way camera-space particles face.
+         * @param useTransform Specifies whether to include the rotation and scale of the Transform in the baked Mesh.
          */
         BakeMesh(mesh: any, useTransform: boolean): void
         /** Creates a snapshot of ParticleSystem Trails and stores them in mesh.
-         * @param mesh A static mesh that will receive the snapshot of the particle trails.
-         * @param camera The camera used for determining which way camera-space trails will face.
-         * @param useTransform Include the rotation and scale of the Transform in the baked mesh.
+         * @param mesh A static Mesh to receive the snapshot of the particle trails.
+         * @param camera The Camera used to determine which way camera-space trails face.
+         * @param useTransform Specifies whether to include the rotation and scale of the Transform in the baked Mesh.
          */
         BakeTrailsMesh(mesh: any, camera: Camera, useTransform: boolean): void
         /** Creates a snapshot of ParticleSystem Trails and stores them in mesh.
-         * @param mesh A static mesh that will receive the snapshot of the particle trails.
-         * @param camera The camera used for determining which way camera-space trails will face.
-         * @param useTransform Include the rotation and scale of the Transform in the baked mesh.
+         * @param mesh A static Mesh to receive the snapshot of the particle trails.
+         * @param camera The Camera used to determine which way camera-space trails face.
+         * @param useTransform Specifies whether to include the rotation and scale of the Transform in the baked Mesh.
          */
         BakeTrailsMesh(mesh: any, useTransform: boolean): void
         SetActiveVertexStreams(streams: any): void
@@ -21413,22 +21936,22 @@ declare module "UnityEngine" {
         /** Control the direction that particles face.
          */
         alignment: any
-        /** How particles are drawn.
+        /** Specifies how the system draws particles.
          */
         renderMode: any
-        /** Sort particles within a system.
+        /** Specifies how to sort particles within a system.
          */
         sortMode: any
         /** How much are the particles stretched in their direction of motion.
          */
         lengthScale: number
-        /** How much are the particles stretched depending on "how fast they move".
+        /** Specifies how much particles stretch depending on their velocity.
          */
         velocityScale: number
-        /** How much are the particles stretched depending on the Camera's speed.
+        /** How much do the particles stretch depending on the Camera's speed.
          */
         cameraVelocityScale: number
-        /** How much are billboard particle normals oriented towards the camera.
+        /** Specifies how much a billboard particle orients its normals towards the Camera.
          */
         normalDirection: number
         /** Apply a shadow bias to prevent self-shadowing artifacts. The specified value is the proportion of the particle size.
@@ -21452,24 +21975,27 @@ declare module "UnityEngine" {
         /** Specifies how the Particle System Renderer interacts with SpriteMask.
          */
         maskInteraction: any
-        /** Set the material used by the Trail module for attaching trails to particles.
+        /** Set the Material that the TrailModule uses to attach trails to particles.
          */
         trailMaterial: Material
-        /** Enables GPU Instancing on platforms where it is supported.
+        /** Enables GPU Instancing on platforms that support it.
          */
         enableGPUInstancing: boolean
-        /** Allow billboard particles to roll around their Z axis.
+        /** Allow billboard particles to roll around their z-axis.
          */
         allowRoll: boolean
-        /** Mesh used as particle instead of billboarded texture.
+        /** The Mesh that the particle uses instead of a billboarded Texture.
          */
         mesh: any
-        /** The number of meshes being used for particle rendering.
+        /** The number of Meshes the system uses for particle rendering.
          */
         readonly meshCount: number
         /** The number of currently active custom vertex streams.
          */
         readonly activeVertexStreamsCount: number
+        /** Determines whether the Particle System can be rendered using GPU Instancing.
+         */
+        readonly supportsMeshInstancing: boolean
     }
 }
 declare module "UnityEngine" {
@@ -21821,6 +22347,7 @@ declare module "global" {
     class SampleBehaviour extends MonoBehaviour {
         constructor()
         SimpleWait(t: number): Promise<string>
+        AnotherWait(t: number): Promise<any>
         PrimitiveCall(a: string, b: number): void
     }
 }
@@ -22446,16 +22973,995 @@ declare module "QuickJS.IO" {
         readonly isWritable: boolean
     }
 }
+declare module "UnityEngine.UI" {
+    import { Object } from "System";
+    class AnimationTriggers extends Object {
+        constructor()
+        normalTrigger: string
+        highlightedTrigger: string
+        pressedTrigger: string
+        selectedTrigger: string
+        disabledTrigger: string
+    }
+}
+declare module "UnityEngine.UI" {
+    import { IEventSystemHandler, IPointerEnterHandler, ISelectHandler, IPointerExitHandler, IDeselectHandler, IPointerDownHandler, IPointerUpHandler, IMoveHandler, ISubmitHandler, IPointerClickHandler, PointerEventData, BaseEventData } from "UnityEngine.EventSystems";
+    class Button extends Selectable implements IEventSystemHandler, IPointerEnterHandler, ISelectHandler, IPointerExitHandler, IDeselectHandler, IPointerDownHandler, IPointerUpHandler, IMoveHandler, ISubmitHandler, IPointerClickHandler {
+        OnPointerClick(eventData: PointerEventData): void
+        OnSubmit(eventData: BaseEventData): void
+        /*protected*/ constructor()
+        onClick: Button.ButtonClickedEvent
+    }
+}
+declare module "UnityEngine.UI" {
+    import * as jsb from "jsb";
+    import { UIBehaviour, IEventSystemHandler, IPointerEnterHandler, ISelectHandler, IPointerExitHandler, IDeselectHandler, IPointerDownHandler, IPointerUpHandler, IMoveHandler, AxisEventData, PointerEventData, BaseEventData } from "UnityEngine.EventSystems";
+    import { Array } from "System";
+    import { Animator, Vector3 } from "UnityEngine";
+    class Selectable extends UIBehaviour implements IEventSystemHandler, IPointerEnterHandler, ISelectHandler, IPointerExitHandler, IDeselectHandler, IPointerDownHandler, IPointerUpHandler, IMoveHandler {
+        IsInteractable(): boolean
+        FindSelectable(dir: Vector3): Selectable
+        FindSelectableOnLeft(): Selectable
+        FindSelectableOnRight(): Selectable
+        FindSelectableOnUp(): Selectable
+        FindSelectableOnDown(): Selectable
+        OnMove(eventData: AxisEventData): void
+        OnPointerDown(eventData: PointerEventData): void
+        OnPointerUp(eventData: PointerEventData): void
+        OnPointerEnter(eventData: PointerEventData): void
+        OnPointerExit(eventData: PointerEventData): void
+        OnSelect(eventData: BaseEventData): void
+        OnDeselect(eventData: BaseEventData): void
+        Select(): void
+        static AllSelectablesNoAlloc(selectables: Array<Selectable>): number
+        /*protected*/ constructor()
+        static readonly allSelectablesArray: Array<Selectable>
+        static readonly allSelectableCount: number
+        navigation: Navigation
+        transition: Selectable.Transition
+        colors: ColorBlock
+        spriteState: SpriteState
+        animationTriggers: AnimationTriggers
+        targetGraphic: Graphic
+        interactable: boolean
+        image: Image
+        readonly animator: Animator
+    }
+}
+declare module "UnityEngine.EventSystems" {
+    import { MonoBehaviour } from "UnityEngine";
+    abstract class UIBehaviour extends MonoBehaviour {
+        IsActive(): boolean
+        IsDestroyed(): boolean
+    }
+}
+declare module "UnityEngine.UI" {
+    import { Enum } from "System";
+    enum CanvasUpdate {
+        Prelayout = 0,
+        Layout = 1,
+        PostLayout = 2,
+        PreRender = 3,
+        LatePreRender = 4,
+        MaxUpdateValue = 5,
+    }
+}
+declare module "UnityEngine.UI" {
+    import { Transform } from "UnityEngine";
+    interface ICanvasElement {
+        Rebuild(executing: CanvasUpdate): void
+        LayoutComplete(): void
+        GraphicUpdateComplete(): void
+        IsDestroyed(): boolean
+        readonly transform: Transform
+    }
+}
+declare module "UnityEngine.UI" {
+    import { Object } from "System";
+    class CanvasUpdateRegistry extends Object {
+        static RegisterCanvasElementForLayoutRebuild(element: ICanvasElement): void
+        static TryRegisterCanvasElementForLayoutRebuild(element: ICanvasElement): boolean
+        static RegisterCanvasElementForGraphicRebuild(element: ICanvasElement): void
+        static TryRegisterCanvasElementForGraphicRebuild(element: ICanvasElement): boolean
+        static UnRegisterCanvasElementForRebuild(element: ICanvasElement): void
+        static IsRebuildingLayout(): boolean
+        static IsRebuildingGraphics(): boolean
+        protected constructor()
+        static readonly instance: CanvasUpdateRegistry
+    }
+}
+declare module "UnityEngine.UI" {
+    import { ValueType, Object } from "System";
+    import { Color } from "UnityEngine";
+    class ColorBlock extends ValueType {
+        constructor()
+        Equals(obj: Object): boolean
+        Equals(other: ColorBlock): boolean
+        GetHashCode(): number
+        static op_Inequality(point1: ColorBlock, point2: ColorBlock): boolean
+        // js_op_overloading: static ==(point1: ColorBlock, point2: ColorBlock): boolean
+        normalColor: Color
+        highlightedColor: Color
+        pressedColor: Color
+        selectedColor: Color
+        disabledColor: Color
+        colorMultiplier: number
+        fadeDuration: number
+        static readonly defaultColorBlock: ColorBlock
+    }
+}
+declare module "UnityEngine.UI" {
+    import { Object } from "System";
+    class ClipperRegistry extends Object {
+        Cull(): void
+        static Register(c: IClipper): void
+        static Unregister(c: IClipper): void
+        protected constructor()
+        static readonly instance: ClipperRegistry
+    }
+}
+declare module "UnityEngine.UI" {
+    import * as jsb from "jsb";
+    import { Object, Array } from "System";
+    import { Rect } from "UnityEngine";
+    import { List } from "System.Collections.Generic";
+    abstract class Clipping extends Object {
+        static FindCullAndClipWorldRect(rectMaskParents: any, validRect: jsb.Out<boolean>): Rect
+    }
+}
+declare module "UnityEngine.UI" {
+    interface IClipper {
+        PerformClipping(): void
+    }
+}
+declare module "UnityEngine.UI" {
+    import { GameObject, RectTransform, Rect, Vector2 } from "UnityEngine";
+    interface IClippable {
+        RecalculateClipping(): void
+        Cull(clipRect: Rect, validRect: boolean): void
+        SetClipRect(value: Rect, validRect: boolean): void
+        SetClipSoftness(clipSoftness: Vector2): void
+        readonly gameObject: GameObject
+        readonly rectTransform: RectTransform
+    }
+}
+declare module "UnityEngine.UI" {
+    import { Object } from "System";
+    import { GameObject } from "UnityEngine";
+    abstract class DefaultControls extends Object {
+        static CreatePanel(resources: DefaultControls.Resources): GameObject
+        static CreateButton(resources: DefaultControls.Resources): GameObject
+        static CreateText(resources: DefaultControls.Resources): GameObject
+        static CreateImage(resources: DefaultControls.Resources): GameObject
+        static CreateRawImage(resources: DefaultControls.Resources): GameObject
+        static CreateSlider(resources: DefaultControls.Resources): GameObject
+        static CreateScrollbar(resources: DefaultControls.Resources): GameObject
+        static CreateToggle(resources: DefaultControls.Resources): GameObject
+        static CreateInputField(resources: DefaultControls.Resources): GameObject
+        static CreateDropdown(resources: DefaultControls.Resources): GameObject
+        static CreateScrollView(resources: DefaultControls.Resources): GameObject
+        static factory: DefaultControls.IFactoryControls
+    }
+}
+declare module "UnityEngine.UI" {
+    import { IEventSystemHandler, IPointerEnterHandler, ISelectHandler, IPointerExitHandler, IDeselectHandler, IPointerDownHandler, IPointerUpHandler, IMoveHandler, ISubmitHandler, IPointerClickHandler, ICancelHandler, PointerEventData, BaseEventData } from "UnityEngine.EventSystems";
+    import { RectTransform, Sprite } from "UnityEngine";
+    import { List } from "System.Collections.Generic";
+    import { Object } from "System";
+    class Dropdown extends Selectable implements IEventSystemHandler, IPointerEnterHandler, ISelectHandler, IPointerExitHandler, IDeselectHandler, IPointerDownHandler, IPointerUpHandler, IMoveHandler, ISubmitHandler, IPointerClickHandler, ICancelHandler {
+        SetValueWithoutNotify(input: number): void
+        RefreshShownValue(): void
+        AddOptions(options: any): void
+        AddOptions(options: List<string>): void
+        AddOptions(options: any): void
+        ClearOptions(): void
+        OnPointerClick(eventData: PointerEventData): void
+        OnSubmit(eventData: BaseEventData): void
+        OnCancel(eventData: BaseEventData): void
+        Show(): void
+        Hide(): void
+        /*protected*/ constructor()
+        template: RectTransform
+        captionText: Text
+        captionImage: Image
+        itemText: Text
+        itemImage: Image
+        options: any
+        onValueChanged: Dropdown.DropdownEvent
+        alphaFadeSpeed: number
+        value: number
+    }
+}
+declare module "UnityEngine.UI" {
+    import { Object, Enum } from "System";
+    import { Object as Object1, TextAnchor } from "UnityEngine";
+    class FontData extends Object {
+        constructor()
+        static readonly defaultFontData: FontData
+        font: any
+        fontSize: number
+        fontStyle: any
+        bestFit: boolean
+        minSize: number
+        maxSize: number
+        alignment: TextAnchor
+        alignByGeometry: boolean
+        richText: boolean
+        horizontalOverflow: any
+        verticalOverflow: any
+        lineSpacing: number
+    }
+}
+declare module "UnityEngine.UI" {
+    import { Object } from "System";
+    abstract class FontUpdateTracker extends Object {
+        static TrackText(t: Text): void
+        static UntrackText(t: Text): void
+    }
+}
+declare module "UnityEngine.UI" {
+    import { UIBehaviour } from "UnityEngine.EventSystems";
+    import { Material, Color, RectTransform, Behaviour, Component, Texture, Vector2, Camera, Rect } from "UnityEngine";
+    abstract class Graphic extends UIBehaviour implements ICanvasElement {
+        SetAllDirty(): void
+        SetLayoutDirty(): void
+        SetVerticesDirty(): void
+        SetMaterialDirty(): void
+        OnCullingChanged(): void
+        Rebuild(update: CanvasUpdate): void
+        LayoutComplete(): void
+        GraphicUpdateComplete(): void
+        SetNativeSize(): void
+        Raycast(sp: Vector2, eventCamera: Camera): boolean
+        PixelAdjustPoint(point: Vector2): Vector2
+        GetPixelAdjustedRect(): Rect
+        CrossFadeColor(targetColor: Color, duration: number, ignoreTimeScale: boolean, useAlpha: boolean, useRGB: boolean): void
+        CrossFadeColor(targetColor: Color, duration: number, ignoreTimeScale: boolean, useAlpha: boolean): void
+        CrossFadeAlpha(alpha: number, duration: number, ignoreTimeScale: boolean): void
+        RegisterDirtyLayoutCallback(action: () => void): void
+        UnregisterDirtyLayoutCallback(action: () => void): void
+        RegisterDirtyVerticesCallback(action: () => void): void
+        UnregisterDirtyVerticesCallback(action: () => void): void
+        RegisterDirtyMaterialCallback(action: () => void): void
+        UnregisterDirtyMaterialCallback(action: () => void): void
+        static readonly defaultGraphicMaterial: Material
+        color: Color
+        raycastTarget: boolean
+        readonly depth: number
+        readonly rectTransform: RectTransform
+        readonly canvas: any
+        readonly canvasRenderer: any
+        readonly defaultMaterial: Material
+        material: Material
+        readonly materialForRendering: Material
+        readonly mainTexture: Texture
+    }
+}
+declare module "UnityEngine.UI" {
+    import { BaseRaycaster, PointerEventData, RaycastResult } from "UnityEngine.EventSystems";
+    import { Camera } from "UnityEngine";
+    import { List } from "System.Collections.Generic";
+    import { Object } from "System";
+    class GraphicRaycaster extends BaseRaycaster {
+        Raycast(eventData: PointerEventData, resultAppendList: any): void
+        /*protected*/ constructor()
+        readonly sortOrderPriority: number
+        readonly renderOrderPriority: number
+        ignoreReversedGraphics: boolean
+        blockingObjects: GraphicRaycaster.BlockingObjects
+        readonly eventCamera: Camera
+    }
+}
+declare module "UnityEngine.EventSystems" {
+    import { Camera } from "UnityEngine";
+    import { List } from "System.Collections.Generic";
+    import { Object } from "System";
+    abstract class BaseRaycaster extends UIBehaviour {
+        Raycast(eventData: PointerEventData, resultAppendList: any): void
+        toString(): string
+        readonly eventCamera: Camera
+        readonly sortOrderPriority: number
+        readonly renderOrderPriority: number
+        readonly rootRaycaster: BaseRaycaster
+    }
+}
+declare module "UnityEngine.UI" {
+    import { Object } from "System";
+    import { Behaviour } from "UnityEngine";
+    import { IList } from "System.Collections.Generic";
+    class GraphicRegistry extends Object {
+        static RegisterGraphicForCanvas(c: any, graphic: Graphic): void
+        static UnregisterGraphicForCanvas(c: any, graphic: Graphic): void
+        static GetGraphicsForCanvas(canvas: any): any
+        protected constructor()
+        static readonly instance: GraphicRegistry
+    }
+}
+declare module "UnityEngine.UI" {
+    interface IMaskable {
+        RecalculateMasking(): void
+    }
+}
+declare module "UnityEngine.UI" {
+    import { Sprite, Material, Texture, Vector2, Camera } from "UnityEngine";
+    class Image extends MaskableGraphic implements IMaterialModifier, IMaskable, ICanvasElement, ILayoutElement, IClippable {
+        DisableSpriteOptimizations(): void
+        OnBeforeSerialize(): void
+        OnAfterDeserialize(): void
+        SetNativeSize(): void
+        CalculateLayoutInputHorizontal(): void
+        CalculateLayoutInputVertical(): void
+        IsRaycastLocationValid(screenPoint: Vector2, eventCamera: Camera): boolean
+        /*protected*/ constructor()
+        sprite: Sprite
+        overrideSprite: Sprite
+        type: Image.Type
+        preserveAspect: boolean
+        fillCenter: boolean
+        fillMethod: Image.FillMethod
+        fillAmount: number
+        fillClockwise: boolean
+        fillOrigin: number
+        alphaHitTestMinimumThreshold: number
+        useSpriteMesh: boolean
+        static readonly defaultETC1GraphicMaterial: Material
+        readonly mainTexture: Texture
+        readonly hasBorder: boolean
+        pixelsPerUnitMultiplier: number
+        readonly pixelsPerUnit: number
+        material: Material
+        readonly minWidth: number
+        readonly preferredWidth: number
+        readonly flexibleWidth: number
+        readonly minHeight: number
+        readonly preferredHeight: number
+        readonly flexibleHeight: number
+        readonly layoutPriority: number
+    }
+}
+declare module "UnityEngine.UI" {
+    import { Material, Rect, Vector2 } from "UnityEngine";
+    abstract class MaskableGraphic extends Graphic implements IMaterialModifier, IMaskable, ICanvasElement, IClippable {
+        GetModifiedMaterial(baseMaterial: Material): Material
+        Cull(clipRect: Rect, validRect: boolean): void
+        SetClipRect(clipRect: Rect, validRect: boolean): void
+        SetClipSoftness(clipSoftness: Vector2): void
+        RecalculateClipping(): void
+        RecalculateMasking(): void
+        onCullStateChanged: MaskableGraphic.CullStateChangedEvent
+        maskable: boolean
+        isMaskingGraphic: boolean
+    }
+}
+declare module "UnityEngine.UI" {
+    import { IDragHandler, IEndDragHandler, IEventSystemHandler, IPointerEnterHandler, IUpdateSelectedHandler, ISelectHandler, IPointerExitHandler, IDeselectHandler, IPointerDownHandler, IPointerUpHandler, IMoveHandler, ISubmitHandler, IPointerClickHandler, IBeginDragHandler, PointerEventData, BaseEventData } from "UnityEngine.EventSystems";
+    import { Color, Event } from "UnityEngine";
+    import { Object, Enum } from "System";
+    class InputField extends Selectable implements IDragHandler, IEndDragHandler, ICanvasElement, IEventSystemHandler, IPointerEnterHandler, IUpdateSelectedHandler, ISelectHandler, IPointerExitHandler, IDeselectHandler, IPointerDownHandler, IPointerUpHandler, IMoveHandler, ILayoutElement, ISubmitHandler, IPointerClickHandler, IBeginDragHandler {
+        SetTextWithoutNotify(input: string): void
+        MoveTextEnd(shift: boolean): void
+        MoveTextStart(shift: boolean): void
+        OnBeginDrag(eventData: PointerEventData): void
+        OnDrag(eventData: PointerEventData): void
+        OnEndDrag(eventData: PointerEventData): void
+        OnPointerDown(eventData: PointerEventData): void
+        ProcessEvent(e: Event): void
+        OnUpdateSelected(eventData: BaseEventData): void
+        ForceLabelUpdate(): void
+        Rebuild(update: CanvasUpdate): void
+        LayoutComplete(): void
+        GraphicUpdateComplete(): void
+        ActivateInputField(): void
+        OnSelect(eventData: BaseEventData): void
+        OnPointerClick(eventData: PointerEventData): void
+        DeactivateInputField(): void
+        OnDeselect(eventData: BaseEventData): void
+        OnSubmit(eventData: BaseEventData): void
+        CalculateLayoutInputHorizontal(): void
+        CalculateLayoutInputVertical(): void
+        /*protected*/ constructor()
+        shouldHideMobileInput: boolean
+        shouldActivateOnSelect: boolean
+        text: string
+        readonly isFocused: boolean
+        caretBlinkRate: number
+        caretWidth: number
+        textComponent: Text
+        placeholder: Graphic
+        caretColor: Color
+        customCaretColor: boolean
+        selectionColor: Color
+        onEndEdit: InputField.SubmitEvent
+        onValueChanged: InputField.OnChangeEvent
+        characterLimit: number
+        contentType: InputField.ContentType
+        lineType: InputField.LineType
+        inputType: InputField.InputType
+        readonly touchScreenKeyboard: any
+        keyboardType: any
+        characterValidation: InputField.CharacterValidation
+        readOnly: boolean
+        readonly multiLine: boolean
+        asteriskChar: string
+        readonly wasCanceled: boolean
+        caretPosition: number
+        selectionAnchorPosition: number
+        selectionFocusPosition: number
+        readonly minWidth: number
+        readonly preferredWidth: number
+        readonly flexibleWidth: number
+        readonly minHeight: number
+        readonly preferredHeight: number
+        readonly flexibleHeight: number
+        readonly layoutPriority: number
+        onValidateInput(op: "get"): (text: string, charIndex: number, addedChar: string) => string
+        onValidateInput(op: "add" | "remove" | "set", fn?: (text: string, charIndex: number, addedChar: string) => string): void
+        onValidateInput(op: "add" | "remove" | "set" | "get", fn?: (text: string, charIndex: number, addedChar: string) => string): (text: string, charIndex: number, addedChar: string) => string | void
+    }
+}
+declare module "UnityEngine.UI" {
+    import { UIBehaviour } from "UnityEngine.EventSystems";
+    class AspectRatioFitter extends UIBehaviour implements ILayoutController {
+        SetLayoutHorizontal(): void
+        SetLayoutVertical(): void
+        /*protected*/ constructor()
+        aspectMode: AspectRatioFitter.AspectMode
+        aspectRatio: number
+    }
+}
+declare module "UnityEngine.UI" {
+    import { UIBehaviour } from "UnityEngine.EventSystems";
+    import { Vector2 } from "UnityEngine";
+    class CanvasScaler extends UIBehaviour {
+        /*protected*/ constructor()
+        uiScaleMode: CanvasScaler.ScaleMode
+        referencePixelsPerUnit: number
+        scaleFactor: number
+        referenceResolution: Vector2
+        screenMatchMode: CanvasScaler.ScreenMatchMode
+        matchWidthOrHeight: number
+        physicalUnit: CanvasScaler.Unit
+        fallbackScreenDPI: number
+        defaultSpriteDPI: number
+        dynamicPixelsPerUnit: number
+    }
+}
+declare module "UnityEngine.UI" {
+    import { UIBehaviour } from "UnityEngine.EventSystems";
+    class ContentSizeFitter extends UIBehaviour implements ILayoutController {
+        SetLayoutHorizontal(): void
+        SetLayoutVertical(): void
+        /*protected*/ constructor()
+        horizontalFit: ContentSizeFitter.FitMode
+        verticalFit: ContentSizeFitter.FitMode
+    }
+}
+declare module "UnityEngine.UI" {
+    import { Vector2 } from "UnityEngine";
+    class GridLayoutGroup extends LayoutGroup implements ILayoutElement, ILayoutController {
+        CalculateLayoutInputHorizontal(): void
+        CalculateLayoutInputVertical(): void
+        SetLayoutHorizontal(): void
+        SetLayoutVertical(): void
+        /*protected*/ constructor()
+        startCorner: GridLayoutGroup.Corner
+        startAxis: GridLayoutGroup.Axis
+        cellSize: Vector2
+        spacing: Vector2
+        constraint: GridLayoutGroup.Constraint
+        constraintCount: number
+    }
+}
+declare module "UnityEngine.UI" {
+    import { UIBehaviour } from "UnityEngine.EventSystems";
+    import { Object } from "System";
+    import { TextAnchor } from "UnityEngine";
+    abstract class LayoutGroup extends UIBehaviour implements ILayoutElement, ILayoutController {
+        CalculateLayoutInputHorizontal(): void
+        CalculateLayoutInputVertical(): void
+        SetLayoutHorizontal(): void
+        SetLayoutVertical(): void
+        padding: any
+        childAlignment: TextAnchor
+        readonly minWidth: number
+        readonly preferredWidth: number
+        readonly flexibleWidth: number
+        readonly minHeight: number
+        readonly preferredHeight: number
+        readonly flexibleHeight: number
+        readonly layoutPriority: number
+    }
+}
+declare module "UnityEngine.UI" {
+    class HorizontalLayoutGroup extends HorizontalOrVerticalLayoutGroup implements ILayoutElement, ILayoutController {
+        CalculateLayoutInputHorizontal(): void
+        CalculateLayoutInputVertical(): void
+        SetLayoutHorizontal(): void
+        SetLayoutVertical(): void
+        /*protected*/ constructor()
+    }
+}
+declare module "UnityEngine.UI" {
+    abstract class HorizontalOrVerticalLayoutGroup extends LayoutGroup implements ILayoutElement, ILayoutController {
+        spacing: number
+        childForceExpandWidth: boolean
+        childForceExpandHeight: boolean
+        childControlWidth: boolean
+        childControlHeight: boolean
+        childScaleWidth: boolean
+        childScaleHeight: boolean
+    }
+}
+declare module "UnityEngine.UI" {
+    interface ILayoutElement {
+        CalculateLayoutInputHorizontal(): void
+        CalculateLayoutInputVertical(): void
+        readonly minWidth: number
+        readonly preferredWidth: number
+        readonly flexibleWidth: number
+        readonly minHeight: number
+        readonly preferredHeight: number
+        readonly flexibleHeight: number
+        readonly layoutPriority: number
+    }
+}
+declare module "UnityEngine.UI" {
+    interface ILayoutController {
+        SetLayoutHorizontal(): void
+        SetLayoutVertical(): void
+    }
+}
+declare module "UnityEngine.UI" {
+    interface ILayoutIgnorer {
+        readonly ignoreLayout: boolean
+    }
+}
+declare module "UnityEngine.UI" {
+    import { UIBehaviour } from "UnityEngine.EventSystems";
+    class LayoutElement extends UIBehaviour implements ILayoutIgnorer, ILayoutElement {
+        CalculateLayoutInputHorizontal(): void
+        CalculateLayoutInputVertical(): void
+        /*protected*/ constructor()
+        ignoreLayout: boolean
+        minWidth: number
+        minHeight: number
+        preferredWidth: number
+        preferredHeight: number
+        flexibleWidth: number
+        flexibleHeight: number
+        layoutPriority: number
+    }
+}
+declare module "UnityEngine.UI" {
+    import { Object } from "System";
+    import { Transform, RectTransform } from "UnityEngine";
+    class LayoutRebuilder extends Object implements ICanvasElement {
+        constructor()
+        IsDestroyed(): boolean
+        Rebuild(executing: CanvasUpdate): void
+        LayoutComplete(): void
+        GraphicUpdateComplete(): void
+        GetHashCode(): number
+        Equals(obj: Object): boolean
+        toString(): string
+        static ForceRebuildLayoutImmediate(layoutRoot: RectTransform): void
+        static MarkLayoutForRebuild(rect: RectTransform): void
+        readonly transform: Transform
+    }
+}
+declare module "UnityEngine.UI" {
+    import * as jsb from "jsb";
+    import { Object, Array } from "System";
+    import { RectTransform } from "UnityEngine";
+    abstract class LayoutUtility extends Object {
+        static GetMinSize(rect: RectTransform, axis: number): number
+        static GetPreferredSize(rect: RectTransform, axis: number): number
+        static GetFlexibleSize(rect: RectTransform, axis: number): number
+        static GetMinWidth(rect: RectTransform): number
+        static GetPreferredWidth(rect: RectTransform): number
+        static GetFlexibleWidth(rect: RectTransform): number
+        static GetMinHeight(rect: RectTransform): number
+        static GetPreferredHeight(rect: RectTransform): number
+        static GetFlexibleHeight(rect: RectTransform): number
+        static GetLayoutProperty(rect: RectTransform, property: (arg: ILayoutElement) => number, defaultValue: number, source: jsb.Out<ILayoutElement>): number
+        static GetLayoutProperty(rect: RectTransform, property: (arg: ILayoutElement) => number, defaultValue: number): number
+    }
+}
+declare module "UnityEngine.UI" {
+    class VerticalLayoutGroup extends HorizontalOrVerticalLayoutGroup implements ILayoutElement, ILayoutController {
+        CalculateLayoutInputHorizontal(): void
+        CalculateLayoutInputVertical(): void
+        SetLayoutHorizontal(): void
+        SetLayoutVertical(): void
+        /*protected*/ constructor()
+    }
+}
+declare module "UnityEngine.UI" {
+    import { UIBehaviour } from "UnityEngine.EventSystems";
+    import { RectTransform, Vector2, Camera, Material } from "UnityEngine";
+    class Mask extends UIBehaviour implements IMaterialModifier {
+        MaskEnabled(): boolean
+        IsRaycastLocationValid(sp: Vector2, eventCamera: Camera): boolean
+        GetModifiedMaterial(baseMaterial: Material): Material
+        /*protected*/ constructor()
+        readonly rectTransform: RectTransform
+        showMaskGraphic: boolean
+        readonly graphic: Graphic
+    }
+}
+declare module "UnityEngine.UI" {
+    import { Object } from "System";
+    import { Component, Transform } from "UnityEngine";
+    import { List } from "System.Collections.Generic";
+    class MaskUtilities extends Object {
+        constructor()
+        static Notify2DMaskStateChanged(mask: Component): void
+        static NotifyStencilStateChanged(mask: Component): void
+        static FindRootSortOverrideCanvas(start: Transform): Transform
+        static GetStencilDepth(transform: Transform, stopAfter: Transform): number
+        static IsDescendantOrSelf(father: Transform, child: Transform): boolean
+        static GetRectMaskForClippable(clippable: IClippable): RectMask2D
+        static GetRectMasksForClip(clipper: RectMask2D, masks: any): void
+    }
+}
+declare module "UnityEngine.UI" {
+    import { Material } from "UnityEngine";
+    interface IMaterialModifier {
+        GetModifiedMaterial(baseMaterial: Material): Material
+    }
+}
+declare module "UnityEngine.UI" {
+    import { ValueType } from "System";
+    class Navigation extends ValueType {
+        constructor()
+        Equals(other: Navigation): boolean
+        mode: Navigation.Mode
+        selectOnUp: Selectable
+        selectOnDown: Selectable
+        selectOnLeft: Selectable
+        selectOnRight: Selectable
+        static readonly defaultNavigation: Navigation
+    }
+}
+declare module "UnityEngine.UI" {
+    import { Texture, Rect } from "UnityEngine";
+    class RawImage extends MaskableGraphic implements IMaterialModifier, IMaskable, ICanvasElement, IClippable {
+        SetNativeSize(): void
+        /*protected*/ constructor()
+        readonly mainTexture: Texture
+        texture: Texture
+        uvRect: Rect
+    }
+}
+declare module "UnityEngine.UI" {
+    import { UIBehaviour } from "UnityEngine.EventSystems";
+    import { Vector4, Vector2Int, Rect, RectTransform, Vector2, Camera } from "UnityEngine";
+    class RectMask2D extends UIBehaviour implements IClipper {
+        IsRaycastLocationValid(sp: Vector2, eventCamera: Camera): boolean
+        PerformClipping(): void
+        UpdateClipSoftness(): void
+        AddClippable(clippable: IClippable): void
+        RemoveClippable(clippable: IClippable): void
+        /*protected*/ constructor()
+        padding: Vector4
+        softness: Vector2Int
+        readonly canvasRect: Rect
+        readonly rectTransform: RectTransform
+    }
+}
+declare module "UnityEngine.UI" {
+    import { UIBehaviour, IInitializePotentialDragHandler, IDragHandler, IEndDragHandler, IScrollHandler, IEventSystemHandler, IBeginDragHandler, PointerEventData } from "UnityEngine.EventSystems";
+    import { RectTransform, Vector2 } from "UnityEngine";
+    class ScrollRect extends UIBehaviour implements IInitializePotentialDragHandler, IDragHandler, IEndDragHandler, ICanvasElement, IScrollHandler, IEventSystemHandler, ILayoutElement, ILayoutController, IBeginDragHandler {
+        Rebuild(executing: CanvasUpdate): void
+        LayoutComplete(): void
+        GraphicUpdateComplete(): void
+        IsActive(): boolean
+        StopMovement(): void
+        OnScroll(data: PointerEventData): void
+        OnInitializePotentialDrag(eventData: PointerEventData): void
+        OnBeginDrag(eventData: PointerEventData): void
+        OnEndDrag(eventData: PointerEventData): void
+        OnDrag(eventData: PointerEventData): void
+        CalculateLayoutInputHorizontal(): void
+        CalculateLayoutInputVertical(): void
+        SetLayoutHorizontal(): void
+        SetLayoutVertical(): void
+        /*protected*/ constructor()
+        content: RectTransform
+        horizontal: boolean
+        vertical: boolean
+        movementType: ScrollRect.MovementType
+        elasticity: number
+        inertia: boolean
+        decelerationRate: number
+        scrollSensitivity: number
+        viewport: RectTransform
+        horizontalScrollbar: Scrollbar
+        verticalScrollbar: Scrollbar
+        horizontalScrollbarVisibility: ScrollRect.ScrollbarVisibility
+        verticalScrollbarVisibility: ScrollRect.ScrollbarVisibility
+        horizontalScrollbarSpacing: number
+        verticalScrollbarSpacing: number
+        onValueChanged: ScrollRect.ScrollRectEvent
+        velocity: Vector2
+        normalizedPosition: Vector2
+        horizontalNormalizedPosition: number
+        verticalNormalizedPosition: number
+        readonly minWidth: number
+        readonly preferredWidth: number
+        readonly flexibleWidth: number
+        readonly minHeight: number
+        readonly preferredHeight: number
+        readonly flexibleHeight: number
+        readonly layoutPriority: number
+    }
+}
+declare module "UnityEngine.UI" {
+    import { IInitializePotentialDragHandler, IDragHandler, IEventSystemHandler, IPointerEnterHandler, ISelectHandler, IPointerExitHandler, IDeselectHandler, IPointerDownHandler, IPointerUpHandler, IMoveHandler, IBeginDragHandler, PointerEventData, AxisEventData } from "UnityEngine.EventSystems";
+    import { RectTransform } from "UnityEngine";
+    class Scrollbar extends Selectable implements IInitializePotentialDragHandler, IDragHandler, ICanvasElement, IEventSystemHandler, IPointerEnterHandler, ISelectHandler, IPointerExitHandler, IDeselectHandler, IPointerDownHandler, IPointerUpHandler, IMoveHandler, IBeginDragHandler {
+        SetValueWithoutNotify(input: number): void
+        Rebuild(executing: CanvasUpdate): void
+        LayoutComplete(): void
+        GraphicUpdateComplete(): void
+        OnBeginDrag(eventData: PointerEventData): void
+        OnDrag(eventData: PointerEventData): void
+        OnPointerDown(eventData: PointerEventData): void
+        OnPointerUp(eventData: PointerEventData): void
+        OnMove(eventData: AxisEventData): void
+        FindSelectableOnLeft(): Selectable
+        FindSelectableOnRight(): Selectable
+        FindSelectableOnUp(): Selectable
+        FindSelectableOnDown(): Selectable
+        OnInitializePotentialDrag(eventData: PointerEventData): void
+        SetDirection(direction: Scrollbar.Direction, includeRectLayouts: boolean): void
+        /*protected*/ constructor()
+        handleRect: RectTransform
+        direction: Scrollbar.Direction
+        value: number
+        size: number
+        numberOfSteps: number
+        onValueChanged: Scrollbar.ScrollEvent
+    }
+}
+declare module "UnityEngine.UI" {
+    import { IInitializePotentialDragHandler, IDragHandler, IEventSystemHandler, IPointerEnterHandler, ISelectHandler, IPointerExitHandler, IDeselectHandler, IPointerDownHandler, IPointerUpHandler, IMoveHandler, PointerEventData, AxisEventData } from "UnityEngine.EventSystems";
+    import { RectTransform } from "UnityEngine";
+    class Slider extends Selectable implements IInitializePotentialDragHandler, IDragHandler, ICanvasElement, IEventSystemHandler, IPointerEnterHandler, ISelectHandler, IPointerExitHandler, IDeselectHandler, IPointerDownHandler, IPointerUpHandler, IMoveHandler {
+        SetValueWithoutNotify(input: number): void
+        Rebuild(executing: CanvasUpdate): void
+        LayoutComplete(): void
+        GraphicUpdateComplete(): void
+        OnPointerDown(eventData: PointerEventData): void
+        OnDrag(eventData: PointerEventData): void
+        OnMove(eventData: AxisEventData): void
+        FindSelectableOnLeft(): Selectable
+        FindSelectableOnRight(): Selectable
+        FindSelectableOnUp(): Selectable
+        FindSelectableOnDown(): Selectable
+        OnInitializePotentialDrag(eventData: PointerEventData): void
+        SetDirection(direction: Slider.Direction, includeRectLayouts: boolean): void
+        /*protected*/ constructor()
+        fillRect: RectTransform
+        handleRect: RectTransform
+        direction: Slider.Direction
+        minValue: number
+        maxValue: number
+        wholeNumbers: boolean
+        value: number
+        normalizedValue: number
+        onValueChanged: Slider.SliderEvent
+    }
+}
+declare module "UnityEngine.UI" {
+    import { ValueType } from "System";
+    import { Sprite } from "UnityEngine";
+    class SpriteState extends ValueType {
+        constructor()
+        Equals(other: SpriteState): boolean
+        highlightedSprite: Sprite
+        pressedSprite: Sprite
+        selectedSprite: Sprite
+        disabledSprite: Sprite
+    }
+}
+declare module "UnityEngine.UI" {
+    import { Object, Enum } from "System";
+    import { Material } from "UnityEngine";
+    abstract class StencilMaterial extends Object {
+        static Add(baseMat: Material, stencilID: number, operation: any, compareFunction: any, colorWriteMask: any, readMask: number, writeMask: number): Material
+        static Add(baseMat: Material, stencilID: number, operation: any, compareFunction: any, colorWriteMask: any): Material
+        static Remove(customMat: Material): void
+        static ClearAll(): void
+    }
+}
+declare module "UnityEngine.UI" {
+    import { Object, Enum, ValueType } from "System";
+    import { Texture, Object as Object1, TextAnchor, Vector2 } from "UnityEngine";
+    class Text extends MaskableGraphic implements IMaterialModifier, IMaskable, ICanvasElement, ILayoutElement, IClippable {
+        FontTextureChanged(): void
+        GetGenerationSettings(extents: Vector2): any
+        CalculateLayoutInputHorizontal(): void
+        CalculateLayoutInputVertical(): void
+        static GetTextAnchorPivot(anchor: TextAnchor): Vector2
+        /*protected*/ constructor()
+        readonly cachedTextGenerator: any
+        readonly cachedTextGeneratorForLayout: any
+        readonly mainTexture: Texture
+        font: any
+        text: string
+        supportRichText: boolean
+        resizeTextForBestFit: boolean
+        resizeTextMinSize: number
+        resizeTextMaxSize: number
+        alignment: TextAnchor
+        alignByGeometry: boolean
+        fontSize: number
+        horizontalOverflow: any
+        verticalOverflow: any
+        lineSpacing: number
+        fontStyle: any
+        readonly pixelsPerUnit: number
+        readonly minWidth: number
+        readonly preferredWidth: number
+        readonly flexibleWidth: number
+        readonly minHeight: number
+        readonly preferredHeight: number
+        readonly flexibleHeight: number
+        readonly layoutPriority: number
+    }
+}
+declare module "UnityEngine.UI" {
+    import { IEventSystemHandler, IPointerEnterHandler, ISelectHandler, IPointerExitHandler, IDeselectHandler, IPointerDownHandler, IPointerUpHandler, IMoveHandler, ISubmitHandler, IPointerClickHandler, PointerEventData, BaseEventData } from "UnityEngine.EventSystems";
+    class Toggle extends Selectable implements ICanvasElement, IEventSystemHandler, IPointerEnterHandler, ISelectHandler, IPointerExitHandler, IDeselectHandler, IPointerDownHandler, IPointerUpHandler, IMoveHandler, ISubmitHandler, IPointerClickHandler {
+        Rebuild(executing: CanvasUpdate): void
+        LayoutComplete(): void
+        GraphicUpdateComplete(): void
+        SetIsOnWithoutNotify(value: boolean): void
+        OnPointerClick(eventData: PointerEventData): void
+        OnSubmit(eventData: BaseEventData): void
+        /*protected*/ constructor()
+        group: ToggleGroup
+        isOn: boolean
+        toggleTransition: Toggle.ToggleTransition
+        graphic: Graphic
+        onValueChanged: Toggle.ToggleEvent
+    }
+}
+declare module "UnityEngine.UI" {
+    import { UIBehaviour } from "UnityEngine.EventSystems";
+    import { IEnumerable } from "System.Collections.Generic";
+    class ToggleGroup extends UIBehaviour {
+        NotifyToggleOn(toggle: Toggle, sendCallback: boolean): void
+        UnregisterToggle(toggle: Toggle): void
+        RegisterToggle(toggle: Toggle): void
+        EnsureValidState(): void
+        AnyTogglesOn(): boolean
+        ActiveToggles(): any
+        SetAllTogglesOff(sendCallback: boolean): void
+        /*protected*/ constructor()
+        allowSwitchOff: boolean
+    }
+}
+declare module "UnityEngine.UI" {
+    import * as jsb from "jsb";
+    import { Object, Array, ValueType } from "System";
+    import { Object as Object1, Vector3, Color32, Vector2, Vector4 } from "UnityEngine";
+    import { List } from "System.Collections.Generic";
+    class VertexHelper extends Object {
+        constructor(m: any)
+        constructor()
+        Dispose(): void
+        Clear(): void
+        PopulateUIVertex(vertex: jsb.Ref<any>, i: number): void
+        SetUIVertex(vertex: any, i: number): void
+        FillMesh(mesh: any): void
+        AddVert(position: Vector3, color: Color32, uv0: Vector2, uv1: Vector2, uv2: Vector2, uv3: Vector2, normal: Vector3, tangent: Vector4): void
+        AddVert(position: Vector3, color: Color32, uv0: Vector2, uv1: Vector2, normal: Vector3, tangent: Vector4): void
+        AddVert(position: Vector3, color: Color32, uv0: Vector2): void
+        AddVert(v: any): void
+        AddTriangle(idx0: number, idx1: number, idx2: number): void
+        AddUIVertexQuad(verts: Array<any>): void
+        AddUIVertexStream(verts: any, indices: List<number>): void
+        AddUIVertexTriangleStream(verts: any): void
+        GetUIVertexStream(stream: any): void
+        readonly currentVertCount: number
+        readonly currentIndexCount: number
+    }
+}
+declare module "UnityEngine.UI" {
+    import { UIBehaviour } from "UnityEngine.EventSystems";
+    import { Object } from "UnityEngine";
+    abstract class BaseMeshEffect extends UIBehaviour implements IMeshModifier {
+        ModifyMesh(mesh: any): void
+        ModifyMesh(vh: VertexHelper): void
+    }
+}
+declare module "UnityEngine.UI" {
+    interface IMeshModifier {
+        ModifyMesh(verts: VertexHelper): void
+    }
+}
+declare module "UnityEngine.UI" {
+    class Outline extends Shadow implements IMeshModifier {
+        /*protected*/ constructor()
+    }
+}
+declare module "UnityEngine.UI" {
+    import { Color, Vector2 } from "UnityEngine";
+    class Shadow extends BaseMeshEffect implements IMeshModifier {
+        /*protected*/ constructor()
+        effectColor: Color
+        effectDistance: Vector2
+        useGraphicAlpha: boolean
+    }
+}
+declare module "UnityEngine.UI" {
+    class PositionAsUV1 extends BaseMeshEffect implements IMeshModifier {
+        /*protected*/ constructor()
+    }
+}
+declare module "UnityEngine.EventSystems" {
+    import { Vector2 } from "UnityEngine";
+    class AxisEventData extends BaseEventData {
+        constructor(eventSystem: EventSystem)
+        moveVector: Vector2
+        moveDir: MoveDirection
+    }
+}
+declare module "UnityEngine.EventSystems" {
+    import { GameObject } from "UnityEngine";
+    class BaseEventData extends AbstractEventData {
+        constructor(eventSystem: EventSystem)
+        readonly currentInputModule: BaseInputModule
+        selectedObject: GameObject
+    }
+}
+declare module "UnityEngine.EventSystems" {
+    import { Object } from "System";
+    abstract class AbstractEventData extends Object {
+        Reset(): void
+        Use(): void
+        readonly used: boolean
+    }
+}
+declare module "UnityEngine.EventSystems" {
+    import { GameObject, Vector2, Camera } from "UnityEngine";
+    import { List } from "System.Collections.Generic";
+    import { Object } from "System";
+    class PointerEventData extends BaseEventData {
+        constructor(eventSystem: EventSystem)
+        IsPointerMoving(): boolean
+        IsScrolling(): boolean
+        toString(): string
+        pointerEnter: GameObject
+        readonly lastPress: GameObject
+        rawPointerPress: GameObject
+        pointerDrag: GameObject
+        pointerCurrentRaycast: RaycastResult
+        pointerPressRaycast: RaycastResult
+        eligibleForClick: boolean
+        pointerId: number
+        position: Vector2
+        delta: Vector2
+        pressPosition: Vector2
+        clickTime: number
+        clickCount: number
+        scrollDelta: Vector2
+        useDragThreshold: boolean
+        dragging: boolean
+        button: PointerEventData.InputButton
+        readonly enterEventCamera: Camera
+        readonly pressEventCamera: Camera
+        pointerPress: GameObject
+        hovered: any
+    }
+}
 declare module "UnityEngine.EventSystems" {
     import { Enum } from "System";
-    /** Enum that tracks event State.
-     */
     enum EventHandle {
-        /** Unused.
-         */
         Unused = 0,
-        /** Used.
-         */
         Used = 1,
     }
 }
@@ -22465,136 +23971,86 @@ declare module "UnityEngine.EventSystems" {
 }
 declare module "UnityEngine.EventSystems" {
     interface IPointerEnterHandler extends IEventSystemHandler {
-        /**
-         * @param eventData Current event data.
-         */
         OnPointerEnter(eventData: PointerEventData): void
     }
 }
 declare module "UnityEngine.EventSystems" {
     interface IPointerExitHandler extends IEventSystemHandler {
-        /**
-         * @param eventData Current event data.
-         */
         OnPointerExit(eventData: PointerEventData): void
     }
 }
 declare module "UnityEngine.EventSystems" {
     interface IPointerDownHandler extends IEventSystemHandler {
-        /**
-         * @param eventData Current event data.
-         */
         OnPointerDown(eventData: PointerEventData): void
     }
 }
 declare module "UnityEngine.EventSystems" {
     interface IPointerUpHandler extends IEventSystemHandler {
-        /**
-         * @param eventData Current event data.
-         */
         OnPointerUp(eventData: PointerEventData): void
     }
 }
 declare module "UnityEngine.EventSystems" {
     interface IPointerClickHandler extends IEventSystemHandler {
-        /** Use this callback to detect clicks.
-         * @param eventData Current event data.
-         */
         OnPointerClick(eventData: PointerEventData): void
     }
 }
 declare module "UnityEngine.EventSystems" {
     interface IBeginDragHandler extends IEventSystemHandler {
-        /** Called by a BaseInputModule before a drag is started.
-         * @param eventData Current event data.
-         */
         OnBeginDrag(eventData: PointerEventData): void
     }
 }
 declare module "UnityEngine.EventSystems" {
     interface IInitializePotentialDragHandler extends IEventSystemHandler {
-        /** Called by a BaseInputModule when a drag has been found but before it is valid to begin the drag.
-         */
         OnInitializePotentialDrag(eventData: PointerEventData): void
     }
 }
 declare module "UnityEngine.EventSystems" {
     interface IDragHandler extends IEventSystemHandler {
-        /** When draging is occuring this will be called every time the cursor is moved.
-         * @param eventData Current event data.
-         */
         OnDrag(eventData: PointerEventData): void
     }
 }
 declare module "UnityEngine.EventSystems" {
     interface IEndDragHandler extends IEventSystemHandler {
-        /** Called by a BaseInputModule when a drag is ended.
-         * @param eventData Current event data.
-         */
         OnEndDrag(eventData: PointerEventData): void
     }
 }
 declare module "UnityEngine.EventSystems" {
     interface IDropHandler extends IEventSystemHandler {
-        /** Called by a BaseInputModule on a target that can accept a drop.
-         * @param eventData Current event data.
-         */
         OnDrop(eventData: PointerEventData): void
     }
 }
 declare module "UnityEngine.EventSystems" {
     interface IScrollHandler extends IEventSystemHandler {
-        /**
-         * @param eventData Current event data.
-         */
         OnScroll(eventData: PointerEventData): void
     }
 }
 declare module "UnityEngine.EventSystems" {
     interface IUpdateSelectedHandler extends IEventSystemHandler {
-        /** Called by the EventSystem when the object associated with this EventTrigger is updated.
-         * @param eventData Current event data.
-         */
         OnUpdateSelected(eventData: BaseEventData): void
     }
 }
 declare module "UnityEngine.EventSystems" {
     interface ISelectHandler extends IEventSystemHandler {
-        /**
-         * @param eventData Current event data.
-         */
         OnSelect(eventData: BaseEventData): void
     }
 }
 declare module "UnityEngine.EventSystems" {
     interface IDeselectHandler extends IEventSystemHandler {
-        /** Called by the EventSystem when a new object is being selected.
-         * @param eventData Current event data.
-         */
         OnDeselect(eventData: BaseEventData): void
     }
 }
 declare module "UnityEngine.EventSystems" {
     interface IMoveHandler extends IEventSystemHandler {
-        /** Called by a BaseInputModule when a move event occurs.
-         * @param eventData Current event data.
-         */
         OnMove(eventData: AxisEventData): void
     }
 }
 declare module "UnityEngine.EventSystems" {
     interface ISubmitHandler extends IEventSystemHandler {
-        /**
-         * @param eventData Current event data.
-         */
         OnSubmit(eventData: BaseEventData): void
     }
 }
 declare module "UnityEngine.EventSystems" {
     interface ICancelHandler extends IEventSystemHandler {
-        /** Called by a BaseInputModule when a Cancel event occurs.
-         * @param eventData Current event data.
-         */
         OnCancel(eventData: BaseEventData): void
     }
 }
@@ -22602,154 +24058,232 @@ declare module "UnityEngine.EventSystems" {
     import { GameObject } from "UnityEngine";
     import { List } from "System.Collections.Generic";
     import { Object } from "System";
-    /** Handles input, raycasting, and sending events.
-     */
     class EventSystem extends UIBehaviour {
         UpdateModules(): void
-        /** Set the GameObject as selected. Will send an OnDeselect the the old selected object and OnSelect to the new selected object.
-         * @param selected GameObject to select.
-         * @param pointer Associated EventData.
-         */
         SetSelectedGameObject(selected: GameObject, pointer: BaseEventData): void
         SetSelectedGameObject(selected: GameObject): void
         RaycastAll(eventData: PointerEventData, raycastResults: any): void
-        /** Is the pointer with the given ID over an EventSystem object?
-         * @param pointerId Pointer (touch / mouse) ID.
-         */
         IsPointerOverGameObject(pointerId: number): boolean
         IsPointerOverGameObject(): boolean
         toString(): string
         /*protected*/ constructor()
-        /** Return the current EventSystem.
-         */
         static current: EventSystem
-        /** Should the EventSystem allow navigation events (move  submit  cancel).
-         */
         sendNavigationEvents: boolean
-        /** The soft area for dragging in pixels.
-         */
         pixelDragThreshold: number
-        /** The currently active EventSystems.BaseInputModule.
-         */
         readonly currentInputModule: BaseInputModule
-        /** The GameObject that was selected first.
-         */
         firstSelectedGameObject: GameObject
-        /** The GameObject currently considered active by the EventSystem.
-         */
         readonly currentSelectedGameObject: GameObject
-        /** Flag to say whether the EventSystem thinks it should be paused or not based upon focused state.
-         */
         readonly isFocused: boolean
-        /** Returns true if the EventSystem is already in a SetSelectedGameObject.
-         */
         readonly alreadySelecting: boolean
-    }
-}
-declare module "UnityEngine.EventSystems" {
-    import { MonoBehaviour } from "UnityEngine";
-    /** Base behaviour that has protected implementations of Unity lifecycle functions.
-     */
-    abstract class UIBehaviour extends MonoBehaviour {
-        IsActive(): boolean
-        IsDestroyed(): boolean
     }
 }
 declare module "UnityEngine.EventSystems" {
     import { MonoBehaviour } from "UnityEngine";
     import { List } from "System.Collections.Generic";
     import { Object } from "System";
-    /** Receives events from the EventSystem and calls registered functions for each event.
-     */
-    class EventTrigger extends MonoBehaviour implements IEndDragHandler, IDropHandler, IScrollHandler, IEventSystemHandler, IUpdateSelectedHandler, IPointerEnterHandler, ISelectHandler, IPointerExitHandler, IDeselectHandler, IPointerDownHandler, IMoveHandler, IPointerUpHandler, ISubmitHandler, IPointerClickHandler, ICancelHandler, IBeginDragHandler, IInitializePotentialDragHandler, IDragHandler {
-        /** Called by the EventSystem when the pointer enters the object associated with this EventTrigger.
-         * @param eventData Current event data.
-         */
+    class EventTrigger extends MonoBehaviour implements IInitializePotentialDragHandler, IDragHandler, IEndDragHandler, IDropHandler, IScrollHandler, IEventSystemHandler, IUpdateSelectedHandler, IPointerEnterHandler, ISelectHandler, IPointerExitHandler, IDeselectHandler, IPointerDownHandler, IMoveHandler, IPointerUpHandler, ISubmitHandler, IPointerClickHandler, ICancelHandler, IBeginDragHandler {
         OnPointerEnter(eventData: PointerEventData): void
-        /** Called by the EventSystem when the pointer exits the object associated with this EventTrigger.
-         * @param eventData Current event data.
-         */
         OnPointerExit(eventData: PointerEventData): void
-        /** Called by the EventSystem every time the pointer is moved during dragging.
-         * @param eventData Current event data.
-         */
         OnDrag(eventData: PointerEventData): void
-        /** Called by the EventSystem when an object accepts a drop.
-         * @param eventData Current event data.
-         */
         OnDrop(eventData: PointerEventData): void
-        /** Called by the EventSystem when a PointerDown event occurs.
-         * @param eventData Current event data.
-         */
         OnPointerDown(eventData: PointerEventData): void
-        /** Called by the EventSystem when a PointerUp event occurs.
-         * @param eventData Current event data.
-         */
         OnPointerUp(eventData: PointerEventData): void
-        /** Called by the EventSystem when a Click event occurs.
-         * @param eventData Current event data.
-         */
         OnPointerClick(eventData: PointerEventData): void
-        /** Called by the EventSystem when a Select event occurs.
-         * @param eventData Current event data.
-         */
         OnSelect(eventData: BaseEventData): void
-        /** Called by the EventSystem when a new object is being selected.
-         * @param eventData Current event data.
-         */
         OnDeselect(eventData: BaseEventData): void
-        /** Called by the EventSystem when a Scroll event occurs.
-         * @param eventData Current event data.
-         */
         OnScroll(eventData: PointerEventData): void
-        /** Called by the EventSystem when a Move event occurs.
-         * @param eventData Current event data.
-         */
         OnMove(eventData: AxisEventData): void
-        /** Called by the EventSystem when the object associated with this EventTrigger is updated.
-         * @param eventData Current event data.
-         */
         OnUpdateSelected(eventData: BaseEventData): void
-        /** Called by the EventSystem when a drag has been found, but before it is valid to begin the drag.
-         * @param eventData Current event data.
-         */
         OnInitializePotentialDrag(eventData: PointerEventData): void
-        /** Called before a drag is started.
-         * @param eventData Current event data.
-         */
         OnBeginDrag(eventData: PointerEventData): void
-        /** Called by the EventSystem once dragging ends.
-         * @param eventData Current event data.
-         */
         OnEndDrag(eventData: PointerEventData): void
-        /** Called by the EventSystem when a Submit event occurs.
-         * @param eventData Current event data.
-         */
         OnSubmit(eventData: BaseEventData): void
-        /** Called by the EventSystem when a Cancel event occurs.
-         * @param eventData Current event data.
-         */
         OnCancel(eventData: BaseEventData): void
         /*protected*/ constructor()
-        /** All the functions registered in this EventTrigger.
-         */
         triggers: any
     }
 }
 declare module "UnityEngine.EventSystems" {
-    import { UnityEvent1, UnityEvent } from "UnityEngine.Events";
-    namespace EventTrigger {
-        class TriggerEvent extends UnityEvent1<BaseEventData> {
+    import { Enum } from "System";
+    enum EventTriggerType {
+        PointerEnter = 0,
+        PointerExit = 1,
+        PointerDown = 2,
+        PointerUp = 3,
+        PointerClick = 4,
+        Drag = 5,
+        Drop = 6,
+        Scroll = 7,
+        UpdateSelected = 8,
+        Select = 9,
+        Deselect = 10,
+        Move = 11,
+        InitializePotentialDrag = 12,
+        BeginDrag = 13,
+        EndDrag = 14,
+        Submit = 15,
+        Cancel = 16,
+    }
+}
+declare module "UnityEngine.EventSystems" {
+    import { Object } from "System";
+    abstract class ExecuteEvents extends Object {
+        static pointerEnterHandler(op: "get"): (handler: IPointerEnterHandler, eventData: BaseEventData) => void
+        static pointerExitHandler(op: "get"): (handler: IPointerExitHandler, eventData: BaseEventData) => void
+        static pointerDownHandler(op: "get"): (handler: IPointerDownHandler, eventData: BaseEventData) => void
+        static pointerUpHandler(op: "get"): (handler: IPointerUpHandler, eventData: BaseEventData) => void
+        static pointerClickHandler(op: "get"): (handler: IPointerClickHandler, eventData: BaseEventData) => void
+        static initializePotentialDrag(op: "get"): (handler: IInitializePotentialDragHandler, eventData: BaseEventData) => void
+        static beginDragHandler(op: "get"): (handler: IBeginDragHandler, eventData: BaseEventData) => void
+        static dragHandler(op: "get"): (handler: IDragHandler, eventData: BaseEventData) => void
+        static endDragHandler(op: "get"): (handler: IEndDragHandler, eventData: BaseEventData) => void
+        static dropHandler(op: "get"): (handler: IDropHandler, eventData: BaseEventData) => void
+        static scrollHandler(op: "get"): (handler: IScrollHandler, eventData: BaseEventData) => void
+        static updateSelectedHandler(op: "get"): (handler: IUpdateSelectedHandler, eventData: BaseEventData) => void
+        static selectHandler(op: "get"): (handler: ISelectHandler, eventData: BaseEventData) => void
+        static deselectHandler(op: "get"): (handler: IDeselectHandler, eventData: BaseEventData) => void
+        static moveHandler(op: "get"): (handler: IMoveHandler, eventData: BaseEventData) => void
+        static submitHandler(op: "get"): (handler: ISubmitHandler, eventData: BaseEventData) => void
+        static cancelHandler(op: "get"): (handler: ICancelHandler, eventData: BaseEventData) => void
+    }
+}
+declare module "UnityEngine.EventSystems" {
+    import { Enum, ValueType } from "System";
+    import { Vector2 } from "UnityEngine";
+    class BaseInput extends UIBehaviour {
+        constructor()
+        GetMouseButtonDown(button: number): boolean
+        GetMouseButtonUp(button: number): boolean
+        GetMouseButton(button: number): boolean
+        GetTouch(index: number): any
+        GetAxisRaw(axisName: string): number
+        GetButtonDown(buttonName: string): boolean
+        readonly compositionString: string
+        imeCompositionMode: any
+        compositionCursorPos: Vector2
+        readonly mousePresent: boolean
+        readonly mousePosition: Vector2
+        readonly mouseScrollDelta: Vector2
+        readonly touchSupported: boolean
+        readonly touchCount: number
+    }
+}
+declare module "UnityEngine.EventSystems" {
+    abstract class BaseInputModule extends UIBehaviour {
+        Process(): void
+        IsPointerOverGameObject(pointerId: number): boolean
+        ShouldActivateModule(): boolean
+        DeactivateModule(): void
+        ActivateModule(): void
+        UpdateModule(): void
+        IsModuleSupported(): boolean
+        readonly input: BaseInput
+        inputOverride: BaseInput
+    }
+}
+declare module "UnityEngine.EventSystems" {
+    abstract class PointerInputModule extends BaseInputModule {
+        IsPointerOverGameObject(pointerId: number): boolean
+        toString(): string
+        static readonly kMouseLeftId: number
+        static readonly kMouseRightId: number
+        static readonly kMouseMiddleId: number
+        static readonly kFakeTouchesId: number
+    }
+}
+declare module "UnityEngine.EventSystems" {
+    class StandaloneInputModule extends PointerInputModule {
+        UpdateModule(): void
+        IsModuleSupported(): boolean
+        ShouldActivateModule(): boolean
+        ActivateModule(): void
+        DeactivateModule(): void
+        Process(): void
+        /*protected*/ constructor()
+        forceModuleActive: boolean
+        inputActionsPerSecond: number
+        repeatDelay: number
+        horizontalAxis: string
+        verticalAxis: string
+        submitButton: string
+        cancelButton: string
+    }
+}
+declare module "UnityEngine.EventSystems" {
+    import { Enum } from "System";
+    enum MoveDirection {
+        Left = 0,
+        Up = 1,
+        Right = 2,
+        Down = 3,
+        None = 4,
+    }
+}
+declare module "UnityEngine.EventSystems" {
+    import { ValueType } from "System";
+    import { Vector3, Vector2, GameObject } from "UnityEngine";
+    class RaycastResult extends ValueType {
+        constructor()
+        Clear(): void
+        toString(): string
+        gameObject: GameObject
+        readonly isValid: boolean
+        module_: BaseRaycaster
+        distance: number
+        index: number
+        depth: number
+        sortingLayer: number
+        sortingOrder: number
+        worldPosition: Vector3
+        worldNormal: Vector3
+        screenPosition: Vector2
+        displayIndex: number
+    }
+}
+declare module "UnityEngine.EventSystems" {
+    import { List } from "System.Collections.Generic";
+    import { Object } from "System";
+    class Physics2DRaycaster extends PhysicsRaycaster {
+        Raycast(eventData: PointerEventData, resultAppendList: any): void
+        /*protected*/ constructor()
+    }
+}
+declare module "UnityEngine.EventSystems" {
+    import { Camera, LayerMask } from "UnityEngine";
+    import { List } from "System.Collections.Generic";
+    import { Object } from "System";
+    class PhysicsRaycaster extends BaseRaycaster {
+        Raycast(eventData: PointerEventData, resultAppendList: any): void
+        /*protected*/ constructor()
+        readonly eventCamera: Camera
+        readonly depth: number
+        readonly finalEventMask: number
+        eventMask: LayerMask
+        maxRayIntersections: number
+    }
+}
+declare module "UnityEngine.UI" {
+    import { UnityEvent } from "UnityEngine.Events";
+    namespace Button {
+        class ButtonClickedEvent extends UnityEvent {
             constructor()
         }
     }
 }
 declare module "UnityEngine.Events" {
-    import { BaseEventData } from "UnityEngine.EventSystems";
-    abstract class UnityEvent_BaseEventData extends UnityEventBase implements UnityEvent1<BaseEventData> {
-        AddListener(call: (arg0: BaseEventData) => void): void
-        RemoveListener(call: (arg0: BaseEventData) => void): void
-        Invoke(arg0: BaseEventData): void
+    /** A zero argument persistent callback that can be saved with the Scene.
+     */
+    class UnityEvent extends UnityEventBase {
+        constructor()
+        /** Add a non persistent listener to the UnityEvent.
+         * @param call Callback function.
+         */
+        AddListener(call: () => void): void
+        /** Remove a non persistent listener from the UnityEvent.
+         * @param call Callback function.
+         */
+        RemoveListener(call: () => void): void
+        Invoke(): void
     }
 }
 declare module "UnityEngine.Events" {
@@ -22783,789 +24317,14 @@ declare module "UnityEngine.Events" {
         static GetValidMethodInfo(obj: Object, functionName: string, argumentTypes: Array<any>): any
     }
 }
-declare module "UnityEngine.Events" {
-    import { Object } from "System";
-    abstract class UnityEvent1<T0> extends UnityEventBase {
-        AddListener(call: any): void
-        RemoveListener(call: any): void
-        Invoke(arg0: T0): void
-    }
-}
-declare module "UnityEngine.EventSystems" {
-    import { Object } from "System";
-    namespace EventTrigger {
-        class Entry extends Object {
-            constructor()
-            eventID: EventTriggerType
-            callback: EventTrigger.TriggerEvent
-        }
-    }
-}
-declare module "UnityEngine.EventSystems" {
-    import { Enum } from "System";
-    /** The type of event the TriggerEvent is intercepting.
-     */
-    enum EventTriggerType {
-        /** Intercepts a IPointerEnterHandler.OnPointerEnter.
-         */
-        PointerEnter = 0,
-        /** Intercepts a IPointerExitHandler.OnPointerExit.
-         */
-        PointerExit = 1,
-        /** Intercepts a IPointerDownHandler.OnPointerDown.
-         */
-        PointerDown = 2,
-        /** Intercepts a IPointerUpHandler.OnPointerUp.
-         */
-        PointerUp = 3,
-        /** Intercepts a IPointerClickHandler.OnPointerClick.
-         */
-        PointerClick = 4,
-        /** Intercepts a IDragHandler.OnDrag.
-         */
-        Drag = 5,
-        /** Intercepts a IDropHandler.OnDrop.
-         */
-        Drop = 6,
-        /** Intercepts a IScrollHandler.OnScroll.
-         */
-        Scroll = 7,
-        /** Intercepts a IUpdateSelectedHandler.OnUpdateSelected.
-         */
-        UpdateSelected = 8,
-        /** Intercepts a ISelectHandler.OnSelect.
-         */
-        Select = 9,
-        /** Intercepts a IDeselectHandler.OnDeselect.
-         */
-        Deselect = 10,
-        /** Intercepts a IMoveHandler.OnMove.
-         */
-        Move = 11,
-        /** Intercepts IInitializePotentialDrag.InitializePotentialDrag.
-         */
-        InitializePotentialDrag = 12,
-        /** Intercepts IBeginDragHandler.OnBeginDrag.
-         */
-        BeginDrag = 13,
-        /** Intercepts IEndDragHandler.OnEndDrag.
-         */
-        EndDrag = 14,
-        /** Intercepts ISubmitHandler.Submit.
-         */
-        Submit = 15,
-        /** Intercepts ICancelHandler.OnCancel.
-         */
-        Cancel = 16,
-    }
-}
-declare module "UnityEngine.EventSystems" {
-    import { Object } from "System";
-    /** Helper class that can be used to send IEventSystemHandler events to GameObjects.
-     */
-    abstract class ExecuteEvents extends Object {
-        static pointerEnterHandler(op: "get"): (handler: IPointerEnterHandler, eventData: BaseEventData) => void
-        static pointerExitHandler(op: "get"): (handler: IPointerExitHandler, eventData: BaseEventData) => void
-        static pointerDownHandler(op: "get"): (handler: IPointerDownHandler, eventData: BaseEventData) => void
-        static pointerUpHandler(op: "get"): (handler: IPointerUpHandler, eventData: BaseEventData) => void
-        static pointerClickHandler(op: "get"): (handler: IPointerClickHandler, eventData: BaseEventData) => void
-        static initializePotentialDrag(op: "get"): (handler: IInitializePotentialDragHandler, eventData: BaseEventData) => void
-        static beginDragHandler(op: "get"): (handler: IBeginDragHandler, eventData: BaseEventData) => void
-        static dragHandler(op: "get"): (handler: IDragHandler, eventData: BaseEventData) => void
-        static endDragHandler(op: "get"): (handler: IEndDragHandler, eventData: BaseEventData) => void
-        static dropHandler(op: "get"): (handler: IDropHandler, eventData: BaseEventData) => void
-        static scrollHandler(op: "get"): (handler: IScrollHandler, eventData: BaseEventData) => void
-        static updateSelectedHandler(op: "get"): (handler: IUpdateSelectedHandler, eventData: BaseEventData) => void
-        static selectHandler(op: "get"): (handler: ISelectHandler, eventData: BaseEventData) => void
-        static deselectHandler(op: "get"): (handler: IDeselectHandler, eventData: BaseEventData) => void
-        static moveHandler(op: "get"): (handler: IMoveHandler, eventData: BaseEventData) => void
-        static submitHandler(op: "get"): (handler: ISubmitHandler, eventData: BaseEventData) => void
-        static cancelHandler(op: "get"): (handler: ICancelHandler, eventData: BaseEventData) => void
-    }
-}
-declare module "UnityEngine.EventSystems" {
-    import { Enum } from "System";
-    /** This is an 8 direction movement enum.
-     */
-    enum MoveDirection {
-        /** This is the Left state of MoveDirection.  Assign functionality for moving to the left.
-         */
-        Left = 0,
-        /** This is the Up state of MoveDirection.  Assign functionality for moving in an upward direction.
-         */
-        Up = 1,
-        /** This is the Right state of MoveDirection. Assign functionality for moving to the right.
-         */
-        Right = 2,
-        /** The Down State of MoveDirection. Assign functionality for moving in a downward direction.
-         */
-        Down = 3,
-        /** This is the None state. Assign functionality that stops movement.
-         */
-        None = 4,
-    }
-}
-declare module "UnityEngine.EventSystems" {
-    import { ValueType } from "System";
-    import { Vector3, Vector2, GameObject } from "UnityEngine";
-    /** A hit result from a BaseRaycaster.
-     */
-    class RaycastResult extends ValueType {
-        constructor()
-        Clear(): void
-        toString(): string
-        /** The GameObject that was hit by the raycast.
-         */
-        gameObject: GameObject
-        /** Is there an associated module and a hit GameObject.
-         */
-        readonly isValid: boolean
-        /** BaseInputModule that raised the hit.
-         */
-        module_: BaseRaycaster
-        /** Distance to the hit.
-         */
-        distance: number
-        /** Hit index.
-         */
-        index: number
-        /** The relative depth of the element.
-         */
-        depth: number
-        /** The SortingLayer of the hit object.
-         */
-        sortingLayer: number
-        /** The SortingOrder for the hit object.
-         */
-        sortingOrder: number
-        /** The world position of the where the raycast has hit.
-         */
-        worldPosition: Vector3
-        /** The normal at the hit location of the raycast.
-         */
-        worldNormal: Vector3
-        /** The screen position from which the raycast was generated.
-         */
-        screenPosition: Vector2
-    }
-}
-declare module "UnityEngine.EventSystems" {
-    import { Vector2 } from "UnityEngine";
-    /** Event Data associated with Axis Events (Controller / Keyboard).
-     */
-    class AxisEventData extends BaseEventData {
-        constructor(eventSystem: EventSystem)
-        /** Raw input vector associated with this event.
-         */
-        moveVector: Vector2
-        /** MoveDirection for this event.
-         */
-        moveDir: MoveDirection
-    }
-}
-declare module "UnityEngine.EventSystems" {
-    import { GameObject } from "UnityEngine";
-    /** A class that contains the base event data that is common to all event types in the new EventSystem.
-     */
-    class BaseEventData extends AbstractEventData {
-        constructor(eventSystem: EventSystem)
-        /** A reference to the BaseInputModule that sent this event.
-         */
-        readonly currentInputModule: BaseInputModule
-        /** The object currently considered selected by the EventSystem.
-         */
-        selectedObject: GameObject
-    }
-}
-declare module "UnityEngine.EventSystems" {
-    import { Object } from "System";
-    /** A class that can be used for sending simple events via the event system.
-     */
-    abstract class AbstractEventData extends Object {
-        Reset(): void
-        Use(): void
-        /** Is the event used?
-         */
-        readonly used: boolean
-    }
-}
-declare module "UnityEngine.EventSystems" {
-    import { GameObject, Vector2, Camera } from "UnityEngine";
-    import { List } from "System.Collections.Generic";
-    import { Object } from "System";
-    /** Event payload associated with pointer (mouse / touch) events.
-     */
-    class PointerEventData extends BaseEventData {
-        constructor(eventSystem: EventSystem)
-        IsPointerMoving(): boolean
-        IsScrolling(): boolean
-        toString(): string
-        /** The object that received 'OnPointerEnter'.
-         */
-        pointerEnter: GameObject
-        /** The GameObject for the last press event.
-         */
-        readonly lastPress: GameObject
-        /** The object that the press happened on even if it can not handle the press event.
-         */
-        rawPointerPress: GameObject
-        /** The object that is receiving OnDrag.
-         */
-        pointerDrag: GameObject
-        /** RaycastResult associated with the current event.
-         */
-        pointerCurrentRaycast: RaycastResult
-        /** RaycastResult associated with the pointer press.
-         */
-        pointerPressRaycast: RaycastResult
-        eligibleForClick: boolean
-        /** Identification of the pointer.
-         */
-        pointerId: number
-        /** Current pointer position.
-         */
-        position: Vector2
-        /** Pointer delta since last update.
-         */
-        delta: Vector2
-        /** The screen space coordinates of the last pointer click.
-         */
-        pressPosition: Vector2
-        /** The last time a click event was sent.
-         */
-        clickTime: number
-        /** Number of clicks in a row.
-         */
-        clickCount: number
-        /** The amount of scroll since the last update.
-         */
-        scrollDelta: Vector2
-        /** Should a drag threshold be used?
-         */
-        useDragThreshold: boolean
-        /** Determines whether the user is dragging the mouse or trackpad.
-         */
-        dragging: boolean
-        /** The EventSystems.PointerEventData.InputButton for this event.
-         */
-        button: PointerEventData.InputButton
-        /** The camera associated with the last OnPointerEnter event.
-         */
-        readonly enterEventCamera: Camera
-        /** The camera associated with the last OnPointerPress event.
-         */
-        readonly pressEventCamera: Camera
-        /** The GameObject that received the OnPointerDown.
-         */
-        pointerPress: GameObject
-        /** List of objects in the hover stack.
-         */
-        hovered: any
-    }
-}
-declare module "UnityEngine.EventSystems" {
-    import { Enum } from "System";
-    namespace PointerEventData {
-        enum InputButton {
-            Left = 0,
-            Right = 1,
-            Middle = 2,
-        }
-    }
-}
-declare module "UnityEngine.EventSystems" {
-    import { Enum } from "System";
-    namespace PointerEventData {
-        enum FramePressState {
-            Pressed = 0,
-            Released = 1,
-            PressedAndReleased = 2,
-            NotChanged = 3,
-        }
-    }
-}
-declare module "UnityEngine.EventSystems" {
-    import { Enum, ValueType } from "System";
-    import { Vector2 } from "UnityEngine";
-    /** Interface to the Input system used by the BaseInputModule. With this it is possible to bypass the Input system with your own but still use the same InputModule. For example this can be used to feed fake input into the UI or interface with a different input system.
-     */
-    class BaseInput extends UIBehaviour {
-        constructor()
-        /** Interface to Input.GetMouseButtonDown. Can be overridden to provide custom input instead of using the Input class.
-         */
-        GetMouseButtonDown(button: number): boolean
-        /** Interface to Input.GetMouseButtonUp. Can be overridden to provide custom input instead of using the Input class.
-         */
-        GetMouseButtonUp(button: number): boolean
-        /** Interface to Input.GetMouseButton. Can be overridden to provide custom input instead of using the Input class.
-         */
-        GetMouseButton(button: number): boolean
-        /** Interface to Input.GetTouch. Can be overridden to provide custom input instead of using the Input class.
-         */
-        GetTouch(index: number): any
-        /** Interface to Input.GetAxisRaw. Can be overridden to provide custom input instead of using the Input class.
-         */
-        GetAxisRaw(axisName: string): number
-        /** Interface to Input.GetButtonDown. Can be overridden to provide custom input instead of using the Input class.
-         */
-        GetButtonDown(buttonName: string): boolean
-        /** Interface to Input.compositionString. Can be overridden to provide custom input instead of using the Input class.
-         */
-        readonly compositionString: string
-        /** Interface to Input.imeCompositionMode. Can be overridden to provide custom input instead of using the Input class.
-         */
-        imeCompositionMode: any
-        /** Interface to Input.compositionCursorPos. Can be overridden to provide custom input instead of using the Input class.
-         */
-        compositionCursorPos: Vector2
-        /** Interface to Input.mousePresent. Can be overridden to provide custom input instead of using the Input class.
-         */
-        readonly mousePresent: boolean
-        /** Interface to Input.mousePosition. Can be overridden to provide custom input instead of using the Input class.
-         */
-        readonly mousePosition: Vector2
-        /** Interface to Input.mouseScrollDelta. Can be overridden to provide custom input instead of using the Input class.
-         */
-        readonly mouseScrollDelta: Vector2
-        /** Interface to Input.touchSupported. Can be overridden to provide custom input instead of using the Input class.
-         */
-        readonly touchSupported: boolean
-        /** Interface to Input.touchCount. Can be overridden to provide custom input instead of using the Input class.
-         */
-        readonly touchCount: number
-    }
-}
-declare module "UnityEngine.EventSystems" {
-    /** A base module that raises events and sends them to GameObjects.
-     */
-    abstract class BaseInputModule extends UIBehaviour {
-        Process(): void
-        /** Is the pointer with the given ID over an EventSystem object?
-         * @param pointerId Pointer ID.
-         */
-        IsPointerOverGameObject(pointerId: number): boolean
-        ShouldActivateModule(): boolean
-        DeactivateModule(): void
-        ActivateModule(): void
-        UpdateModule(): void
-        IsModuleSupported(): boolean
-        /** The current BaseInput being used by the input module.
-         */
-        readonly input: BaseInput
-        /** Used to override the default BaseInput for the input module.
-         */
-        inputOverride: BaseInput
-    }
-}
-declare module "UnityEngine.EventSystems" {
-    /** A BaseInputModule for pointer input.
-     */
-    abstract class PointerInputModule extends BaseInputModule {
-        IsPointerOverGameObject(pointerId: number): boolean
-        toString(): string
-        /** Id of the cached left mouse pointer event.
-         */
-        static readonly kMouseLeftId: number
-        /** Id of the cached right mouse pointer event.
-         */
-        static readonly kMouseRightId: number
-        /** Id of the cached middle mouse pointer event.
-         */
-        static readonly kMouseMiddleId: number
-        /** Touch id for when simulating touches on a non touch device.
-         */
-        static readonly kFakeTouchesId: number
-    }
-}
-declare module "UnityEngine.EventSystems" {
-    import { Object } from "System";
-    namespace PointerInputModule {
-        class MouseButtonEventData extends Object {
-            constructor()
-            PressedThisFrame(): boolean
-            ReleasedThisFrame(): boolean
-            buttonState: PointerEventData.FramePressState
-            buttonData: PointerEventData
-        }
-    }
-}
-declare module "UnityEngine.EventSystems" {
-    /** A BaseInputModule designed for mouse  keyboard  controller input.
-     */
-    class StandaloneInputModule extends PointerInputModule {
-        UpdateModule(): void
-        IsModuleSupported(): boolean
-        ShouldActivateModule(): boolean
-        ActivateModule(): void
-        DeactivateModule(): void
-        Process(): void
-        /*protected*/ constructor()
-        /** Force this module to be active.
-         */
-        forceModuleActive: boolean
-        /** Number of keyboard / controller inputs allowed per second.
-         */
-        inputActionsPerSecond: number
-        /** Delay in seconds before the input actions per second repeat rate takes effect.
-         */
-        repeatDelay: number
-        /** Input manager name for the horizontal axis button.
-         */
-        horizontalAxis: string
-        /** Input manager name for the vertical axis.
-         */
-        verticalAxis: string
-        /** Maximum number of input events handled per second.
-         */
-        submitButton: string
-        /** Input manager name for the 'cancel' button.
-         */
-        cancelButton: string
-    }
-}
-declare module "UnityEngine.EventSystems" {
-    import { Camera } from "UnityEngine";
-    import { List } from "System.Collections.Generic";
-    import { Object } from "System";
-    /** Base class for any RayCaster.
-     */
-    abstract class BaseRaycaster extends UIBehaviour {
-        Raycast(eventData: PointerEventData, resultAppendList: any): void
-        toString(): string
-        /** The camera that will generate rays for this raycaster.
-         */
-        readonly eventCamera: Camera
-        /** Priority of the raycaster based upon sort order.
-         */
-        readonly sortOrderPriority: number
-        /** Priority of the raycaster based upon render order.
-         */
-        readonly renderOrderPriority: number
-        /** Raycaster on root canvas.
-         */
-        readonly rootRaycaster: BaseRaycaster
-    }
-}
-declare module "UnityEngine.EventSystems" {
-    import { List } from "System.Collections.Generic";
-    import { Object } from "System";
-    /** Raycaster for casting against 2D Physics components.
-     */
-    class Physics2DRaycaster extends PhysicsRaycaster {
-        Raycast(eventData: PointerEventData, resultAppendList: any): void
-        /*protected*/ constructor()
-    }
-}
-declare module "UnityEngine.EventSystems" {
-    import { Camera, LayerMask } from "UnityEngine";
-    import { List } from "System.Collections.Generic";
-    import { Object } from "System";
-    /** Raycaster for casting against 3D Physics components.
-     */
-    class PhysicsRaycaster extends BaseRaycaster {
-        Raycast(eventData: PointerEventData, resultAppendList: any): void
-        /*protected*/ constructor()
-        /** Get the camera that is used for this module.
-         */
-        readonly eventCamera: Camera
-        /** Get the depth of the configured camera.
-         */
-        readonly depth: number
-        /** Logical and of Camera mask and eventMask.
-         */
-        readonly finalEventMask: number
-        /** Mask of allowed raycast events.
-         */
-        eventMask: LayerMask
-        /** Max number of ray intersection allowed to be found.
-         */
-        maxRayIntersections: number
-    }
-}
-declare module "UnityEngine.UI" {
-    import { Object } from "System";
-    /** Structure to store the state of an animation transition on a Selectable.
-     */
-    class AnimationTriggers extends Object {
-        constructor()
-        /** Trigger to send to animator when entering normal state.
-         */
-        normalTrigger: string
-        /** Trigger to send to animator when entering highlighted state.
-         */
-        highlightedTrigger: string
-        /** Trigger to send to animator when entering pressed state.
-         */
-        pressedTrigger: string
-        /** Trigger to send to animator when entering selected state.
-         */
-        selectedTrigger: string
-        /** Trigger to send to animator when entering disabled state.
-         */
-        disabledTrigger: string
-    }
-}
-declare module "UnityEngine.UI" {
-    import { IEventSystemHandler, IPointerEnterHandler, ISelectHandler, IPointerExitHandler, IDeselectHandler, IPointerDownHandler, IPointerUpHandler, IMoveHandler, ISubmitHandler, IPointerClickHandler, PointerEventData, BaseEventData } from "UnityEngine.EventSystems";
-    /** A standard button that can be clicked in order to trigger an event.
-     */
-    class Button extends Selectable implements IEventSystemHandler, IPointerEnterHandler, ISelectHandler, IPointerExitHandler, IDeselectHandler, IPointerDownHandler, IPointerUpHandler, IMoveHandler, ISubmitHandler, IPointerClickHandler {
-        /** Registered IPointerClickHandler callback.
-         * @param eventData Data passed in (Typically by the event system).
-         */
-        OnPointerClick(eventData: PointerEventData): void
-        /** Registered ISubmitHandler callback.
-         * @param eventData Data passed in (Typically by the event system).
-         */
-        OnSubmit(eventData: BaseEventData): void
-        /*protected*/ constructor()
-        /** UnityEvent that is triggered when the Button is pressed.
-         */
-        onClick: Button.ButtonClickedEvent
-    }
-}
 declare module "UnityEngine.UI" {
     import * as jsb from "jsb";
-    import { UIBehaviour, IEventSystemHandler, IPointerEnterHandler, ISelectHandler, IPointerExitHandler, IDeselectHandler, IPointerDownHandler, IPointerUpHandler, IMoveHandler, AxisEventData, PointerEventData, BaseEventData } from "UnityEngine.EventSystems";
-    import { Array } from "System";
-    import { Animator, Vector3 } from "UnityEngine";
-    /** Simple selectable object - derived from to create a selectable control.
-     */
-    class Selectable extends UIBehaviour implements IEventSystemHandler, IPointerEnterHandler, ISelectHandler, IPointerExitHandler, IDeselectHandler, IPointerDownHandler, IPointerUpHandler, IMoveHandler {
-        IsInteractable(): boolean
-        /** Finds the selectable object next to this one.
-         * @param dir The direction in which to search for a neighbouring Selectable object.
-         * @returns The neighbouring Selectable object. Null if none found. 
-         */
-        FindSelectable(dir: Vector3): Selectable
-        FindSelectableOnLeft(): Selectable
-        FindSelectableOnRight(): Selectable
-        FindSelectableOnUp(): Selectable
-        FindSelectableOnDown(): Selectable
-        /** Determine in which of the 4 move directions the next selectable object should be found.
-         * @param eventData The EventData usually sent by the EventSystem.
-         */
-        OnMove(eventData: AxisEventData): void
-        /** Evaluate current state and transition to pressed state.
-         * @param eventData The EventData usually sent by the EventSystem.
-         */
-        OnPointerDown(eventData: PointerEventData): void
-        /** Evaluate eventData and transition to appropriate state.
-         * @param eventData The EventData usually sent by the EventSystem.
-         */
-        OnPointerUp(eventData: PointerEventData): void
-        /** Evaluate current state and transition to appropriate state.
-         * @param eventData The EventData usually sent by the EventSystem.
-         */
-        OnPointerEnter(eventData: PointerEventData): void
-        /** Evaluate current state and transition to normal state.
-         * @param eventData The EventData usually sent by the EventSystem.
-         */
-        OnPointerExit(eventData: PointerEventData): void
-        /** Set selection and transition to appropriate state.
-         * @param eventData The EventData usually sent by the EventSystem.
-         */
-        OnSelect(eventData: BaseEventData): void
-        /** Unset selection and transition to appropriate state.
-         * @param eventData The eventData usually sent by the EventSystem.
-         */
-        OnDeselect(eventData: BaseEventData): void
-        Select(): void
-        /** Non allocating option to get all the selectable objects currently active in the Scene.
-         * @param selectables The array of Selectables to populated.
-         * @returns The number of Selectable elements copied into the array. 
-         */
-        static AllSelectablesNoAlloc(selectables: Array<Selectable>): number
-        /*protected*/ constructor()
-        /** Duplicated array of all the selectable objects currently active in the Scene.
-         */
-        static readonly allSelectablesArray: Array<Selectable>
-        /** Count how many selectables are currently active.
-         */
-        static readonly allSelectableCount: number
-        /** The Navigation setting for this selectable object.
-         */
-        navigation: Navigation
-        /** The type of transition that will be applied to the targetGraphic when the state changes.
-         */
-        transition: Selectable.Transition
-        /** The ColorBlock for this selectable object.
-         */
-        colors: ColorBlock
-        /** The SpriteState for this selectable object.
-         */
-        spriteState: SpriteState
-        /** The AnimationTriggers for this selectable object.
-         */
-        animationTriggers: AnimationTriggers
-        /** Graphic that will be transitioned upon.
-         */
-        targetGraphic: Graphic
-        /** Use to enable or disable the ability to select a selectable UI element (for example, a Button).
-         */
-        interactable: boolean
-        /** Convenience function that converts the referenced Graphic to a Image, if possible.
-         */
-        image: Image
-        /** Convenience function to get the Animator component on the GameObject.
-         */
-        readonly animator: Animator
-    }
-}
-declare module "UnityEngine.UI" {
-    import { UnityEvent } from "UnityEngine.Events";
-    namespace Button {
-        class ButtonClickedEvent extends UnityEvent {
-            constructor()
-        }
-    }
-}
-declare module "UnityEngine.Events" {
-    /** A zero argument persistent callback that can be saved with the Scene.
-     */
-    class UnityEvent extends UnityEventBase {
-        constructor()
-        /** Add a non persistent listener to the UnityEvent.
-         * @param call Callback function.
-         */
-        AddListener(call: () => void): void
-        /** Remove a non persistent listener from the UnityEvent.
-         * @param call Callback function.
-         */
-        RemoveListener(call: () => void): void
-        Invoke(): void
-    }
-}
-declare module "UnityEngine.UI" {
-    import { Enum } from "System";
-    /** Values of 'update' called on a Canvas update.
-     */
-    enum CanvasUpdate {
-        /** Called before layout.
-         */
-        Prelayout = 0,
-        /** Called for layout.
-         */
-        Layout = 1,
-        /** Called after layout.
-         */
-        PostLayout = 2,
-        /** Called before rendering.
-         */
-        PreRender = 3,
-        /** Called late, before render.
-         */
-        LatePreRender = 4,
-        /** Max enum value.
-         */
-        MaxUpdateValue = 5,
-    }
-}
-declare module "UnityEngine.UI" {
-    import { Transform } from "UnityEngine";
-    interface ICanvasElement {
-        /** Rebuild the element for the given stage.
-         * @param executing Stage being rebuild.
-         */
-        Rebuild(executing: CanvasUpdate): void
-        LayoutComplete(): void
-        GraphicUpdateComplete(): void
-        IsDestroyed(): boolean
-        /** Get the transform associated with the ICanvasElement.
-         */
-        readonly transform: Transform
-    }
-}
-declare module "UnityEngine.UI" {
-    import { Object } from "System";
-    /** A place where CanvasElements can register themselves for rebuilding.
-     */
-    class CanvasUpdateRegistry extends Object {
-        /** Rebuild the layout of the given element.
-         * @param element Element to rebuild.
-         */
-        static RegisterCanvasElementForLayoutRebuild(element: ICanvasElement): void
-        /** Was the element scheduled.
-         * @param element Element to rebuild.
-         * @returns Was the element scheduled. 
-         */
-        static TryRegisterCanvasElementForLayoutRebuild(element: ICanvasElement): boolean
-        /** Rebuild the graphics of the given element.
-         * @param element Element to rebuild.
-         */
-        static RegisterCanvasElementForGraphicRebuild(element: ICanvasElement): void
-        /** Rebuild the layout of the given element.
-         * @param element Element to rebuild.
-         * @returns Was the element scheduled. 
-         */
-        static TryRegisterCanvasElementForGraphicRebuild(element: ICanvasElement): boolean
-        /** Remove the given element from rebuild.
-         * @param element Element to remove.
-         */
-        static UnRegisterCanvasElementForRebuild(element: ICanvasElement): void
-        static IsRebuildingLayout(): boolean
-        static IsRebuildingGraphics(): boolean
-        protected constructor()
-        /** Get the singleton registry.
-         */
-        static readonly instance: CanvasUpdateRegistry
-    }
-}
-declare module "UnityEngine.UI" {
-    import { ValueType, Object } from "System";
-    import { Color } from "UnityEngine";
-    /** Structure to store the state of a color transition on a Selectable.
-     */
-    class ColorBlock extends ValueType {
-        constructor()
-        Equals(obj: Object): boolean
-        Equals(other: ColorBlock): boolean
-        GetHashCode(): number
-        static op_Inequality(point1: ColorBlock, point2: ColorBlock): boolean
-        // js_op_overloading: static ==(point1: ColorBlock, point2: ColorBlock): boolean
-        /** Normal Color.
-         */
-        normalColor: Color
-        /** Highlighted Color.
-         */
-        highlightedColor: Color
-        /** Pressed Color.
-         */
-        pressedColor: Color
-        /** Selected Color.
-         */
-        selectedColor: Color
-        /** Disabled Color.
-         */
-        disabledColor: Color
-        /** Multiplier applied to colors (allows brightening greater then base color).
-         */
-        colorMultiplier: number
-        /** How long a color transition should take.
-         */
-        fadeDuration: number
-        /** Simple getter for the default ColorBlock.
-         */
-        static readonly defaultColorBlock: ColorBlock
-    }
-}
-declare module "UnityEngine.UI" {
-    import { Object } from "System";
     import { GameObject } from "UnityEngine";
-    /** Utility class for creating default implementations of builtin UI controls.
-     */
-    abstract class DefaultControls extends Object {
-        static CreatePanel(resources: DefaultControls.Resources): GameObject
-        static CreateButton(resources: DefaultControls.Resources): GameObject
-        static CreateText(resources: DefaultControls.Resources): GameObject
-        static CreateImage(resources: DefaultControls.Resources): GameObject
-        static CreateRawImage(resources: DefaultControls.Resources): GameObject
-        static CreateSlider(resources: DefaultControls.Resources): GameObject
-        static CreateScrollbar(resources: DefaultControls.Resources): GameObject
-        static CreateToggle(resources: DefaultControls.Resources): GameObject
-        static CreateInputField(resources: DefaultControls.Resources): GameObject
-        static CreateDropdown(resources: DefaultControls.Resources): GameObject
-        static CreateScrollView(resources: DefaultControls.Resources): GameObject
+    import { Array, Object } from "System";
+    namespace DefaultControls {
+        interface IFactoryControls {
+            CreateGameObject(name: string, ...components: any[]): GameObject
+        }
     }
 }
 declare module "UnityEngine.UI" {
@@ -23582,66 +24341,6 @@ declare module "UnityEngine.UI" {
             dropdown: Sprite
             mask: Sprite
         }
-    }
-}
-declare module "UnityEngine.UI" {
-    import { IEventSystemHandler, IPointerEnterHandler, ISelectHandler, IPointerExitHandler, IDeselectHandler, IPointerDownHandler, IPointerUpHandler, IMoveHandler, ISubmitHandler, IPointerClickHandler, ICancelHandler, PointerEventData, BaseEventData } from "UnityEngine.EventSystems";
-    import { RectTransform, Sprite } from "UnityEngine";
-    import { List } from "System.Collections.Generic";
-    import { Object } from "System";
-    /** A standard dropdown that presents a list of options when clicked, of which one can be chosen.
-     */
-    class Dropdown extends Selectable implements IEventSystemHandler, IPointerEnterHandler, ISelectHandler, IPointerExitHandler, IDeselectHandler, IPointerDownHandler, IPointerUpHandler, IMoveHandler, ISubmitHandler, IPointerClickHandler, ICancelHandler {
-        /** Set index number of the current selection in the Dropdown without invoking onValueChanged callback.
-         * @param input The new index for the current selection.
-         */
-        SetValueWithoutNotify(input: number): void
-        RefreshShownValue(): void
-        AddOptions(options: any): void
-        AddOptions(options: List<string>): void
-        AddOptions(options: any): void
-        ClearOptions(): void
-        /** Handling for when the dropdown is 'clicked'.
-         * @param eventData Current event.
-         */
-        OnPointerClick(eventData: PointerEventData): void
-        /** What to do when the event system sends a submit Event.
-         * @param eventData Current event.
-         */
-        OnSubmit(eventData: BaseEventData): void
-        /** Called by a BaseInputModule when a Cancel event occurs.
-         */
-        OnCancel(eventData: BaseEventData): void
-        Show(): void
-        Hide(): void
-        /*protected*/ constructor()
-        /** The Rect Transform of the template for the dropdown list.
-         */
-        template: RectTransform
-        /** The Text component to hold the text of the currently selected option.
-         */
-        captionText: Text
-        /** The Image component to hold the image of the currently selected option.
-         */
-        captionImage: Image
-        /** The Text component to hold the text of the item.
-         */
-        itemText: Text
-        /** The Image component to hold the image of the item.
-         */
-        itemImage: Image
-        /** The list of possible options. A text string and an image can be specified for each option.
-         */
-        options: any
-        /** A UnityEvent that is invoked when when a user has clicked one of the options in the dropdown list.
-         */
-        onValueChanged: Dropdown.DropdownEvent
-        /** How fast the drop down will appear and disapear when focus changes.
-         */
-        alphaFadeSpeed: number
-        /** The Value is the index number of the current selection in the Dropdown. 0 is the first option in the Dropdown, 1 is the second, and so on.
-         */
-        value: number
     }
 }
 declare module "UnityEngine.UI" {
@@ -23683,186 +24382,12 @@ declare module "UnityEngine.Events" {
         Invoke(arg0: number): void
     }
 }
-declare module "UnityEngine.UI" {
-    import { Object, Enum } from "System";
-    import { Object as Object1, TextAnchor } from "UnityEngine";
-    /** Struct for storing Text generation settings.
-     */
-    class FontData extends Object {
-        constructor()
-        /** Maintain a list of all the FontData features.
-         */
-        static readonly defaultFontData: FontData
-        /** Font to use.
-         */
-        font: any
-        /** Font size.
-         */
-        fontSize: number
-        /** Font Style.
-         */
-        fontStyle: any
-        /** Is best fit used.
-         */
-        bestFit: boolean
-        /** Minimum text size.
-         */
-        minSize: number
-        /** Maximum text size.
-         */
-        maxSize: number
-        /** How is the text aligned.
-         */
-        alignment: TextAnchor
-        /** Use the extents of glyph geometry to perform horizontal alignment rather than glyph metrics.
-         */
-        alignByGeometry: boolean
-        /** Should RichText be used?
-         */
-        richText: boolean
-        /** Horizontal overflow mode.
-         */
-        horizontalOverflow: any
-        /** Vertical overflow mode.
-         */
-        verticalOverflow: any
-        /** Line spacing.
-         */
-        lineSpacing: number
-    }
-}
-declare module "UnityEngine.UI" {
+declare module "UnityEngine.Events" {
     import { Object } from "System";
-    /** Utility class that is used to help with Text update.
-     */
-    abstract class FontUpdateTracker extends Object {
-        /** Register a Text element for receiving texture atlas rebuild calls.
-         */
-        static TrackText(t: Text): void
-        /** Deregister a Text element from receiving texture atlas rebuild calls.
-         */
-        static UntrackText(t: Text): void
-    }
-}
-declare module "UnityEngine.UI" {
-    import { UIBehaviour } from "UnityEngine.EventSystems";
-    import { Material, Color, RectTransform, Behaviour, Component, Texture, Vector2, Camera, Rect } from "UnityEngine";
-    /** Base class for all visual UI Component.
-     */
-    abstract class Graphic extends UIBehaviour implements ICanvasElement {
-        SetAllDirty(): void
-        SetLayoutDirty(): void
-        SetVerticesDirty(): void
-        SetMaterialDirty(): void
-        OnCullingChanged(): void
-        /** Rebuilds the graphic geometry and its material on the PreRender cycle.
-         * @param update The current step of the rendering CanvasUpdate cycle.
-         */
-        Rebuild(update: CanvasUpdate): void
-        LayoutComplete(): void
-        GraphicUpdateComplete(): void
-        SetNativeSize(): void
-        /** When a GraphicRaycaster is raycasting into the Scene it does two things. First it filters the elements using their RectTransform rect. Then it uses this Raycast function to determine the elements hit by the raycast.
-         * @param sp Screen point.
-         * @param eventCamera Camera.
-         * @returns True if the provided point is a valid location for GraphicRaycaster raycasts. 
-         */
-        Raycast(sp: Vector2, eventCamera: Camera): boolean
-        /** Adjusts the given pixel to be pixel perfect.
-         * @param point Local space point.
-         * @returns Pixel perfect adjusted point. 
-         */
-        PixelAdjustPoint(point: Vector2): Vector2
-        GetPixelAdjustedRect(): Rect
-        CrossFadeColor(targetColor: Color, duration: number, ignoreTimeScale: boolean, useAlpha: boolean, useRGB: boolean): void
-        /** Tweens the CanvasRenderer color associated with this Graphic.
-         * @param targetColor Target color.
-         * @param duration Tween duration.
-         * @param ignoreTimeScale Should ignore Time.scale?
-         * @param useAlpha Should also Tween the alpha channel?
-         */
-        CrossFadeColor(targetColor: Color, duration: number, ignoreTimeScale: boolean, useAlpha: boolean): void
-        /** Tweens the alpha of the CanvasRenderer color associated with this Graphic.
-         * @param alpha Target alpha.
-         * @param duration Duration of the tween in seconds.
-         * @param ignoreTimeScale Should ignore Time.scale?
-         */
-        CrossFadeAlpha(alpha: number, duration: number, ignoreTimeScale: boolean): void
-        /** Add a listener to receive notification when the graphics layout is dirtied.
-         */
-        RegisterDirtyLayoutCallback(action: () => void): void
-        /** Remove a listener from receiving notifications when the graphics layout is dirtied.
-         */
-        UnregisterDirtyLayoutCallback(action: () => void): void
-        /** Add a listener to receive notification when the graphics vertices are dirtied.
-         */
-        RegisterDirtyVerticesCallback(action: () => void): void
-        /** Remove a listener from receiving notifications when the graphics vertices are dirtied.
-         * @param action The delegate function to remove.
-         */
-        UnregisterDirtyVerticesCallback(action: () => void): void
-        /** Add a listener to receive notification when the graphics material is dirtied.
-         */
-        RegisterDirtyMaterialCallback(action: () => void): void
-        /** Remove a listener from receiving notifications when the graphics material is dirtied.
-         */
-        UnregisterDirtyMaterialCallback(action: () => void): void
-        /** Default material used to draw UI elements if no explicit material was specified.
-         */
-        static readonly defaultGraphicMaterial: Material
-        /** Base color of the Graphic.
-         */
-        color: Color
-        /** Should this graphic be considered a target for raycasting?
-         */
-        raycastTarget: boolean
-        /** Absolute depth of the graphic in the hierarchy, used by rendering and events.
-         */
-        readonly depth: number
-        /** The RectTransform component used by the Graphic.
-         */
-        readonly rectTransform: RectTransform
-        /** A reference to the Canvas this Graphic is rendering to.
-         */
-        readonly canvas: any
-        /** The CanvasRenderer used by this Graphic.
-         */
-        readonly canvasRenderer: any
-        /** Returns the default material for the graphic.
-         */
-        readonly defaultMaterial: Material
-        /** The Material set by the user.
-         */
-        material: Material
-        /** The material that will be sent for Rendering (Read only).
-         */
-        readonly materialForRendering: Material
-        /** The graphic's texture. (Read Only).
-         */
-        readonly mainTexture: Texture
-    }
-}
-declare module "UnityEngine.UI" {
-    import { BaseRaycaster, PointerEventData, RaycastResult } from "UnityEngine.EventSystems";
-    import { Camera } from "UnityEngine";
-    import { List } from "System.Collections.Generic";
-    import { Object } from "System";
-    /** A BaseRaycaster to raycast against Graphic elements.
-     */
-    class GraphicRaycaster extends BaseRaycaster {
-        Raycast(eventData: PointerEventData, resultAppendList: any): void
-        /*protected*/ constructor()
-        readonly sortOrderPriority: number
-        readonly renderOrderPriority: number
-        /** Should graphics facing away from the raycaster be considered?
-         */
-        ignoreReversedGraphics: boolean
-        /** Type of objects that will block graphic raycasts.
-         */
-        blockingObjects: GraphicRaycaster.BlockingObjects
-        /** See: BaseRaycaster.
-         */
-        readonly eventCamera: Camera
+    abstract class UnityEvent1<T0> extends UnityEventBase {
+        AddListener(call: any): void
+        RemoveListener(call: any): void
+        Invoke(arg0: T0): void
     }
 }
 declare module "UnityEngine.UI" {
@@ -23874,155 +24399,6 @@ declare module "UnityEngine.UI" {
             ThreeD = 2,
             All = 3,
         }
-    }
-}
-declare module "UnityEngine.UI" {
-    import { Object } from "System";
-    /** EditorOnly class for tracking all Graphics.
-     */
-    abstract class GraphicRebuildTracker extends Object {
-        /** Track a Graphic.
-         */
-        static TrackGraphic(g: Graphic): void
-        /** Untrack a Graphic.
-         */
-        static UnTrackGraphic(g: Graphic): void
-    }
-}
-declare module "UnityEngine.UI" {
-    import { Object } from "System";
-    import { Behaviour } from "UnityEngine";
-    import { IList } from "System.Collections.Generic";
-    /** Registry which maps a Graphic to the canvas it belongs to.
-     */
-    class GraphicRegistry extends Object {
-        /** Store a link between the given canvas and graphic in the registry.
-         * @param c Canvas to register.
-         * @param graphic Graphic to register.
-         */
-        static RegisterGraphicForCanvas(c: any, graphic: Graphic): void
-        /** Deregister the given Graphic from a Canvas.
-         * @param c Canvas.
-         * @param graphic Graphic to deregister.
-         */
-        static UnregisterGraphicForCanvas(c: any, graphic: Graphic): void
-        /** Return a list of Graphics that are registered on the Canvas.
-         * @param canvas Input canvas.
-         * @returns Graphics on the input canvas. 
-         */
-        static GetGraphicsForCanvas(canvas: any): any
-        protected constructor()
-        /** Singleton instance.
-         */
-        static readonly instance: GraphicRegistry
-    }
-}
-declare module "UnityEngine.UI" {
-    import { Sprite, Material, Texture, Vector2, Camera } from "UnityEngine";
-    /** Displays a Sprite for the UI System.
-     */
-    class Image extends MaskableGraphic implements IClippable, ICanvasElement, IMaterialModifier, ILayoutElement, IMaskable {
-        DisableSpriteOptimizations(): void
-        OnBeforeSerialize(): void
-        OnAfterDeserialize(): void
-        SetNativeSize(): void
-        CalculateLayoutInputHorizontal(): void
-        CalculateLayoutInputVertical(): void
-        /** See:ICanvasRaycastFilter.
-         */
-        IsRaycastLocationValid(screenPoint: Vector2, eventCamera: Camera): boolean
-        /*protected*/ constructor()
-        /** The sprite that is used to render this image.
-         */
-        sprite: Sprite
-        /** Set an override sprite to be used for rendering.
-         */
-        overrideSprite: Sprite
-        /** How to display the image.
-         */
-        type: Image.Type
-        /** Whether this image should preserve its Sprite aspect ratio.
-         */
-        preserveAspect: boolean
-        /** Whether or not to render the center of a Tiled or Sliced image.
-         */
-        fillCenter: boolean
-        /** What type of fill method to use.
-         */
-        fillMethod: Image.FillMethod
-        /** Amount of the Image shown when the Image.type is set to Image.Type.Filled.
-         */
-        fillAmount: number
-        /** Whether the Image should be filled clockwise (true) or counter-clockwise (false).
-         */
-        fillClockwise: boolean
-        /** Controls the origin point of the Fill process. Value means different things with each fill method.
-         */
-        fillOrigin: number
-        /** The alpha threshold specifies the minimum alpha a pixel must have for the event to considered a "hit" on the Image.
-         */
-        alphaHitTestMinimumThreshold: number
-        /** Allows you to specify whether the UI Image should be displayed using the mesh generated by the TextureImporter, or by a simple quad mesh.
-         */
-        useSpriteMesh: boolean
-        /** Cache of the default Canvas Ericsson Texture Compression 1 (ETC1) and alpha Material.
-         */
-        static readonly defaultETC1GraphicMaterial: Material
-        /** The image's texture. (ReadOnly).
-         */
-        readonly mainTexture: Texture
-        /** True if the sprite used has borders.
-         */
-        readonly hasBorder: boolean
-        readonly pixelsPerUnit: number
-        /** The specified Material used by this Image. The default Material is used instead if one wasn't specified.
-         */
-        material: Material
-        /** See ILayoutElement.minWidth.
-         */
-        readonly minWidth: number
-        /** See ILayoutElement.preferredWidth.
-         */
-        readonly preferredWidth: number
-        /** See ILayoutElement.flexibleWidth.
-         */
-        readonly flexibleWidth: number
-        /** See ILayoutElement.minHeight.
-         */
-        readonly minHeight: number
-        /** See ILayoutElement.preferredHeight.
-         */
-        readonly preferredHeight: number
-        /** See ILayoutElement.flexibleHeight.
-         */
-        readonly flexibleHeight: number
-        /** See ILayoutElement.layoutPriority.
-         */
-        readonly layoutPriority: number
-    }
-}
-declare module "UnityEngine.UI" {
-    import { Material, Rect } from "UnityEngine";
-    /** A Graphic that is capable of being masked out.
-     */
-    abstract class MaskableGraphic extends Graphic implements IClippable, ICanvasElement, IMaterialModifier, IMaskable {
-        /** See IMaterialModifier.GetModifiedMaterial.
-         */
-        GetModifiedMaterial(baseMaterial: Material): Material
-        /** See IClippable.Cull.
-         */
-        Cull(clipRect: Rect, validRect: boolean): void
-        /** See IClippable.SetClipRect.
-         */
-        SetClipRect(clipRect: Rect, validRect: boolean): void
-        RecalculateClipping(): void
-        RecalculateMasking(): void
-        /** Callback issued when culling changes.
-         */
-        onCullStateChanged: MaskableGraphic.CullStateChangedEvent
-        /** Does this graphic allow masking.
-         */
-        maskable: boolean
     }
 }
 declare module "UnityEngine.UI" {
@@ -24100,162 +24476,6 @@ declare module "UnityEngine.UI" {
     }
 }
 declare module "UnityEngine.UI" {
-    interface IMaskable {
-        RecalculateMasking(): void
-    }
-}
-declare module "UnityEngine.UI" {
-    import { IEndDragHandler, IEventSystemHandler, IPointerEnterHandler, IUpdateSelectedHandler, ISelectHandler, IPointerExitHandler, IDeselectHandler, IPointerDownHandler, IPointerUpHandler, IMoveHandler, ISubmitHandler, IPointerClickHandler, IBeginDragHandler, IDragHandler, PointerEventData, BaseEventData } from "UnityEngine.EventSystems";
-    import { Color, Event } from "UnityEngine";
-    import { Object, Enum } from "System";
-    /** Turn a simple label into a interactable input field.
-     */
-    class InputField extends Selectable implements IEndDragHandler, IEventSystemHandler, IPointerEnterHandler, IUpdateSelectedHandler, ISelectHandler, IPointerExitHandler, IDeselectHandler, IPointerDownHandler, ICanvasElement, IPointerUpHandler, IMoveHandler, ILayoutElement, ISubmitHandler, IPointerClickHandler, IBeginDragHandler, IDragHandler {
-        /** Set Input field's current text value without invoke onValueChanged.
-         * @param input The new text string.
-         */
-        SetTextWithoutNotify(input: string): void
-        /** Move the caret index to end of text.
-         * @param shift Only move the selectionPosition.
-         */
-        MoveTextEnd(shift: boolean): void
-        /** Move the caret index to start of text.
-         * @param shift Only move the selectionPosition.
-         */
-        MoveTextStart(shift: boolean): void
-        /** Capture the OnBeginDrag callback from the EventSystem and ensure we should listen to the drag events to follow.
-         * @param eventData The data passed by the EventSystem.
-         */
-        OnBeginDrag(eventData: PointerEventData): void
-        /** What to do when the event system sends a Drag Event.
-         */
-        OnDrag(eventData: PointerEventData): void
-        /** Capture the OnEndDrag callback from the EventSystem and cancel the listening of drag events.
-         * @param eventData The eventData sent by the EventSystem.
-         */
-        OnEndDrag(eventData: PointerEventData): void
-        /** What to do when the event system sends a pointer down Event.
-         */
-        OnPointerDown(eventData: PointerEventData): void
-        /** Helper function to allow separate events to be processed by the InputField.
-         * @param e The Event to be processed.
-         */
-        ProcessEvent(e: Event): void
-        /** What to do when the event system sends a Update selected Event.
-         */
-        OnUpdateSelected(eventData: BaseEventData): void
-        ForceLabelUpdate(): void
-        /** Rebuild the input fields geometry. (caret and highlight).
-         */
-        Rebuild(update: CanvasUpdate): void
-        LayoutComplete(): void
-        GraphicUpdateComplete(): void
-        ActivateInputField(): void
-        OnSelect(eventData: BaseEventData): void
-        /** What to do when the event system sends a pointer click Event.
-         */
-        OnPointerClick(eventData: PointerEventData): void
-        DeactivateInputField(): void
-        /** What to do when the event system sends a Deselect Event.
-         */
-        OnDeselect(eventData: BaseEventData): void
-        /** What to do when the event system sends a submit Event.
-         */
-        OnSubmit(eventData: BaseEventData): void
-        CalculateLayoutInputHorizontal(): void
-        CalculateLayoutInputVertical(): void
-        /*protected*/ constructor()
-        /** Should the mobile keyboard input be hidden.
-         */
-        shouldHideMobileInput: boolean
-        /** The current value of the input field.
-         */
-        text: string
-        /** Does the InputField currently have focus and is able to process events.
-         */
-        readonly isFocused: boolean
-        /** The blinking rate of the input caret, defined as the number of times the blink cycle occurs per second.
-         */
-        caretBlinkRate: number
-        /** The width of the caret in pixels.
-         */
-        caretWidth: number
-        /** The Text component that is going to be used to render the text to screen.
-         */
-        textComponent: Text
-        /** This is an optional ‘empty’ graphic to show that the InputField text field is empty.
-         */
-        placeholder: Graphic
-        /** The custom caret color used if customCaretColor is set.
-         */
-        caretColor: Color
-        /** Should a custom caret color be used or should the textComponent.color be used.
-         */
-        customCaretColor: boolean
-        /** The color of the highlight to show which characters are selected.
-         */
-        selectionColor: Color
-        /** The Unity Event to call when editing has ended.
-         */
-        onEndEdit: InputField.SubmitEvent
-        /** Accessor to the OnChangeEvent.
-         */
-        onValueChanged: InputField.OnChangeEvent
-        /** How many characters the input field is limited to. 0 = infinite.
-         */
-        characterLimit: number
-        /** Specifies the type of the input text content.
-         */
-        contentType: InputField.ContentType
-        /** The LineType used by the InputField.
-         */
-        lineType: InputField.LineType
-        /** The type of input expected. See InputField.InputType.
-         */
-        inputType: InputField.InputType
-        /** The TouchScreenKeyboard being used to edit the Input Field.
-         */
-        readonly touchScreenKeyboard: any
-        /** They type of mobile keyboard that will be used.
-         */
-        keyboardType: any
-        /** The type of validation to perform on a character.
-         */
-        characterValidation: InputField.CharacterValidation
-        /** Set the InputField to be read only.
-         */
-        readOnly: boolean
-        /** If the input field supports multiple lines.
-         */
-        readonly multiLine: boolean
-        /** The character used for password fields.
-         */
-        asteriskChar: string
-        /** If the UI.InputField was canceled and will revert back to the original text upon DeactivateInputField.
-         */
-        readonly wasCanceled: boolean
-        /** Current InputField caret position (also selection tail).
-         */
-        caretPosition: number
-        /** The beginning point of the selection.
-         */
-        selectionAnchorPosition: number
-        /** The end point of the selection.
-         */
-        selectionFocusPosition: number
-        readonly minWidth: number
-        readonly preferredWidth: number
-        readonly flexibleWidth: number
-        readonly minHeight: number
-        readonly preferredHeight: number
-        readonly flexibleHeight: number
-        readonly layoutPriority: number
-        onValidateInput(op: "get"): (text: string, charIndex: number, addedChar: string) => string
-        onValidateInput(op: "add" | "remove" | "set", fn?: (text: string, charIndex: number, addedChar: string) => string): void
-        onValidateInput(op: "add" | "remove" | "set" | "get", fn?: (text: string, charIndex: number, addedChar: string) => string): (text: string, charIndex: number, addedChar: string) => string | void
-    }
-}
-declare module "UnityEngine.UI" {
     import { Enum } from "System";
     namespace InputField {
         enum ContentType {
@@ -24329,28 +24549,87 @@ declare module "UnityEngine.UI" {
     }
 }
 declare module "UnityEngine.UI" {
-    import { UIBehaviour } from "UnityEngine.EventSystems";
-    import { RectTransform, Vector2, Camera, Material } from "UnityEngine";
-    /** A component for masking children elements.
-     */
-    class Mask extends UIBehaviour implements IMaterialModifier {
-        MaskEnabled(): boolean
-        /** See:ICanvasRaycastFilter.
-         */
-        IsRaycastLocationValid(sp: Vector2, eventCamera: Camera): boolean
-        /** See: IMaterialModifier.
-         */
-        GetModifiedMaterial(baseMaterial: Material): Material
-        /*protected*/ constructor()
-        /** Cached RectTransform.
-         */
-        readonly rectTransform: RectTransform
-        /** Show the graphic that is associated with the Mask render area.
-         */
-        showMaskGraphic: boolean
-        /** The graphic associated with the Mask.
-         */
-        readonly graphic: Graphic
+    import { Enum } from "System";
+    namespace AspectRatioFitter {
+        enum AspectMode {
+            None = 0,
+            WidthControlsHeight = 1,
+            HeightControlsWidth = 2,
+            FitInParent = 3,
+            EnvelopeParent = 4,
+        }
+    }
+}
+declare module "UnityEngine.UI" {
+    import { Enum } from "System";
+    namespace CanvasScaler {
+        enum ScaleMode {
+            ConstantPixelSize = 0,
+            ScaleWithScreenSize = 1,
+            ConstantPhysicalSize = 2,
+        }
+    }
+}
+declare module "UnityEngine.UI" {
+    import { Enum } from "System";
+    namespace CanvasScaler {
+        enum ScreenMatchMode {
+            MatchWidthOrHeight = 0,
+            Expand = 1,
+            Shrink = 2,
+        }
+    }
+}
+declare module "UnityEngine.UI" {
+    import { Enum } from "System";
+    namespace CanvasScaler {
+        enum Unit {
+            Centimeters = 0,
+            Millimeters = 1,
+            Inches = 2,
+            Points = 3,
+            Picas = 4,
+        }
+    }
+}
+declare module "UnityEngine.UI" {
+    import { Enum } from "System";
+    namespace ContentSizeFitter {
+        enum FitMode {
+            Unconstrained = 0,
+            MinSize = 1,
+            PreferredSize = 2,
+        }
+    }
+}
+declare module "UnityEngine.UI" {
+    import { Enum } from "System";
+    namespace GridLayoutGroup {
+        enum Corner {
+            UpperLeft = 0,
+            UpperRight = 1,
+            LowerLeft = 2,
+            LowerRight = 3,
+        }
+    }
+}
+declare module "UnityEngine.UI" {
+    import { Enum } from "System";
+    namespace GridLayoutGroup {
+        enum Axis {
+            Horizontal = 0,
+            Vertical = 1,
+        }
+    }
+}
+declare module "UnityEngine.UI" {
+    import { Enum } from "System";
+    namespace GridLayoutGroup {
+        enum Constraint {
+            Flexible = 0,
+            FixedColumnCount = 1,
+            FixedRowCount = 2,
+        }
     }
 }
 declare module "UnityEngine.UI" {
@@ -24363,71 +24642,9 @@ declare module "UnityEngine.UI" {
 }
 declare module "UnityEngine.Events" {
     abstract class UnityEvent_Boolean extends UnityEventBase implements UnityEvent1<boolean> {
-        AddListener(call: (arg0: boolean) => void): void
-        RemoveListener(call: (arg0: boolean) => void): void
+        AddListener(call: (obj: boolean) => void): void
+        RemoveListener(call: (obj: boolean) => void): void
         Invoke(arg0: boolean): void
-    }
-}
-declare module "UnityEngine.UI" {
-    import { Object } from "System";
-    import { Component, Transform } from "UnityEngine";
-    import { List } from "System.Collections.Generic";
-    /** Mask related utility class.
-     */
-    class MaskUtilities extends Object {
-        constructor()
-        /** Notify all IClippables under the given component that they need to recalculate clipping.
-         */
-        static Notify2DMaskStateChanged(mask: Component): void
-        /** Notify all IMaskable under the given component that they need to recalculate masking.
-         */
-        static NotifyStencilStateChanged(mask: Component): void
-        /** Find a root Canvas.
-         * @param start Search start.
-         * @returns Canvas transform. 
-         */
-        static FindRootSortOverrideCanvas(start: Transform): Transform
-        /** Find the stencil depth for a given element.
-         */
-        static GetStencilDepth(transform: Transform, stopAfter: Transform): number
-        /** Helper function to determine if the child is a descendant of father or is father.
-         * @param father The transform to compare against.
-         * @param child The starting transform to search up the hierarchy.
-         * @returns Is child equal to father or is a descendant. 
-         */
-        static IsDescendantOrSelf(father: Transform, child: Transform): boolean
-        /** Find the correct RectMask2D for a given IClippable.
-         * @param transform Clippable to search from.
-         */
-        static GetRectMaskForClippable(clippable: IClippable): RectMask2D
-        static GetRectMasksForClip(clipper: RectMask2D, masks: any): void
-    }
-}
-declare module "UnityEngine.UI" {
-    import { ValueType } from "System";
-    /** Structure storing details related to navigation.
-     */
-    class Navigation extends ValueType {
-        constructor()
-        Equals(other: Navigation): boolean
-        /** Navigation mode.
-         */
-        mode: Navigation.Mode
-        /** Specify a Selectable UI GameObject to highlight when the Up arrow key is pressed.
-         */
-        selectOnUp: Selectable
-        /** Specify a Selectable UI GameObject to highlight when the down arrow key is pressed.
-         */
-        selectOnDown: Selectable
-        /** Specify a Selectable UI GameObject to highlight when the left arrow key is pressed.
-         */
-        selectOnLeft: Selectable
-        /** Specify a Selectable UI GameObject to highlight when the right arrow key is pressed.
-         */
-        selectOnRight: Selectable
-        /** Return a Navigation with sensible default values.
-         */
-        static readonly defaultNavigation: Navigation
     }
 }
 declare module "UnityEngine.UI" {
@@ -24440,252 +24657,6 @@ declare module "UnityEngine.UI" {
             Automatic = 3,
             Explicit = 4,
         }
-    }
-}
-declare module "UnityEngine.UI" {
-    import { Texture, Rect } from "UnityEngine";
-    /** Displays a Texture2D for the UI System.
-     */
-    class RawImage extends MaskableGraphic implements IClippable, ICanvasElement, IMaterialModifier, IMaskable {
-        SetNativeSize(): void
-        /*protected*/ constructor()
-        /** The RawImage's texture. (ReadOnly).
-         */
-        readonly mainTexture: Texture
-        /** The RawImage's texture.
-         */
-        texture: Texture
-        /** The RawImage texture coordinates.
-         */
-        uvRect: Rect
-    }
-}
-declare module "UnityEngine.UI" {
-    import { UIBehaviour } from "UnityEngine.EventSystems";
-    import { Rect, RectTransform, Vector2, Camera } from "UnityEngine";
-    /** A 2D rectangular mask that allows for clipping / masking of areas outside the mask.
-     */
-    class RectMask2D extends UIBehaviour implements IClipper {
-        /** See:ICanvasRaycastFilter.
-         */
-        IsRaycastLocationValid(sp: Vector2, eventCamera: Camera): boolean
-        PerformClipping(): void
-        /** Add a [IClippable]] to be tracked by the mask.
-         */
-        AddClippable(clippable: IClippable): void
-        /** Remove an IClippable from being tracked by the mask.
-         */
-        RemoveClippable(clippable: IClippable): void
-        /*protected*/ constructor()
-        /** Get the Rect for the mask in canvas space.
-         */
-        readonly canvasRect: Rect
-        /** Get the RectTransform for the mask.
-         */
-        readonly rectTransform: RectTransform
-    }
-}
-declare module "UnityEngine.UI" {
-    import { IEventSystemHandler, IPointerEnterHandler, ISelectHandler, IPointerExitHandler, IDeselectHandler, IPointerDownHandler, IPointerUpHandler, IMoveHandler, IBeginDragHandler, IInitializePotentialDragHandler, IDragHandler, PointerEventData, AxisEventData } from "UnityEngine.EventSystems";
-    import { RectTransform } from "UnityEngine";
-    /** A standard scrollbar with a variable sized handle that can be dragged between 0 and 1.
-     */
-    class Scrollbar extends Selectable implements IEventSystemHandler, IPointerEnterHandler, ISelectHandler, IPointerExitHandler, IDeselectHandler, IPointerDownHandler, ICanvasElement, IPointerUpHandler, IMoveHandler, IBeginDragHandler, IInitializePotentialDragHandler, IDragHandler {
-        /** Set the value of the scrollbar without invoking onValueChanged callback.
-         * @param input The new value for the scrollbar.
-         */
-        SetValueWithoutNotify(input: number): void
-        /** Handling for when the canvas is rebuilt.
-         */
-        Rebuild(executing: CanvasUpdate): void
-        LayoutComplete(): void
-        GraphicUpdateComplete(): void
-        /** Handling for when the scrollbar value is beginning to be dragged.
-         */
-        OnBeginDrag(eventData: PointerEventData): void
-        /** Handling for when the scrollbar value is dragged.
-         */
-        OnDrag(eventData: PointerEventData): void
-        /** Event triggered when pointer is pressed down on the scrollbar.
-         */
-        OnPointerDown(eventData: PointerEventData): void
-        /** Event triggered when pointer is released after pressing on the scrollbar.
-         */
-        OnPointerUp(eventData: PointerEventData): void
-        /** Handling for movement events.
-         */
-        OnMove(eventData: AxisEventData): void
-        FindSelectableOnLeft(): Selectable
-        FindSelectableOnRight(): Selectable
-        FindSelectableOnUp(): Selectable
-        FindSelectableOnDown(): Selectable
-        /** See: IInitializePotentialDragHandler.OnInitializePotentialDrag.
-         */
-        OnInitializePotentialDrag(eventData: PointerEventData): void
-        SetDirection(direction: Scrollbar.Direction, includeRectLayouts: boolean): void
-        /*protected*/ constructor()
-        /** The RectTransform to use for the handle.
-         */
-        handleRect: RectTransform
-        /** The direction of the scrollbar from minimum to maximum value.
-         */
-        direction: Scrollbar.Direction
-        /** The current value of the scrollbar, between 0 and 1.
-         */
-        value: number
-        /** The size of the scrollbar handle where 1 means it fills the entire scrollbar.
-         */
-        size: number
-        /** The number of steps to use for the value. A value of 0 disables use of steps.
-         */
-        numberOfSteps: number
-        /** Handling for when the scrollbar value is changed.
-         */
-        onValueChanged: Scrollbar.ScrollEvent
-    }
-}
-declare module "UnityEngine.UI" {
-    import { Enum } from "System";
-    namespace Scrollbar {
-        enum Direction {
-            LeftToRight = 0,
-            RightToLeft = 1,
-            BottomToTop = 2,
-            TopToBottom = 3,
-        }
-    }
-}
-declare module "UnityEngine.UI" {
-    import { UnityEvent1, UnityEvent } from "UnityEngine.Events";
-    namespace Scrollbar {
-        class ScrollEvent extends UnityEvent1<number> {
-            constructor()
-        }
-    }
-}
-declare module "UnityEngine.Events" {
-    abstract class UnityEvent_Single extends UnityEventBase implements UnityEvent1<number> {
-        AddListener(call: (arg0: number) => void): void
-        RemoveListener(call: (arg0: number) => void): void
-        Invoke(arg0: number): void
-    }
-}
-declare module "UnityEngine.UI" {
-    import { UIBehaviour, IEndDragHandler, IScrollHandler, IEventSystemHandler, IBeginDragHandler, IInitializePotentialDragHandler, IDragHandler, PointerEventData } from "UnityEngine.EventSystems";
-    import { RectTransform, Vector2 } from "UnityEngine";
-    /** A component for making a child RectTransform scroll.
-     */
-    class ScrollRect extends UIBehaviour implements IEndDragHandler, IScrollHandler, IEventSystemHandler, ICanvasElement, ILayoutElement, ILayoutController, IBeginDragHandler, IInitializePotentialDragHandler, IDragHandler {
-        /** Rebuilds the scroll rect data after initialization.
-         * @param executing The current step of the rendering CanvasUpdate cycle.
-         */
-        Rebuild(executing: CanvasUpdate): void
-        LayoutComplete(): void
-        GraphicUpdateComplete(): void
-        IsActive(): boolean
-        StopMovement(): void
-        /** See IScrollHandler.OnScroll.
-         */
-        OnScroll(data: PointerEventData): void
-        /** See: IInitializePotentialDragHandler.OnInitializePotentialDrag.
-         */
-        OnInitializePotentialDrag(eventData: PointerEventData): void
-        /** Handling for when the content is being dragged.
-         * @param eventData The values used when the drag is started.
-         */
-        OnBeginDrag(eventData: PointerEventData): void
-        /** Handling for when the content has finished being dragged.
-         */
-        OnEndDrag(eventData: PointerEventData): void
-        /** Handling for when the content is dragged.
-         */
-        OnDrag(eventData: PointerEventData): void
-        CalculateLayoutInputHorizontal(): void
-        CalculateLayoutInputVertical(): void
-        SetLayoutHorizontal(): void
-        SetLayoutVertical(): void
-        /*protected*/ constructor()
-        /** The content that can be scrolled. It should be a child of the GameObject with ScrollRect on it.
-         */
-        content: RectTransform
-        /** Should horizontal scrolling be enabled?
-         */
-        horizontal: boolean
-        /** Should vertical scrolling be enabled?
-         */
-        vertical: boolean
-        /** The behavior to use when the content moves beyond the scroll rect.
-         */
-        movementType: ScrollRect.MovementType
-        /** The amount of elasticity to use when the content moves beyond the scroll rect.
-         */
-        elasticity: number
-        /** Should movement inertia be enabled?
-         */
-        inertia: boolean
-        /** The rate at which movement slows down.
-         */
-        decelerationRate: number
-        /** The sensitivity to scroll wheel and track pad scroll events.
-         */
-        scrollSensitivity: number
-        /** Reference to the viewport RectTransform that is the parent of the content RectTransform.
-         */
-        viewport: RectTransform
-        /** Optional Scrollbar object linked to the horizontal scrolling of the ScrollRect.
-         */
-        horizontalScrollbar: Scrollbar
-        /** Optional Scrollbar object linked to the vertical scrolling of the ScrollRect.
-         */
-        verticalScrollbar: Scrollbar
-        /** The mode of visibility for the horizontal scrollbar.
-         */
-        horizontalScrollbarVisibility: ScrollRect.ScrollbarVisibility
-        /** The mode of visibility for the vertical scrollbar.
-         */
-        verticalScrollbarVisibility: ScrollRect.ScrollbarVisibility
-        /** The space between the scrollbar and the viewport.
-         */
-        horizontalScrollbarSpacing: number
-        /** The space between the scrollbar and the viewport.
-         */
-        verticalScrollbarSpacing: number
-        /** Callback executed when the position of the child changes.
-         */
-        onValueChanged: ScrollRect.ScrollRectEvent
-        /** The current velocity of the content.
-         */
-        velocity: Vector2
-        /** The scroll position as a Vector2 between (0,0) and (1,1) with (0,0) being the lower left corner.
-         */
-        normalizedPosition: Vector2
-        /** The horizontal scroll position as a value between 0 and 1, with 0 being at the left.
-         */
-        horizontalNormalizedPosition: number
-        /** The vertical scroll position as a value between 0 and 1, with 0 being at the bottom.
-         */
-        verticalNormalizedPosition: number
-        /** Called by the layout system.
-         */
-        readonly minWidth: number
-        /** Called by the layout system.
-         */
-        readonly preferredWidth: number
-        /** Called by the layout system.
-         */
-        readonly flexibleWidth: number
-        /** Called by the layout system.
-         */
-        readonly minHeight: number
-        /** Called by the layout system.
-         */
-        readonly preferredHeight: number
-        /** Called by the layout system.
-         */
-        readonly flexibleHeight: number
-        /** Called by the layout system.
-         */
-        readonly layoutPriority: number
     }
 }
 declare module "UnityEngine.UI" {
@@ -24727,6 +24698,32 @@ declare module "UnityEngine.Events" {
 }
 declare module "UnityEngine.UI" {
     import { Enum } from "System";
+    namespace Scrollbar {
+        enum Direction {
+            LeftToRight = 0,
+            RightToLeft = 1,
+            BottomToTop = 2,
+            TopToBottom = 3,
+        }
+    }
+}
+declare module "UnityEngine.UI" {
+    import { UnityEvent1, UnityEvent } from "UnityEngine.Events";
+    namespace Scrollbar {
+        class ScrollEvent extends UnityEvent1<number> {
+            constructor()
+        }
+    }
+}
+declare module "UnityEngine.Events" {
+    abstract class UnityEvent_Single extends UnityEventBase implements UnityEvent1<number> {
+        AddListener(call: (arg0: number) => void): void
+        RemoveListener(call: (arg0: number) => void): void
+        Invoke(arg0: number): void
+    }
+}
+declare module "UnityEngine.UI" {
+    import { Enum } from "System";
     namespace Selectable {
         enum Transition {
             None = 0,
@@ -24734,66 +24731,6 @@ declare module "UnityEngine.UI" {
             SpriteSwap = 2,
             Animation = 3,
         }
-    }
-}
-declare module "UnityEngine.UI" {
-    import { IEventSystemHandler, IPointerEnterHandler, ISelectHandler, IPointerExitHandler, IDeselectHandler, IPointerDownHandler, IPointerUpHandler, IMoveHandler, IInitializePotentialDragHandler, IDragHandler, PointerEventData, AxisEventData } from "UnityEngine.EventSystems";
-    import { RectTransform } from "UnityEngine";
-    /** A standard slider that can be moved between a minimum and maximum value.
-     */
-    class Slider extends Selectable implements IEventSystemHandler, IPointerEnterHandler, ISelectHandler, IPointerExitHandler, IDeselectHandler, IPointerDownHandler, ICanvasElement, IPointerUpHandler, IMoveHandler, IInitializePotentialDragHandler, IDragHandler {
-        /** Set the value of the slider without invoking onValueChanged callback.
-         * @param input The new value for the slider.
-         */
-        SetValueWithoutNotify(input: number): void
-        /** Handling for when the canvas is rebuilt.
-         */
-        Rebuild(executing: CanvasUpdate): void
-        LayoutComplete(): void
-        GraphicUpdateComplete(): void
-        OnPointerDown(eventData: PointerEventData): void
-        /** Handling for when the slider is dragged.
-         */
-        OnDrag(eventData: PointerEventData): void
-        /** Handling for movement events.
-         */
-        OnMove(eventData: AxisEventData): void
-        FindSelectableOnLeft(): Selectable
-        FindSelectableOnRight(): Selectable
-        FindSelectableOnUp(): Selectable
-        FindSelectableOnDown(): Selectable
-        /** See: IInitializePotentialDragHandler.OnInitializePotentialDrag.
-         */
-        OnInitializePotentialDrag(eventData: PointerEventData): void
-        SetDirection(direction: Slider.Direction, includeRectLayouts: boolean): void
-        /*protected*/ constructor()
-        /** Optional RectTransform to use as fill for the slider.
-         */
-        fillRect: RectTransform
-        /** Optional RectTransform to use as a handle for the slider.
-         */
-        handleRect: RectTransform
-        /** The direction of the slider, from minimum to maximum value.
-         */
-        direction: Slider.Direction
-        /** The minimum allowed value of the slider.
-         */
-        minValue: number
-        /** The maximum allowed value of the slider.
-         */
-        maxValue: number
-        /** Should the value only be allowed to be whole numbers?
-         */
-        wholeNumbers: boolean
-        /** The current value of the slider.
-         */
-        value: number
-        /** The current value of the slider normalized into a value between 0 and 1.
-         */
-        normalizedValue: number
-        /** Callback executed when the value of the slider is changed.
-         */
-        onValueChanged: Slider.SliderEvent
     }
 }
 declare module "UnityEngine.UI" {
@@ -24816,170 +24753,6 @@ declare module "UnityEngine.UI" {
     }
 }
 declare module "UnityEngine.UI" {
-    import { ValueType } from "System";
-    import { Sprite } from "UnityEngine";
-    /** Structure to store the state of a sprite transition on a Selectable.
-     */
-    class SpriteState extends ValueType {
-        constructor()
-        Equals(other: SpriteState): boolean
-        /** Highlighted sprite.
-         */
-        highlightedSprite: Sprite
-        /** Pressed sprite.
-         */
-        pressedSprite: Sprite
-        /** Selected sprite.
-         */
-        selectedSprite: Sprite
-        /** Disabled sprite.
-         */
-        disabledSprite: Sprite
-    }
-}
-declare module "UnityEngine.UI" {
-    import { Object, Enum } from "System";
-    import { Material } from "UnityEngine";
-    abstract class StencilMaterial extends Object {
-        static Add(baseMat: Material, stencilID: number, operation: any, compareFunction: any, colorWriteMask: any, readMask: number, writeMask: number): Material
-        static Add(baseMat: Material, stencilID: number, operation: any, compareFunction: any, colorWriteMask: any): Material
-        static Remove(customMat: Material): void
-        static ClearAll(): void
-    }
-}
-declare module "UnityEngine.UI" {
-    import { Object, Enum, ValueType } from "System";
-    import { Texture, Object as Object1, TextAnchor, Vector2 } from "UnityEngine";
-    /** The default Graphic to draw font data to screen.
-     */
-    class Text extends MaskableGraphic implements IClippable, ICanvasElement, IMaterialModifier, ILayoutElement, IMaskable {
-        FontTextureChanged(): void
-        /** Convenience function to populate the generation setting for the text.
-         * @param extents The extents the text can draw in.
-         * @returns Generated settings. 
-         */
-        GetGenerationSettings(extents: Vector2): any
-        CalculateLayoutInputHorizontal(): void
-        CalculateLayoutInputVertical(): void
-        /** Convenience function to determine the vector offset of the anchor.
-         */
-        static GetTextAnchorPivot(anchor: TextAnchor): Vector2
-        /*protected*/ constructor()
-        /** The cached TextGenerator used when generating visible Text.
-         */
-        readonly cachedTextGenerator: any
-        /** The cached TextGenerator used when determine Layout.
-         */
-        readonly cachedTextGeneratorForLayout: any
-        /** The Texture that comes from the Font.
-         */
-        readonly mainTexture: Texture
-        /** The Font used by the text.
-         */
-        font: any
-        /** The string value this Text displays.
-         */
-        text: string
-        /** Whether this Text will support rich text.
-         */
-        supportRichText: boolean
-        /** Should the text be allowed to auto resized.
-         */
-        resizeTextForBestFit: boolean
-        /** The minimum size the text is allowed to be.
-         */
-        resizeTextMinSize: number
-        /** The maximum size the text is allowed to be. 1 = infinitly large.
-         */
-        resizeTextMaxSize: number
-        /** The positioning of the text reliative to its RectTransform.
-         */
-        alignment: TextAnchor
-        /** Use the extents of glyph geometry to perform horizontal alignment rather than glyph metrics.
-         */
-        alignByGeometry: boolean
-        /** The size that the Font should render at.
-         */
-        fontSize: number
-        /** Horizontal overflow mode.
-         */
-        horizontalOverflow: any
-        /** Vertical overflow mode.
-         */
-        verticalOverflow: any
-        /** Line spacing, specified as a factor of font line height. A value of 1 will produce normal line spacing.
-         */
-        lineSpacing: number
-        /** FontStyle used by the text.
-         */
-        fontStyle: any
-        /** (Read Only) Provides information about how fonts are scale to the screen.
-         */
-        readonly pixelsPerUnit: number
-        /** Called by the layout system.
-         */
-        readonly minWidth: number
-        /** Called by the layout system.
-         */
-        readonly preferredWidth: number
-        /** Called by the layout system.
-         */
-        readonly flexibleWidth: number
-        /** Called by the layout system.
-         */
-        readonly minHeight: number
-        /** Called by the layout system.
-         */
-        readonly preferredHeight: number
-        /** Called by the layout system.
-         */
-        readonly flexibleHeight: number
-        /** Called by the layout system.
-         */
-        readonly layoutPriority: number
-    }
-}
-declare module "UnityEngine.UI" {
-    import { IEventSystemHandler, IPointerEnterHandler, ISelectHandler, IPointerExitHandler, IDeselectHandler, IPointerDownHandler, IPointerUpHandler, IMoveHandler, ISubmitHandler, IPointerClickHandler, PointerEventData, BaseEventData } from "UnityEngine.EventSystems";
-    /** A standard toggle that has an on / off state.
-     */
-    class Toggle extends Selectable implements IEventSystemHandler, IPointerEnterHandler, ISelectHandler, IPointerExitHandler, IDeselectHandler, IPointerDownHandler, ICanvasElement, IPointerUpHandler, IMoveHandler, ISubmitHandler, IPointerClickHandler {
-        /** Handling for when the canvas is rebuilt.
-         */
-        Rebuild(executing: CanvasUpdate): void
-        LayoutComplete(): void
-        GraphicUpdateComplete(): void
-        /** Set isOn without invoking onValueChanged callback.
-         * @param value New value for isOn.
-         */
-        SetIsOnWithoutNotify(value: boolean): void
-        /** Handling for when the toggle is 'clicked'.
-         * @param eventData Current event.
-         */
-        OnPointerClick(eventData: PointerEventData): void
-        /** Handling for when the submit key is pressed.
-         * @param eventData Current event.
-         */
-        OnSubmit(eventData: BaseEventData): void
-        /*protected*/ constructor()
-        /** Group the toggle belongs to.
-         */
-        group: ToggleGroup
-        /** Return or set whether the Toggle is on or not.
-         */
-        isOn: boolean
-        /** Transition mode for the toggle.
-         */
-        toggleTransition: Toggle.ToggleTransition
-        /** Graphic affected by the toggle.
-         */
-        graphic: Graphic
-        /** Callback executed when the value of the toggle is changed.
-         */
-        onValueChanged: Toggle.ToggleEvent
-    }
-}
-declare module "UnityEngine.UI" {
     import { Enum } from "System";
     namespace Toggle {
         enum ToggleTransition {
@@ -24996,614 +24769,62 @@ declare module "UnityEngine.UI" {
         }
     }
 }
-declare module "UnityEngine.UI" {
-    import { UIBehaviour } from "UnityEngine.EventSystems";
-    import { IEnumerable } from "System.Collections.Generic";
-    /** A component that represents a group of UI.Toggles.
-     */
-    class ToggleGroup extends UIBehaviour {
-        NotifyToggleOn(toggle: Toggle, sendCallback: boolean): void
-        UnregisterToggle(toggle: Toggle): void
-        RegisterToggle(toggle: Toggle): void
-        AnyTogglesOn(): boolean
-        ActiveToggles(): any
-        SetAllTogglesOff(sendCallback: boolean): void
-        /*protected*/ constructor()
-        /** Is it allowed that no toggle is switched on?
-         */
-        allowSwitchOff: boolean
+declare module "UnityEngine.EventSystems" {
+    import { Enum } from "System";
+    namespace PointerEventData {
+        enum InputButton {
+            Left = 0,
+            Right = 1,
+            Middle = 2,
+        }
     }
 }
-declare module "UnityEngine.UI" {
+declare module "UnityEngine.EventSystems" {
+    import { Enum } from "System";
+    namespace PointerEventData {
+        enum FramePressState {
+            Pressed = 0,
+            Released = 1,
+            PressedAndReleased = 2,
+            NotChanged = 3,
+        }
+    }
+}
+declare module "UnityEngine.EventSystems" {
+    import { UnityEvent1, UnityEvent } from "UnityEngine.Events";
+    namespace EventTrigger {
+        class TriggerEvent extends UnityEvent1<BaseEventData> {
+            constructor()
+        }
+    }
+}
+declare module "UnityEngine.Events" {
+    import { BaseEventData } from "UnityEngine.EventSystems";
+    abstract class UnityEvent_BaseEventData extends UnityEventBase implements UnityEvent1<BaseEventData> {
+        AddListener(call: (arg0: BaseEventData) => void): void
+        RemoveListener(call: (arg0: BaseEventData) => void): void
+        Invoke(arg0: BaseEventData): void
+    }
+}
+declare module "UnityEngine.EventSystems" {
     import { Object } from "System";
-    /** Registry class to keep track of all IClippers that exist in the Scene.
-     */
-    class ClipperRegistry extends Object {
-        Cull(): void
-        /** Register an IClipper.
-         */
-        static Register(c: IClipper): void
-        /** Unregister an IClipper.
-         */
-        static Unregister(c: IClipper): void
-        protected constructor()
-        /** Singleton instance.
-         */
-        static readonly instance: ClipperRegistry
-    }
-}
-declare module "UnityEngine.UI" {
-    import * as jsb from "jsb";
-    import { Object, Array } from "System";
-    import { Rect } from "UnityEngine";
-    import { List } from "System.Collections.Generic";
-    /** Utility class to help when clipping using IClipper.
-     */
-    abstract class Clipping extends Object {
-        static FindCullAndClipWorldRect(rectMaskParents: any, validRect: jsb.Out<boolean>): Rect
-    }
-}
-declare module "UnityEngine.UI" {
-    interface IClipper {
-        PerformClipping(): void
-    }
-}
-declare module "UnityEngine.UI" {
-    import { GameObject, RectTransform, Rect } from "UnityEngine";
-    interface IClippable {
-        RecalculateClipping(): void
-        /** Clip and cull the IClippable given the clipRect.
-         * @param clipRect Rectangle to clip against.
-         * @param validRect Is the Rect valid. If not then the rect has 0 size.
-         */
-        Cull(clipRect: Rect, validRect: boolean): void
-        /** Set the clip rect for the IClippable.
-         */
-        SetClipRect(value: Rect, validRect: boolean): void
-        /** GameObject of the IClippable.
-         */
-        readonly gameObject: GameObject
-        /** RectTransform of the clippable.
-         */
-        readonly rectTransform: RectTransform
-    }
-}
-declare module "UnityEngine.UI" {
-    import { UIBehaviour } from "UnityEngine.EventSystems";
-    /** Resizes a RectTransform to fit a specified aspect ratio.
-     */
-    class AspectRatioFitter extends UIBehaviour implements ILayoutController {
-        SetLayoutHorizontal(): void
-        SetLayoutVertical(): void
-        /*protected*/ constructor()
-        /** The mode to use to enforce the aspect ratio.
-         */
-        aspectMode: AspectRatioFitter.AspectMode
-        /** The aspect ratio to enforce. This means width divided by height.
-         */
-        aspectRatio: number
-    }
-}
-declare module "UnityEngine.UI" {
-    import { Enum } from "System";
-    namespace AspectRatioFitter {
-        enum AspectMode {
-            None = 0,
-            WidthControlsHeight = 1,
-            HeightControlsWidth = 2,
-            FitInParent = 3,
-            EnvelopeParent = 4,
+    namespace EventTrigger {
+        class Entry extends Object {
+            constructor()
+            eventID: EventTriggerType
+            callback: EventTrigger.TriggerEvent
         }
     }
 }
-declare module "UnityEngine.UI" {
-    import { UIBehaviour } from "UnityEngine.EventSystems";
-    import { Vector2 } from "UnityEngine";
-    /** The Canvas Scaler component is used for controlling the overall scale and pixel density of UI elements in the Canvas. This scaling affects everything under the Canvas, including font sizes and image borders.
-     */
-    class CanvasScaler extends UIBehaviour {
-        /*protected*/ constructor()
-        /** Determines how UI elements in the Canvas are scaled.
-         */
-        uiScaleMode: CanvasScaler.ScaleMode
-        /** If a sprite has this 'Pixels Per Unit' setting, then one pixel in the sprite will cover one unit in the UI.
-         */
-        referencePixelsPerUnit: number
-        /** Scales all UI elements in the Canvas by this factor.
-         */
-        scaleFactor: number
-        /** The resolution the UI layout is designed for.
-         */
-        referenceResolution: Vector2
-        /** A mode used to scale the canvas area if the aspect ratio of the current resolution doesn't fit the reference resolution.
-         */
-        screenMatchMode: CanvasScaler.ScreenMatchMode
-        /** Setting to scale the Canvas to match the width or height of the reference resolution, or a combination.
-         */
-        matchWidthOrHeight: number
-        /** The physical unit to specify positions and sizes in.
-         */
-        physicalUnit: CanvasScaler.Unit
-        /** The DPI to assume if the screen DPI is not known.
-         */
-        fallbackScreenDPI: number
-        /** The pixels per inch to use for sprites that have a 'Pixels Per Unit' setting that matches the 'Reference Pixels Per Unit' setting.
-         */
-        defaultSpriteDPI: number
-        /** The amount of pixels per unit to use for dynamically created bitmaps in the UI, such as Text.
-         */
-        dynamicPixelsPerUnit: number
-    }
-}
-declare module "UnityEngine.UI" {
-    import { Enum } from "System";
-    namespace CanvasScaler {
-        enum ScaleMode {
-            ConstantPixelSize = 0,
-            ScaleWithScreenSize = 1,
-            ConstantPhysicalSize = 2,
-        }
-    }
-}
-declare module "UnityEngine.UI" {
-    import { Enum } from "System";
-    namespace CanvasScaler {
-        enum ScreenMatchMode {
-            MatchWidthOrHeight = 0,
-            Expand = 1,
-            Shrink = 2,
-        }
-    }
-}
-declare module "UnityEngine.UI" {
-    import { Enum } from "System";
-    namespace CanvasScaler {
-        enum Unit {
-            Centimeters = 0,
-            Millimeters = 1,
-            Inches = 2,
-            Points = 3,
-            Picas = 4,
-        }
-    }
-}
-declare module "UnityEngine.UI" {
-    import { UIBehaviour } from "UnityEngine.EventSystems";
-    /** Resizes a RectTransform to fit the size of its content.
-     */
-    class ContentSizeFitter extends UIBehaviour implements ILayoutController {
-        SetLayoutHorizontal(): void
-        SetLayoutVertical(): void
-        /*protected*/ constructor()
-        /** The fit mode to use to determine the width.
-         */
-        horizontalFit: ContentSizeFitter.FitMode
-        /** The fit mode to use to determine the height.
-         */
-        verticalFit: ContentSizeFitter.FitMode
-    }
-}
-declare module "UnityEngine.UI" {
-    import { Enum } from "System";
-    namespace ContentSizeFitter {
-        enum FitMode {
-            Unconstrained = 0,
-            MinSize = 1,
-            PreferredSize = 2,
-        }
-    }
-}
-declare module "UnityEngine.UI" {
-    import { Vector2 } from "UnityEngine";
-    /** Layout child layout elements in a grid.
-     */
-    class GridLayoutGroup extends LayoutGroup implements ILayoutElement, ILayoutController {
-        CalculateLayoutInputHorizontal(): void
-        CalculateLayoutInputVertical(): void
-        SetLayoutHorizontal(): void
-        SetLayoutVertical(): void
-        /*protected*/ constructor()
-        /** Which corner should the first cell be placed in?
-         */
-        startCorner: GridLayoutGroup.Corner
-        /** Which axis should cells be placed along first?
-         */
-        startAxis: GridLayoutGroup.Axis
-        /** The size to use for each cell in the grid.
-         */
-        cellSize: Vector2
-        /** The spacing to use between layout elements in the grid.
-         */
-        spacing: Vector2
-        /** Which constraint to use for the GridLayoutGroup.
-         */
-        constraint: GridLayoutGroup.Constraint
-        /** How many cells there should be along the constrained axis.
-         */
-        constraintCount: number
-    }
-}
-declare module "UnityEngine.UI" {
-    import { UIBehaviour } from "UnityEngine.EventSystems";
+declare module "UnityEngine.EventSystems" {
     import { Object } from "System";
-    import { TextAnchor } from "UnityEngine";
-    /** Abstract base class to use for layout groups.
-     */
-    abstract class LayoutGroup extends UIBehaviour implements ILayoutElement, ILayoutController {
-        CalculateLayoutInputHorizontal(): void
-        CalculateLayoutInputVertical(): void
-        SetLayoutHorizontal(): void
-        SetLayoutVertical(): void
-        /** The padding to add around the child layout elements.
-         */
-        padding: any
-        /** The alignment to use for the child layout elements in the layout group.
-         */
-        childAlignment: TextAnchor
-        /** Called by the layout system.
-         */
-        readonly minWidth: number
-        /** Called by the layout system.
-         */
-        readonly preferredWidth: number
-        /** Called by the layout system.
-         */
-        readonly flexibleWidth: number
-        /** Called by the layout system.
-         */
-        readonly minHeight: number
-        /** Called by the layout system.
-         */
-        readonly preferredHeight: number
-        /** Called by the layout system.
-         */
-        readonly flexibleHeight: number
-        /** Called by the layout system.
-         */
-        readonly layoutPriority: number
-    }
-}
-declare module "UnityEngine.UI" {
-    import { Enum } from "System";
-    namespace GridLayoutGroup {
-        enum Corner {
-            UpperLeft = 0,
-            UpperRight = 1,
-            LowerLeft = 2,
-            LowerRight = 3,
+    namespace PointerInputModule {
+        class MouseButtonEventData extends Object {
+            constructor()
+            PressedThisFrame(): boolean
+            ReleasedThisFrame(): boolean
+            buttonState: PointerEventData.FramePressState
+            buttonData: PointerEventData
         }
-    }
-}
-declare module "UnityEngine.UI" {
-    import { Enum } from "System";
-    namespace GridLayoutGroup {
-        enum Axis {
-            Horizontal = 0,
-            Vertical = 1,
-        }
-    }
-}
-declare module "UnityEngine.UI" {
-    import { Enum } from "System";
-    namespace GridLayoutGroup {
-        enum Constraint {
-            Flexible = 0,
-            FixedColumnCount = 1,
-            FixedRowCount = 2,
-        }
-    }
-}
-declare module "UnityEngine.UI" {
-    /** Layout child layout elements side by side.
-     */
-    class HorizontalLayoutGroup extends HorizontalOrVerticalLayoutGroup implements ILayoutElement, ILayoutController {
-        CalculateLayoutInputHorizontal(): void
-        CalculateLayoutInputVertical(): void
-        SetLayoutHorizontal(): void
-        SetLayoutVertical(): void
-        /*protected*/ constructor()
-    }
-}
-declare module "UnityEngine.UI" {
-    /** Abstract base class for HorizontalLayoutGroup and VerticalLayoutGroup.
-     */
-    abstract class HorizontalOrVerticalLayoutGroup extends LayoutGroup implements ILayoutElement, ILayoutController {
-        /** The spacing to use between layout elements in the layout group.
-         */
-        spacing: number
-        /** Whether to force the children to expand to fill additional available horizontal space.
-         */
-        childForceExpandWidth: boolean
-        /** Whether to force the children to expand to fill additional available vertical space.
-         */
-        childForceExpandHeight: boolean
-        /** Returns true if the Layout Group controls the widths of its children. Returns false if children control their own widths.
-         */
-        childControlWidth: boolean
-        /** Returns true if the Layout Group controls the heights of its children. Returns false if children control their own heights.
-         */
-        childControlHeight: boolean
-        /** Whether to use the x scale of each child when calculating its width.
-         */
-        childScaleWidth: boolean
-        /** Whether to use the y scale of each child when calculating its height.
-         */
-        childScaleHeight: boolean
-    }
-}
-declare module "UnityEngine.UI" {
-    interface ILayoutElement {
-        CalculateLayoutInputHorizontal(): void
-        CalculateLayoutInputVertical(): void
-        /** The minimum width this layout element may be allocated.
-         */
-        readonly minWidth: number
-        /** The preferred width this layout element should be allocated if there is sufficient space.
-         */
-        readonly preferredWidth: number
-        /** The extra relative width this layout element should be allocated if there is additional available space.
-         */
-        readonly flexibleWidth: number
-        /** The minimum height this layout element may be allocated.
-         */
-        readonly minHeight: number
-        /** The preferred height this layout element should be allocated if there is sufficient space.
-         */
-        readonly preferredHeight: number
-        /** The extra relative height this layout element should be allocated if there is additional available space.
-         */
-        readonly flexibleHeight: number
-        /** The layout priority of this component.
-         */
-        readonly layoutPriority: number
-    }
-}
-declare module "UnityEngine.UI" {
-    interface ILayoutController {
-        SetLayoutHorizontal(): void
-        SetLayoutVertical(): void
-    }
-}
-declare module "UnityEngine.UI" {
-    interface ILayoutIgnorer {
-        /** Should this RectTransform be ignored bvy the layout system?
-         */
-        readonly ignoreLayout: boolean
-    }
-}
-declare module "UnityEngine.UI" {
-    import { UIBehaviour } from "UnityEngine.EventSystems";
-    /** Add this component to a GameObject to make it into a layout element or override values on an existing layout element.
-     */
-    class LayoutElement extends UIBehaviour implements ILayoutElement, ILayoutIgnorer {
-        CalculateLayoutInputHorizontal(): void
-        CalculateLayoutInputVertical(): void
-        /*protected*/ constructor()
-        /** Should this RectTransform be ignored by the layout system?
-         */
-        ignoreLayout: boolean
-        /** The minimum width this layout element may be allocated.
-         */
-        minWidth: number
-        /** The minimum height this layout element may be allocated.
-         */
-        minHeight: number
-        /** The preferred width this layout element should be allocated if there is sufficient space.
-         */
-        preferredWidth: number
-        /** The preferred height this layout element should be allocated if there is sufficient space.
-         */
-        preferredHeight: number
-        /** The extra relative width this layout element should be allocated if there is additional available space.
-         */
-        flexibleWidth: number
-        /** The extra relative height this layout element should be allocated if there is additional available space.
-         */
-        flexibleHeight: number
-        /** Called by the layout system.
-         */
-        layoutPriority: number
-    }
-}
-declare module "UnityEngine.UI" {
-    import { Object } from "System";
-    import { Transform, RectTransform } from "UnityEngine";
-    /** Wrapper class for managing layout rebuilding of CanvasElement.
-     */
-    class LayoutRebuilder extends Object implements ICanvasElement {
-        constructor()
-        IsDestroyed(): boolean
-        /** See ICanvasElement.Rebuild.
-         */
-        Rebuild(executing: CanvasUpdate): void
-        LayoutComplete(): void
-        GraphicUpdateComplete(): void
-        GetHashCode(): number
-        Equals(obj: Object): boolean
-        toString(): string
-        /** Forces an immediate rebuild of the layout element and child layout elements affected by the calculations.
-         * @param layoutRoot The layout element to perform the layout rebuild on.
-         */
-        static ForceRebuildLayoutImmediate(layoutRoot: RectTransform): void
-        /** Mark the given RectTransform as needing it's layout to be recalculated during the next layout pass.
-         * @param rect Rect to rebuild.
-         */
-        static MarkLayoutForRebuild(rect: RectTransform): void
-        /** See ICanvasElement.
-         */
-        readonly transform: Transform
-    }
-}
-declare module "UnityEngine.UI" {
-    import * as jsb from "jsb";
-    import { Object, Array } from "System";
-    import { RectTransform } from "UnityEngine";
-    /** Utility functions for querying layout elements for their minimum, preferred, and flexible sizes.
-     */
-    abstract class LayoutUtility extends Object {
-        /** Returns the minimum size of the layout element.
-         * @param rect The RectTransform of the layout element to query.
-         * @param axis The axis to query. This can be 0 or 1.
-         */
-        static GetMinSize(rect: RectTransform, axis: number): number
-        /** Returns the preferred size of the layout element.
-         * @param rect The RectTransform of the layout element to query.
-         * @param axis The axis to query. This can be 0 or 1.
-         */
-        static GetPreferredSize(rect: RectTransform, axis: number): number
-        /** Returns the flexible size of the layout element.
-         * @param rect The RectTransform of the layout element to query.
-         * @param axis The axis to query. This can be 0 or 1.
-         */
-        static GetFlexibleSize(rect: RectTransform, axis: number): number
-        /** Returns the minimum width of the layout element.
-         * @param rect The RectTransform of the layout element to query.
-         */
-        static GetMinWidth(rect: RectTransform): number
-        /** Returns the preferred width of the layout element.
-         * @param rect The RectTransform of the layout element to query.
-         */
-        static GetPreferredWidth(rect: RectTransform): number
-        /** Returns the flexible width of the layout element.
-         * @param rect The RectTransform of the layout element to query.
-         */
-        static GetFlexibleWidth(rect: RectTransform): number
-        /** Returns the minimum height of the layout element.
-         * @param rect The RectTransform of the layout element to query.
-         */
-        static GetMinHeight(rect: RectTransform): number
-        /** Returns the preferred height of the layout element.
-         * @param rect The RectTransform of the layout element to query.
-         */
-        static GetPreferredHeight(rect: RectTransform): number
-        /** Returns the flexible height of the layout element.
-         * @param rect The RectTransform of the layout element to query.
-         */
-        static GetFlexibleHeight(rect: RectTransform): number
-        static GetLayoutProperty(rect: RectTransform, property: (arg: ILayoutElement) => number, defaultValue: number, source: jsb.Out<ILayoutElement>): number
-        static GetLayoutProperty(rect: RectTransform, property: (arg: ILayoutElement) => number, defaultValue: number): number
-    }
-}
-declare module "UnityEngine.UI" {
-    /** Layout child layout elements below each other.
-     */
-    class VerticalLayoutGroup extends HorizontalOrVerticalLayoutGroup implements ILayoutElement, ILayoutController {
-        CalculateLayoutInputHorizontal(): void
-        CalculateLayoutInputVertical(): void
-        SetLayoutHorizontal(): void
-        SetLayoutVertical(): void
-        /*protected*/ constructor()
-    }
-}
-declare module "UnityEngine.UI" {
-    import { Material } from "UnityEngine";
-    interface IMaterialModifier {
-        /** Perform material modification in this function.
-         * @param baseMaterial Configured Material.
-         * @returns Modified material. 
-         */
-        GetModifiedMaterial(baseMaterial: Material): Material
-    }
-}
-declare module "UnityEngine.UI" {
-    import * as jsb from "jsb";
-    import { Object, Array, ValueType } from "System";
-    import { Object as Object1, Vector3, Color32, Vector2, Vector4 } from "UnityEngine";
-    import { List } from "System.Collections.Generic";
-    /** A utility class that can aid in the generation of meshes for the UI.
-     */
-    class VertexHelper extends Object {
-        constructor(m: any)
-        constructor()
-        Dispose(): void
-        Clear(): void
-        /** Fill a UIVertex with data from index i of the stream.
-         * @param vertex Vertex to populate.
-         * @param i Index to populate from.
-         */
-        PopulateUIVertex(vertex: jsb.Ref<any>, i: number): void
-        /** Set a UIVertex at the given index.
-         */
-        SetUIVertex(vertex: any, i: number): void
-        /** Fill the given mesh with the stream data.
-         */
-        FillMesh(mesh: any): void
-        AddVert(position: Vector3, color: Color32, uv0: Vector2, uv1: Vector2, uv2: Vector2, uv3: Vector2, normal: Vector3, tangent: Vector4): void
-        /** Add a single vertex to the stream.
-         */
-        AddVert(position: Vector3, color: Color32, uv0: Vector2, uv1: Vector2, normal: Vector3, tangent: Vector4): void
-        /** Add a single vertex to the stream.
-         */
-        AddVert(position: Vector3, color: Color32, uv0: Vector2): void
-        /** Add a single vertex to the stream.
-         */
-        AddVert(v: any): void
-        /** Add a triangle to the buffer.
-         * @param idx0 Index 0.
-         * @param idx1 Index 1.
-         * @param idx2 Index 2.
-         */
-        AddTriangle(idx0: number, idx1: number, idx2: number): void
-        /** Add a quad to the stream.
-         * @param verts 4 Vertices representing the quad.
-         */
-        AddUIVertexQuad(verts: Array<any>): void
-        AddUIVertexStream(verts: any, indices: List<number>): void
-        AddUIVertexTriangleStream(verts: any): void
-        GetUIVertexStream(stream: any): void
-        /** Current number of vertices in the buffer.
-         */
-        readonly currentVertCount: number
-        /** Get the number of indices set on the VertexHelper.
-         */
-        readonly currentIndexCount: number
-    }
-}
-declare module "UnityEngine.UI" {
-    import { UIBehaviour } from "UnityEngine.EventSystems";
-    import { Object } from "UnityEngine";
-    /** Base class for effects that modify the generated Mesh.
-     */
-    abstract class BaseMeshEffect extends UIBehaviour implements IMeshModifier {
-        /** See:IMeshModifier.
-         */
-        ModifyMesh(mesh: any): void
-        ModifyMesh(vh: VertexHelper): void
-    }
-}
-declare module "UnityEngine.UI" {
-    interface IMeshModifier {
-        ModifyMesh(verts: VertexHelper): void
-    }
-}
-declare module "UnityEngine.UI" {
-    /** Adds an outline to a graphic using IVertexModifier.
-     */
-    class Outline extends Shadow implements IMeshModifier {
-        /*protected*/ constructor()
-    }
-}
-declare module "UnityEngine.UI" {
-    import { Color, Vector2 } from "UnityEngine";
-    /** Adds an outline to a graphic using IVertexModifier.
-     */
-    class Shadow extends BaseMeshEffect implements IMeshModifier {
-        /*protected*/ constructor()
-        /** Color for the effect.
-         */
-        effectColor: Color
-        /** How far is the shadow from the graphic.
-         */
-        effectDistance: Vector2
-        /** Should the shadow inherit the alpha from the graphic?
-         */
-        useGraphicAlpha: boolean
-    }
-}
-declare module "UnityEngine.UI" {
-    /** An IVertexModifier which sets the raw vertex position into UV1 of the generated verts.
-     */
-    class PositionAsUV1 extends BaseMeshEffect implements IMeshModifier {
-        /*protected*/ constructor()
     }
 }
