@@ -81,6 +81,7 @@ namespace jsb.Editor
             bindingManager.AddExportedType(typeof(BuildPlayerOptions)).EditorRuntime();
             bindingManager.AddExportedType(typeof(BuildAssetBundleOptions)).EditorRuntime();
             bindingManager.AddExportedType(typeof(BuildTarget)).EditorRuntime();
+            bindingManager.AddExportedType(typeof(BuildOptions)).EditorRuntime();
             bindingManager.AddExportedType(typeof(ObjectFactory)).EditorRuntime();
             bindingManager.AddExportedType(typeof(CameraEditor)).EditorRuntime();
             bindingManager.AddExportedType(typeof(CameraEditorUtils)).EditorRuntime();
@@ -127,7 +128,7 @@ namespace jsb.Editor
         
         public override void OnPostExporting(BindingManager bindingManager)
         {
-            bindingManager.ExportTypesInAssembly(typeof(Editor).Assembly, true);
+            bindingManager.ExportTypesInAssembly(typeof(Editor).Assembly, true, transform => transform.EditorRuntime());
         }
     }
 }

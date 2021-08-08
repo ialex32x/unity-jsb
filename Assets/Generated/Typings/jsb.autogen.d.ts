@@ -11697,7 +11697,7 @@ declare module "UnityEditor" {
         target: BuildTarget
         /** Additional BuildOptions, like whether to run the built player.
          */
-        options: any
+        options: BuildOptions
         /** User-specified preprocessor defines used while compiling assemblies for the player.
          */
         extraScriptingDefines: Array<string>
@@ -11852,6 +11852,108 @@ declare module "UnityEditor" {
         /** OBSOLETE: Use iOS. Build an iOS player.
          */
         MetroPlayer = -1,
+    }
+}
+declare module "UnityEditor" {
+    import * as jsb from "jsb";
+    import { Enum } from "System";
+    /** Building options. Multiple options can be combined together.
+     */
+    enum BuildOptions {
+        /** Force full optimizations for script compilation in Development builds.
+         */
+        None = 0,
+        /** Force full optimizations for script compilation in Development builds.
+         */
+        CompressTextures = 0,
+        /** Force full optimizations for script compilation in Development builds.
+         */
+        StripDebugSymbols = 0,
+        /** Force full optimizations for script compilation in Development builds.
+         */
+        ForceOptimizeScriptCompilation = 0,
+        /** Force full optimizations for script compilation in Development builds.
+         */
+        Il2CPP = 0,
+        /** Build a development version of the player.
+         */
+        Development = 1,
+        /** Run the built player.
+         */
+        AutoRunPlayer = 4,
+        /** Show the built player.
+         */
+        ShowBuiltPlayer = 8,
+        /** Build a compressed asset bundle that contains streamed Scenes loadable with the UnityWebRequest class.
+         */
+        BuildAdditionalStreamedScenes = 16,
+        /** Used when building Xcode (iOS) or Eclipse (Android) projects.
+         */
+        AcceptExternalModificationsToPlayer = 32,
+        InstallInBuildFolder = 64,
+        /** Copy UnityObject.js alongside Web Player so it wouldn't have to be downloaded from internet.
+         */
+        WebPlayerOfflineDeployment = 128,
+        /** Start the player with a connection to the profiler in the editor.
+         */
+        ConnectWithProfiler = 256,
+        /** Allow script debuggers to attach to the player remotely.
+         */
+        AllowDebugging = 512,
+        /** Symlink runtime libraries when generating iOS Xcode project. (Faster iteration time).
+         */
+        SymlinkLibraries = 1024,
+        /** Don't compress the data when creating the asset bundle.
+         */
+        UncompressedAssetBundle = 2048,
+        /** Sets the Player to connect to the Editor.
+         */
+        ConnectToHost = 4096,
+        /** Options for building the standalone player in headless mode.
+         */
+        EnableHeadlessMode = 16384,
+        /** Only build the scripts in a Project.
+         */
+        BuildScriptsOnly = 32768,
+        /** Patch a Development app package rather than completely rebuilding it.
+
+Supported platforms:
+         */
+        PatchPackage = 65536,
+        /** Include assertions in the build. By default, the assertions are only included in development builds.
+         */
+        ForceEnableAssertions = 131072,
+        /** Use chunk-based LZ4 compression when building the Player.
+         */
+        CompressWithLz4 = 262144,
+        /** Use chunk-based LZ4 high-compression when building the Player.
+         */
+        CompressWithLz4HC = 524288,
+        ComputeCRC = 1048576,
+        /** Do not allow the build to succeed if any errors are reporting during it.
+         */
+        StrictMode = 2097152,
+        /** Build will include Assemblies for testing.
+         */
+        IncludeTestAssemblies = 4194304,
+        /** Will force the buildGUID to all zeros.
+         */
+        NoUniqueIdentifier = 8388608,
+        /** Sets the Player to wait for player connection on player start.
+         */
+        WaitForPlayerConnection = 33554432,
+        /** Enables code coverage. You can use this as a complimentary way of enabling code coverage on platforms that do not support command line arguments.
+         */
+        EnableCodeCoverage = 67108864,
+        /** Enables Deep Profiling support in the player.
+         */
+        EnableDeepProfilingSupport = 268435456,
+        /** Generates more information in the BuildReport.
+         */
+        DetailedBuildReport = 536870912,
+        /** Enable Shader Livelink support.
+         */
+        ShaderLivelinkSupport = 1073741824,
     }
 }
 declare module "UnityEditor" {
@@ -13574,7 +13676,7 @@ declare module "UnityEditor" {
          * @param options Additional BuildOptions, like whether to run the built player.
          * @returns An error message if an error occurred. 
          */
-        static BuildPlayer(levels: Array<any>, locationPathName: string, target: BuildTarget, options: any): BuildReport
+        static BuildPlayer(levels: Array<any>, locationPathName: string, target: BuildTarget, options: BuildOptions): BuildReport
         /** Builds a player. These overloads are still supported, but will be replaced. Please use BuildPlayer (BuildPlayerOptions buildPlayerOptions)  instead.
          * @param scenes The Scenes to include in the build. If empty, the build only includes the currently open Scene. Paths are relative to the project folder (AssetsMyLevelsMyScene.unity).
          * @param locationPathName The path where the application will be built.
@@ -13582,7 +13684,7 @@ declare module "UnityEditor" {
          * @param options Additional BuildOptions, like whether to run the built player.
          * @returns An error message if an error occurred. 
          */
-        static BuildPlayer(levels: Array<string>, locationPathName: string, target: BuildTarget, options: any): BuildReport
+        static BuildPlayer(levels: Array<string>, locationPathName: string, target: BuildTarget, options: BuildOptions): BuildReport
         /** Builds a player.
          * @param buildPlayerOptions Provide various options to control the behavior of BuildPipeline.BuildPlayer.
          * @returns A BuildReport giving build process information. 
@@ -13593,7 +13695,7 @@ declare module "UnityEditor" {
          * @param target The platform to target for this build.
          * @param options Options for this build.
          */
-        static WriteBootConfig(outputFile: string, target: BuildTarget, options: any): void
+        static WriteBootConfig(outputFile: string, target: BuildTarget, options: BuildOptions): void
         /** Build AssetBundles from a building map.
          * @param outputPath Output path for the AssetBundles.
          * @param builds AssetBundle building map.
@@ -13627,7 +13729,7 @@ In some cases the player directory path can be affected by BuildOptions.Developm
          * @param options Build options.
          * @param buildTargetGroup Build target group.
          */
-        static GetPlaybackEngineDirectory(buildTargetGroup: any, target: BuildTarget, options: any): string
+        static GetPlaybackEngineDirectory(buildTargetGroup: any, target: BuildTarget, options: BuildOptions): string
         /** Returns the path of a player directory. For ex., Editor\Data\PlaybackEngines\AndroidPlayer.
 
 In some cases the player directory path can be affected by BuildOptions.Development.
@@ -13635,10 +13737,10 @@ In some cases the player directory path can be affected by BuildOptions.Developm
          * @param options Build options.
          * @param buildTargetGroup Build target group.
          */
-        static GetPlaybackEngineDirectory(target: BuildTarget, options: any): string
+        static GetPlaybackEngineDirectory(target: BuildTarget, options: BuildOptions): string
         /** Returns the mode currently used by players to initiate a connect to the host.
          */
-        static GetPlayerConnectionInitiateMode(targetPlatform: BuildTarget, buildOptions: any): any
+        static GetPlayerConnectionInitiateMode(targetPlatform: BuildTarget, buildOptions: BuildOptions): any
         protected constructor()
         /** Is a player currently being built?
          */
