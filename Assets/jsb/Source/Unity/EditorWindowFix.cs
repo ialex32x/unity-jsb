@@ -20,18 +20,102 @@ namespace QuickJS.Unity
                 //TODO: 需要补充 GetWindow 其余重载匹配
                 if (argc == 1)
                 {
-                    System.Type arg0;
-                    if (!Values.js_get_classvalue(ctx, argv[0], out arg0))
+                    System.Type arg_editorType;
+                    if (!Values.js_get_classvalue(ctx, argv[0], out arg_editorType))
                     {
                         throw new ParameterException(typeof(UnityEditor.EditorWindow), "GetWindow", typeof(System.Type), 0);
                     }
-                    var inject = QuickJS.Unity.EditorWindowFix.js_get_window(ctx, argv[0], arg0);
+                    var inject = QuickJS.Unity.EditorWindowFix.js_get_window(ctx, argv[0], arg_editorType, false, null, true);
                     if (!inject.IsUndefined())
                     {
                         return inject;
                     }
-                    var ret = UnityEditor.EditorWindow.GetWindow(arg0);
+                    var ret = UnityEditor.EditorWindow.GetWindow(arg_editorType);
                     return Values.js_push_classvalue(ctx, ret);
+                } 
+                else if (argc == 2)
+                {
+                    if (Values.js_match_type(ctx, argv[0], typeof(Type)) && Values.js_match_type(ctx, argv[1], typeof(bool)))
+                    {
+                        System.Type arg_editorType;
+                        if (!Values.js_get_classvalue(ctx, argv[0], out arg_editorType))
+                        {
+                            throw new ParameterException(typeof(UnityEditor.EditorWindow), "GetWindow", typeof(System.Type), 0);
+                        }
+                        bool arg_utility;
+                        if (!Values.js_get_primitive(ctx, argv[1], out arg_utility))
+                        {
+                            throw new ParameterException(typeof(UnityEditor.EditorWindow), "GetWindow", typeof(bool), 1);
+                        }
+                        var inject = QuickJS.Unity.EditorWindowFix.js_get_window(ctx, argv[0], arg_editorType, arg_utility, null, true);
+                        if (!inject.IsUndefined())
+                        {
+                            return inject;
+                        }
+                        var ret = UnityEditor.EditorWindow.GetWindow(arg_editorType);
+                        return Values.js_push_classvalue(ctx, ret);
+                    }
+                }
+                else if (argc == 3)
+                {
+                    if (Values.js_match_type(ctx, argv[0], typeof(Type)) && Values.js_match_type(ctx, argv[1], typeof(bool)) && Values.js_match_type(ctx, argv[2], typeof(string)))
+                    {
+                        System.Type arg_editorType;
+                        if (!Values.js_get_classvalue(ctx, argv[0], out arg_editorType))
+                        {
+                            throw new ParameterException(typeof(UnityEditor.EditorWindow), "GetWindow", typeof(System.Type), 0);
+                        }
+                        bool arg_utility;
+                        if (!Values.js_get_primitive(ctx, argv[1], out arg_utility))
+                        {
+                            throw new ParameterException(typeof(UnityEditor.EditorWindow), "GetWindow", typeof(bool), 1);
+                        }
+                        string arg_title;
+                        if (!Values.js_get_primitive(ctx, argv[2], out arg_title))
+                        {
+                            throw new ParameterException(typeof(UnityEditor.EditorWindow), "GetWindow", typeof(string), 2);
+                        }
+                        var inject = QuickJS.Unity.EditorWindowFix.js_get_window(ctx, argv[0], arg_editorType, arg_utility, arg_title, true);
+                        if (!inject.IsUndefined())
+                        {
+                            return inject;
+                        }
+                        var ret = UnityEditor.EditorWindow.GetWindow(arg_editorType);
+                        return Values.js_push_classvalue(ctx, ret);
+                    }
+                }
+                else if (argc == 4)
+                {
+                    if (Values.js_match_type(ctx, argv[0], typeof(Type)) && Values.js_match_type(ctx, argv[1], typeof(bool)) && Values.js_match_type(ctx, argv[2], typeof(string)) && Values.js_match_type(ctx, argv[3], typeof(bool)))
+                    {
+                        System.Type arg_editorType;
+                        if (!Values.js_get_classvalue(ctx, argv[0], out arg_editorType))
+                        {
+                            throw new ParameterException(typeof(UnityEditor.EditorWindow), "GetWindow", typeof(System.Type), 0);
+                        }
+                        bool arg_utility;
+                        if (!Values.js_get_primitive(ctx, argv[1], out arg_utility))
+                        {
+                            throw new ParameterException(typeof(UnityEditor.EditorWindow), "GetWindow", typeof(bool), 1);
+                        }
+                        string arg_title;
+                        if (!Values.js_get_primitive(ctx, argv[2], out arg_title))
+                        {
+                            throw new ParameterException(typeof(UnityEditor.EditorWindow), "GetWindow", typeof(string), 2);
+                        }
+                        bool arg_focus;
+                        if (!Values.js_get_primitive(ctx, argv[3], out arg_focus))
+                        {
+                            throw new ParameterException(typeof(UnityEditor.EditorWindow), "GetWindow", typeof(bool), 3);
+                        }
+                        var inject = QuickJS.Unity.EditorWindowFix.js_get_window(ctx, argv[0], arg_editorType, arg_utility, arg_title, arg_focus);
+                        if (!inject.IsUndefined())
+                        {
+                            return inject;
+                        }
+                        var ret = UnityEditor.EditorWindow.GetWindow(arg_editorType);
+                        return Values.js_push_classvalue(ctx, ret);
+                    }
                 }
                 throw new NoSuitableMethodException("GetWindow", argc);
             }
@@ -110,7 +194,7 @@ namespace QuickJS.Unity
         }
 
         // inject: GetWindow(Type)
-        public static JSValue js_get_window(JSContext ctx, JSValue ctor, Type type)
+        public static JSValue js_get_window(JSContext ctx, JSValue ctor, Type type, bool utility, string title, bool focus)
         {
             if (JSApi.JS_IsConstructor(ctx, ctor) == 1)
             {
@@ -119,7 +203,7 @@ namespace QuickJS.Unity
                 {
                     if (type == typeof(EditorWindow))
                     {
-                        var bridgeValue = _js_get_window_clone(ctx, ctor, false, null, true);
+                        var bridgeValue = _js_get_window_clone(ctx, ctor, utility, title, focus);
                         if (!bridgeValue.IsUndefined())
                         {
                             return bridgeValue;
