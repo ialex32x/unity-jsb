@@ -74,7 +74,7 @@ jobs:
           name: prebuilt_quickjs_libs
 
   linux:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-18.04
     steps:
       - uses: actions/checkout@v2
       - uses: lukka/get-cmake@v3.19.0
