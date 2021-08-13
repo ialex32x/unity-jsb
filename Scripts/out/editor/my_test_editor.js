@@ -8,7 +8,9 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.MyTestEditorWindow = void 0;
 const jsb_1 = require("jsb");
+const System_1 = require("System");
 const UnityEditor_1 = require("UnityEditor");
+const UnityEngine_1 = require("UnityEngine");
 const editor_decorators_1 = require("../plover/editor/editor_decorators");
 let MyTestEditorWindow = class MyTestEditorWindow extends UnityEditor_1.EditorWindow {
     constructor() {
@@ -19,10 +21,15 @@ let MyTestEditorWindow = class MyTestEditorWindow extends UnityEditor_1.EditorWi
     Awake() {
         jsb_1.AddCacheString("Test");
         jsb_1.AddCacheString("");
+        this._scenes = System_1.Array.CreateInstance(System_1.String, 1);
+        this._scenes.SetValue("Assets/Examples/Scenes/BasicRun.unity", 0);
     }
     OnGUI() {
         this._testString = UnityEditor_1.EditorGUILayout.TextField("Test", this._testString || "");
         this._sel = UnityEditor_1.EditorGUILayout.Popup("A", this._sel, ["1", "2", "3"]);
+        if (UnityEngine_1.GUILayout.Button("Test Build")) {
+            UnityEditor_1.BuildPipeline.BuildPlayer(this._scenes, "Build/macos.app", UnityEditor_1.BuildTarget.StandaloneOSX, UnityEditor_1.BuildOptions.Development);
+        }
     }
 };
 MyTestEditorWindow = __decorate([

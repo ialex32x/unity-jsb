@@ -1556,7 +1556,7 @@ namespace QuickJS.Binding
             return null;
         }
 
-        public void ExportTypesInAssembly(Assembly assembly, bool implicitExport)
+        public void ExportTypesInAssembly(Assembly assembly, bool implicitExport, Action<TypeTransform> iterator = null)
         {
             try
             {
@@ -1588,14 +1588,16 @@ namespace QuickJS.Binding
                     if (implicitExport)
                     {
                         Info("export (implicit): {0}", type.FullName);
-                        this.AddExportedType(type, true);
+                        var transform = this.AddExportedType(type, true);
+                        iterator?.Invoke(transform);
                         continue;
                     }
 
                     if (IsExportingExplicit(type))
                     {
                         Info("export (explicit): {0}", type.FullName);
-                        this.AddExportedType(type, true);
+                        var transform = this.AddExportedType(type, true);
+                        iterator?.Invoke(transform);
                         continue;
                     }
 

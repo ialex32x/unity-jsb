@@ -95,6 +95,10 @@ namespace jsb.Editor
             bindingManager.AddExportedType(typeof(UnityEngine.Object))
                 .EnableOperatorOverloading(false)
                 ;
+            bindingManager.AddExportedType(typeof(KeyCode));
+            bindingManager.AddExportedType(typeof(Texture));
+            bindingManager.AddExportedType(typeof(Texture2D));
+            bindingManager.AddExportedType(typeof(Material));
             bindingManager.AddExportedType(typeof(Time));
             bindingManager.AddExportedType(typeof(Random));
             bindingManager.AddExportedType(typeof(GameObject), true);

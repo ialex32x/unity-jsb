@@ -81,6 +81,7 @@ namespace jsb.Editor
             bindingManager.AddExportedType(typeof(BuildPlayerOptions)).EditorRuntime();
             bindingManager.AddExportedType(typeof(BuildAssetBundleOptions)).EditorRuntime();
             bindingManager.AddExportedType(typeof(BuildTarget)).EditorRuntime();
+            bindingManager.AddExportedType(typeof(BuildOptions)).EditorRuntime();
             bindingManager.AddExportedType(typeof(ObjectFactory)).EditorRuntime();
             bindingManager.AddExportedType(typeof(CameraEditor)).EditorRuntime();
             bindingManager.AddExportedType(typeof(CameraEditorUtils)).EditorRuntime();
@@ -112,13 +113,13 @@ namespace jsb.Editor
                 .WriteCrossBindingConstructor();
             bindingManager.AddExportedType(typeof(EditorWindow)).EditorRuntime()
                 .SetMemberBlocked("GetWindowWithRect")
-                //TODO: 此方法需要接管, 待处理, 暂时屏蔽
                 .SetMethodBlocked("GetWindow", typeof(Type), typeof(bool), typeof(string), typeof(bool))
-                //TODO: 此方法需要接管, 待处理, 暂时屏蔽
                 .SetMethodBlocked("GetWindow", typeof(Type), typeof(bool), typeof(string))
-                //TODO: 此方法需要接管, 待处理, 暂时屏蔽
                 .SetMethodBlocked("GetWindow", typeof(Type), typeof(bool))
+                //TODO add overloading members of GetWindow (already implemented)
                 .AddTSMethodDeclaration("static GetWindow<T extends EditorWindow>(type: { new(): T }): T", "GetWindow", typeof(Type))
+                //TODO desiredDockNextTo
+                //.add equivalent memeber function in typescript for desiredDockNextTo
                 .WriteCrossBindingConstructor()
                 .WriteCSMethodOverrideBinding("GetWindow", EditorWindowFix.BindStatic_GetWindow)
                 .AddStaticMethod(EditorWindowFix.CreateWindow)
@@ -127,7 +128,7 @@ namespace jsb.Editor
         
         public override void OnPostExporting(BindingManager bindingManager)
         {
-            bindingManager.ExportTypesInAssembly(typeof(Editor).Assembly, true);
+            bindingManager.ExportTypesInAssembly(typeof(Editor).Assembly, true, transform => transform.EditorRuntime());
         }
     }
 }
