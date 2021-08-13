@@ -44,6 +44,14 @@ export class MyClass extends MonoBehaviour {
         console.log("MyClass.OnDestroy", this._tick++);
     }
 
+    OnApplicationFocus(hasFocus: boolean) {
+        console.log("OnApplicationFocus:", hasFocus);
+    }
+    
+    OnApplicationPause(pause: boolean) {
+        console.log("OnApplicationPause:", pause);
+    }
+
     speak(text: string) {
         console.log("modified", text);
     }

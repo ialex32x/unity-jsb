@@ -47,6 +47,12 @@ let MyClass = class MyClass extends UnityEngine_1.MonoBehaviour {
     OnDestroy() {
         console.log("MyClass.OnDestroy", this._tick++);
     }
+    OnApplicationFocus(hasFocus) {
+        console.log("OnApplicationFocus:", hasFocus);
+    }
+    OnApplicationPause(pause) {
+        console.log("OnApplicationPause:", pause);
+    }
     speak(text) {
         console.log("modified", text);
     }

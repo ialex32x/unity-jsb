@@ -707,6 +707,15 @@ namespace QuickJS.Native
             JSValueConst[] argv);
 
         [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern unsafe JSValue JS_Invoke(JSContext ctx, JSValueConst this_val, JSAtom atom,
+            int argc, JSValueConst* argv);
+
+        public static unsafe JSValue JS_Invoke(JSContext ctx, JSValueConst this_val, JSAtom atom)
+        {
+            return JS_Invoke(ctx, this_val, atom, 0, (JSValueConst*)0);
+        }
+
+        [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern int JS_IsExtensible(JSContext ctx, JSValueConst obj);
 
         [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
