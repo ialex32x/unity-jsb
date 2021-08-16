@@ -333,6 +333,21 @@ namespace QuickJS.Binding
             bindingManager.Info("[AddMethod] {0}.{1}", type, methodInfo);
         }
 
+        public void AddMethod(Native.JSCFunction func)
+        {
+            var group = staticMethods;
+            MethodBindingInfo methodBindingInfo;
+            var methodCSName = func.Method.Name;
+            var methodJSName = this.bindingManager.GetNamingAttribute(this.transform, func.Method);
+            if (!group.TryGetValue(methodJSName, out methodBindingInfo))
+            {
+                methodBindingInfo = new MethodBindingInfo(bindingManager, true, methodCSName, methodJSName);
+                group.Add(methodJSName, methodBindingInfo);
+            }
+
+            methodBindingInfo._cfunc = func.Method;
+        }
+
         private void CollectDelegate(MethodBase method)
         {
             var parameters = method.GetParameters();
@@ -585,6 +600,14 @@ namespace QuickJS.Binding
             CollectMethods(transform.staticMethods, false);
         }
 
+        private void CollectMethods(IEnumerable<Native.JSCFunction> funcs, bool asExtensionAnyway)
+        {
+            foreach (var func in funcs)
+            {
+                AddMethod(func);
+            }
+        }
+
         private void CollectMethods(IEnumerable<MethodInfo> methods, bool asExtensionAnyway)
         {
             foreach (var method in methods)
@@ -705,6 +728,11 @@ namespace QuickJS.Binding
                 if (jscOverride != null)
                 {
                     cls.AddMethod(true, methodJSName, jscOverride);
+                }
+                else if (methodBindingInfo._cfunc != null)
+                {
+                    var dynamicMethod = new Binding.DynamicPrimitiveMethod(dynamicType, methodBindingInfo._cfunc);
+                    cls.AddMethod(true, methodJSName, dynamicMethod);
                 }
                 else
                 {

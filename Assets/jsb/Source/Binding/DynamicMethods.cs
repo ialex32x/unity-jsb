@@ -23,7 +23,7 @@ namespace QuickJS.Binding
             for (var i = 0; i < count; i++)
             {
                 var overload = _overloads[i];
-                if (method.GetParameters().Length > overload.GetParameters().Length)
+                if (method.GetParameterCount() > overload.GetParameterCount())
                 {
                     _overloads.Insert(i, method);
                     return;

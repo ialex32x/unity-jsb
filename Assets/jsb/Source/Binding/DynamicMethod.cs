@@ -11,11 +11,41 @@ namespace QuickJS.Binding
 
     public abstract class DynamicMethodBase : IDynamicMethod
     {
-        public abstract ParameterInfo[] GetParameters();
+        public abstract int GetParameterCount();
 
         public abstract bool CheckArgs(JSContext ctx, int argc, JSValue[] argv);
 
         public abstract JSValue Invoke(JSContext ctx, JSValue this_obj, int argc, JSValue[] argv);
+    }
+
+    /// <summary>
+    /// primitive JSCFunction
+    /// </summary>
+    public class DynamicPrimitiveMethod : DynamicMethodBase
+    {
+        private MethodBase _methodInfo;
+
+        public DynamicPrimitiveMethod(DynamicType type, MethodBase methodInfo)
+        {
+            _methodInfo = methodInfo;
+        }
+
+        public override bool CheckArgs(JSContext ctx, int argc, JSValue[] argv)
+        {
+            //TODO: args check 
+            return true;
+        }
+
+        public override int GetParameterCount()
+        {
+            return 0;
+        }
+
+        public override JSValue Invoke(JSContext ctx, JSValue this_obj, int argc, JSValue[] argv)
+        {
+            var rval = _methodInfo.Invoke(null, new object[] { ctx, this_obj, argc, argv });
+            return (JSValue)rval;
+        }
     }
 
     public class DynamicMethod : DynamicMethodBase
@@ -58,9 +88,9 @@ namespace QuickJS.Binding
             }
         }
 
-        public override ParameterInfo[] GetParameters()
+        public override int GetParameterCount()
         {
-            return _inputParameters;
+            return _inputParameters.Length;
         }
 
         public override bool CheckArgs(JSContext ctx, int argc, JSValue[] argv)
@@ -245,9 +275,9 @@ namespace QuickJS.Binding
         {
         }
 
-        public override ParameterInfo[] GetParameters()
+        public override int GetParameterCount()
         {
-            return new ParameterInfo[0];
+            return 0;
         }
 
         public override bool CheckArgs(JSContext ctx, int argc, JSValue[] argv)
@@ -270,9 +300,9 @@ namespace QuickJS.Binding
             _type = type;
         }
 
-        public override ParameterInfo[] GetParameters()
+        public override int GetParameterCount()
         {
-            return new ParameterInfo[0];
+            return 0;
         }
 
         public override bool CheckArgs(JSContext ctx, int argc, JSValue[] argv)
@@ -308,9 +338,9 @@ namespace QuickJS.Binding
             _disposable = disposable;
         }
 
-        public override ParameterInfo[] GetParameters()
+        public override int GetParameterCount()
         {
-            return _parameters;
+            return _parameters.Length;
         }
 
         public override bool CheckArgs(JSContext ctx, int argc, JSValue[] argv)

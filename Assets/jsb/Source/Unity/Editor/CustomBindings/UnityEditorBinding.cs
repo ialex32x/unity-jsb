@@ -112,6 +112,7 @@ namespace jsb.Editor
             bindingManager.AddExportedType(typeof(Editor)).EditorRuntime()
                 .WriteCrossBindingConstructor();
             bindingManager.AddExportedType(typeof(EditorWindow)).EditorRuntime()
+                .SetMemberBlocked("CreateWindow")
                 .SetMemberBlocked("GetWindowWithRect")
                 .SetMethodBlocked("GetWindow", typeof(Type), typeof(bool), typeof(string), typeof(bool))
                 .SetMethodBlocked("GetWindow", typeof(Type), typeof(bool), typeof(string))
