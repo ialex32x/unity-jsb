@@ -156,4 +156,10 @@ if (module == require.main) {
     if (ps) {
         ps.AddComponent(RotateBehaviour);
     }
+
+    // {
+    //     let sphere = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+    //     sphere.transform.localScale = new Vector3(2, 2, 2);
+    //     sphere.transform.ResetAll();
+    // }
 }

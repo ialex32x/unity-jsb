@@ -35,7 +35,7 @@ namespace QuickJS.Binding
 
         public static bool IsExtensionMethod(MethodBase method)
         {
-            return method.IsDefined(typeof(System.Runtime.CompilerServices.ExtensionAttribute), false);
+            return method.IsStatic && method.IsDefined(typeof(System.Runtime.CompilerServices.ExtensionAttribute), false);
         }
 
         public static bool ContainsGenericParameters(MethodBase method)
@@ -95,5 +95,56 @@ namespace QuickJS.Binding
         {
             return ContainsPointer(method) || IsGenericMethod(method);
         }
+
+        #region Helper for Extension Methods 
+        
+        public TypeTransform AddExtensionMethod<T>(Action<T> method, string tsDecl = null)
+        {
+            return AddExtensionMethod(method.Method, tsDecl);
+        }
+
+        public TypeTransform AddExtensionMethod<T1, T2>(Action<T1, T2> method, string tsDecl = null)
+        {
+            return AddExtensionMethod(method.Method, tsDecl);
+        }
+
+        public TypeTransform AddExtensionMethod<T1, T2, T3>(Action<T1, T2, T3> method, string tsDecl = null)
+        {
+            return AddExtensionMethod(method.Method, tsDecl);
+        }
+
+        public TypeTransform AddExtensionMethod<TResult>(Func<TResult> method, string tsDecl = null)
+        {
+            return AddExtensionMethod(method.Method, tsDecl);
+        }
+
+        public TypeTransform AddExtensionMethod<T1, TResult>(Func<T1, TResult> method, string tsDecl = null)
+        {
+            return AddExtensionMethod(method.Method, tsDecl);
+        }
+
+        public TypeTransform AddExtensionMethod<T1, T2, TResult>(Func<T1, T2, TResult> method, string tsDecl = null)
+        {
+            return AddExtensionMethod(method.Method, tsDecl);
+        }
+
+        public TypeTransform AddExtensionMethod<T1, T2, T3, TResult>(Func<T1, T2, T3, TResult> method, string tsDecl = null)
+        {
+            return AddExtensionMethod(method.Method, tsDecl);
+        }
+
+        public TypeTransform AddExtensionMethod(MethodInfo method, string tsDecl = null)
+        {
+            if (!IsExtensionMethod(method))
+            {
+                throw new InvalidCastException("Not an extension method: " + method.ToString());
+            }
+
+            var parameters = method.GetParameters();
+            var parameterType = parameters[0].ParameterType;
+            return TransformType(parameterType).AddExtensionMethod(method, tsDecl);
+        }
+
+        #endregion
     }
 }

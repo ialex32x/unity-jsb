@@ -33,23 +33,13 @@ declare module "UnityEngine" {
         constructor(r: number, g: number, b: number)
         $GetValue(index: number): number
         $SetValue(index: number, value: number): void
-        /** Returns a formatted string of this color.
-         * @param format A numeric format string.
-         * @param formatProvider An object that specifies culture-specific formatting.
-         */
-        toString(format: string, formatProvider: any): string
-        /** Returns a formatted string of this color.
-         * @param format A numeric format string.
-         * @param formatProvider An object that specifies culture-specific formatting.
+        /** Returns a nicely formatted string of this color.
          */
         toString(format: string): string
         toString(): string
         GetHashCode(): number
         Equals(other: Object1): boolean
         Equals(other: Color): boolean
-        Compare(b: Color): boolean
-        CompareRGB(b: Color): boolean
-        MinAlpha(c2: Color): Color
         static op_Inequality(lhs: Color, rhs: Color): boolean
         /** Linearly interpolates between colors a and b by t.
          * @param a Color a.
@@ -160,22 +150,10 @@ declare module "UnityEngine" {
         constructor(r: jsb.byte, g: jsb.byte, b: jsb.byte, a: jsb.byte)
         $GetValue(index: number): jsb.byte
         $SetValue(index: number, value: jsb.byte): void
-        /** Returns a formatted string for this color.
-         * @param format A numeric format string.
-         * @param formatProvider An object that specifies culture-specific formatting.
-         */
-        toString(format: string, formatProvider: any): string
-        /** Returns a formatted string for this color.
-         * @param format A numeric format string.
-         * @param formatProvider An object that specifies culture-specific formatting.
+        /** Returns a nicely formatted string of this color.
          */
         toString(format: string): string
         toString(): string
-        Compare(b: Color32): boolean
-        CompareRGB(b: Color32): boolean
-        Multiply(c2: Color32): Color32
-        Tint(c2: Color32): Color32
-        Tint(tint: number): Color32
         static op_Implicit(c: Color): Color32
         static op_Implicit(c: Color32): Color
         /** Linearly interpolates between colors a and b by t.
@@ -214,14 +192,7 @@ declare module "UnityEngine" {
          */
         Scale(scale: Vector2): void
         Normalize(): void
-        /** Returns a formatted string for this vector.
-         * @param format A numeric format string.
-         * @param formatProvider An object that specifies culture-specific formatting.
-         */
-        toString(format: string, formatProvider: any): string
-        /** Returns a formatted string for this vector.
-         * @param format A numeric format string.
-         * @param formatProvider An object that specifies culture-specific formatting.
+        /** Returns a nicely formatted string for this vector.
          */
         toString(format: string): string
         toString(): string
@@ -381,16 +352,6 @@ declare module "UnityEngine" {
         Equals(other: Object1): boolean
         Equals(other: Vector2Int): boolean
         GetHashCode(): number
-        /** Returns a formatted string for this vector.
-         * @param format A numeric format string.
-         * @param formatProvider An object that specifies culture-specific formatting.
-         */
-        toString(format: string, formatProvider: any): string
-        /** Returns a formatted string for this vector.
-         * @param format A numeric format string.
-         * @param formatProvider An object that specifies culture-specific formatting.
-         */
-        toString(format: string): string
         toString(): string
         /** Returns the distance between a and b.
          */
@@ -436,22 +397,22 @@ declare module "UnityEngine" {
         /** Returns the squared length of this vector (Read Only).
          */
         readonly sqrMagnitude: number
-        /** Shorthand for writing Vector2Int(0, 0).
+        /** Shorthand for writing Vector2Int (0, 0).
          */
         static readonly zero: Vector2Int
-        /** Shorthand for writing Vector2Int(1, 1).
+        /** Shorthand for writing Vector2Int (1, 1).
          */
         static readonly one: Vector2Int
-        /** Shorthand for writing Vector2Int(0, 1).
+        /** Shorthand for writing Vector2Int (0, 1).
          */
         static readonly up: Vector2Int
-        /** Shorthand for writing Vector2Int(0, -1).
+        /** Shorthand for writing Vector2Int (0, -1).
          */
         static readonly down: Vector2Int
-        /** Shorthand for writing Vector2Int(-1, 0).
+        /** Shorthand for writing Vector2Int (-1, 0).
          */
         static readonly left: Vector2Int
-        /** Shorthand for writing Vector2Int(1, 0).
+        /** Shorthand for writing Vector2Int (1, 0).
          */
         static readonly right: Vector2Int
     }
@@ -478,18 +439,10 @@ declare module "UnityEngine" {
         Equals(other: Object1): boolean
         Equals(other: Vector3): boolean
         Normalize(): void
-        /** Returns a formatted string for this vector.
-         * @param format A numeric format string.
-         * @param formatProvider An object that specifies culture-specific formatting.
-         */
-        toString(format: string, formatProvider: any): string
-        /** Returns a formatted string for this vector.
-         * @param format A numeric format string.
-         * @param formatProvider An object that specifies culture-specific formatting.
+        /** Returns a nicely formatted string for this vector.
          */
         toString(format: string): string
         toString(): string
-        Compare(v2: Vector3, accuracy: number): boolean
         /** Spherically interpolates between two vectors.
          */
         static Slerp(a: Vector3, b: Vector3, t: number): Vector3
@@ -686,14 +639,7 @@ declare module "UnityEngine" {
         Equals(other: Object1): boolean
         Equals(other: Vector3Int): boolean
         GetHashCode(): number
-        /** Returns a formatted string for this vector.
-         * @param format A numeric format string.
-         * @param formatProvider An object that specifies culture-specific formatting.
-         */
-        toString(format: string, formatProvider: any): string
-        /** Returns a formatted string for this vector.
-         * @param format A numeric format string.
-         * @param formatProvider An object that specifies culture-specific formatting.
+        /** Returns a nicely formatted string for this vector.
          */
         toString(format: string): string
         toString(): string
@@ -744,30 +690,24 @@ declare module "UnityEngine" {
         /** Returns the squared length of this vector (Read Only).
          */
         readonly sqrMagnitude: number
-        /** Shorthand for writing Vector3Int(0, 0, 0).
+        /** Shorthand for writing Vector3Int (0, 0, 0).
          */
         static readonly zero: Vector3Int
-        /** Shorthand for writing Vector3Int(1, 1, 1).
+        /** Shorthand for writing Vector3Int (1, 1, 1).
          */
         static readonly one: Vector3Int
-        /** Shorthand for writing Vector3Int(0, 1, 0).
+        /** Shorthand for writing Vector3Int (0, 1, 0).
          */
         static readonly up: Vector3Int
-        /** Shorthand for writing Vector3Int(0, -1, 0).
+        /** Shorthand for writing Vector3Int (0, -1, 0).
          */
         static readonly down: Vector3Int
-        /** Shorthand for writing Vector3Int(-1, 0, 0).
+        /** Shorthand for writing Vector3Int (-1, 0, 0).
          */
         static readonly left: Vector3Int
-        /** Shorthand for writing Vector3Int(1, 0, 0).
+        /** Shorthand for writing Vector3Int (1, 0, 0).
          */
         static readonly right: Vector3Int
-        /** Shorthand for writing Vector3Int(0, 0, 1).
-         */
-        static readonly forward: Vector3Int
-        /** Shorthand for writing Vector3Int(0, 0, -1).
-         */
-        static readonly back: Vector3Int
     }
 }
 declare module "UnityEngine" {
@@ -792,14 +732,7 @@ declare module "UnityEngine" {
         Equals(other: Object1): boolean
         Equals(other: Vector4): boolean
         Normalize(): void
-        /** Returns a formatted string for this vector.
-         * @param format A numeric format string.
-         * @param formatProvider An object that specifies culture-specific formatting.
-         */
-        toString(format: string, formatProvider: any): string
-        /** Returns a formatted string for this vector.
-         * @param format A numeric format string.
-         * @param formatProvider An object that specifies culture-specific formatting.
+        /** Returns a nicely formatted string for this vector.
          */
         toString(format: string): string
         toString(): string
@@ -923,14 +856,7 @@ declare module "UnityEngine" {
         GetHashCode(): number
         Equals(other: Object1): boolean
         Equals(other: Rect): boolean
-        /** Returns a formatted string for this Rect.
-         * @param format A numeric format string.
-         * @param formatProvider An object that specifies culture-specific formatting.
-         */
-        toString(format: string, formatProvider: any): string
-        /** Returns a formatted string for this Rect.
-         * @param format A numeric format string.
-         * @param formatProvider An object that specifies culture-specific formatting.
+        /** Returns a nicely formatted string for this Rect.
          */
         toString(format: string): string
         toString(): string
@@ -1030,18 +956,10 @@ declare module "UnityEngine" {
         GetHashCode(): number
         Equals(other: Object1): boolean
         Equals(other: Quaternion): boolean
-        /** Returns a formatted string of the Quaternion.
-         * @param format A numeric format string.
-         * @param formatProvider An object that specifies culture-specific formatting.
-         */
-        toString(format: string, formatProvider: any): string
-        /** Returns a formatted string of the Quaternion.
-         * @param format A numeric format string.
-         * @param formatProvider An object that specifies culture-specific formatting.
+        /** Returns a nicely formatted string of the Quaternion.
          */
         toString(format: string): string
         toString(): string
-        Compare(q2: Quaternion, accuracy: number): boolean
         /** Creates a rotation which rotates from fromDirection to toDirection.
          */
         static FromToRotation(fromDirection: Vector3, toDirection: Vector3): Quaternion
@@ -1165,14 +1083,7 @@ declare module "UnityEngine" {
         /** Returns a plane that is transformed in space.
          */
         TransformPlane(plane: any): any
-        /** Returns a formatted string for this matrix.
-         * @param format A numeric format string.
-         * @param formatProvider An object that specifies culture-specific formatting.
-         */
-        toString(format: string, formatProvider: any): string
-        /** Returns a formatted string for this matrix.
-         * @param format A numeric format string.
-         * @param formatProvider An object that specifies culture-specific formatting.
+        /** Returns a nicely formatted string for this matrix.
          */
         toString(format: string): string
         toString(): string
@@ -1395,30 +1306,18 @@ declare module "UnityEngine" {
          * @param allowDestroyingAssets Set to true to allow assets to be destroyed.
          */
         static DestroyImmediate(obj: Object): void
-        /** Gets a list of all loaded objects of Type type.
+        /** The older, non-generic version of this method. In most cases you should use the generic version of this method.
          * @param type The type of object to find.
-         * @param includeInactive If true, components attached to inactive GameObjects are also included.
-         * @returns The array of objects found matching the type specified. 
-         */
-        static FindObjectsOfType(type: any, includeInactive: boolean): Array<Object>
-        /** Gets a list of all loaded objects of Type type.
-         * @param type The type of object to find.
-         * @param includeInactive If true, components attached to inactive GameObjects are also included.
-         * @returns The array of objects found matching the type specified. 
+         * @returns Returns an array of all active loaded objects of Type type. 
          */
         static FindObjectsOfType(type: any): Array<Object>
         /** Do not destroy the target Object when loading a new Scene.
          * @param target An Object not destroyed on Scene change.
          */
         static DontDestroyOnLoad(target: Object): void
-        /** Returns the first active loaded object of Type type.
+        /** The older, non-generic version of this method. In most cases you should use the generic version of this method.
          * @param type The type of object to find.
-         * @returns Object The first active loaded object that matches the specified type. It returns null if no Object matches the type. 
-         */
-        static FindObjectOfType(type: any, includeInactive: boolean): Object
-        /** Returns the first active loaded object of Type type.
-         * @param type The type of object to find.
-         * @returns Object The first active loaded object that matches the specified type. It returns null if no Object matches the type. 
+         * @returns Returns an array of all active loaded objects of Type type. 
          */
         static FindObjectOfType(type: any): Object
         static op_Equality(x: Object, y: Object): boolean
@@ -2418,7 +2317,7 @@ declare module "UnityEngine" {
 }
 declare module "UnityEngine" {
     import { Enum } from "System";
-    /** Base class for Texture handling.
+    /** Base class for texture handling.
      */
     class Texture extends Object {
         GetNativeTexturePtr(): any
@@ -2429,23 +2328,23 @@ declare module "UnityEngine" {
         static SetStreamingTextureMaterialDebugProperties(): void
         protected constructor()
         static masterTextureLimit: number
-        /** How many mipmap levels are in this Texture (Read Only).
+        /** How many mipmap levels are in this texture (Read Only).
          */
         readonly mipmapCount: number
         static anisotropicFiltering: any
-        /** Returns the GraphicsFormat format or color format of a Texture object.
+        /** Returns the GraphicsFormat format or color format of a texture object.
          */
         readonly graphicsFormat: any
-        /** Width of the Texture in pixels. (Read Only)
+        /** Width of the texture in pixels. (Read Only)
          */
         width: number
-        /** Height of the Texture in pixels. (Read Only)
+        /** Height of the texture in pixels. (Read Only)
          */
         height: number
-        /** Dimensionality (type) of the Texture (Read Only).
+        /** Dimensionality (type) of the texture (Read Only).
          */
         dimension: any
-        /** Returns true if the Read/Write Enabled checkbox was checked when the Texture was imported; otherwise returns false. For a dynamic Texture created from script, always returns true. For additional information, see TextureImporter.isReadable.
+        /** Returns true if the Read/Write Enabled checkbox was checked when the texture was imported; otherwise returns false. For a dynamic Texture created from script, always returns true. For additional information, see TextureImporter.isReadable.
          */
         readonly isReadable: boolean
         /** Texture coordinate wrapping mode.
@@ -2460,73 +2359,62 @@ declare module "UnityEngine" {
         /** Texture W coordinate wrapping mode for Texture3D.
          */
         wrapModeW: any
-        /** Filtering mode of the Texture.
+        /** Filtering mode of the texture.
          */
         filterMode: any
-        /** Defines the anisotropic filtering level of the Texture.
+        /** Anisotropic filtering level of the texture.
          */
         anisoLevel: number
-        /** The mipmap bias of the Texture.
+        /** Mip map bias of the texture.
          */
         mipMapBias: number
         readonly texelSize: Vector2
-        /** This counter is incremented when the Texture is updated.
+        /** This counter is incremented when the texture is updated.
          */
         readonly updateCount: number
-        /** The total amount of Texture memory that Unity would use if it loads all Textures at mipmap level 0.
-
-This is a theoretical value that does not take into account any input from the streaming system or any other input, for example when you set the`Texture2D.requestedMipmapLevel` manually.
-
-To see a Texture memory value that takes inputs into account, use `desiredTextureMemory`.
-
-`totalTextureMemory` only includes instances of Texture2D and CubeMap Textures. It does not include any other Texture types, or 2D and CubeMap Textures that Unity creates internally.
+        /** The total amount of memory that would be used by all textures at mipmap level 0.
          */
         static readonly totalTextureMemory: number
-        /** The total size of the Textures, in bytes, that Unity loads if there were no other constraints. Before Unity loads any Textures, it applies the which reduces the loaded Texture resolution if the Texture sizes exceed its value. The `desiredTextureMemory` value takes into account the mipmap levels that Unity has requested or that you have set manually.
-
-For example, if Unity does not load a Texture at full resolution because it is far away or its requested mipmap level is greater than 0,  Unity reduces the `desiredTextureMemory` value to match the total memory needed.
-
-The `desiredTextureMemory` value can be greater than the `targetTextureMemory` value.
-                
+        /** This amount of texture memory would be used before the texture streaming budget is applied.
          */
         static readonly desiredTextureMemory: number
-        /** The total amount of Texture memory that Unity allocates to the Textures in the scene after it applies the and finishes loading Textures. `targetTextureMemory`also takes mipmap streaming settings into account. This value only includes instances of Texture2D and CubeMap Textures. It does not include any other Texture types, or 2D and CubeMap Textures that Unity creates internally.
+        /** The amount of memory used by textures after the mipmap streaming and budget are applied and loading is complete.
          */
         static readonly targetTextureMemory: number
-        /** The amount of memory that all Textures in the scene use.
+        /** The amount of memory currently being used by textures.
          */
         static readonly currentTextureMemory: number
-        /** The amount of memory Unity allocates for non-streaming Textures in the scene. This only includes instances of Texture2D and CubeMap Textures. This does not include any other Texture types, or 2D and CubeMap Textures that Unity creates internally.
+        /** Total amount of memory being used by non-streaming textures.
          */
         static readonly nonStreamingTextureMemory: number
-        /** How many times has a Texture been uploaded due to Texture mipmap streaming.
+        /** How many times has a texture been uploaded due to texture mipmap streaming.
          */
         static readonly streamingMipmapUploadCount: number
-        /** Number of renderers registered with the Texture streaming system.
+        /** Number of renderers registered with the texture streaming system.
          */
         static readonly streamingRendererCount: number
-        /** Number of streaming Textures.
+        /** Number of streaming textures.
          */
         static readonly streamingTextureCount: number
-        /** The number of non-streaming Textures in the scene. This includes instances of Texture2D and CubeMap Textures. This does not include any other Texture types, or 2D and CubeMap Textures that Unity creates internally.
+        /** Number of non-streaming textures.
          */
         static readonly nonStreamingTextureCount: number
-        /** Number of streaming Textures with outstanding mipmaps to be loaded.
+        /** Number of streaming textures with outstanding mipmaps to be loaded.
          */
         static readonly streamingTexturePendingLoadCount: number
-        /** Number of streaming Textures with mipmaps currently loading.
+        /** Number of streaming textures with mipmaps currently loading.
          */
         static readonly streamingTextureLoadingCount: number
-        /** Force streaming Textures to load all mipmap levels.
+        /** Force streaming textures to load all mipmap levels.
          */
         static streamingTextureForceLoadAll: boolean
-        /** This property forces the streaming Texture system to discard all unused mipmaps instead of caching them until the Texture is exceeded. This is useful when you profile or write tests to keep a predictable set of Textures in memory.
+        /** Force the streaming texture system to discard all unused mipmaps immediately, rather than caching them until the texture memory budget is exceeded.
          */
         static streamingTextureDiscardUnusedMips: boolean
-        /** Allow Unity internals to perform Texture creation on any thread (rather than the dedicated render thread).
+        /** Allow texture creation to occur on any thread (rather than the dedicated render thread).
          */
         static allowThreadedTextureCreation: boolean
-        /** Can be used with Texture constructors that take a mip count to indicate that all mips should be generated.  The value of this field is -1.
+        /** Can be used with texture constructors that take a mip count to indicate that all mips should be generated.  The value of this field is -1.
          */
         static readonly GenerateAllMips: number
     }
@@ -2629,7 +2517,6 @@ declare module "UnityEngine" {
         /** Resizes the texture.
          */
         Resize(width: number, height: number, format: any, hasMipMap: boolean): boolean
-        Resize(width: number, height: number, format: any, hasMipMap: boolean): boolean
         /** Resizes the texture.
          */
         Resize(width: number, height: number): boolean
@@ -2677,7 +2564,7 @@ declare module "UnityEngine" {
          */
         LoadImage(data: Array<jsb.byte>, markNonReadable: boolean): boolean
         LoadImage(data: Array<jsb.byte>): boolean
-        /** Creates a Unity Texture out of an externally created native texture object.
+        /** Creates Unity Texture out of externally created native texture object.
          * @param nativeTex Native 2D texture object.
          * @param width Width of texture in pixels.
          * @param height Height of texture in pixels.
@@ -2711,9 +2598,6 @@ declare module "UnityEngine" {
         /** Returns true if the Read/Write Enabled checkbox was checked when the texture was imported; otherwise returns false. For a dynamic Texture created from script, always returns true. For additional information, see TextureImporter.isReadable.
          */
         readonly isReadable: boolean
-        /** Returns true if the VTOnly checkbox was checked when the texture was imported; otherwise returns false. For additional information, see TextureImporter.vtOnly.
-         */
-        readonly vtOnly: boolean
         /** Determines whether mipmap streaming is enabled for this Texture.
          */
         readonly streamingMipmaps: boolean
@@ -2875,82 +2759,54 @@ declare module "UnityEngine" {
          * @param nameID Property name ID, use Shader.PropertyToID to get it.
          * @param name Property name, e.g. "_MainTex".
          * @param value Texture to set.
-         * @param element Optional parameter that specifies the type of data to set from the RenderTexture.
+         * @param element Optional parameter that specifies the type of data from the render texture to set.
          */
         SetTexture(name: string, value: any, element: any): void
         /** Sets a named texture.
          * @param nameID Property name ID, use Shader.PropertyToID to get it.
          * @param name Property name, e.g. "_MainTex".
          * @param value Texture to set.
-         * @param element Optional parameter that specifies the type of data to set from the RenderTexture.
+         * @param element Optional parameter that specifies the type of data from the render texture to set.
          */
         SetTexture(nameID: number, value: any, element: any): void
         /** Sets a named texture.
          * @param nameID Property name ID, use Shader.PropertyToID to get it.
          * @param name Property name, e.g. "_MainTex".
          * @param value Texture to set.
-         * @param element Optional parameter that specifies the type of data to set from the RenderTexture.
+         * @param element Optional parameter that specifies the type of data from the render texture to set.
          */
         SetTexture(name: string, value: Texture): void
         /** Sets a named texture.
          * @param nameID Property name ID, use Shader.PropertyToID to get it.
          * @param name Property name, e.g. "_MainTex".
          * @param value Texture to set.
-         * @param element Optional parameter that specifies the type of data to set from the RenderTexture.
+         * @param element Optional parameter that specifies the type of data from the render texture to set.
          */
         SetTexture(nameID: number, value: Texture): void
-        /** Sets a named buffer value.
+        /** Sets a named ComputeBuffer value.
          * @param nameID Property name ID, use Shader.PropertyToID to get it.
          * @param name Property name.
-         * @param value The ComputeBuffer or GraphicsBuffer value to set.
+         * @param value The ComputeBuffer value to set.
          */
         SetBuffer(name: string, value: any): void
-        /** Sets a named buffer value.
+        /** Sets a named ComputeBuffer value.
          * @param nameID Property name ID, use Shader.PropertyToID to get it.
          * @param name Property name.
-         * @param value The ComputeBuffer or GraphicsBuffer value to set.
+         * @param value The ComputeBuffer value to set.
          */
         SetBuffer(nameID: number, value: any): void
-        /** Sets a named buffer value.
-         * @param nameID Property name ID, use Shader.PropertyToID to get it.
-         * @param name Property name.
-         * @param value The ComputeBuffer or GraphicsBuffer value to set.
-         */
-        SetBuffer(name: string, value: any): void
-        /** Sets a named buffer value.
-         * @param nameID Property name ID, use Shader.PropertyToID to get it.
-         * @param name Property name.
-         * @param value The ComputeBuffer or GraphicsBuffer value to set.
-         */
-        SetBuffer(nameID: number, value: any): void
-        /** Sets a ComputeBuffer or GraphicsBuffer as a named constant buffer for the material.
+        /** Sets a ComputeBuffer as a named constant buffer for the material.
          * @param name The name of the constant buffer to override.
          * @param value The ComputeBuffer to override the constant buffer values with, or null to remove binding.
-         * @param offset Offset in bytes from the beginning of the buffer to bind. Must be a multiple of SystemInfo.constantBufferOffsetAlignment, or 0 if that value is 0.
+         * @param offset Offset in bytes from the beginning of the ComputeBuffer to bind. Must be a multiple of SystemInfo.MinConstantBufferAlignment, or 0 if that value is 0.
          * @param size The number of bytes to bind.
          * @param nameID The shader property ID of the constant buffer to override.
          */
         SetConstantBuffer(name: string, value: any, offset: number, size: number): void
-        /** Sets a ComputeBuffer or GraphicsBuffer as a named constant buffer for the material.
+        /** Sets a ComputeBuffer as a named constant buffer for the material.
          * @param name The name of the constant buffer to override.
          * @param value The ComputeBuffer to override the constant buffer values with, or null to remove binding.
-         * @param offset Offset in bytes from the beginning of the buffer to bind. Must be a multiple of SystemInfo.constantBufferOffsetAlignment, or 0 if that value is 0.
-         * @param size The number of bytes to bind.
-         * @param nameID The shader property ID of the constant buffer to override.
-         */
-        SetConstantBuffer(nameID: number, value: any, offset: number, size: number): void
-        /** Sets a ComputeBuffer or GraphicsBuffer as a named constant buffer for the material.
-         * @param name The name of the constant buffer to override.
-         * @param value The ComputeBuffer to override the constant buffer values with, or null to remove binding.
-         * @param offset Offset in bytes from the beginning of the buffer to bind. Must be a multiple of SystemInfo.constantBufferOffsetAlignment, or 0 if that value is 0.
-         * @param size The number of bytes to bind.
-         * @param nameID The shader property ID of the constant buffer to override.
-         */
-        SetConstantBuffer(name: string, value: any, offset: number, size: number): void
-        /** Sets a ComputeBuffer or GraphicsBuffer as a named constant buffer for the material.
-         * @param name The name of the constant buffer to override.
-         * @param value The ComputeBuffer to override the constant buffer values with, or null to remove binding.
-         * @param offset Offset in bytes from the beginning of the buffer to bind. Must be a multiple of SystemInfo.constantBufferOffsetAlignment, or 0 if that value is 0.
+         * @param offset Offset in bytes from the beginning of the ComputeBuffer to bind. Must be a multiple of SystemInfo.MinConstantBufferAlignment, or 0 if that value is 0.
          * @param size The number of bytes to bind.
          * @param nameID The shader property ID of the constant buffer to override.
          */
@@ -3200,53 +3056,38 @@ declare module "UnityEngine" {
 }
 declare module "UnityEngine" {
     import { Object as Object1 } from "System";
-    /** Provides an interface to get time information from Unity.
+    /** The interface to get time information from Unity.
      */
     class Time extends Object1 {
         constructor()
-        /** The time at the beginning of this frame (Read Only).
+        /** The time at the beginning of this frame (Read Only). This is the time in seconds since the start of the game.
          */
         static readonly time: number
-        /** The double precision time at the beginning of this frame (Read Only). This is the time in seconds since the start of the game.
-         */
-        static readonly timeAsDouble: number
-        /** The time since this frame started (Read Only). This is the time in seconds since the last non-additive scene has finished loading.
+        /** The time this frame has started (Read Only). This is the time in seconds since the last level has been loaded.
          */
         static readonly timeSinceLevelLoad: number
-        /** The double precision time since this frame started (Read Only). This is the time in seconds since the last non-additive scene has finished loading.
-         */
-        static readonly timeSinceLevelLoadAsDouble: number
-        /** The interval in seconds from the last frame to the current one (Read Only).
+        /** The completion time in seconds since the last frame (Read Only).
          */
         static readonly deltaTime: number
-        /** The time since the last MonoBehaviour.FixedUpdate started (Read Only). This is the time in seconds since the start of the game.
+        /** The time the latest MonoBehaviour.FixedUpdate has started (Read Only). This is the time in seconds since the start of the game.
          */
         static readonly fixedTime: number
-        /** The double precision time since the last MonoBehaviour.FixedUpdate started (Read Only). This is the time in seconds since the start of the game.
-         */
-        static readonly fixedTimeAsDouble: number
-        /** The timeScale-independent time for this frame (Read Only). This is the time in seconds since the start of the game.
+        /** The timeScale-independant time for this frame (Read Only). This is the time in seconds since the start of the game.
          */
         static readonly unscaledTime: number
-        /** The double precision timeScale-independent time for this frame (Read Only). This is the time in seconds since the start of the game.
-         */
-        static readonly unscaledTimeAsDouble: number
-        /** The timeScale-independent time at the beginning of the last MonoBehaviour.FixedUpdate phase (Read Only). This is the time in seconds since the start of the game.
+        /** The TimeScale-independant time the latest MonoBehaviour.FixedUpdate has started (Read Only). This is the time in seconds since the start of the game.
          */
         static readonly fixedUnscaledTime: number
-        /** The double precision timeScale-independent time at the beginning of the last MonoBehaviour.FixedUpdate (Read Only). This is the time in seconds since the start of the game.
-         */
-        static readonly fixedUnscaledTimeAsDouble: number
         /** The timeScale-independent interval in seconds from the last frame to the current one (Read Only).
          */
         static readonly unscaledDeltaTime: number
-        /** The timeScale-independent interval in seconds from the last MonoBehaviour.FixedUpdate phase to the current one (Read Only).
+        /** The timeScale-independent interval in seconds from the last fixed frame to the current one (Read Only).
          */
         static readonly fixedUnscaledDeltaTime: number
         /** The interval in seconds at which physics and other fixed frame rate updates (like MonoBehaviour's MonoBehaviour.FixedUpdate) are performed.
          */
         static fixedDeltaTime: number
-        /** The maximum value of Time.deltaTime in any given frame. This is a time in seconds that limits the increase of Time.time between two frames.
+        /** The maximum time a frame can take. Physics and other fixed frame rate updates (like MonoBehaviour's MonoBehaviour.FixedUpdate) will be performed only for this duration of time per frame.
          */
         static maximumDeltaTime: number
         /** A smoothed out Time.deltaTime (Read Only).
@@ -3255,20 +3096,17 @@ declare module "UnityEngine" {
         /** The maximum time a frame can spend on particle updates. If the frame takes longer than this, then updates are split into multiple smaller updates.
          */
         static maximumParticleDeltaTime: number
-        /** The scale at which time passes.
+        /** The scale at which time passes. This can be used for slow motion effects.
          */
         static timeScale: number
-        /** The total number of frames since the start of the game (Read Only).
+        /** The total number of frames that have passed (Read Only).
          */
         static readonly frameCount: number
         static readonly renderedFrameCount: number
         /** The real time in seconds since the game started (Read Only).
          */
         static readonly realtimeSinceStartup: number
-        /** The real time in seconds since the game started (Read Only). Double precision version of Time.realtimeSinceStartup. 
-         */
-        static readonly realtimeSinceStartupAsDouble: number
-        /** Slows your application’s playback time to allow Unity to save screenshots in between frames.
+        /** Slows game playback time to allow screenshots to be saved between frames.
          */
         static captureDeltaTime: number
         /** The reciprocal of Time.captureDeltaTime.
@@ -3281,81 +3119,82 @@ declare module "UnityEngine" {
 }
 declare module "UnityEngine" {
     import { Object as Object1, ValueType } from "System";
-    /** Easily generate random data for games.
+    /** Class for generating random data.
      */
-    abstract class Random extends Object1 {
+    class Random extends Object1 {
+        constructor()
         /** Initializes the random number generator state with a seed.
          * @param seed Seed used to initialize the random number generator.
          */
         static InitState(seed: number): void
-        /** Returns a random float within [minInclusive..maxInclusive] (range is inclusive).
+        /** Return a random float number between min [inclusive] and max [inclusive] (Read Only).
          */
-        static Range(minInclusive: number, maxInclusive: number): number
-        /** Return a random int within [minInclusive..maxExclusive) (Read Only).
+        static Range(min: number, max: number): number
+        /** Return a random integer number between min [inclusive] and max [exclusive] (Read Only).
          */
-        static Range(minInclusive: number, maxExclusive: number): number
+        static Range(min: number, max: number): number
         /** Generates a random color from HSV and alpha ranges.
          * @param hueMin Minimum hue [0..1].
          * @param hueMax Maximum hue [0..1].
          * @param saturationMin Minimum saturation [0..1].
-         * @param saturationMax Maximum saturation [0..1].
+         * @param saturationMax Maximum saturation[0..1].
          * @param valueMin Minimum value [0..1].
          * @param valueMax Maximum value [0..1].
          * @param alphaMin Minimum alpha [0..1].
          * @param alphaMax Maximum alpha [0..1].
-         * @returns A random color with HSV and alpha values in the (inclusive) input ranges. Values for each component are derived via linear interpolation of value. 
+         * @returns A random color with HSV and alpha values in the input ranges. 
          */
         static ColorHSV(hueMin: number, hueMax: number, saturationMin: number, saturationMax: number, valueMin: number, valueMax: number, alphaMin: number, alphaMax: number): Color
         /** Generates a random color from HSV and alpha ranges.
          * @param hueMin Minimum hue [0..1].
          * @param hueMax Maximum hue [0..1].
          * @param saturationMin Minimum saturation [0..1].
-         * @param saturationMax Maximum saturation [0..1].
+         * @param saturationMax Maximum saturation[0..1].
          * @param valueMin Minimum value [0..1].
          * @param valueMax Maximum value [0..1].
          * @param alphaMin Minimum alpha [0..1].
          * @param alphaMax Maximum alpha [0..1].
-         * @returns A random color with HSV and alpha values in the (inclusive) input ranges. Values for each component are derived via linear interpolation of value. 
+         * @returns A random color with HSV and alpha values in the input ranges. 
          */
         static ColorHSV(hueMin: number, hueMax: number, saturationMin: number, saturationMax: number, valueMin: number, valueMax: number): Color
         /** Generates a random color from HSV and alpha ranges.
          * @param hueMin Minimum hue [0..1].
          * @param hueMax Maximum hue [0..1].
          * @param saturationMin Minimum saturation [0..1].
-         * @param saturationMax Maximum saturation [0..1].
+         * @param saturationMax Maximum saturation[0..1].
          * @param valueMin Minimum value [0..1].
          * @param valueMax Maximum value [0..1].
          * @param alphaMin Minimum alpha [0..1].
          * @param alphaMax Maximum alpha [0..1].
-         * @returns A random color with HSV and alpha values in the (inclusive) input ranges. Values for each component are derived via linear interpolation of value. 
+         * @returns A random color with HSV and alpha values in the input ranges. 
          */
         static ColorHSV(hueMin: number, hueMax: number, saturationMin: number, saturationMax: number): Color
         /** Generates a random color from HSV and alpha ranges.
          * @param hueMin Minimum hue [0..1].
          * @param hueMax Maximum hue [0..1].
          * @param saturationMin Minimum saturation [0..1].
-         * @param saturationMax Maximum saturation [0..1].
+         * @param saturationMax Maximum saturation[0..1].
          * @param valueMin Minimum value [0..1].
          * @param valueMax Maximum value [0..1].
          * @param alphaMin Minimum alpha [0..1].
          * @param alphaMax Maximum alpha [0..1].
-         * @returns A random color with HSV and alpha values in the (inclusive) input ranges. Values for each component are derived via linear interpolation of value. 
+         * @returns A random color with HSV and alpha values in the input ranges. 
          */
         static ColorHSV(hueMin: number, hueMax: number): Color
         static ColorHSV(): Color
-        /** Gets or sets the full internal state of the random number generator.
+        /** Gets/Sets the full internal state of the random number generator.
          */
         static state: any
-        /** Returns a random float within [0.0..1.0] (range is inclusive) (Read Only).
+        /** Returns a random number between 0.0 [inclusive] and 1.0 [inclusive] (Read Only).
          */
         static readonly value: number
-        /** Returns a random point inside or on a sphere with radius 1.0 (Read Only).
+        /** Returns a random point inside a sphere with radius 1 (Read Only).
          */
         static readonly insideUnitSphere: Vector3
-        /** Returns a random point inside or on a circle with radius 1.0 (Read Only).
+        /** Returns a random point inside a circle with radius 1 (Read Only).
          */
         static readonly insideUnitCircle: Vector2
-        /** Returns a random point on the surface of a sphere with radius 1.0 (Read Only).
+        /** Returns a random point on the surface of a sphere with radius 1 (Read Only).
          */
         static readonly onUnitSphere: Vector3
         /** Returns a random rotation (Read Only).
@@ -3394,11 +3233,6 @@ declare module "UnityEngine" {
          * @returns A component of the matching type, if found. 
          */
         GetComponentInChildren<T extends Component>(type: { new(): T }): T
-        /** Retrieves the component of Type type in the GameObject or any of its parents.
-         * @param type Type of component to find.
-         * @returns Returns a component if a component matching the type is found. Returns null otherwise. 
-         */
-        GetComponentInParent(type: any, includeInactive: boolean): Component
         /** Retrieves the component of Type type in the GameObject or any of its parents.
          * @param type Type of component to find.
          * @returns Returns a component if a component matching the type is found. Returns null otherwise. 
@@ -3536,7 +3370,6 @@ declare module "UnityEngine" {
 declare module "UnityEngine" {
     import * as jsb from "jsb";
     import { Enum, Array, ValueType, Object as Object1 } from "System";
-    import { List } from "System.Collections.Generic";
     /** A Camera is a device through which the player views the world.
      */
     class Camera extends Behaviour {
@@ -3636,7 +3469,6 @@ declare module "UnityEngine" {
          */
         RenderWithShader(shader: any, replacementTag: string): void
         RenderDontRestore(): void
-        SubmitRenderRequests(renderRequests: any): void
         /** Makes this camera's settings match other camera.
          * @param other Copy camera settings to the other camera.
          */
@@ -3928,11 +3760,11 @@ declare module "UnityEngine" {
      */
     class Component extends Object {
         constructor()
-        /** Returns the component of Type type if the GameObject has one attached, null if it doesn't. Will also return disabled components.
+        /** Returns the component of Type type if the game object has one attached, null if it doesn't.
          * @param type The type of Component to retrieve.
          */
         GetComponent<T extends Component>(type: { new(): T }): T
-        /** Returns the component with name type if the GameObject has one attached, null if it doesn't.
+        /** Returns the component with name type if the game object has one attached, null if it doesn't.
          */
         GetComponent(type: string): Component
         /** Gets the component of the specified type, if it exists.
@@ -3947,9 +3779,9 @@ declare module "UnityEngine" {
          * @returns A component of the matching type, if found. 
          */
         GetComponentInChildren<T extends Component>(type: { new(): T }): T
-        /** Returns all components of Type type in the GameObject or any of its children. Works recursively.
+        /** Returns all components of Type type in the GameObject or any of its children.
          * @param t The type of Component to retrieve.
-         * @param includeInactive Should Components on inactive GameObjects be included in the found set? includeInactive decides which children of the GameObject will be searched.  The GameObject that you call GetComponentsInChildren on is always searched regardless. Default is false.
+         * @param includeInactive Should Components on inactive GameObjects be included in the found set? includeInactive decides which children of the GameObject will be searched.  The GameObject that you call GetComponentsInChildren on is always searched regardless.
          */
         GetComponentsInChildren<T extends Component>(type: { new(): T }, includeInactive: boolean): T[]
         GetComponentsInChildren<T extends Component>(type: { new(): T }): T[]
@@ -6029,7 +5861,7 @@ declare module "UnityEngine" {
         /** Returns the keyboard input entered this frame. (Read Only)
          */
         static readonly inputString: string
-        /** The current mouse position in pixel coordinates. (Read Only).
+        /** The current mouse position in pixel coordinates. (Read Only)
          */
         static readonly mousePosition: Vector3
         /** The current mouse scroll delta. (Read Only)
@@ -6108,14 +5940,7 @@ declare module "UnityEngine" {
         /** Returns a point at distance units along the ray.
          */
         GetPoint(distance: number): Vector3
-        /** Returns a formatted string for this ray.
-         * @param format A numeric format string.
-         * @param formatProvider An object that specifies culture-specific formatting.
-         */
-        toString(format: string, formatProvider: any): string
-        /** Returns a formatted string for this ray.
-         * @param format A numeric format string.
-         * @param formatProvider An object that specifies culture-specific formatting.
+        /** Returns a nicely formatted string for this ray.
          */
         toString(format: string): string
         toString(): string
@@ -6163,9 +5988,6 @@ declare module "UnityEngine" {
         /** The Rigidbody of the collider that was hit. If the collider is not attached to a rigidbody then it is null.
          */
         readonly rigidbody: Rigidbody
-        /** The ArticulationBody of the collider that was hit. If the collider is not attached to an articulation body then it is null.
-         */
-        readonly articulationBody: any
         /** The uv lightmap coordinate at the impact point.
          */
         readonly lightmapCoord: Vector2
@@ -6675,9 +6497,6 @@ Note that IgnoreLayerCollision will reset the trigger state of affected collider
         /** Two colliding objects with a relative velocity below this will not bounce (default 2). Must be positive.
          */
         static bounceThreshold: number
-        /** The maximum default velocity needed to move a Rigidbody's collider out of another collider's surface penetration. Must be positive.
-         */
-        static defaultMaxDepenetrationVelocity: number
         /** The defaultSolverIterations determines how accurately Rigidbody joints and collision contacts are resolved. (default 6). Must be positive.
          */
         static defaultSolverIterations: number
@@ -6749,9 +6568,6 @@ declare module "UnityEngine" {
         /** The rigidbody the collider is attached to.
          */
         readonly attachedRigidbody: Rigidbody
-        /** The articulation body the collider is attached to.
-         */
-        readonly attachedArticulationBody: any
         /** Is the collider a trigger?
          */
         isTrigger: boolean
@@ -7037,22 +6853,21 @@ declare module "UnityEngine" {
 }
 declare module "UnityEngine" {
     import * as jsb from "jsb";
-    import { Object as Object1, Array, ValueType } from "System";
-    import { List } from "System.Collections.Generic";
+    import { Object as Object1, Array } from "System";
     /** The Resources class allows you to find and access Objects including assets.
      */
     class Resources extends Object1 {
         /** Returns a list of all objects of Type type.
          */
         static FindObjectsOfTypeAll(type: any): Array<Object>
-        /** Loads an asset stored at path in a Resources folder using an optional systemTypeInstance filter.
-         * @param path Path to the target resource to load.
+        /** Loads an asset stored at path in a Resources folder.
+         * @param path Path to the target resource to load. When using an empty string (i.e., ""), the function loads the entire contents of the Resources folder.
          * @param systemTypeInstance Type filter for objects returned.
          * @returns The requested asset returned as an Object. 
          */
         static Load(path: string, systemTypeInstance: any): Object
-        /** Loads an asset stored at path in a Resources folder using an optional systemTypeInstance filter.
-         * @param path Path to the target resource to load.
+        /** Loads an asset stored at path in a Resources folder.
+         * @param path Path to the target resource to load. When using an empty string (i.e., ""), the function loads the entire contents of the Resources folder.
          * @param systemTypeInstance Type filter for objects returned.
          * @returns The requested asset returned as an Object. 
          */
@@ -7080,12 +6895,6 @@ declare module "UnityEngine" {
          */
         static UnloadAsset(assetToUnload: Object): void
         static UnloadUnusedAssets(): any
-        /** Translates an instance ID to an object reference.
-         * @param instanceID Instance ID of an Object.
-         * @returns Resolved reference or null if the instance ID didn't match anything. 
-         */
-        static InstanceIDToObject(instanceID: number): Object
-        static InstanceIDToObjectList(instanceIDs: any, objects: any): void
         protected constructor()
     }
 }
@@ -9543,16 +9352,6 @@ declare module "UnityEngine" {
          * @returns True if the other rectangle overlaps this one. 
          */
         Overlaps(other: RectInt): boolean
-        /** Returns the x, y, width and height of the RectInt.
-         * @param format A numeric format string.
-         * @param formatProvider An object that specifies culture-specific formatting.
-         */
-        toString(format: string, formatProvider: any): string
-        /** Returns the x, y, width and height of the RectInt.
-         * @param format A numeric format string.
-         * @param formatProvider An object that specifies culture-specific formatting.
-         */
-        toString(format: string): string
         toString(): string
         /** Returns true if the given RectInt is equal to this RectInt.
          */
@@ -9566,10 +9365,10 @@ declare module "UnityEngine" {
         /** Center coordinate of the rectangle.
          */
         readonly center: Vector2
-        /** The lower left corner of the rectangle; which is the minimal position of the rectangle along the x- and y-axes, when it is aligned to both axes.
+        /** Lower left corner of the rectangle.
          */
         min: Vector2Int
-        /** The upper right corner of the rectangle; which is the maximal position of the rectangle along the x- and y-axes, when it is aligned to both axes.
+        /** Upper right corner of the rectangle.
          */
         max: Vector2Int
         /** Width of the rectangle.
@@ -9578,16 +9377,16 @@ declare module "UnityEngine" {
         /** Height of the rectangle.
          */
         height: number
-        /** Shows the minimum X value of the RectInt.
+        /** Returns the minimum X value of the RectInt.
          */
         xMin: number
-        /** Show the minimum Y value of the RectInt.
+        /** Returns the minimum Y value of the RectInt.
          */
         yMin: number
-        /** Shows the maximum X value of the RectInt.
+        /** Returns the maximum X value of the RectInt.
          */
         xMax: number
-        /** Shows the maximum Y value of the RectInt.
+        /** Returns the maximum Y value of the RectInt.
          */
         yMax: number
         /** Returns the position (x, y) of the RectInt.
@@ -9635,14 +9434,7 @@ declare module "UnityEngine" {
         /** Does ray intersect this bounding box?
          */
         IntersectRay(ray: Ray): boolean
-        /** Returns a formatted string for the bounds.
-         * @param format A numeric format string.
-         * @param formatProvider An object that specifies culture-specific formatting.
-         */
-        toString(format: string, formatProvider: any): string
-        /** Returns a formatted string for the bounds.
-         * @param format A numeric format string.
-         * @param formatProvider An object that specifies culture-specific formatting.
+        /** Returns a nicely formatted string for the bounds.
          */
         toString(format: string): string
         toString(): string
@@ -9696,16 +9488,6 @@ declare module "UnityEngine" {
          * @returns Is point contained in the bounding box? 
          */
         Contains(position: Vector3Int): boolean
-        /** Returns a formatted string for the bounds.
-         * @param format A numeric format string.
-         * @param formatProvider An object that specifies culture-specific formatting.
-         */
-        toString(format: string, formatProvider: any): string
-        /** Returns a formatted string for the bounds.
-         * @param format A numeric format string.
-         * @param formatProvider An object that specifies culture-specific formatting.
-         */
-        toString(format: string): string
         toString(): string
         Equals(other: Object1): boolean
         Equals(other: BoundsInt): boolean
@@ -9981,18 +9763,18 @@ declare module "UnityEngine" {
         /** A keyboard key was pressed.
          */
         KeyDown = 4,
+        /** A keyboard key was released.
+         */
         KeyUp = 5,
+        /** The scroll wheel was moved.
+         */
         ScrollWheel = 6,
         Repaint = 7,
         /** A layout event.
          */
         Layout = 8,
-        /** Editor only: drag & drop operation updated.
-         */
         DragUpdated = 9,
         DragPerform = 10,
-        /** Event should be ignored.
-         */
         Ignore = 11,
         /** Already processed event.
          */
@@ -10015,24 +9797,6 @@ declare module "UnityEngine" {
         /** Mouse left a window (Editor views only).
          */
         MouseLeaveWindow = 21,
-        /** Direct manipulation device (finger, pen) touched the screen.
-         */
-        TouchDown = 30,
-        /** Direct manipulation device (finger, pen) left the screen.
-         */
-        TouchUp = 31,
-        /** Direct manipulation device (finger, pen) moved on the screen (drag).
-         */
-        TouchMove = 32,
-        /** Direct manipulation device (finger, pen) moving into the window (drag).
-         */
-        TouchEnter = 33,
-        /** Direct manipulation device (finger, pen) moved out of the window (drag).
-         */
-        TouchLeave = 34,
-        /** Direct manipulation device (finger, pen) stationary event (long touch down).
-         */
-        TouchStationary = 35,
     }
 }
 declare module "UnityEngine" {
@@ -10127,9 +9891,6 @@ declare module "UnityEditor" {
     @jsb.RequiredDefines("UNITY_EDITOR")
     class EditorStyles extends Object {
         constructor()
-        static FromUSS(baseStyle: GUIStyle, ussStyleRuleName: string, ussInPlaceStyleOverride: string): GUIStyle
-        static FromUSS(ussStyleRuleName: string, ussInPlaceStyleOverride: string): GUIStyle
-        static ApplyUSS(style: GUIStyle, ussStyleRuleName: string, ussInPlaceStyleOverride: string): GUIStyle
         /** Style used for the labelled on all EditorGUI overloads that take a prefix label.
          */
         static readonly label: GUIStyle
@@ -10400,7 +10161,7 @@ declare module "UnityEditor" {
 declare module "UnityEngine" {
     import * as jsb from "jsb";
     import { ValueType, Object as Object1 } from "System";
-    /** Represents  a 128-bit hash value.
+    /** Represent the hash value.
      */
     @jsb.RequiredDefines("UNITY_EDITOR")
     class Hash128 extends ValueType {
@@ -10409,46 +10170,20 @@ declare module "UnityEngine" {
         CompareTo(rhs: Hash128): number
         CompareTo(obj: Object1): number
         toString(): string
-        /** Hash new input string and combine with the current hash value.
-         * @param data Input data string. Note that Unity interprets the string as UTF-8 data, even if internally in C# strings are UTF-16.
-         */
-        Append(data: string): void
-        /** Hash new input data and combine with the current hash value.
-         * @param val Input value.
-         */
-        Append(val: number): void
-        /** Hash new input data and combine with the current hash value.
-         * @param val Input value.
-         */
-        Append(val: number): void
         Equals(obj: Object1): boolean
         Equals(obj: Hash128): boolean
         GetHashCode(): number
-        /** Convert a hex-encoded string into Hash128 value.
-         * @param hashString A hexadecimal-encoded hash string.
-         * @returns The 128-bit hash. 
+        /** Convert the input string to Hash128.
          */
         static Parse(hashString: string): Hash128
-        /** Compute a hash of input data string.
-         * @param data Input data string. Note that Unity interprets the string as UTF-8 data, even if internally in C# strings are UTF-16.
-         * @returns The 128-bit hash. 
+        /** Compute a hash of the input string.
          */
-        static Compute(data: string): Hash128
-        /** Compute a hash of input data.
-         * @param val Input value.
-         * @returns The 128-bit hash. 
-         */
-        static Compute(val: number): Hash128
-        /** Compute a hash of input data.
-         * @param val Input value.
-         * @returns The 128-bit hash. 
-         */
-        static Compute(val: number): Hash128
+        static Compute(hashString: string): Hash128
         static op_Inequality(hash1: Hash128, hash2: Hash128): boolean
         static op_GreaterThan(x: Hash128, y: Hash128): boolean
         // js_op_overloading: static ==(hash1: Hash128, hash2: Hash128): boolean
         // js_op_overloading: static <(x: Hash128, y: Hash128): boolean
-        /** Returns true is the hash value is valid. (Read Only)
+        /** Get if the hash value is valid or not. (Read Only)
          */
         readonly isValid: boolean
     }
@@ -10629,13 +10364,6 @@ declare module "UnityEditor" {
         /** Combine vertices that share the same position in space.
          */
         weldVertices: boolean
-        /** Computes the axis conversion on geometry and animation for Models defined in an axis system that differs from Unity's (left handed, Z forward, Y-up).
-
-                    When enabled, Unity transforms the geometry and animation data in order to convert the axis.
-
-                    When disabled, Unity transforms the root GameObject of the hierarchy in order to convert the axis.
-         */
-        bakeAxisConversion: boolean
         /** If this is true, any quad faces that exist in the mesh data before it is imported are kept as quads instead of being split into two triangles, for the purposes of tessellation. Set this to false to disable this behavior.
          */
         keepQuads: boolean
@@ -10657,18 +10385,9 @@ declare module "UnityEditor" {
         /** Hard angle (in degrees) for generating secondary UV.
          */
         secondaryUVHardAngle: number
-        /** Method to use for handling margins when generating secondary UV.
-         */
-        secondaryUVMarginMethod: any
         /** Margin to be left between charts when packing secondary UV.
          */
         secondaryUVPackMargin: number
-        /** The minimum lightmap resolution in texels per unit that the associated model is expected to have.
-         */
-        secondaryUVMinLightmapResolution: number
-        /** The minimum object scale that the associated model is expected to have.
-         */
-        secondaryUVMinObjectScale: number
         /** Animation generation options.
          */
         generateAnimations: any
@@ -10696,7 +10415,7 @@ declare module "UnityEditor" {
         /** Skin weights import options.
          */
         skinWeights: any
-        /** The maximum number of bones per vertex stored in this mesh data.
+        /** Maximum bones per vertex.
          */
         maxBonesPerVertex: number
         /** Minimum bone weight to keep.
@@ -11030,17 +10749,17 @@ declare module "UnityEditor" {
          */
         SetTextureSettings(src: any): void
         ReadTextureImportInstructions(target: BuildTarget, desiredFormat: jsb.Out<any>, colorSpace: jsb.Out<any>, compressionQuality: jsb.Out<number>): void
-        /** Validates ref::TextureImporterFormat:: based on a specified import type (ref::TextureImporterType::) and a specified build target (ref::BuildTarget::.).
+        /** Validates TextureImporterFormat based on a specified import type (TextureImporterType) and a specified build target (BuildTarget.).
          * @param textureType The TextureImporterType that the importer uses.
-         * @param target The platform that the setting targets, referred to as the ref::BuilTarget::.
+         * @param target The platform that the setting targets, referred to as the BuilTarget.
          * @param currentFormat The TextureImporterFormat to validate.
-         * @returns Returns true if ref::TextureImporterFormat:: is valid and can be set. Returns false otherwise. 
+         * @returns Returns true if TextureImporterFormat is valid and can be set. Returns false otherwise. 
          */
         static IsPlatformTextureFormatValid(textureType: any, target: BuildTarget, currentFormat: any): boolean
-        /** Validates ref::TextureImporterFormat:: based on the type of the current format (ref::TextureImporterType::) and the default platform.
+        /** Validates TextureImporterFormat based on the type of the current format (TextureImporterType) and the default platform.
          * @param currentFormat The TextureImporterType that the importer uses.
          * @param textureType The TextureImporterFormat to validate.
-         * @returns Returns true if ref::TextureImporterFormat:: is valid and can be set. Returns false otherwise. 
+         * @returns Returns true if TextureImporterFormat is valid and can be set. Returns false otherwise. 
          */
         static IsDefaultPlatformTextureFormatValid(textureType: any, currentFormat: any): boolean
         /** Maximum texture size.
@@ -11079,9 +10798,6 @@ declare module "UnityEditor" {
         /** Relative priority for this texture when reducing memory size in order to hit the memory budget.
          */
         streamingMipmapsPriority: number
-        /** When enabled, this texture can solely be used in combination with a Texture Stack for Virtual Texturing. When enabled the texture is not guaranteed to be available as a Texture2D in the Player (e.g., not accessible from a script). When disabled, the Player includes the texture both as a Texture2D (e.g., accessible from script) and as a streamable texture in a Texture Stack.
-         */
-        vtOnly: boolean
         /** Generate Mip Maps.
          */
         mipmapEnabled: boolean
@@ -11091,7 +10807,7 @@ declare module "UnityEditor" {
         /** Determines whether this texture stores color data.
          */
         sRGBTexture: boolean
-        /** Enables or disables coverage-preserving alpha mipmapping.
+        /** Enables or disables coverage-preserving alpha MIP mapping.
          */
         mipMapsPreserveCoverage: boolean
         /** Returns or assigns the alpha test reference value.
@@ -11169,12 +10885,9 @@ declare module "UnityEditor" {
         /** Which type of texture are we dealing with here.
          */
         textureType: any
-        /** The shape of the imported texture.
+        /** Shape of imported texture.
          */
         textureShape: any
-        /** Ignore the Gamma attribute in PNG files. This property does not effect other file formats.
-         */
-        ignorePngGamma: boolean
     }
 }
 declare module "UnityEditor" {
@@ -11698,9 +11411,6 @@ declare module "UnityEditor" {
         /** Additional BuildOptions, like whether to run the built player.
          */
         options: BuildOptions
-        /** User-specified preprocessor defines used while compiling assemblies for the player.
-         */
-        extraScriptingDefines: Array<string>
     }
 }
 declare module "UnityEditor" {
@@ -11712,7 +11422,7 @@ declare module "UnityEditor" {
         /** Build assetBundle without any special option.
          */
         None = 0,
-        /** Don't compress the data when creating the AssetBundle.
+        /** Don't compress the data when creating the asset bundle.
          */
         UncompressedAssetBundle = 1,
         /** Includes all dependencies.
@@ -11754,6 +11464,7 @@ declare module "UnityEditor" {
         /** Removes the Unity Version number in the Archive File & Serialized File headers during the build.
          */
         AssetBundleStripUnityVersion = 32768,
+        EnableProtection = 65536,
     }
 }
 declare module "UnityEditor" {
@@ -11836,12 +11547,6 @@ declare module "UnityEditor" {
         /** Build a CloudRendering standalone.
          */
         CloudRendering = 41,
-        GameCoreScarlett = 42,
-        GameCoreXboxSeries = 42,
-        GameCoreXboxOne = 43,
-        /** Build to PlayStation 5 platform.
-         */
-        PS5 = 44,
         NoTarget = -2,
         /** OBSOLETE: Use iOS. Build an iOS player.
          */
@@ -11860,20 +11565,10 @@ declare module "UnityEditor" {
     /** Building options. Multiple options can be combined together.
      */
     enum BuildOptions {
-        /** Force full optimizations for script compilation in Development builds.
-         */
         None = 0,
-        /** Force full optimizations for script compilation in Development builds.
-         */
-        CompressTextures = 0,
-        /** Force full optimizations for script compilation in Development builds.
-         */
         StripDebugSymbols = 0,
-        /** Force full optimizations for script compilation in Development builds.
-         */
+        CompressTextures = 0,
         ForceOptimizeScriptCompilation = 0,
-        /** Force full optimizations for script compilation in Development builds.
-         */
         Il2CPP = 0,
         /** Build a development version of the player.
          */
@@ -11948,12 +11643,6 @@ Supported platforms:
         /** Enables Deep Profiling support in the player.
          */
         EnableDeepProfilingSupport = 268435456,
-        /** Generates more information in the BuildReport.
-         */
-        DetailedBuildReport = 536870912,
-        /** Enable Shader Livelink support.
-         */
-        ShaderLivelinkSupport = 1073741824,
     }
 }
 declare module "UnityEditor" {
@@ -12006,7 +11695,6 @@ declare module "UnityEditor" {
     class CameraEditor extends Editor {
         constructor()
         OnEnable(): void
-        OnDisable(): void
         OnDestroy(): void
         OnInspectorGUI(): void
         OnOverlayGUI(target: Object, sceneView: SceneView): void
@@ -12193,12 +11881,6 @@ declare module "UnityEditor" {
          * @returns The number of MonoBehaviours with a missing script that were removed. 
          */
         static RemoveMonoBehavioursWithMissingScript(go: GameObject): number
-        /** Use this method if a custom scene culling mask is needed for renderers that should be shown or hidden in a Scene view when Prefab Mode in Context is active.
-         * @param sceneCullingMask The scene culling mask intended to be used with the custom renderer.
-         * @param gameObject The GameObject associated with the custom renderer.
-         * @returns If the GameObject is hidden for Prefab Mode in Context, a modified scene culling mask is returned. If it's not hidden, then the input scene culling mask is returned. 
-         */
-        static ModifyMaskIfGameObjectIsHiddenForPrefabModeInContext(sceneCullingMask: number, gameObject: GameObject): number
     }
 }
 declare module "UnityEditor" {
@@ -12277,7 +11959,7 @@ declare module "UnityEditor" {
 declare module "UnityEditor" {
     import * as jsb from "jsb";
     import { Object, Enum, Array } from "System";
-    import { Color, Matrix4x4, Camera, Vector3, Quaternion, EventType, Vector2, Transform, Texture2D, Rect, GUIStyle, GUIContent, Texture, Gradient } from "UnityEngine";
+    import { Color, Matrix4x4, Camera, Vector3, Quaternion, EventType, Vector2, Transform, Texture2D, Rect, GUIStyle, GUIContent, Texture } from "UnityEngine";
     /** Custom 3D GUI controls and drawing in the Scene view.
      */
     @jsb.RequiredDefines("UNITY_EDITOR")
@@ -12285,16 +11967,7 @@ declare module "UnityEditor" {
         /** Draw a line going through the list of points.
          */
         static DrawPolyLine(...points: Vector3[]): void
-        /** Draws a line from p1 to p2.
-         * @param p1 The position of the first line's end point in world space.
-         * @param p2 The position of the second line's end point in world space.
-         * @param thickness Line thickness in UI points (zero thickness draws single-pixel line).
-         */
-        static DrawLine(p1: Vector3, p2: Vector3, thickness: number): void
-        /** Draws a line from p1 to p2.
-         * @param p1 The position of the first line's end point in world space.
-         * @param p2 The position of the second line's end point in world space.
-         * @param thickness Line thickness in UI points (zero thickness draws single-pixel line).
+        /** Draw a line from p1 to p2.
          */
         static DrawLine(p1: Vector3, p2: Vector3): void
         /** Draw a list of indexed line segments.
@@ -12580,36 +12253,20 @@ Note: Use HandleUtility.GetHandleSize where you might want to have constant scre
          * @param width The width of the bezier line.
          */
         static DrawBezier(startPosition: Vector3, endPosition: Vector3, startTangent: Vector3, endTangent: Vector3, color: Color, texture: Texture2D, width: number): void
-        /** Draws the outline of a flat disc in 3D space.
-         * @param center The center of the disc in world space.
-         * @param normal The normal of the disc in world space.
-         * @param radius The radius of the disc in world space units.
-         * @param thickness Line thickness in UI points (zero thickness draws single-pixel line).
-         */
-        static DrawWireDisc(center: Vector3, normal: Vector3, radius: number, thickness: number): void
-        /** Draws the outline of a flat disc in 3D space.
-         * @param center The center of the disc in world space.
-         * @param normal The normal of the disc in world space.
-         * @param radius The radius of the disc in world space units.
-         * @param thickness Line thickness in UI points (zero thickness draws single-pixel line).
+        /** Draw the outline of a flat disc in 3D space.
+         * @param center The center of the disc.
+         * @param normal The normal of the disc.
+         * @param radius The radius of the disc.
          */
         static DrawWireDisc(center: Vector3, normal: Vector3, radius: number): void
-        /** Draws a circular arc in 3D space.
-         * @param center The center of the circle in world space.
-         * @param normal The normal of the circle in world space.
+        /** Draw a circular arc in 3D space.
+         * @param center The center of the circle.
+         * @param normal The normal of the circle.
          * @param from The direction of the point on the circle circumference, relative to the center, where the arc begins.
          * @param angle The angle of the arc, in degrees.
-         * @param radius The radius of the circle in world space units.
-         * @param thickness Line thickness in UI points (zero thickness draws single-pixel line).
-         */
-        static DrawWireArc(center: Vector3, normal: Vector3, from: Vector3, angle: number, radius: number, thickness: number): void
-        /** Draws a circular arc in 3D space.
-         * @param center The center of the circle in world space.
-         * @param normal The normal of the circle in world space.
-         * @param from The direction of the point on the circle circumference, relative to the center, where the arc begins.
-         * @param angle The angle of the arc, in degrees.
-         * @param radius The radius of the circle in world space units.
-         * @param thickness Line thickness in UI points (zero thickness draws single-pixel line).
+         * @param radius The radius of the circle
+
+Note: Use HandleUtility.GetHandleSize where you might want to have constant screen-sized handles.
          */
         static DrawWireArc(center: Vector3, normal: Vector3, from: Vector3, angle: number, radius: number): void
         static DrawSolidRectangleWithOutline(rectangle: Rect, faceColor: Color, outlineColor: Color): void
@@ -12693,7 +12350,6 @@ Note: Use HandleUtility.GetHandleSize where you might want to have constant scre
          * @param camera The camera to clear.
          */
         static ClearCamera(position: Rect, camera: Camera): void
-        static DrawCamera(position: Rect, camera: Camera, drawMode: any, drawGizmos: boolean): void
         /** Draws a camera inside a rectangle.
          * @param position The area to draw the camera within in GUI coordinates.
          * @param camera The camera to draw.
@@ -12717,30 +12373,6 @@ Note: Use HandleUtility.GetHandleSize where you might want to have constant scre
         /** Retuns an array of points to representing the bezier curve.
          */
         static MakeBezierPoints(startPosition: Vector3, endPosition: Vector3, startTangent: Vector3, endTangent: Vector3, division: number): Array<Vector3>
-        /** Draws a 3D texture using Signed Distance Field rendering mode in 3D space.
-         * @param texture The volumetric texture to draw.
-         * @param stepScale The number by which to multiply the ray step size. The ray step size is the distance between 2 neighboring pixels. The default value is 1.
-         * @param surfaceOffset The intensity of the pixels at which the surface is rendered. When this value is positive, Unity will expand the rendered surface. When this value is negative, Unity will render empty space as a surface, and a surface as empty space. The default value is 0.
-         * @param customColorRamp The custom gradient that Unity uses as a color ramp. If this is not specified, Unity uses <a href="https:ai.googleblog.com201908turbo-improved-rainbow-colormap-for.html">Google Turbo color ramp<a>.
-         */
-        static DrawTexture3DSDF(texture: Texture, stepScale: number, surfaceOffset: number, customColorRamp: Gradient): void
-        /** Draws a 3D texture using Slice rendering mode in 3D space.
-         * @param texture The volumetric texture to draw.
-         * @param slicePositions The positions of the texture sampling planes.
-         * @param filterMode Sets the texture filtering mode to use.
-         * @param useColorRamp Enables color ramp visualization.
-         * @param customColorRamp The custom gradient that Unity uses as a color ramp. If this is not specified, Unity uses <a href="https:ai.googleblog.com201908turbo-improved-rainbow-colormap-for.html">Google Turbo color ramp<a>.
-         */
-        static DrawTexture3DSlice(texture: Texture, slicePositions: Vector3, filterMode: any, useColorRamp: boolean, customColorRamp: Gradient): void
-        /** Draws a 3D texture using Volume rendering mode in 3D space.
-         * @param texture The volumetric texture to draw.
-         * @param opacity The non-linear volume opacity modifier. Use this to control the opacity of the visualization. Valid values are 0-1, inclusive. A value of 1 is fully opaque and a value of 0 is fully transparent. The default value is 1.
-         * @param qualityModifier Sets the sample per texture pixel count. Higher values result in a higher quality render. The default value is 1.
-         * @param filterMode Sets the texture filtering mode to use.
-         * @param useColorRamp Enables color ramp visualization.
-         * @param customColorRamp The custom gradient that Unity uses as a color ramp. If this is not specified, Unity uses <a href="https:ai.googleblog.com201908turbo-improved-rainbow-colormap-for.html">Google Turbo color ramp<a>.
-         */
-        static DrawTexture3DVolume(texture: Texture, opacity: number, qualityModifier: number, filterMode: any, useColorRamp: boolean, customColorRamp: Gradient): void
         static DoPositionHandle(position: Vector3, rotation: Quaternion): Vector3
         static DoRotationHandle(rotation: Quaternion, position: Vector3): Quaternion
         static DoScaleHandle(scale: Vector3, position: Vector3, rotation: Quaternion, size: number): Vector3
@@ -12806,9 +12438,6 @@ Note: Use HandleUtility.GetHandleSize where you might want to have constant scre
         /** Soft color to use for for general things.
          */
         static readonly secondaryColor: Color
-        /** Retrieves the user preference setting that controls the thickness of tool handle lines. (Read Only)
-         */
-        static readonly lineThickness: number
         /** Setup viewport and stuff for a current camera.
          */
         currentCamera: Camera
@@ -12817,7 +12446,7 @@ Note: Use HandleUtility.GetHandleSize where you might want to have constant scre
 declare module "UnityEditor" {
     import * as jsb from "jsb";
     import { Object, Array } from "System";
-    import { Material, GameObject, Camera, Vector2, Vector3, Quaternion, Ray, Rect, GUIContent, GUIStyle, Transform } from "UnityEngine";
+    import { Material, Vector3, Vector2, Quaternion, Ray, Rect, GUIContent, GUIStyle, GameObject, Camera } from "UnityEngine";
     /** Helper functions for Scene View style 3D GUI.
      */
     @jsb.RequiredDefines("UNITY_EDITOR")
@@ -12842,27 +12471,13 @@ declare module "UnityEditor" {
         /** Calculate distance between a point and a line.
          */
         static DistancePointLine(point: Vector3, lineStart: Vector3, lineEnd: Vector3): number
-        /** Returns the distance in pixels from the mouse pointer to a line.
+        /** Pixel distance from mouse pointer to line.
          */
         static DistanceToLine(p1: Vector3, p2: Vector3): number
-        /** Returns the distance in pixels from the mouse pointer to a camera facing circle.
+        /** Pixel distance from mouse pointer to camera facing circle.
          */
         static DistanceToCircle(position: Vector3, radius: number): number
-        /** Returns the distance in pixels from the mouse pointer to a cone.
-         * @param position Position of the cone.
-         * @param rotation Rotation of the cone.
-         * @param size Size of the cone.
-         * @returns Distance from mouse to cone in pixels. 
-         */
-        static DistanceToCone(position: Vector3, rotation: Quaternion, size: number): number
-        /** Returns the distance in pixels from the mouse pointer to a cube.
-         * @param position Position of the cube.
-         * @param rotation Rotation of the cube.
-         * @param size Size of the cube.
-         * @returns Distance from mouse to cube in pixels. 
-         */
-        static DistanceToCube(position: Vector3, rotation: Quaternion, size: number): number
-        /** Returns the distance in pixels from the mouse pointer to a rectangle on screen.
+        /** Pixel distance from mouse pointer to a rectangle on screen.
          */
         static DistanceToRectangle(position: Vector3, rotation: Quaternion, size: number): number
         /** Distance from a point p in 2d to a line defined by two points a and b.
@@ -12871,19 +12486,19 @@ declare module "UnityEditor" {
         /** Distance from a point p in 2d to a line segment defined by two points a and b.
          */
         static DistancePointToLineSegment(p: Vector2, a: Vector2, b: Vector2): number
-        /** Returns the distance in pixels from the mouse pointer to a 3D disc.
+        /** Pixel distance from mouse pointer to a 3D disc.
          */
         static DistanceToDisc(center: Vector3, normal: Vector3, radius: number): number
         /** Get the point on an disc (in 3D space) which is closest to the current mouse position.
          */
         static ClosestPointToDisc(center: Vector3, normal: Vector3, radius: number): Vector3
-        /** Returns the distance in pixels from the mouse pointer to a 3D section of a disc.
+        /** Pixel distance from mouse pointer to a 3D section of a disc.
          */
         static DistanceToArc(center: Vector3, normal: Vector3, from: Vector3, angle: number, radius: number): number
         /** Get the point on an arc (in 3D space) which is closest to the current mouse position.
          */
         static ClosestPointToArc(center: Vector3, normal: Vector3, from: Vector3, angle: number, radius: number): Vector3
-        /** Returns the distance in pixels from the mouse pointer to a polyline.
+        /** Pixel distance from mouse pointer to a polyline.
          */
         static DistanceToPolyLine(...points: Vector3[]): number
         /** Get the point on a polyline (in 3D space) which is closest to the current mouse position.
@@ -12926,73 +12541,16 @@ declare module "UnityEditor" {
          * @param rect An screen rectangle specified with pixel coordinates.
          */
         static PickRectObjects(rect: Rect): Array<GameObject>
-        /** Returns the nearest vertex to a guiPoint within a maximum radius of 50 pixels.
-         * @param guiPoint A point in GUI space.
-         * @param vertex The nearest vertex position to guiPoint, or a default value if no vertex is within the minimum picking distance.
-         * @param objectsToSearch An array of Transform to consider when picking the nearest vertex. If null, all active objects in open scenes are considered.
-         * @param objectsToIgnore An array of Transform to exclude from consideration when picking nearest vertex.
-         * @returns Returns true if a vertex within 50 pixels of the guiPoint was found, false if no vertex found within the minimum picking radius. 
-         */
-        static FindNearestVertex(guiPoint: Vector2, objectsToSearch: Array<Transform>, objectsToIgnore: Array<Transform>, vertex: jsb.Out<Vector3>): boolean
-        /** Returns the nearest vertex to a guiPoint within a maximum radius of 50 pixels.
-         * @param guiPoint A point in GUI space.
-         * @param vertex The nearest vertex position to guiPoint, or a default value if no vertex is within the minimum picking distance.
-         * @param objectsToSearch An array of Transform to consider when picking the nearest vertex. If null, all active objects in open scenes are considered.
-         * @param objectsToIgnore An array of Transform to exclude from consideration when picking nearest vertex.
-         * @returns Returns true if a vertex within 50 pixels of the guiPoint was found, false if no vertex found within the minimum picking radius. 
-         */
-        static FindNearestVertex(guiPoint: Vector2, objectsToSearch: Array<Transform>, vertex: jsb.Out<Vector3>): boolean
-        /** Returns the nearest vertex to a guiPoint within a maximum radius of 50 pixels.
-         * @param guiPoint A point in GUI space.
-         * @param vertex The nearest vertex position to guiPoint, or a default value if no vertex is within the minimum picking distance.
-         * @param objectsToSearch An array of Transform to consider when picking the nearest vertex. If null, all active objects in open scenes are considered.
-         * @param objectsToIgnore An array of Transform to exclude from consideration when picking nearest vertex.
-         * @returns Returns true if a vertex within 50 pixels of the guiPoint was found, false if no vertex found within the minimum picking radius. 
-         */
-        static FindNearestVertex(guiPoint: Vector2, vertex: jsb.Out<Vector3>): boolean
-        /** Pick game object closest to specified position.
-         * @param selectPrefabRoot Select Prefab.
-         * @param materialIndex Returns index into material array of the Renderer component that is closest to specified position.
-         * @param position A position in GUI coordinates. The top-left of the window is (0,0), and the bottom-right is (Screen.width, Screen.height).
-         * @param ignore An array of GameObjects that will not be considered when selecting the nearest GameObject.
-         * @param filter An array of GameObjects to be exclusively considered for selection. If null, all GameObjects in open scenes are eligible for selection.
-         * @returns The GameObject that is under the requested position. 
-         */
-        static PickGameObject(position: Vector2, selectPrefabRoot: boolean, ignore: Array<GameObject>, filter: Array<GameObject>): GameObject
-        /** Pick game object closest to specified position.
-         * @param selectPrefabRoot Select Prefab.
-         * @param materialIndex Returns index into material array of the Renderer component that is closest to specified position.
-         * @param position A position in GUI coordinates. The top-left of the window is (0,0), and the bottom-right is (Screen.width, Screen.height).
-         * @param ignore An array of GameObjects that will not be considered when selecting the nearest GameObject.
-         * @param filter An array of GameObjects to be exclusively considered for selection. If null, all GameObjects in open scenes are eligible for selection.
-         * @returns The GameObject that is under the requested position. 
-         */
         static PickGameObject(position: Vector2, ignore: Array<GameObject>, materialIndex: jsb.Out<number>): GameObject
-        /** Pick game object closest to specified position.
-         * @param selectPrefabRoot Select Prefab.
-         * @param materialIndex Returns index into material array of the Renderer component that is closest to specified position.
-         * @param position A position in GUI coordinates. The top-left of the window is (0,0), and the bottom-right is (Screen.width, Screen.height).
-         * @param ignore An array of GameObjects that will not be considered when selecting the nearest GameObject.
-         * @param filter An array of GameObjects to be exclusively considered for selection. If null, all GameObjects in open scenes are eligible for selection.
-         * @returns The GameObject that is under the requested position. 
-         */
         static PickGameObject(position: Vector2, selectPrefabRoot: boolean, ignore: Array<GameObject>): GameObject
         /** Pick game object closest to specified position.
          * @param selectPrefabRoot Select Prefab.
          * @param materialIndex Returns index into material array of the Renderer component that is closest to specified position.
-         * @param position A position in GUI coordinates. The top-left of the window is (0,0), and the bottom-right is (Screen.width, Screen.height).
-         * @param ignore An array of GameObjects that will not be considered when selecting the nearest GameObject.
-         * @param filter An array of GameObjects to be exclusively considered for selection. If null, all GameObjects in open scenes are eligible for selection.
-         * @returns The GameObject that is under the requested position. 
          */
         static PickGameObject(position: Vector2, materialIndex: jsb.Out<number>): GameObject
         /** Pick game object closest to specified position.
          * @param selectPrefabRoot Select Prefab.
          * @param materialIndex Returns index into material array of the Renderer component that is closest to specified position.
-         * @param position A position in GUI coordinates. The top-left of the window is (0,0), and the bottom-right is (Screen.width, Screen.height).
-         * @param ignore An array of GameObjects that will not be considered when selecting the nearest GameObject.
-         * @param filter An array of GameObjects to be exclusively considered for selection. If null, all GameObjects in open scenes are eligible for selection.
-         * @returns The GameObject that is under the requested position. 
          */
         static PickGameObject(position: Vector2, selectPrefabRoot: boolean): GameObject
         /** Store all camera settings.
@@ -13005,13 +12563,6 @@ declare module "UnityEditor" {
          * @returns A boxed RaycastHit, null if nothing hit it. 
          */
         static RaySnap(ray: Ray): Object
-        /** Casts a ray against the loaded scenes and returns the nearest intersected point on a collider.
-         * @param guiPosition The GUI position in the SceneView. You can pass Event.current.mousePosition to this parameter in most cases.
-         * @param position Returns the nearest intersected point to a ray cast from the mouse position into the scene.
-         * @param normal Returns the normal of the nearest intersected point to a ray cast from the mouse position into the scene.
-         * @returns Returns true if the raycast intersected something in the scene; otherwise, false. 
-         */
-        static PlaceObject(guiPosition: Vector2, position: jsb.Out<Vector3>, normal: jsb.Out<Vector3>): boolean
         static Repaint(): void
         protected constructor()
         /** Get standard acceleration for dragging values (Read Only).
@@ -13025,8 +12576,6 @@ declare module "UnityEditor" {
         static readonly niceMouseDeltaZoom: number
         static nearestControl: number
         static readonly handleMaterial: Material
-        static pickGameObjectCustomPasses(op: "add" | "remove", fn: (cam: Camera, layers: number, position: Vector2, ignore: Array<GameObject>, filter: Array<GameObject>, materialIndex: jsb.Out<number>) => GameObject): void
-        static placeObjectCustomPasses(op: "add" | "remove", fn: (guiPosition: Vector2, position: jsb.Out<Vector3>, normal: jsb.Out<Vector3>) => boolean): void
     }
 }
 declare module "UnityEditor" {
@@ -13208,9 +12757,8 @@ declare module "UnityEditor" {
 }
 declare module "UnityEditor" {
     import * as jsb from "jsb";
-    import { Object, Enum, Array, ValueType } from "System";
+    import { Object, Enum, Array } from "System";
     import { Object as Object1, Vector2 } from "UnityEngine";
-    import { List } from "System.Collections.Generic";
     /** Various utilities for mesh manipulation.
      */
     @jsb.RequiredDefines("UNITY_EDITOR")
@@ -13230,19 +12778,6 @@ declare module "UnityEditor" {
         /** Will insert per-triangle uv2 in mesh and handle vertex splitting etc.
          */
         static SetPerTriangleUV2(src: any, triUV: Array<Vector2>): void
-        /** Gets a snapshot of Mesh data for read-only access in the Unity Editor.
-         * @param mesh The input mesh.
-         * @param meshes The input meshes.
-         * @returns Returns a read-only snapshot of Mesh data. See Mesh.MeshDataArray and Mesh.MeshData. 
-         */
-        static AcquireReadOnlyMeshData(mesh: any): any
-        /** Gets a snapshot of Mesh data for read-only access in the Unity Editor.
-         * @param mesh The input mesh.
-         * @param meshes The input meshes.
-         * @returns Returns a read-only snapshot of Mesh data. See Mesh.MeshDataArray and Mesh.MeshData. 
-         */
-        static AcquireReadOnlyMeshData(meshes: Array<any>): any
-        static AcquireReadOnlyMeshData(meshes: any): any
         protected constructor()
     }
 }
@@ -13331,7 +12866,7 @@ declare module "UnityEditor" {
          */
         static IsPartOfVariantPrefab(componentOrGameObject: Object1): boolean
         /** Is this object part of a Prefab that cannot be edited?
-         * @param componentOrGameObject The object to check. Must be a component or GameObject.
+         * @param gameObjectOrComponent The object to check. Must be a component or GameObject.
          * @returns True if the object is part of a Prefab that cannot be edited. 
          */
         static IsPartOfImmutablePrefab(componentOrGameObject: Object1): boolean
@@ -13617,9 +13152,6 @@ declare module "UnityEditor.Build.Reporting" {
         /** An array of all the PackedAssets generated by the build process.
          */
         readonly packedAssets: Array<any>
-        /** An optional array of ScenesUsingAssets generated by the build process if BuildOptions.DetailedBuildReport was used during the build.
-         */
-        readonly scenesUsingAssets: Array<any>
     }
 }
 declare module "UnityEngine" {
@@ -13663,12 +13195,7 @@ declare module "UnityEditor" {
          * @returns Target platform name represented by the passed in BuildTarget. 
          */
         static GetBuildTargetName(targetPlatform: BuildTarget): string
-        /** Checks if Unity can append the build.
-         * @param target The BuildTarget to build.
-         * @param location The path where Unity builds the application.
-         * @returns Returns a UnityEditor.CanAppendBuild enum that indicates whether Unity can append the build. 
-         */
-        static BuildCanBeAppended(target: BuildTarget, location: string): any
+        static SetAssetBundleEncryptKey(password: string): void
         /** Builds a player. These overloads are still supported, but will be replaced. Please use BuildPlayer (BuildPlayerOptions buildPlayerOptions)  instead.
          * @param scenes The Scenes to include in the build. If empty, the build only includes the currently open Scene. Paths are relative to the project folder (AssetsMyLevelsMyScene.unity).
          * @param locationPathName The path where the application will be built.
@@ -13690,12 +13217,6 @@ declare module "UnityEditor" {
          * @returns A BuildReport giving build process information. 
          */
         static BuildPlayer(buildPlayerOptions: BuildPlayerOptions): BuildReport
-        /** Writes out a "boot.config" file that contains configuration information for the very early stages of engine startup.
-         * @param outputFile The location to write the file to.
-         * @param target The platform to target for this build.
-         * @param options Options for this build.
-         */
-        static WriteBootConfig(outputFile: string, target: BuildTarget, options: BuildOptions): void
         /** Build AssetBundles from a building map.
          * @param outputPath Output path for the AssetBundles.
          * @param builds AssetBundle building map.
@@ -13738,9 +13259,6 @@ In some cases the player directory path can be affected by BuildOptions.Developm
          * @param buildTargetGroup Build target group.
          */
         static GetPlaybackEngineDirectory(target: BuildTarget, options: BuildOptions): string
-        /** Returns the mode currently used by players to initiate a connect to the host.
-         */
-        static GetPlayerConnectionInitiateMode(targetPlatform: BuildTarget, buildOptions: BuildOptions): any
         protected constructor()
         /** Is a player currently being built?
          */
@@ -13749,78 +13267,13 @@ In some cases the player directory path can be affected by BuildOptions.Developm
 }
 declare module "UnityEditor" {
     import * as jsb from "jsb";
-    import { Object, ValueType, Array } from "System";
+    import { Object, Array } from "System";
     import { List, IEnumerable } from "System.Collections.Generic";
     import { Object as Object1, Hash128, Texture } from "UnityEngine";
     /** An Interface for accessing assets and performing operations on assets.
      */
     @jsb.RequiredDefines("UNITY_EDITOR")
     class AssetDatabase extends Object {
-        static CanOpenForEdit(assetOrMetaFilePaths: Array<string>, outNotEditablePaths: List<string>, statusQueryOptions: StatusQueryOptions): void
-        /** Query whether an Asset file can be opened for editing in version control and is not exclusively locked by another user or otherwise unavailable.
-         * @param assetObject Object representing the asset whose status you wish to query.
-         * @param assetOrMetaFilePath Path to the asset file or its .meta file on disk, relative to project folder.
-         * @param message Returns a reason for the asset not being available for edit.
-         * @param statusOptions Options for how the version control system should be queried. These options can effect the speed and accuracy of the query. Default is StatusQueryOptions.UseCachedIfPossible.
-         * @returns True if the asset is considered available for edit by the selected version control system. 
-         */
-        static CanOpenForEdit(assetObject: Object1, message: jsb.Out<string>, statusOptions: StatusQueryOptions): boolean
-        /** Query whether an Asset file can be opened for editing in version control and is not exclusively locked by another user or otherwise unavailable.
-         * @param assetObject Object representing the asset whose status you wish to query.
-         * @param assetOrMetaFilePath Path to the asset file or its .meta file on disk, relative to project folder.
-         * @param message Returns a reason for the asset not being available for edit.
-         * @param statusOptions Options for how the version control system should be queried. These options can effect the speed and accuracy of the query. Default is StatusQueryOptions.UseCachedIfPossible.
-         * @returns True if the asset is considered available for edit by the selected version control system. 
-         */
-        static CanOpenForEdit(assetOrMetaFilePath: string, message: jsb.Out<string>, statusOptions: StatusQueryOptions): boolean
-        /** Query whether an Asset file can be opened for editing in version control and is not exclusively locked by another user or otherwise unavailable.
-         * @param assetObject Object representing the asset whose status you wish to query.
-         * @param assetOrMetaFilePath Path to the asset file or its .meta file on disk, relative to project folder.
-         * @param message Returns a reason for the asset not being available for edit.
-         * @param statusOptions Options for how the version control system should be queried. These options can effect the speed and accuracy of the query. Default is StatusQueryOptions.UseCachedIfPossible.
-         * @returns True if the asset is considered available for edit by the selected version control system. 
-         */
-        static CanOpenForEdit(assetObject: Object1, statusOptions: StatusQueryOptions): boolean
-        /** Query whether an Asset file can be opened for editing in version control and is not exclusively locked by another user or otherwise unavailable.
-         * @param assetObject Object representing the asset whose status you wish to query.
-         * @param assetOrMetaFilePath Path to the asset file or its .meta file on disk, relative to project folder.
-         * @param message Returns a reason for the asset not being available for edit.
-         * @param statusOptions Options for how the version control system should be queried. These options can effect the speed and accuracy of the query. Default is StatusQueryOptions.UseCachedIfPossible.
-         * @returns True if the asset is considered available for edit by the selected version control system. 
-         */
-        static CanOpenForEdit(assetOrMetaFilePath: string, statusOptions: StatusQueryOptions): boolean
-        /** Query whether an Asset file can be opened for editing in version control and is not exclusively locked by another user or otherwise unavailable.
-         * @param assetObject Object representing the asset whose status you wish to query.
-         * @param assetOrMetaFilePath Path to the asset file or its .meta file on disk, relative to project folder.
-         * @param message Returns a reason for the asset not being available for edit.
-         * @param statusOptions Options for how the version control system should be queried. These options can effect the speed and accuracy of the query. Default is StatusQueryOptions.UseCachedIfPossible.
-         * @returns True if the asset is considered available for edit by the selected version control system. 
-         */
-        static CanOpenForEdit(assetObject: Object1, message: jsb.Out<string>): boolean
-        /** Query whether an Asset file can be opened for editing in version control and is not exclusively locked by another user or otherwise unavailable.
-         * @param assetObject Object representing the asset whose status you wish to query.
-         * @param assetOrMetaFilePath Path to the asset file or its .meta file on disk, relative to project folder.
-         * @param message Returns a reason for the asset not being available for edit.
-         * @param statusOptions Options for how the version control system should be queried. These options can effect the speed and accuracy of the query. Default is StatusQueryOptions.UseCachedIfPossible.
-         * @returns True if the asset is considered available for edit by the selected version control system. 
-         */
-        static CanOpenForEdit(assetOrMetaFilePath: string, message: jsb.Out<string>): boolean
-        /** Query whether an Asset file can be opened for editing in version control and is not exclusively locked by another user or otherwise unavailable.
-         * @param assetObject Object representing the asset whose status you wish to query.
-         * @param assetOrMetaFilePath Path to the asset file or its .meta file on disk, relative to project folder.
-         * @param message Returns a reason for the asset not being available for edit.
-         * @param statusOptions Options for how the version control system should be queried. These options can effect the speed and accuracy of the query. Default is StatusQueryOptions.UseCachedIfPossible.
-         * @returns True if the asset is considered available for edit by the selected version control system. 
-         */
-        static CanOpenForEdit(assetObject: Object1): boolean
-        /** Query whether an Asset file can be opened for editing in version control and is not exclusively locked by another user or otherwise unavailable.
-         * @param assetObject Object representing the asset whose status you wish to query.
-         * @param assetOrMetaFilePath Path to the asset file or its .meta file on disk, relative to project folder.
-         * @param message Returns a reason for the asset not being available for edit.
-         * @param statusOptions Options for how the version control system should be queried. These options can effect the speed and accuracy of the query. Default is StatusQueryOptions.UseCachedIfPossible.
-         * @returns True if the asset is considered available for edit by the selected version control system. 
-         */
-        static CanOpenForEdit(assetOrMetaFilePath: string): boolean
         static IsOpenForEdit(assetOrMetaFilePaths: Array<string>, outNotEditablePaths: List<string>, statusQueryOptions: StatusQueryOptions): void
         /** Query whether an Asset file is open for editing in version control.
          * @param assetObject Object representing the asset whose status you wish to query.
@@ -13977,18 +13430,13 @@ The parent folder string must start with the "Assets" folder, and all folders wi
          * @returns An empty string, if the asset has been successfully renamed, otherwise an error message. 
          */
         static RenameAsset(pathName: string, newName: string): string
-        /** Moves the specified asset  or folder to the OS trash.
-         * @param path Project relative path of the asset or folder to be deleted.
-         * @returns Returns true if the asset has been successfully removed, false if it doesn't exist or couldn't be removed. 
+        /** Moves the asset at path to the trash.
          */
         static MoveAssetToTrash(path: string): boolean
-        static MoveAssetsToTrash(paths: Array<string>, outFailedPaths: List<string>): boolean
-        /** Deletes the specified asset or folder.
-         * @param path Project relative path of the asset or folder to be deleted.
-         * @returns Returns true if the asset has been successfully removed, false if it doesn't exist or couldn't be removed. 
+        /** Deletes the asset file at path.
+         * @param path Filesystem path of the asset to be deleted.
          */
         static DeleteAsset(path: string): boolean
-        static DeleteAssets(paths: Array<string>, outFailedPaths: List<string>): boolean
         /** Import asset at path.
          */
         static ImportAsset(path: string, options: ImportAssetOptions): void
@@ -14060,8 +13508,6 @@ The parent folder string must start with the "Assets" folder, and all folders wi
          */
         static LoadAssetAtPath(assetPath: string, type: any): Object1
         /** Returns the main asset object at assetPath.
-
-The "main" Asset is the Asset at the root of a hierarchy (such as a Maya file which may contain multiples meshes and GameObjects).
          * @param assetPath Filesystem path of the asset to load.
          */
         static LoadMainAssetAtPath(assetPath: string): Object1
@@ -14069,12 +13515,6 @@ The "main" Asset is the Asset at the root of a hierarchy (such as a Maya file wh
          * @param assetPath Filesystem path of the asset to load.
          */
         static GetMainAssetTypeAtPath(assetPath: string): any
-        /** Gets an object's type from an Asset path and a local file identifier.
-         * @param assetPath The Asset's path.
-         * @param localIdentifierInFile The object's local file identifier.
-         * @returns The object's type. 
-         */
-        static GetTypeFromPathAndFileID(assetPath: string, localIdentifierInFile: number): any
         /** Returns true if the main asset object at assetPath is loaded in memory.
          * @param assetPath Filesystem path of the asset to load.
          */
@@ -14114,35 +13554,16 @@ The "main" Asset is the Asset at the root of a hierarchy (such as a Maya file wh
         /** Opens the asset(s) with associated application(s).
          */
         static OpenAsset(objects: Array<Object1>): boolean
-        /** Gets the corresponding asset path for the supplied GUID, or an empty string if the GUID can't be found.
-         * @param guid The GUID of an asset.
-         * @returns Path of the asset relative to the project folder. 
-         */
-        static GUIDToAssetPath(guid: string): string
-        /** Gets the corresponding asset path for the supplied GUID, or an empty string if the GUID can't be found.
-         * @param guid The GUID of an asset.
-         * @returns Path of the asset relative to the project folder. 
-         */
-        static GUIDToAssetPath(guid: any): string
-        /** Get the GUID for the asset at path.
-         * @param path Filesystem path for the asset. All paths are relative to the project folder.
-         * @returns The GUID of the asset. An all-zero GUID denotes an invalid asset path. 
-         */
-        static GUIDFromAssetPath(path: string): any
         /** Get the GUID for the asset at path.
          * @param path Filesystem path for the asset.
          * @returns GUID. 
          */
         static AssetPathToGUID(path: string): string
-        /** Returns the hash of all the dependencies of an asset.
-         * @param path Path to the asset.
-         * @param guid GUID of the asset.
-         * @returns Aggregate hash. 
+        /** Gets the corresponding asset path for the supplied guid, or an empty string if the GUID can't be found.
          */
-        static GetAssetDependencyHash(guid: any): Hash128
+        static GUIDToAssetPath(guid: string): string
         /** Returns the hash of all the dependencies of an asset.
          * @param path Path to the asset.
-         * @param guid GUID of the asset.
          * @returns Aggregate hash. 
          */
         static GetAssetDependencyHash(path: string): Hash128
@@ -14153,7 +13574,6 @@ The "main" Asset is the Asset at the root of a hierarchy (such as a Maya file wh
         /** Replaces that list of labels on an asset.
          */
         static SetLabels(obj: Object1, labels: Array<string>): void
-        static GetLabels(guid: any): Array<string>
         /** Returns all labels attached to a given asset.
          */
         static GetLabels(obj: Object1): Array<string>
@@ -14266,20 +13686,24 @@ Note: GetDependencies() gets the Assets that are referenced by other Assets. For
         static GetBuiltinExtraResource(type: any, path: string): Object1
         static ForceReserializeAssets(assetPaths: IEnumerable<string>, options: ForceReserializeAssetsOptions): void
         static ForceReserializeAssets(): void
-        /** Get the GUID and local file id from an object instance id.
+        /** Warning Use the overload with a long localId parameter. Using the overload with an integer localId parameter can cause an integer overflow in localId. This can happen when the object passed to the API is part of a Prefab.
+
+Get the GUID and local file id from an object instance id.
          * @param instanceID InstanceID of the object to retrieve information for.
          * @param obj The object to retrieve GUID and File Id for.
          * @param assetRef The asset reference to retrieve GUID and File Id for.
-         * @param guid The GUID of an asset.
+         * @param guid The GUID of the asset.
          * @param localId The local file identifier of this asset.
          * @returns True if the guid and file id were successfully found, false if not. 
          */
         static TryGetGUIDAndLocalFileIdentifier(obj: Object1, guid: jsb.Out<string>, localId: jsb.Out<number>): boolean
-        /** Get the GUID and local file id from an object instance id.
+        /** Warning Use the overload with a long localId parameter. Using the overload with an integer localId parameter can cause an integer overflow in localId. This can happen when the object passed to the API is part of a Prefab.
+
+Get the GUID and local file id from an object instance id.
          * @param instanceID InstanceID of the object to retrieve information for.
          * @param obj The object to retrieve GUID and File Id for.
          * @param assetRef The asset reference to retrieve GUID and File Id for.
-         * @param guid The GUID of an asset.
+         * @param guid The GUID of the asset.
          * @param localId The local file identifier of this asset.
          * @returns True if the guid and file id were successfully found, false if not. 
          */
@@ -14292,63 +13716,11 @@ Note: GetDependencies() gets the Assets that are referenced by other Assets. For
         static ImportPackage(packagePath: string, interactive: boolean): void
         static DisallowAutoRefresh(): void
         static AllowAutoRefresh(): void
-        /** Clears the importer override for the asset.
-         * @param path Asset path.
-         */
-        static ClearImporterOverride(path: string): void
-        static IsCacheServerEnabled(): boolean
-        /** Returns the type of the override importer.
-         * @param path Asset path.
-         * @returns Importer type. 
-         */
-        static GetImporterOverride(path: string): any
-        /** Gets the importer types associated with a given Asset type.
-         * @param path The Asset path.
-         * @returns Returns an array of importer types that can handle the specified Asset. 
-         */
-        static GetAvailableImporterTypes(path: string): Array<any>
-        /** Checks the availability of the Cache Server.
-         * @param ip The IP address of the Cache Server.
-         * @param port The Port number of the Cache Server.
-         * @returns Returns true when Editor can connect to the Cache Server. Returns false otherwise. 
-         */
-        static CanConnectToCacheServer(ip: string, port: number): boolean
-        static RefreshSettings(): void
-        static IsConnectedToCacheServer(): boolean
-        static ResetCacheServerReconnectTimer(): void
-        static CloseCacheServerConnection(): void
-        static GetCacheServerAddress(): string
-        static GetCacheServerPort(): number
-        static GetCacheServerNamespacePrefix(): string
-        static GetCacheServerEnableDownload(): boolean
-        static GetCacheServerEnableUpload(): boolean
-        static IsDirectoryMonitoringEnabled(): boolean
-        /** Allows you to register a custom dependency that Assets can be dependent on. If you register a custom dependency, and specify that an Asset is dependent on it, then the Asset will get re-imported if the custom dependency changes.
-         * @param dependency Name of dependency. You can use any name you like, but because these names are global across all your Assets, it can be useful to use a naming convention (eg a path-based naming system) to avoid clashes with other custom dependency names.
-         * @param hashOfValue A Hash128 value of the dependency.
-         */
-        static RegisterCustomDependency(dependency: string, hashOfValue: Hash128): void
-        /** Removes custom dependencies that match the prefixFilter.
-         * @param prefixFilter Prefix filter for the custom dependencies to unregister.
-         * @returns Number of custom dependencies removed. 
-         */
-        static UnregisterCustomDependencyPrefixFilter(prefixFilter: string): number
-        static IsAssetImportWorkerProcess(): boolean
         protected constructor()
-        /** Changes during Refresh if anything has changed that can invalidate any artifact.
-         */
-        static readonly GlobalArtifactDependencyVersion: number
-        /** Changes whenever a new artifact is added to the artifact database.
-         */
-        static readonly GlobalArtifactProcessedVersion: number
         static importPackageStarted(op: "add" | "remove", fn: (packageName: string) => void): void
         static importPackageCompleted(op: "add" | "remove", fn: (packageName: string) => void): void
         static importPackageCancelled(op: "add" | "remove", fn: (packageName: string) => void): void
         static importPackageFailed(op: "add" | "remove", fn: (packageName: string, errorMessage: string) => void): void
-        static cacheServerConnectionChanged(op: "add" | "remove", fn: (obj: any) => void): void
-        static onImportPackageItemsCompleted(op: "get"): (obj: Array<string>) => void
-        static onImportPackageItemsCompleted(op: "add" | "remove" | "set", fn?: (obj: Array<string>) => void): void
-        static onImportPackageItemsCompleted(op: "add" | "remove" | "set" | "get", fn?: (obj: Array<string>) => void): (obj: Array<string>) => void | void
     }
 }
 declare module "UnityEditor" {
@@ -14574,7 +13946,7 @@ declare module "UnityEditor" {
 }
 declare module "UnityEditor" {
     import * as jsb from "jsb";
-    import { Object, Array, Enum, ValueType } from "System";
+    import { Object, Array, Enum } from "System";
     import { Object as Object1, Texture2D, Texture, Renderer, Camera, Rect, GUIContent, GameObject } from "UnityEngine";
     /** Editor utility functions.
      */
@@ -14666,7 +14038,7 @@ declare module "UnityEditor" {
         /** Compress a cubemap texture.
          */
         static CompressCubemapTexture(texture: any, format: any, quality: any): void
-        /** Marks target object as dirty.
+        /** Marks target object as dirty. (Only suitable for non-scene objects).
          * @param target The object to mark as dirty.
          */
         static SetDirty(target: Object1): void
@@ -14779,15 +14151,6 @@ declare module "UnityEditor" {
         static CreateGameObjectWithHideFlags(name: string, flags: any, ...components: any[]): GameObject
         static CompileCSharp(sources: Array<string>, references: Array<string>, defines: Array<string>, outputFile: string): Array<string>
         static DisplayCustomMenuWithSeparators(position: Rect, options: Array<string>, enabled: Array<boolean>, separator: Array<boolean>, selected: Array<number>, callback: (userData: Object, options: Array<string>, selected: number) => void, userData: Object): void
-        /** Sets the default parent object for the active Scene.
-         * @param defaultParentObject The GameObject to set as the default parent object.
-         */
-        static SetDefaultParentObject(defaultParentObject: GameObject): void
-        /** Clears the default parent GameObject from either a specific Scene or the active Scene.
-         * @param scene Specify a Scene to clear the default parent object for a specific Scene. If a Scene is not specified, this method clears the default parent object for the active Scene.
-         */
-        static ClearDefaultParentObject(scene: any): void
-        static ClearDefaultParentObject(): void
         protected constructor()
         static audioMasterMute: boolean
         /** True if there are any compilation error messages in the log.
@@ -15078,7 +14441,6 @@ declare module "UnityEditor" {
          * @returns The enum flags value modified by the user. This is a selection BitMask where each bit represents an Enum value index. (Note this returned value is not itself an Enum). 
          */
         static EnumFlagsField(position: Rect, enumValue: Enum): Enum
-        static ObjectField(position: Rect, label: string, obj: Object1, objType: any, targetBeingEdited: Object1): Object1
         /** Makes an object field. You can assign objects either by drag and drop objects or by selecting an object using the Object Picker.
          * @param position Rectangle on the screen to use for the field.
          * @param label Optional label in front of the field.
@@ -15088,7 +14450,6 @@ declare module "UnityEditor" {
          * @returns The object that has been set by the user. 
          */
         static ObjectField(position: Rect, label: string, obj: Object1, objType: any, allowSceneObjects: boolean): Object1
-        static ObjectField(position: Rect, label: GUIContent, obj: Object1, objType: any, targetBeingEdited: Object1): Object1
         /** Makes an object field. You can assign objects either by drag and drop objects or by selecting an object using the Object Picker.
          * @param position Rectangle on the screen to use for the field.
          * @param label Optional label in front of the field.
@@ -15105,7 +14466,6 @@ declare module "UnityEditor" {
          * @param label Optional label to display in front of the field. Pass GUIContent.none to hide the label.
          */
         static ObjectField(position: Rect, property: SerializedProperty, objType: any, label: GUIContent): void
-        static ObjectField(position: Rect, obj: Object1, objType: any, targetBeingEdited: Object1): Object1
         /** Makes an object field. You can assign objects either by drag and drop objects or by selecting an object using the Object Picker.
          * @param position Rectangle on the screen to use for the field.
          * @param label Optional label in front of the field.
@@ -15581,7 +14941,6 @@ It sets material _Mip property.
 It sets material _Mip property.
          */
         static DrawTextureAlpha(position: Rect, image: Texture): void
-        static DrawTextureTransparent(position: Rect, image: Texture, scaleMode: ScaleMode, imageAspect: number, mipLevel: number, colorWriteMask: any, exposure: number): void
         static DrawTextureTransparent(position: Rect, image: Texture, scaleMode: ScaleMode, imageAspect: number, mipLevel: number, colorWriteMask: any): void
         static DrawTextureTransparent(position: Rect, image: Texture, scaleMode: ScaleMode, imageAspect: number, mipLevel: number): void
         static DrawTextureTransparent(position: Rect, image: Texture, scaleMode: ScaleMode, imageAspect: number): void
@@ -15594,21 +14953,8 @@ It sets material _Mip property.
          * @param scaleMode How to scale the image when the aspect ratio of it doesn't fit the aspect ratio to be drawn within.
          * @param imageAspect Aspect ratio to use for the source image. If 0 (the default), the aspect ratio from the image is used.
          * @param mipLevel The mip-level to sample. If negative, the texture is sampled normally.
-Sets material's _Mip property.
-         * @param colorWriteMask Specifies which color components of image will get written. Sets material's _ColorMask property.
-         * @param exposure Specifies the exposure for the texture. Sets material's _Exposure property.
-         */
-        static DrawPreviewTexture(position: Rect, image: Texture, mat: Material, scaleMode: ScaleMode, imageAspect: number, mipLevel: number, colorWriteMask: any, exposure: number): void
-        /** Draws the texture within a rectangle.
-         * @param position Rectangle on the screen to draw the texture within.
-         * @param image Texture to display.
-         * @param mat Material to be used when drawing the texture.
-         * @param scaleMode How to scale the image when the aspect ratio of it doesn't fit the aspect ratio to be drawn within.
-         * @param imageAspect Aspect ratio to use for the source image. If 0 (the default), the aspect ratio from the image is used.
-         * @param mipLevel The mip-level to sample. If negative, the texture is sampled normally.
-Sets material's _Mip property.
-         * @param colorWriteMask Specifies which color components of image will get written. Sets material's _ColorMask property.
-         * @param exposure Specifies the exposure for the texture. Sets material's _Exposure property.
+Sets material _Mip property.
+         * @param colorWriteMask Specifies which color components of image will get written.
          */
         static DrawPreviewTexture(position: Rect, image: Texture, mat: Material, scaleMode: ScaleMode, imageAspect: number, mipLevel: number, colorWriteMask: any): void
         /** Draws the texture within a rectangle.
@@ -15618,9 +14964,8 @@ Sets material's _Mip property.
          * @param scaleMode How to scale the image when the aspect ratio of it doesn't fit the aspect ratio to be drawn within.
          * @param imageAspect Aspect ratio to use for the source image. If 0 (the default), the aspect ratio from the image is used.
          * @param mipLevel The mip-level to sample. If negative, the texture is sampled normally.
-Sets material's _Mip property.
-         * @param colorWriteMask Specifies which color components of image will get written. Sets material's _ColorMask property.
-         * @param exposure Specifies the exposure for the texture. Sets material's _Exposure property.
+Sets material _Mip property.
+         * @param colorWriteMask Specifies which color components of image will get written.
          */
         static DrawPreviewTexture(position: Rect, image: Texture, mat: Material, scaleMode: ScaleMode, imageAspect: number, mipLevel: number): void
         /** Draws the texture within a rectangle.
@@ -15630,9 +14975,8 @@ Sets material's _Mip property.
          * @param scaleMode How to scale the image when the aspect ratio of it doesn't fit the aspect ratio to be drawn within.
          * @param imageAspect Aspect ratio to use for the source image. If 0 (the default), the aspect ratio from the image is used.
          * @param mipLevel The mip-level to sample. If negative, the texture is sampled normally.
-Sets material's _Mip property.
-         * @param colorWriteMask Specifies which color components of image will get written. Sets material's _ColorMask property.
-         * @param exposure Specifies the exposure for the texture. Sets material's _Exposure property.
+Sets material _Mip property.
+         * @param colorWriteMask Specifies which color components of image will get written.
          */
         static DrawPreviewTexture(position: Rect, image: Texture, mat: Material, scaleMode: ScaleMode, imageAspect: number): void
         /** Draws the texture within a rectangle.
@@ -15642,9 +14986,8 @@ Sets material's _Mip property.
          * @param scaleMode How to scale the image when the aspect ratio of it doesn't fit the aspect ratio to be drawn within.
          * @param imageAspect Aspect ratio to use for the source image. If 0 (the default), the aspect ratio from the image is used.
          * @param mipLevel The mip-level to sample. If negative, the texture is sampled normally.
-Sets material's _Mip property.
-         * @param colorWriteMask Specifies which color components of image will get written. Sets material's _ColorMask property.
-         * @param exposure Specifies the exposure for the texture. Sets material's _Exposure property.
+Sets material _Mip property.
+         * @param colorWriteMask Specifies which color components of image will get written.
          */
         static DrawPreviewTexture(position: Rect, image: Texture, mat: Material, scaleMode: ScaleMode): void
         /** Draws the texture within a rectangle.
@@ -15654,9 +14997,8 @@ Sets material's _Mip property.
          * @param scaleMode How to scale the image when the aspect ratio of it doesn't fit the aspect ratio to be drawn within.
          * @param imageAspect Aspect ratio to use for the source image. If 0 (the default), the aspect ratio from the image is used.
          * @param mipLevel The mip-level to sample. If negative, the texture is sampled normally.
-Sets material's _Mip property.
-         * @param colorWriteMask Specifies which color components of image will get written. Sets material's _ColorMask property.
-         * @param exposure Specifies the exposure for the texture. Sets material's _Exposure property.
+Sets material _Mip property.
+         * @param colorWriteMask Specifies which color components of image will get written.
          */
         static DrawPreviewTexture(position: Rect, image: Texture, mat: Material): void
         /** Draws the texture within a rectangle.
@@ -15666,9 +15008,8 @@ Sets material's _Mip property.
          * @param scaleMode How to scale the image when the aspect ratio of it doesn't fit the aspect ratio to be drawn within.
          * @param imageAspect Aspect ratio to use for the source image. If 0 (the default), the aspect ratio from the image is used.
          * @param mipLevel The mip-level to sample. If negative, the texture is sampled normally.
-Sets material's _Mip property.
-         * @param colorWriteMask Specifies which color components of image will get written. Sets material's _ColorMask property.
-         * @param exposure Specifies the exposure for the texture. Sets material's _Exposure property.
+Sets material _Mip property.
+         * @param colorWriteMask Specifies which color components of image will get written.
          */
         static DrawPreviewTexture(position: Rect, image: Texture): void
         /** Makes a label field. (Useful for showing read-only info.)
@@ -16662,16 +16003,6 @@ Sets material's _Mip property.
          * @param label Optional label to display in front of the field.
          * @param gradient The gradient to edit.
          * @param hdr Display the HDR Gradient Editor.
-         * @param colorSpace Display the gradient and Gradient Editor in this color space.
-         * @returns The gradient edited by the user. 
-         */
-        static GradientField(position: Rect, label: GUIContent, gradient: Gradient, hdr: boolean, colorSpace: any): Gradient
-        /** Makes a field for editing a Gradient.
-         * @param position Rectangle on the screen to use for the field.
-         * @param label Optional label to display in front of the field.
-         * @param gradient The gradient to edit.
-         * @param hdr Display the HDR Gradient Editor.
-         * @param colorSpace Display the gradient and Gradient Editor in this color space.
          * @returns The gradient edited by the user. 
          */
         static GradientField(position: Rect, label: GUIContent, gradient: Gradient, hdr: boolean): Gradient
@@ -16680,7 +16011,6 @@ Sets material's _Mip property.
          * @param label Optional label to display in front of the field.
          * @param gradient The gradient to edit.
          * @param hdr Display the HDR Gradient Editor.
-         * @param colorSpace Display the gradient and Gradient Editor in this color space.
          * @returns The gradient edited by the user. 
          */
         static GradientField(position: Rect, label: string, gradient: Gradient): Gradient
@@ -16689,7 +16019,6 @@ Sets material's _Mip property.
          * @param label Optional label to display in front of the field.
          * @param gradient The gradient to edit.
          * @param hdr Display the HDR Gradient Editor.
-         * @param colorSpace Display the gradient and Gradient Editor in this color space.
          * @returns The gradient edited by the user. 
          */
         static GradientField(position: Rect, label: GUIContent, gradient: Gradient): Gradient
@@ -16698,7 +16027,6 @@ Sets material's _Mip property.
          * @param label Optional label to display in front of the field.
          * @param gradient The gradient to edit.
          * @param hdr Display the HDR Gradient Editor.
-         * @param colorSpace Display the gradient and Gradient Editor in this color space.
          * @returns The gradient edited by the user. 
          */
         static GradientField(position: Rect, gradient: Gradient): Gradient
@@ -16742,10 +16070,6 @@ declare module "UnityEditor" {
         /** Send an input event into the game.
          */
         static QueueGameViewInputEvent(evt: Event): void
-        static GetMainWindowPosition(): Rect
-        /** Sets position of Unity Editor's main window.
-         */
-        static SetMainWindowPosition(position: Rect): void
         /** Converts a position from point to pixel space.
          * @param rect A GUI position in point space.
          * @returns The same position in pixel space. 
@@ -18566,7 +17890,6 @@ GUILayout.MaxHeight, GUILayout.ExpandWidth, GUILayout.ExpandHeight.
          * @returns The enum flags value modified by the user. This is a selection BitMask where each bit represents an Enum value index. (Note this returned value is not itself an Enum). 
          */
         static EnumFlagsField(enumValue: Enum, ...options: GUILayoutOption[]): Enum
-        static ObjectField(label: string, obj: Object1, objType: any, targetBeingEdited: Object1, ...options: GUILayoutOption[]): Object1
         /** Make a field to receive any object type.
          * @param label Optional label in front of the field.
          * @param obj The object the field shows.
@@ -18578,7 +17901,6 @@ GUILayout.MaxHeight, GUILayout.ExpandWidth, GUILayout.ExpandHeight.
          * @returns The object that has been set by the user. 
          */
         static ObjectField(label: string, obj: Object1, objType: any, allowSceneObjects: boolean, ...options: GUILayoutOption[]): Object1
-        static ObjectField(label: GUIContent, obj: Object1, objType: any, targetBeingEdited: Object1, ...options: GUILayoutOption[]): Object1
         /** Make a field to receive any object type.
          * @param label Optional label in front of the field.
          * @param obj The object the field shows.
@@ -18590,7 +17912,6 @@ GUILayout.MaxHeight, GUILayout.ExpandWidth, GUILayout.ExpandHeight.
          * @returns The object that has been set by the user. 
          */
         static ObjectField(label: GUIContent, obj: Object1, objType: any, allowSceneObjects: boolean, ...options: GUILayoutOption[]): Object1
-        static ObjectField(obj: Object1, objType: any, targetBeingEdited: Object1, ...options: GUILayoutOption[]): Object1
         /** Make a field to receive any object type.
          * @param label Optional label in front of the field.
          * @param obj The object the field shows.
@@ -19476,7 +18797,6 @@ declare module "UnityEditor" {
         Show(): void
         ShowAuxWindow(): void
         ShowModal(): void
-        SaveChanges(): void
         Close(): void
         Repaint(): void
         /** Sends an Event to a window.
@@ -19505,33 +18825,18 @@ declare module "UnityEditor" {
         /** Checks whether MouseEnterWindow and MouseLeaveWindow events are received in the GUI in this Editor window.
          */
         wantsMouseEnterLeaveWindow: boolean
-        /** Specifies whether a layout pass is performed before all user events (for example, EventType.MouseDown or EventType, KeyDown), or is only performed before repaint events.
-         */
-        wantsLessLayoutEvents: boolean
         /** Does the window automatically repaint whenever the Scene has changed?
          */
         autoRepaintOnSceneChange: boolean
         /** Is this window maximized?
          */
         maximized: boolean
-        /** Returns true if EditorWindow is focused.
-         */
-        readonly hasFocus: boolean
-        /** Returns true if EditorWindow is docked.
-         */
-        readonly docked: boolean
         /** The EditorWindow which currently has keyboard focus. (Read Only)
          */
         static readonly focusedWindow: EditorWindow
         /** The EditorWindow currently under the mouse cursor. (Read Only)
          */
         static readonly mouseOverWindow: EditorWindow
-        /** When set to true in a derived class, the editor will prompt the user to save unsaved changes if the window is about to be closed.
-         */
-        readonly hasUnsavedChanges: boolean
-        /** The message that displays to the user if they are prompted to save
-         */
-        readonly saveChangesMessage: string
         /** The minimum size of this window.
          */
         minSize: Vector2
@@ -22018,6 +21323,7 @@ declare module "UnityEngine" {
         static LoadFromStream(stream: any, crc: number, managedReadBufferSize: number): AssetBundle
         static LoadFromStream(stream: any, crc: number): AssetBundle
         static LoadFromStream(stream: any): AssetBundle
+        static SetAssetBundleDecryptKey(password: string): void
         /** Asynchronously recompress a downloaded/stored AssetBundle from one BuildCompression to another.
          * @param inputPath Path to the AssetBundle to recompress.
          * @param outputPath Path to the recompressed AssetBundle to be generated. Can be the same as inputPath.
@@ -22550,12 +21856,6 @@ declare module "UnityEngine" {
          * @param subEmitterIndex Index of the sub emitter to trigger.
          */
         TriggerSubEmitter(subEmitterIndex: number): void
-        AllocateAxisOfRotationAttribute(): void
-        AllocateMeshIndexAttribute(): void
-        /** Ensures that the ParticleSystemJobs.ParticleSystemJobData.customData1|customData1 and ParticleSystemJobs.ParticleSystemJobData.customData1|customData2 particle attribute arrays are allocated.
-         * @param stream The custom data stream to allocate.
-         */
-        AllocateCustomDataAttribute(stream: any): void
         /** Safe array size for use with ParticleSystem.GetCollisionEvents.
          */
         GetSafeCollisionEventSize(): number
@@ -22566,7 +21866,6 @@ declare module "UnityEngine" {
          * @returns Number of particles with this trigger event type. 
          */
         GetSafeTriggerParticlesSize(type: any): number
-        GetTriggerParticles(type: any, particles: any, colliderData: jsb.Out<any>): number
         GetTriggerParticles(type: any, particles: any): number
         SetTriggerParticles(type: any, particles: any, offset: number, count: number): void
         SetTriggerParticles(type: any, particles: any): void
@@ -22621,9 +21920,6 @@ declare module "UnityEngine" {
         /** Script interface for the InheritVelocityModule of a Particle System.
          */
         readonly inheritVelocity: any
-        /** Script interface for the Particle System Lifetime By Emitter Speed module.
-         */
-        readonly lifetimeByEmitterSpeed: any
         /** Script interface for the ForceOverLifetimeModule of a Particle System.
          */
         readonly forceOverLifetime: any
@@ -22732,7 +22028,7 @@ declare module "UnityEngine" {
         /** Specifies how to sort particles within a system.
          */
         sortMode: any
-        /** How much are the particles stretched in their direction of motion, defined as the length of the particle compared to its width.
+        /** How much are the particles stretched in their direction of motion.
          */
         lengthScale: number
         /** Specifies how much particles stretch depending on their velocity.
@@ -22774,12 +22070,6 @@ declare module "UnityEngine" {
         /** Allow billboard particles to roll around their z-axis.
          */
         allowRoll: boolean
-        /** Enables freeform stretching behavior.
-         */
-        freeformStretching: boolean
-        /** Rotate the particles based on the direction they are stretched in. This is added on top of other particle rotation.
-         */
-        rotateWithStretchDirection: boolean
         /** The Mesh that the particle uses instead of a billboarded Texture.
          */
         mesh: any
@@ -23410,7 +22700,7 @@ declare module "System" {
 }
 declare module "System" {
     import * as jsb from "jsb";
-    import { IEnumerable, List } from "System.Collections.Generic";
+    import { IEnumerable } from "System.Collections.Generic";
     class String extends Object {
         constructor(value: Array<string>, startIndex: number, length: number)
         constructor(c: string, count: number)
@@ -23491,9 +22781,6 @@ declare module "System" {
         Remove(startIndex: number): string
         GetTypeCode(): any
         GetEnumerator(): any
-        ArrayListFromJson(): any
-        HashtableFromJson(): any
-        ToIntArray(): Array<number>
         static Join(separator: string, value: Array<string>, startIndex: number, count: number): string
         static Join(separator: string, values: IEnumerable<string>): string
         static Join(separator: string, ...value: string[]): string
@@ -23883,7 +23170,7 @@ declare module "UnityEngine.UI" {
         disabledColor: Color
         colorMultiplier: number
         fadeDuration: number
-        static defaultColorBlock: ColorBlock
+        static readonly defaultColorBlock: ColorBlock
     }
 }
 declare module "UnityEngine.UI" {
@@ -23996,7 +23283,7 @@ declare module "UnityEngine.UI" {
 }
 declare module "UnityEngine.UI" {
     import { UIBehaviour } from "UnityEngine.EventSystems";
-    import { Material, Color, Vector4, RectTransform, Behaviour, Component, Texture, Vector2, Camera, Rect } from "UnityEngine";
+    import { Material, Color, RectTransform, Behaviour, Component, Texture, Vector2, Camera, Rect } from "UnityEngine";
     abstract class Graphic extends UIBehaviour implements ICanvasElement {
         SetAllDirty(): void
         SetLayoutDirty(): void
@@ -24022,7 +23309,6 @@ declare module "UnityEngine.UI" {
         static readonly defaultGraphicMaterial: Material
         color: Color
         raycastTarget: boolean
-        raycastPadding: Vector4
         readonly depth: number
         readonly rectTransform: RectTransform
         readonly canvas: any
@@ -24035,7 +23321,7 @@ declare module "UnityEngine.UI" {
 }
 declare module "UnityEngine.UI" {
     import { BaseRaycaster, PointerEventData, RaycastResult } from "UnityEngine.EventSystems";
-    import { LayerMask, Camera } from "UnityEngine";
+    import { Camera } from "UnityEngine";
     import { List } from "System.Collections.Generic";
     import { Object } from "System";
     class GraphicRaycaster extends BaseRaycaster {
@@ -24045,7 +23331,6 @@ declare module "UnityEngine.UI" {
         readonly renderOrderPriority: number
         ignoreReversedGraphics: boolean
         blockingObjects: GraphicRaycaster.BlockingObjects
-        blockingMask: LayerMask
         readonly eventCamera: Camera
     }
 }
@@ -24068,11 +23353,8 @@ declare module "UnityEngine.UI" {
     import { IList } from "System.Collections.Generic";
     class GraphicRegistry extends Object {
         static RegisterGraphicForCanvas(c: any, graphic: Graphic): void
-        static RegisterRaycastGraphicForCanvas(c: any, graphic: Graphic): void
         static UnregisterGraphicForCanvas(c: any, graphic: Graphic): void
-        static UnregisterRaycastGraphicForCanvas(c: any, graphic: Graphic): void
         static GetGraphicsForCanvas(canvas: any): any
-        static GetRaycastableGraphicsForCanvas(canvas: any): any
         protected constructor()
         static readonly instance: GraphicRegistry
     }
@@ -24204,8 +23486,6 @@ declare module "UnityEngine.UI" {
     class AspectRatioFitter extends UIBehaviour implements ILayoutController {
         SetLayoutHorizontal(): void
         SetLayoutVertical(): void
-        IsComponentValidOnObject(): boolean
-        IsAspectModeValid(): boolean
         /*protected*/ constructor()
         aspectMode: AspectRatioFitter.AspectMode
         aspectRatio: number
@@ -24292,7 +23572,6 @@ declare module "UnityEngine.UI" {
         childControlHeight: boolean
         childScaleWidth: boolean
         childScaleHeight: boolean
-        reverseArrangement: boolean
     }
 }
 declare module "UnityEngine.UI" {
@@ -24419,7 +23698,6 @@ declare module "UnityEngine.UI" {
         constructor()
         Equals(other: Navigation): boolean
         mode: Navigation.Mode
-        wrapAround: boolean
         selectOnUp: Selectable
         selectOnDown: Selectable
         selectOnLeft: Selectable
@@ -24643,7 +23921,6 @@ declare module "UnityEngine.UI" {
         EnsureValidState(): void
         AnyTogglesOn(): boolean
         ActiveToggles(): any
-        GetFirstActiveToggle(): Toggle
         SetAllTogglesOff(sendCallback: boolean): void
         /*protected*/ constructor()
         allowSwitchOff: boolean
@@ -24652,7 +23929,7 @@ declare module "UnityEngine.UI" {
 declare module "UnityEngine.UI" {
     import * as jsb from "jsb";
     import { Object, Array, ValueType } from "System";
-    import { Object as Object1, Vector3, Color32, Vector4 } from "UnityEngine";
+    import { Object as Object1, Vector3, Color32, Vector2, Vector4 } from "UnityEngine";
     import { List } from "System.Collections.Generic";
     class VertexHelper extends Object {
         constructor(m: any)
@@ -24662,9 +23939,9 @@ declare module "UnityEngine.UI" {
         PopulateUIVertex(vertex: jsb.Ref<any>, i: number): void
         SetUIVertex(vertex: any, i: number): void
         FillMesh(mesh: any): void
-        AddVert(position: Vector3, color: Color32, uv0: Vector4, uv1: Vector4, uv2: Vector4, uv3: Vector4, normal: Vector3, tangent: Vector4): void
-        AddVert(position: Vector3, color: Color32, uv0: Vector4, uv1: Vector4, normal: Vector3, tangent: Vector4): void
-        AddVert(position: Vector3, color: Color32, uv0: Vector4): void
+        AddVert(position: Vector3, color: Color32, uv0: Vector2, uv1: Vector2, uv2: Vector2, uv3: Vector2, normal: Vector3, tangent: Vector4): void
+        AddVert(position: Vector3, color: Color32, uv0: Vector2, uv1: Vector2, normal: Vector3, tangent: Vector4): void
+        AddVert(position: Vector3, color: Color32, uv0: Vector2): void
         AddVert(v: any): void
         AddTriangle(idx0: number, idx1: number, idx2: number): void
         AddUIVertexQuad(verts: Array<any>): void
@@ -24744,7 +24021,6 @@ declare module "UnityEngine.EventSystems" {
         readonly lastPress: GameObject
         rawPointerPress: GameObject
         pointerDrag: GameObject
-        pointerClick: GameObject
         pointerCurrentRaycast: RaycastResult
         pointerPressRaycast: RaycastResult
         eligibleForClick: boolean
@@ -25121,12 +24397,6 @@ declare module "UnityEngine.Events" {
          * @param argumentTypes Argument types for the function.
          */
         static GetValidMethodInfo(obj: Object, functionName: string, argumentTypes: Array<any>): any
-        /** Given an object type, function name, and a list of argument types; find the method that matches.
-         * @param objectType Object type to search for the method.
-         * @param functionName Function name to search for.
-         * @param argumentTypes Argument types for the function.
-         */
-        static GetValidMethodInfo(objectType: any, functionName: string, argumentTypes: Array<any>): any
     }
 }
 declare module "UnityEngine.UI" {
@@ -25188,8 +24458,7 @@ declare module "UnityEngine.UI" {
     }
 }
 declare module "UnityEngine.Events" {
-    class UnityEvent_Int32 extends UnityEventBase implements UnityEvent1<number> {
-        constructor()
+    abstract class UnityEvent_Int32 extends UnityEventBase implements UnityEvent1<number> {
         AddListener(call: (id: number) => void): void
         RemoveListener(call: (id: number) => void): void
         Invoke(arg0: number): void
@@ -25197,7 +24466,7 @@ declare module "UnityEngine.Events" {
 }
 declare module "UnityEngine.Events" {
     import { Object } from "System";
-    class UnityEvent1<T0> extends UnityEventBase {
+    abstract class UnityEvent1<T0> extends UnityEventBase {
         AddListener(call: any): void
         RemoveListener(call: any): void
         Invoke(arg0: T0): void
@@ -25347,8 +24616,7 @@ declare module "UnityEngine.UI" {
     }
 }
 declare module "UnityEngine.Events" {
-    class UnityEvent_String extends UnityEventBase implements UnityEvent1<string> {
-        constructor()
+    abstract class UnityEvent_String extends UnityEventBase implements UnityEvent1<string> {
         AddListener(call: (obj: string) => void): void
         RemoveListener(call: (obj: string) => void): void
         Invoke(arg0: string): void
@@ -25455,8 +24723,7 @@ declare module "UnityEngine.UI" {
     }
 }
 declare module "UnityEngine.Events" {
-    class UnityEvent_Boolean extends UnityEventBase implements UnityEvent1<boolean> {
-        constructor()
+    abstract class UnityEvent_Boolean extends UnityEventBase implements UnityEvent1<boolean> {
         AddListener(call: (obj: boolean) => void): void
         RemoveListener(call: (obj: boolean) => void): void
         Invoke(arg0: boolean): void
@@ -25505,8 +24772,7 @@ declare module "UnityEngine.UI" {
 }
 declare module "UnityEngine.Events" {
     import { Vector2 } from "UnityEngine";
-    class UnityEvent_Vector2 extends UnityEventBase implements UnityEvent1<Vector2> {
-        constructor()
+    abstract class UnityEvent_Vector2 extends UnityEventBase implements UnityEvent1<Vector2> {
         AddListener(call: (arg0: Vector2) => void): void
         RemoveListener(call: (arg0: Vector2) => void): void
         Invoke(arg0: Vector2): void
@@ -25532,8 +24798,7 @@ declare module "UnityEngine.UI" {
     }
 }
 declare module "UnityEngine.Events" {
-    class UnityEvent_Single extends UnityEventBase implements UnityEvent1<number> {
-        constructor()
+    abstract class UnityEvent_Single extends UnityEventBase implements UnityEvent1<number> {
         AddListener(call: (arg0: number) => void): void
         RemoveListener(call: (arg0: number) => void): void
         Invoke(arg0: number): void
@@ -25617,8 +24882,7 @@ declare module "UnityEngine.EventSystems" {
 }
 declare module "UnityEngine.Events" {
     import { BaseEventData } from "UnityEngine.EventSystems";
-    class UnityEvent_BaseEventData extends UnityEventBase implements UnityEvent1<BaseEventData> {
-        constructor()
+    abstract class UnityEvent_BaseEventData extends UnityEventBase implements UnityEvent1<BaseEventData> {
         AddListener(call: (arg0: BaseEventData) => void): void
         RemoveListener(call: (arg0: BaseEventData) => void): void
         Invoke(arg0: BaseEventData): void

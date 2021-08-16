@@ -1601,7 +1601,7 @@ namespace QuickJS.Binding
                         continue;
                     }
 
-                    TryExportTypeMembers(type);
+                    TryExportExtensionMethods(type);
                     Info("skip: {0}", type.FullName);
                 }
                 _logWriter?.DecTabLevel();
@@ -1612,8 +1612,10 @@ namespace QuickJS.Binding
             }
         }
 
-        // 此类本身不导出, 但可能包含扩展方法等
-        private void TryExportTypeMembers(Type type)
+        /// <summary>
+        /// try to export extension methods contained in specified type (the type itself will not be exported)
+        /// </summary>
+        public void TryExportExtensionMethods(Type type)
         {
             var methods = type.GetMethods(QuickJS.Binding.DynamicType.PublicFlags);
             var methodCount = methods.Length;
@@ -1629,7 +1631,9 @@ namespace QuickJS.Binding
             }
         }
 
-        // 清理多余文件
+        /// <summary>
+        /// remove unused files in 'Generated' directory
+        /// </summary>
         public void Cleanup()
         {
             Info("cleanup");

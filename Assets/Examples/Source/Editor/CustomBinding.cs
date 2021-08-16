@@ -29,6 +29,9 @@ namespace Example.Editor
             // bindingManager.AddExportedType(typeof(System.Net.IPAddress));
             // bindingManager.AddExportedType(typeof(System.Net.IPEndPoint));
 
+            // bindingManager.TryExportExtensionMethods(typeof(ExtensionTest));  // expose all extension methods
+            bindingManager.AddExtensionMethod<Transform>(ExtensionTest.ResetAll); // expose single extension method
+
             bindingManager.AddExportedType(typeof(ParticleSystem));
             bindingManager.AddExportedType(typeof(ParticleSystemRenderer))
                 .SetMemberBlocked("supportsMeshInstancing")

@@ -21,21 +21,24 @@ namespace QuickJS.Binding
     public class DynamicMethod : DynamicMethodBase
     {
         private DynamicType _type;
+        private bool _isExtension;
         private MethodInfo _methodInfo;
 
         private ParameterInfo[] _inputParameters;
         private ParameterInfo[] _methodParameters;
         private bool _isVarargMethod;
 
-        public DynamicMethod(DynamicType type, MethodInfo methodInfo)
+        public DynamicMethod(DynamicType type, MethodInfo methodInfo, bool asExtensionAnyway)
         {
             _type = type;
+            _isExtension = asExtensionAnyway;
             _methodInfo = methodInfo;
             _methodParameters = _methodInfo.GetParameters();
             _isVarargMethod = Values.IsVarargParameter(_methodParameters);
 
+            var paramStartIndex = _isExtension ? 1 : 0;
             var argIndex = 0;
-            for (var i = 0; i < _methodParameters.Length; i++)
+            for (var i = paramStartIndex; i < _methodParameters.Length; i++)
             {
                 var p = _methodParameters[i];
                 if (!Values.IsContextualType(p.ParameterType))
@@ -45,7 +48,7 @@ namespace QuickJS.Binding
             }
             _inputParameters = new ParameterInfo[argIndex];
             argIndex = 0;
-            for (var i = 0; i < _methodParameters.Length; i++)
+            for (var i = paramStartIndex; i < _methodParameters.Length; i++)
             {
                 var p = _methodParameters[i];
                 if (!Values.IsContextualType(p.ParameterType))
@@ -89,7 +92,7 @@ namespace QuickJS.Binding
                 return JSApi.JS_ThrowInternalError(ctx, "method is inaccessible due to its protection level");
             }
             object self = null;
-            if (!_methodInfo.IsStatic)
+            if (_isExtension || !_methodInfo.IsStatic)
             {
                 if (!Values.js_get_var(ctx, this_obj, _type.type, out self) || !_type.CheckThis(self))
                 {
@@ -97,34 +100,42 @@ namespace QuickJS.Binding
                 }
             }
             var nArgs = _methodParameters.Length;
+            var requiredArgNum = nArgs;
             var args = new object[nArgs];
-            var vIndex = 0;
+            var argvIndex = 0;
+            var paramIndex = 0;
             var bBackValues = false;
-            for (var i = 0; i < nArgs; i++)
+
+            if (_isExtension)
             {
-                var parameterInfo = _methodParameters[i];
+                args[paramIndex++] = self;
+                --requiredArgNum;
+            }
+            for (; paramIndex < nArgs; paramIndex++)
+            {
+                var parameterInfo = _methodParameters[paramIndex];
                 var pType = parameterInfo.ParameterType;
                 if (Values.IsContextualType(pType))
                 {
-                    args[i] = Values.js_get_context(ctx, pType);
+                    args[paramIndex] = Values.js_get_context(ctx, pType);
                 }
                 else
                 {
-                    if (_isVarargMethod && i == nArgs - 1)
+                    if (_isVarargMethod && paramIndex == nArgs - 1)
                     {
-                        var varArgLength = argc - nArgs + 1;
+                        var varArgLength = argc - requiredArgNum + 1;
                         var varArgType = pType.GetElementType();
                         var varArgArray = Array.CreateInstance(varArgType, varArgLength);
                         for (var varArgIndex = 0; varArgIndex < varArgLength; varArgIndex++)
                         {
                             object varArgElement = null;
-                            if (!Values.js_get_var(ctx, argv[vIndex++], varArgType, out varArgElement))
+                            if (!Values.js_get_var(ctx, argv[argvIndex++], varArgType, out varArgElement))
                             {
                                 return JSApi.JS_ThrowInternalError(ctx, $"failed to cast val vararg #{varArgIndex}");
                             }
                             varArgArray.SetValue(varArgElement, varArgIndex);
                         }
-                        args[i] = varArgArray;
+                        args[paramIndex] = varArgArray;
                     }
                     else
                     {
@@ -133,29 +144,29 @@ namespace QuickJS.Binding
                             bBackValues = true;
                             if (!parameterInfo.IsOut)
                             {
-                                if (!Values.js_get_var(ctx, argv[vIndex], pType.GetElementType(), out args[i]))
+                                if (!Values.js_get_var(ctx, argv[argvIndex], pType.GetElementType(), out args[paramIndex]))
                                 {
-                                    return JSApi.JS_ThrowInternalError(ctx, $"failed to cast val byref #{vIndex}");
+                                    return JSApi.JS_ThrowInternalError(ctx, $"failed to cast val byref #{argvIndex}");
                                 }
                             }
                         }
                         else
                         {
-                            if (!Values.js_get_var(ctx, argv[vIndex], pType, out args[i]))
+                            if (!Values.js_get_var(ctx, argv[argvIndex], pType, out args[paramIndex]))
                             {
-                                return JSApi.JS_ThrowInternalError(ctx, $"failed to cast val #{vIndex}");
+                                return JSApi.JS_ThrowInternalError(ctx, $"failed to cast val #{argvIndex}");
                             }
                         }
-                        vIndex++;
+                        argvIndex++;
                     }
                 }
             }
 
-            var ret = _methodInfo.Invoke(self, args);
+            var ret = _methodInfo.Invoke(_isExtension ? null : self, args);
 
             if (bBackValues)
             {
-                vIndex = 0;
+                argvIndex = 0;
                 for (var i = 0; i < nArgs; i++)
                 {
                     var parameterInfo = _methodParameters[i];
@@ -171,10 +182,10 @@ namespace QuickJS.Binding
                             {
                                 var backValue = Values.js_push_var(ctx, args[i]);
                                 var valueAtom = ScriptEngine.GetContext(ctx).GetAtom("value");
-                                JSApi.JS_SetProperty(ctx, argv[vIndex], valueAtom, backValue);
+                                JSApi.JS_SetProperty(ctx, argv[argvIndex], valueAtom, backValue);
                             }
 
-                            vIndex++;
+                            argvIndex++;
                         }
                     }
                 }
