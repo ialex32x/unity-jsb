@@ -1,18 +1,14 @@
 using System;
 using System.Collections.Generic;
-using System.Net;
-using System.Net.Sockets;
-using System.Threading;
-using System.Text;
+using System.Runtime.InteropServices;
 
 namespace QuickJS.Extra.Sqlite
 {
     using Native;
 
-    public class SqliteConnection
+    public unsafe class SqliteConnection
     {
         private sqlite3 _db;
-        // private sqlite3_vfs _vfs;
 
         public void Open()
         {
