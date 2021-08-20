@@ -76,7 +76,8 @@ namespace QuickJS.Binding
 
             if (logger != null)
             {
-                logger.Write(Utils.LogLevel.Error, "failed to get method: UnityHelper.InvokeReflectBinding");
+                logger.Write(Utils.LogLevel.Error, "failed to get method: UnityHelper.InvokeReflectBinding, fallback to StaticBind mode");
+                StaticBind(runtime);
             }
         }
     }
