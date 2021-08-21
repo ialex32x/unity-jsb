@@ -90,7 +90,7 @@ namespace QuickJS
             _runtime = runtime;
             _runtime.OnAfterDestroy += OnWorkerAfterDestroy;
             RegisterGlobalObjects();
-            _runtime.EvalMain(scriptPath);
+            _runtime.ResolveModule(scriptPath);
 
             _thread = new Thread(new ThreadStart(Run));
             _thread.Priority = ThreadPriority.Lowest;

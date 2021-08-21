@@ -761,44 +761,6 @@ namespace QuickJS
             }
         }
 
-        /// <summary>
-        /// load and run the main module
-        /// </summary>
-        public void EvalMain(string fileName)
-        {
-            EvalMain(fileName, typeof(void));
-        }
-
-        public T EvalMain<T>(string fileName)
-        {
-            return (T)EvalMain(fileName, typeof(T));
-        }
-
-        public object EvalMain(string fileName, Type returnType)
-        {
-            if (!string.IsNullOrEmpty(fileName))
-            {
-                var resolvedPath = ResolveFilePath("", fileName);
-                if (resolvedPath != null)
-                {
-                    var source = _fileSystem.ReadAllBytes(resolvedPath);
-                    var fullPath = _fileSystem.GetFullPath(resolvedPath);
-                    return _mainContext.EvalMain(source, resolvedPath, fullPath, returnType);
-                }
-                else
-                {
-                    throw new UnexpectedException(fileName, "can not resolve file path");
-                }
-            }
-
-            throw new UnexpectedException("<invalid file name>", "can not resolve file path");
-        }
-
-        public void EvalEmptyMain()
-        {
-            _mainContext.EvalEmptyMain();
-        }
-
         public bool IsMainThread()
         {
             return _mainThreadId == Thread.CurrentThread.ManagedThreadId;

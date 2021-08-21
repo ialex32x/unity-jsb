@@ -27,6 +27,7 @@ namespace QuickJS
 
         private JSValue _moduleCache; // commonjs module cache
         private JSValue _require; // require function object 
+        private bool _mainModuleLoaded;
         private bool _isValid;
         private Regex _stRegex;
 
@@ -513,6 +514,12 @@ namespace QuickJS
         // this method will consume the module_obj refcount 
         public unsafe JSValue LoadModuleFromSource(byte[] source, string resolved_id, JSValue module_obj)
         {
+            object unused;
+            return LoadModuleFromSource(source, resolved_id, module_obj, null, out unused);
+        }
+
+        public unsafe JSValue LoadModuleFromSource(byte[] source, string resolved_id, JSValue module_obj, Type expectedReturnType, out object expectedReturnValue)
+        {
             var context = this;
             var ctx = _ctx;
             var dirname = PathUtils.GetDirectoryName(resolved_id);
@@ -520,11 +527,23 @@ namespace QuickJS
             var filename_obj = JSApi.JS_GetProperty(ctx, module_obj, context.GetAtom("filename"));
             var module_id_atom = context.GetAtom(resolved_id);
             var dirname_atom = context.GetAtom(dirname);
-            var require_obj = JSApi.JSB_NewCFunction(ctx, ScriptRuntime.module_require, context.GetAtom("require"), 1, JSCFunctionEnum.JS_CFUNC_generic, 0);
-            var main_mod_obj = context._dup_commonjs_main_module();
+            JSValue require_obj;
+            JSValue main_mod_obj;
+            if (_mainModuleLoaded)
+            {
+                require_obj = JSApi.JSB_NewCFunction(ctx, ScriptRuntime.module_require, context.GetAtom("require"), 1, JSCFunctionEnum.JS_CFUNC_generic, 0);
+                main_mod_obj = context._dup_commonjs_main_module();
+            }
+            else
+            {
+                _mainModuleLoaded = true;
+                require_obj = JSApi.JS_DupValue(_ctx, _require);
+                main_mod_obj = JSApi.JS_DupValue(_ctx, module_obj);
+            }
             var dirname_obj = JSApi.JS_AtomToString(ctx, dirname_atom);
             var exports_obj = JSApi.JS_GetProperty(ctx, module_obj, context.GetAtom("exports"));
 
+            expectedReturnValue = null;
             JSApi.JS_SetProperty(ctx, require_obj, context.GetAtom("moduleId"), JSApi.JS_AtomToString(ctx, module_id_atom));
             JSApi.JS_SetProperty(ctx, require_obj, context.GetAtom("main"), main_mod_obj);
 
@@ -555,7 +574,16 @@ namespace QuickJS
                             JSApi.JS_FreeValue(ctx, require_argv);
                             return rval;
                         }
+
                         // success
+                        if (expectedReturnType != null)
+                        {
+                            Values.js_get_var(_ctx, rval, expectedReturnType, out expectedReturnValue);
+                        }
+                        else
+                        {
+                            expectedReturnValue = null;
+                        }
                         JSApi.JS_FreeValue(ctx, rval);
                     }
                     else
@@ -589,6 +617,16 @@ namespace QuickJS
                             JSApi.JS_FreeValue(ctx, func_val);
                             JSApi.JS_FreeValue(ctx, require_argv);
                             return rval;
+                        }
+
+                        // success
+                        if (expectedReturnType != null)
+                        {
+                            Values.js_get_var(_ctx, rval, expectedReturnType, out expectedReturnValue);
+                        }
+                        else
+                        {
+                            expectedReturnValue = null;
                         }
                         JSApi.JS_FreeValue(ctx, rval);
                     }
@@ -659,173 +697,6 @@ namespace QuickJS
             return ns_jsb;
         }
 
-        public bool IsMainEvaluated()
-        {
-            var main_mod = _dup_commonjs_main_module();
-            var main_prop = JSApi.JS_GetProperty(_ctx, main_mod, GetAtom("main"));
-            var retVal = main_prop.IsObject();
-
-            JSApi.JS_FreeValue(_ctx, main_prop);
-            JSApi.JS_FreeValue(_ctx, main_mod);
-            return retVal;
-        }
-
-        public unsafe void EvalMain(byte[] source, string fileName)
-        {
-            EvalMain(source, fileName, fileName, typeof(void));
-        }
-
-        public unsafe T EvalMain<T>(byte[] source, string fileName)
-        {
-            return (T)EvalMain(source, fileName, fileName, typeof(T));
-        }
-
-        public unsafe void EvalMain(byte[] source, string fileName, string fullPath)
-        {
-            EvalMain(source, fileName, fullPath, typeof(void));
-        }
-
-        public unsafe T EvalMain<T>(byte[] source, string fileName, string fullPath)
-        {
-            return (T)EvalMain(source, fileName, fullPath, typeof(T));
-        }
-
-        public unsafe void EvalEmptyMain()
-        {
-            if (IsMainEvaluated())
-            {
-                return;
-            }
-
-            var module_id = "jsb://main";
-            var fullPath = module_id;
-
-            var exports_obj = JSApi.JS_NewObject(_ctx);
-            var module_obj = _new_commonjs_script_module(null, module_id, fullPath, exports_obj, false);
-            var require_obj = JSApi.JS_DupValue(_ctx, _require);
-            var module_id_atom = GetAtom(module_id);
-            var module_id_obj = JSApi.JS_AtomToString(_ctx, module_id_atom);
-
-            JSApi.JS_SetProperty(_ctx, require_obj, GetAtom("moduleId"), JSApi.JS_DupValue(_ctx, module_id_obj));
-            JSApi.JS_SetProperty(_ctx, require_obj, GetAtom("main"), JSApi.JS_DupValue(_ctx, module_obj));
-            JSApi.JS_SetProperty(_ctx, module_obj, GetAtom("loaded"), JSApi.JS_NewBool(_ctx, true));
-
-            JSApi.JS_FreeValue(_ctx, exports_obj);
-            JSApi.JS_FreeValue(_ctx, module_obj);
-            JSApi.JS_FreeValue(_ctx, require_obj);
-            JSApi.JS_FreeValue(_ctx, module_id_obj);
-        }
-
-        //TODO: optimize into a unified module loading process
-        public unsafe object EvalMain(byte[] source, string module_id, string fullPath, Type expectedReturnType)
-        {
-            if (IsMainEvaluated())
-            {
-                //TODO: fix it. the editor main script will override the normal main script.
-            }
-            
-            var tagValue = ScriptRuntime.TryReadByteCodeTagValue(source);
-            if (tagValue == ScriptRuntime.BYTECODE_ES6_MODULE_TAG)
-            {
-                throw new Exception("es6 module bytecode as main is unsupported");
-            }
-
-            object csValue = null;
-            var dirname = PathUtils.GetDirectoryName(module_id);
-            var filename_bytes = TextUtils.GetNullTerminatedBytes(module_id);
-            var module_id_atom = GetAtom(module_id);
-            var dirname_atom = GetAtom(dirname);
-            var full_path_atom = GetAtom(fullPath);
-
-            var exports_obj = JSApi.JS_NewObject(_ctx);
-            var require_obj = JSApi.JS_DupValue(_ctx, _require);
-            var module_obj = _new_commonjs_script_module(null, module_id, fullPath, exports_obj, false);
-            var module_id_obj = JSApi.JS_AtomToString(_ctx, module_id_atom);
-            var filename_obj = JSApi.JS_AtomToString(_ctx, full_path_atom);
-            var dirname_obj = JSApi.JS_AtomToString(_ctx, dirname_atom);
-            var require_argv = new JSValue[5] { exports_obj, require_obj, module_obj, filename_obj, dirname_obj };
-            JSApi.JS_SetProperty(_ctx, require_obj, GetAtom("moduleId"), JSApi.JS_DupValue(_ctx, module_id_obj));
-            JSApi.JS_SetProperty(_ctx, require_obj, GetAtom("main"), JSApi.JS_DupValue(_ctx, module_obj));
-            JSApi.JS_FreeValue(_ctx, module_id_obj);
-
-            if (tagValue == ScriptRuntime.BYTECODE_COMMONJS_MODULE_TAG)
-            {
-                // bytecode
-                fixed (byte* intput_ptr = source)
-                {
-                    var bytecodeFunc = JSApi.JS_ReadObject(_ctx, intput_ptr + sizeof(uint), source.Length - sizeof(uint), JSApi.JS_READ_OBJ_BYTECODE);
-
-                    if (bytecodeFunc.tag == JSApi.JS_TAG_FUNCTION_BYTECODE)
-                    {
-                        var func_val = JSApi.JS_EvalFunction(_ctx, bytecodeFunc); // it's CallFree (bytecodeFunc)
-                        if (JSApi.JS_IsFunction(_ctx, func_val) != 1)
-                        {
-                            JSApi.JS_FreeValue(_ctx, func_val);
-                            FreeValues(require_argv);
-                            throw new Exception("failed to eval bytecode module");
-                        }
-
-                        var rval = JSApi.JS_Call(_ctx, func_val, JSApi.JS_UNDEFINED);
-                        JSApi.JS_FreeValue(_ctx, func_val);
-                        if (rval.IsException())
-                        {
-                            _ctx.print_exception();
-                            JSApi.JS_FreeValue(_ctx, rval);
-                            FreeValues(require_argv);
-                            throw new Exception("failed to eval bytecode module");
-                        }
-
-                        // success
-                        Values.js_get_var(_ctx, rval, expectedReturnType, out csValue);
-                        JSApi.JS_FreeValue(_ctx, rval);
-                        JSApi.JS_SetProperty(_ctx, module_obj, GetAtom("loaded"), JSApi.JS_NewBool(_ctx, true));
-                        FreeValues(require_argv);
-                        return csValue;
-                    }
-
-                    JSApi.JS_FreeValue(_ctx, bytecodeFunc);
-                    FreeValues(require_argv);
-                    throw new Exception("failed to eval bytecode module");
-                }
-            }
-            else
-            {
-                // source
-                var input_bytes = TextUtils.GetShebangNullTerminatedCommonJSBytes(source);
-                fixed (byte* input_ptr = input_bytes)
-                fixed (byte* resolved_id_ptr = filename_bytes)
-                {
-                    var input_len = (size_t)(input_bytes.Length - 1);
-                    var func_val = JSApi.JS_Eval(_ctx, input_ptr, input_len, resolved_id_ptr, JSEvalFlags.JS_EVAL_TYPE_GLOBAL | JSEvalFlags.JS_EVAL_FLAG_STRICT);
-                    if (func_val.IsException())
-                    {
-                        FreeValues(require_argv);
-                        _ctx.print_exception();
-                        throw new Exception("failed to eval module");
-                    }
-
-                    if (JSApi.JS_IsFunction(_ctx, func_val) == 1)
-                    {
-                        var rval = JSApi.JS_Call(_ctx, func_val, JSApi.JS_UNDEFINED, require_argv.Length, require_argv);
-                        if (rval.IsException())
-                        {
-                            JSApi.JS_FreeValue(_ctx, func_val);
-                            FreeValues(require_argv);
-                            _ctx.print_exception();
-                            throw new Exception("failed to eval module");
-                        }
-                        Values.js_get_var(_ctx, rval, expectedReturnType, out csValue);
-                        JSApi.JS_FreeValue(_ctx, rval);
-                    }
-
-                    JSApi.JS_FreeValue(_ctx, func_val);
-                    JSApi.JS_SetProperty(_ctx, module_obj, GetAtom("loaded"), JSApi.JS_NewBool(_ctx, true));
-                    FreeValues(require_argv);
-                    return csValue;
-                }
-            }
-        }
-
         public void EvalSource(string source, string fileName)
         {
             var bytes = System.Text.Encoding.UTF8.GetBytes(source);
@@ -867,6 +738,7 @@ namespace QuickJS
             var ctx = (JSContext)this;
             var global_object = this.GetGlobalObject();
             {
+                _mainModuleLoaded = false;
                 _require = JSApi.JSB_NewCFunction(ctx, ScriptRuntime.module_require, GetAtom("require"), 1, JSCFunctionEnum.JS_CFUNC_generic, 0);
                 JSApi.JS_SetProperty(ctx, _require, GetAtom("moduleId"), JSApi.JS_NewString(ctx, ""));
                 JSApi.JS_SetProperty(ctx, _require, GetAtom("cache"), JSApi.JS_DupValue(ctx, _moduleCache));
