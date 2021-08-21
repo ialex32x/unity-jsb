@@ -3,6 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.JSModuleView = void 0;
 const UnityEditor_1 = require("UnityEditor");
 const UnityEngine_1 = require("UnityEngine");
+const string_utils_1 = require("../text/string_utils");
 const editor_window_base_1 = require("./base/editor_window_base");
 const js_reload_1 = require("./js_reload");
 class JSModuleView extends editor_window_base_1.EditorWindowBase {
@@ -21,24 +22,25 @@ class JSModuleView extends editor_window_base_1.EditorWindowBase {
             return;
         }
         let mod = data;
+        UnityEditor_1.EditorGUILayout.Toggle(string_utils_1.TEXT("Main"), mod == require.main);
         UnityEditor_1.EditorGUILayout.BeginHorizontal();
-        UnityEditor_1.EditorGUILayout.TextField("Module ID", mod.id);
+        UnityEditor_1.EditorGUILayout.TextField(string_utils_1.TEXT("Module ID"), mod.id);
         let doReload = false;
         if (mod["resolvername"] != "source") {
             UnityEditor_1.EditorGUI.BeginDisabledGroup(true);
-            doReload = UnityEngine_1.GUILayout.Button("Reload");
+            doReload = UnityEngine_1.GUILayout.Button(string_utils_1.TEXT("Reload"));
             UnityEditor_1.EditorGUI.EndDisabledGroup();
         }
         else {
-            doReload = UnityEngine_1.GUILayout.Button("Reload");
+            doReload = UnityEngine_1.GUILayout.Button(string_utils_1.TEXT("Reload"));
         }
         UnityEditor_1.EditorGUILayout.EndHorizontal();
-        UnityEditor_1.EditorGUILayout.TextField("File Name", mod.filename);
+        UnityEditor_1.EditorGUILayout.TextField(string_utils_1.TEXT("File Name"), mod.filename);
         if (typeof mod.parent === "object") {
-            UnityEditor_1.EditorGUILayout.TextField("Parent", mod.parent.id);
+            UnityEditor_1.EditorGUILayout.TextField(string_utils_1.TEXT("Parent"), mod.parent.id);
         }
         else {
-            UnityEditor_1.EditorGUILayout.TextField("Parent", "TOP LEVEL");
+            UnityEditor_1.EditorGUILayout.TextField(string_utils_1.TEXT("Parent"), string_utils_1.TEXT("TOP LEVEL"));
         }
         if (doReload) {
             js_reload_1.reload(mod);

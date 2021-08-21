@@ -28,24 +28,25 @@ export class JSModuleView extends EditorWindowBase {
 
         let mod: NodeModule = data;
 
+        EditorGUILayout.Toggle(TEXT("Main"), mod == require.main);
         EditorGUILayout.BeginHorizontal();
-        EditorGUILayout.TextField("Module ID", mod.id);
+        EditorGUILayout.TextField(TEXT("Module ID"), mod.id);
 
         let doReload = false;
         if (mod["resolvername"] != "source") {
             EditorGUI.BeginDisabledGroup(true);
-            doReload = GUILayout.Button("Reload");
+            doReload = GUILayout.Button(TEXT("Reload"));
             EditorGUI.EndDisabledGroup();
         } else {
-            doReload = GUILayout.Button("Reload");
+            doReload = GUILayout.Button(TEXT("Reload"));
         }
         EditorGUILayout.EndHorizontal();
 
-        EditorGUILayout.TextField("File Name", mod.filename);
+        EditorGUILayout.TextField(TEXT("File Name"), mod.filename);
         if (typeof mod.parent === "object") {
-            EditorGUILayout.TextField("Parent", mod.parent.id);
+            EditorGUILayout.TextField(TEXT("Parent"), mod.parent.id);
         } else {
-            EditorGUILayout.TextField("Parent", "TOP LEVEL");
+            EditorGUILayout.TextField(TEXT("Parent"), TEXT("TOP LEVEL"));
         }
 
         if (doReload) {
