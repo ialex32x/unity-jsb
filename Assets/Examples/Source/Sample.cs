@@ -89,7 +89,7 @@ namespace Example
                 byteBufferAllocator = new ByteBufferPooledAllocator(),
                 binder = DefaultBinder.GetBinder(useReflectBind),
             });
-            _rt.ResolveModule(entryFileName);
+            _rt.EvalMain(entryFileName);
         }
 
         void Update()

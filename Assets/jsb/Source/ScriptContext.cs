@@ -489,6 +489,11 @@ namespace QuickJS
             OnScriptReloaded?.Invoke(this, resolved_id);
         }
 
+        public bool IsMainModuleLoaded() 
+        {
+            return _mainModuleLoaded;
+        }
+
 #if !JSB_UNITYLESS
         public bool CheckModuleId(Unity.JSScriptRef scriptRef, string resolved_id)
         {

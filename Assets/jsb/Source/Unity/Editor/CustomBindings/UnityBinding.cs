@@ -118,6 +118,7 @@ namespace jsb.Editor
             bindingManager.AddExportedType(typeof(WaitForSeconds), true);
             bindingManager.AddExportedType(typeof(WaitForEndOfFrame), true);
             bindingManager.AddExportedType(typeof(Input));
+            bindingManager.AddExportedType(typeof(Application));
 
             bindingManager.AddExportedType(typeof(Ray));
             bindingManager.AddExportedType(typeof(RaycastHit));

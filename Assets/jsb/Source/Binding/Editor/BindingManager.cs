@@ -716,6 +716,12 @@ namespace QuickJS.Binding
             return "jsb.";
         }
 
+        public string GetValueOperation(string operation, Type forType)
+        {
+            //TODO codegen: lookup js_* (push/get/rebind) for specified type (instead of the partial class 'Values')
+            return operation;
+        }
+
         public string GetCSNamespace(Type type)
         {
             return string.IsNullOrEmpty(type.Namespace) ? "" : (type.Namespace + ".");

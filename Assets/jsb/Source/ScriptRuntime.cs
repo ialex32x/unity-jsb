@@ -23,6 +23,7 @@ namespace QuickJS
 
         public event Action<ScriptRuntime> OnDestroy;
         public event Action<ScriptRuntime> OnInitialized;
+        public event Action<ScriptRuntime> OnMainModuleLoaded;
         public event Action<int> OnAfterDestroy;
         public event Action OnUpdate;
         public event Action<ScriptContext, string> OnScriptReloading;
@@ -172,13 +173,16 @@ namespace QuickJS
 
         public string ResolveModuleId(ScriptContext context, string parent_module_id, string module_id)
         {
-            for (int i = 0, count = _moduleResolvers.Count; i < count; i++)
+            if (module_id != null)
             {
-                var resolver = _moduleResolvers[i];
-                string resolved_id;
-                if (resolver.ResolveModule(_fileSystem, _pathResolver, parent_module_id, module_id, out resolved_id))
+                for (int i = 0, count = _moduleResolvers.Count; i < count; i++)
                 {
-                    return resolved_id;
+                    var resolver = _moduleResolvers[i];
+                    string resolved_id;
+                    if (resolver.ResolveModule(_fileSystem, _pathResolver, parent_module_id, module_id, out resolved_id))
+                    {
+                        return resolved_id;
+                    }
                 }
             }
 
@@ -735,6 +739,18 @@ namespace QuickJS
                 _pendingActions.Enqueue(action);
             }
             return true;
+        }
+
+        public void EvalMain(string fileName)
+        {
+            if (_mainContext.IsMainModuleLoaded())
+            {
+                ResolveModule(fileName);
+                return;
+            }
+
+            ResolveModule(fileName);
+            OnMainModuleLoaded?.Invoke(this);
         }
 
         public void EvalFile(string fileName)

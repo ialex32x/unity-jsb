@@ -55,7 +55,8 @@ namespace QuickJS.Binding
             if (declaringType.IsValueType && !eventInfo.GetAddMethod().IsStatic)
             {
                 // 非静态结构体属性修改, 尝试替换实例
-                this.cg.cs.AppendLine($"js_rebind_this(ctx, this_obj, ref {caller});");
+                var js_rebind_this = this.cg.bindingManager.GetValueOperation("js_rebind_this", bindingInfo.declaringType);
+                this.cg.cs.AppendLine($"{js_rebind_this}(ctx, this_obj, ref {caller});");
             }
             this.cg.cs.AppendLine("return JSApi.JS_UNDEFINED;");
         }

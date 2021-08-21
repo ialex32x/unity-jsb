@@ -53,7 +53,8 @@ namespace QuickJS.Binding
             if (declaringType.IsValueType && !fieldInfo.IsStatic)
             {
                 // 非静态结构体字段修改, 尝试替换实例
-                this.cg.cs.AppendLine($"js_rebind_this(ctx, this_obj, ref {caller});");
+                var js_rebind_this = this.cg.bindingManager.GetValueOperation("js_rebind_this", declaringType);
+                this.cg.cs.AppendLine($"{js_rebind_this}(ctx, this_obj, ref {caller});");
             }
             this.cg.cs.AppendLine("return JSApi.JS_UNDEFINED;");
         }

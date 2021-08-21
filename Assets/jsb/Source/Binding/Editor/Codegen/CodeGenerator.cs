@@ -512,17 +512,22 @@ namespace QuickJS.Binding
             return caller;
         }
 
-        public string AppendGetThisCS(MethodBase method, bool asExtensionAnyway)
+        public string AppendGetThisCS(MethodBase method, bool asExtensionAnyway, out Type thisType)
         {
             if (method.IsConstructor)
             {
+                thisType = null;
                 return null;
             }
+            
             if (asExtensionAnyway)
             {
                 var parameters = method.GetParameters();
+                thisType = parameters[0].ParameterType;
                 return AppendGetThisCS(false, parameters[0].ParameterType);
             }
+
+            thisType = method.DeclaringType;
             return AppendGetThisCS(method.IsStatic, method.DeclaringType);
         }
 

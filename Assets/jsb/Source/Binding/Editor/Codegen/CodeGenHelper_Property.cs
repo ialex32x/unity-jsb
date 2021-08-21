@@ -16,7 +16,8 @@ namespace QuickJS.Binding
             this.cg = cg;
             this.bindingInfo = bindingInfo;
 
-            var caller = this.cg.AppendGetThisCS(bindingInfo.getMethod, false);
+            Type callerType;
+            var caller = this.cg.AppendGetThisCS(bindingInfo.getMethod, false, out callerType);
 
             this.cg.cs.AppendLine("var ret = {0}.{1};", caller, bindingInfo.propertyInfo.Name);
             var pusher = this.cg.AppendValuePusher(bindingInfo.propertyType, "ret");
@@ -40,7 +41,8 @@ namespace QuickJS.Binding
 
             var propertyInfo = this.bindingInfo.propertyInfo;
             var declaringType = propertyInfo.DeclaringType;
-            var caller = this.cg.AppendGetThisCS(propertyBindingInfo.setMethod, false);
+            Type callerType;
+            var caller = this.cg.AppendGetThisCS(propertyBindingInfo.setMethod, false, out callerType);
             var propertyType = this.cg.bindingManager.GetCSTypeFullName(propertyInfo.PropertyType);
 
             this.cg.cs.AppendLine("{0} value;", propertyType);
@@ -54,7 +56,8 @@ namespace QuickJS.Binding
             if (declaringType.IsValueType && !propertyBindingInfo.setMethod.IsStatic)
             {
                 // 非静态结构体属性修改, 尝试替换实例
-                this.cg.cs.AppendLine($"js_rebind_this(ctx, this_obj, ref {caller});");
+                var js_rebind_this = this.cg.bindingManager.GetValueOperation("js_rebind_this", callerType);
+                this.cg.cs.AppendLine($"{js_rebind_this}(ctx, this_obj, ref {caller});");
             }
             this.cg.cs.AppendLine("return JSApi.JS_UNDEFINED;");
         }

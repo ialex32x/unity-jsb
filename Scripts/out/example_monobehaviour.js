@@ -162,10 +162,12 @@ if (module == require.main) {
     if (ps) {
         ps.AddComponent(RotateBehaviour);
     }
-    // {
-    //     let sphere = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-    //     sphere.transform.localScale = new Vector3(2, 2, 2);
-    //     sphere.transform.ResetAll();
-    // }
+    {
+        let sphere = UnityEngine_1.GameObject.CreatePrimitive(UnityEngine_1.PrimitiveType.Sphere);
+        sphere.transform.localScale = new UnityEngine_1.Vector3(2, 2, 2);
+        sphere.transform.TestWithScriptObject(function () {
+            console.warn("TestWithScriptObject");
+        });
+    }
 }
 //# sourceMappingURL=example_monobehaviour.js.map

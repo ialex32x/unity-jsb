@@ -124,6 +124,7 @@ namespace QuickJS.Unity
         private void OnScriptRuntimeCreated(ScriptRuntime runtime)
         {
             runtime.OnInitialized += OnScriptRuntimeInitialized;
+            runtime.OnMainModuleLoaded += OnScriptRuntimeMainModuleLoaded;
         }
 
         public TSConfig GetTSConfig(string workspace = null)
@@ -140,20 +141,10 @@ namespace QuickJS.Unity
             return null;
         }
 
-        private void OnScriptRuntimeInitialized(ScriptRuntime runtime)
+        private void OnScriptRuntimeMainModuleLoaded(ScriptRuntime runtime)
         {
-            var tsconfig = GetTSConfig();
-
-            if (tsconfig != null)
-            {
-                runtime.AddSearchPath(tsconfig.compilerOptions.outDir);
-            }
-
-            if (!string.IsNullOrEmpty(_prefs.editorEntryPoint))
-            {
-                runtime.ResolveModule(_prefs.editorEntryPoint);
-            }
-
+            runtime.ResolveModule(_prefs.editorEntryPoint);
+            
             foreach (var module in _prefs.editorRequires)
             {
                 runtime.ResolveModule(module);
@@ -161,7 +152,6 @@ namespace QuickJS.Unity
 
             var editorScripts = new List<JSScriptClassPathHint>();
 
-            JSScriptFinder.GetInstance().ModuleSourceChanged += OnModuleSourceChanged;
             JSScriptFinder.GetInstance().Search(JSScriptClassType.CustomEditor, editorScripts);
 
             foreach (var editorScript in editorScripts)
@@ -172,6 +162,25 @@ namespace QuickJS.Unity
             foreach (var assetPostProcessor in _prefs.assetPostProcessors)
             {
                 runtime.ResolveModule(assetPostProcessor);
+            }
+        }
+
+        private void OnScriptRuntimeInitialized(ScriptRuntime runtime)
+        {
+            var tsconfig = GetTSConfig();
+
+            if (tsconfig != null)
+            {
+                runtime.AddSearchPath(tsconfig.compilerOptions.outDir);
+            }
+            JSScriptFinder.GetInstance().ModuleSourceChanged += OnModuleSourceChanged;
+
+            if (!string.IsNullOrEmpty(_prefs.editorEntryPoint))
+            {
+                if (!Application.isPlaying)
+                {
+                    runtime.EvalMain(_prefs.editorEntryPoint);
+                }
             }
         }
 

@@ -29,5 +29,10 @@ namespace Example
             dist = pos.magnitude;
             return true;
         }
+
+        public static void TestWithScriptObject(this Transform transform, ScriptFunction function)
+        {
+            function?.Invoke();
+        }
     }
 }

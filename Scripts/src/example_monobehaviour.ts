@@ -47,7 +47,7 @@ export class MyClass extends MonoBehaviour {
     OnApplicationFocus(hasFocus: boolean) {
         console.log("OnApplicationFocus:", hasFocus);
     }
-    
+
     OnApplicationPause(pause: boolean) {
         console.log("OnApplicationPause:", pause);
     }
@@ -157,9 +157,11 @@ if (module == require.main) {
         ps.AddComponent(RotateBehaviour);
     }
 
-    // {
-    //     let sphere = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-    //     sphere.transform.localScale = new Vector3(2, 2, 2);
-    //     sphere.transform.ResetAll();
-    // }
+    {
+        let sphere = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+        sphere.transform.localScale = new Vector3(2, 2, 2);
+        sphere.transform.TestWithScriptObject(function () {
+            console.warn("TestWithScriptObject");
+        });
+    }
 }

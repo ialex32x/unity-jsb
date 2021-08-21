@@ -504,13 +504,14 @@ namespace QuickJS.Binding
             }
         }
 
-        private void WriteRebindThis(MethodBase method, string caller)
+        private void WriteRebindThis(MethodBase method, Type callerType, string caller)
         {
             if (!method.IsStatic && method.DeclaringType.IsValueType) // struct 非静态方法 检查 Mutable 属性
             {
                 if (!string.IsNullOrEmpty(caller))
                 {
-                    cg.cs.AppendLine($"js_rebind_this(ctx, this_obj, ref {caller});");
+                    var js_rebind_this = this.cg.bindingManager.GetValueOperation("js_rebind_this", callerType);
+                    cg.cs.AppendLine($"{js_rebind_this}(ctx, this_obj, ref {caller});");
                 }
             }
         }
@@ -532,7 +533,8 @@ namespace QuickJS.Binding
 
             // var isRaw = method.IsDefined(typeof(JSCFunctionAttribute));
             var parameters = method.GetParameters();
-            var caller = this.cg.AppendGetThisCS(method, isExtension);
+            Type callerType;
+            var caller = this.cg.AppendGetThisCS(method, isExtension, out callerType);
             var returnType = GetReturnType(method);
 
             if (returnType == null || returnType == typeof(void))
@@ -543,7 +545,7 @@ namespace QuickJS.Binding
                 this.EndInvokeBinding();
 
                 _WriteBackParameters(isExtension, parameters);
-                WriteRebindThis(method, caller);
+                WriteRebindThis(method, callerType, caller);
                 InvokeVoidReturn();
             }
             else
