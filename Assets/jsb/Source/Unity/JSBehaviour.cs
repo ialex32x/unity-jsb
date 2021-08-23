@@ -133,9 +133,9 @@ namespace QuickJS.Unity
                 {
                     var fullCap = false;
                     var prototype = JSApi.JS_GetProperty(ctx, ctor, JSApi.JS_ATOM_prototype);
+                    var context = ScriptEngine.GetContext(ctx);
                     if (!prototype.IsException())
                     {
-                        var context = ScriptEngine.GetContext(ctx);
                         if (context != null)
                         {
                             fullCap = IsUpdatable(context, prototype);
@@ -143,6 +143,19 @@ namespace QuickJS.Unity
                     }
                     JSApi.JS_FreeValue(ctx, prototype);
                     var bridge = fullCap ? gameObject.AddComponent<JSBehaviourFull>() : gameObject.AddComponent<JSBehaviour>();
+#if UNITY_EDITOR
+                    context.ForEachModuleExport((mod_id_atom, exp_id_atom, exp_obj) =>
+                    {
+                        if (exp_obj == ctor)
+                        {
+                            bridge._scriptRef.modulePath = JSApi.GetString(ctx, mod_id_atom);
+                            bridge._scriptRef.className = JSApi.GetString(ctx, exp_id_atom);
+                            return true;
+                        }
+
+                        return false;
+                    });
+#endif
                     return bridge.SetScriptInstance(ctx, ctor, execAwake);
                 }
             }
