@@ -56,7 +56,7 @@ namespace QuickJS.Unity
                 _dirty = false;
                 try
                 {
-                    var json = JsonUtility.ToJson(this, true);
+                    var json = JsonUtility.ToJson(_prefs, true);
                     System.IO.File.WriteAllText(_filePath, json);
                 }
                 catch (Exception exception)
