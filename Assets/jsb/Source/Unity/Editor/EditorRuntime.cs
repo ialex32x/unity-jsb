@@ -11,7 +11,6 @@ namespace QuickJS.Unity
     using UnityEngine;
     using QuickJS;
     using QuickJS.Binding;
-    using QuickJS.Native;
 
     [InitializeOnLoad]
     public class EditorRuntime

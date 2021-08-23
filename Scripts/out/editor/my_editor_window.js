@@ -21,6 +21,7 @@ let MyEditorWindow = MyEditorWindow_1 = class MyEditorWindow extends UnityEditor
         this._thisWindowRect = new UnityEngine_1.Rect(50, 50, 400, 300);
         this._resizerContent = new UnityEngine_1.GUIContent("* ", "Resize");
         this._isResizing = false;
+        this._windowIndex = 0;
         this._lastHour = -1;
         this._lastMinute = -1;
         this._lastSecond = -1;
@@ -31,7 +32,7 @@ let MyEditorWindow = MyEditorWindow_1 = class MyEditorWindow extends UnityEditor
         this._onWindowGUI = this.onWindowGUI.bind(this);
     }
     OnEnable() {
-        this.titleContent = new UnityEngine_1.GUIContent("Blablabla6");
+        this.titleContent = new UnityEngine_1.GUIContent("Blablabla0");
         UnityEditor_1.SceneView.duringSceneGui("add", this._onSceneGui);
     }
     OnDisable() {
@@ -99,7 +100,11 @@ let MyEditorWindow = MyEditorWindow_1 = class MyEditorWindow extends UnityEditor
             console.log("Thanks!", System_1.DateTime.Now);
         }
         if (UnityEngine_1.GUILayout.Button("CreateWindow")) {
-            UnityEditor_1.EditorWindow.CreateWindow(MyEditorWindow_1);
+            let child = UnityEditor_1.EditorWindow.CreateWindow(MyEditorWindow_1, MyEditorWindow_1);
+            if (child) {
+                child._windowIndex = this._windowIndex + 1;
+                child.titleContent = new UnityEngine_1.GUIContent("Blablabla" + child._windowIndex);
+            }
         }
         let w = this.position.width;
         let h = this.position.height;

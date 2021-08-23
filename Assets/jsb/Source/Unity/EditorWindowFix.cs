@@ -2,6 +2,8 @@
 #if UNITY_EDITOR
 using System;
 using System.Reflection;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace QuickJS.Unity
 {
@@ -32,7 +34,7 @@ namespace QuickJS.Unity
                     }
                     var ret = UnityEditor.EditorWindow.GetWindow(arg_editorType);
                     return Values.js_push_classvalue(ctx, ret);
-                } 
+                }
                 else if (argc == 2)
                 {
                     if (Values.js_match_type(ctx, argv[0], typeof(Type)) && Values.js_match_type(ctx, argv[1], typeof(bool)))
@@ -150,44 +152,83 @@ namespace QuickJS.Unity
             return _new_js_editor_window(ctx, argv[0], false, null, null, 0);
         }
 
-        private static bool __dock(JSValue[] desiredDockNextTo)
+        //TODO fix type checking
+        private static bool __type_equals(EditorWindow editorWindow, JSContext ctx, JSValue value)
         {
-            var ContainerWindow = typeof(EditorWindow).Assembly.GetType("UnityEditor.ContainerWindow");
-            var ContainerWindow_windows = ContainerWindow.GetProperty("windows", BindingFlags.Public | BindingFlags.Static);
-            var ContainerWindow_rootView = ContainerWindow.GetProperty("rootView", BindingFlags.Public);
-
-            var View = typeof(EditorWindow).Assembly.GetType("UnityEditor.View");
-            var View_allChildren = View.GetProperty("allChildren", BindingFlags.Public);
-
-            // foreach (var desired in desiredDockNextTo)
-            for (var dIndex = 0; dIndex < desiredDockNextTo.Length; dIndex++)
+            var jsEditorWindow = editorWindow as JSEditorWindow;
+            if (jsEditorWindow != null)
             {
-                var desired = desiredDockNextTo[dIndex];
-                // ContainerWindow[]
-                var windows = (Array)ContainerWindow_windows.GetMethod.Invoke(null, null);
-                for (var wIndex = 0; wIndex < windows.Length; wIndex++)
+                if (jsEditorWindow.IsInstanceOf(value) == 1)
                 {
-                    var containerWindow = windows.GetValue(wIndex);
-                    var rootView = ContainerWindow_rootView.GetMethod.Invoke(containerWindow, null);
-                    // View[]
-                    var allChildren = (Array)View_allChildren.GetMethod.Invoke(rootView, null);
-                    for (var vIndex = 0; vIndex < allChildren.Length; vIndex++)
-                    {
-                        var view = allChildren.GetValue(vIndex);
-                        var dockArea = view; //  as DockArea
+                    return true;
+                }
+            }
 
-                        // DockArea.m_Panes: internal List<EditorWindow> 
-                        if (!((UnityEngine.Object)dockArea == null))
+            Type type;
+            if (Values.js_get_classvalue(ctx, value, out type))
+            {
+                var editorWindowType = editorWindow.GetType();
+                if (editorWindowType == type || editorWindowType.IsSubclassOf(type))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        private static bool __dock(EditorWindow val, JSContext ctx, JSValue[] desiredDockNextTo)
+        {
+            if (desiredDockNextTo == null || desiredDockNextTo.Length == 0)
+            {
+                return false;
+            }
+
+            try
+            {
+                var ContainerWindow = typeof(EditorWindow).Assembly.GetType("UnityEditor.ContainerWindow");
+                var ContainerWindow_windows = ContainerWindow.GetProperty("windows", BindingFlags.Public | BindingFlags.Static);
+                var ContainerWindow_rootView = ContainerWindow.GetProperty("rootView", BindingFlags.Public | BindingFlags.Instance);
+
+                var View = typeof(EditorWindow).Assembly.GetType("UnityEditor.View");
+                var View_allChildren = View.GetProperty("allChildren", BindingFlags.Public | BindingFlags.Instance);
+                var DockArea = typeof(EditorWindow).Assembly.GetType("UnityEditor.DockArea");
+                var DockArea_Panes = DockArea.GetField("m_Panes", BindingFlags.NonPublic | BindingFlags.Instance);
+                var DockArea_AddTab = DockArea.GetMethod("AddTab", new Type[] { typeof(EditorWindow), typeof(bool) });
+
+                // foreach (var desired in desiredDockNextTo)
+                for (var dIndex = 0; dIndex < desiredDockNextTo.Length; dIndex++)
+                {
+                    var desired = desiredDockNextTo[dIndex];
+                    // ContainerWindow[]
+                    var windows = (Array)ContainerWindow_windows.GetMethod.Invoke(null, null);
+                    for (var wIndex = 0; wIndex < windows.Length; wIndex++)
+                    {
+                        var containerWindow = windows.GetValue(wIndex);
+                        var rootView = ContainerWindow_rootView.GetMethod.Invoke(containerWindow, null);
+                        // View[]
+                        var allChildren = (Array)View_allChildren.GetMethod.Invoke(rootView, null);
+                        for (var vIndex = 0; vIndex < allChildren.Length; vIndex++)
                         {
-                            //TODO: 区分 JSEditorWindow 与 C# EditorWindow
-                            // if (dockArea.m_Panes.Any((EditorWindow pane) => pane.GetType() == desired))
-                            // {
-                            //     dockArea.AddTab(val);
-                            //     return true;
-                            // }
+                            var view = allChildren.GetValue(vIndex);
+                            var dockArea = view; //  as DockArea
+
+                            // DockArea.m_Panes: internal List<EditorWindow> 
+                            if (!((UnityEngine.Object)dockArea == null))
+                            {
+                                if ((DockArea_Panes.GetValue(dockArea) as List<EditorWindow>).Any((EditorWindow pane) => __type_equals(pane, ctx, desired)))
+                                {
+                                    DockArea_AddTab.Invoke(dockArea, new object[] { val, true }); // dockArea.AddTab(val);
+                                    return true;
+                                }
+                            }
                         }
                     }
                 }
+            }
+            catch (Exception exception)
+            {
+                Debug.LogError(exception);
             }
 
             return false;
@@ -257,6 +298,7 @@ namespace QuickJS.Unity
                 editorWindow.titleContent = new GUIContent(title);
             }
 
+            __dock(editorWindow, ctx, desiredDockNextTo);
             if (utility)
             {
                 editorWindow.ShowUtility();

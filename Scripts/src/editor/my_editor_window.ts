@@ -16,6 +16,7 @@ export class MyEditorWindow extends EditorWindow {
     private _thisWindowRect = new Rect(50, 50, 400, 300);
     private _resizerContent = new GUIContent("* ", "Resize");
     private _isResizing = false;
+    private _windowIndex = 0;
 
     Awake() {
         this._onSceneGui = this.onSceneGui.bind(this);
@@ -24,7 +25,7 @@ export class MyEditorWindow extends EditorWindow {
     }
 
     OnEnable() {
-        this.titleContent = new GUIContent("Blablabla6");
+        this.titleContent = new GUIContent("Blablabla0");
         SceneView.duringSceneGui("add", this._onSceneGui);
     }
 
@@ -106,7 +107,11 @@ export class MyEditorWindow extends EditorWindow {
         }
 
         if (GUILayout.Button("CreateWindow")) {
-            EditorWindow.CreateWindow(MyEditorWindow);
+            let child = EditorWindow.CreateWindow(MyEditorWindow, MyEditorWindow);
+            if (child) {
+                child._windowIndex = this._windowIndex + 1;
+                child.titleContent = new GUIContent("Blablabla" + child._windowIndex);
+            }
         }
 
         let w = this.position.width;
