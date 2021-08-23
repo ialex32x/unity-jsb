@@ -30,6 +30,7 @@ namespace QuickJS.Unity
         private int _tick;
         private bool _ready;
         private Prefs _prefs;
+        private FileSystemWatcher _fsw;
 
         static EditorRuntime()
         {
@@ -64,6 +65,34 @@ namespace QuickJS.Unity
             EditorApplication.update += OnUpdate;
             EditorApplication.quitting += OnQuitting;
             EditorApplication.playModeStateChanged += OnPlayModeStateChanged;
+            if (File.Exists(_prefs.filePath))
+            {
+                var path = Path.GetDirectoryName(_prefs.filePath);
+                _fsw = new FileSystemWatcher(string.IsNullOrWhiteSpace(path) ? "." : path, Path.GetFileName(_prefs.filePath));
+                _fsw.Changed += OnFileChanged;
+                _fsw.Created += OnFileChanged;
+                _fsw.Deleted += OnFileChanged;
+                _fsw.EnableRaisingEvents = true;
+            }
+        }
+
+        private void OnFileChanged(object sender, FileSystemEventArgs e)
+        {
+            _runtime.EnqueueAction(OnFileChangedSync, e.FullPath);
+        }
+
+        private void OnFileChangedSync(ScriptRuntime runtime, JSAction action)
+        {
+            if (action.args != null && action.args.GetType() == typeof(string))
+            {
+                var fullPath1 = Path.GetFullPath((string)action.args);
+                var fullPath2 = Path.GetFullPath(_prefs.filePath);
+
+                if (string.Compare(fullPath1, fullPath2, true) == 0)
+                {
+                    _prefs = UnityHelper.LoadPrefs();
+                }
+            }
         }
 
         ~EditorRuntime()
@@ -84,6 +113,11 @@ namespace QuickJS.Unity
             EditorApplication.update -= OnUpdate;
             EditorApplication.quitting -= OnQuitting;
             EditorApplication.playModeStateChanged -= OnPlayModeStateChanged;
+            if (_fsw != null)
+            {
+                _fsw.Dispose();
+                _fsw = null;
+            }
             runtime.Shutdown();
         }
 
@@ -144,7 +178,7 @@ namespace QuickJS.Unity
         private void OnScriptRuntimeMainModuleLoaded(ScriptRuntime runtime)
         {
             runtime.ResolveModule(_prefs.editorEntryPoint);
-            
+
             foreach (var module in _prefs.editorRequires)
             {
                 runtime.ResolveModule(module);

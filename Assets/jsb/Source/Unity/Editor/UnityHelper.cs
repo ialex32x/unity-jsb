@@ -68,6 +68,7 @@ namespace QuickJS.Unity
                         Debug.Log($"load prefs({path}): {json}");
                         var prefs = JsonUtility.FromJson<Prefs>(json);
                         filePath = path;
+                        prefs.filePath = filePath;
                         if (string.IsNullOrEmpty(prefs.typescriptDir))
                         {
                             prefs.typescriptDir = prefs.outDir;

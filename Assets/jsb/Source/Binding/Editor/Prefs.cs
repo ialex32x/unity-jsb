@@ -14,6 +14,8 @@ namespace QuickJS.Binding
         /// </summary>
         public const string PATH = "js-bridge.json";
 
+        public string filePath;
+
         #region Configurable Fields
 
         /// <summary>
