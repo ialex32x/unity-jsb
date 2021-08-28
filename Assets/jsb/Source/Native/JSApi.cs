@@ -168,7 +168,7 @@ namespace QuickJS.Native
         }
 
         [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern void JS_FreeRuntime(JSRuntime rt);
+        public static extern int JS_FreeRuntime(JSRuntime rt);
 
         [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern IntPtr JS_GetRuntimeOpaque(JSRuntime rt);

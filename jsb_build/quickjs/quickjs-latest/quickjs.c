@@ -1931,10 +1931,11 @@ void JS_SetRuntimeInfo(JSRuntime *rt, const char *s)
         rt->rt_info = s;
 }
 
-void JS_FreeRuntime(JSRuntime *rt)
+int JS_FreeRuntime(JSRuntime *rt)
 {
     struct list_head *el, *el1;
     int i;
+    int ret_leaks;
 
     JS_FreeValueRT(rt, rt->current_exception);
 
@@ -1987,7 +1988,7 @@ void JS_FreeRuntime(JSRuntime *rt)
             printf("Secondary object leaks: %d\n", count);
     }
 #endif
-    assert(list_empty(&rt->gc_obj_list));
+    ret_leaks = (list_empty(&rt->gc_obj_list));
 
     /* free the classes */
     for(i = 0; i < rt->class_count; i++) {
@@ -2117,6 +2118,7 @@ void JS_FreeRuntime(JSRuntime *rt)
         JSMallocState ms = rt->malloc_state;
         rt->mf.js_free(&ms, rt);
     }
+    return ret_leaks;
 }
 
 JSContext *JS_NewContextRaw(JSRuntime *rt)

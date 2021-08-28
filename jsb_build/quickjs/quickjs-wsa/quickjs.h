@@ -346,7 +346,7 @@ JS_EXPORT void JS_SetMaxStackSize(JSRuntime *rt, size_t stack_size);
    used to check stack overflow. */
 JS_EXPORT void JS_UpdateStackTop(JSRuntime *rt);
 JS_EXPORT JSRuntime *JS_NewRuntime2(const JSMallocFunctions *mf, void *opaque);
-JS_EXPORT void JS_FreeRuntime(JSRuntime *rt);
+JS_EXPORT int JS_FreeRuntime(JSRuntime *rt);
 JS_EXPORT void *JS_GetRuntimeOpaque(JSRuntime *rt);
 JS_EXPORT void JS_SetRuntimeOpaque(JSRuntime *rt, void *opaque);
 typedef void JS_MarkFunc(JSRuntime *rt, JSGCObjectHeader *gp);
