@@ -233,6 +233,7 @@ namespace QuickJS.Unity
             switch (mode)
             {
                 case PlayModeStateChange.EnteredEditMode: _runMode = RunMode.Editor; EditorApplication.delayCall += OnInit; break;
+                case PlayModeStateChange.ExitingEditMode: OnQuitting(); break;
                 case PlayModeStateChange.EnteredPlayMode: _runMode = RunMode.Playing; break;
             }
         }
