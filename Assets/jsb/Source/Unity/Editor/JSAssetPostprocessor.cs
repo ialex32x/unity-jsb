@@ -108,8 +108,10 @@ namespace QuickJS.Unity
                             {
                                 ctx.print_exception();
                             }
-
-                            JSApi.JS_FreeValue(ctx, rval);
+                            else
+                            {
+                                JSApi.JS_FreeValue(ctx, rval);
+                            }
                         } while (false);
 
                         for (var i = 0; i < arglist.Count; i++)

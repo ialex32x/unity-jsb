@@ -186,7 +186,10 @@ namespace QuickJS.Unity
                 {
                     _ctx.print_exception();
                 }
-                JSApi.JS_FreeValue(_ctx, rval);
+                else
+                {
+                    JSApi.JS_FreeValue(_ctx, rval);
+                }
             }
         }
 
@@ -202,7 +205,10 @@ namespace QuickJS.Unity
                     {
                         _ctx.print_exception();
                     }
-                    JSApi.JS_FreeValue(_ctx, rval);
+                    else
+                    {
+                        JSApi.JS_FreeValue(_ctx, rval);
+                    }
                 }
             }
         }
@@ -221,7 +227,7 @@ namespace QuickJS.Unity
                         UnbindJSMembers();
                         JSApi.JS_SetPrototype(context, _this_obj, prototype);
                         BindJSMembers(context);
-                        
+
                         if (_onAfterScriptReloadValid)
                         {
                             var rval = JSApi.JS_Call(_ctx, _onAfterScriptReloadFunc, _this_obj);
@@ -229,7 +235,10 @@ namespace QuickJS.Unity
                             {
                                 _ctx.print_exception();
                             }
-                            JSApi.JS_FreeValue(_ctx, rval);
+                            else
+                            {
+                                JSApi.JS_FreeValue(_ctx, rval);
+                            }
                         }
                     }
 
@@ -286,7 +295,10 @@ namespace QuickJS.Unity
                 {
                     _ctx.print_exception();
                 }
-                JSApi.JS_FreeValue(_ctx, rval);
+                else
+                {
+                    JSApi.JS_FreeValue(_ctx, rval);
+                }
             }
         }
 
@@ -299,7 +311,10 @@ namespace QuickJS.Unity
                 {
                     _ctx.print_exception();
                 }
-                JSApi.JS_FreeValue(_ctx, rval);
+                else
+                {
+                    JSApi.JS_FreeValue(_ctx, rval);
+                }
             }
         }
 
@@ -312,7 +327,10 @@ namespace QuickJS.Unity
                 {
                     _ctx.print_exception();
                 }
-                JSApi.JS_FreeValue(_ctx, rval);
+                else
+                {
+                    JSApi.JS_FreeValue(_ctx, rval);
+                }
             }
             if (UnityEditor.EditorApplication.isCompiling)
             {
@@ -334,7 +352,10 @@ namespace QuickJS.Unity
                 {
                     _ctx.print_exception();
                 }
-                JSApi.JS_FreeValue(_ctx, rval);
+                else
+                {
+                    JSApi.JS_FreeValue(_ctx, rval);
+                }
             }
             _destroyed = true;
             Release();
@@ -349,7 +370,10 @@ namespace QuickJS.Unity
                 {
                     _ctx.print_exception();
                 }
-                JSApi.JS_FreeValue(_ctx, rval);
+                else
+                {
+                    JSApi.JS_FreeValue(_ctx, rval);
+                }
             }
         }
 
@@ -365,7 +389,10 @@ namespace QuickJS.Unity
                 {
                     _ctx.print_exception();
                 }
-                JSApi.JS_FreeValue(_ctx, rval);
+                else
+                {
+                    JSApi.JS_FreeValue(_ctx, rval);
+                }
             }
         }
     }

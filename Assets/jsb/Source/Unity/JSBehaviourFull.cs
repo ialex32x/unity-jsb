@@ -61,7 +61,10 @@ namespace QuickJS.Unity
                 {
                     _ctx.print_exception();
                 }
-                JSApi.JS_FreeValue(_ctx, rval);
+                else
+                {
+                    JSApi.JS_FreeValue(_ctx, rval);
+                }
             }
         }
 
@@ -74,7 +77,10 @@ namespace QuickJS.Unity
                 {
                     _ctx.print_exception();
                 }
-                JSApi.JS_FreeValue(_ctx, rval);
+                else
+                {
+                    JSApi.JS_FreeValue(_ctx, rval);
+                }
             }
         }
 
@@ -87,7 +93,10 @@ namespace QuickJS.Unity
                 {
                     _ctx.print_exception();
                 }
-                JSApi.JS_FreeValue(_ctx, rval);
+                else
+                {
+                    JSApi.JS_FreeValue(_ctx, rval);
+                }
             }
         }
     }

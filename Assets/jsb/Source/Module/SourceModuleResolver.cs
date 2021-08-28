@@ -87,7 +87,7 @@ namespace QuickJS.Module
             exports_obj = _ReloadModule(context, resolved_id, JSApi.JS_DupValue(context, module_obj));
             if (exports_obj.IsException())
             {
-                ((JSContext)context).print_exception();
+                JSContext.print_exception(context);
                 exports_obj = JSApi.JS_UNDEFINED;
                 return false;
             }

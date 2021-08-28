@@ -192,7 +192,14 @@ namespace QuickJS
         public void ResolveModule(string module_id)
         {
             var rval = ResolveModule(_mainContext, "", module_id);
-            JSApi.JS_FreeValueRT(_rt, rval);
+            if (rval.IsException())
+            {
+                JSContext.print_exception(_mainContext, _logger, LogLevel.Error, "Module Loader Error");
+            }
+            else
+            {
+                JSApi.JS_FreeValueRT(_rt, rval);
+            }
         }
 
         public JSValue ResolveModule(ScriptContext context, string parent_module_id, string module_id)

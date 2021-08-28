@@ -24,28 +24,34 @@ namespace QuickJS.Native
         public void print_exception(Utils.LogLevel logLevel = Utils.LogLevel.Error, string title = "")
         {
             var logger = ScriptEngine.GetLogger(this);
-            print_exception(logger, logLevel, title);
+            print_exception(this, logger, logLevel, title);
         }
 
-        public void print_exception(Utils.IScriptLogger logger, Utils.LogLevel logLevel, string title)
+        public static void print_exception(JSContext ctx, Utils.LogLevel logLevel = Utils.LogLevel.Error, string title = "")
         {
-            var ex = JSApi.JS_GetException(this);
+            var logger = ScriptEngine.GetLogger(ctx);
+            print_exception(ctx, logger, logLevel, title);
+        }
+
+        public static void print_exception(JSContext ctx, Utils.IScriptLogger logger, Utils.LogLevel logLevel, string title)
+        {
+            var ex = JSApi.JS_GetException(ctx);
 
             try
             {
                 if (logger != null)
                 {
-                    var err_fileName = JSApi.JS_GetProperty(this, ex, JSApi.JS_ATOM_fileName);
-                    var err_lineNumber = JSApi.JS_GetProperty(this, ex, JSApi.JS_ATOM_lineNumber);
-                    var err_message = JSApi.JS_GetProperty(this, ex, JSApi.JS_ATOM_message);
-                    var err_stack = JSApi.JS_GetProperty(this, ex, JSApi.JS_ATOM_stack);
+                    var err_fileName = JSApi.JS_GetProperty(ctx, ex, JSApi.JS_ATOM_fileName);
+                    var err_lineNumber = JSApi.JS_GetProperty(ctx, ex, JSApi.JS_ATOM_lineNumber);
+                    var err_message = JSApi.JS_GetProperty(ctx, ex, JSApi.JS_ATOM_message);
+                    var err_stack = JSApi.JS_GetProperty(ctx, ex, JSApi.JS_ATOM_stack);
 
                     try
                     {
-                        var fileName = err_fileName.IsNullish() ? "native" : JSApi.GetString(this, err_fileName);
-                        var lineNumber = err_lineNumber.IsNullish() ? null : JSApi.GetString(this, err_lineNumber);
-                        var message = JSApi.GetString(this, err_message);
-                        var stack = JSApi.GetString(this, err_stack);
+                        var fileName = err_fileName.IsNullish() ? "native" : JSApi.GetString(ctx, err_fileName);
+                        var lineNumber = err_lineNumber.IsNullish() ? null : JSApi.GetString(ctx, err_lineNumber);
+                        var message = JSApi.GetString(ctx, err_message);
+                        var stack = JSApi.GetString(ctx, err_stack);
 
                         if (string.IsNullOrEmpty(lineNumber))
                         {
@@ -76,16 +82,16 @@ namespace QuickJS.Native
                     }
                     finally
                     {
-                        JSApi.JS_FreeValue(this, err_fileName);
-                        JSApi.JS_FreeValue(this, err_lineNumber);
-                        JSApi.JS_FreeValue(this, err_message);
-                        JSApi.JS_FreeValue(this, err_stack);
+                        JSApi.JS_FreeValue(ctx, err_fileName);
+                        JSApi.JS_FreeValue(ctx, err_lineNumber);
+                        JSApi.JS_FreeValue(ctx, err_message);
+                        JSApi.JS_FreeValue(ctx, err_stack);
                     }
                 }
             }
             finally
             {
-                JSApi.JS_FreeValue(this, ex);
+                JSApi.JS_FreeValue(ctx, ex);
             }
         }
 

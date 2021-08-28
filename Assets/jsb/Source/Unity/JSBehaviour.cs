@@ -433,7 +433,10 @@ namespace QuickJS.Unity
                     {
                         _ctx.print_exception();
                     }
-                    JSApi.JS_FreeValue(_ctx, rval);
+                    else
+                    {
+                        JSApi.JS_FreeValue(_ctx, rval);
+                    }
                 }
             }
         }
@@ -452,7 +455,10 @@ namespace QuickJS.Unity
                     {
                         _ctx.print_exception();
                     }
-                    JSApi.JS_FreeValue(_ctx, rval);
+                    else
+                    {
+                        JSApi.JS_FreeValue(_ctx, rval);
+                    }
                     JSApi.JS_FreeValue(_ctx, argv[0]);
                 }
             }
@@ -472,7 +478,10 @@ namespace QuickJS.Unity
                     {
                         _ctx.print_exception();
                     }
-                    JSApi.JS_FreeValue(_ctx, rval);
+                    else
+                    {
+                        JSApi.JS_FreeValue(_ctx, rval);
+                    }
                     JSApi.JS_FreeValue(_ctx, argv[0]);
                 }
             }
@@ -487,7 +496,10 @@ namespace QuickJS.Unity
                 {
                     _ctx.print_exception();
                 }
-                JSApi.JS_FreeValue(_ctx, rval);
+                else
+                {
+                    JSApi.JS_FreeValue(_ctx, rval);
+                }
             }
         }
 
@@ -514,7 +526,10 @@ namespace QuickJS.Unity
                     {
                         _ctx.print_exception();
                     }
-                    JSApi.JS_FreeValue(_ctx, rval);
+                    else
+                    {
+                        JSApi.JS_FreeValue(_ctx, rval);
+                    }
                 }
             }
         }
@@ -543,7 +558,10 @@ namespace QuickJS.Unity
                                 {
                                     _ctx.print_exception();
                                 }
-                                JSApi.JS_FreeValue(_ctx, rval);
+                                else
+                                {
+                                    JSApi.JS_FreeValue(_ctx, rval);
+                                }
                             }
                         }
 
@@ -593,7 +611,10 @@ namespace QuickJS.Unity
                 {
                     _ctx.print_exception();
                 }
-                JSApi.JS_FreeValue(_ctx, rval);
+                else
+                {
+                    JSApi.JS_FreeValue(_ctx, rval);
+                }
             }
         }
 
@@ -606,7 +627,10 @@ namespace QuickJS.Unity
                 {
                     _ctx.print_exception();
                 }
-                JSApi.JS_FreeValue(_ctx, rval);
+                else
+                {
+                    JSApi.JS_FreeValue(_ctx, rval);
+                }
             }
         }
 
@@ -619,7 +643,10 @@ namespace QuickJS.Unity
                 {
                     _ctx.print_exception();
                 }
-                JSApi.JS_FreeValue(_ctx, rval);
+                else
+                {
+                    JSApi.JS_FreeValue(_ctx, rval);
+                }
             }
         }
 
@@ -632,7 +659,10 @@ namespace QuickJS.Unity
                 {
                     _ctx.print_exception();
                 }
-                JSApi.JS_FreeValue(_ctx, rval);
+                else
+                {
+                    JSApi.JS_FreeValue(_ctx, rval);
+                }
             }
         }
 
@@ -645,7 +675,10 @@ namespace QuickJS.Unity
                 {
                     _ctx.print_exception();
                 }
-                JSApi.JS_FreeValue(_ctx, rval);
+                else
+                {
+                    JSApi.JS_FreeValue(_ctx, rval);
+                }
             }
 #if UNITY_EDITOR
             if (UnityEditor.EditorApplication.isCompiling)
@@ -665,7 +698,10 @@ namespace QuickJS.Unity
                 {
                     _ctx.print_exception();
                 }
-                JSApi.JS_FreeValue(_ctx, rval);
+                else
+                {
+                    JSApi.JS_FreeValue(_ctx, rval);
+                }
             }
         }
 #endif
@@ -679,7 +715,10 @@ namespace QuickJS.Unity
                 {
                     _ctx.print_exception();
                 }
-                JSApi.JS_FreeValue(_ctx, rval);
+                else
+                {
+                    JSApi.JS_FreeValue(_ctx, rval);
+                }
             }
             ReleaseJSValues();
         }

@@ -473,7 +473,10 @@ namespace QuickJS.Extra
                     {
                         _jsContext.print_exception();
                     }
-                    JSApi.JS_FreeValue(_jsContext, eventFunc);
+                    else
+                    {
+                        JSApi.JS_FreeValue(_jsContext, eventFunc);
+                    }
                     return;
                 }
                 var args = stackalloc JSValue[1];
@@ -483,7 +486,10 @@ namespace QuickJS.Extra
                 {
                     _jsContext.print_exception();
                 }
-                JSApi.JS_FreeValue(_jsContext, rval);
+                else
+                {
+                    JSApi.JS_FreeValue(_jsContext, rval);
+                }
                 JSApi.JS_FreeValue(_jsContext, eventFunc);
             }
         }
@@ -834,7 +840,7 @@ namespace QuickJS.Extra
             {
                 return;
             }
-            
+
             var cls = register.CreateClass(typeof(WebSocket).Name, typeof(WebSocket), _js_constructor);
             cls.AddMethod(false, "close", _js_close);
             cls.AddMethod(false, "send", _js_send);

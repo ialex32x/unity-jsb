@@ -153,7 +153,10 @@ namespace QuickJS.Unity
                     {
                         _ctx.print_exception();
                     }
-                    JSApi.JS_FreeValue(_ctx, rval);
+                    else
+                    {
+                        JSApi.JS_FreeValue(_ctx, rval);
+                    }
                 }
             }
         }
@@ -174,7 +177,7 @@ namespace QuickJS.Unity
                             OnUnbindingJSFuncs();
                             JSApi.JS_SetPrototype(context, _this_obj, prototype);
                             OnBindingJSFuncs(context);
-                            
+
                             if (_onAfterScriptReloadValid)
                             {
                                 var rval = JSApi.JS_Call(_ctx, _onAfterScriptReloadFunc, _this_obj);
@@ -182,7 +185,10 @@ namespace QuickJS.Unity
                                 {
                                     _ctx.print_exception();
                                 }
-                                JSApi.JS_FreeValue(_ctx, rval);
+                                else
+                                {
+                                    JSApi.JS_FreeValue(_ctx, rval);
+                                }
                             }
                         }
 
@@ -376,7 +382,10 @@ namespace QuickJS.Unity
                 {
                     _ctx.print_exception();
                 }
-                JSApi.JS_FreeValue(_ctx, rval);
+                else
+                {
+                    JSApi.JS_FreeValue(_ctx, rval);
+                }
             }
         }
 
