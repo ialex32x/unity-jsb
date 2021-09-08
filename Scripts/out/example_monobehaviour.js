@@ -129,6 +129,9 @@ RotateBehaviour = __decorate([
 exports.RotateBehaviour = RotateBehaviour;
 let Something5Behaviour = class Something5Behaviour extends UnityEngine_1.MonoBehaviour {
 };
+__decorate([
+    class_decorators_1.ScriptProperty({ type: "Vector3" })
+], Something5Behaviour.prototype, "pos", void 0);
 Something5Behaviour = __decorate([
     class_decorators_1.ScriptType()
 ], Something5Behaviour);
@@ -168,6 +171,7 @@ if (module == require.main) {
         sphere.transform.TestWithScriptObject(function () {
             console.warn("TestWithScriptObject");
         });
+        sphere.AddComponent(Something5Behaviour);
     }
 }
 //# sourceMappingURL=example_monobehaviour.js.map

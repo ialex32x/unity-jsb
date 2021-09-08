@@ -118,6 +118,10 @@ export class RotateBehaviour extends MonoBehaviour {
 
 @ScriptType()
 export class Something5Behaviour extends MonoBehaviour {
+    
+    @ScriptProperty({ type: "Vector3" })
+    pos: Vector3;
+
 }
 
 if (module == require.main) {
@@ -163,5 +167,7 @@ if (module == require.main) {
         sphere.transform.TestWithScriptObject(function () {
             console.warn("TestWithScriptObject");
         });
+
+        sphere.AddComponent(Something5Behaviour);
     }
 }

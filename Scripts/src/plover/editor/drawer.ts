@@ -21,7 +21,7 @@ let DefaultPropertyDrawers: { [key: string]: IPropertyDrawer } = {
     "bool": {
         draw(self: any, prop: PropertyMetaInfo, label: string, editablePE: boolean) {
             let propertyKey = prop.propertyKey;
-            let oldValue: boolean = self[propertyKey];
+            let oldValue: boolean = !!self[propertyKey];
             if (editablePE) {
                 let newValue = EditorGUILayout.Toggle(label, oldValue);
                 if (newValue != oldValue) {
@@ -38,7 +38,7 @@ let DefaultPropertyDrawers: { [key: string]: IPropertyDrawer } = {
     "float": {
         draw(self: any, prop: PropertyMetaInfo, label: string, editablePE: boolean) {
             let propertyKey = prop.propertyKey;
-            let oldValue: number = self[propertyKey];
+            let oldValue: number = self[propertyKey] || 0;
             if (editablePE) {
                 let newValue = EditorGUILayout.FloatField(label, oldValue);
                 if (newValue != oldValue) {
@@ -55,7 +55,7 @@ let DefaultPropertyDrawers: { [key: string]: IPropertyDrawer } = {
     "double": {
         draw(self: any, prop: PropertyMetaInfo, label: string, editablePE: boolean) {
             let propertyKey = prop.propertyKey;
-            let oldValue: number = self[propertyKey];
+            let oldValue: number = self[propertyKey] || 0;
             if (editablePE) {
                 let newValue = EditorGUILayout.FloatField(label, oldValue);
                 if (newValue != oldValue) {
@@ -72,7 +72,7 @@ let DefaultPropertyDrawers: { [key: string]: IPropertyDrawer } = {
     "Vector3": {
         draw(self: any, prop: PropertyMetaInfo, label: string, editablePE: boolean) {
             let propertyKey = prop.propertyKey;
-            let oldValue: Vector3 = self[propertyKey];
+            let oldValue: Vector3 = self[propertyKey] || Vector3.zero;
             if (editablePE) {
                 let newValue = EditorGUILayout.Vector3Field(label, oldValue);
                 if (newValue != oldValue) {
@@ -89,7 +89,7 @@ let DefaultPropertyDrawers: { [key: string]: IPropertyDrawer } = {
     "Vector4": {
         draw(self: any, prop: PropertyMetaInfo, label: string, editablePE: boolean) {
             let propertyKey = prop.propertyKey;
-            let oldValue: Vector4 = self[propertyKey];
+            let oldValue: Vector4 = self[propertyKey] || Vector4.zero;
             if (editablePE) {
                 let newValue = EditorGUILayout.Vector4Field(label, oldValue);
                 if (newValue != oldValue) {
@@ -106,7 +106,7 @@ let DefaultPropertyDrawers: { [key: string]: IPropertyDrawer } = {
     "Quaternion": {
         draw(self: any, prop: PropertyMetaInfo, label: string, editablePE: boolean) {
             let propertyKey = prop.propertyKey;
-            let oldValue: Vector4 = self[propertyKey];
+            let oldValue: Vector4 = self[propertyKey] || Quaternion.identity;
             if (editablePE) {
                 let newValue = EditorGUILayout.Vector4Field(label, oldValue);
                 if (newValue != oldValue) {
