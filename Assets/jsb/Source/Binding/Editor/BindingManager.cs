@@ -1144,6 +1144,12 @@ namespace QuickJS.Binding
                 return true;
             }
 
+            //TODO optional support for unsafe types?
+            if (type.GetCustomAttribute<System.Runtime.CompilerServices.UnsafeValueTypeAttribute>() != null)
+            {
+                return true;
+            }
+
             var encloser = type;
             while (encloser != null)
             {

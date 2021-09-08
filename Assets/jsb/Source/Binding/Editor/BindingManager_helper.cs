@@ -53,6 +53,15 @@ namespace QuickJS.Binding
         }
 
         // 是否包含指针参数
+        public static bool ContainsPointer(MethodInfo method)
+        {
+            if (method.ReturnType.IsPointer)
+            {
+                return true;
+            }
+            return ContainsPointer((MethodBase)method);
+        }
+
         public static bool ContainsPointer(MethodBase method)
         {
             var parameters = method.GetParameters();

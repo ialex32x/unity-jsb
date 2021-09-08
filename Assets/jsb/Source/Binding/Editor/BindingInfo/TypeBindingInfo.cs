@@ -192,7 +192,15 @@ namespace QuickJS.Binding
 
         public bool IsSupportedOperators(MethodInfo methodInfo)
         {
-            return methodInfo.IsSpecialName && methodInfo.Name.StartsWith("op_");
+            if (methodInfo.IsSpecialName && methodInfo.Name.StartsWith("op_"))
+            {
+                // do not support overloaded operators at present
+                if (methodInfo.DeclaringType.GetMethods().Count(m => m.IsSpecialName && m.Name.StartsWith("op_") && m.Name == methodInfo.Name) == 1)
+                {
+                    return true;
+                }
+            }
+            return false;
         }
 
         public bool IsOperatorOverloadingEnabled(MethodInfo methodInfo)
@@ -229,7 +237,7 @@ namespace QuickJS.Binding
 
             var methodCSName = methodInfo.Name;
             var methodJSName = this.bindingManager.GetNamingAttribute(this.transform, methodInfo);
-            
+
             if (IsOperatorOverloadingEnabled(methodInfo))
             {
                 var parameters = methodInfo.GetParameters();
@@ -410,6 +418,12 @@ namespace QuickJS.Binding
                 if (field.IsDefined(typeof(ObsoleteAttribute), false))
                 {
                     bindingManager.Info("skip obsolete field: {0}", field.Name);
+                    continue;
+                }
+
+                if (field.IsDefined(typeof(System.Runtime.CompilerServices.FixedBufferAttribute), false))
+                {
+                    bindingManager.Info("skip unsupported field (FixedBuffer): {0}", field.Name);
                     continue;
                 }
 
