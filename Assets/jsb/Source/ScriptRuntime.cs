@@ -916,7 +916,7 @@ namespace QuickJS
                 _asyncManager = null;
             }
 
-            if (JSApi.JS_FreeRuntime(_rt) != 0) {
+            if (JSApi.JS_FreeRuntime(_rt) == 0) {
                 _logger?.Write(LogLevel.Assert, "gc object leaks");
             }
             var id = _runtimeId;
