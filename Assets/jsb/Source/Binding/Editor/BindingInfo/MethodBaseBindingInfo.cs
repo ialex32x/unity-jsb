@@ -2,6 +2,7 @@
 using System.IO;
 using System.Collections.Generic;
 using System.Reflection;
+using System.Linq;
 using System.Runtime.CompilerServices;
 
 namespace QuickJS.Binding
@@ -89,6 +90,10 @@ namespace QuickJS.Binding
             this.jsName = jsName;
             this.cs_op = cs_op;
             this.csBindName = bindingManager.GetBindName(bStatic, csName);
+            if (methodInfo.DeclaringType.GetMethods().Count(m => m.IsSpecialName && m.Name.StartsWith("op_") && m.Name == methodInfo.Name) > 1)
+            {
+                this.csBindName += "_m";
+            }
 
             this.Add(methodInfo, isExtension); //NOTE: 旧代码, 待更替
         }

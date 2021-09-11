@@ -1736,7 +1736,7 @@ namespace QuickJS.Binding
                 }
                 catch (Exception exception)
                 {
-                    Error($"generate failed {typeBindingInfo.type.FullName}: {exception.Message}");
+                    Error($"generate failed {typeBindingInfo.type.FullName}: {exception.Message}\n{exception.StackTrace}");
                 }
             }
 

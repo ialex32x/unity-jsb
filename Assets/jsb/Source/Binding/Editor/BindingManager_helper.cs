@@ -76,6 +76,29 @@ namespace QuickJS.Binding
             return false;
         }
 
+        public static bool ContainsUnsupportedParameter(MethodInfo method)
+        {
+            if (method.ReturnType.IsPointer || method.ReturnType.FullName == null)
+            {
+                return true;
+            }
+            return ContainsUnsupportedParameter((MethodBase)method);
+        }
+
+        public static bool ContainsUnsupportedParameter(MethodBase method)
+        {
+            var parameters = method.GetParameters();
+            for (int i = 0, size = parameters.Length; i < size; i++)
+            {
+                var parameterType = parameters[i].ParameterType;
+                if (parameterType.IsPointer || parameterType.FullName == null)
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
         // 是否包含按引用传参 (ref/out)
         public static bool ContainsByRefParameters(ParameterInfo[] parameters)
         {
@@ -102,7 +125,12 @@ namespace QuickJS.Binding
 
         public static bool IsUnsupported(MethodBase method)
         {
-            return ContainsPointer(method) || IsGenericMethod(method);
+            return ContainsUnsupportedParameter(method) || IsGenericMethod(method);
+        }
+
+        public static bool IsUnsupported(MethodInfo method)
+        {
+            return ContainsUnsupportedParameter(method) || IsGenericMethod(method);
         }
 
         #region Helper for Extension Methods 

@@ -119,7 +119,8 @@ namespace QuickJS.Binding
             if (type.IsGenericType)
             {
                 var selfname = string.IsNullOrEmpty(type.Namespace) ? "" : (type.Namespace + "_");
-                selfname += type.Name.Substring(0, type.Name.IndexOf('`'));
+                var gpIndex = type.Name.IndexOf('`');
+                selfname += gpIndex >= 0 ? type.Name.Substring(0, gpIndex) : type.Name;
                 foreach (var gp in type.GetGenericArguments())
                 {
                     selfname += "_" + gp.Name;
@@ -195,10 +196,11 @@ namespace QuickJS.Binding
             if (methodInfo.IsSpecialName && methodInfo.Name.StartsWith("op_"))
             {
                 // do not support overloaded operators at present
-                if (methodInfo.DeclaringType.GetMethods().Count(m => m.IsSpecialName && m.Name.StartsWith("op_") && m.Name == methodInfo.Name) == 1)
-                {
-                    return true;
-                }
+                // if (methodInfo.DeclaringType.GetMethods().Count(m => m.IsSpecialName && m.Name.StartsWith("op_") && m.Name == methodInfo.Name) == 1)
+                // {
+                //     return true;
+                // }
+                return true;
             }
             return false;
         }
@@ -632,9 +634,9 @@ namespace QuickJS.Binding
                     continue;
                 }
 
-                if (BindingManager.ContainsPointer(method))
+                if (BindingManager.ContainsUnsupportedParameter(method))
                 {
-                    bindingManager.Info("skip unsafe (pointer) method: {0}", method);
+                    bindingManager.Info("skip unsupported (pointer/invalid parameter type) method: {0}", method);
                     continue;
                 }
 
