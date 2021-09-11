@@ -146,11 +146,13 @@ namespace QuickJS.Unity
         {
             var prefs = LoadPrefs();
             var kv = new Dictionary<string, List<string>>();
-            foreach (var dir in prefs.cleanupDir)
+
+            if (prefs.cleanupDir != null) 
             {
-                var pdir = ReplacePathVars(dir);
-                kv[pdir] = new List<string>();
+                prefs.cleanupDir.ForEach(dir => kv[ReplacePathVars(dir)] = null);
             }
+            kv[ReplacePathVars(prefs.outDir)] = null;
+            kv[ReplacePathVars(prefs.typescriptDir)] = null;
             BindingManager.Cleanup(kv, null);
             AssetDatabase.Refresh();
         }

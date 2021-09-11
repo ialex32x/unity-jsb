@@ -1674,7 +1674,7 @@ namespace QuickJS.Binding
                         {
                             nfile = file.Substring(0, file.Length - 5);
                         }
-                        // Debug.LogFormat("checking file {0}", nfile);
+                        // UnityEngine.Debug.LogFormat("checking file {0}", nfile);
                         if (excludedFiles == null || !excludedFiles.Contains(nfile))
                         {
                             File.Delete(file);
