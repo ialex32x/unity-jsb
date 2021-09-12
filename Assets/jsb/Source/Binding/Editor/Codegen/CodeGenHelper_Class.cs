@@ -100,6 +100,7 @@ namespace QuickJS.Binding
                 var jscOverride = transform.GetCSMethodOverrideBinding(methodBindingInfo.jsName);
                 if (jscOverride == null)
                 {
+                    //TODO add requiredDefines support
                     using (new PInvokeGuardCodeGen(cg))
                     {
                         using (new BindingFuncDeclareCodeGen(cg, methodBindingInfo.csBindName))
@@ -137,6 +138,7 @@ namespace QuickJS.Binding
                     var jscOverride = transform.GetCSMethodOverrideBinding(methodBindingInfo.jsName);
                     if (jscOverride == null)
                     {
+                        //TODO add requiredDefines support
                         using (new PInvokeGuardCodeGen(cg))
                         {
                             using (new BindingFuncDeclareCodeGen(cg, methodBindingInfo.csBindName))
@@ -289,14 +291,17 @@ namespace QuickJS.Binding
                 // 可读
                 if (fieldBindingInfo.getterName != null)
                 {
-                    using (new PInvokeGuardCodeGen(cg, typeof(JSGetterCFunction)))
+                    using (new CSEditorOnlyCodeGen(cg, transform.GetRequiredDefinesOfMember(fieldBindingInfo.fieldInfo.Name)))
                     {
-                        using (new BindingGetterFuncDeclareCodeGen(cg, fieldBindingInfo.getterName))
+                        using (new PInvokeGuardCodeGen(cg, typeof(JSGetterCFunction)))
                         {
-                            using (new TryCatchGuradCodeGen(cg))
+                            using (new BindingGetterFuncDeclareCodeGen(cg, fieldBindingInfo.getterName))
                             {
-                                using (new FieldGetterCodeGen(cg, fieldBindingInfo))
+                                using (new TryCatchGuradCodeGen(cg))
                                 {
+                                    using (new FieldGetterCodeGen(cg, fieldBindingInfo))
+                                    {
+                                    }
                                 }
                             }
                         }
@@ -306,14 +311,17 @@ namespace QuickJS.Binding
                 // 可写 
                 if (fieldBindingInfo.setterName != null)
                 {
-                    using (new PInvokeGuardCodeGen(cg, typeof(JSSetterCFunction)))
+                    using (new CSEditorOnlyCodeGen(cg, transform.GetRequiredDefinesOfMember(fieldBindingInfo.fieldInfo.Name)))
                     {
-                        using (new BindingSetterFuncDeclareCodeGen(cg, fieldBindingInfo.setterName))
+                        using (new PInvokeGuardCodeGen(cg, typeof(JSSetterCFunction)))
                         {
-                            using (new TryCatchGuradCodeGen(cg))
+                            using (new BindingSetterFuncDeclareCodeGen(cg, fieldBindingInfo.setterName))
                             {
-                                using (new FieldSetterCodeGen(cg, fieldBindingInfo))
+                                using (new TryCatchGuradCodeGen(cg))
                                 {
+                                    using (new FieldSetterCodeGen(cg, fieldBindingInfo))
+                                    {
+                                    }
                                 }
                             }
                         }
@@ -533,29 +541,32 @@ namespace QuickJS.Binding
 
                 foreach (var kv in typeBindingInfo.fields)
                 {
-                    var bindingInfo = kv.Value;
-                    var bStatic = bindingInfo.isStatic;
-                    var tsFieldVar = this.cg.bindingManager.GetTSVariable(bindingInfo.regName);
-                    if (bindingInfo.constantValue != null)
+                    var fieldBindingInfo = kv.Value;
+                    var bStatic = fieldBindingInfo.isStatic;
+                    var tsFieldVar = this.cg.bindingManager.GetTSVariable(fieldBindingInfo.regName);
+                    using (new CSEditorOnlyCodeGen(cg, transform.GetRequiredDefinesOfMember(fieldBindingInfo.fieldInfo.Name)))
                     {
-                        var cv = bindingInfo.constantValue;
-                        cg.cs.AppendLine($"cls.AddConstValue(\"{tsFieldVar}\", {cv});");
-                    }
-                    else
-                    {
-                        cg.cs.AppendLine("cls.AddField({0}, \"{1}\", {2}, {3});",
-                            bStatic ? "true" : "false",
-                            tsFieldVar,
-                            bindingInfo.getterName != null ? bindingInfo.getterName : "null",
-                            bindingInfo.setterName != null ? bindingInfo.setterName : "null");
+                        if (fieldBindingInfo.constantValue != null)
+                        {
+                            var cv = fieldBindingInfo.constantValue;
+                            cg.cs.AppendLine($"cls.AddConstValue(\"{tsFieldVar}\", {cv});");
+                        }
+                        else
+                        {
+                            cg.cs.AppendLine("cls.AddField({0}, \"{1}\", {2}, {3});",
+                                bStatic ? "true" : "false",
+                                tsFieldVar,
+                                fieldBindingInfo.getterName != null ? fieldBindingInfo.getterName : "null",
+                                fieldBindingInfo.setterName != null ? fieldBindingInfo.setterName : "null");
+                        }
                     }
                     var tsFieldPrefix = bStatic ? "static " : "";
-                    if (bindingInfo.setterName == null)
+                    if (fieldBindingInfo.setterName == null)
                     {
                         tsFieldPrefix += "readonly ";
                     }
-                    var tsFieldType = this.cg.currentTSModule.GetTSTypeFullName(bindingInfo.fieldType);
-                    cg.AppendJSDoc(bindingInfo.fieldInfo);
+                    var tsFieldType = this.cg.currentTSModule.GetTSTypeFullName(fieldBindingInfo.fieldType);
+                    cg.AppendJSDoc(fieldBindingInfo.fieldInfo);
                     cg.tsDeclare.AppendLine($"{tsFieldPrefix}{tsFieldVar}: {tsFieldType}");
                 }
 
