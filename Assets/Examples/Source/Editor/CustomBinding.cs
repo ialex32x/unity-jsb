@@ -53,12 +53,16 @@ namespace Example.Editor
             bindingManager.AddExportedType(typeof(TWrapper<Vector3>));
             bindingManager.AddExportedType(typeof(DisposableObject)).SetDisposable();
 
-            #if CUSTOM_DEF_FOO
-            bindingManager.AddExportedType(typeof(FOO)).AddRequiredDefines("CUSTOM_DEF_FOO", "UNITY_EDITOR");
-            #endif
-            #if CUSTOM_DEF_BAR
+#if CUSTOM_DEF_FOO
+            bindingManager.AddExportedType(typeof(FOO)).AddRequiredDefines("CUSTOM_DEF_FOO", "UNITY_EDITOR")
+#if CUSTOM_DEF_PROP
+                .AddRequiredDefinesForMember("propValue", "CUSTOM_DEF_PROP")                
+#endif
+            ;
+#endif
+#if CUSTOM_DEF_BAR
             bindingManager.AddExportedType(typeof(BAR)).AddRequiredDefines("CUSTOM_DEF_BAR");
-            #endif
+#endif
         }
     }
 }

@@ -30,6 +30,8 @@ namespace QuickJS.Binding
         // 此类型依赖特定的预编译指令
         public HashSet<string> requiredDefines = new HashSet<string>();
 
+        private Dictionary<string, HashSet<string>> _requiredDefinesOfMember;
+
         // 扩展方法
         public readonly List<MethodInfo> extensionMethods = new List<MethodInfo>();
 
@@ -125,6 +127,37 @@ namespace QuickJS.Binding
         public TypeTransform SystemRuntime()
         {
             bindingFlags &= ~TypeBindingFlags.BuildTargetPlatformOnly;
+            return this;
+        }
+
+        public HashSet<string> GetRequiredDefinesOfMember(string memberName)
+        {
+            if (_requiredDefinesOfMember != null) 
+            {
+                HashSet<string> requiredDefines;
+                if (_requiredDefinesOfMember.TryGetValue(memberName, out requiredDefines))
+                {
+                    return requiredDefines;
+                }
+            }
+            return null;
+        }
+
+        public TypeTransform AddRequiredDefinesForMember(string memberName, params string[] requiredDefines)
+        {
+            if (_requiredDefinesOfMember == null) 
+            {
+                _requiredDefinesOfMember = new Dictionary<string, HashSet<string>>();
+            }
+            HashSet<string> oldValues;
+            if (_requiredDefinesOfMember.TryGetValue(memberName, out oldValues))
+            {
+                oldValues.UnionWith(requiredDefines);
+            }
+            else
+            {
+                _requiredDefinesOfMember[memberName] = new HashSet<string>(requiredDefines);
+            }
             return this;
         }
 

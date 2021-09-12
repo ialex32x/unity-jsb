@@ -200,14 +200,17 @@ namespace QuickJS.Binding
                     // 可读属性
                     if (propertyBindingInfo.staticPair.getterName != null)
                     {
-                        using (new PInvokeGuardCodeGen(cg, typeof(JSGetterCFunction)))
+                        using (new CSEditorOnlyCodeGen(cg, transform.GetRequiredDefinesOfMember(propertyBindingInfo.propertyInfo.Name)))
                         {
-                            using (new BindingGetterFuncDeclareCodeGen(cg, propertyBindingInfo.staticPair.getterName))
+                            using (new PInvokeGuardCodeGen(cg, typeof(JSGetterCFunction)))
                             {
-                                using (new TryCatchGuradCodeGen(cg))
+                                using (new BindingGetterFuncDeclareCodeGen(cg, propertyBindingInfo.staticPair.getterName))
                                 {
-                                    using (new PropertyGetterCodeGen(cg, propertyBindingInfo))
+                                    using (new TryCatchGuradCodeGen(cg))
                                     {
+                                        using (new PropertyGetterCodeGen(cg, propertyBindingInfo))
+                                        {
+                                        }
                                     }
                                 }
                             }
@@ -217,14 +220,17 @@ namespace QuickJS.Binding
                     // 可写属性
                     if (propertyBindingInfo.staticPair.setterName != null)
                     {
-                        using (new PInvokeGuardCodeGen(cg, typeof(JSSetterCFunction)))
+                        using (new CSEditorOnlyCodeGen(cg, transform.GetRequiredDefinesOfMember(propertyBindingInfo.propertyInfo.Name)))
                         {
-                            using (new BindingSetterFuncDeclareCodeGen(cg, propertyBindingInfo.staticPair.setterName))
+                            using (new PInvokeGuardCodeGen(cg, typeof(JSSetterCFunction)))
                             {
-                                using (new TryCatchGuradCodeGen(cg))
+                                using (new BindingSetterFuncDeclareCodeGen(cg, propertyBindingInfo.staticPair.setterName))
                                 {
-                                    using (new PropertySetterCodeGen(cg, propertyBindingInfo))
+                                    using (new TryCatchGuradCodeGen(cg))
                                     {
+                                        using (new PropertySetterCodeGen(cg, propertyBindingInfo))
+                                        {
+                                        }
                                     }
                                 }
                             }
@@ -237,14 +243,17 @@ namespace QuickJS.Binding
                     // 可读属性
                     if (propertyBindingInfo.instancePair.getterName != null)
                     {
-                        using (new PInvokeGuardCodeGen(cg, typeof(JSGetterCFunction)))
+                        using (new CSEditorOnlyCodeGen(cg, transform.GetRequiredDefinesOfMember(propertyBindingInfo.propertyInfo.Name)))
                         {
-                            using (new BindingGetterFuncDeclareCodeGen(cg, propertyBindingInfo.instancePair.getterName))
+                            using (new PInvokeGuardCodeGen(cg, typeof(JSGetterCFunction)))
                             {
-                                using (new TryCatchGuradCodeGen(cg))
+                                using (new BindingGetterFuncDeclareCodeGen(cg, propertyBindingInfo.instancePair.getterName))
                                 {
-                                    using (new PropertyGetterCodeGen(cg, propertyBindingInfo))
+                                    using (new TryCatchGuradCodeGen(cg))
                                     {
+                                        using (new PropertyGetterCodeGen(cg, propertyBindingInfo))
+                                        {
+                                        }
                                     }
                                 }
                             }
@@ -253,14 +262,17 @@ namespace QuickJS.Binding
                     // 可写属性
                     if (propertyBindingInfo.instancePair.setterName != null)
                     {
-                        using (new PInvokeGuardCodeGen(cg, typeof(JSSetterCFunction)))
+                        using (new CSEditorOnlyCodeGen(cg, transform.GetRequiredDefinesOfMember(propertyBindingInfo.propertyInfo.Name)))
                         {
-                            using (new BindingSetterFuncDeclareCodeGen(cg, propertyBindingInfo.instancePair.setterName))
+                            using (new PInvokeGuardCodeGen(cg, typeof(JSSetterCFunction)))
                             {
-                                using (new TryCatchGuradCodeGen(cg))
+                                using (new BindingSetterFuncDeclareCodeGen(cg, propertyBindingInfo.instancePair.setterName))
                                 {
-                                    using (new PropertySetterCodeGen(cg, propertyBindingInfo))
+                                    using (new TryCatchGuradCodeGen(cg))
                                     {
+                                        using (new PropertySetterCodeGen(cg, propertyBindingInfo))
+                                        {
+                                        }
                                     }
                                 }
                             }
@@ -350,6 +362,7 @@ namespace QuickJS.Binding
         {
             using (new RegFuncCodeGen(cg))
             {
+                var transform = typeBindingInfo.transform;
                 var constructor = typeBindingInfo.constructors.available ? typeBindingInfo.constructors.csBindName : "JSApi.class_private_ctor";
 
                 if (!typeBindingInfo.constructors.available && !typeBindingInfo.type.IsAbstract)
@@ -480,11 +493,13 @@ namespace QuickJS.Binding
                     if (propertyBindingInfo.staticPair.IsValid())
                     {
                         var tsPropertyVar = this.cg.bindingManager.GetTSVariable(propertyBindingInfo.regName);
-                        cg.cs.AppendLine("cls.AddProperty(true, \"{0}\", {1}, {2});",
-                            tsPropertyVar,
-                            propertyBindingInfo.staticPair.getterName != null ? propertyBindingInfo.staticPair.getterName : "null",
-                            propertyBindingInfo.staticPair.setterName != null ? propertyBindingInfo.staticPair.setterName : "null");
-
+                        using (new CSEditorOnlyCodeGen(cg, transform.GetRequiredDefinesOfMember(propertyBindingInfo.propertyInfo.Name)))
+                        {
+                            cg.cs.AppendLine("cls.AddProperty(true, \"{0}\", {1}, {2});",
+                                tsPropertyVar,
+                                propertyBindingInfo.staticPair.getterName != null ? propertyBindingInfo.staticPair.getterName : "null",
+                                propertyBindingInfo.staticPair.setterName != null ? propertyBindingInfo.staticPair.setterName : "null");
+                        }
                         var tsPropertyPrefix = "static ";
                         if (propertyBindingInfo.staticPair.setterName == null)
                         {
@@ -498,11 +513,13 @@ namespace QuickJS.Binding
                     if (propertyBindingInfo.instancePair.IsValid())
                     {
                         var tsPropertyVar = this.cg.bindingManager.GetTSVariable(propertyBindingInfo.regName);
-                        cg.cs.AppendLine("cls.AddProperty(false, \"{0}\", {1}, {2});",
-                            tsPropertyVar,
-                            propertyBindingInfo.instancePair.getterName != null ? propertyBindingInfo.instancePair.getterName : "null",
-                            propertyBindingInfo.instancePair.setterName != null ? propertyBindingInfo.instancePair.setterName : "null");
-
+                        using (new CSEditorOnlyCodeGen(cg, transform.GetRequiredDefinesOfMember(propertyBindingInfo.propertyInfo.Name)))
+                        {
+                            cg.cs.AppendLine("cls.AddProperty(false, \"{0}\", {1}, {2});",
+                                tsPropertyVar,
+                                propertyBindingInfo.instancePair.getterName != null ? propertyBindingInfo.instancePair.getterName : "null",
+                                propertyBindingInfo.instancePair.setterName != null ? propertyBindingInfo.instancePair.setterName : "null");
+                        }
                         var tsPropertyPrefix = "";
                         if (propertyBindingInfo.instancePair.setterName == null)
                         {

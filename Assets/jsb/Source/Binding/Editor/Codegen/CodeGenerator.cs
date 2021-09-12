@@ -105,7 +105,7 @@ namespace QuickJS.Binding
 
                                                     foreach (var editorTypes in editorTypesMap)
                                                     {
-                                                        using (new EditorOnlyCodeGen(this, editorTypes.Key))
+                                                        using (new CSEditorOnlyCodeGen(this, editorTypes.Key))
                                                         {
                                                             foreach (var type in editorTypes.Value)
                                                             {
@@ -167,7 +167,7 @@ namespace QuickJS.Binding
                                     // var nargs = delegateBindingInfo.parameters.Length;
 
                                     this.bindingManager.OnPreGenerateDelegate(delegateBindingInfo);
-                                    using (new EditorOnlyCodeGen(this, delegateBindingInfo.requiredDefines))
+                                    using (new CSEditorOnlyCodeGen(this, delegateBindingInfo.requiredDefines))
                                     {
                                         using (new PreservedCodeGen(this))
                                         {
@@ -198,11 +198,10 @@ namespace QuickJS.Binding
         {
             this.cs.enabled = (typeBindingInfo.bindingFlags & TypeBindingFlags.BindingCode) != 0 && (typeBindingFlags & TypeBindingFlags.BindingCode) != 0;
             this.tsDeclare.enabled = (typeBindingInfo.bindingFlags & TypeBindingFlags.TypeDefinition) != 0 && (typeBindingFlags & TypeBindingFlags.TypeDefinition) != 0;
-            var defs = string.Join(" && ", from def in typeBindingInfo.requiredDefines select def);
 
             using (new CSDebugCodeGen(this))
             {
-                using (new EditorOnlyCodeGen(this, defs))
+                using (new CSEditorOnlyCodeGen(this, typeBindingInfo.requiredDefines))
                 {
                     using (new CSPlatformCodeGen(this, TypeBindingFlags.Default))
                     {

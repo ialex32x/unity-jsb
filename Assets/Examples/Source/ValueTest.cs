@@ -56,6 +56,10 @@ namespace Example
 #if CUSTOM_DEF_FOO && UNITY_EDITOR
     public class FOO
     {
+#if CUSTOM_DEF_PROP
+        public string propValue {get; set;}
+#endif
+        
         public static string value = "FOO";
     }
 #endif

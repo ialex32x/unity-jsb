@@ -374,12 +374,17 @@ namespace QuickJS.Binding
         }
     }
 
-    public class EditorOnlyCodeGen : IDisposable
+    public class CSEditorOnlyCodeGen : IDisposable
     {
         protected CodeGenerator cg;
         protected string requiredDefines;
 
-        public EditorOnlyCodeGen(CodeGenerator cg, string requiredDefines)
+        public CSEditorOnlyCodeGen(CodeGenerator cg, IEnumerable<string> requiredDefines)
+        : this(cg, (string)(requiredDefines != null ? string.Join(" && ", from def in requiredDefines select def) : null))
+        {
+        }
+
+        public CSEditorOnlyCodeGen(CodeGenerator cg, string requiredDefines)
         {
             this.cg = cg;
             this.requiredDefines = requiredDefines;
@@ -389,7 +394,7 @@ namespace QuickJS.Binding
             }
         }
 
-        public EditorOnlyCodeGen(CodeGenerator cg, bool isEditorRuntime = true)
+        public CSEditorOnlyCodeGen(CodeGenerator cg, bool isEditorRuntime = true)
         : this(cg, isEditorRuntime ? "UNITY_EDITOR" : null)
         {
         }
