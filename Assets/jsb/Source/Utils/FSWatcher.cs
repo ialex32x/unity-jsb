@@ -93,7 +93,14 @@ namespace QuickJS.Utils
             var ret = JSApi.JS_Call(_jsContext, func, JSApi.JS_UNDEFINED, 2, argv);
             JSApi.JS_FreeValue(_jsContext, argv[0]);
             JSApi.JS_FreeValue(_jsContext, argv[1]);
-            JSApi.JS_FreeValue(_jsContext, ret);
+            if (ret.IsException())
+            {
+                _jsContext.print_exception(Utils.LogLevel.Error, $"exception thrown in FSWatcher.Call: ${name} Path: ${fullPath}");
+            }
+            else
+            {
+                JSApi.JS_FreeValue(_jsContext, ret);
+            }
         }
 
         #region JS Bridging
