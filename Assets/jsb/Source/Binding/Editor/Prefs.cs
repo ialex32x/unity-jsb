@@ -257,6 +257,12 @@ namespace QuickJS.Binding
             "UnityEditor.TakeInfo", 
             "UnityEditor.L10n", 
             "UnityEditor.Build.Reporting", 
+            "UnityEditor.TypeCache", 
+            "UnityEditor.SceneManagement.ObjectOverride", 
+            "UnityEditor.SceneManagement.PrefabOverride", 
+            "UnityEditor.SceneManagement.AddedGameObject", 
+            "UnityEditor.SceneManagement.AddedComponent", 
+            "UnityEditor.SceneManagement.RemovedComponent", 
         });
 
         public List<string> namespaceBlacklist = new List<string>(new string[]

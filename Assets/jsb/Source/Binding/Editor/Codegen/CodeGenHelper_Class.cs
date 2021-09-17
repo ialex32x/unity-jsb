@@ -23,12 +23,6 @@ namespace QuickJS.Binding
             var jsClassName = this.typeBindingInfo.tsTypeNaming.jsName;
             var jsClassType = "";
 
-            if (typeBindingInfo.requiredDefines.Count != 0)
-            {
-                var defs = string.Join(", ", from def in typeBindingInfo.requiredDefines select $"\"{def}\"");
-                this.cg.tsDeclare.AppendLine($"@{this.cg.bindingManager.GetDefaultTypePrefix()}RequiredDefines({defs})");
-            }
-
             if (typeBindingInfo.type.IsInterface)
             {
                 jsClassType = "interface";
@@ -62,6 +56,19 @@ namespace QuickJS.Binding
                 if (!string.IsNullOrEmpty(interfaces))
                 {
                     implements += $" implements {interfaces}";
+                }
+            }
+
+            if (typeBindingInfo.requiredDefines.Count != 0)
+            {
+                var defs = string.Join(", ", from def in typeBindingInfo.requiredDefines select $"\"{def}\"");
+                if (jsClassType == "interface")
+                {
+                    this.cg.tsDeclare.AppendLine($"// @{this.cg.bindingManager.GetDefaultTypePrefix()}RequiredDefines({defs})");
+                }
+                else
+                {
+                    this.cg.tsDeclare.AppendLine($"@{this.cg.bindingManager.GetDefaultTypePrefix()}RequiredDefines({defs})");
                 }
             }
 
@@ -155,7 +162,7 @@ namespace QuickJS.Binding
                             }
                         }
                     }
-                    
+
                     if (this.cg.tsDeclare.enabled)
                     {
                         using (new TSMethodCodeGen<MethodInfo>(cg, typeBindingInfo, methodBindingInfo))

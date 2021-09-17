@@ -27,7 +27,7 @@ namespace QuickJS.Binding
         public JSBindResult bindResult;
         public TypeBindingFlags typeBindingFlags;
 
-        public bool withCodegen => cs.enabled && tsDeclare.enabled;
+        public bool withCodegen => cs.enabled || tsDeclare.enabled;
 
         public CodeGenerator(BindingManager bindingManager, TypeBindingFlags typeBindingFlags)
         {
