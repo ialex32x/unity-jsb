@@ -26,12 +26,13 @@ namespace QuickJS.Binding
         private IBindingUtils _utils;
         private TextGenerator _logWriter;
 
-        private HashSet<string> _blockedAssemblies = new HashSet<string>();  // 禁止导出的 assembly
         private List<string> _implicitAssemblies = new List<string>(); // 默认导出所有类型
         private List<string> _explicitAssemblies = new List<string>(); // 仅导出指定需要导出的类型
 
-        private HashSet<Type> _blacklist;
-        private List<string> _typePrefixBlacklist;
+        private HashSet<Type> _typeBlacklist;
+        private HashSet<string> _namespaceBlacklist;
+        private HashSet<string> _typeFullNameBlacklist;
+        private HashSet<string> _assemblyBlacklist;  // 禁止导出的 assembly
         private Dictionary<Type, TypeBindingInfo> _exportedTypes = new Dictionary<Type, TypeBindingInfo>();
         private Dictionary<Type, TSTypeNaming> _tsTypeNamings = new Dictionary<Type, TSTypeNaming>();
         private Dictionary<string, TSModuleBindingInfo> _exportedModules = new Dictionary<string, TSModuleBindingInfo>();
@@ -92,8 +93,10 @@ namespace QuickJS.Binding
             _bindingLogger = args.bindingLogger;
             _codegenCallback = args.codeGenCallback;
             _bindingCallback = args.bindingCallback;
-            _typePrefixBlacklist = new List<string>(prefs.typePrefixBlacklist);
-            _blacklist = new HashSet<Type>();
+            _namespaceBlacklist = new HashSet<string>(prefs.namespaceBlacklist);
+            _typeFullNameBlacklist = new HashSet<string>(prefs.typeFullNameBlacklist);
+            _assemblyBlacklist = new HashSet<string>(prefs.assemblyBlacklist);
+            _typeBlacklist = new HashSet<Type>();
             _logWriter = args.useLogWriter ? new TextGenerator(newline, tab) : null;
 
             if (prefs.optToString)
@@ -103,7 +106,6 @@ namespace QuickJS.Binding
 
             CollectDelegateReflectMethods();
             AddNameRule("js", t => char.ToLower(t[0]) + t.Substring(1));
-            AddTypePrefixBlacklist("System.SpanExtensions");
 
             TransformType(typeof(string))
                 .AddTSMethodDeclaration("static Equals(a: string | Object, b: string | Object, comparisonType: any): boolean", "Equals", typeof(string), typeof(string), typeof(StringComparison))
@@ -262,7 +264,7 @@ namespace QuickJS.Binding
 
         public void SetTypeBlocked(Type type)
         {
-            _blacklist.Add(type);
+            _typeBlacklist.Add(type);
         }
 
         public bool GetTSMethodDeclaration(MethodBase method, out string code)
@@ -444,6 +446,20 @@ namespace QuickJS.Binding
             return typeTransform;
         }
 
+        public static bool IsCompoundedType(Type[] types)
+        {
+            for (int i = 0, size = types.Length; i < size; ++i)
+            {
+                var type = types[i];
+                if (type.IsArray)
+                {
+                    return true;
+                }
+            }
+            
+            return false;
+        }
+
         public static bool IsConstructedGenericType(Type type)
         {
             return type.IsGenericType && !type.IsGenericTypeDefinition;
@@ -457,11 +473,6 @@ namespace QuickJS.Binding
                 module = _exportedModules[name] = new TSModuleBindingInfo(name);
             }
             return module;
-        }
-
-        public bool RemoveExportedType(Type type)
-        {
-            return _exportedTypes.Remove(type);
         }
 
         public DelegateBridgeBindingInfo GetDelegateBindingInfo(Type type)
@@ -1109,7 +1120,7 @@ namespace QuickJS.Binding
         // 是否在黑名单中屏蔽, 或者已知无需导出的类型
         public bool IsExportingBlocked(Type type)
         {
-            if (_blacklist.Contains(type))
+            if (_typeBlacklist.Contains(type))
             {
                 return true;
             }
@@ -1118,6 +1129,11 @@ namespace QuickJS.Binding
             // {
             //     return true;
             // }
+
+            if (IsConstructedGenericType(type) && IsCompoundedType(type.GetGenericArguments()))
+            {
+                return true;
+            }
 
             if (type.Name.Contains("<"))
             {
@@ -1160,14 +1176,25 @@ namespace QuickJS.Binding
                 encloser = encloser.DeclaringType;
             }
 
-            //TODO: try to remove this feature, extremely strong impact on performance 
-            for (int i = 0, size = _typePrefixBlacklist.Count; i < size; i++)
+            if (_namespaceBlacklist.Contains(type.Namespace) || _typeFullNameBlacklist.Contains(type.FullName))
             {
-                if (type.FullName.StartsWith(_typePrefixBlacklist[i]))
-                {
-                    return true;
-                }
+                return true;
             }
+
+            if (type.IsNested && IsExportingBlocked(type.DeclaringType))
+            {
+                return true;
+            }
+
+            // extremely strong impact on performance 
+            // for (int i = 0, size = prefs.typePrefixBlacklist.Count; i < size; i++)
+            // {
+            //     if (type.FullName.StartsWith(prefs.typePrefixBlacklist[i]))
+            //     {
+            //         UnityEngine.Debug.LogFormat("<01> skip in-blacklist type: {0} NS: {1} Assembly: {2}", type.FullName, type.Namespace, type.Assembly.FullName);
+            //         return true;
+            //     }
+            // }
 
             return false;
         }
@@ -1421,17 +1448,14 @@ namespace QuickJS.Binding
             _logWriter?.DecTabLevel();
         }
 
-        public void AddTypePrefixBlacklist(string prefix)
+        public void AddNamespaceBlacklist(string ns)
         {
-            if (!_typePrefixBlacklist.Contains(prefix))
-            {
-                _typePrefixBlacklist.Add(prefix);
-            }
+            _namespaceBlacklist.Add(ns);
         }
 
         public void SetAssemblyBlocked(string name)
         {
-            _blockedAssemblies.Add(name);
+            _assemblyBlacklist.Add(name);
         }
 
         public bool IsAssemblyReferenceTo(Assembly assembly, Assembly target)
@@ -1489,7 +1513,7 @@ namespace QuickJS.Binding
             }
             var comma = assembly.FullName.IndexOf(',');
             var name = comma >= 0 ? assembly.FullName.Substring(0, comma) : assembly.FullName;
-            return _blockedAssemblies.Contains(name);
+            return _assemblyBlacklist.Contains(name);
         }
 
         public void AddAssemblies(bool implicitExport, params string[] assemblyNames)

@@ -25,7 +25,6 @@ namespace jsb.Editor
 
         public override void OnPreCollectAssemblies(BindingManager bindingManager)
         {
-            bindingManager.SetAssemblyBlocked("ExCSS.Unity");
             HackGetComponents(bindingManager.TransformType(typeof(GameObject)));
             HackGetComponents(bindingManager.TransformType(typeof(Component)));
 
@@ -35,16 +34,16 @@ namespace jsb.Editor
             bindingManager.TransformType(typeof(ScriptableObject))
                 .WriteCrossBindingConstructor();
 
-            var buildTarget = EditorUserBuildSettings.activeBuildTarget;
-            if (buildTarget != BuildTarget.iOS)
-            {
-                bindingManager.AddTypePrefixBlacklist("UnityEngine.Apple");
-            }
-            if (buildTarget != BuildTarget.Android)
-            {
-                bindingManager.AddTypePrefixBlacklist("UnityEngine.Android");
-            }
-            bindingManager.AddTypePrefixBlacklist("SyntaxTree.");
+            // var buildTarget = EditorUserBuildSettings.activeBuildTarget;
+            // if (buildTarget != BuildTarget.iOS)
+            // {
+            //     bindingManager.AddTypePrefixBlacklist("UnityEngine.Apple");
+            // }
+            // if (buildTarget != BuildTarget.Android)
+            // {
+            //     bindingManager.AddTypePrefixBlacklist("UnityEngine.Android");
+            // }
+            // bindingManager.AddTypePrefixBlacklist("SyntaxTree.");
 
             // fix d.ts, some C# classes use explicit implemented interface method
             bindingManager.SetTypeBlocked(typeof(UnityEngine.ILogHandler));

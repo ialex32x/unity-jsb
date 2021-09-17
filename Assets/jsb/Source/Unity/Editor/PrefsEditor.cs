@@ -258,15 +258,15 @@ namespace QuickJS.Unity
 
         private bool InBlacklist(Type type)
         {
-            var list = _prefs.typePrefixBlacklist;
-            for (int i = 0, size = list.Count; i < size; i++)
-            {
-                var item = list[i];
-                if (type.FullName.StartsWith(item))
-                {
-                    return true;
-                }
-            }
+            // var list = _prefs.typePrefixBlacklist;
+            // for (int i = 0, size = list.Count; i < size; i++)
+            // {
+            //     var item = list[i];
+            //     if (type.FullName.StartsWith(item))
+            //     {
+            //         return true;
+            //     }
+            // }
             return false;
         }
     }

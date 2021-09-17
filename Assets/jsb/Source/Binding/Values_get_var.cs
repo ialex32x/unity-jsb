@@ -132,6 +132,47 @@ namespace QuickJS.Binding
             return NewBridgeClassObject(ctx, new_target, o, type_id, disposable);
         }
 
+        public static bool js_get_var_array(JSContext ctx, JSValue val, out object[] o)
+        {
+            var isArray = JSApi.JS_IsArray(ctx, val);
+            if (isArray == 1)
+            {
+                var lengthVal = JSApi.JS_GetProperty(ctx, val, JSApi.JS_ATOM_length);
+                if (JSApi.JS_IsException(lengthVal))
+                {
+                    o = null;
+                    return js_script_error(ctx);
+                }
+                int length;
+                JSApi.JS_ToInt32(ctx, out length, lengthVal);
+                JSApi.JS_FreeValue(ctx, lengthVal);
+                o = new object[length];
+                for (var i = 0U; i < length; i++)
+                {
+                    var eVal = JSApi.JS_GetPropertyUint32(ctx, val, i);
+                    object e;
+                    if (js_get_var(ctx, eVal, out e))
+                    {
+                        o[i] = e;
+                        JSApi.JS_FreeValue(ctx, eVal);
+                    }
+                    else
+                    {
+                        o = null;
+                        JSApi.JS_FreeValue(ctx, eVal);
+                        return false;
+                    }
+                }
+                return true;
+            }
+            if (isArray == -1)
+            {
+                o = null;
+                return false;
+            }
+            return js_get_classvalue<object[]>(ctx, val, out o);
+        }
+
         public static bool js_get_var(JSContext ctx, JSValue val, out object o)
         {
             return js_get_fallthrough(ctx, val, out o);

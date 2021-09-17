@@ -208,7 +208,7 @@ namespace QuickJS.Binding
                 return;
             }
 
-            if (type.IsGenericType && !type.IsGenericTypeDefinition)
+            if (BindingManager.IsConstructedGenericType(type))
             {
                 if (type.GetGenericTypeDefinition() == typeof(Nullable<>))
                 {
@@ -516,7 +516,7 @@ namespace QuickJS.Binding
         {
             var str = "";
 
-            if (type.IsGenericType && !type.IsGenericTypeDefinition)
+            if (BindingManager.IsConstructedGenericType(type))
             {
                 var gType = type.GetGenericTypeDefinition();
                 var gTypeInfo = this.cg.bindingManager.GetExportedType(gType);

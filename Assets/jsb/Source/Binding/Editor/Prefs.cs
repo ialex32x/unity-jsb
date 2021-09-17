@@ -204,24 +204,104 @@ namespace QuickJS.Binding
             // "UnityEngine.UI",
         });
 
-        /// <summary>
-        /// type.FullName 前缀满足以下任意一条时不会被导出
-        /// </summary>
-        public List<string> typePrefixBlacklist = new List<string>(new string[]
+        // extremely strong impact on performance 
+        // public List<string> typePrefixBlacklist = new List<string>(new string[]
+        // {
+        //     "JetBrains.",
+        //     "Unity.Collections.",
+        //     "Unity.Jobs.",
+        //     "Unity.Profiling.",
+        //     "UnityEditor.",
+        //     "UnityEditorInternal.",
+        //     "UnityEngineInternal.",
+        //     "UnityEditor.Experimental.",
+        //     "UnityEngine.Experimental.",
+        //     "Unity.IO.LowLevel.",
+        //     "Unity.Burst.",
+        //     "UnityEngine.Assertions.",
+        // });
+
+        public List<string> typeFullNameBlacklist = new List<string>(new string[] 
         {
-            "JetBrains.",
-            "Unity.Collections.",
-            "Unity.Jobs.",
-            "Unity.Profiling.",
-            "UnityEditor.",
-            "UnityEditorInternal.",
-            "UnityEngineInternal.",
-            "UnityEditor.Experimental.",
-            "UnityEngine.Experimental.",
-            "Unity.IO.LowLevel.",
-            "Unity.Burst.",
-            "UnityEngine.Assertions.",
+            "System.SpanExtensions", 
+            "UnityEditor.AppleMobileArchitecture",
+            "UnityEngine.AndroidJavaException", 
+            "UnityEngine.AndroidJavaProxy", 
+            "UnityEngine.AndroidJavaObject", 
+            "UnityEngine.AndroidJavaClass", 
+            "UnityEngine.AndroidJNIHelper", 
+            "UnityEngine.AndroidJNI", 
+            "UnityEngine.AndroidActivityIndicatorStyle", 
+            "UnityEngine.Android.AndroidDevice", 
+            "UnityEngine.Android.Permission", 
+            "UnityEngine.AndroidInput", 
+            "UnityEditor.AndroidETC2Fallback", 
+            "UnityEditor.AndroidBuildSystem", 
+            "UnityEditor.AndroidBuildType", 
+            "UnityEditor.AndroidMinification", 
+            "UnityEditor.AndroidArchitecture", 
+            "UnityEditor.AndroidSdkVersions", 
+            "UnityEditor.AndroidPreferredInstallLocation", 
+            "UnityEditor.AndroidShowActivityIndicatorOnLoading", 
+            "UnityEditor.AndroidGamepadSupportLevel", 
+            "UnityEditor.AndroidSplashScreenScale", 
+            "UnityEditor.AndroidBlitType", 
+            "UnityEditor.AndroidETC2FallbackOverride", 
+            "UnityEditor.Android.IPostGenerateGradleAndroidProject", 
         });
+
+        public List<string> namespaceBlacklist = new List<string>(new string[]
+        {
+            "TreeEditor", 
+            "Unity.CodeEditor", 
+            "UnityEditor.Experimental", 
+            "UnityEngine.Assertions", 
+            "UnityEngine.Experimental.AI", 
+            "UnityEngine.Experimental.Animations", 
+            "UnityEngine.Experimental.AssetBundlePatching", 
+            "UnityEngine.Experimental.Audio", 
+            "UnityEngine.Experimental.Networking.PlayerConnection", 
+            "UnityEngine.Experimental.GlobalIllumination", 
+            "UnityEngine.Experimental.Playables", 
+            "UnityEngine.Experimental.Rendering", 
+            "UnityEngine.Experimental.TerrainAPI", 
+            "UnityEngine.Experimental.XR", 
+            "UnityEngine.Experimental.Video", 
+            "UnityEngine.Jobs", 
+            "Unity.Jobs", 
+            "Unity.Profiling", 
+            "Unity.Profiling.LowLevel", 
+            "Unity.Jobs.LowLevel.Unsafe", 
+            "Unity.Collections.LowLevel.Unsafe", 
+            "UnityEngine.Apple.ReplayKit", 
+            "UnityEditor.Profiling.Memory.Experimental", 
+            "UnityEditor.Profiling", 
+            "UnityEditor.UIElements", 
+            "UnityEditor.Animations", 
+            "UnityEditor.Experimental.AssetImporters", 
+            "UnityEditor.Experimental.SceneManagement", 
+            "UnityEngineInternal", 
+            "UnityEditorInternal", 
+            "UnityEditorInternal.VersionControl", 
+            "JetBrains.Annotations", 
+            "Unity.IO.LowLevel.Unsafe", 
+            "Unity.Collections", 
+            "UnityEditor.Experimental.Rendering", 
+            "UnityEditor.Experimental.GraphView", 
+            "UnityEditor.Experimental.Licensing", 
+            "UnityEditor.Experimental.TerrainAPI", 
+        });
+
+        public List<string> assemblyBlacklist = new List<string>(new string[] 
+        {
+            "ExCSS.Unity", 
+            "Unity.Cecil", 
+            "Unity.Cecil.Mdb", 
+            "Unity.Cecil.Pdb", 
+            "Unity.Cecil.Rocks", 
+            "Unity.CecilTools", 
+        });
+        
         #endregion
 
         #region Runtime Methods

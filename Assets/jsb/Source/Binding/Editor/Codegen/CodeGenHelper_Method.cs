@@ -798,6 +798,10 @@ namespace QuickJS.Binding
                     case "op_Implicit":
                         var implicitTypeName = this.cg.bindingManager.GetCSTypeFullName(GetReturnType(method));
                         return $"({implicitTypeName}){arglist[0]}";
+                    case "op_BitwiseAnd":
+                        return $"{arglist[0]} & {arglist[1]}";
+                    case "op_BitwiseOr":
+                        return $"{arglist[0]} | {arglist[1]}";
                 }
             }
 

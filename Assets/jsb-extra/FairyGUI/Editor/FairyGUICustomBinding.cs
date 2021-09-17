@@ -20,7 +20,7 @@ namespace QuickJS.Extra
 
         public override void OnPreCollectAssemblies(BindingManager bindingManager)
         {
-            bindingManager.AddTypePrefixBlacklist("WebSocketSharp.");
+            bindingManager.AddNamespaceBlacklist("WebSocketSharp");
         }
 
         public override void OnPreExporting(BindingManager bindingManager)

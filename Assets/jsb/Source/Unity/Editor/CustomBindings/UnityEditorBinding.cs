@@ -25,8 +25,8 @@ namespace jsb.Editor
 
         public override void OnPreExporting(BindingManager bindingManager)
         {
-            bindingManager.AddTypePrefixBlacklist("Unity.");
-            bindingManager.AddTypePrefixBlacklist("TreeEditor.");
+            // bindingManager.AddTypePrefixBlacklist("Unity.");
+            // bindingManager.AddTypePrefixBlacklist("TreeEditor.");
             
             bindingManager.AddExportedType(typeof(GUI)).SetAllConstructorsBlocked();
             bindingManager.AddExportedType(typeof(GUIUtility)).SetAllConstructorsBlocked();
