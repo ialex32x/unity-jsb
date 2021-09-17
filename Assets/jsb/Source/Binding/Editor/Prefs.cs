@@ -224,6 +224,7 @@ namespace QuickJS.Binding
         public List<string> typeFullNameBlacklist = new List<string>(new string[]
         {
             "System.SpanExtensions",
+            "UnityEditor.MaterialEditorExtensions",
             "UnityEditor.AppleMobileArchitecture",
             "UnityEngine.AndroidJavaException",
             "UnityEngine.AndroidJavaProxy",

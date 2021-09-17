@@ -215,7 +215,7 @@ namespace QuickJS.Binding
                     // 可读属性
                     if (propertyBindingInfo.staticPair.getterName != null)
                     {
-                        using (new CSEditorOnlyCodeGen(cg, transform.GetRequiredDefinesOfMember(propertyBindingInfo.propertyInfo.Name)))
+                        using (new CSEditorOnlyCodeGen(cg, typeBindingInfo.GetRequiredDefines(propertyBindingInfo.propertyInfo)))
                         {
                             using (new PInvokeGuardCodeGen(cg, typeof(JSGetterCFunction)))
                             {
@@ -235,7 +235,7 @@ namespace QuickJS.Binding
                     // 可写属性
                     if (propertyBindingInfo.staticPair.setterName != null)
                     {
-                        using (new CSEditorOnlyCodeGen(cg, transform.GetRequiredDefinesOfMember(propertyBindingInfo.propertyInfo.Name)))
+                        using (new CSEditorOnlyCodeGen(cg, typeBindingInfo.GetRequiredDefines(propertyBindingInfo.propertyInfo)))
                         {
                             using (new PInvokeGuardCodeGen(cg, typeof(JSSetterCFunction)))
                             {
@@ -258,7 +258,7 @@ namespace QuickJS.Binding
                     // 可读属性
                     if (propertyBindingInfo.instancePair.getterName != null)
                     {
-                        using (new CSEditorOnlyCodeGen(cg, transform.GetRequiredDefinesOfMember(propertyBindingInfo.propertyInfo.Name)))
+                        using (new CSEditorOnlyCodeGen(cg, typeBindingInfo.GetRequiredDefines(propertyBindingInfo.propertyInfo)))
                         {
                             using (new PInvokeGuardCodeGen(cg, typeof(JSGetterCFunction)))
                             {
@@ -277,7 +277,7 @@ namespace QuickJS.Binding
                     // 可写属性
                     if (propertyBindingInfo.instancePair.setterName != null)
                     {
-                        using (new CSEditorOnlyCodeGen(cg, transform.GetRequiredDefinesOfMember(propertyBindingInfo.propertyInfo.Name)))
+                        using (new CSEditorOnlyCodeGen(cg, typeBindingInfo.GetRequiredDefines(propertyBindingInfo.propertyInfo)))
                         {
                             using (new PInvokeGuardCodeGen(cg, typeof(JSSetterCFunction)))
                             {
@@ -304,7 +304,7 @@ namespace QuickJS.Binding
                 // 可读
                 if (fieldBindingInfo.getterName != null)
                 {
-                    using (new CSEditorOnlyCodeGen(cg, transform.GetRequiredDefinesOfMember(fieldBindingInfo.fieldInfo.Name)))
+                    using (new CSEditorOnlyCodeGen(cg, typeBindingInfo.GetRequiredDefines(fieldBindingInfo.fieldInfo)))
                     {
                         using (new PInvokeGuardCodeGen(cg, typeof(JSGetterCFunction)))
                         {
@@ -324,7 +324,7 @@ namespace QuickJS.Binding
                 // 可写 
                 if (fieldBindingInfo.setterName != null)
                 {
-                    using (new CSEditorOnlyCodeGen(cg, transform.GetRequiredDefinesOfMember(fieldBindingInfo.fieldInfo.Name)))
+                    using (new CSEditorOnlyCodeGen(cg, typeBindingInfo.GetRequiredDefines(fieldBindingInfo.fieldInfo)))
                     {
                         using (new PInvokeGuardCodeGen(cg, typeof(JSSetterCFunction)))
                         {
@@ -514,7 +514,7 @@ namespace QuickJS.Binding
                     if (propertyBindingInfo.staticPair.IsValid())
                     {
                         var tsPropertyVar = this.cg.bindingManager.GetTSVariable(propertyBindingInfo.regName);
-                        using (new CSEditorOnlyCodeGen(cg, transform.GetRequiredDefinesOfMember(propertyBindingInfo.propertyInfo.Name)))
+                        using (new CSEditorOnlyCodeGen(cg, typeBindingInfo.GetRequiredDefines(propertyBindingInfo.propertyInfo)))
                         {
                             cg.cs.AppendLine("cls.AddProperty(true, \"{0}\", {1}, {2});",
                                 tsPropertyVar,
@@ -534,7 +534,7 @@ namespace QuickJS.Binding
                     if (propertyBindingInfo.instancePair.IsValid())
                     {
                         var tsPropertyVar = this.cg.bindingManager.GetTSVariable(propertyBindingInfo.regName);
-                        using (new CSEditorOnlyCodeGen(cg, transform.GetRequiredDefinesOfMember(propertyBindingInfo.propertyInfo.Name)))
+                        using (new CSEditorOnlyCodeGen(cg, typeBindingInfo.GetRequiredDefines(propertyBindingInfo.propertyInfo)))
                         {
                             cg.cs.AppendLine("cls.AddProperty(false, \"{0}\", {1}, {2});",
                                 tsPropertyVar,
@@ -557,7 +557,7 @@ namespace QuickJS.Binding
                     var fieldBindingInfo = kv.Value;
                     var bStatic = fieldBindingInfo.isStatic;
                     var tsFieldVar = this.cg.bindingManager.GetTSVariable(fieldBindingInfo.regName);
-                    using (new CSEditorOnlyCodeGen(cg, transform.GetRequiredDefinesOfMember(fieldBindingInfo.fieldInfo.Name)))
+                    using (new CSEditorOnlyCodeGen(cg, typeBindingInfo.GetRequiredDefines(fieldBindingInfo.fieldInfo)))
                     {
                         if (fieldBindingInfo.constantValue != null)
                         {

@@ -113,6 +113,24 @@ namespace QuickJS.Binding
             module.Add(this);
         }
 
+        public HashSet<string> GetRequiredDefines(MemberInfo memberInfo)
+        {
+            var setForMember = transform.GetRequiredDefinesOfMember(memberInfo.Name);
+            var declaringType = bindingManager.TransformType(memberInfo.DeclaringType);
+            var setForDeclaringType = declaringType?.requiredDefines;
+            if (setForMember != null)
+            {
+                if (setForDeclaringType != null)
+                {
+                    var set = new HashSet<string>(setForMember);
+                    set.UnionWith(setForDeclaringType);
+                    return set;
+                }
+                return setForMember;
+            }
+            return null;
+        }
+
         // 将类型名转换成简单字符串 (比如用于文件名)
         public string GetFileName()
         {
