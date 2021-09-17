@@ -310,6 +310,11 @@ namespace QuickJS.Unity
 
             Block("Control", () =>
             {
+                if (GUILayout.Button("Reload EditorScripting"))
+                {
+                    EditorRuntime.GetInstance()?.Reload();
+                }
+
                 _autoCap = EditorGUILayout.Toggle("Auto", _autoCap);
                 EditorGUI.BeginDisabledGroup(!_autoCap);
                 _timeCap = EditorGUILayout.Slider("Interval", _timeCap, 1f, 30f);

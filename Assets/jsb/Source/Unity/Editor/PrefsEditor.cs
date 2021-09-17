@@ -253,7 +253,7 @@ namespace QuickJS.Unity
 
         private bool IsMarked(Type type)
         {
-            return Attribute.GetCustomAttribute(type, typeof(JSTypeAttribute)) != null;
+            return Attribute.IsDefined(type, typeof(JSTypeAttribute));
         }
 
         private bool InBlacklist(Type type)

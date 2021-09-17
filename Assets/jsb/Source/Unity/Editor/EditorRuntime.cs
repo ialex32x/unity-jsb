@@ -120,6 +120,18 @@ namespace QuickJS.Unity
             runtime.Shutdown();
         }
 
+        public bool Reload()
+        {
+            if (EditorApplication.isCompiling)
+            {
+                return false;
+            }
+
+            OnQuitting();
+            OnInit();
+            return true;
+        }
+
         private void OnInit()
         {
             if (_runMode == RunMode.Playing)

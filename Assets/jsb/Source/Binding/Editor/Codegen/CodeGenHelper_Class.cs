@@ -115,8 +115,11 @@ namespace QuickJS.Binding
                     }
                 }
 
-                using (new TSMethodCodeGen<MethodInfo>(cg, this.typeBindingInfo, methodBindingInfo))
+                if (this.cg.tsDeclare.enabled)
                 {
+                    using (new TSMethodCodeGen<MethodInfo>(cg, this.typeBindingInfo, methodBindingInfo))
+                    {
+                    }
                 }
             }
 
@@ -152,9 +155,12 @@ namespace QuickJS.Binding
                             }
                         }
                     }
-
-                    using (new TSMethodCodeGen<MethodInfo>(cg, typeBindingInfo, methodBindingInfo))
+                    
+                    if (this.cg.tsDeclare.enabled)
                     {
+                        using (new TSMethodCodeGen<MethodInfo>(cg, typeBindingInfo, methodBindingInfo))
+                        {
+                        }
                     }
                 }
             }

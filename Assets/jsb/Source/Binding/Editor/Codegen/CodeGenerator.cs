@@ -27,6 +27,8 @@ namespace QuickJS.Binding
         public JSBindResult bindResult;
         public TypeBindingFlags typeBindingFlags;
 
+        public bool withCodegen => cs.enabled && tsDeclare.enabled;
+
         public CodeGenerator(BindingManager bindingManager, TypeBindingFlags typeBindingFlags)
         {
             this.typeBindingFlags = typeBindingFlags;
@@ -52,6 +54,11 @@ namespace QuickJS.Binding
         {
             this.cs.enabled = (typeBindingFlags & TypeBindingFlags.BindingCode) != 0;
             this.tsDeclare.enabled = (typeBindingFlags & TypeBindingFlags.TypeDefinition) != 0;
+
+            if (!withCodegen)
+            {
+                return;
+            }
 
             using (new CSDebugCodeGen(this))
             {
@@ -139,6 +146,11 @@ namespace QuickJS.Binding
             this.cs.enabled = (typeBindingFlags & TypeBindingFlags.BindingCode) != 0;
             this.tsDeclare.enabled = (typeBindingFlags & TypeBindingFlags.TypeDefinition) != 0;
 
+            if (!withCodegen)
+            {
+                return;
+            }
+
             using (new CSDebugCodeGen(this))
             {
                 using (new CSPlatformCodeGen(this, TypeBindingFlags.Default))
@@ -198,6 +210,11 @@ namespace QuickJS.Binding
         {
             this.cs.enabled = (typeBindingInfo.bindingFlags & TypeBindingFlags.BindingCode) != 0 && (typeBindingFlags & TypeBindingFlags.BindingCode) != 0;
             this.tsDeclare.enabled = (typeBindingInfo.bindingFlags & TypeBindingFlags.TypeDefinition) != 0 && (typeBindingFlags & TypeBindingFlags.TypeDefinition) != 0;
+            
+            if (!withCodegen)
+            {
+                return;
+            }
 
             using (new CSDebugCodeGen(this))
             {
@@ -518,7 +535,7 @@ namespace QuickJS.Binding
                 thisType = null;
                 return null;
             }
-            
+
             if (asExtensionAnyway)
             {
                 var parameters = method.GetParameters();
@@ -540,12 +557,15 @@ namespace QuickJS.Binding
             else
             {
                 caller = "self";
-                this.cs.AppendLine($"{this.bindingManager.GetCSTypeFullName(declaringType)} {caller};");
-                var getter = this.bindingManager.GetScriptObjectGetter(declaringType, "ctx", "this_obj", caller);
-                this.cs.AppendLine("if (!{0})", getter);
-                using (this.cs.CodeBlockScope())
+                if (this.cs.enabled)
                 {
-                    this.cs.AppendLine("throw new ThisBoundException();");
+                    this.cs.AppendLine($"{this.bindingManager.GetCSTypeFullName(declaringType)} {caller};");
+                    var getter = this.bindingManager.GetScriptObjectGetter(declaringType, "ctx", "this_obj", caller);
+                    this.cs.AppendLine("if (!{0})", getter);
+                    using (this.cs.CodeBlockScope())
+                    {
+                        this.cs.AppendLine("throw new ThisBoundException();");
+                    }
                 }
             }
             return caller;
@@ -563,7 +583,7 @@ namespace QuickJS.Binding
 
         public void AppendJSDoc(Type type)
         {
-            if (bindingManager.prefs.genTypescriptDoc)
+            if (bindingManager.prefs.genTypescriptDoc && this.tsDeclare.enabled)
             {
                 var doc = this.GetDocBody(type);
                 if (doc != null)
@@ -582,7 +602,7 @@ namespace QuickJS.Binding
 
         public void AppendJSDoc(PropertyInfo propertyInfo)
         {
-            if (bindingManager.prefs.genTypescriptDoc)
+            if (bindingManager.prefs.genTypescriptDoc && this.tsDeclare.enabled)
             {
                 var doc = this.GetDocBody(propertyInfo);
                 if (doc != null)
@@ -601,7 +621,7 @@ namespace QuickJS.Binding
 
         public void AppendJSDoc(FieldInfo fieldInfo)
         {
-            if (bindingManager.prefs.genTypescriptDoc)
+            if (bindingManager.prefs.genTypescriptDoc && this.tsDeclare.enabled)
             {
                 var doc = this.GetDocBody(fieldInfo);
                 if (doc != null)
@@ -620,7 +640,7 @@ namespace QuickJS.Binding
 
         public void AppendEnumJSDoc(Type type, object value)
         {
-            if (bindingManager.prefs.genTypescriptDoc)
+            if (bindingManager.prefs.genTypescriptDoc && this.tsDeclare.enabled)
             {
                 var resolver = this.GetResolver(type.Assembly);
                 var doc = resolver.GetFieldDocBody(type.FullName + "." + Enum.GetName(type, value));
@@ -635,7 +655,7 @@ namespace QuickJS.Binding
         public void AppendJSDoc<T>(T methodInfo)
         where T : MethodBase
         {
-            if (bindingManager.prefs.genTypescriptDoc)
+            if (bindingManager.prefs.genTypescriptDoc && this.tsDeclare.enabled)
             {
                 var doc = this.GetDocBody(methodInfo);
                 if (doc != null)

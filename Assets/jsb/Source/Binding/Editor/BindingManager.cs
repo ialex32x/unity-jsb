@@ -1145,7 +1145,7 @@ namespace QuickJS.Binding
             }
 
             //TODO optional support for unsafe types?
-            if (type.GetCustomAttribute<System.Runtime.CompilerServices.UnsafeValueTypeAttribute>() != null)
+            if (type.IsDefined(typeof(System.Runtime.CompilerServices.UnsafeValueTypeAttribute), false))
             {
                 return true;
             }
@@ -1160,6 +1160,7 @@ namespace QuickJS.Binding
                 encloser = encloser.DeclaringType;
             }
 
+            //TODO: try to remove this feature, extremely strong impact on performance 
             for (int i = 0, size = _typePrefixBlacklist.Count; i < size; i++)
             {
                 if (type.FullName.StartsWith(_typePrefixBlacklist[i]))
@@ -1584,11 +1585,14 @@ namespace QuickJS.Binding
                 _logWriter?.AddTabLevel();
                 foreach (var type in types)
                 {
-                    var hotfixTag = Attribute.GetCustomAttribute(type, typeof(JSHotfixAttribute)) as JSHotfixAttribute;
-                    if (hotfixTag != null)
+                    if (Attribute.IsDefined(type, typeof(JSHotfixAttribute)))
                     {
-                        TransformType(type).SetHotfix(hotfixTag);
-                        AddHotfixType(type);
+                        var hotfixTag = Attribute.GetCustomAttribute(type, typeof(JSHotfixAttribute)) as JSHotfixAttribute;
+                        if (hotfixTag != null)
+                        {
+                            TransformType(type).SetHotfix(hotfixTag);
+                            AddHotfixType(type);
+                        }
                     }
 
                     if (IsExportingBlocked(type))
