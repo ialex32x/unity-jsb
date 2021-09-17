@@ -59,9 +59,10 @@ namespace QuickJS.Binding
                 }
             }
 
-            if (typeBindingInfo.requiredDefines.Count != 0)
+            var requiredDefinesOfType = typeBindingInfo.transform.requiredDefines;
+            if (requiredDefinesOfType != null)
             {
-                var defs = string.Join(", ", from def in typeBindingInfo.requiredDefines select $"\"{def}\"");
+                var defs = string.Join(", ", from def in requiredDefinesOfType select $"\"{def}\"");
                 if (jsClassType == "interface")
                 {
                     this.cg.tsDeclare.AppendLine($"// @{this.cg.bindingManager.GetDefaultTypePrefix()}RequiredDefines({defs})");
@@ -196,13 +197,7 @@ namespace QuickJS.Binding
             }
 
             // 所有附加方法
-            if (transform != null)
-            {
-                transform.ForEachAdditionalTSMethodDeclaration(decl =>
-                {
-                    this.cg.tsDeclare.AppendLine(decl);
-                });
-            }
+            transform.ForEachAdditionalTSMethodDeclaration(decl => this.cg.tsDeclare.AppendLine(decl));
 
             // 所有属性
             foreach (var kv in this.typeBindingInfo.properties)

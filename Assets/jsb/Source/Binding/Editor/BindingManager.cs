@@ -456,7 +456,7 @@ namespace QuickJS.Binding
                     return true;
                 }
             }
-            
+
             return false;
         }
 
@@ -572,7 +572,11 @@ namespace QuickJS.Binding
                 return;
             }
 
-            defs.UnionWith(TransformType(type).requiredDefines);
+            var requiredDefines = TransformType(type).requiredDefines;
+            if (requiredDefines != null)
+            {
+                defs.UnionWith(requiredDefines);
+            }
 
             // check outter class for nested class
             CollectTypeRequiredDefines(defs, type.DeclaringType);

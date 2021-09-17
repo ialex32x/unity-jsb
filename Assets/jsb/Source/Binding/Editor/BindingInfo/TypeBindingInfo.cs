@@ -34,11 +34,6 @@ namespace QuickJS.Binding
         /// </summary>
         public bool genBindingCode => (bindingFlags & TypeBindingFlags.BindingCode) != 0;
 
-        /// <summary>
-        /// 所需编译选项的列表
-        /// </summary>
-        public HashSet<string> requiredDefines => transform.requiredDefines;
-
         // 父类类型
         public Type super => type.BaseType;
 
@@ -636,14 +631,22 @@ namespace QuickJS.Binding
 
         private void CollectMethods(IEnumerable<Native.JSCFunction> funcs, bool asExtensionAnyway)
         {
-            foreach (var func in funcs)
+            if (funcs != null)
             {
-                AddMethod(func);
+                foreach (var func in funcs)
+                {
+                    AddMethod(func);
+                }
             }
         }
 
         private void CollectMethods(IEnumerable<MethodInfo> methods, bool asExtensionAnyway)
         {
+            if (methods == null)
+            {
+                return;
+            }
+            
             foreach (var method in methods)
             {
                 if (BindingManager.IsGenericMethod(method))

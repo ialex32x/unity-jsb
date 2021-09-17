@@ -56,7 +56,7 @@ namespace QuickJS.Binding
 
         private void CollectImports()
         {
-            if (typeBindingInfo.requiredDefines.Count != 0)
+            if (typeBindingInfo.transform.requiredDefines != null)
             {
                 _jsbImport = true;
             }

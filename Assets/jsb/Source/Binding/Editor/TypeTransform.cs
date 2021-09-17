@@ -20,6 +20,7 @@ namespace QuickJS.Binding
         private string _typeNaming;
         private bool _enableOperatorOverloading = true;
         private bool _disposable;
+        private Native.JSCFunctionMagic _csConstructorOverride = null;
 
         public bool crossbind => _csConstructorOverride != null;
 
@@ -27,46 +28,45 @@ namespace QuickJS.Binding
 
         public TypeBindingFlags bindingFlags = TypeBindingFlags.Default;
 
-        // 此类型依赖特定的预编译指令
-        public HashSet<string> requiredDefines = new HashSet<string>();
+        /// <summary>
+        /// required defines of this type
+        /// </summary>
+        public HashSet<string> requiredDefines;
 
         private Dictionary<string, HashSet<string>> _requiredDefinesOfMember;
 
-        // 扩展方法
-        public readonly List<MethodInfo> extensionMethods = new List<MethodInfo>();
+        //TODO requiredDefines of type.method 
+        private Dictionary<MethodBase, HashSet<string>> _requiredDefinesOfMethod;
 
-        // 附加的静态方法
-        public readonly List<Native.JSCFunction> staticMethods = new List<Native.JSCFunction>();
+        /// <summary>
+        /// additional extension methods not directly belonging to this type
+        /// </summary>
+        public HashSet<MethodInfo> extensionMethods;
 
-        // 按名字屏蔽导出
-        private HashSet<string> _memberBlacklist = new HashSet<string>();
+        /// <summary>
+        /// additional static JS raw method for this type
+        /// </summary>
+        public HashSet<Native.JSCFunction> staticMethods;
+
+        /// <summary>
+        /// all memebers not to expose to JS by name
+        /// </summary>
+        private HashSet<string> _memberBlacklist;
 
         // 强制不导出的方法
-        private HashSet<MethodBase> _blockedMethods = new HashSet<MethodBase>();
+        private HashSet<MethodBase> _methodBlacklist = new HashSet<MethodBase>();
 
         // 针对特定方法的 ts 声明优化
         private Dictionary<MethodBase, string> _tsMethodDeclarations = new Dictionary<MethodBase, string>();
         private Dictionary<string, Native.JSCFunction> _csMethodOverride = new Dictionary<string, Native.JSCFunction>();
-        private Native.JSCFunctionMagic _csConstructorOverride = null;
 
-        // d.ts 中额外输出附加方法声明 (例如 Vector3, js中需要通过方法调用进行 +-*/== 等运算)
-        private List<string> _tsAdditionalMethodDeclarations = new List<string>();
+        private List<string> _tsAdditionalMethodDeclarations;
 
         private Dictionary<Type, Delegate> _filters = new Dictionary<Type, Delegate>();
-        // private Func<ConstructorInfo, bool> _filterConstructorInfo;
-        // private Func<PropertyInfo, bool> _filterPropertyInfo;
-        // private Func<FieldInfo, bool> _filterFieldInfo;
-        // private Func<EventInfo, bool> _filterEventInfo;
-        // private Func<MethodInfo, bool> _filterMethodInfo;
 
         private Dictionary<MemberInfo, string> _memberNameRules = new Dictionary<MemberInfo, string>();
 
         private Dictionary<MemberInfo, string> _memberNameAlias = new Dictionary<MemberInfo, string>();
-
-        /// <summary>
-        /// 是否需要 UNITY_EDITOR 条件
-        /// </summary>
-        public bool isEditorRuntime { get { return requiredDefines.Contains("UNITY_EDITOR"); } }
 
         public bool enableOperatorOverloading => _enableOperatorOverloading;
 
@@ -90,7 +90,7 @@ namespace QuickJS.Binding
         }
 
         /// <summary>
-        /// let this type's lifetime totally managed by JS.
+        /// let the lifetime of this type totally managed by JS.
         /// it means the underlying C# object will be automatically disposed after JS object's releasing.
         /// NOTE: it's only valid for the objects created by JS ('new XXX()' in JS).
         /// </summary>
@@ -113,9 +113,14 @@ namespace QuickJS.Binding
         /// </summary>
         public TypeTransform AddRequiredDefines(params string[] defines)
         {
-            foreach (var def in defines)
+            if (requiredDefines == null)
             {
-                requiredDefines.Add(def);
+                requiredDefines = new HashSet<string>();
+            }
+
+            for (int i = 0, len = defines.Length; i < len; i++)
+            {
+                requiredDefines.Add(defines[i]);
             }
             return this;
         }
@@ -132,7 +137,7 @@ namespace QuickJS.Binding
 
         public HashSet<string> GetRequiredDefinesOfMember(string memberName)
         {
-            if (_requiredDefinesOfMember != null) 
+            if (_requiredDefinesOfMember != null)
             {
                 HashSet<string> requiredDefines;
                 if (_requiredDefinesOfMember.TryGetValue(memberName, out requiredDefines))
@@ -145,7 +150,7 @@ namespace QuickJS.Binding
 
         public TypeTransform AddRequiredDefinesForMember(string memberName, params string[] requiredDefines)
         {
-            if (_requiredDefinesOfMember == null) 
+            if (_requiredDefinesOfMember == null)
             {
                 _requiredDefinesOfMember = new Dictionary<string, HashSet<string>>();
             }
@@ -157,6 +162,37 @@ namespace QuickJS.Binding
             else
             {
                 _requiredDefinesOfMember[memberName] = new HashSet<string>(requiredDefines);
+            }
+            return this;
+        }
+
+        public HashSet<string> GetRequiredDefinesOfMethod(MethodBase memberBase)
+        {
+            if (_requiredDefinesOfMethod != null)
+            {
+                HashSet<string> requiredDefines;
+                if (_requiredDefinesOfMethod.TryGetValue(memberBase, out requiredDefines))
+                {
+                    return requiredDefines;
+                }
+            }
+            return null;
+        }
+
+        public TypeTransform AddRequiredDefinesForMember(MethodBase memberBase, params string[] requiredDefines)
+        {
+            if (_requiredDefinesOfMethod == null)
+            {
+                _requiredDefinesOfMethod = new Dictionary<MethodBase, HashSet<string>>();
+            }
+            HashSet<string> oldValues;
+            if (_requiredDefinesOfMethod.TryGetValue(memberBase, out oldValues))
+            {
+                oldValues.UnionWith(requiredDefines);
+            }
+            else
+            {
+                _requiredDefinesOfMethod[memberBase] = new HashSet<string>(requiredDefines);
             }
             return this;
         }
@@ -238,10 +274,14 @@ namespace QuickJS.Binding
 
         public TypeTransform AddExtensionMethod(MethodInfo method, string tsDecl = null)
         {
+            if (extensionMethods == null)
+            {
+                extensionMethods = new HashSet<MethodInfo>();
+            }
+
             if (!extensionMethods.Contains(method) && !Filter(method))
             {
                 extensionMethods.Add(method);
-
                 AddTSMethodDeclaration(method, tsDecl);
             }
 
@@ -251,9 +291,13 @@ namespace QuickJS.Binding
 
         public TypeTransform AddStaticMethod(Native.JSCFunction method, string tsDecl = null)
         {
-            if (!staticMethods.Contains(method))
+            if (staticMethods == null)
             {
-                staticMethods.Add(method);
+                staticMethods = new HashSet<Native.JSCFunction>();
+            }
+
+            if (staticMethods.Add(method))
+            {
                 AddTSMethodDeclaration(method.Method, tsDecl);
             }
 
@@ -273,9 +317,12 @@ namespace QuickJS.Binding
 
         public void ForEachAdditionalTSMethodDeclaration(Action<string> fn)
         {
-            foreach (var decl in _tsAdditionalMethodDeclarations)
+            if (_tsAdditionalMethodDeclarations != null)
             {
-                fn(decl);
+                foreach (var decl in _tsAdditionalMethodDeclarations)
+                {
+                    fn(decl);
+                }
             }
         }
 
@@ -292,19 +339,27 @@ namespace QuickJS.Binding
 
         public TypeTransform AddTSMethodDeclaration(string spec)
         {
+            if (_tsAdditionalMethodDeclarations == null)
+            {
+                _tsAdditionalMethodDeclarations = new List<string>();
+            }
             _tsAdditionalMethodDeclarations.Add(spec);
             return this;
         }
 
         public TypeTransform AddTSMethodDeclaration(params string[] specs)
         {
+            if (_tsAdditionalMethodDeclarations == null)
+            {
+                _tsAdditionalMethodDeclarations = new List<string>();
+            }
             _tsAdditionalMethodDeclarations.AddRange(specs);
             return this;
         }
 
         public bool IsMemberBlocked(string memeberName)
         {
-            return _memberBlacklist.Contains(memeberName);
+            return _memberBlacklist != null && _memberBlacklist.Contains(memeberName);
         }
 
         /// <summary>
@@ -313,6 +368,10 @@ namespace QuickJS.Binding
         /// <param name="memberName">the name of member you want to block</param>
         public TypeTransform SetMemberBlocked(string memberName)
         {
+            if (_memberBlacklist == null)
+            {
+                _memberBlacklist = new HashSet<string>();
+            }
             _memberBlacklist.Add(memberName);
             return this;
         }
@@ -320,12 +379,12 @@ namespace QuickJS.Binding
         // 指定的方法是否被屏蔽
         public bool IsBlocked(MethodBase method)
         {
-            return _blockedMethods.Contains(method);
+            return _methodBlacklist.Contains(method);
         }
 
         public bool IsBlocked(int token)
         {
-            return _blockedMethods.Any(i => i.MetadataToken == token);
+            return _methodBlacklist.Any(i => i.MetadataToken == token);
         }
 
         /// <summary>
@@ -335,7 +394,7 @@ namespace QuickJS.Binding
         {
             foreach (var ctor in _type.GetConstructors())
             {
-                _blockedMethods.Add(ctor);
+                _methodBlacklist.Add(ctor);
             }
 
             return this;
@@ -349,7 +408,7 @@ namespace QuickJS.Binding
             var method = _type.GetConstructor(parameters);
             if (method != null)
             {
-                _blockedMethods.Add(method);
+                _methodBlacklist.Add(method);
             }
             return this;
         }
@@ -362,7 +421,7 @@ namespace QuickJS.Binding
             var method = _type.GetMethod(name, parameters);
             if (method != null)
             {
-                _blockedMethods.Add(method);
+                _methodBlacklist.Add(method);
             }
             return this;
         }

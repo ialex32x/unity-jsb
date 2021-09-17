@@ -94,9 +94,10 @@ namespace QuickJS.Binding
                                                     var editorTypesMap = new Dictionary<string, List<TypeBindingInfo>>();
                                                     foreach (var type in module)
                                                     {
-                                                        if (type.requiredDefines.Count != 0)
+                                                        var requiredDefinesOfType = type.transform.requiredDefines;
+                                                        if (requiredDefinesOfType != null)
                                                         {
-                                                            var defs = string.Join(" && ", from def in type.requiredDefines select def);
+                                                            var defs = string.Join(" && ", from def in requiredDefinesOfType select def);
                                                             List<TypeBindingInfo> list;
                                                             if (!editorTypesMap.TryGetValue(defs, out list))
                                                             {
@@ -218,7 +219,7 @@ namespace QuickJS.Binding
 
             using (new CSDebugCodeGen(this))
             {
-                using (new CSEditorOnlyCodeGen(this, typeBindingInfo.requiredDefines))
+                using (new CSEditorOnlyCodeGen(this, typeBindingInfo.transform.requiredDefines))
                 {
                     using (new CSPlatformCodeGen(this, TypeBindingFlags.Default))
                     {
