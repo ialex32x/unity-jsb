@@ -57,22 +57,6 @@ namespace QuickJS.Binding
 
         public static bool IsReflectBindingSupported()
         {
-            var UnityHelper = Binding.Values.FindType("QuickJS.Unity.UnityHelper");
-            if (UnityHelper != null)
-            {
-                var IsReflectBindingSupported = UnityHelper.GetMethod("IsReflectBindingSupported");
-                if (IsReflectBindingSupported != null && (bool)IsReflectBindingSupported.Invoke(null, null))
-                {
-                    var bindAll = UnityHelper.GetMethod("InvokeReflectBinding");
-                    return bindAll != null;
-                }
-            }
-            return false;
-        }
-
-        public static void ReflectBind(ScriptRuntime runtime)
-        {
-            var logger = runtime.GetLogger();
             try
             {
                 var UnityHelper = Binding.Values.FindType("QuickJS.Unity.UnityHelper");
@@ -82,6 +66,31 @@ namespace QuickJS.Binding
                     if (IsReflectBindingSupported != null && (bool)IsReflectBindingSupported.Invoke(null, null))
                     {
                         var bindAll = UnityHelper.GetMethod("InvokeReflectBinding");
+                        return bindAll != null;
+                    }
+                }
+                return false;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+        }
+
+        public static void ReflectBind(ScriptRuntime runtime)
+        {
+            var logger = runtime.GetLogger();
+            try
+            {
+                var typeName = "QuickJS.Unity.UnityHelper";
+                var methodName = "InvokeReflectBinding";
+                var UnityHelper = Binding.Values.FindType(typeName);
+                if (UnityHelper != null)
+                {
+                    var IsReflectBindingSupported = UnityHelper.GetMethod("IsReflectBindingSupported");
+                    if (IsReflectBindingSupported != null && (bool)IsReflectBindingSupported.Invoke(null, null))
+                    {
+                        var bindAll = UnityHelper.GetMethod(methodName);
                         if (bindAll != null)
                         {
                             bindAll.Invoke(null, new object[] { runtime });
@@ -89,14 +98,18 @@ namespace QuickJS.Binding
                         }
                     }
                 }
+                throw new Exception($"failed to invoke {typeName}.{methodName}");
             }
-            catch (Exception)
+            catch (Exception exception)
             {
-            }
-
-            if (logger != null)
-            {
-                logger.Write(Utils.LogLevel.Error, "failed to get method: UnityHelper.InvokeReflectBinding, fallback to StaticBind mode");
+                if (logger != null)
+                {
+                    logger.Write(Utils.LogLevel.Error, $"{exception.Message}, fallback to StaticBind mode\n{exception.StackTrace}");
+                    if (exception.InnerException != null)
+                    {
+                        logger.Write(Utils.LogLevel.Error, $"{exception.InnerException.Message}\n{exception.InnerException.StackTrace}");
+                    }
+                }
                 StaticBind(runtime);
             }
         }

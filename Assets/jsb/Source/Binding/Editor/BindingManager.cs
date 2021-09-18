@@ -53,8 +53,7 @@ namespace QuickJS.Binding
         private Dictionary<string, string> _csTypeNameMapS = new Dictionary<string, string>();
         private static HashSet<string> _tsKeywords = new HashSet<string>();
 
-        private Dictionary<int, MethodInfo> _reflectActions = new Dictionary<int, MethodInfo>();
-        private Dictionary<int, MethodInfo> _reflectFuncs = new Dictionary<int, MethodInfo>();
+        private Dictionary<int, List<MethodInfo>> _reflectedDelegateTemplates = new Dictionary<int, List<MethodInfo>>();
 
         // 自定义的处理流程
         private List<IBindingProcess> _bindingProcess = new List<IBindingProcess>();
@@ -104,7 +103,7 @@ namespace QuickJS.Binding
                 AddGlobalNameRule("ToString", "toString");
             }
 
-            CollectDelegateReflectMethods();
+            CollectRefectedDelegateTemplates();
             AddNameRule("js", t => char.ToLower(t[0]) + t.Substring(1));
 
             TransformType(typeof(string))
@@ -651,25 +650,80 @@ namespace QuickJS.Binding
             }
         }
 
-        private void CollectDelegateReflectMethods()
+        private void CollectRefectedDelegateTemplates()
         {
             var methods = typeof(ReflectBindDelegateGen).GetMethods();
-            foreach (var method in methods)
+            for (int i = 0, length = methods.Length; i < length; ++i)
             {
-                var parameters = method.GetParameters();
+                AddReflectedDelegateTemplate(methods[i]);
+            }
+        }
 
-                if (parameters.Length > 0 && parameters[0].ParameterType == typeof(ScriptDelegate))
+        public bool AddReflectedDelegateTemplate(MethodInfo methodInfo)
+        {
+            var parameters = methodInfo.GetParameters();
+
+            if (parameters.Length > 0 && parameters[0].ParameterType == typeof(ScriptDelegate))
+            {
+                List<MethodInfo> list;
+                var argc = parameters.Length - 1;
+                if (!_reflectedDelegateTemplates.TryGetValue(argc, out list))
                 {
-                    if (method.ReturnType == typeof(void))
-                    {
-                        _reflectActions[parameters.Length - 1] = method;
-                    }
-                    else
-                    {
-                        _reflectFuncs[parameters.Length - 1] = method;
-                    }
+                    _reflectedDelegateTemplates[argc] = list = new List<MethodInfo>();
+                }
+                list.Add(methodInfo);
+                return true;
+            }
+            return false;
+        }
+
+        public static bool IsGenericMethodSuitable(MethodInfo methodTemplate, int startIndex, ParameterInfo[] parameters, Type returnType)
+        {
+            if (methodTemplate.ReturnType != returnType && methodTemplate.ReturnType == typeof(void))
+            {
+                return false;
+            }
+            var templateParameters = methodTemplate.GetParameters();
+            var templateLength = templateParameters.Length - startIndex;
+            var targetLength = parameters.Length;
+            if (templateLength != targetLength)
+            {
+                return false;
+            }
+
+            for (var i = 0; i < targetLength; ++i)
+            {
+                var templateInfo = templateParameters[i + startIndex];
+                var targetInfo = parameters[i];
+                if (templateInfo.IsOut != targetInfo.IsOut)
+                {
+                    return false;
                 }
             }
+
+            return true;
+        }
+
+        public MethodInfo GetReflectedDelegateTemplate(List<MethodInfo> list, ParameterInfo[] parameters, Type returnType)
+        {
+            for (int i = 0, count = list.Count; i < count; ++i)
+            {
+                var methodTemplate = list[i];
+                if (IsGenericMethodSuitable(methodTemplate, 1, parameters, returnType))
+                {
+                    if (!methodTemplate.IsGenericMethodDefinition)
+                    {
+                        return methodTemplate;
+                    }
+
+                    var parametersTypes = from p in parameters select p.ParameterType;
+                    return methodTemplate.MakeGenericMethod(
+                        returnType != typeof(void)
+                        ? AppendEnumerable(parametersTypes, returnType)
+                        : parametersTypes.ToArray());
+                }
+            }
+            return null;
         }
 
         public MethodInfo GetReflect(Type returnType, ParameterInfo[] parameters)
@@ -681,31 +735,11 @@ namespace QuickJS.Binding
             }
 
             var argc = parameters.Length;
-            MethodInfo genMethod = null;
+            List<MethodInfo> genMethods = null;
 
-            if (returnType == typeof(void))
+            if (_reflectedDelegateTemplates.TryGetValue(argc, out genMethods))
             {
-                if (_reflectActions.TryGetValue(argc, out genMethod))
-                {
-                    if (argc == 0)
-                    {
-                        return genMethod;
-                    }
-                    var types = (from p in parameters select p.ParameterType).ToArray();
-                    return genMethod.MakeGenericMethod(types);
-                }
-            }
-            else
-            {
-                if (_reflectFuncs.TryGetValue(argc, out genMethod))
-                {
-                    if (argc == 0)
-                    {
-                        return genMethod;
-                    }
-                    var types = AppendEnumerable(from p in parameters select p.ParameterType, returnType);
-                    return genMethod.MakeGenericMethod(types);
-                }
+                return GetReflectedDelegateTemplate(genMethods, parameters, returnType);
             }
             return null;
         }
