@@ -14,6 +14,10 @@ namespace QuickJS.Binding
         /// </summary>
         public const string PATH = "js-bridge.json";
 
+        /// <summary>
+        /// the actual location of this configuration (valid only if loaded from disk)
+        /// </summary>
+        [NonSerialized]
         public string filePath;
 
         #region Configurable Fields
@@ -34,32 +38,33 @@ namespace QuickJS.Binding
         public string outDir = "Assets/Generated/${platform}";
 
         /// <summary>
-        /// 绑定代码对应 ts 声明文件生成目录
+        /// the location of the corresponding d.ts of the generated binding code
         /// </summary>
         public string typescriptDir = "Assets/Generated/Typings";
 
         /// <summary>
-        /// 编辑器搜索脚本源码时匹配的后缀名
+        /// used for editor scripting to find out all unity classes implemented in typescript
         /// </summary>
         public string typescriptExt = ".ts";
 
         /// <summary>
-        /// Assembly-CSharp.dll 对应的 XmlDoc 生成目录
+        /// location of XmlDoc generated from Assembly-CSharp.dll 
         /// </summary>
         public string xmlDocDir = "Assets/Generated/Docs";
 
         /// <summary>
-        /// 生成绑定代码时输出一份 JS 模块列表信息
+        /// all related modules information generated in the binding process will be written into this file. 
+        /// it's useful to mark these modules as external when using webpack for packaging.
         /// </summary>
         public string jsModulePackInfoPath = "jsb-modules.json";
 
         /// <summary>
-        /// 是否生成 typescript 声明文件中的文档注释
+        /// whether to generate doc comments in d.sts or not
         /// </summary>
         public bool genTypescriptDoc = true;
 
         /// <summary>
-        /// 默认启用编辑器脚本执行相关功能 (JSEditorWindow 等)
+        /// enable editor scripting feature
         /// </summary>
         public bool editorScripting = true;
 
@@ -69,12 +74,13 @@ namespace QuickJS.Binding
         public bool reflectBinding = true;
 
         /// <summary>
-        /// 启用运算符重载转换 (禁用后运算符将以 op_* 的形式导出为函数)
+        /// generate binding code for operator overloading support in QuickJS (not fully supported). 
+        /// operators will be generated as ordinary method (op_XXX) if disabled
         /// </summary>
         public bool enableOperatorOverloading = true;
 
         /// <summary>
-        /// 编辑器运行时脚本入口
+        /// optional entry point for editor scripting
         /// </summary>
         public string editorEntryPoint = "editor/main";
 
@@ -122,7 +128,7 @@ namespace QuickJS.Binding
         public bool alwaysCheckArgType = false;
 
         /// <summary>
-        /// 即使只有唯一匹配的方法/函数, 也进行参数数量检查 
+        /// enable checking the number of parameters even if not overloading exists
         /// </summary>
         public bool alwaysCheckArgc = true;
 
@@ -131,36 +137,39 @@ namespace QuickJS.Binding
         /// </summary>
         public bool randomizedBindingCode = false;
 
-        // 生成类型绑定代码类型前缀
+        /// <summary>
+        /// prefix of the type of generated binding code
+        /// </summary>
         public string typeBindingPrefix = "QuickJS_";
 
         /// <summary>
-        /// 生成的绑定类所在命名空间 (in C#)
+        /// C# namespace for the generated glue code
         /// </summary>
         public string ns = "jsb";
 
         /// <summary>
-        /// 为没有命名空间的 C# 类型, 指定一个默认模块名
+        /// module name for the C# global types
         /// </summary>
         public string defaultJSModule = "global";
 
         /// <summary>
-        /// 生成文件的额外后缀
+        /// the optional suffix for the generated d.ts file
         /// </summary>
-        public string extraExt = "";
+        public string extraExtForTypescript = "";
 
         /// <summary>
-        /// 生成代码中的换行符风格 (cr, lf, crlf), 不指定时将使用当前平台默认风格
+        /// the new-line style for codegen (cr, lf, crlf). 
+        /// it will depend on the operating system if not assigned.
         /// </summary>
         public string newLineStyle = "";
 
         /// <summary>
-        /// 生成代码中的缩进
+        /// the indent block for codegen
         /// </summary>
         public string tab = "    ";
 
         /// <summary>
-        /// 跳过指定的 BindingProcess
+        /// a list of BindingProcess not to run
         /// </summary>
         public List<string> skipExtras = new List<string>(new string[]
         {
@@ -203,23 +212,6 @@ namespace QuickJS.Binding
             // "UnityEngine.PhysicsModule",
             // "UnityEngine.UI",
         });
-
-        // extremely strong impact on performance 
-        // public List<string> typePrefixBlacklist = new List<string>(new string[]
-        // {
-        //     "JetBrains.",
-        //     "Unity.Collections.",
-        //     "Unity.Jobs.",
-        //     "Unity.Profiling.",
-        //     "UnityEditor.",
-        //     "UnityEditorInternal.",
-        //     "UnityEngineInternal.",
-        //     "UnityEditor.Experimental.",
-        //     "UnityEngine.Experimental.",
-        //     "Unity.IO.LowLevel.",
-        //     "Unity.Burst.",
-        //     "UnityEngine.Assertions.",
-        // });
 
         public List<string> typeFullNameBlacklist = new List<string>(new string[]
         {
@@ -367,7 +359,9 @@ namespace QuickJS.Binding
                     case "cr": return "\r";
                     case "lf": return "\n";
                     case "crlf": return "\r\n";
-                    default: return Environment.NewLine;
+                    case "":
+                    case "auto": return Environment.NewLine;
+                    default: return newLineStyle;
                 }
             }
         }

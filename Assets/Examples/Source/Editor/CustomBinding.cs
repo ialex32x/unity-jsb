@@ -1,4 +1,5 @@
 ﻿using System.Reflection;
+using System;
 
 namespace Example.Editor
 {
@@ -15,20 +16,6 @@ namespace Example.Editor
 
         public override void OnPreExporting(BindingManager bindingManager)
         {
-            // bindingManager.AddTypePrefixBlacklist("SyntaxTree.");
-
-            // bindingManager.AddExportedType(typeof(System.Threading.Tasks.Task))
-            //     .Rename("ATask")
-            //     .SetMemberBlocked("IsCompletedSuccessfully");
-            // bindingManager.AddExportedType(typeof(System.Threading.Tasks.Task<System.Net.Sockets.Socket>));
-            // bindingManager.AddExportedType(typeof(System.Threading.Tasks.Task<int>));
-
-            // bindingManager.AddExportedType(typeof(System.Net.Sockets.Socket));
-            // bindingManager.AddExportedType(typeof(System.Net.Sockets.SocketFlags));
-            // bindingManager.AddExportedType(typeof(System.Net.Sockets.AddressFamily));
-            // bindingManager.AddExportedType(typeof(System.Net.IPAddress));
-            // bindingManager.AddExportedType(typeof(System.Net.IPEndPoint));
-
             // bindingManager.TryExportExtensionMethods(typeof(ExtensionTest));  // expose all extension methods
             bindingManager.AddExtensionMethod<Transform>(ExtensionTest.ResetAll); // expose single extension method
 
@@ -53,10 +40,13 @@ namespace Example.Editor
             bindingManager.AddExportedType(typeof(TWrapper<Vector3>));
             bindingManager.AddExportedType(typeof(DisposableObject)).SetDisposable();
 
-#if CUSTOM_DEF_FOO
+#if CUSTOM_DEF_FOO && UNITY_EDITOR
             bindingManager.AddExportedType(typeof(FOO)).AddRequiredDefines("CUSTOM_DEF_FOO", "UNITY_EDITOR")
 #if CUSTOM_DEF_PROP
                 .AddRequiredDefinesForMember("propValue", "CUSTOM_DEF_PROP")                
+#endif
+#if CUSTOM_DEF_METHOD
+                .AddRequiredDefinesForMethod(t => t.GetMethod("Exclusive", Type.EmptyTypes), "CUSTOM_DEF_METHOD")
 #endif
             ;
 #endif

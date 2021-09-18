@@ -1735,7 +1735,7 @@ namespace QuickJS.Binding
             var cg = new CodeGenerator(this, typeBindingFlags);
             var csOutDir = _utils.ReplacePathVars(prefs.outDir);
             var tsOutDir = _utils.ReplacePathVars(prefs.typescriptDir);
-            var extraExt = prefs.extraExt;
+            var extraExt = prefs.extraExtForTypescript;
             // var extraExt = "";
 
             var cancel = false;
@@ -1762,7 +1762,7 @@ namespace QuickJS.Binding
                         OnPreGenerateType(typeBindingInfo);
                         cg.Generate(typeBindingInfo);
                         OnPostGenerateType(typeBindingInfo);
-                        cg.WriteCSharp(csOutDir, typeBindingInfo.GetFileName(), extraExt);
+                        cg.WriteCSharp(csOutDir, typeBindingInfo.GetFileName(), string.Empty);
                         cg.WriteTSD(tsOutDir, typeBindingInfo.GetFileName(), extraExt);
                     }
                 }
@@ -1794,7 +1794,7 @@ namespace QuickJS.Binding
                     {
                         cg.Clear();
                         cg.Generate(exportedDelegatesArray, _exportedHotfixDelegates);
-                        cg.WriteCSharp(csOutDir, CodeGenerator.NameOfDelegates, extraExt);
+                        cg.WriteCSharp(csOutDir, CodeGenerator.NameOfDelegates, string.Empty);
                         cg.WriteTSD(tsOutDir, CodeGenerator.NameOfDelegates, extraExt);
                     }
                 }
@@ -1835,7 +1835,7 @@ namespace QuickJS.Binding
                     {
                         cg.Clear();
                         cg.GenerateBindingList(modules);
-                        cg.WriteCSharp(csOutDir, CodeGenerator.NameOfBindingList, extraExt);
+                        cg.WriteCSharp(csOutDir, CodeGenerator.NameOfBindingList, string.Empty);
                         cg.WriteTSD(tsOutDir, CodeGenerator.NameOfBindingList, extraExt);
                     }
                 }

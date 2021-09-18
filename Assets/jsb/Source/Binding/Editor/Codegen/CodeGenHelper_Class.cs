@@ -115,7 +115,7 @@ namespace QuickJS.Binding
                         {
                             using (new TryCatchGuradCodeGen(cg))
                             {
-                                using (new MethodCodeGen(cg, this.typeBindingInfo, methodBindingInfo))
+                                using (new CSMethodCodeGen(cg, this.typeBindingInfo, methodBindingInfo))
                                 {
                                 }
                             }
@@ -156,7 +156,7 @@ namespace QuickJS.Binding
                             {
                                 using (new TryCatchGuradCodeGen(cg))
                                 {
-                                    using (new MethodCodeGen(cg, this.typeBindingInfo, methodBindingInfo))
+                                    using (new CSMethodCodeGen(cg, this.typeBindingInfo, methodBindingInfo))
                                     {
                                     }
                                 }

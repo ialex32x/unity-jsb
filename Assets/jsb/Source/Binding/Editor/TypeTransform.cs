@@ -166,12 +166,12 @@ namespace QuickJS.Binding
             return this;
         }
 
-        public HashSet<string> GetRequiredDefinesOfMethod(MethodBase memberBase)
+        public HashSet<string> GetRequiredDefinesOfMethod(MethodBase methodBase)
         {
             if (_requiredDefinesOfMethod != null)
             {
                 HashSet<string> requiredDefines;
-                if (_requiredDefinesOfMethod.TryGetValue(memberBase, out requiredDefines))
+                if (_requiredDefinesOfMethod.TryGetValue(methodBase, out requiredDefines))
                 {
                     return requiredDefines;
                 }
@@ -179,20 +179,30 @@ namespace QuickJS.Binding
             return null;
         }
 
-        public TypeTransform AddRequiredDefinesForMember(MethodBase memberBase, params string[] requiredDefines)
+        public TypeTransform AddRequiredDefinesForMethod(MethodBase methodBase, params string[] requiredDefines)
         {
             if (_requiredDefinesOfMethod == null)
             {
                 _requiredDefinesOfMethod = new Dictionary<MethodBase, HashSet<string>>();
             }
             HashSet<string> oldValues;
-            if (_requiredDefinesOfMethod.TryGetValue(memberBase, out oldValues))
+            if (_requiredDefinesOfMethod.TryGetValue(methodBase, out oldValues))
             {
                 oldValues.UnionWith(requiredDefines);
             }
             else
             {
-                _requiredDefinesOfMethod[memberBase] = new HashSet<string>(requiredDefines);
+                _requiredDefinesOfMethod[methodBase] = new HashSet<string>(requiredDefines);
+            }
+            return this;
+        }
+
+        public TypeTransform AddRequiredDefinesForMethod(Func<Type, MethodBase> getter, params string[] requiredDefines)
+        {
+            var methodBase = getter(_type);
+            if (methodBase != null)
+            {
+                return AddRequiredDefinesForMethod(methodBase, requiredDefines);
             }
             return this;
         }

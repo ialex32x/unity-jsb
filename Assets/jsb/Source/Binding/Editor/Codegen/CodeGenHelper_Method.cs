@@ -33,6 +33,11 @@ namespace QuickJS.Binding
         {
         }
 
+        protected virtual IEnumerable<string> GetRequiredDefines(MethodBase methodBase)
+        {
+            return null;
+        }
+
         public string GetParamArrayMatchType(T method)
         {
             var parameters = method.GetParameters();
@@ -148,7 +153,6 @@ namespace QuickJS.Binding
         }
 
         // 输出所有变体绑定
-        // hasOverrides: 是否需要处理重载
         protected void WriteCSAllVariants(TypeBindingInfo typeBindingInfo, MethodBaseBindingInfo<T> methodBindingInfo) // SortedDictionary<int, MethodBaseVariant<T>> variants)
         {
             var transform = typeBindingInfo.transform;
@@ -172,12 +176,20 @@ namespace QuickJS.Binding
                     if (variant.isVararg)
                     {
                         var method = variant.varargMethods[0];
-                        WriteCSMethodBinding(methodBindingInfo, method.method, argc, true, method.isExtension);
+
+                        using (new CSEditorOnlyCodeGen(cg, GetRequiredDefines(method.method)))
+                        {
+                            WriteCSBindingMethodBody(methodBindingInfo, method.method, argc, true, method.isExtension);
+                        }
                     }
                     else
                     {
                         var method = variant.plainMethods[0];
-                        WriteCSMethodBinding(methodBindingInfo, method.method, argc, false, method.isExtension);
+
+                        using (new CSEditorOnlyCodeGen(cg, GetRequiredDefines(method.method)))
+                        {
+                            WriteCSBindingMethodBody(methodBindingInfo, method.method, argc, false, method.isExtension);
+                        }
                     }
                 }
             }
@@ -307,18 +319,21 @@ namespace QuickJS.Binding
                             {
                                 foreach (var method in variant.plainMethods)
                                 {
-                                    var fixedMatchers = GetFixedMatchTypes(method.method, false, method.isExtension);
-                                    if (fixedMatchers.Length != 0)
+                                    using (new CSEditorOnlyCodeGen(cg, GetRequiredDefines(method.method)))
                                     {
-                                        cg.cs.AppendLine($"if ({fixedMatchers})");
-                                        using (cg.cs.CodeBlockScope())
+                                        var fixedMatchers = GetFixedMatchTypes(method.method, false, method.isExtension);
+                                        if (fixedMatchers.Length != 0)
                                         {
-                                            this.WriteCSMethodBinding(methodBindingInfo, method.method, argc, false, method.isExtension);
+                                            cg.cs.AppendLine($"if ({fixedMatchers})");
+                                            using (cg.cs.CodeBlockScope())
+                                            {
+                                                this.WriteCSBindingMethodBody(methodBindingInfo, method.method, argc, false, method.isExtension);
+                                            }
                                         }
-                                    }
-                                    else
-                                    {
-                                        this.WriteCSMethodBinding(methodBindingInfo, method.method, argc, false, method.isExtension);
+                                        else
+                                        {
+                                            this.WriteCSBindingMethodBody(methodBindingInfo, method.method, argc, false, method.isExtension);
+                                        }
                                     }
                                 }
 
@@ -331,7 +346,10 @@ namespace QuickJS.Binding
                             {
                                 // 只有一个定参方法时, 不再判定类型匹配
                                 var method = variant.plainMethods[0];
-                                this.WriteCSMethodBinding(methodBindingInfo, method.method, argc, false, method.isExtension);
+                                using (new CSEditorOnlyCodeGen(cg, GetRequiredDefines(method.method)))
+                                {
+                                    this.WriteCSBindingMethodBody(methodBindingInfo, method.method, argc, false, method.isExtension);
+                                }
                             }
                         }
                     }
@@ -341,21 +359,24 @@ namespace QuickJS.Binding
                     {
                         foreach (var method in variant.varargMethods)
                         {
-                            var fixedMatchers = GetFixedMatchTypes(method.method, true, method.isExtension);
-                            var variantMatchers = GetParamArrayMatchType(method.method);
+                            using (new CSEditorOnlyCodeGen(cg, GetRequiredDefines(method.method)))
+                            {
+                                var fixedMatchers = GetFixedMatchTypes(method.method, true, method.isExtension);
+                                var variantMatchers = GetParamArrayMatchType(method.method);
 
-                            if (fixedMatchers.Length > 0)
-                            {
-                                cg.cs.AppendLine($"if ({fixedMatchers} && js_match_param_types(ctx, {expectedArgCount}, argv, {variantMatchers}))");
-                            }
-                            else
-                            {
-                                cg.cs.AppendLine($"if (js_match_param_types(ctx, {expectedArgCount}, argv, {variantMatchers}))");
-                            }
+                                if (fixedMatchers.Length > 0)
+                                {
+                                    cg.cs.AppendLine($"if ({fixedMatchers} && js_match_param_types(ctx, {expectedArgCount}, argv, {variantMatchers}))");
+                                }
+                                else
+                                {
+                                    cg.cs.AppendLine($"if (js_match_param_types(ctx, {expectedArgCount}, argv, {variantMatchers}))");
+                                }
 
-                            using (cg.cs.CodeBlockScope())
-                            {
-                                this.WriteCSMethodBinding(methodBindingInfo, method.method, argc, true, method.isExtension);
+                                using (cg.cs.CodeBlockScope())
+                                {
+                                    this.WriteCSBindingMethodBody(methodBindingInfo, method.method, argc, true, method.isExtension);
+                                }
                             }
                         }
                     }
@@ -517,21 +538,13 @@ namespace QuickJS.Binding
         }
 
         // 写入绑定代码
-        protected void WriteCSMethodBinding(MethodBaseBindingInfo<T> bindingInfo, T method, string argc, bool isVararg, bool isExtension)
+        protected void WriteCSBindingMethodBody(MethodBaseBindingInfo<T> bindingInfo, T method, string argc, bool isVararg, bool isExtension)
         {
             if (this.cg.bindingManager.prefs.verboseLog)
             {
                 cg.bindingManager.Info($"WriteCSMethodBinding: {method.Name} {isExtension}");
             }
 
-            // // 是否接管 cs 绑定代码生成
-            // var transform = cg.bindingManager.GetTypeTransform(method.DeclaringType);
-            // if (transform != null && transform.OnBinding(BindingPoints.METHOD_BINDING_FULL, method, cg))
-            // {
-            //     return;
-            // }
-
-            // var isRaw = method.IsDefined(typeof(JSCFunctionAttribute));
             var parameters = method.GetParameters();
             Type callerType;
             var caller = this.cg.AppendGetThisCS(method, isExtension, out callerType);
@@ -676,10 +689,23 @@ namespace QuickJS.Binding
     }
 
     // 生成成员方法绑定代码
-    public class MethodCodeGen : MethodBaseCodeGen<MethodInfo>
+    public class CSMethodCodeGen : MethodBaseCodeGen<MethodInfo>
     {
         protected TypeBindingInfo typeBindingInfo;
         protected MethodBindingInfo methodBindingInfo;
+
+        public CSMethodCodeGen(CodeGenerator cg, TypeBindingInfo typeBindingInfo, MethodBindingInfo methodBindingInfo)
+        : base(cg)
+        {
+            this.typeBindingInfo = typeBindingInfo;
+            this.methodBindingInfo = methodBindingInfo;
+            WriteCSAllVariants(this.typeBindingInfo, this.methodBindingInfo);
+        }
+
+        protected override IEnumerable<string> GetRequiredDefines(MethodBase methodBase)
+        {
+            return typeBindingInfo.transform.GetRequiredDefinesOfMethod(methodBase);
+        }
 
         protected override Type GetReturnType(MethodInfo method)
         {
@@ -808,15 +834,6 @@ namespace QuickJS.Binding
             // 普通成员调用
             return $"{caller}.{method.Name}({arglistSig})";
         }
-
-        public MethodCodeGen(CodeGenerator cg, TypeBindingInfo typeBindingInfo, MethodBindingInfo methodBindingInfo)
-        : base(cg)
-        {
-            this.typeBindingInfo = typeBindingInfo;
-            this.methodBindingInfo = methodBindingInfo;
-            WriteCSAllVariants(this.typeBindingInfo, this.methodBindingInfo);
-            // WriteTSAllVariants(this.bindingInfo);
-        }
     }
 
     public class TSConstructorCodeGen : MethodBaseCodeGen<ConstructorInfo>
@@ -840,7 +857,7 @@ namespace QuickJS.Binding
             WriteTSAllVariants(typeBindingInfo, this.bindingInfo);
         }
     }
-    
+
     public class TSMethodCodeGen<T> : MethodBaseCodeGen<T>
         where T : MethodInfo
     {

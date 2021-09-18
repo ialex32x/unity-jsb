@@ -61,6 +61,15 @@ namespace Example
 #endif
         
         public static string value = "FOO";
+
+#if CUSTOM_DEF_METHOD
+        public static void Exclusive()
+        {
+        }
+#endif
+        public static void Exclusive(int i32)
+        {
+        }
     }
 #endif
 
