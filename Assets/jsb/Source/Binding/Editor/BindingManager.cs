@@ -103,7 +103,7 @@ namespace QuickJS.Binding
                 AddGlobalNameRule("ToString", "toString");
             }
 
-            CollectRefectedDelegateTemplates();
+            CollectRefectedDelegateTemplates(typeof(ReflectBindDelegateGen));
             AddNameRule("js", t => char.ToLower(t[0]) + t.Substring(1));
 
             TransformType(typeof(string))
@@ -650,9 +650,9 @@ namespace QuickJS.Binding
             }
         }
 
-        private void CollectRefectedDelegateTemplates()
+        public void CollectRefectedDelegateTemplates(Type type)
         {
-            var methods = typeof(ReflectBindDelegateGen).GetMethods();
+            var methods = type.GetMethods();
             for (int i = 0, length = methods.Length; i < length; ++i)
             {
                 AddReflectedDelegateTemplate(methods[i]);
@@ -715,7 +715,7 @@ namespace QuickJS.Binding
                     {
                         return methodTemplate;
                     }
-
+                    
                     var parametersTypes = from p in parameters select p.ParameterType;
                     return methodTemplate.MakeGenericMethod(
                         returnType != typeof(void)
@@ -723,13 +723,14 @@ namespace QuickJS.Binding
                         : parametersTypes.ToArray());
                 }
             }
+            
             return null;
         }
 
         public MethodInfo GetReflect(Type returnType, ParameterInfo[] parameters)
         {
             // skip unsupported types
-            if (BindingManager.ContainsByRefParameters(parameters) || Binding.Values.IsVarargParameter(parameters))
+            if (Binding.Values.IsVarargParameter(parameters))
             {
                 return null;
             }
@@ -741,6 +742,7 @@ namespace QuickJS.Binding
             {
                 return GetReflectedDelegateTemplate(genMethods, parameters, returnType);
             }
+            
             return null;
         }
 

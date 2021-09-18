@@ -1,7 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const Example_1 = require("Example");
-const jsb_1 = require("jsb");
 if (module == require.main) {
     let actions = new Example_1.DelegateTest();
     print("测试: 无参数的委托");
@@ -37,19 +36,13 @@ if (module == require.main) {
     Example_1.DelegateTest.onStaticEvent("remove", staticEventHandler);
     Example_1.DelegateTest.DipatchStaticEvent(123);
     try {
-        // if (true) {
-        if (jsb_1.IsStaticBinding()) {
-            print("测试: 带 ref/out 的委托");
-            actions.complexCall("add", (b, a, v) => {
-                a.value += b;
-                v.value = 999;
-                return 789;
-            });
-            actions.TestComplexCall();
-        }
-        else {
-            console.warn("reflectbind 模式不支持带 ref,out 参数的委托");
-        }
+        print("测试: 带 ref/out 的委托 (staticbind模式直接支持, reflectbind模式下目前需要手写模板函数)");
+        actions.complexCall("add", (b, a, v) => {
+            a.value += b;
+            v.value = 999;
+            return 789;
+        });
+        actions.TestComplexCall();
     }
     catch (err) {
         console.error(err);

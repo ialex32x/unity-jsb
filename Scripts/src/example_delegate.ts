@@ -44,18 +44,13 @@ if (module == require.main) {
     DelegateTest.DipatchStaticEvent(123);
 
     try {
-        // if (true) {
-        if (IsStaticBinding()) {
-            print("测试: 带 ref/out 的委托");
-            actions.complexCall("add", (b, a, v) => {
-                a.value += b;
-                v.value = 999;
-                return 789;
-            });
-            actions.TestComplexCall();
-        } else {
-            console.warn("reflectbind 模式不支持带 ref,out 参数的委托")
-        }
+        print("测试: 带 ref/out 的委托 (staticbind模式直接支持, reflectbind模式下目前需要手写模板函数)");
+        actions.complexCall("add", (b, a, v) => {
+            a.value += b;
+            v.value = 999;
+            return 789;
+        });
+        actions.TestComplexCall();
     } catch (err) {
         console.error(err);
     }
