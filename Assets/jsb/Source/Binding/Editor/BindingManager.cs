@@ -695,7 +695,7 @@ namespace QuickJS.Binding
             {
                 var templateInfo = templateParameters[i + startIndex];
                 var targetInfo = parameters[i];
-                if (templateInfo.IsOut != targetInfo.IsOut)
+                if (templateInfo.IsOut != targetInfo.IsOut || templateInfo.ParameterType.IsByRef != targetInfo.ParameterType.IsByRef)
                 {
                     return false;
                 }
