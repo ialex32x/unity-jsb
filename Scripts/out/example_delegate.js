@@ -36,17 +36,23 @@ if (module == require.main) {
     Example_1.DelegateTest.DipatchStaticEvent(123);
     Example_1.DelegateTest.onStaticEvent("remove", staticEventHandler);
     Example_1.DelegateTest.DipatchStaticEvent(123);
-    if (!jsb_1.IsReflectBind()) {
-        print("测试: 带 ref/out 的委托");
-        actions.complexCall("add", (b, a, v) => {
-            a.value += b;
-            v.value = 999;
-            return 789;
-        });
-        actions.TestComplexCall();
+    try {
+        // if (true) {
+        if (jsb_1.IsStaticBinding()) {
+            print("测试: 带 ref/out 的委托");
+            actions.complexCall("add", (b, a, v) => {
+                a.value += b;
+                v.value = 999;
+                return 789;
+            });
+            actions.TestComplexCall();
+        }
+        else {
+            console.warn("reflectbind 模式不支持带 ref,out 参数的委托");
+        }
     }
-    else {
-        console.warn("reflectbind 模式不支持带 ref,out 参数的委托");
+    catch (err) {
+        console.error(err);
     }
 }
 //# sourceMappingURL=example_delegate.js.map

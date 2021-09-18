@@ -24,7 +24,7 @@ function execute() {
         print("out:", x.value, typeof x.value, z.value, typeof z.value);
     }
 }
-if (!jsb.IsReflectBind()) {
+if (jsb.IsStaticBinding()) {
     execute();
 }
 else {

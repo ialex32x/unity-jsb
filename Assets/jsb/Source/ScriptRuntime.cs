@@ -61,6 +61,7 @@ namespace QuickJS
         private bool _isRunning;
         private bool _isInitialized;
         private bool _isWorker;
+        private bool _isStaticBinding;
 
         public bool withStacktrace
         {
@@ -77,6 +78,8 @@ namespace QuickJS
         public bool isRunning { get { return _isRunning; } }
 
         public bool isValid { get { return _isValid; } }
+
+        public bool isStaticBinding { get { return _isStaticBinding; } }
 
         public ScriptRuntime(int runtimeId)
         {
@@ -194,7 +197,7 @@ namespace QuickJS
             var rval = ResolveModule(_mainContext, "", module_id);
             if (rval.IsException())
             {
-                JSContext.print_exception(_mainContext, _logger, LogLevel.Error, "Module Loader Error");
+                JSContext.print_exception(_mainContext, _logger, LogLevel.Error, "failed to load module: " + module_id);
             }
             else
             {
@@ -316,6 +319,7 @@ namespace QuickJS
 
             _isValid = true;
             _isRunning = true;
+            _isStaticBinding = DefaultBinder.IsStaticBinding(binder);
             _logger = logger;
             // _rwlock = new ReaderWriterLockSlim();
             _rt = JSApi.JS_NewRuntime();

@@ -147,9 +147,9 @@ declare module "jsb" {
     function Now(): number
 
     /**
-     * 是否运行在 ReflectBind 模式下
+     * 是否运行在 StaticBinding 模式下
      */
-    function IsReflectBind(): boolean;
+    function IsStaticBinding(): boolean;
 
     /**
      * 即 Thread.Sleep()

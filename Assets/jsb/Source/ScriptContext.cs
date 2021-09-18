@@ -681,6 +681,7 @@ namespace QuickJS
             ns_jsb.AddFunction("Sleep", _sleep, 1);
             ns_jsb.AddFunction("AddModule", _add_module, 2);
             ns_jsb.AddFunction("Now", _now, 0);
+            ns_jsb.AddFunction("IsStaticBinding", _IsStaticBinding, 0);
             {
                 var ns_hotfix = register.CreateClass("JSBHotfix");
                 ns_hotfix.AddFunction("replace_single", hotfix_replace_single, 2);

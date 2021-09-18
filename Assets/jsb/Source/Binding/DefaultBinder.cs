@@ -12,7 +12,12 @@ namespace QuickJS.Binding
         /// </summary>
         public static BindAction GetBinder(bool useReflectBind)
         {
-            return useReflectBind ? (BindAction)ReflectBind : StaticBind;
+            return useReflectBind && IsReflectBindingSupported() ? (BindAction)ReflectBind : StaticBind;
+        }
+
+        public static bool IsStaticBinding(BindAction bindAction)
+        {
+            return bindAction == StaticBind;
         }
 
         public static void StaticBind(ScriptRuntime runtime)
@@ -48,6 +53,21 @@ namespace QuickJS.Binding
             }
 
             bindAll.Invoke(null, new object[] { runtime });
+        }
+
+        public static bool IsReflectBindingSupported()
+        {
+            var UnityHelper = Binding.Values.FindType("QuickJS.Unity.UnityHelper");
+            if (UnityHelper != null)
+            {
+                var IsReflectBindingSupported = UnityHelper.GetMethod("IsReflectBindingSupported");
+                if (IsReflectBindingSupported != null && (bool)IsReflectBindingSupported.Invoke(null, null))
+                {
+                    var bindAll = UnityHelper.GetMethod("InvokeReflectBinding");
+                    return bindAll != null;
+                }
+            }
+            return false;
         }
 
         public static void ReflectBind(ScriptRuntime runtime)

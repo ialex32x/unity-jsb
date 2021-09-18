@@ -27,7 +27,7 @@ function execute() {
     }
 }
 
-if (!jsb.IsReflectBind()) {
+if (jsb.IsStaticBinding()) {
     execute();
 } else {
     console.warn("reflectbind 模式下暂时不支持引用参数");
