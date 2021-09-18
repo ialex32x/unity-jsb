@@ -28,10 +28,18 @@ namespace QuickJS.Utils
         /// 展开路径中的 ./..
         public static string ExtractPath(string path, char sp)
         {
+            var prefix = string.Empty;
+            var pathRoot = System.IO.Path.GetPathRoot(path);
+            if (pathRoot != string.Empty)
+            {
+                prefix = path.Substring(0, pathRoot.Length);
+                path = path.Substring(pathRoot.Length);
+            }
+
             var items = path.Split(sp);
             if (items.Length < 2)
             {
-                return path;
+                return prefix + path;
             }
 
             var array = new List<string>(items.Length);
@@ -61,7 +69,8 @@ namespace QuickJS.Utils
                     }
                 }
             }
-            return Combine(array.ToArray());
+
+            return prefix + Combine(array.ToArray());
         }
     }
 }
