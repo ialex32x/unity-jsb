@@ -87,6 +87,10 @@ namespace QuickJS.Extra
 
         private static void _EvalSource(ScriptRuntime runtime, JSAction value)
         {
+            if (!runtime.isValid || !runtime.isRunning)
+            {
+                return;
+            }
             var args = (JSSourceArgs)value.args;
             runtime.GetMainContext().EvalSource(args.source, args.src);
         }

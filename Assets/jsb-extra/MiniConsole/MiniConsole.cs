@@ -41,7 +41,7 @@ namespace QuickJS.Extra
             {
                 return;
             }
-            
+
             if (scrollRect == null)
             {
                 return;
@@ -126,11 +126,24 @@ namespace QuickJS.Extra
                 return;
             }
 
-            _loopCheck = true;
-            var text = exception.ToString();
-            _defaultHandler.LogFormat(LogType.Error, null, "{0}", text);
-            NewEntry(text, Color.cyan);
-            _loopCheck = false;
+            try
+            {
+                _loopCheck = true;
+                var text = exception.ToString();
+                _defaultHandler.LogFormat(LogType.Error, null, "{0}\nStacktrack:{1}", text, exception.StackTrace);
+                if (exception.InnerException != null)
+                {
+                    _defaultHandler.LogFormat(LogType.Error, null, "InnerException: {0}\nStacktrack:{1}", exception.InnerException, exception.InnerException.StackTrace);
+                }
+                NewEntry(text, Color.cyan);
+            }
+            catch (Exception)
+            {
+            }
+            finally
+            {
+                _loopCheck = false;
+            }
         }
 
         private void LogException(string text)

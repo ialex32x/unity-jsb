@@ -44,7 +44,17 @@ namespace QuickJS.Utils
 
         public void WriteException(Exception exception)
         {
-            UnityEngine.Debug.LogException(exception);
+            try
+            {
+                UnityEngine.Debug.LogException(exception);
+                if (exception.InnerException != null)
+                {
+                    UnityEngine.Debug.LogException(exception.InnerException);
+                }
+            }
+            catch (Exception)
+            {
+            }
         }
 
         public void Write(LogLevel ll, string text)

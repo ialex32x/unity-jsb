@@ -63,6 +63,10 @@ namespace QuickJS.Utils
 
         private void _JSActionCallback(ScriptRuntime runtime, JSAction action)
         {
+            if (!runtime.isValid || !runtime.isRunning)
+            {
+                return;
+            }
             var e = (FileSystemEventArgs)action.args;
             switch (e.ChangeType)
             {

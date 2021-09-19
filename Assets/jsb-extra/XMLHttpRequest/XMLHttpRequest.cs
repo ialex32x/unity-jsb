@@ -223,7 +223,8 @@ namespace QuickJS.Extra
                 try { request?.Abort(); } catch (Exception) { }
             }
 
-            ScriptEngine.GetRuntime(_jsContext).EnqueueAction(OnResponseCallback, new ResponseArgs()
+            var runtime = ScriptEngine.GetRuntime(_jsContext);
+            runtime?.EnqueueAction(OnResponseCallback, new ResponseArgs()
             {
                 request = this,
                 error = error,
@@ -232,6 +233,10 @@ namespace QuickJS.Extra
 
         private static void OnResponseCallback(ScriptRuntime runtime, JSAction action)
         {
+            if (!runtime.isValid || !runtime.isRunning)
+            {
+                return;
+            }
             var args = action.args as ResponseArgs;
             if (args.request._state != ReadyState.UNSENT)
             {

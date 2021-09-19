@@ -135,6 +135,10 @@ namespace QuickJS.Utils
 
         private static void _OnTaskCompleted(ScriptRuntime runtime, JSAction action)
         {
+            if (!runtime.isValid || !runtime.isRunning)
+            {
+                return;
+            }
             var context = runtime.GetMainContext();
             var logger = runtime.GetLogger();
             var args = (JSTaskCompletionArgs)action.args;

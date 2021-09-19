@@ -114,8 +114,13 @@ namespace QuickJS.Unity
             runtime.EnqueueAction(OnSnapshotRequest, snapshot);
         }
 
-        private static void OnSnapshotRequest(ScriptRuntime rt, Utils.JSAction act)
+        private static void OnSnapshotRequest(ScriptRuntime runtime, Utils.JSAction act)
         {
+            if (!runtime.isValid || !runtime.isRunning)
+            {
+                Debug.LogError("get snapshot on released script runtime");
+                return;
+            }
             var snapshot = (Snapshot)act.args;
             lock (snapshot)
             {
@@ -123,15 +128,15 @@ namespace QuickJS.Unity
                 {
                     fixed (Native.JSMemoryUsage* ptr = &snapshot.memoryUsage)
                     {
-                        Native.JSApi.JS_ComputeMemoryUsage(rt, ptr);
+                        Native.JSApi.JS_ComputeMemoryUsage(runtime, ptr);
                     }
                 }
 
-                var typeDB = rt.GetTypeDB();
+                var typeDB = runtime.GetTypeDB();
                 snapshot.exportedTypes = typeDB.Count;
 
-                var objectCache = rt.GetObjectCache();
-                var stringCache = rt.GetMainContext().GetStringCache();
+                var objectCache = runtime.GetObjectCache();
+                var stringCache = runtime.GetMainContext().GetStringCache();
 
                 snapshot.managedObjectCount = objectCache.GetManagedObjectCount();
                 snapshot.managedObjectCap = objectCache.GetManagedObjectCap();
@@ -149,7 +154,7 @@ namespace QuickJS.Unity
                 snapshot.scriptPromiseCount = objectCache.GetScriptPromiseCount();
                 snapshot.stringCount = stringCache.GetStringCount();
 
-                var timeManager = rt.GetTimerManager();
+                var timeManager = runtime.GetTimerManager();
                 snapshot.activeTimers.Clear();
                 snapshot.timeNow = timeManager.now;
                 timeManager.ForEach((id, delay, deadline, once) => snapshot.activeTimers.Add(new Snapshot.TimerInfo()
