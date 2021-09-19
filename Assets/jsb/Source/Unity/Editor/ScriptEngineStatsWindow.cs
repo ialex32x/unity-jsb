@@ -118,7 +118,7 @@ namespace QuickJS.Unity
         {
             if (!runtime.isValid || !runtime.isRunning)
             {
-                Debug.LogError("get snapshot on released script runtime");
+                // Debug.LogError("get snapshot on released script runtime");
                 return;
             }
             var snapshot = (Snapshot)act.args;

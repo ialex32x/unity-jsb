@@ -16,6 +16,11 @@ namespace Example
         {
         }
 
+        public override string ToString()
+        {
+            throw new Exception("the intentionally thrown error");
+        }
+
         // 未完成
         [return: JSUseStringCache]
         public static string Foo([JSUseStringCache] string v)
