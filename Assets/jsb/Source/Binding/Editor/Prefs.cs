@@ -89,7 +89,7 @@ namespace QuickJS.Binding
         /// </summary>
         public List<string> assetPostProcessors = new List<string>(new string[]
         {
-            "editor/asset_postprocessor",
+            // "editor/asset_postprocessor",
         });
 
         public List<string> editorRequires = new List<string>(new string[]
