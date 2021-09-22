@@ -29,7 +29,7 @@ namespace QuickJS.Unity
         private int _tick;
         private bool _ready;
         private Prefs _prefs;
-        private FileSystemWatcher _fsw;
+        private FileSystemWatcher _prefsWatcher;
 
         static EditorRuntime()
         {
@@ -67,11 +67,11 @@ namespace QuickJS.Unity
             if (File.Exists(_prefs.filePath))
             {
                 var path = Path.GetDirectoryName(_prefs.filePath);
-                _fsw = new FileSystemWatcher(string.IsNullOrWhiteSpace(path) ? "." : path, Path.GetFileName(_prefs.filePath));
-                _fsw.Changed += OnFileChanged;
-                _fsw.Created += OnFileChanged;
-                _fsw.Deleted += OnFileChanged;
-                _fsw.EnableRaisingEvents = true;
+                _prefsWatcher = new FileSystemWatcher(string.IsNullOrWhiteSpace(path) ? "." : path, Path.GetFileName(_prefs.filePath));
+                _prefsWatcher.Changed += OnFileChanged;
+                _prefsWatcher.Created += OnFileChanged;
+                _prefsWatcher.Deleted += OnFileChanged;
+                _prefsWatcher.EnableRaisingEvents = true;
             }
         }
 
@@ -112,10 +112,10 @@ namespace QuickJS.Unity
             EditorApplication.update -= OnUpdate;
             EditorApplication.quitting -= OnQuitting;
             EditorApplication.playModeStateChanged -= OnPlayModeStateChanged;
-            if (_fsw != null)
+            if (_prefsWatcher != null)
             {
-                _fsw.Dispose();
-                _fsw = null;
+                _prefsWatcher.Dispose();
+                _prefsWatcher = null;
             }
             runtime.Shutdown();
         }
@@ -195,14 +195,12 @@ namespace QuickJS.Unity
                 runtime.ResolveModule(module);
             }
 
-            var editorScripts = new List<JSScriptClassPathHint>();
-
-            JSScriptFinder.GetInstance().Search(JSScriptClassType.CustomEditor, editorScripts);
-
-            foreach (var editorScript in editorScripts)
-            {
-                runtime.ResolveModule(editorScript.modulePath);
-            }
+            // var editorScripts = new List<JSScriptClassPathHint>();
+            // JSScriptFinder.GetInstance().Search(JSScriptClassType.CustomEditor, editorScripts);
+            // foreach (var editorScript in editorScripts)
+            // {
+            //     runtime.ResolveModule(editorScript.modulePath);
+            // }
 
             foreach (var assetPostProcessor in _prefs.assetPostProcessors)
             {
