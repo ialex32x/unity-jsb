@@ -17,6 +17,8 @@ namespace QuickJS.Binding
         /// </summary>
         public readonly TypeTransform transform;
 
+        public bool preload => operators.Count != 0;
+
         public TypeBindingFlags bindingFlags => transform.bindingFlags;
 
         /// <summary>

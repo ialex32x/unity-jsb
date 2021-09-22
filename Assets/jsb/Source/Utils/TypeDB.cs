@@ -215,7 +215,7 @@ namespace QuickJS.Utils
                 return true;
             }
 
-            if (_runtime.EnsureReflectBindTypeLoaded(_context, type))
+            if (_runtime.TryLoadType(_context, type))
             {
                 if (_prototypes.TryGetValue(type, out proto))
                 {

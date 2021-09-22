@@ -61,7 +61,7 @@ namespace QuickJS.Binding
                 var def = self[i];
                 // var funcVal = JSApi.JS_NewCFunction(ctx, def.func, def.op, def.length);
                 JSApi.JS_DefinePropertyValue(ctx, argv[0], register.GetAtom(def.op), def.value, JSPropFlags.DEFAULT);
-                // Debug.LogFormat("{0} operator {1}", type, def.op);
+                // UnityEngine.Debug.LogFormat("{0} operator {1}", type, def.op);
             }
 
             for (int i = 0, len = left.Count; i < len; i++)
@@ -77,7 +77,7 @@ namespace QuickJS.Binding
                     // var funcVal = JSApi.JS_NewCFunction(ctx, def.func, def.op, def.length);
                     JSApi.JS_DefinePropertyValue(ctx, operator_, register.GetAtom(def.op), def.value, JSPropFlags.DEFAULT);
                     argv[i + 1] = operator_;
-                    // Debug.LogFormat("{0} {1} operator {2} {3} ({4})", type, side, def.op, cross.type, sideCtor);
+                    // UnityEngine.Debug.LogFormat("{0} {1} operator {2} {3} ({4})", type, side, def.op, cross.type, sideCtor);
                 }
             }
 
@@ -94,7 +94,7 @@ namespace QuickJS.Binding
                     // var funcVal = JSApi.JS_NewCFunction(ctx, def.func, def.op, def.length);
                     JSApi.JS_DefinePropertyValue(ctx, operator_, register.GetAtom(def.op), def.value, JSPropFlags.DEFAULT);
                     argv[i + 1 + left.Count] = operator_;
-                    // Debug.LogFormat("{0} {1} operator {2} {3} ({4})", type, side, def.op, cross.type, sideCtor);
+                    // UnityEngine.Debug.LogFormat("{0} {1} operator {2} {3} ({4})", type, side, def.op, cross.type, sideCtor);
                 }
             }
 

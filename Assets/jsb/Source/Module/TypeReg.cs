@@ -7,9 +7,8 @@ namespace QuickJS.Module
     using Native;
     using Binding;
 
-    public class TypeReg
+    public struct TypeReg
     {
-        public bool loaded;
         public string[] ns;
         public ModuleExportsBind bind;
     }

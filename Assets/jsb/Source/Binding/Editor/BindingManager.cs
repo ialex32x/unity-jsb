@@ -1854,10 +1854,12 @@ namespace QuickJS.Binding
                     {
                         foreach (var module in modules)
                         {
-                            if (module.Count() > 0)
+                            var count = module.Count();
+
+                            if (count > 0)
                             {
                                 var moduleName = string.IsNullOrEmpty(module.Key) ? this.prefs.defaultJSModule : module.Key;
-                                _bindingCallback.BeginStaticModule(moduleName);
+                                _bindingCallback.BeginStaticModule(moduleName, count);
                                 foreach (var type in module)
                                 {
                                     _bindingCallback.AddTypeReference(moduleName, type);

@@ -7,7 +7,7 @@ namespace QuickJS.Binding
 {
     public interface IBindingCallback
     {
-        void BeginStaticModule(string moduleName);
+        void BeginStaticModule(string moduleName, int capacity);
         void AddTypeReference(string moduleName, TypeBindingInfo typeBindingInfo);
         void EndStaticModule(string moduleName);
 

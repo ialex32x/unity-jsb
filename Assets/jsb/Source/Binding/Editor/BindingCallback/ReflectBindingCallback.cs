@@ -46,19 +46,20 @@ namespace QuickJS.Binding
 #endif
         }
 
-        public void BeginStaticModule(string moduleName)
+        public void BeginStaticModule(string moduleName, int capacity)
         {
-            _moduleReg = new Module.ProxyModuleRegister(_runtime);
+            _moduleReg = _runtime.AddStaticModuleProxy(moduleName); 
+            // _moduleReg = new Module.ProxyModuleRegister(_runtime);
         }
 
         public void AddTypeReference(string moduleName, TypeBindingInfo typeBindingInfo)
         {
-            _runtime.AddTypeReference(_moduleReg, typeBindingInfo.type, register => typeBindingInfo.DoReflectBind(register, _moduleReg), typeBindingInfo.tsTypeNaming.jsFullNameForReflectBind);
+            _runtime.AddTypeReference(_moduleReg, typeBindingInfo.type, register => typeBindingInfo.DoReflectBind(register, _moduleReg), typeBindingInfo.preload, typeBindingInfo.tsTypeNaming.jsFullNameForReflectBind);
         }
 
         public void EndStaticModule(string moduleName)
         {
-            _runtime.AddStaticModule(moduleName, _moduleReg);
+            // _runtime.AddStaticModule(moduleName, _moduleReg);
         }
 
         public void AddDelegate(DelegateBridgeBindingInfo bindingInfo)

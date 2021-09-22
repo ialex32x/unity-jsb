@@ -14,12 +14,11 @@ namespace QuickJS.Binding
 
         // 注册过程中产生的 atom, 完成后自动释放 
         private AtomCache _atoms;
-
         private List<Type> _pendingTypes = new List<Type>();
+        private List<ClassDecl> _pendingClasses = new List<ClassDecl>();
+        
         private List<OperatorDecl> _operatorDecls = new List<OperatorDecl>();
         private Dictionary<Type, int> _operatorDeclIndex = new Dictionary<Type, int>();
-
-        private List<ClassDecl> _pendingClasses = new List<ClassDecl>();
 
         public static implicit operator JSContext(TypeRegister register)
         {
@@ -48,8 +47,6 @@ namespace QuickJS.Binding
 
         public TypeRegister(ScriptContext context)
         {
-            var ctx = (JSContext)context;
-
             _context = context;
             _refCount = 1;
             _atoms = new AtomCache(_context);
@@ -236,14 +233,14 @@ namespace QuickJS.Binding
             RegisterOperator(type, op, JSApi.JS_NewCFunction(_context, func, op, length));
         }
 
-        public void RegisterOperator(Type type, string op, JSCFunction func, int length, bool left, Type sideType)
-        {
-            RegisterOperator(type, op, JSApi.JS_NewCFunction(_context, func, op, length), left, sideType);
-        }
-
         public void RegisterOperator(Type type, string op, IDynamicMethod func)
         {
             RegisterOperator(type, op, _db.NewDynamicMethod(GetAtom(op), func));
+        }
+
+        public void RegisterOperator(Type type, string op, JSCFunction func, int length, bool left, Type sideType)
+        {
+            RegisterOperator(type, op, JSApi.JS_NewCFunction(_context, func, op, length), left, sideType);
         }
 
         public void RegisterOperator(Type type, string op, IDynamicMethod func, bool left, Type sideType)
@@ -344,6 +341,7 @@ namespace QuickJS.Binding
                     clazz.Close();
                 }
 
+                _pendingClasses.Clear();
                 _pendingTypes.Clear();
             }
         }

@@ -148,7 +148,7 @@ namespace QuickJS
             {
                 sb.Append("Assertion failed: ");
             }
-            
+
             for (; i < argc; i++)
             {
                 var pstr = JSApi.JS_ToCStringLen(ctx, out str_len, argv[i]);
@@ -473,6 +473,21 @@ namespace QuickJS
         }
 
         [MonoPInvokeCallback(typeof(JSCFunction))]
+        public static JSValue js_load_type(JSContext ctx, JSValue this_obj, int argc, JSValue[] argv)
+        {
+            if (argc != 2 || !argv[0].IsString() || !argv[1].IsString())
+            {
+                return JSApi.JS_ThrowInternalError(ctx, "string expected");
+            }
+
+            var module_id = JSApi.GetString(ctx, argv[0]);
+            var cluster_id = JSApi.GetString(ctx, argv[1]);
+
+            var context = ScriptEngine.GetContext(ctx);
+            return context._LoadType(module_id, cluster_id);
+        }
+
+        [MonoPInvokeCallback(typeof(JSCFunction))]
         public static JSValue ModuleManager_BeginReload(JSContext ctx, JSValue this_obj, int argc, JSValue[] argv)
         {
             var context = ScriptEngine.GetContext(ctx);
@@ -490,7 +505,7 @@ namespace QuickJS
             {
                 return JSApi.JS_ThrowInternalError(ctx, "resolved module_id expected");
             }
-            
+
             var context = ScriptEngine.GetContext(ctx);
             if (context != null)
             {

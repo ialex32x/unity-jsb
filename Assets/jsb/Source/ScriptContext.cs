@@ -674,6 +674,7 @@ namespace QuickJS
             ns_jsb.AddFunction("ToFunction", to_js_function, 1);
             ns_jsb.AddFunction("ToDelegate", to_cs_delegate, 1);
             ns_jsb.AddFunction("Import", js_import_type, 2);
+            ns_jsb.AddFunction("$LoadType", js_load_type, 2);
             ns_jsb.AddFunction("GC", _gc, 0);
             ns_jsb.AddFunction("SetDisposable", _set_disposable, 2);
             ns_jsb.AddFunction("AddCacheString", _add_cache_string, 1);
@@ -701,6 +702,11 @@ namespace QuickJS
                 ns_jsb.AddValue("ModuleManager", ns_ModuleManager.GetConstructor());
             }
             return ns_jsb;
+        }
+
+        public JSValue _LoadType(string module_id, string topLevelNamespace)
+        {
+            return _runtime._LoadType(this, module_id, topLevelNamespace);
         }
 
         public void EvalSource(string source, string fileName)

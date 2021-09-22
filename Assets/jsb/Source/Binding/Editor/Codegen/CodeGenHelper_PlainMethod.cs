@@ -35,8 +35,9 @@ namespace QuickJS.Binding
             var csNamespace = this.cg.bindingManager.prefs.ns;
             var csBindingName = typeBindingInfo.csBindingName;
             var jsNamespace = CodeGenUtils.Concat(", ", CodeGenUtils.ConcatAsLiteral(", ", typeBindingInfo.tsTypeNaming.jsNamespaceSlice), $"\"{typeBindingInfo.tsTypeNaming.jsNameNormalized}\"");
-
-            AddStatement($"{runtimeVarName}.AddTypeReference({moduleVarName}, typeof({csType}), {csNamespace}.{csBindingName}.Bind, {jsNamespace});");
+            var preload = typeBindingInfo.preload ? "true" : "false";
+            
+            AddStatement($"{runtimeVarName}.AddTypeReference({moduleVarName}, typeof({csType}), {csNamespace}.{csBindingName}.Bind, {preload}, {jsNamespace});");
         }
     }
 }
