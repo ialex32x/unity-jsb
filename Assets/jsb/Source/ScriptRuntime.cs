@@ -214,26 +214,18 @@ namespace QuickJS
                 if (resolver.ResolveModule(_fileSystem, _pathResolver, parent_module_id, module_id, out resolved_id))
                 {
                     // 如果目标模块在 reloading 列表中, 直接进入重载逻辑
-                    JSValue module_obj;
-                    if (context.TryGetModuleForReloading(resolved_id, out module_obj))
+                    JSValue exports_obj;
+                    if (TryGetModuleForReloading(context, resolver, resolved_id, out exports_obj))
                     {
-                        JSValue exports_obj;
-                        RaiseScriptReloadingEvent_nothrow(context, resolved_id);
-                        if (resolver.ReloadModule(context, resolved_id, module_obj, out exports_obj))
-                        {
-                            RaiseScriptReloadedEvent_nothrow(context, resolved_id);
-                            JSApi.JS_FreeValue(context, module_obj);
-                            return exports_obj;
-                        }
-
-                        JSApi.JS_FreeValue(context, module_obj);
+                        return exports_obj;
                     }
 
                     // 如果已经在模块缓存中, 直接返回
+                    JSValue module_obj;
                     if (context.LoadModuleCache(resolved_id, out module_obj))
                     {
                         var ctx = (JSContext)context;
-                        var exports_obj = JSApi.JS_GetProperty(ctx, module_obj, context.GetAtom("exports"));
+                        exports_obj = JSApi.JS_GetProperty(ctx, module_obj, context.GetAtom("exports"));
                         JSApi.JS_FreeValue(ctx, module_obj);
                         return exports_obj;
                     }
@@ -252,27 +244,34 @@ namespace QuickJS
             for (int i = 0, count = _moduleResolvers.Count; i < count; i++)
             {
                 var resolver = _moduleResolvers[i];
-                if (resolver.ContainsModule(_fileSystem, _pathResolver, resolved_id))
+                JSValue exports_obj;
+                if (resolver.ContainsModule(_fileSystem, _pathResolver, resolved_id) && TryGetModuleForReloading(context, resolver, resolved_id, out exports_obj))
                 {
-                    JSValue module_obj;
-                    if (context.TryGetModuleForReloading(resolved_id, out module_obj))
-                    {
-                        JSValue exports_obj;
-                        RaiseScriptReloadingEvent_nothrow(context, resolved_id);
-                        if (resolver.ReloadModule(context, resolved_id, module_obj, out exports_obj))
-                        {
-                            RaiseScriptReloadedEvent_nothrow(context, resolved_id);
-                            JSApi.JS_FreeValue(ctx, module_obj);
-                            JSApi.JS_FreeValue(ctx, exports_obj);
-                            return true;
-                        }
-                        JSApi.JS_FreeValue(ctx, module_obj);
-                    }
-
-                    return false;
+                    JSApi.JS_FreeValue(ctx, exports_obj);
+                    return true;
                 }
             }
 
+            return false;
+        }
+
+        private bool TryGetModuleForReloading(ScriptContext context, IModuleResolver resolver, string resolved_id, out JSValue exports_obj)
+        {
+            JSValue module_obj;
+            if (context.TryGetModuleForReloading(resolved_id, out module_obj))
+            {
+                RaiseScriptReloadingEvent_nothrow(context, resolved_id);
+                if (resolver.ReloadModule(context, resolved_id, module_obj, out exports_obj))
+                {
+                    RaiseScriptReloadedEvent_nothrow(context, resolved_id);
+                    JSApi.JS_FreeValue(context, module_obj);
+                    return true;
+                }
+
+                JSApi.JS_FreeValue(context, module_obj);
+            }
+
+            exports_obj = JSApi.JS_UNDEFINED;
             return false;
         }
 
