@@ -320,6 +320,11 @@ namespace QuickJS.Unity
                     EditorRuntime.GetInstance()?.Reload();
                 }
 
+                if (GUILayout.Button("Reload CSharp"))
+                {
+                    UnityEditor.Compilation.CompilationPipeline.RequestScriptCompilation();
+                }
+
                 _autoCap = EditorGUILayout.Toggle("Auto", _autoCap);
                 EditorGUI.BeginDisabledGroup(!_autoCap);
                 _timeCap = EditorGUILayout.Slider("Interval", _timeCap, 1f, 30f);

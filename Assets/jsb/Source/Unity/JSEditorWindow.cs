@@ -15,8 +15,7 @@ namespace QuickJS.Unity
     /// </summary>
     public class JSEditorWindow : EditorWindow, IHasCustomMenu
     {
-        private bool _released;
-        private bool _destroyed;
+        private bool _scriptBinded;
 
         private string _moduleId;
         private string _className;
@@ -51,7 +50,7 @@ namespace QuickJS.Unity
 
         public int IsInstanceOf(JSValue ctor)
         {
-            if (_released)
+            if (!_scriptBinded)
             {
                 return 0;
             }
@@ -60,7 +59,7 @@ namespace QuickJS.Unity
 
         public JSValue CloneValue()
         {
-            if (_released)
+            if (!_scriptBinded)
             {
                 return JSApi.JS_UNDEFINED;
             }
@@ -70,7 +69,7 @@ namespace QuickJS.Unity
         public void SetBridge(JSContext ctx, JSValue this_obj, JSValue ctor)
         {
             var context = ScriptEngine.GetContext(ctx);
-            if (context == null)
+            if (context == null || !context.IsValid())
             {
                 return;
             }
@@ -97,7 +96,7 @@ namespace QuickJS.Unity
                 context.OnScriptReloaded += OnScriptReloaded;
             }
 #endif
-            _released = false;
+            _scriptBinded = true;
             _ctx = ctx;
             _this_obj = JSApi.JS_DupValue(ctx, this_obj);
 
@@ -256,18 +255,17 @@ namespace QuickJS.Unity
 
         void Release()
         {
-            if (_released)
+            if (!_scriptBinded)
             {
                 return;
             }
 
-            _released = true;
-
+            _scriptBinded = false;
             UnbindJSMembers();
             JSApi.JS_FreeValue(_ctx, _this_obj);
 
             var context = ScriptEngine.GetContext(_ctx);
-            if (context != null)
+            if (context != null && context.IsValid())
             {
                 context.OnDestroy -= OnContextDestroy;
 #if UNITY_EDITOR
@@ -276,14 +274,11 @@ namespace QuickJS.Unity
 #endif
             }
 
-            if (!_destroyed)
+            try
             {
-                try
-                {
-                    Close();
-                }
-                catch (Exception) { }
+                Close();
             }
+            catch (Exception) { }
         }
 
         void Update()
@@ -332,6 +327,7 @@ namespace QuickJS.Unity
                     JSApi.JS_FreeValue(_ctx, rval);
                 }
             }
+
             if (UnityEditor.EditorApplication.isCompiling)
             {
                 Release();
@@ -340,11 +336,6 @@ namespace QuickJS.Unity
 
         void OnDestroy()
         {
-            if (_destroyed)
-            {
-                return;
-            }
-
             if (_onDestroyValid)
             {
                 var rval = JSApi.JS_Call(_ctx, _onDestroyFunc, _this_obj);
@@ -357,7 +348,6 @@ namespace QuickJS.Unity
                     JSApi.JS_FreeValue(_ctx, rval);
                 }
             }
-            _destroyed = true;
             Release();
         }
 
