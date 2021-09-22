@@ -15,6 +15,7 @@ namespace QuickJS.Unity
     /// </summary>
     public class JSEditorWindow : EditorWindow, IHasCustomMenu
     {
+        [NonSerialized]
         private bool _scriptBinded;
 
         private string _moduleId;
@@ -253,7 +254,7 @@ namespace QuickJS.Unity
             Release();
         }
 
-        void Release()
+        void Release(bool noClose = false)
         {
             if (!_scriptBinded)
             {
@@ -261,6 +262,8 @@ namespace QuickJS.Unity
             }
 
             _scriptBinded = false;
+            _moduleId = null;
+            _className = null;
             UnbindJSMembers();
             JSApi.JS_FreeValue(_ctx, _this_obj);
 
@@ -276,7 +279,10 @@ namespace QuickJS.Unity
 
             try
             {
-                Close();
+                if (!noClose) 
+                {
+                    Close();
+                }
             }
             catch (Exception) { }
         }
@@ -348,12 +354,18 @@ namespace QuickJS.Unity
                     JSApi.JS_FreeValue(_ctx, rval);
                 }
             }
-            Release();
+            Release(true);
         }
 
         void OnGUI()
         {
-            if (_onGUIValid)
+            if (EditorApplication.isCompiling)
+            {
+                Release();
+                return;
+            }
+
+            if (_onGUIValid && _scriptBinded && _ctx.IsValid())
             {
                 var rval = JSApi.JS_Call(_ctx, _onGUIFunc, _this_obj);
                 if (rval.IsException())
