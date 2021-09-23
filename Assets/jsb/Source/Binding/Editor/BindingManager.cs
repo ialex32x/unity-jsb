@@ -56,7 +56,8 @@ namespace QuickJS.Binding
         private Dictionary<int, List<MethodInfo>> _reflectedDelegateTemplates = new Dictionary<int, List<MethodInfo>>();
 
         // 自定义的处理流程
-        private List<IBindingProcess> _bindingProcess = new List<IBindingProcess>();
+        private List<Type> _allBindingProcessTypes = new List<Type>();
+        private List<IBindingProcess> _enabledBindingProcess = new List<IBindingProcess>();
 
         private ICodeGenCallback _codegenCallback;
         private IBindingCallback _bindingCallback;
@@ -266,6 +267,11 @@ namespace QuickJS.Binding
             _typeBlacklist.Add(type);
         }
 
+        public List<Type> GetBindingProcessTypes()
+        {
+            return _allBindingProcessTypes;
+        }
+
         public bool GetTSMethodDeclaration(MethodBase method, out string code)
         {
             var transform = GetTypeTransform(method.DeclaringType);
@@ -330,18 +336,20 @@ namespace QuickJS.Binding
                     var interfaces = type.FindInterfaces(_FindFilterBindingProcess, null);
                     if (interfaces != null && interfaces.Length > 0)
                     {
-                        var ctor = type.GetConstructor(Type.EmptyTypes);
-                        var inst = ctor.Invoke(null) as IBindingProcess;
-                        var procName = inst.GetBindingProcessName();
-                        if (procName == null || !prefs.skipExtras.Contains(procName))
+                        _allBindingProcessTypes.Add(type);
+
+                        if (prefs.skipBinding.Contains(type.FullName))
                         {
-                            inst.OnInitialize(this);
-                            _bindingProcess.Add(inst);
-                            _bindingLogger?.Log($"add binding process: {type}");
+                            _bindingLogger?.Log($"skip binding process: {type}");
                         }
                         else
                         {
-                            _bindingLogger?.Log($"skip binding process: {type}");
+                            var ctor = type.GetConstructor(Type.EmptyTypes);
+                            var inst = ctor.Invoke(null) as IBindingProcess;
+
+                            inst.OnInitialize(this);
+                            _enabledBindingProcess.Add(inst);
+                            _bindingLogger?.Log($"add binding process: {type}");
                         }
                     }
                 }
@@ -715,7 +723,7 @@ namespace QuickJS.Binding
                     {
                         return methodTemplate;
                     }
-                    
+
                     var parametersTypes = from p in parameters select p.ParameterType;
                     return methodTemplate.MakeGenericMethod(
                         returnType != typeof(void)
@@ -723,7 +731,7 @@ namespace QuickJS.Binding
                         : parametersTypes.ToArray());
                 }
             }
-            
+
             return null;
         }
 
@@ -742,7 +750,7 @@ namespace QuickJS.Binding
             {
                 return GetReflectedDelegateTemplate(genMethods, parameters, returnType);
             }
-            
+
             return null;
         }
 
@@ -1251,9 +1259,9 @@ namespace QuickJS.Binding
 
         private void OnPreCollectAssemblies()
         {
-            for (int i = 0, size = _bindingProcess.Count; i < size; i++)
+            for (int i = 0, size = _enabledBindingProcess.Count; i < size; i++)
             {
-                var bp = _bindingProcess[i];
+                var bp = _enabledBindingProcess[i];
                 try
                 {
                     bp.OnPreCollectAssemblies(this);
@@ -1267,9 +1275,9 @@ namespace QuickJS.Binding
 
         private void OnPostCollectAssemblies()
         {
-            for (int i = 0, size = _bindingProcess.Count; i < size; i++)
+            for (int i = 0, size = _enabledBindingProcess.Count; i < size; i++)
             {
-                var bp = _bindingProcess[i];
+                var bp = _enabledBindingProcess[i];
                 try
                 {
                     bp.OnPostCollectAssemblies(this);
@@ -1283,9 +1291,9 @@ namespace QuickJS.Binding
 
         private void OnPostExporting()
         {
-            for (int i = 0, size = _bindingProcess.Count; i < size; i++)
+            for (int i = 0, size = _enabledBindingProcess.Count; i < size; i++)
             {
-                var bp = _bindingProcess[i];
+                var bp = _enabledBindingProcess[i];
                 try
                 {
                     bp.OnPostExporting(this);
@@ -1299,9 +1307,9 @@ namespace QuickJS.Binding
 
         private void OnPreExporting()
         {
-            for (int i = 0, size = _bindingProcess.Count; i < size; i++)
+            for (int i = 0, size = _enabledBindingProcess.Count; i < size; i++)
             {
-                var bp = _bindingProcess[i];
+                var bp = _enabledBindingProcess[i];
                 try
                 {
                     bp.OnPreExporting(this);
@@ -1315,9 +1323,9 @@ namespace QuickJS.Binding
 
         private void OnPreCollectTypes()
         {
-            for (int i = 0, size = _bindingProcess.Count; i < size; i++)
+            for (int i = 0, size = _enabledBindingProcess.Count; i < size; i++)
             {
-                var bp = _bindingProcess[i];
+                var bp = _enabledBindingProcess[i];
                 try
                 {
                     bp.OnPreCollectTypes(this);
@@ -1331,9 +1339,9 @@ namespace QuickJS.Binding
 
         private void OnPostCollectTypes()
         {
-            for (int i = 0, size = _bindingProcess.Count; i < size; i++)
+            for (int i = 0, size = _enabledBindingProcess.Count; i < size; i++)
             {
-                var bp = _bindingProcess[i];
+                var bp = _enabledBindingProcess[i];
                 try
                 {
                     bp.OnPostCollectTypes(this);
@@ -1347,9 +1355,9 @@ namespace QuickJS.Binding
 
         private void OnPreGenerateType(TypeBindingInfo bindingInfo)
         {
-            for (int i = 0, size = _bindingProcess.Count; i < size; i++)
+            for (int i = 0, size = _enabledBindingProcess.Count; i < size; i++)
             {
-                var bp = _bindingProcess[i];
+                var bp = _enabledBindingProcess[i];
                 try
                 {
                     bp.OnPreGenerateType(this, bindingInfo);
@@ -1363,9 +1371,9 @@ namespace QuickJS.Binding
 
         private void OnPostGenerateType(TypeBindingInfo bindingInfo)
         {
-            for (int i = 0, size = _bindingProcess.Count; i < size; i++)
+            for (int i = 0, size = _enabledBindingProcess.Count; i < size; i++)
             {
-                var bp = _bindingProcess[i];
+                var bp = _enabledBindingProcess[i];
                 try
                 {
                     bp.OnPostGenerateType(this, bindingInfo);
@@ -1379,9 +1387,9 @@ namespace QuickJS.Binding
 
         public void OnPreGenerateDelegate(DelegateBridgeBindingInfo bindingInfo)
         {
-            for (int i = 0, size = _bindingProcess.Count; i < size; i++)
+            for (int i = 0, size = _enabledBindingProcess.Count; i < size; i++)
             {
-                var bp = _bindingProcess[i];
+                var bp = _enabledBindingProcess[i];
                 try
                 {
                     bp.OnPreGenerateDelegate(this, bindingInfo);
@@ -1395,9 +1403,9 @@ namespace QuickJS.Binding
 
         public void OnPostGenerateDelegate(DelegateBridgeBindingInfo bindingInfo)
         {
-            for (int i = 0, size = _bindingProcess.Count; i < size; i++)
+            for (int i = 0, size = _enabledBindingProcess.Count; i < size; i++)
             {
-                var bp = _bindingProcess[i];
+                var bp = _enabledBindingProcess[i];
                 try
                 {
                     bp.OnPostGenerateDelegate(this, bindingInfo);
@@ -1411,9 +1419,9 @@ namespace QuickJS.Binding
 
         private void OnCleanup()
         {
-            for (int i = 0, size = _bindingProcess.Count; i < size; i++)
+            for (int i = 0, size = _enabledBindingProcess.Count; i < size; i++)
             {
-                var bp = _bindingProcess[i];
+                var bp = _enabledBindingProcess[i];
                 try
                 {
                     bp.OnCleanup(this);

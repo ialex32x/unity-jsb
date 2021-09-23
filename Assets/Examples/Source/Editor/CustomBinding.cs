@@ -9,11 +9,6 @@ namespace Example.Editor
 
     public class CustomBinding : AbstractBindingProcess
     {
-        public override string GetBindingProcessName()
-        {
-            return "Example";
-        }
-
         public override void OnPreExporting(BindingManager bindingManager)
         {
             // bindingManager.TryExportExtensionMethods(typeof(ExtensionTest));  // expose all extension methods

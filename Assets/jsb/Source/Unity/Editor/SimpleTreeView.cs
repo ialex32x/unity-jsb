@@ -98,11 +98,11 @@ namespace QuickJS.Unity
                 {
                     if (index % 2 == 0)
                     {
-                        _itemRect.Set(0, _index * _itemHeight, _drawRect.width, _itemHeight);
+                        _itemRect.Set(0, index * _itemHeight, _drawRect.width, _itemHeight);
                         EditorGUI.DrawRect(_itemRect, _rowColor);
                     }
                     var x = _indent * _indentWidth;
-                    _itemRect.Set(x, _index * _itemHeight, _maxWidth - x, _itemHeight);
+                    _itemRect.Set(x, index * _itemHeight, _maxWidth - x, _itemHeight);
                     GUI.Label(_itemRect, content, _itemStyle);
                 }
             }

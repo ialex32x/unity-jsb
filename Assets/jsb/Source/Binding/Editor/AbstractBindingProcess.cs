@@ -7,11 +7,6 @@ namespace QuickJS.Binding
 {
     public abstract class AbstractBindingProcess : IBindingProcess
     {
-        public virtual string GetBindingProcessName()
-        {
-            return null;
-        }
-
         public virtual void OnInitialize(BindingManager bindingManager)
         {
         }

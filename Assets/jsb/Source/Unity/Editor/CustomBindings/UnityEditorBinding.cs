@@ -13,11 +13,6 @@ namespace jsb.Editor
 
     public class UnityEditorBinding : AbstractBindingProcess
     {
-        public override string GetBindingProcessName()
-        {
-            return "UnityEditor";
-        }
-
         public bool IsAvailable(MethodInfo methodInfo)
         {
             return methodInfo != null && methodInfo.IsPublic;

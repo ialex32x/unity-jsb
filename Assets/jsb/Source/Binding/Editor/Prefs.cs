@@ -169,13 +169,11 @@ namespace QuickJS.Binding
         public string tab = "    ";
 
         /// <summary>
-        /// a list of BindingProcess not to run
+        /// a list of BindingProcess not to run (type.FullName)
         /// </summary>
-        public List<string> skipExtras = new List<string>(new string[]
+        public List<string> skipBinding = new List<string>(new string[]
         {
-            // "FairyGUI",
-            // "UnityEditor",
-            // "Example",
+            // "jsb.Editor.UnityEditorBinding",
         });
 
         /// <summary>

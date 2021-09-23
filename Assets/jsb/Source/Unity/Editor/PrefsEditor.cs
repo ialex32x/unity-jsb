@@ -126,6 +126,13 @@ namespace QuickJS.Unity
         private Prefs _prefs;
         private string _filePath;
         private bool _dirty;
+        private BindingManager _bindingManager;
+
+        private int _selectedTabViewIndex;
+        private GUIContent[] _tabViewNames = new GUIContent[] { };
+        private Action[] _tabViewDrawers = new Action[] { };
+        private string[] _newlineValues = new string[] { "cr", "lf", "crlf", "" };
+        private string[] _newlineNames = new string[] { "UNIX", "MacOS", "Windows", "Auto" };
 
         private GUIStyle _footStyle;
         private SearchField _searchField;
@@ -135,6 +142,12 @@ namespace QuickJS.Unity
 
         private SimpleTreeView _treeView = new SimpleTreeView();
         private SimpleScrollView<Type_TreeViewNode> _listView = new SimpleScrollView<Type_TreeViewNode>();
+
+        public void AddTabView(string name, Action action)
+        {
+            ArrayUtility.Add(ref _tabViewNames, new GUIContent(name));
+            ArrayUtility.Add(ref _tabViewDrawers, action);
+        }
 
         private Type_TreeViewNode CreateTypeNode(Type type)
         {
@@ -170,18 +183,19 @@ namespace QuickJS.Unity
         protected override void OnEnable()
         {
             base.OnEnable();
-            titleContent = new GUIContent("JS Bridge Prefs");
 
             _prefs = UnityHelper.LoadPrefs(out _filePath);
+            _bindingManager = new BindingManager(_prefs, new BindingManager.Args());
+            _bindingManager.Collect();
+            _bindingManager.Generate(TypeBindingFlags.None);
+            _bindingManager.Report();
 
-            foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
-            {
-                _treeView.Add(CreateAssemblyNode(assembly));
-            }
-            _treeView.Invalidate();
-            _listView.OnDrawItem = (rect, index, node) => GUI.Label(rect, node.FullName, EditorStyles.label);
-            _searchField = new SearchField();
-            _searchField.autoSetFocusOnFindCommand = true;
+            AddTabView("Codegen", DrawView_Codegen);
+            AddTabView("Scripting", DrawView_Scripting);
+            AddTabView("Types", DrawView_Types);
+            AddTabView("Process", DrawView_Process);
+            AddTabView("Options", DrawView_Options);
+            OnDirtyStateChanged();
         }
 
         public void MarkAsDirty()
@@ -189,7 +203,8 @@ namespace QuickJS.Unity
             if (!_dirty)
             {
                 _dirty = true;
-                EditorApplication.delayCall += Save;
+                OnDirtyStateChanged();
+                // EditorApplication.delayCall += Save;
             }
         }
 
@@ -198,10 +213,12 @@ namespace QuickJS.Unity
             if (_dirty)
             {
                 _dirty = false;
+                OnDirtyStateChanged();
                 try
                 {
                     var json = JsonUtility.ToJson(_prefs, true);
                     System.IO.File.WriteAllText(_filePath, json);
+                    Debug.LogFormat("save {0}", _filePath);
                 }
                 catch (Exception exception)
                 {
@@ -210,17 +227,120 @@ namespace QuickJS.Unity
             }
         }
 
+        private void OnDirtyStateChanged()
+        {
+            titleContent = new GUIContent("JS Bridge Prefs" + (_dirty ? " *" : ""));
+        }
+
         private void OnDrawItem(Rect rect, Type type)
         {
             GUI.Label(rect, type.FullName);
         }
 
-        protected override void OnPaint()
+        private void DrawView_Scripting()
         {
-            EditorGUILayout.HelpBox("(experimental) Editor for " + _filePath, MessageType.Warning);
-            if (GUILayout.Button("Save"))
+            EditorGUI.BeginChangeCheck();
+            _prefs.editorScripting = EditorGUILayout.Toggle("Editor Scripting", _prefs.editorScripting);
+            _prefs.reflectBinding = EditorGUILayout.Toggle("Reflect Binding", _prefs.reflectBinding);
+            _prefs.typescriptExt = EditorGUILayout.TextField("Typescript Ext", _prefs.typescriptExt);
+            _prefs.sourceDir = EditorGUILayout.TextField("Source Dir", _prefs.sourceDir);
+            _prefs.editorEntryPoint = EditorGUILayout.TextField("Editor Entry Script", _prefs.editorEntryPoint);
+            if (EditorGUI.EndChangeCheck())
             {
                 MarkAsDirty();
+            }
+        }
+
+        private void DrawView_Process()
+        {
+            var list = _bindingManager.GetBindingProcessTypes();
+
+            for (int i = 0, count = list.Count; i < count; ++i)
+            {
+                var process = list[i];
+                var name = process.FullName;
+                var enabled = !_prefs.skipBinding.Contains(name);
+                var state = EditorGUILayout.ToggleLeft(name, enabled);
+                if (state != enabled)
+                {
+                    if (state)
+                    {
+                        _prefs.skipBinding.Remove(name);
+                    }
+                    else
+                    {
+                        _prefs.skipBinding.Add(name);
+                    }
+                    MarkAsDirty();
+                }
+            }
+        }
+
+        private List<string> _repeatStringCache = new List<string>(new string[] { "" });
+        private string RepeatString(string v, int repeat)
+        {
+            while (_repeatStringCache.Count < repeat + 1)
+            {
+                _repeatStringCache.Add(_repeatStringCache[_repeatStringCache.Count - 1] + v);
+            }
+            return _repeatStringCache[repeat];
+        }
+
+        private void DrawView_Codegen()
+        {
+            EditorGUI.BeginChangeCheck();
+            _prefs.debugCodegen = EditorGUILayout.Toggle("Debug Codegen", _prefs.debugCodegen);
+            _prefs.verboseLog = EditorGUILayout.Toggle("Verbose Log", _prefs.verboseLog);
+            _prefs.optToString = EditorGUILayout.Toggle("Auto ToString", _prefs.optToString);
+            _prefs.enableOperatorOverloading = EditorGUILayout.Toggle("Operator Overloading", _prefs.enableOperatorOverloading);
+            _prefs.skipDelegateWithByRefParams = EditorGUILayout.Toggle("Omit ref param Delegates", _prefs.skipDelegateWithByRefParams);
+            _prefs.alwaysCheckArgType = EditorGUILayout.Toggle("Always check arg type", _prefs.alwaysCheckArgType);
+            _prefs.alwaysCheckArgc = EditorGUILayout.Toggle("Always check argc", _prefs.alwaysCheckArgc);
+            _prefs.randomizedBindingCode = EditorGUILayout.Toggle("Obfuscate", _prefs.randomizedBindingCode);
+            _prefs.genTypescriptDoc = EditorGUILayout.Toggle("Gen d.ts", _prefs.genTypescriptDoc);
+            _prefs.xmlDocDir = EditorGUILayout.TextField("XmlDoc Dir", _prefs.xmlDocDir);
+            _prefs.typescriptDir = EditorGUILayout.TextField("d.ts Output Dir", _prefs.typescriptDir);
+            _prefs.outDir = EditorGUILayout.TextField("Output Dir", _prefs.outDir);
+            _prefs.logPath = EditorGUILayout.TextField("Log", _prefs.logPath);
+            _prefs.jsModulePackInfoPath = EditorGUILayout.TextField("JS Module List", _prefs.jsModulePackInfoPath);
+            _prefs.typeBindingPrefix = EditorGUILayout.TextField("C# Binding Prefix", _prefs.typeBindingPrefix);
+            _prefs.ns = EditorGUILayout.TextField("C# Binding Namespace", _prefs.ns);
+            _prefs.defaultJSModule = EditorGUILayout.TextField("Default Module", _prefs.defaultJSModule);
+            _prefs.tab = RepeatString(" ", EditorGUILayout.IntSlider("Tab Size", _prefs.tab.Length, 0, 8));
+            var newlineIndex = Array.IndexOf(_newlineValues, _prefs.newLineStyle);
+            var newlineIndex_t = EditorGUILayout.Popup("Newline Style", newlineIndex, _newlineNames);
+            if (newlineIndex_t != newlineIndex && newlineIndex_t >= 0)
+            {
+                _prefs.newLineStyle = _newlineValues[newlineIndex_t];
+            }
+
+            if (EditorGUI.EndChangeCheck())
+            {
+                MarkAsDirty();
+            }
+        }
+
+        private void DrawView_Options()
+        {
+            EditorGUI.BeginChangeCheck();
+            if (EditorGUI.EndChangeCheck())
+            {
+                MarkAsDirty();
+            }
+        }
+
+        private void DrawView_Types()
+        {
+            if (_searchField == null)
+            {
+                foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
+                {
+                    _treeView.Add(CreateAssemblyNode(assembly));
+                }
+                _treeView.Invalidate();
+                _listView.OnDrawItem = (rect, index, node) => GUI.Label(rect, node.FullName, EditorStyles.label);
+                _searchField = new SearchField();
+                _searchField.autoSetFocusOnFindCommand = true;
             }
 
             var searchFieldRect = EditorGUILayout.GetControlRect();
@@ -258,6 +378,22 @@ namespace QuickJS.Unity
                 _listView.Draw(typesViewRect);
                 GUILayout.Label($"{_listView.Count} Types", _footStyle);
             }
+        }
+
+        protected override void OnPaint()
+        {
+            EditorGUILayout.BeginHorizontal();
+            EditorGUI.BeginDisabledGroup(!_dirty);
+            if (GUILayout.Button("Save", EditorStyles.miniButton, GUILayout.Width(46f)))
+            {
+                Save();
+            }
+            EditorGUI.EndDisabledGroup();
+            EditorGUILayout.EndHorizontal();
+            EditorGUILayout.HelpBox("(experimental) Editor for " + _filePath, MessageType.Warning);
+
+            _selectedTabViewIndex = GUILayout.Toolbar(_selectedTabViewIndex, _tabViewNames);
+            _tabViewDrawers[_selectedTabViewIndex]();
         }
     }
 }
