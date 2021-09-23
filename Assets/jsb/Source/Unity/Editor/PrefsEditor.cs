@@ -10,26 +10,162 @@ namespace QuickJS.Unity
 {
     using UnityEngine;
     using UnityEditor;
+    using UnityEditor.IMGUI.Controls;
     using QuickJS.Binding;
 
     // 配置编辑器
     public class PrefsEditor : BaseEditorWindow
     {
-        public enum BindingGenMethod
+        internal abstract class TreeViewNode<T> : SimpleTreeView.INode
         {
-            None,
-            Implicit,
-            Explicit,
+            protected bool _expanded = true;
+
+            protected T _value;
+            protected GUIContent _content;
+            protected List<SimpleTreeView.INode> _children = new List<SimpleTreeView.INode>();
+
+            public void AddChild(SimpleTreeView.INode node)
+            {
+                _children.Add(node);
+            }
+
+            public void Prepass(SimpleTreeView.State state)
+            {
+                state.AddSpace(_content);
+                if (_expanded)
+                {
+                    state.PushGroup();
+                    for (int i = 0, count = _children.Count; i < count; ++i)
+                    {
+                        _children[i].Prepass(state);
+                    }
+                    state.PopGroup();
+                }
+            }
+
+            public void Draw(SimpleTreeView.State state)
+            {
+                state.Draw(_content);
+                if (_expanded)
+                {
+                    state.PushGroup();
+                    for (int i = 0, count = _children.Count; i < count; ++i)
+                    {
+                        _children[i].Draw(state);
+                    }
+                    state.PopGroup();
+                }
+            }
         }
 
-        private Assembly[] _assemblies;
-        private int _selectedIndex;
-        private List<Type> _filteredTypes = new List<Type>();
-        private Vector2 _sv;
+        internal class Type_TreeViewNode : TreeViewNode<Type>
+        {
+            public GUIContent content => _content;
+
+            public string FullName => _value.FullName;
+
+            public Type_TreeViewNode(Type type)
+            {
+                _value = type;
+                _content = new GUIContent(type.Name);
+            }
+
+            public bool MatchString(string pattern)
+            {
+                return _value.FullName.Contains(pattern);
+            }
+
+            public override string ToString()
+            {
+                return _value.Name;
+            }
+        }
+
+        internal class Namespace_TreeViewNode : TreeViewNode<string>
+        {
+            public Namespace_TreeViewNode(string ns)
+            {
+                _value = ns;
+                _content = new GUIContent(ns);
+            }
+
+            public override string ToString()
+            {
+                return _value;
+            }
+        }
+
+        internal class Assembly_TreeViewNode : TreeViewNode<Assembly>
+        {
+            private Dictionary<string, Namespace_TreeViewNode> _allNamespaces = new Dictionary<string, Namespace_TreeViewNode>();
+
+            public Namespace_TreeViewNode GetNamespace_TreeViewNode(string ns)
+            {
+                var name = string.IsNullOrEmpty(ns) ? "-" : ns;
+                Namespace_TreeViewNode node;
+                if (!_allNamespaces.TryGetValue(name, out node))
+                {
+                    _allNamespaces[name] = node = new Namespace_TreeViewNode(name);
+                    AddChild(node);
+                }
+                return node;
+            }
+
+            public Assembly_TreeViewNode(Assembly assembly)
+            {
+                _value = assembly;
+                _content = new GUIContent(assembly.GetName().Name);
+            }
+
+            public override string ToString()
+            {
+                return _value.GetName().Name;
+            }
+        }
+
         private Prefs _prefs;
         private string _filePath;
-
         private bool _dirty;
+
+        private GUIStyle _footStyle;
+        private SearchField _searchField;
+        private string _lastSearchString = string.Empty;
+
+        private List<Type_TreeViewNode> _typeNodes = new List<Type_TreeViewNode>();
+
+        private SimpleTreeView _treeView = new SimpleTreeView();
+        private SimpleScrollView<Type_TreeViewNode> _listView = new SimpleScrollView<Type_TreeViewNode>();
+
+        private Type_TreeViewNode CreateTypeNode(Type type)
+        {
+            var self = new Type_TreeViewNode(type);
+            _typeNodes.Add(self);
+            if (type.DeclaringType != null)
+            {
+                var enclosing = CreateTypeNode(type.DeclaringType);
+                enclosing.AddChild(self);
+                return enclosing;
+            }
+
+            return self;
+        }
+
+        private Assembly_TreeViewNode CreateAssemblyNode(Assembly assembly)
+        {
+            var types = assembly.GetExportedTypes();
+            var node = new Assembly_TreeViewNode(assembly);
+
+            foreach (var type in types)
+            {
+                if (type.IsGenericTypeDefinition)
+                {
+                    continue;
+                }
+
+                node.GetNamespace_TreeViewNode(type.Namespace).AddChild(CreateTypeNode(type));
+            }
+            return node;
+        }
 
         protected override void OnEnable()
         {
@@ -37,7 +173,15 @@ namespace QuickJS.Unity
             titleContent = new GUIContent("JS Bridge Prefs");
 
             _prefs = UnityHelper.LoadPrefs(out _filePath);
-            _assemblies = AppDomain.CurrentDomain.GetAssemblies();
+
+            foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
+            {
+                _treeView.Add(CreateAssemblyNode(assembly));
+            }
+            _treeView.Invalidate();
+            _listView.OnDrawItem = (rect, index, node) => GUI.Label(rect, node.FullName, EditorStyles.label);
+            _searchField = new SearchField();
+            _searchField.autoSetFocusOnFindCommand = true;
         }
 
         public void MarkAsDirty()
@@ -66,6 +210,11 @@ namespace QuickJS.Unity
             }
         }
 
+        private void OnDrawItem(Rect rect, Type type)
+        {
+            GUI.Label(rect, type.FullName);
+        }
+
         protected override void OnPaint()
         {
             EditorGUILayout.HelpBox("(experimental) Editor for " + _filePath, MessageType.Warning);
@@ -74,200 +223,41 @@ namespace QuickJS.Unity
                 MarkAsDirty();
             }
 
-            // ShowAssemblies();
-        }
-
-        private void ShowAssemblies()
-        {
-            EditorGUILayout.BeginHorizontal();
-            Block("Assemblies", () =>
+            var searchFieldRect = EditorGUILayout.GetControlRect();
+            var searchString = _searchField.OnGUI(searchFieldRect, _lastSearchString);
+            if (_lastSearchString != searchString)
             {
-                EditorGUILayout.BeginHorizontal();
-                EditorGUILayout.LabelField("Preview", GUILayout.Width(60f));
-                EditorGUILayout.LabelField("Binding", GUILayout.Width(100f));
-                EditorGUILayout.LabelField("Assembly Name");
-                EditorGUILayout.EndHorizontal();
-                _sv = EditorGUILayout.BeginScrollView(_sv);
-                for (var i = 0; i < _assemblies.Length; i++)
+                _lastSearchString = searchString;
+                _listView.Clear();
+                if (!string.IsNullOrEmpty(_lastSearchString))
                 {
-                    var a = _assemblies[i];
-                    var name = a.GetName().Name;
-                    var pMethod = BindingGenMethod.None;
-                    if (_prefs.implicitAssemblies.Contains(name))
+                    foreach (var t in _typeNodes)
                     {
-                        pMethod = BindingGenMethod.Implicit;
-                    }
-                    else if (_prefs.explicitAssemblies.Contains(name))
-                    {
-                        pMethod = BindingGenMethod.Explicit;
-                    }
-                    EditorGUI.BeginDisabledGroup(a.IsDynamic);
-                    EditorGUILayout.BeginHorizontal();
-                    var tRect = EditorGUILayout.GetControlRect(GUILayout.Width(60f));
-                    tRect.xMin = tRect.xMax - 20f;
-                    var selected = EditorGUI.Toggle(tRect, _selectedIndex == i);
-                    var rMethod = (BindingGenMethod)EditorGUILayout.EnumPopup(pMethod, GUILayout.Width(100f));
-                    if (selected)
-                    {
-                        if (_selectedIndex != i)
+                        if (t.MatchString(_lastSearchString))
                         {
-                            _selectedIndex = i;
-                            FilterTypes();
-                        }
-                    }
-                    EditorGUILayout.TextField(name);
-                    if (rMethod != pMethod)
-                    {
-                        switch (rMethod)
-                        {
-                            case BindingGenMethod.None:
-                                if (pMethod == BindingGenMethod.Implicit)
-                                {
-                                    _prefs.implicitAssemblies.Remove(name);
-                                    MarkAsDirty();
-                                }
-                                else if (pMethod == BindingGenMethod.Explicit)
-                                {
-                                    _prefs.explicitAssemblies.Remove(name);
-                                    MarkAsDirty();
-                                }
-                                break;
-                            case BindingGenMethod.Implicit:
-                                if (pMethod == BindingGenMethod.Explicit)
-                                {
-                                    _prefs.explicitAssemblies.Remove(name);
-                                }
-                                _prefs.implicitAssemblies.Add(name);
-                                MarkAsDirty();
-                                break;
-                            case BindingGenMethod.Explicit:
-                                if (pMethod == BindingGenMethod.Implicit)
-                                {
-                                    _prefs.implicitAssemblies.Remove(name);
-                                }
-                                _prefs.explicitAssemblies.Add(name);
-                                MarkAsDirty();
-                                break;
-                        }
-                    }
-                    EditorGUILayout.EndHorizontal();
-                    EditorGUI.EndDisabledGroup();
-                }
-                EditorGUILayout.EndScrollView();
-            }, () =>
-            {
-                var color = GUI.color;
-                GUI.color = Color.green;
-                if (GUILayout.Button("R", GUILayout.Width(20f)))
-                {
-                    if (EditorUtility.DisplayDialog("Reload", $"Reload {Prefs.PATH}?", "ok", "cancel"))
-                    {
-                        Defer(() => _prefs = UnityHelper.LoadPrefs(out _filePath));
-                    }
-                }
-                GUI.color = color;
-            }, () =>
-            {
-                var color = GUI.color;
-                GUI.color = Color.yellow;
-                if (GUILayout.Button("G", GUILayout.Width(20f)))
-                {
-                    if (EditorUtility.DisplayDialog("Generate", "Generate all binding code?", "ok", "cancel"))
-                    {
-                        Defer(() => UnityHelper.GenerateBindingsAndTypeDefinition());
-                    }
-                }
-                GUI.color = color;
-            }, () =>
-            {
-                var color = GUI.color;
-                GUI.color = Color.red;
-                if (GUILayout.Button("C", GUILayout.Width(20f)))
-                {
-                    if (EditorUtility.DisplayDialog("Cleanup", "Cleanup generated binding code?", "ok", "cancel"))
-                    {
-                        Defer(() => UnityHelper.ClearBindings());
-                    }
-                }
-                GUI.color = color;
-            });
-            EditorGUILayout.BeginVertical();
-            Block("Assembly Info", () =>
-            {
-                if (_selectedIndex >= 0 && _selectedIndex < _assemblies.Length)
-                {
-                    var assembly = _assemblies[_selectedIndex];
-                    EditorGUILayout.TextField("Full Name", assembly.FullName);
-                    EditorGUILayout.TextField("Location", assembly.Location, GUILayout.MinWidth(500f));
-                }
-            });
-            Block("Types", () =>
-            {
-                var count = _filteredTypes.Count;
-                for (var i = 0; i < count; i++)
-                {
-                    var type = _filteredTypes[i];
-                    EditorGUILayout.TextField(type.FullName);
-                }
-                if (count == 0)
-                {
-                    EditorGUILayout.HelpBox("No type to bindgen.", MessageType.Info);
-                }
-            });
-            EditorGUILayout.EndVertical();
-            EditorGUILayout.EndHorizontal();
-        }
-
-        private void FilterTypes()
-        {
-            _filteredTypes.Clear();
-            if (_selectedIndex >= 0 && _selectedIndex < _assemblies.Length)
-            {
-                var a = _assemblies[_selectedIndex];
-                var types = a.GetExportedTypes();
-                if (_prefs.implicitAssemblies.Contains(a.GetName().Name))
-                {
-                    for (var i = 0; i < types.Length; i++)
-                    {
-                        var type = types[i];
-                        if (!InBlacklist(type))
-                        {
-                            _filteredTypes.Add(type);
+                            _listView.Add(t);
                         }
                     }
                 }
-                else if (_prefs.explicitAssemblies.Contains(a.GetName().Name))
-                {
-                    for (var i = 0; i < types.Length; i++)
-                    {
-                        var type = types[i];
-                        if (IsMarked(type))
-                        {
-                            _filteredTypes.Add(type);
-                        }
-                    }
-                }
-
             }
-        }
 
-        private bool IsMarked(Type type)
-        {
-            return Attribute.IsDefined(type, typeof(JSTypeAttribute));
-        }
+            if (_footStyle == null)
+            {
+                _footStyle = new GUIStyle(EditorStyles.miniLabel);
+                _footStyle.alignment = TextAnchor.MiddleRight;
+            }
 
-        private bool InBlacklist(Type type)
-        {
-            // var list = _prefs.typePrefixBlacklist;
-            // for (int i = 0, size = list.Count; i < size; i++)
-            // {
-            //     var item = list[i];
-            //     if (type.FullName.StartsWith(item))
-            //     {
-            //         return true;
-            //     }
-            // }
-            return false;
+            var typesViewRect = EditorGUILayout.GetControlRect(GUILayout.ExpandHeight(true));
+            if (string.IsNullOrEmpty(_lastSearchString))
+            {
+                _treeView.Draw(typesViewRect);
+                GUILayout.Label($"{_typeNodes.Count} Types", _footStyle);
+            }
+            else
+            {
+                _listView.Draw(typesViewRect);
+                GUILayout.Label($"{_listView.Count} Types", _footStyle);
+            }
         }
     }
 }
