@@ -13,10 +13,13 @@ namespace QuickJS.Unity
         private Rect _viewRect;
         private Rect _itemRect;
         private List<T> _items;
+        private HashSet<T> _selected = new HashSet<T>();
         private float _itemHeight;
         private Color _rowColor = new Color(0.5f, 0.5f, 0.5f, 0.1f);
+        private Color _selectColor = new Color(44f / 255f, 93f / 255f, 135f / 255f);
 
         public Action<Rect, int, T> OnDrawItem;
+        public Action<Rect, int, T, HashSet<T>> OnSelectItem;
 
         public SimpleScrollView()
         {
@@ -54,11 +57,30 @@ namespace QuickJS.Unity
             {
                 _itemRect.Set(0f, i * _itemHeight, rect.width, _itemHeight);
 
-                if (i % 2 == 0)
+                var currentItem = _items[i];
+                var isSelected = _selected.Contains(currentItem);
+
+                if (isSelected)
                 {
-                    EditorGUI.DrawRect(_itemRect, _rowColor);
+                    EditorGUI.DrawRect(_itemRect, _selectColor);
                 }
-                OnDrawItem(_itemRect, i, _items[i]);
+                else
+                {
+                    if (i % 2 == 0)
+                    {
+                        EditorGUI.DrawRect(_itemRect, _rowColor);
+                    }
+                }
+                OnDrawItem?.Invoke(_itemRect, i, currentItem);
+                if (Event.current.type == EventType.MouseUp && !isSelected)
+                {
+                    if (_itemRect.Contains(Event.current.mousePosition))
+                    {
+                        _selected.Clear();
+                        _selected.Add(currentItem);
+                        OnSelectItem?.Invoke(_itemRect, i, currentItem, _selected);
+                    }
+                }
             }
             GUI.EndScrollView();
         }

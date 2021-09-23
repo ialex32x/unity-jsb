@@ -24,6 +24,8 @@ namespace QuickJS.Unity
             protected GUIContent _content;
             protected List<SimpleTreeView.INode> _children = new List<SimpleTreeView.INode>();
 
+            public T value => _value;
+
             public void AddChild(SimpleTreeView.INode node)
             {
                 _children.Add(node);
@@ -142,6 +144,7 @@ namespace QuickJS.Unity
 
         private SimpleTreeView _treeView = new SimpleTreeView();
         private SimpleScrollView<Type_TreeViewNode> _listView = new SimpleScrollView<Type_TreeViewNode>();
+        private SimpleSplitView _splitView = new SimpleSplitView();
 
         public void AddTabView(string name, Action action)
         {
@@ -331,6 +334,32 @@ namespace QuickJS.Unity
 
         private void DrawView_Types()
         {
+            var rect = EditorGUILayout.GetControlRect(GUILayout.Height(1f));
+            var y = 90f;
+            rect.height = position.height - rect.height;
+            var repaint = _splitView.Draw(rect);
+
+            GUILayout.BeginArea(new Rect(rect.x, y, _splitView.cursorChangeRect.x, rect.height));
+            DrawView_Types_Left();
+            GUILayout.EndArea();
+
+            GUILayout.BeginArea(new Rect(_splitView.cursorChangeRect.x + rect.x, y, rect.width - _splitView.cursorChangeRect.xMax, rect.height));
+            DrawView_Types_Right();
+            GUILayout.EndArea();
+
+            if (repaint)
+            {
+                Repaint();
+            }
+        }
+
+        private void DrawView_Types_Right()
+        {
+            EditorGUILayout.LabelField("HI", "OK");
+        }
+
+        private void DrawView_Types_Left()
+        {
             if (_searchField == null)
             {
                 foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
@@ -339,6 +368,7 @@ namespace QuickJS.Unity
                 }
                 _treeView.Invalidate();
                 _listView.OnDrawItem = (rect, index, node) => GUI.Label(rect, node.FullName, EditorStyles.label);
+                _listView.OnSelectItem = OnSelectListViewItem;
                 _searchField = new SearchField();
                 _searchField.autoSetFocusOnFindCommand = true;
             }
@@ -378,6 +408,11 @@ namespace QuickJS.Unity
                 _listView.Draw(typesViewRect);
                 GUILayout.Label($"{_listView.Count} Types", _footStyle);
             }
+        }
+
+        private void OnSelectListViewItem(Rect rect, int index, Type_TreeViewNode item, HashSet<Type_TreeViewNode> selection)
+        {
+            Repaint();
         }
 
         protected override void OnPaint()
