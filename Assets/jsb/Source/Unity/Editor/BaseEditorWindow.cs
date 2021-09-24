@@ -29,6 +29,15 @@ namespace QuickJS.Unity
         {
         }
 
+        protected void Update()
+        {
+            OnUpdate();
+        }
+
+        protected virtual void OnUpdate()
+        {
+        }
+
         private void OnGUI()
         {
             OnPaint();

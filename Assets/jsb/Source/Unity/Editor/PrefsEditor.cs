@@ -355,6 +355,7 @@ namespace QuickJS.Unity
         private SearchField _searchField;
         private string _lastSearchString = string.Empty;
 
+        private System.Collections.IEnumerator _typeTreeConstruct;
         private List<Type_TreeViewNode> _typeNodes = new List<Type_TreeViewNode>();
 
         private SimpleTreeView _treeView = new SimpleTreeView();
@@ -383,12 +384,12 @@ namespace QuickJS.Unity
             return self;
         }
 
-        private Assembly_TreeViewNode CreateAssemblyNode(Assembly assembly)
+        private System.Collections.IEnumerator ConstructAssemblyNode(Assembly assembly)
         {
             var types = assembly.GetExportedTypes();
             if (types.Length == 0)
             {
-                return null;
+                yield break;
             }
             var node = new Assembly_TreeViewNode(assembly);
 
@@ -401,9 +402,15 @@ namespace QuickJS.Unity
                 }
 
                 node.GetNamespace_TreeViewNode(type.Namespace).AddChild(CreateTypeNode(type));
+                yield return null;
             }
 
-            return node.childCount > 0 ? node : null;
+            if (node.childCount > 0)
+            {
+                _treeView.Add(node);
+            }
+
+            yield break;
         }
 
         protected override void OnEnable()
@@ -573,18 +580,31 @@ namespace QuickJS.Unity
             _activeView?.Draw(this);
         }
 
+        private System.Collections.IEnumerator ConstructTypeTree()
+        {
+            var assemblyList = AppDomain.CurrentDomain.GetAssemblies();
+            Array.Sort<Assembly>(assemblyList, (a, b) => string.Compare(a.FullName, b.FullName, true));
+            foreach (var assembly in assemblyList)
+            {
+                var e = ConstructAssemblyNode(assembly);
+                while (e.MoveNext())
+                {
+                    yield return null;
+                }
+                
+                _treeView.Invalidate();
+            }
+            _typeTreeConstruct = null;
+        }
+
         private void DrawView_Types_Left()
         {
             if (_searchField == null)
             {
-                var assemblyList = AppDomain.CurrentDomain.GetAssemblies();
-
-                Array.Sort<Assembly>(assemblyList, (a, b) => string.Compare(a.FullName, b.FullName, true));
-                foreach (var assembly in assemblyList)
+                if (_typeTreeConstruct == null)
                 {
-                    _treeView.Add(CreateAssemblyNode(assembly));
+                    _typeTreeConstruct = ConstructTypeTree();
                 }
-                _treeView.Invalidate();
                 _treeView.OnSelectItem = OnSelectTreeViewItem;
                 _listView.OnDrawItem = (rect, index, node) => GUI.Label(rect, node.FullName, EditorStyles.label);
                 _listView.OnSelectItem = OnSelectListViewItem;
@@ -617,18 +637,26 @@ namespace QuickJS.Unity
             }
 
             var typesViewRect = EditorGUILayout.GetControlRect(GUILayout.ExpandHeight(true));
+            var pendingHint = string.Empty;
+
+            if (_typeTreeConstruct != null)
+            {
+                pendingHint = "(Loading...) ";
+                Repaint();
+            }
+
             if (string.IsNullOrEmpty(_lastSearchString))
             {
                 if (_treeView.Draw(typesViewRect))
                 {
                     Repaint();
                 }
-                GUILayout.Label($"{_typeNodes.Count} Types", _footStyle);
+                GUILayout.Label($"{pendingHint}{_typeNodes.Count} Types", _footStyle);
             }
             else
             {
                 _listView.Draw(typesViewRect);
-                GUILayout.Label($"{_listView.Count} Types", _footStyle);
+                GUILayout.Label($"{pendingHint}{_listView.Count} Types", _footStyle);
             }
         }
 
@@ -678,6 +706,15 @@ namespace QuickJS.Unity
         {
             Defer(() => SetActiveView<TypeInfoView>().Show(item.value));
             Repaint();
+        }
+
+        protected override void OnUpdate()
+        {
+            var cycle = 5;
+            while (_typeTreeConstruct != null && --cycle > 0)
+            {
+                _typeTreeConstruct.MoveNext();
+            }
         }
 
         protected override void OnPaint()
