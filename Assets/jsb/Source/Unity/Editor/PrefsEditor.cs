@@ -377,15 +377,23 @@ namespace QuickJS.Unity
             ArrayUtility.Add(ref _tabViewDrawers, action);
         }
 
-        private Type_TreeViewNode CreateTypeNode(Type type)
+        private Type_TreeViewNode ConstructTypeNode<T>(TreeViewNode<T> parent, Dictionary<Type, Type_TreeViewNode> cache, Type type)
         {
-            var self = new Type_TreeViewNode(type);
-            _typeNodes.Add(self);
-            if (type.DeclaringType != null)
+            Type_TreeViewNode self;
+            if (!cache.TryGetValue(type, out self))
             {
-                var enclosing = CreateTypeNode(type.DeclaringType);
-                enclosing.AddChild(self);
-                return enclosing;
+                self = new Type_TreeViewNode(type);
+                cache[type] = self;
+                _typeNodes.Add(self);
+                if (type.DeclaringType != null)
+                {
+                    var declaringType = ConstructTypeNode(parent, cache, type.DeclaringType);
+                    declaringType.AddChild(self);
+                }
+                else
+                {
+                    parent.AddChild(self);
+                }
             }
 
             return self;
@@ -401,6 +409,7 @@ namespace QuickJS.Unity
             var node = new Assembly_TreeViewNode(assembly);
 
             Array.Sort<Type>(types, (a, b) => string.Compare(a.FullName, b.FullName, true));
+            var cache = new Dictionary<Type, Type_TreeViewNode>();
             foreach (var type in types)
             {
                 if (type.IsGenericTypeDefinition)
@@ -408,7 +417,8 @@ namespace QuickJS.Unity
                     continue;
                 }
 
-                node.GetNamespace_TreeViewNode(type.Namespace).AddChild(CreateTypeNode(type));
+                var ns = node.GetNamespace_TreeViewNode(type.Namespace);
+                ConstructTypeNode(ns, cache, type);
                 yield return null;
             }
 

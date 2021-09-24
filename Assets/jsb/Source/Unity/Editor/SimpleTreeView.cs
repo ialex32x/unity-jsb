@@ -29,7 +29,7 @@ namespace QuickJS.Unity
         public class State
         {
             private SimpleTreeView _treeView;
-            private float _indentWidth = 32f;
+            private float _indentWidth = 16f;
             private float _itemHeight = EditorGUIUtility.singleLineHeight;
 
             private int _index;
