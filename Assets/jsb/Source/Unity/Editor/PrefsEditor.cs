@@ -22,6 +22,8 @@ namespace QuickJS.Unity
 
             protected T _value;
             protected GUIContent _content;
+            private bool _isSizeCached;
+            private Vector2 _contentSize;
             protected List<SimpleTreeView.INode> _children = new List<SimpleTreeView.INode>();
 
             public T value => _value;
@@ -86,9 +88,19 @@ namespace QuickJS.Unity
                 _children.Add(node);
             }
 
+            public Vector2 CalcSize(GUIStyle style)
+            {
+                if (!_isSizeCached)
+                {
+                    _isSizeCached = true;
+                    _contentSize = style.CalcSize(content);
+                }
+                return _contentSize;
+            }
+
             public void Prepass(SimpleTreeView.State state)
             {
-                state.AddSpace(_content);
+                state.AddSpace(this);
                 if (_expanded)
                 {
                     state.PushGroup();

@@ -18,6 +18,7 @@ namespace QuickJS.Unity
             void AddChild(INode node);
             void Prepass(State state);
             void Render(State state);
+            Vector2 CalcSize(GUIStyle style);
 
             bool CollapseAll();
             bool ExpandAll();
@@ -42,6 +43,8 @@ namespace QuickJS.Unity
             private Rect _itemRect;
             private Rect _itemFullRect;
             private GUIStyle _itemStyle;
+
+            private float _lastClickTime;
 
             private Color _rowColor = new Color(0.5f, 0.5f, 0.5f, 0.1f);
             private Color _selectColor = new Color(44f / 255f, 93f / 255f, 135f / 255f);
@@ -68,9 +71,9 @@ namespace QuickJS.Unity
                 _viewRect.Set(0f, 0f, 0f, 0f);
             }
 
-            public void AddSpace(GUIContent content)
+            public void AddSpace(INode node)
             {
-                var itemWidth = _itemStyle.CalcSize(content).x;
+                var itemWidth = node.CalcSize(_itemStyle).x;
                 _viewRect.height += _itemHeight;
                 var width = _indent * _indentWidth + itemWidth;
                 _viewRect.width = Mathf.Max(width, _viewRect.width);
@@ -111,6 +114,19 @@ namespace QuickJS.Unity
             public void PopGroup()
             {
                 --_indent;
+            }
+
+            private bool CheckDoubleClick()
+            {
+                var rt = Time.realtimeSinceStartup;
+                var dt = rt - _lastClickTime;
+                if (dt < 0.2f)
+                {
+                    _lastClickTime = 0f;
+                    return true;
+                }
+                _lastClickTime = rt;
+                return false;
             }
 
             public void Render(INode node)
@@ -168,7 +184,7 @@ namespace QuickJS.Unity
 
                     _itemRect.Set(x + _itemHeight, index * _itemHeight, _maxWidth - x, _itemHeight);
                     EditorGUI.LabelField(_itemRect, node.content, _itemStyle);
-                    
+
                     if (!eventUsed && Event.current.type == EventType.MouseUp)
                     {
                         _itemRect.x = 0f;
@@ -181,13 +197,23 @@ namespace QuickJS.Unity
                             }
                             else
                             {
-                                if (!isSelected)
+                                if (CheckDoubleClick())
                                 {
-                                    _selection.Clear();
-                                    _selection.Add(node);
-                                    _treeView.OnSelectItem?.Invoke(_itemRect, index, node, _selection);
+                                    node.isExpanded = !node.isExpanded;
+                                    _treeView.Invalidate();
                                     _repaint = true;
                                     eventUsed = true;
+                                }
+                                else
+                                {
+                                    if (!isSelected)
+                                    {
+                                        _selection.Clear();
+                                        _selection.Add(node);
+                                        _treeView.OnSelectItem?.Invoke(_itemRect, index, node, _selection);
+                                        _repaint = true;
+                                        eventUsed = true;
+                                    }
                                 }
                             }
                         }
