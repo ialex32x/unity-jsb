@@ -57,13 +57,11 @@ namespace QuickJS.Unity
             base.OnEnable();
             titleContent = new GUIContent("ScriptEngine Stats");
             _time = Time.realtimeSinceStartup;
-            EditorApplication.update += OnUpdate;
             CaptureAll();
         }
 
         protected override void OnDisable()
         {
-            EditorApplication.update -= OnUpdate;
             base.OnDisable();
         }
 
@@ -278,7 +276,7 @@ namespace QuickJS.Unity
             EditorGUILayout.EndVertical();
         }
 
-        private void OnUpdate()
+        protected override void OnUpdate()
         {
             if (_autoCap)
             {

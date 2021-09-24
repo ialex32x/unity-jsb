@@ -141,14 +141,14 @@ namespace QuickJS.Unity
 
                     if (isSelected)
                     {
-                        _itemRect.Set(0, index * _itemHeight, _drawRect.width, _itemHeight);
+                        _itemRect.Set(0, index * _itemHeight, _maxWidth, _itemHeight);
                         EditorGUI.DrawRect(_itemRect, _selectColor);
                     }
                     else
                     {
                         if (index % 2 == 0)
                         {
-                            _itemRect.Set(0, index * _itemHeight, _drawRect.width, _itemHeight);
+                            _itemRect.Set(0, index * _itemHeight, _maxWidth, _itemHeight);
                             EditorGUI.DrawRect(_itemRect, _rowColor);
                         }
                     }

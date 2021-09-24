@@ -234,22 +234,29 @@ namespace QuickJS.Unity
 
             public void Draw(PrefsEditor contenxt)
             {
-                EditorGUILayout.LabelField("Namespace", _namespace);
-                var blocked = contenxt._bindingManager.IsNamespaceInBlacklist(_namespace);
-                var blocked_t = EditorGUILayout.Toggle("Blacklisted", blocked);
-                if (blocked_t != blocked)
+                if (_namespace == "-")
                 {
-                    if (blocked_t)
+                    EditorGUILayout.HelpBox("It's not a real namespace (types without namespace)", MessageType.Info);
+                }
+                else
+                {
+                    EditorGUILayout.LabelField("Namespace", _namespace);
+                    var blocked = contenxt._bindingManager.IsNamespaceInBlacklist(_namespace);
+                    var blocked_t = EditorGUILayout.Toggle("Blacklisted", blocked);
+                    if (blocked_t != blocked)
                     {
-                        contenxt._bindingManager.AddNamespaceBlacklist(_namespace);
-                        contenxt._prefs.namespaceBlacklist.Add(_namespace);
+                        if (blocked_t)
+                        {
+                            contenxt._bindingManager.AddNamespaceBlacklist(_namespace);
+                            contenxt._prefs.namespaceBlacklist.Add(_namespace);
+                        }
+                        else
+                        {
+                            contenxt._bindingManager.RemoveNamespaceBlacklist(_namespace);
+                            contenxt._prefs.namespaceBlacklist.Remove(_namespace);
+                        }
+                        contenxt.MarkAsDirty();
                     }
-                    else
-                    {
-                        contenxt._bindingManager.RemoveNamespaceBlacklist(_namespace);
-                        contenxt._prefs.namespaceBlacklist.Remove(_namespace);
-                    }
-                    contenxt.MarkAsDirty();
                 }
             }
         }
@@ -591,7 +598,7 @@ namespace QuickJS.Unity
                 {
                     yield return null;
                 }
-                
+
                 _treeView.Invalidate();
             }
             _typeTreeConstruct = null;
