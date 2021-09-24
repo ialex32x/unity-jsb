@@ -16,6 +16,19 @@ namespace QuickJS.Unity
     [InitializeOnLoad]
     public static class UnityHelper
     {
+        private static Dictionary<string, Texture> _iconCache = new Dictionary<string, Texture>();
+
+        public static Texture GetIcon(string name)
+        {
+            Texture icon;
+            if (!_iconCache.TryGetValue(name, out icon))
+            {
+                var assetPath = $"Assets/jsb/Editor/Icons/{name}.png";
+                icon = _iconCache[name] = AssetDatabase.LoadMainAssetAtPath(assetPath) as Texture;
+            }
+            return icon;
+        }
+
         #region All Menu Items
         [MenuItem("JS Bridge/Generate Bindings And Type Definition")]
         public static void GenerateBindingsAndTypeDefinition()
@@ -147,7 +160,7 @@ namespace QuickJS.Unity
             var prefs = LoadPrefs();
             var kv = new Dictionary<string, List<string>>();
 
-            if (prefs.cleanupDir != null) 
+            if (prefs.cleanupDir != null)
             {
                 prefs.cleanupDir.ForEach(dir => kv[ReplacePathVars(dir)] = null);
             }

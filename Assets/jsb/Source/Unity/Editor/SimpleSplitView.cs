@@ -17,7 +17,7 @@ namespace QuickJS.Unity
 
         public float cursorHintSize = 2f;
         public float cursorSize = 6f;
-        public Color cursorHintColor = new Color(0f, 0f, 0f, 0.25f);
+        public Color cursorHintColor = new Color(0f, 0f, 0f, 0.35f);
 
         public bool Draw(Rect rect)
         {

@@ -1496,14 +1496,34 @@ namespace QuickJS.Binding
             _logWriter?.DecTabLevel();
         }
 
+        public bool IsNamespaceInBlacklist(string ns)
+        {
+            return _namespaceBlacklist.Contains(ns);
+        }
+
+        public bool RemoveNamespaceBlacklist(string ns)
+        {
+            return _namespaceBlacklist.Remove(ns);
+        }
+
         public void AddNamespaceBlacklist(string ns)
         {
             _namespaceBlacklist.Add(ns);
         }
 
-        public void SetAssemblyBlocked(string name)
+        public void AddAssemblyBlacklist(string simplifiedAssembly)
         {
-            _assemblyBlacklist.Add(name);
+            _assemblyBlacklist.Add(simplifiedAssembly);
+        }
+
+        public void RemoveAssemblyBlacklist(string simplifiedAssembly)
+        {
+            _assemblyBlacklist.Remove(simplifiedAssembly);
+        }
+
+        public bool InAssemblyBlacklist(string simplifiedAssembly)
+        {
+            return _assemblyBlacklist.Contains(simplifiedAssembly);
         }
 
         public bool IsAssemblyReferenceTo(Assembly assembly, Assembly target)
@@ -1559,9 +1579,15 @@ namespace QuickJS.Binding
                     return true;
                 }
             }
+            
+            return _assemblyBlacklist.Contains(GetSimplifiedAssemblyName(assembly));
+        }
+
+        public string GetSimplifiedAssemblyName(Assembly assembly)
+        {
             var comma = assembly.FullName.IndexOf(',');
             var name = comma >= 0 ? assembly.FullName.Substring(0, comma) : assembly.FullName;
-            return _assemblyBlacklist.Contains(name);
+            return name;
         }
 
         public void AddAssemblies(bool implicitExport, params string[] assemblyNames)

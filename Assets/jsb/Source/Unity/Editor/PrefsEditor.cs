@@ -26,6 +26,61 @@ namespace QuickJS.Unity
 
             public T value => _value;
 
+            public GUIContent content => _content;
+
+            public int childCount => _children.Count;
+
+            public bool isExpanded
+            {
+                get { return _expanded; }
+                set { _expanded = value; }
+            }
+
+            public bool CollapseAll()
+            {
+                var change = false;
+                if (_expanded)
+                {
+                    _expanded = false;
+                    change = true;
+                }
+
+                foreach (var child in _children)
+                {
+                    if (child.CollapseAll())
+                    {
+                        change = true;
+                    }
+                }
+                return change;
+            }
+
+            public bool ExpandAll()
+            {
+                var change = false;
+                if (!_expanded)
+                {
+                    _expanded = true; change = true;
+                }
+
+                foreach (var child in _children)
+                {
+                    if (child.ExpandAll())
+                    {
+                        change = true;
+                    }
+                }
+                return change;
+            }
+
+            public void ShowContextMenu(SimpleTreeView.State state)
+            {
+                var menu = new GenericMenu();
+                menu.AddItem(new GUIContent("Expand All"), false, () => state.ExpandAll());
+                menu.AddItem(new GUIContent("Collapse All"), false, () => state.CollapseAll());
+                menu.ShowAsContext();
+            }
+
             public void AddChild(SimpleTreeView.INode node)
             {
                 _children.Add(node);
@@ -45,15 +100,15 @@ namespace QuickJS.Unity
                 }
             }
 
-            public void Draw(SimpleTreeView.State state)
+            public void Render(SimpleTreeView.State state)
             {
-                state.Draw(_content);
+                state.Render(this);
                 if (_expanded)
                 {
                     state.PushGroup();
                     for (int i = 0, count = _children.Count; i < count; ++i)
                     {
-                        _children[i].Draw(state);
+                        _children[i].Render(state);
                     }
                     state.PopGroup();
                 }
@@ -62,19 +117,37 @@ namespace QuickJS.Unity
 
         internal class Type_TreeViewNode : TreeViewNode<Type>
         {
-            public GUIContent content => _content;
+            private GUIContent _fullNameContent;
 
-            public string FullName => _value.FullName;
+            public GUIContent FullName => _fullNameContent;
 
             public Type_TreeViewNode(Type type)
             {
+                var icon = GetIcon(type);
+
                 _value = type;
-                _content = new GUIContent(type.Name);
+                _content = new GUIContent(type.Name, icon);
+                _fullNameContent = new GUIContent(type.FullName, icon);
+            }
+
+            public static Texture GetIcon(Type type)
+            {
+                if (type.IsEnum)
+                {
+                    return UnityHelper.GetIcon("EnumIcon");
+                }
+
+                if (type.IsValueType)
+                {
+                    return UnityHelper.GetIcon("StructIcon");
+                }
+
+                return UnityHelper.GetIcon("ClassIcon");
             }
 
             public bool MatchString(string pattern)
             {
-                return _value.FullName.Contains(pattern);
+                return _value.FullName.IndexOf(pattern, StringComparison.OrdinalIgnoreCase) >= 0;
             }
 
             public override string ToString()
@@ -88,7 +161,7 @@ namespace QuickJS.Unity
             public Namespace_TreeViewNode(string ns)
             {
                 _value = ns;
-                _content = new GUIContent(ns);
+                _content = new GUIContent(ns, UnityHelper.GetIcon("NamespaceIcon"));
             }
 
             public override string ToString()
@@ -116,12 +189,142 @@ namespace QuickJS.Unity
             public Assembly_TreeViewNode(Assembly assembly)
             {
                 _value = assembly;
-                _content = new GUIContent(assembly.GetName().Name);
+                _content = new GUIContent(assembly.GetName().Name, UnityHelper.GetIcon("AssemblyIcon"));
             }
 
             public override string ToString()
             {
                 return _value.GetName().Name;
+            }
+        }
+
+        internal interface IView
+        {
+            void Draw(PrefsEditor contenxt);
+        }
+
+        internal class NoneView : IView
+        {
+            public void Draw(PrefsEditor contenxt)
+            {
+                EditorGUILayout.HelpBox("Nothing", MessageType.Warning);
+            }
+        }
+
+        internal class NamespaceInfoView : IView
+        {
+            public string _namespace;
+
+            public void Show(string ns)
+            {
+                _namespace = ns;
+            }
+
+            public void Draw(PrefsEditor contenxt)
+            {
+                EditorGUILayout.LabelField("Namespace", _namespace);
+                var blocked = contenxt._bindingManager.IsNamespaceInBlacklist(_namespace);
+                var blocked_t = EditorGUILayout.Toggle("Blacklisted", blocked);
+                if (blocked_t != blocked)
+                {
+                    if (blocked_t)
+                    {
+                        contenxt._bindingManager.AddNamespaceBlacklist(_namespace);
+                        contenxt._prefs.namespaceBlacklist.Add(_namespace);
+                    }
+                    else
+                    {
+                        contenxt._bindingManager.RemoveNamespaceBlacklist(_namespace);
+                        contenxt._prefs.namespaceBlacklist.Remove(_namespace);
+                    }
+                    contenxt.MarkAsDirty();
+                }
+            }
+        }
+
+        internal class TypeInfoView : IView
+        {
+            private Type _type;
+
+            public void Show(Type type)
+            {
+                _type = type;
+            }
+
+            public void Draw(PrefsEditor contenxt)
+            {
+                if (_type == null)
+                {
+                    EditorGUILayout.HelpBox("No type is seleted", MessageType.Warning);
+                    return;
+                }
+
+                var typeBindingInfo = contenxt._bindingManager.GetExportedType(_type);
+                if (typeBindingInfo == null)
+                {
+                    EditorGUILayout.HelpBox(_type.Name + " will not be exported to the script runtime", MessageType.Warning);
+                }
+                else
+                {
+                    EditorGUI.BeginDisabledGroup(true);
+                    EditorGUILayout.Toggle("Managed", typeBindingInfo.disposable);
+                    EditorGUILayout.TextField("Binding", typeBindingInfo.csBindingName ?? string.Empty);
+
+                    var tsTypeNaming = typeBindingInfo.tsTypeNaming;
+                    EditorGUILayout.TextField("JS Module", tsTypeNaming.jsModule);
+                    EditorGUILayout.TextField("JS Namespace", tsTypeNaming.jsNamespace);
+                    EditorGUILayout.TextField("JS Name", tsTypeNaming.jsLocalName);
+
+                    var requiredDefines = typeBindingInfo.transform.requiredDefines;
+                    if (requiredDefines != null && requiredDefines.Count > 0)
+                    {
+                        EditorGUILayout.LabelField("Required Defines");
+                        foreach (var def in requiredDefines)
+                        {
+                            EditorGUILayout.TextField(def);
+                        }
+                    }
+                    EditorGUI.EndDisabledGroup();
+                }
+            }
+        }
+
+        internal class AssemblyInfoView : IView
+        {
+            private Assembly _assembly;
+
+            public void Show(Assembly assembly)
+            {
+                _assembly = assembly;
+            }
+
+            public void Draw(PrefsEditor contenxt)
+            {
+                if (_assembly == null)
+                {
+                    EditorGUILayout.HelpBox("No assembly is seleted", MessageType.Warning);
+                    return;
+                }
+
+                var name = contenxt._bindingManager.GetSimplifiedAssemblyName(_assembly);
+                var blocked = contenxt._bindingManager.InAssemblyBlacklist(name);
+
+                EditorGUILayout.LabelField("Assembly", _assembly.FullName);
+                var blocked_t = EditorGUILayout.Toggle("Blacklisted", blocked);
+                if (blocked_t != blocked)
+                {
+                    if (blocked_t)
+                    {
+                        contenxt._bindingManager.AddAssemblyBlacklist(name);
+                        contenxt._prefs.assemblyBlacklist.Add(name);
+                    }
+                    else
+                    {
+                        contenxt._bindingManager.RemoveAssemblyBlacklist(name);
+                        contenxt._prefs.assemblyBlacklist.Remove(name);
+                    }
+                    contenxt.MarkAsDirty();
+                }
             }
         }
 
@@ -143,8 +346,10 @@ namespace QuickJS.Unity
         private List<Type_TreeViewNode> _typeNodes = new List<Type_TreeViewNode>();
 
         private SimpleTreeView _treeView = new SimpleTreeView();
-        private SimpleScrollView<Type_TreeViewNode> _listView = new SimpleScrollView<Type_TreeViewNode>();
+        private SimpleListView<Type_TreeViewNode> _listView = new SimpleListView<Type_TreeViewNode>();
         private SimpleSplitView _splitView = new SimpleSplitView();
+        private List<IView> _allViews = new List<IView>();
+        private IView _activeView;
 
         public void AddTabView(string name, Action action)
         {
@@ -169,8 +374,13 @@ namespace QuickJS.Unity
         private Assembly_TreeViewNode CreateAssemblyNode(Assembly assembly)
         {
             var types = assembly.GetExportedTypes();
+            if (types.Length == 0)
+            {
+                return null;
+            }
             var node = new Assembly_TreeViewNode(assembly);
 
+            Array.Sort<Type>(types, (a, b) => string.Compare(a.FullName, b.FullName, true));
             foreach (var type in types)
             {
                 if (type.IsGenericTypeDefinition)
@@ -180,7 +390,8 @@ namespace QuickJS.Unity
 
                 node.GetNamespace_TreeViewNode(type.Namespace).AddChild(CreateTypeNode(type));
             }
-            return node;
+
+            return node.childCount > 0 ? node : null;
         }
 
         protected override void OnEnable()
@@ -193,11 +404,10 @@ namespace QuickJS.Unity
             _bindingManager.Generate(TypeBindingFlags.None);
             _bindingManager.Report();
 
+            AddTabView("Types", DrawView_Types);
             AddTabView("Codegen", DrawView_Codegen);
             AddTabView("Scripting", DrawView_Scripting);
-            AddTabView("Types", DrawView_Types);
             AddTabView("Process", DrawView_Process);
-            AddTabView("Options", DrawView_Options);
             OnDirtyStateChanged();
         }
 
@@ -323,27 +533,20 @@ namespace QuickJS.Unity
             }
         }
 
-        private void DrawView_Options()
-        {
-            EditorGUI.BeginChangeCheck();
-            if (EditorGUI.EndChangeCheck())
-            {
-                MarkAsDirty();
-            }
-        }
-
+        private Rect _typesViewRect;
         private void DrawView_Types()
         {
-            var rect = EditorGUILayout.GetControlRect(GUILayout.Height(1f));
             var y = 90f;
-            rect.height = position.height - rect.height;
-            var repaint = _splitView.Draw(rect);
+            _typesViewRect.Set(0f, y, position.width, position.height - y);
+            var repaint = _splitView.Draw(_typesViewRect);
 
-            GUILayout.BeginArea(new Rect(rect.x, y, _splitView.cursorChangeRect.x, rect.height));
+            _typesViewRect.Set(0f, y, _splitView.cursorChangeRect.x, position.height - y);
+            GUILayout.BeginArea(_typesViewRect);
             DrawView_Types_Left();
             GUILayout.EndArea();
 
-            GUILayout.BeginArea(new Rect(_splitView.cursorChangeRect.x + rect.x, y, rect.width - _splitView.cursorChangeRect.xMax, rect.height));
+            _typesViewRect.Set(_splitView.cursorChangeRect.xMax, y, position.width - _splitView.cursorChangeRect.x, position.height - y);
+            GUILayout.BeginArea(_typesViewRect);
             DrawView_Types_Right();
             GUILayout.EndArea();
 
@@ -355,18 +558,22 @@ namespace QuickJS.Unity
 
         private void DrawView_Types_Right()
         {
-            EditorGUILayout.LabelField("HI", "OK");
+            _activeView?.Draw(this);
         }
 
         private void DrawView_Types_Left()
         {
             if (_searchField == null)
             {
-                foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
+                var assemblyList = AppDomain.CurrentDomain.GetAssemblies();
+
+                Array.Sort<Assembly>(assemblyList, (a, b) => string.Compare(a.FullName, b.FullName, true));
+                foreach (var assembly in assemblyList)
                 {
                     _treeView.Add(CreateAssemblyNode(assembly));
                 }
                 _treeView.Invalidate();
+                _treeView.OnSelectItem = OnSelectTreeViewItem;
                 _listView.OnDrawItem = (rect, index, node) => GUI.Label(rect, node.FullName, EditorStyles.label);
                 _listView.OnSelectItem = OnSelectListViewItem;
                 _searchField = new SearchField();
@@ -400,7 +607,10 @@ namespace QuickJS.Unity
             var typesViewRect = EditorGUILayout.GetControlRect(GUILayout.ExpandHeight(true));
             if (string.IsNullOrEmpty(_lastSearchString))
             {
-                _treeView.Draw(typesViewRect);
+                if (_treeView.Draw(typesViewRect))
+                {
+                    Repaint();
+                }
                 GUILayout.Label($"{_typeNodes.Count} Types", _footStyle);
             }
             else
@@ -410,8 +620,51 @@ namespace QuickJS.Unity
             }
         }
 
+        private T SetActiveView<T>()
+        where T : IView, new()
+        {
+            Repaint();
+
+            foreach (var view in _allViews)
+            {
+                if (view.GetType() == typeof(T))
+                {
+                    _activeView = view;
+                    return (T)view;
+                }
+            }
+
+            var newView = new T();
+            _allViews.Add(newView);
+            _activeView = newView;
+
+            return newView;
+        }
+
+        private void OnSelectTreeViewItem(Rect rect, int index, SimpleTreeView.INode item, HashSet<SimpleTreeView.INode> selection)
+        {
+            if (item is Assembly_TreeViewNode)
+            {
+                Defer(() => SetActiveView<AssemblyInfoView>().Show((item as Assembly_TreeViewNode).value));
+            }
+            else if (item is Type_TreeViewNode)
+            {
+                Defer(() => SetActiveView<TypeInfoView>().Show((item as Type_TreeViewNode).value));
+            }
+            else if (item is Namespace_TreeViewNode)
+            {
+                Defer(() => SetActiveView<NamespaceInfoView>().Show((item as Namespace_TreeViewNode).value));
+            }
+            else
+            {
+                Defer(() => SetActiveView<NoneView>());
+            }
+            Repaint();
+        }
+
         private void OnSelectListViewItem(Rect rect, int index, Type_TreeViewNode item, HashSet<Type_TreeViewNode> selection)
         {
+            Defer(() => SetActiveView<TypeInfoView>().Show(item.value));
             Repaint();
         }
 

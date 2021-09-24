@@ -7,13 +7,13 @@ namespace QuickJS.Unity
     using UnityEngine;
     using UnityEditor;
 
-    public class SimpleScrollView<T>
+    public class SimpleListView<T>
     {
         private Vector2 _scollPosition;
         private Rect _viewRect;
         private Rect _itemRect;
         private List<T> _items;
-        private HashSet<T> _selected = new HashSet<T>();
+        private HashSet<T> _selection = new HashSet<T>();
         private float _itemHeight;
         private Color _rowColor = new Color(0.5f, 0.5f, 0.5f, 0.1f);
         private Color _selectColor = new Color(44f / 255f, 93f / 255f, 135f / 255f);
@@ -21,7 +21,7 @@ namespace QuickJS.Unity
         public Action<Rect, int, T> OnDrawItem;
         public Action<Rect, int, T, HashSet<T>> OnSelectItem;
 
-        public SimpleScrollView()
+        public SimpleListView()
         {
             _itemHeight = EditorGUIUtility.singleLineHeight;
             _items = new List<T>();
@@ -58,7 +58,7 @@ namespace QuickJS.Unity
                 _itemRect.Set(0f, i * _itemHeight, rect.width, _itemHeight);
 
                 var currentItem = _items[i];
-                var isSelected = _selected.Contains(currentItem);
+                var isSelected = _selection.Contains(currentItem);
 
                 if (isSelected)
                 {
@@ -72,13 +72,13 @@ namespace QuickJS.Unity
                     }
                 }
                 OnDrawItem?.Invoke(_itemRect, i, currentItem);
-                if (Event.current.type == EventType.MouseUp && !isSelected)
+                if (!isSelected && Event.current.type == EventType.MouseUp)
                 {
                     if (_itemRect.Contains(Event.current.mousePosition))
                     {
-                        _selected.Clear();
-                        _selected.Add(currentItem);
-                        OnSelectItem?.Invoke(_itemRect, i, currentItem, _selected);
+                        _selection.Clear();
+                        _selection.Add(currentItem);
+                        OnSelectItem?.Invoke(_itemRect, i, currentItem, _selection);
                     }
                 }
             }
