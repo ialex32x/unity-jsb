@@ -363,6 +363,9 @@ namespace QuickJS.Unity
         private string _lastSearchString = string.Empty;
 
         private System.Collections.IEnumerator _typeTreeConstruct;
+        private int _typeTreeConstructWalk;
+        private int _typeTreeConstructAll;
+
         private List<Type_TreeViewNode> _typeNodes = new List<Type_TreeViewNode>();
 
         private SimpleTreeView _treeView = new SimpleTreeView();
@@ -399,19 +402,20 @@ namespace QuickJS.Unity
             return self;
         }
 
-        private System.Collections.IEnumerator ConstructAssemblyNode(Assembly assembly)
+        private System.Collections.IEnumerator ConstructAssemblyNode(Assembly assembly, Type[] types)
         {
-            var types = assembly.GetExportedTypes();
             if (types.Length == 0)
             {
                 yield break;
             }
+            _typeTreeConstructAll += types.Length;
             var node = new Assembly_TreeViewNode(assembly);
 
             Array.Sort<Type>(types, (a, b) => string.Compare(a.FullName, b.FullName, true));
             var cache = new Dictionary<Type, Type_TreeViewNode>();
             foreach (var type in types)
             {
+                _typeTreeConstructWalk++;
                 if (type.IsGenericTypeDefinition)
                 {
                     continue;
@@ -601,9 +605,18 @@ namespace QuickJS.Unity
         {
             var assemblyList = AppDomain.CurrentDomain.GetAssemblies();
             Array.Sort<Assembly>(assemblyList, (a, b) => string.Compare(a.FullName, b.FullName, true));
+            List<Type[]> aTypes = new List<Type[]>(assemblyList.Length);
             foreach (var assembly in assemblyList)
             {
-                var e = ConstructAssemblyNode(assembly);
+                var types = assembly.GetExportedTypes();
+                aTypes.Add(types);
+                _typeTreeConstructAll += types.Length;
+            }
+
+            for (int i = 0, count = assemblyList.Length; i < count; i++)
+            {
+                var assembly = assemblyList[i];
+                var e = ConstructAssemblyNode(assembly, aTypes[i]);
                 while (e.MoveNext())
                 {
                     yield return null;
@@ -658,7 +671,7 @@ namespace QuickJS.Unity
 
             if (_typeTreeConstruct != null)
             {
-                pendingHint = "(Loading...) ";
+                pendingHint = $"(Loading... {ToPercent((float)_typeTreeConstructWalk / _typeTreeConstructAll)}%) ";
                 Repaint();
             }
 
@@ -675,6 +688,11 @@ namespace QuickJS.Unity
                 _listView.Draw(typesViewRect);
                 GUILayout.Label($"{pendingHint}{_listView.Count} Types", _footStyle);
             }
+        }
+
+        private static int ToPercent(float p)
+        {
+            return Mathf.FloorToInt(p * 100f);
         }
 
         private T SetActiveView<T>()

@@ -78,7 +78,7 @@ namespace QuickJS.Unity
                     try
                     {
                         var json = Utils.TextUtils.NormalizeJson(System.IO.File.ReadAllText(path));
-                        Debug.Log($"load prefs({path}): {json}");
+                        // Debug.Log($"load prefs({path}): {json}");
                         var prefs = JsonUtility.FromJson<Prefs>(json);
                         filePath = path;
                         prefs.filePath = filePath;
