@@ -195,7 +195,12 @@ namespace QuickJS
 
         public void ResolveModule(string module_id)
         {
-            var rval = ResolveModule(_mainContext, "", module_id);
+            ResolveModule(module_id, false);
+        }
+
+        public void ResolveModule(string module_id, bool set_as_main)
+        {
+            var rval = ResolveModule(_mainContext, "", module_id, set_as_main);
             if (rval.IsException())
             {
                 JSContext.print_exception(_mainContext, _logger, LogLevel.Error, "failed to load module: " + module_id);
@@ -206,7 +211,7 @@ namespace QuickJS
             }
         }
 
-        public JSValue ResolveModule(ScriptContext context, string parent_module_id, string module_id)
+        public JSValue ResolveModule(ScriptContext context, string parent_module_id, string module_id, bool set_as_main)
         {
             for (int i = 0, count = _moduleResolvers.Count; i < count; i++)
             {
@@ -232,7 +237,7 @@ namespace QuickJS
                     }
 
                     // 载入新模块
-                    return resolver.LoadModule(context, parent_module_id, resolved_id);
+                    return resolver.LoadModule(context, parent_module_id, resolved_id, set_as_main);
                 }
             }
 
@@ -758,11 +763,11 @@ namespace QuickJS
         {
             if (_mainContext.IsMainModuleLoaded())
             {
-                ResolveModule(fileName);
+                ResolveModule(fileName, false);
                 return;
             }
 
-            ResolveModule(fileName);
+            ResolveModule(fileName, true);
             OnMainModuleLoaded?.Invoke(this);
         }
 

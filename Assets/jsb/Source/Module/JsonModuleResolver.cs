@@ -30,7 +30,7 @@ namespace QuickJS.Module
 
         public override bool ReloadModule(ScriptContext context, string resolved_id, JSValue module_obj, out JSValue exports_obj)
         {
-            exports_obj = LoadModule(context, null, resolved_id);
+            exports_obj = LoadModule(context, null, resolved_id, false);
             if (exports_obj.IsException())
             {
                 JSContext.print_exception(context);
@@ -41,7 +41,7 @@ namespace QuickJS.Module
             return true;
         }
 
-        public override unsafe JSValue LoadModule(ScriptContext context, string parent_module_id, string resolved_id)
+        public override unsafe JSValue LoadModule(ScriptContext context, string parent_module_id, string resolved_id, bool set_as_main)
         {
             var fileSystem = context.GetRuntime().GetFileSystem();
             var resolved_id_bytes = Utils.TextUtils.GetNullTerminatedBytes(resolved_id);
@@ -66,7 +66,7 @@ namespace QuickJS.Module
                     return rval;
                 }
 
-                var module_obj = context._new_commonjs_resolver_module(resolved_id, "json", rval, true);
+                var module_obj = context._new_commonjs_resolver_module(resolved_id, "json", rval, true, set_as_main);
                 JSApi.JS_FreeValue(ctx, module_obj);
 
                 return rval;

@@ -54,13 +54,13 @@ namespace QuickJS.Module
             return false;
         }
 
-        public JSValue LoadModule(ScriptContext context, string parent_module_id, string resolved_id)
+        public JSValue LoadModule(ScriptContext context, string parent_module_id, string resolved_id, bool set_as_main)
         {
             IModuleRegister moduleRegister;
             if (_modRegisters.TryGetValue(resolved_id, out moduleRegister))
             {
                 var exports_obj = JSApi.JS_NewObject(context);
-                var module_obj = context._new_commonjs_resolver_module(resolved_id, "static", exports_obj, true);
+                var module_obj = context._new_commonjs_resolver_module(resolved_id, "static", exports_obj, true, set_as_main);
 
                 moduleRegister.Load(context, module_obj, exports_obj);
 

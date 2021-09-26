@@ -26,8 +26,10 @@ namespace QuickJS
         private JSStringCache _stringCache;
 
         private JSValue _moduleCache; // commonjs module cache
-        private JSValue _require; // require function object 
-        private bool _mainModuleLoaded;
+
+        /// globally defined require function object, its only used in source evaluated from scratch (not module) (e.g dofile/eval)
+        private JSValue _require; 
+        private JSValue _mainModule;
         private bool _isValid;
         private Regex _stRegex;
 
@@ -57,6 +59,7 @@ namespace QuickJS
             JSApi.JS_AddIntrinsicOperators(_ctx);
             _atoms = new AtomCache(_ctx);
             _stringCache = new JSStringCache(_ctx);
+            _mainModule = JSApi.JS_UNDEFINED;
             _moduleCache = JSApi.JS_NewObject(_ctx);
             _globalObject = JSApi.JS_GetGlobalObject(_ctx);
             _objectConstructor = JSApi.JS_GetProperty(_ctx, _globalObject, JSApi.JS_ATOM_Object);
@@ -223,6 +226,7 @@ namespace QuickJS
             JSApi.JS_FreeValue(_ctx, _operatorCreate);
 
             JSApi.JS_FreeValue(_ctx, _moduleCache);
+            JSApi.JS_FreeValue(_ctx, _mainModule);
             JSApi.JS_FreeValue(_ctx, _require);
             JSApi.JS_FreeContext(_ctx);
             var id = _contextId;
@@ -325,21 +329,21 @@ namespace QuickJS
         //TODO: 改为消耗 exports_obj 计数
         // for special resolver (json/static) use
         // no specified parent module assignment
-        public JSValue _new_commonjs_resolver_module(string module_id, string resolvername, JSValue exports_obj, bool loaded)
+        public JSValue _new_commonjs_resolver_module(string module_id, string resolvername, JSValue exports_obj, bool loaded, bool set_as_main)
         {
-            return _new_commonjs_module_entry(null, module_id, module_id, resolvername, exports_obj, loaded);
+            return _new_commonjs_module_entry(null, module_id, module_id, resolvername, exports_obj, loaded, set_as_main);
         }
 
         //TODO: 改为消耗 exports_obj 计数
         // for source script use
-        public JSValue _new_commonjs_script_module(string parent_module_id, string module_id, string filename, JSValue exports_obj, bool loaded)
+        public JSValue _new_commonjs_script_module(string parent_module_id, string module_id, string filename, JSValue exports_obj, bool loaded, bool set_as_main)
         {
-            return _new_commonjs_module_entry(parent_module_id, module_id, filename, "source", exports_obj, loaded);
+            return _new_commonjs_module_entry(parent_module_id, module_id, filename, "source", exports_obj, loaded, set_as_main);
         }
 
         //TODO: 改为消耗 exports_obj 计数
         //NOTE: 返回值需要调用者 free
-        public JSValue _new_commonjs_module_entry(string parent_module_id, string module_id, string filename, string resolvername, JSValue exports_obj, bool loaded)
+        public JSValue _new_commonjs_module_entry(string parent_module_id, string module_id, string filename, string resolvername, JSValue exports_obj, bool loaded, bool set_as_main)
         {
             var module_obj = JSApi.JS_NewObject(_ctx);
             var module_id_atom = GetAtom(module_id);
@@ -356,6 +360,11 @@ namespace QuickJS
             JSApi.JS_SetProperty(_ctx, module_obj, GetAtom("resolvername"), JSApi.JS_AtomToString(_ctx, resolvername_atom));
             JSApi.JS_SetProperty(_ctx, module_obj, GetAtom("children"), JSApi.JS_NewArray(_ctx));
             JSApi.JS_FreeValue(_ctx, module_id_obj);
+
+            if (set_as_main && _mainModule.IsUndefined())
+            {
+                _mainModule = JSApi.JS_DupValue(_ctx, module_obj);
+            }
 
             // set parent/children here
             if (!string.IsNullOrEmpty(parent_module_id))
@@ -383,12 +392,6 @@ namespace QuickJS
             }
 
             return module_obj;
-        }
-
-        // retrn the main module value (commonjs module) directly
-        public JSValue _dup_commonjs_main_module()
-        {
-            return JSApi.JS_GetProperty(_ctx, _require, GetAtom("main"));
         }
 
         public void ForEachModuleExport(Func<JSAtom, JSAtom, JSValue, bool> callback)
@@ -489,9 +492,9 @@ namespace QuickJS
             OnScriptReloaded?.Invoke(this, resolved_id);
         }
 
-        public bool IsMainModuleLoaded() 
+        public bool IsMainModuleLoaded()
         {
-            return _mainModuleLoaded;
+            return !_mainModule.IsUndefined();
         }
 
 #if !JSB_UNITYLESS
@@ -532,19 +535,8 @@ namespace QuickJS
             var filename_obj = JSApi.JS_GetProperty(ctx, module_obj, context.GetAtom("filename"));
             var module_id_atom = context.GetAtom(resolved_id);
             var dirname_atom = context.GetAtom(dirname);
-            JSValue require_obj;
-            JSValue main_mod_obj;
-            if (_mainModuleLoaded)
-            {
-                require_obj = JSApi.JSB_NewCFunction(ctx, ScriptRuntime.module_require, context.GetAtom("require"), 1, JSCFunctionEnum.JS_CFUNC_generic, 0);
-                main_mod_obj = context._dup_commonjs_main_module();
-            }
-            else
-            {
-                _mainModuleLoaded = true;
-                require_obj = JSApi.JS_DupValue(_ctx, _require);
-                main_mod_obj = JSApi.JS_DupValue(_ctx, module_obj);
-            }
+            var require_obj = JSApi.JSB_NewCFunction(ctx, ScriptRuntime.module_require, context.GetAtom("require"), 1, JSCFunctionEnum.JS_CFUNC_generic, 0);
+            var main_mod_obj = JSApi.JS_DupValue(ctx, _mainModule);
             var dirname_obj = JSApi.JS_AtomToString(ctx, dirname_atom);
             var exports_obj = JSApi.JS_GetProperty(ctx, module_obj, context.GetAtom("exports"));
 
@@ -750,7 +742,7 @@ namespace QuickJS
             var ctx = (JSContext)this;
             var global_object = this.GetGlobalObject();
             {
-                _mainModuleLoaded = false;
+                _mainModule = JSApi.JS_UNDEFINED;
                 _require = JSApi.JSB_NewCFunction(ctx, ScriptRuntime.module_require, GetAtom("require"), 1, JSCFunctionEnum.JS_CFUNC_generic, 0);
                 JSApi.JS_SetProperty(ctx, _require, GetAtom("moduleId"), JSApi.JS_NewString(ctx, ""));
                 JSApi.JS_SetProperty(ctx, _require, GetAtom("cache"), JSApi.JS_DupValue(ctx, _moduleCache));

@@ -218,12 +218,9 @@ namespace QuickJS.Unity
             }
             JSScriptFinder.GetInstance().ModuleSourceChanged += OnModuleSourceChanged;
 
-            if (!string.IsNullOrEmpty(_prefs.editorEntryPoint))
+            if (!string.IsNullOrEmpty(_prefs.editorEntryPoint) && !Application.isPlaying)
             {
-                if (!Application.isPlaying)
-                {
-                    runtime.EvalMain(_prefs.editorEntryPoint);
-                }
+                runtime.EvalMain(_prefs.editorEntryPoint);
             }
         }
 

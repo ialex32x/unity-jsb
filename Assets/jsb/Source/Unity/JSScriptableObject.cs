@@ -416,6 +416,9 @@ namespace QuickJS.Unity
 
         void Awake()
         {
+            //NOTE: only Awake will be called if using Scriptable.CreateInstance
+            //      only OnAfterDeserialize will be called if deserializing from asset
+
             // Debug.LogFormat("ScriptableObject.Awake {0} {1}", _scriptRef.modulePath, _scriptRef.className);
         }
 

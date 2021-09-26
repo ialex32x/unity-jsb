@@ -70,7 +70,7 @@ namespace QuickJS
             try
             {
                 var module_id = JSApi.GetString(ctx, argv[0]);
-                return runtime.ResolveModule(context, parent_module_id, module_id);
+                return runtime.ResolveModule(context, parent_module_id, module_id, false);
             }
             catch (Exception exception)
             {
