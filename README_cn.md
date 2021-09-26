@@ -21,14 +21,6 @@
 * [初步] 支持 C# 代码热更 (hotfix, limited support)
 * [未完成] Webpack HMR 运行时模块热替换 (limited support, for development only)
 
-# 附加模块支持 (可选)
-Extra 为可选附加模块, 提供不同的特定功能, 不需要的直接删除相应目录即可.
-* Websocket (初步支持, limited support)
-* XMLHttpRequest (初步支持, limited support)
-* UdpSocket (未实现)
-* SQLite (未实现)
-* FairyGUI 接入示例 (with FairyGUI Editor plugin)
-
 # 特性示例
 > 推荐使用 typescript 编写脚本, unity-jsb 对导出的 C# 类型自动生成了对应的 d.ts 声明, 以提供强类型辅助. 示例代码均使用 typescript. 
 >
@@ -363,6 +355,12 @@ npm install
 使用 VSCode 打开此项目根目录, 在 ```Run And Debug``` 页签中选择 ```dotnetcore example``` 直接启动即可运行示例.
 
 # 其他尝试
+
+## 附加模块支持 (可选)
+Extra 为可选附加模块, 提供不同的特定功能, 不需要的直接删除相应目录即可.
+* Websocket (初步支持, limited support)
+* XMLHttpRequest (初步支持, limited support)
+
 ## JSX
 
 ```tsx

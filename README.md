@@ -22,10 +22,6 @@ It brings Javascript runtime capability to Unity3D by integrating [QuickJS](http
 
 > Supports .NET 4.0/dotnetcore 3.1/Unity2019+ 
 
-# Extra Features (Optional)
-* Websocket 
-* XMLHttpRequest 
-
 # Samples
 > Typescript is the preferred language for unity-jsb, the definition files (d.ts) of exported C# types is automatically generated.
 
@@ -309,6 +305,11 @@ Open ```Assets/Examples/Scenes/SampleScene.unity``` and select specific example 
 Open this project directory in VSCode, select ```dotnetcore example``` in ```Run And Debug``` panel, then just run it.
 
 # Some experimental works
+
+## Extra Features (Optional)
+* Websocket 
+* XMLHttpRequest 
+
 ## JSX
 ```tsx
 export interface TestData {

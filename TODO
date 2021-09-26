@@ -1,16 +1,18 @@
-    
+
+MOVED TO https://github.com/ialex32x/unity-jsb/projects/1
+
 BUGFIX:
     ☐ 带变参方法变参类型为Object时，存在不一致行为 (例如 Debug.LogWarningFormat)
     ☐ C# 运算符本身存在重载时，需要生成不同的绑定名
-    ☐ 以 toString 形式导出的 ToString 中触发异常将导致调用栈溢出崩溃
+    ✔ 以 toString 形式导出的 ToString 中触发异常将导致调用栈溢出崩溃 @done(21-09-26 19:11)
     ✔ js_match_type 数组处理 @done(21-07-25 23:31)
     ✔ dotnetcore 执行反射绑定函数时异常 @done(21-05-10 19:14)
 
 必要:
     ✔ 反射模式支持运算符重载 (考虑接入v8, 可能取消运算符重载的导入) @done(21-07-25 23:29)
-    ☐ build quickjs libraries for linux
+    ✔ build quickjs libraries for linux @done(21-09-26 19:11)
     ☐ JS Worker Runtime 的类型绑定
-    ☐ 主模块与一般模块共用一致的加载流程
+    ✔ 主模块与一般模块共用一致的加载流程 @done(21-09-26 19:11)
     ☐ ES模块与require模块逻辑一致
     ✔ 支持 dotnetcore/.net @done(21-05-01 08:06)
     ☐ 额外的运行时通讯机制 (jsb.runtimes, jsb.postMessage)
