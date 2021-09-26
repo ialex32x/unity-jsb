@@ -27,7 +27,7 @@ namespace QuickJS.Unity
                     {
                         throw new ParameterException(typeof(UnityEditor.EditorWindow), "GetWindow", typeof(System.Type), 0);
                     }
-                    var inject = QuickJS.Unity.EditorWindowFix.js_get_window(ctx, argv[0], arg_editorType, false, null, true);
+                    var inject = js_get_window(ctx, argv[0], arg_editorType, false, null, true);
                     if (!inject.IsUndefined())
                     {
                         return inject;
@@ -49,7 +49,7 @@ namespace QuickJS.Unity
                         {
                             throw new ParameterException(typeof(UnityEditor.EditorWindow), "GetWindow", typeof(bool), 1);
                         }
-                        var inject = QuickJS.Unity.EditorWindowFix.js_get_window(ctx, argv[0], arg_editorType, arg_utility, null, true);
+                        var inject = js_get_window(ctx, argv[0], arg_editorType, arg_utility, null, true);
                         if (!inject.IsUndefined())
                         {
                             return inject;
@@ -77,7 +77,7 @@ namespace QuickJS.Unity
                         {
                             throw new ParameterException(typeof(UnityEditor.EditorWindow), "GetWindow", typeof(string), 2);
                         }
-                        var inject = QuickJS.Unity.EditorWindowFix.js_get_window(ctx, argv[0], arg_editorType, arg_utility, arg_title, true);
+                        var inject = js_get_window(ctx, argv[0], arg_editorType, arg_utility, arg_title, true);
                         if (!inject.IsUndefined())
                         {
                             return inject;
@@ -110,7 +110,7 @@ namespace QuickJS.Unity
                         {
                             throw new ParameterException(typeof(UnityEditor.EditorWindow), "GetWindow", typeof(bool), 3);
                         }
-                        var inject = QuickJS.Unity.EditorWindowFix.js_get_window(ctx, argv[0], arg_editorType, arg_utility, arg_title, arg_focus);
+                        var inject = js_get_window(ctx, argv[0], arg_editorType, arg_utility, arg_title, arg_focus);
                         if (!inject.IsUndefined())
                         {
                             return inject;

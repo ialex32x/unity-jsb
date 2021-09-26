@@ -13,8 +13,8 @@ MonoBehaviour:
   m_Name: js_data
   m_EditorClassIdentifier: 
   _scriptRef:
-    sourceFile: C:\Users\julio\Documents\Projects\github.com\ialex32x\unity-jsb\Scripts\src\example_scriptable_object.ts
-    modulePath: example_scriptable_object
+    sourceFile: F:\projects\unity-jsb\Scripts\src\my_scriptable_object.ts
+    modulePath: my_scriptable_object
     className: MyScriptableObject
   _properties:
     _objects: []

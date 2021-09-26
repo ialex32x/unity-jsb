@@ -2317,7 +2317,7 @@ declare module "UnityEngine" {
 }
 declare module "UnityEngine" {
     import { Enum } from "System";
-    /** Base class for texture handling.
+    /** Base class for Texture handling.
      */
     class Texture extends Object {
         GetNativeTexturePtr(): any
@@ -2328,23 +2328,23 @@ declare module "UnityEngine" {
         static SetStreamingTextureMaterialDebugProperties(): void
         protected constructor()
         static masterTextureLimit: number
-        /** How many mipmap levels are in this texture (Read Only).
+        /** How many mipmap levels are in this Texture (Read Only).
          */
         readonly mipmapCount: number
         static anisotropicFiltering: any
-        /** Returns the GraphicsFormat format or color format of a texture object.
+        /** Returns the GraphicsFormat format or color format of a Texture object.
          */
         readonly graphicsFormat: any
-        /** Width of the texture in pixels. (Read Only)
+        /** Width of the Texture in pixels. (Read Only)
          */
         width: number
-        /** Height of the texture in pixels. (Read Only)
+        /** Height of the Texture in pixels. (Read Only)
          */
         height: number
-        /** Dimensionality (type) of the texture (Read Only).
+        /** Dimensionality (type) of the Texture (Read Only).
          */
         dimension: any
-        /** Returns true if the Read/Write Enabled checkbox was checked when the texture was imported; otherwise returns false. For a dynamic Texture created from script, always returns true. For additional information, see TextureImporter.isReadable.
+        /** Returns true if the Read/Write Enabled checkbox was checked when the Texture was imported; otherwise returns false. For a dynamic Texture created from script, always returns true. For additional information, see TextureImporter.isReadable.
          */
         readonly isReadable: boolean
         /** Texture coordinate wrapping mode.
@@ -2359,62 +2359,73 @@ declare module "UnityEngine" {
         /** Texture W coordinate wrapping mode for Texture3D.
          */
         wrapModeW: any
-        /** Filtering mode of the texture.
+        /** Filtering mode of the Texture.
          */
         filterMode: any
-        /** Anisotropic filtering level of the texture.
+        /** Defines the anisotropic filtering level of the Texture.
          */
         anisoLevel: number
-        /** Mip map bias of the texture.
+        /** The mipmap bias of the Texture.
          */
         mipMapBias: number
         readonly texelSize: Vector2
-        /** This counter is incremented when the texture is updated.
+        /** This counter is incremented when the Texture is updated.
          */
         readonly updateCount: number
-        /** The total amount of memory that would be used by all textures at mipmap level 0.
+        /** The total amount of Texture memory that Unity would use if it loads all Textures at mipmap level 0.
+
+This is a theoretical value that does not take into account any input from the streaming system or any other input, for example when you set the`Texture2D.requestedMipmapLevel` manually.
+
+To see a Texture memory value that takes inputs into account, use `desiredTextureMemory`.
+
+`totalTextureMemory` only includes instances of Texture2D and CubeMap Textures. It does not include any other Texture types, or 2D and CubeMap Textures that Unity creates internally.
          */
         static readonly totalTextureMemory: number
-        /** This amount of texture memory would be used before the texture streaming budget is applied.
+        /** The total size of the Textures, in bytes, that Unity loads if there were no other constraints. Before Unity loads any Textures, it applies the which reduces the loaded Texture resolution if the Texture sizes exceed its value. The `desiredTextureMemory` value takes into account the mipmap levels that Unity has requested or that you have set manually.
+
+For example, if Unity does not load a Texture at full resolution because it is far away or its requested mipmap level is greater than 0,  Unity reduces the `desiredTextureMemory` value to match the total memory needed.
+
+The `desiredTextureMemory` value can be greater than the `targetTextureMemory` value.
+                
          */
         static readonly desiredTextureMemory: number
-        /** The amount of memory used by textures after the mipmap streaming and budget are applied and loading is complete.
+        /** The total amount of Texture memory that Unity allocates to the Textures in the scene after it applies the and finishes loading Textures. `targetTextureMemory`also takes mipmap streaming settings into account. This value only includes instances of Texture2D and CubeMap Textures. It does not include any other Texture types, or 2D and CubeMap Textures that Unity creates internally.
          */
         static readonly targetTextureMemory: number
-        /** The amount of memory currently being used by textures.
+        /** The amount of memory that all Textures in the scene use.
          */
         static readonly currentTextureMemory: number
-        /** Total amount of memory being used by non-streaming textures.
+        /** The amount of memory Unity allocates for non-streaming Textures in the scene. This only includes instances of Texture2D and CubeMap Textures. This does not include any other Texture types, or 2D and CubeMap Textures that Unity creates internally.
          */
         static readonly nonStreamingTextureMemory: number
-        /** How many times has a texture been uploaded due to texture mipmap streaming.
+        /** How many times has a Texture been uploaded due to Texture mipmap streaming.
          */
         static readonly streamingMipmapUploadCount: number
-        /** Number of renderers registered with the texture streaming system.
+        /** Number of renderers registered with the Texture streaming system.
          */
         static readonly streamingRendererCount: number
-        /** Number of streaming textures.
+        /** Number of streaming Textures.
          */
         static readonly streamingTextureCount: number
-        /** Number of non-streaming textures.
+        /** The number of non-streaming Textures in the scene. This includes instances of Texture2D and CubeMap Textures. This does not include any other Texture types, or 2D and CubeMap Textures that Unity creates internally.
          */
         static readonly nonStreamingTextureCount: number
-        /** Number of streaming textures with outstanding mipmaps to be loaded.
+        /** Number of streaming Textures with outstanding mipmaps to be loaded.
          */
         static readonly streamingTexturePendingLoadCount: number
-        /** Number of streaming textures with mipmaps currently loading.
+        /** Number of streaming Textures with mipmaps currently loading.
          */
         static readonly streamingTextureLoadingCount: number
-        /** Force streaming textures to load all mipmap levels.
+        /** Force streaming Textures to load all mipmap levels.
          */
         static streamingTextureForceLoadAll: boolean
-        /** Force the streaming texture system to discard all unused mipmaps immediately, rather than caching them until the texture memory budget is exceeded.
+        /** This property forces the streaming Texture system to discard all unused mipmaps instead of caching them until the Texture is exceeded. This is useful when you profile or write tests to keep a predictable set of Textures in memory.
          */
         static streamingTextureDiscardUnusedMips: boolean
-        /** Allow texture creation to occur on any thread (rather than the dedicated render thread).
+        /** Allow Unity internals to perform Texture creation on any thread (rather than the dedicated render thread).
          */
         static allowThreadedTextureCreation: boolean
-        /** Can be used with texture constructors that take a mip count to indicate that all mips should be generated.  The value of this field is -1.
+        /** Can be used with Texture constructors that take a mip count to indicate that all mips should be generated.  The value of this field is -1.
          */
         static readonly GenerateAllMips: number
     }
@@ -3054,38 +3065,38 @@ declare module "UnityEngine" {
 }
 declare module "UnityEngine" {
     import { Object as Object1 } from "System";
-    /** The interface to get time information from Unity.
+    /** Provides an interface to get time information from Unity.
      */
     class Time extends Object1 {
         constructor()
-        /** The time at the beginning of this frame (Read Only). This is the time in seconds since the start of the game.
+        /** The time at the beginning of this frame (Read Only).
          */
         static readonly time: number
-        /** The time this frame has started (Read Only). This is the time in seconds since the last level has been loaded.
+        /** The time since this frame started (Read Only). This is the time in seconds since the last non-additive scene has finished loading.
          */
         static readonly timeSinceLevelLoad: number
-        /** The completion time in seconds since the last frame (Read Only).
+        /** The interval in seconds from the last frame to the current one (Read Only).
          */
         static readonly deltaTime: number
-        /** The time the latest MonoBehaviour.FixedUpdate has started (Read Only). This is the time in seconds since the start of the game.
+        /** The time since the last MonoBehaviour.FixedUpdate started (Read Only). This is the time in seconds since the start of the game.
          */
         static readonly fixedTime: number
-        /** The timeScale-independant time for this frame (Read Only). This is the time in seconds since the start of the game.
+        /** The timeScale-independent time for this frame (Read Only). This is the time in seconds since the start of the game.
          */
         static readonly unscaledTime: number
-        /** The TimeScale-independant time the latest MonoBehaviour.FixedUpdate has started (Read Only). This is the time in seconds since the start of the game.
+        /** The timeScale-independent time at the beginning of the last MonoBehaviour.FixedUpdate phase (Read Only). This is the time in seconds since the start of the game.
          */
         static readonly fixedUnscaledTime: number
         /** The timeScale-independent interval in seconds from the last frame to the current one (Read Only).
          */
         static readonly unscaledDeltaTime: number
-        /** The timeScale-independent interval in seconds from the last fixed frame to the current one (Read Only).
+        /** The timeScale-independent interval in seconds from the last MonoBehaviour.FixedUpdate phase to the current one (Read Only).
          */
         static readonly fixedUnscaledDeltaTime: number
         /** The interval in seconds at which physics and other fixed frame rate updates (like MonoBehaviour's MonoBehaviour.FixedUpdate) are performed.
          */
         static fixedDeltaTime: number
-        /** The maximum time a frame can take. Physics and other fixed frame rate updates (like MonoBehaviour's MonoBehaviour.FixedUpdate) will be performed only for this duration of time per frame.
+        /** The maximum value of Time.deltaTime in any given frame. This is a time in seconds that limits the increase of Time.time between two frames.
          */
         static maximumDeltaTime: number
         /** A smoothed out Time.deltaTime (Read Only).
@@ -3094,17 +3105,17 @@ declare module "UnityEngine" {
         /** The maximum time a frame can spend on particle updates. If the frame takes longer than this, then updates are split into multiple smaller updates.
          */
         static maximumParticleDeltaTime: number
-        /** The scale at which time passes. This can be used for slow motion effects.
+        /** The scale at which time passes.
          */
         static timeScale: number
-        /** The total number of frames that have passed (Read Only).
+        /** The total number of frames since the start of the game (Read Only).
          */
         static readonly frameCount: number
         static readonly renderedFrameCount: number
         /** The real time in seconds since the game started (Read Only).
          */
         static readonly realtimeSinceStartup: number
-        /** Slows game playback time to allow screenshots to be saved between frames.
+        /** Slows your application’s playback time to allow Unity to save screenshots in between frames.
          */
         static captureDeltaTime: number
         /** The reciprocal of Time.captureDeltaTime.
@@ -3775,9 +3786,9 @@ declare module "UnityEngine" {
          * @returns A component of the matching type, if found. 
          */
         GetComponentInChildren<T extends Component>(type: { new(): T }): T
-        /** Returns all components of Type type in the GameObject or any of its children.
+        /** Returns all components of Type type in the GameObject or any of its children. Works recursively.
          * @param t The type of Component to retrieve.
-         * @param includeInactive Should Components on inactive GameObjects be included in the found set? includeInactive decides which children of the GameObject will be searched.  The GameObject that you call GetComponentsInChildren on is always searched regardless.
+         * @param includeInactive Should Components on inactive GameObjects be included in the found set? includeInactive decides which children of the GameObject will be searched.  The GameObject that you call GetComponentsInChildren on is always searched regardless. Default is false.
          */
         GetComponentsInChildren<T extends Component>(type: { new(): T }, includeInactive: boolean): T[]
         GetComponentsInChildren<T extends Component>(type: { new(): T }): T[]
@@ -4213,13 +4224,7 @@ declare module "UnityEngine" {
          * @param type The type of the ScriptableObject to create, as a System.Type instance.
          * @returns The created ScriptableObject. 
          */
-        static CreateInstance(className: string): ScriptableObject
-        /** Creates an instance of a scriptable object.
-         * @param className The type of the ScriptableObject to create, as the name of the type.
-         * @param type The type of the ScriptableObject to create, as a System.Type instance.
-         * @returns The created ScriptableObject. 
-         */
-        static CreateInstance(type: any): ScriptableObject
+        static CreateInstance<T extends ScriptableObject>(type: { new(): T }): T
     }
 }
 declare module "UnityEngine" {
@@ -4363,6 +4368,7 @@ Returns NULL if there is no associated alpha texture for the source sprite. This
         /** Location of the Sprite's center point in the Rect on the original Texture, specified in pixels.
          */
         readonly pivot: Vector2
+        readonly isUsingPlaceholder: boolean
         /** Returns true if this Sprite is packed in an atlas.
          */
         readonly packed: boolean
@@ -9621,7 +9627,6 @@ declare module "UnityEngine" {
         ClampToBounds(bounds: BoundsInt): void
         /** Is point contained in the bounding box?
          * @param position Point to check.
-         * @param inclusive Whether the max limits are included in the check.
          * @returns Is point contained in the bounding box? 
          */
         Contains(position: Vector3Int): boolean
@@ -10940,7 +10945,7 @@ declare module "UnityEditor" {
         /** Determines whether this texture stores color data.
          */
         sRGBTexture: boolean
-        /** Enables or disables coverage-preserving alpha MIP mapping.
+        /** Enables or disables coverage-preserving alpha mipmapping.
          */
         mipMapsPreserveCoverage: boolean
         /** Returns or assigns the alpha test reference value.
@@ -11680,6 +11685,12 @@ declare module "UnityEditor" {
         /** Build a CloudRendering standalone.
          */
         CloudRendering = 41,
+        GameCoreScarlett = 42,
+        GameCoreXboxSeries = 42,
+        GameCoreXboxOne = 43,
+        /** Build to PlayStation 5 platform.
+         */
+        PS5 = 44,
         NoTarget = -2,
         /** OBSOLETE: Use iOS. Build an iOS player.
          */
@@ -11698,10 +11709,20 @@ declare module "UnityEditor" {
     /** Building options. Multiple options can be combined together.
      */
     enum BuildOptions {
+        /** Force full optimizations for script compilation in Development builds.
+         */
         None = 0,
-        StripDebugSymbols = 0,
+        /** Force full optimizations for script compilation in Development builds.
+         */
         CompressTextures = 0,
+        /** Force full optimizations for script compilation in Development builds.
+         */
+        StripDebugSymbols = 0,
+        /** Force full optimizations for script compilation in Development builds.
+         */
         ForceOptimizeScriptCompilation = 0,
+        /** Force full optimizations for script compilation in Development builds.
+         */
         Il2CPP = 0,
         /** Build a development version of the player.
          */
@@ -11737,6 +11758,7 @@ declare module "UnityEditor" {
         /** Sets the Player to connect to the Editor.
          */
         ConnectToHost = 4096,
+        EnableInstantGame = 8192,
         /** Options for building the standalone player in headless mode.
          */
         EnableHeadlessMode = 16384,
@@ -12869,7 +12891,7 @@ declare module "UnityEditor" {
         /** The Camera that is rendering this SceneView.
          */
         readonly camera: Camera
-        /** The center point, or pivot, of the Scene view.
+        /** The central point that the camera orbits within the Scene view.
          */
         pivot: Vector3
         /** The direction of the camera to the pivot of the SceneView.
@@ -13328,6 +13350,12 @@ declare module "UnityEditor" {
          */
         static GetBuildTargetName(targetPlatform: BuildTarget): string
         static SetAssetBundleEncryptKey(password: string): void
+        /** Checks if Unity can append the build.
+         * @param target The BuildTarget to build.
+         * @param location The path where Unity builds the application.
+         * @returns Returns a UnityEditor.CanAppendBuild enum that indicates whether Unity can append the build. 
+         */
+        static BuildCanBeAppended(target: BuildTarget, location: string): CanAppendBuild
         /** Builds a player. These overloads are still supported, but will be replaced. Please use BuildPlayer (BuildPlayerOptions buildPlayerOptions)  instead.
          * @param scenes The Scenes to include in the build. If empty, the build only includes the currently open Scene. Paths are relative to the project folder (AssetsMyLevelsMyScene.unity).
          * @param locationPathName The path where the application will be built.
@@ -19605,7 +19633,7 @@ declare module "Example" {
     class FOO extends Object {
         constructor()
         static Exclusive(i32: number): void
-        propValue: string
+        static Exclusive(): void
         static value: string
     }
 }
@@ -20014,6 +20042,8 @@ declare module "System" {
         Remove(startIndex: number): string
         GetTypeCode(): any
         GetEnumerator(): any
+        ArrayListFromJson(): any
+        HashtableFromJson(): any
         static Join(separator: string, value: Array<string>, startIndex: number, count: number): string
         static Join(separator: string, values: IEnumerable<string>): string
         static Join(separator: string, ...value: string[]): string
@@ -20370,6 +20400,23 @@ declare module "UnityEditor" {
 }
 declare module "UnityEditor" {
     import * as jsb from "jsb";
+    import { Enum } from "System";
+    /** Whether you can append an existing build using BuildOptions.AcceptExternalModificationsToPlayer.
+     */
+    enum CanAppendBuild {
+        /** The target platform does not support appending builds.
+         */
+        Unsupported = 0,
+        /** The target platform supports appending builds, and the build can be appended.
+         */
+        Yes = 1,
+        /** The target platform supports appending builds, and the build is not in a valid state.
+         */
+        No = 2,
+    }
+}
+declare module "UnityEditor" {
+    import * as jsb from "jsb";
     import { ValueType, Array } from "System";
     /** AssetBundle building map entry.
      */
@@ -20459,10 +20506,10 @@ declare module "UnityEditor" {
         /** Mac/PC webplayer target.
          */
         WebPlayer = 2,
-        /** Apple iOS target.
+        /** OBSOLETE: Use iOS. Apple iOS target.
          */
         iPhone = 4,
-        /** Apple iOS target.
+        /** OBSOLETE: Use iOS. Apple iOS target.
          */
         iOS = 4,
         PS3 = 5,
@@ -20509,6 +20556,12 @@ declare module "UnityEditor" {
         /** CloudRendering target.
          */
         CloudRendering = 30,
+        GameCoreScarlett = 31,
+        GameCoreXboxSeries = 31,
+        GameCoreXboxOne = 32,
+        /** Sony Playstation 5 target.
+         */
+        PS5 = 33,
     }
 }
 declare module "UnityEditor" {
@@ -21058,6 +21111,23 @@ declare module "UnityEditor" {
 declare module "UnityEditor" {
     import * as jsb from "jsb";
     import { Enum } from "System";
+    enum PS5BuildSubtarget {
+        PCHosted = 0,
+        Package = 1,
+        GP5Project = 2,
+    }
+}
+declare module "UnityEditor" {
+    import * as jsb from "jsb";
+    import { Enum } from "System";
+    enum PS5BuildCompressionType {
+        Default = 0,
+        Kraken = 1,
+    }
+}
+declare module "UnityEditor" {
+    import * as jsb from "jsb";
+    import { Enum } from "System";
     enum PS4HardwareTarget {
         BaseOnly = 0,
         NeoAndBase = 1,
@@ -21201,6 +21271,21 @@ declare module "UnityEditor" {
         /** Specifies which version of PS4 hardware to target.
          */
         static ps4HardwareTarget: PS4HardwareTarget
+        /** Target PS5 build type.
+         */
+        static ps5BuildSubtarget: PS5BuildSubtarget
+        /** PS5 file compression type.
+         */
+        static ps5BuildCompressionType: PS5BuildCompressionType
+        /** PS5 file compression level.
+         */
+        static ps5BuildCompressionLevel: number
+        /** Maintain package file between builds.
+         */
+        static ps5KeepPackageFiles: boolean
+        /** Destination Workspace name for build.
+         */
+        static ps5WorkspaceName: string
         /** Are null references actively validated?
          */
         static explicitNullChecks: boolean
@@ -21322,11 +21407,13 @@ declare module "UnityEditor" {
         static switchCreateSolutionFile: boolean
         static switchCreateRomFile: boolean
         static switchNVNGraphicsDebugger: boolean
+        static generateNintendoSwitchShaderInfo: boolean
         static switchNVNShaderDebugging: boolean
         static switchNVNDrawValidation: boolean
         static switchEnableHeapInspector: boolean
         static switchEnableDebugPad: boolean
         static switchRedirectWritesToHostMount: boolean
+        static switchUseLegacyNvnPoolAllocator: boolean
         /** Place the built player in the build folder.
          */
         static installInBuildFolder: boolean
@@ -22237,6 +22324,9 @@ Note: calling this function will implicitly call Application.SetStackTraceLogTyp
         /** Set to true to exact version matching for strong named assemblies.
          */
         static assemblyVersionValidation: boolean
+        /** Suppresses common C# warnings.
+         */
+        static suppressCommonWarnings: boolean
         /** Allow 'unsafe' C# code code to be compiled for predefined assemblies.
          */
         static allowUnsafeCode: boolean
@@ -22598,6 +22688,45 @@ declare module "UnityEditor" {
 }
 declare module "UnityEditor" {
     import * as jsb from "jsb";
+    import { Object, Array } from "System";
+    namespace PlayerSettings {
+        @jsb.RequiredDefines("UNITY_EDITOR")
+        class PS5 extends Object {
+            constructor()
+            static passcode: string
+            static monoEnv: string
+            static playerPrefsSupport: boolean
+            static restrictedAudioUsageRights: boolean
+            static paramFilePath: string
+            static videoOutPixelFormat: number
+            static videoOutInitialWidth: number
+            static useResolutionFallback: boolean
+            static videoOutOutputMode: number
+            static SdkOverride: string
+            static BackgroundImagePath: string
+            static Pic2Path: string
+            static StartupImagePath: string
+            static startupImagesFolder: string
+            static iconImagesFolder: string
+            static SaveDataImagePath: string
+            static BGMPath: string
+            static ShareOverlayImagePath: string
+            static npConfigZipPath: string
+            static scriptOptimizationLevel: number
+            static disableAutoHideSplash: boolean
+            static includedModules: Array<string>
+            static updateReferencePackage: string
+            static sharedBinaryContentLabels: Array<string>
+            static sharedBinarySystemFolders: Array<string>
+            static enableApplicationExit: boolean
+            static resetTempFolder: boolean
+            static playerPrefsMaxSize: number
+            static operatingSystemCanDisableSplashScreen: boolean
+        }
+    }
+}
+declare module "UnityEditor" {
+    import * as jsb from "jsb";
     import { ValueType } from "System";
     import { Sprite } from "UnityEngine";
     namespace PlayerSettings {
@@ -22751,6 +22880,8 @@ declare module "UnityEditor" {
             static socketInitializeEnabled: boolean
             static networkInterfaceManagerInitializeEnabled: boolean
             static playerConnectionEnabled: boolean
+            static switchUseMicroSleepForYield: boolean
+            static switchMicroSleepForYieldTime: number
         }
     }
 }
@@ -22786,6 +22917,7 @@ declare module "UnityEditor" {
             SimplifiedChinese = 12,
             TraditionalChinese = 13,
             Korean = 14,
+            BrazilianPortuguese = 15,
         }
     }
 }
@@ -24992,12 +25124,12 @@ declare module "UnityEditor" {
         /** ASTC compressed RGB(A) texture format, 4x4 block size.
          */
         ASTC_4x4 = 48,
-        /** ASTC compressed RGB texture format, 5x5 block size.
-         */
-        ASTC_5x5 = 49,
-        /** ASTC compressed RGB texture format, 5x5 block size.
+        /** ASTC compressed RGB(A) texture format, 5x5 block size.
          */
         ASTC_RGB_5x5 = 49,
+        /** ASTC compressed RGB(A) texture format, 5x5 block size.
+         */
+        ASTC_5x5 = 49,
         /** ASTC compressed RGB(A) texture format, 6x6 block size.
          */
         ASTC_RGB_6x6 = 50,
@@ -25006,22 +25138,22 @@ declare module "UnityEditor" {
         ASTC_6x6 = 50,
         /** ASTC compressed RGB(A) texture format, 8x8 block size.
          */
-        ASTC_8x8 = 51,
+        ASTC_RGB_8x8 = 51,
         /** ASTC compressed RGB(A) texture format, 8x8 block size.
          */
-        ASTC_RGB_8x8 = 51,
-        /** ASTC compressed RGB texture format, 10x10 block size.
-         */
-        ASTC_RGB_10x10 = 52,
-        /** ASTC compressed RGB texture format, 10x10 block size.
+        ASTC_8x8 = 51,
+        /** ASTC compressed RGB(A) texture format, 10x10 block size.
          */
         ASTC_10x10 = 52,
-        /** ASTC compressed RGB texture format, 12x12 block size.
+        /** ASTC compressed RGB(A) texture format, 10x10 block size.
          */
-        ASTC_RGB_12x12 = 53,
-        /** ASTC compressed RGB texture format, 12x12 block size.
+        ASTC_RGB_10x10 = 52,
+        /** ASTC compressed RGB(A) texture format, 12x12 block size.
          */
         ASTC_12x12 = 53,
+        /** ASTC compressed RGB(A) texture format, 12x12 block size.
+         */
+        ASTC_RGB_12x12 = 53,
         /** ASTC compressed RGBA texture format, 4x4 block size.
          */
         ASTC_RGBA_4x4 = 54,
@@ -25076,6 +25208,15 @@ declare module "UnityEditor" {
         /** ASTC compressed RGB(A) HDR texture format, 12x12 block size.
          */
         ASTC_HDR_12x12 = 71,
+        /** TextureFormat.RG32 texture format.
+         */
+        RG32 = 72,
+        /** TextureFormat.RGB48 texture format.
+         */
+        RGB48 = 73,
+        /** TextureFormat.RGBA64 texture format.
+         */
+        RGBA64 = 74,
         /** Choose a compressed HDR format automatically.
          */
         AutomaticCompressedHDR = -7,
@@ -25211,21 +25352,21 @@ declare module "UnityEditor" {
     enum TextureImporterType {
         /** This is the most common setting used for all the textures in general.
          */
-        Default = 0,
+        Image = 0,
         /** This is the most common setting used for all the textures in general.
          */
-        Image = 0,
-        /** Select this to turn the color channels into a format suitable for real-time normal mapping.
-         */
-        NormalMap = 1,
+        Default = 0,
         /** Select this to turn the color channels into a format suitable for real-time normal mapping.
          */
         Bump = 1,
+        /** Select this to turn the color channels into a format suitable for real-time normal mapping.
+         */
+        NormalMap = 1,
         /** Use this if your texture is going to be used on any HUD/GUI Controls.
          */
         GUI = 2,
-        Cubemap = 3,
         Reflection = 3,
+        Cubemap = 3,
         /** This sets up your texture with the basic parameters used for the Cookies of your lights.
          */
         Cookie = 4,
@@ -25243,6 +25384,9 @@ declare module "UnityEditor" {
         /** Use this for texture containing a single channel.
          */
         SingleChannel = 10,
+        /** Use this for textures that contain directional lightmap data.
+         */
+        DirectionalLightmap = 12,
     }
 }
 declare module "UnityEditor" {
@@ -25365,7 +25509,7 @@ declare module "UnityEditor" {
         /** Mipmap filtering mode.
          */
         mipmapFilter: TextureImporterMipFilter
-        /** Generate mip maps for the texture?
+        /** Generate mipmaps for the texture?
          */
         mipmapEnabled: boolean
         /** Is texture storing color data?
@@ -25377,7 +25521,7 @@ declare module "UnityEditor" {
         /** Enable this to avoid colors seeping out to the edge of the lower Mip levels. Used for light cookies.
          */
         borderMipmap: boolean
-        /** Enables or disables coverage-preserving alpha MIP mapping.
+        /** Enables or disables coverage-preserving alpha mipmapping.
          */
         mipMapsPreserveCoverage: boolean
         /** Returns or assigns the alpha test reference value.
@@ -25429,7 +25573,7 @@ declare module "UnityEditor" {
         /** Anisotropic filtering level of the texture.
          */
         aniso: number
-        /** Mip map bias of the texture.
+        /** Mipmap bias of the texture.
          */
         mipmapBias: number
         /** Texture coordinate wrapping mode.

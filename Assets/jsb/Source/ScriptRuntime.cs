@@ -22,6 +22,7 @@ namespace QuickJS
         }
 
         public event Action<ScriptRuntime> OnDestroy;
+        public event Action<ScriptRuntime> OnInitializing;
         public event Action<ScriptRuntime> OnInitialized;
         public event Action<ScriptRuntime> OnMainModuleLoaded;
         public event Action<int> OnAfterDestroy;
@@ -376,6 +377,7 @@ namespace QuickJS
             // FindModuleResolver<StaticModuleResolver>().Warmup(_mainContext);
 
             _isInitialized = true;
+            OnInitializing?.Invoke(this);
             OnInitialized?.Invoke(this);
         }
 

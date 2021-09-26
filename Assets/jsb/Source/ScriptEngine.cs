@@ -24,6 +24,7 @@ namespace QuickJS
         private static IO.ByteBufferThreadedPooledAllocator _sharedAllocator;
 
         public static event Action<ScriptRuntime> RuntimeCreated;
+        public static event Action<ScriptRuntime> RuntimeInitialized;
 
         static ScriptEngine()
         {
@@ -242,6 +243,7 @@ namespace QuickJS
             freeEntry.target = runtime;
             freeEntry.isEditorRuntime = isEditorRuntime;
             runtime.OnAfterDestroy += OnRuntimeAfterDestroy;
+            runtime.OnInitialized += OnRuntimeInitialized;
             _rwlock.ExitWriteLock();
             RuntimeCreated?.Invoke(runtime);
             
@@ -275,6 +277,12 @@ namespace QuickJS
                 var runtime = copylist[i];
                 runtime.Shutdown();
             }
+        }
+
+        private static void OnRuntimeInitialized(ScriptRuntime runtime)
+        {
+            runtime.OnInitialized -= OnRuntimeInitialized;
+            RuntimeInitialized?.Invoke(runtime);
         }
 
         private static void OnRuntimeAfterDestroy(int runtimeId)

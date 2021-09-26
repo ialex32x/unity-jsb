@@ -27,7 +27,12 @@ namespace jsb.Editor
                 .WriteCrossBindingConstructor();
 
             bindingManager.TransformType(typeof(ScriptableObject))
-                .WriteCrossBindingConstructor();
+                .WriteCrossBindingConstructor()
+                .SetMethodBlocked("CreateInstance", typeof(string)) 
+                // .SetMethodBlocked("CreateInstance", typeof(Type)) 
+                .AddTSMethodDeclaration("static CreateInstance<T extends ScriptableObject>(type: { new(): T }): T", "CreateInstance", typeof(Type))
+                .WriteCSMethodOverrideBinding("CreateInstance", ScriptableObjectFix.BindStatic_CreateInstance)
+            ;
 
             // var buildTarget = EditorUserBuildSettings.activeBuildTarget;
             // if (buildTarget != BuildTarget.iOS)

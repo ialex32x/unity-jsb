@@ -168,7 +168,7 @@ namespace QuickJS.Unity
 
         private void OnScriptRuntimeCreated(ScriptRuntime runtime)
         {
-            runtime.OnInitialized += OnScriptRuntimeInitialized;
+            runtime.OnInitializing += OnScriptRuntimeInitialized;
             runtime.OnMainModuleLoaded += OnScriptRuntimeMainModuleLoaded;
         }
 

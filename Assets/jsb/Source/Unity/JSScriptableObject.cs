@@ -127,7 +127,7 @@ namespace QuickJS.Unity
             if (_isWaitingRuntime)
             {
                 _isWaitingRuntime = false;
-                ScriptEngine.RuntimeCreated -= OnRuntimeCreated;
+                ScriptEngine.RuntimeInitialized -= OnRuntimeInitialized;
             }
             _ctx = JSContext.Null;
 
@@ -246,7 +246,7 @@ namespace QuickJS.Unity
                         if (!_isWaitingRuntime)
                         {
                             _isWaitingRuntime = true;
-                            ScriptEngine.RuntimeCreated += OnRuntimeCreated;
+                            ScriptEngine.RuntimeInitialized += OnRuntimeInitialized;
                         }
                         // Debug.LogError("script runtime not ready");
                     }
@@ -260,21 +260,12 @@ namespace QuickJS.Unity
             return _isScriptInstanced;
         }
 
-        private void OnRuntimeCreated(ScriptRuntime runtime)
-        {
-            if (_isWaitingRuntime)
-            {
-                runtime.OnInitialized += OnRuntimeInitialized;
-            }
-        }
-
         private void OnRuntimeInitialized(ScriptRuntime runtime)
         {
             if (_isWaitingRuntime)
             {
                 _isWaitingRuntime = false;
-                ScriptEngine.RuntimeCreated -= OnRuntimeCreated;
-                runtime.OnInitialized -= OnRuntimeInitialized;
+                ScriptEngine.RuntimeInitialized -= OnRuntimeInitialized;
                 CreateScriptInstance();
             }
         }
@@ -423,8 +414,15 @@ namespace QuickJS.Unity
             }
         }
 
+        void Awake()
+        {
+            // Debug.LogFormat("ScriptableObject.Awake {0} {1}", _scriptRef.modulePath, _scriptRef.className);
+        }
+
         public void OnAfterDeserialize()
         {
+            // Debug.LogFormat("ScriptableObject.OnAfterDeserialize {0} {1}", _scriptRef.modulePath, _scriptRef.className);
+            CreateScriptInstance();
         }
 
         public void _OnScriptingAfterDeserialize()
