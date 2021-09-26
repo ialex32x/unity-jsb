@@ -1,16 +1,12 @@
 #if !JSB_UNITYLESS
 #if UNITY_EDITOR
 using System;
-using System.Reflection;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace QuickJS.Unity
 {
     using Native;
     using Binding;
     using UnityEngine;
-    using UnityEditor;
 
     public static class ScriptableObjectFix
     {

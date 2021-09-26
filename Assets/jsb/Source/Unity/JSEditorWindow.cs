@@ -13,7 +13,7 @@ namespace QuickJS.Unity
     /// 脚本实现编辑器窗口的基础类. 
     /// 此实现刻意放在非 Editor 目录下, 以便在非编辑器脚本中也可以使用, 实际仍然只在编辑器环境下可用.
     /// </summary>
-    public class JSEditorWindow : EditorWindow, IHasCustomMenu
+    public class JSEditorWindow : EditorWindow, IHasCustomMenu, IScriptInstancedObject
     {
         [NonSerialized]
         private bool _scriptBinded;

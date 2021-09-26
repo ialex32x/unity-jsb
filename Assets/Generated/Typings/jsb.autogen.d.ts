@@ -7002,7 +7002,7 @@ declare module "UnityEngine" {
     class Resources extends Object1 {
         /** Returns a list of all objects of Type type.
          */
-        static FindObjectsOfTypeAll(type: any): Array<Object>
+        static FindObjectsOfTypeAll<T extends Object>(type: { new(): T }): T[]
         /** Loads an asset stored at path in a Resources folder.
          * @param path Path to the target resource to load. When using an empty string (i.e., ""), the function loads the entire contents of the Resources folder.
          * @param systemTypeInstance Type filter for objects returned.

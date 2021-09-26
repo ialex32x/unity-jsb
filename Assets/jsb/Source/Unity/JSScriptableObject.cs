@@ -12,7 +12,7 @@ namespace QuickJS.Unity
     // 脚本回调与 C# 版本不完全一致
 
     [CreateAssetMenu(fileName = "js_data", menuName = "JSScriptableObject Asset", order = 100)]
-    public class JSScriptableObject : ScriptableObject, ISerializationCallbackReceiver, IScriptEditorSupport
+    public class JSScriptableObject : ScriptableObject, ISerializationCallbackReceiver, IScriptEditorSupport, IScriptInstancedObject
     {
         // 在编辑器运行时下与 js 脚本建立链接关系
         [SerializeField]
@@ -68,6 +68,24 @@ namespace QuickJS.Unity
         public bool IsValid()
         {
             return _ctx.IsValid() && !_this_obj.IsNullish();
+        }
+
+        public int IsInstanceOf(JSValue ctor)
+        {
+            if (!IsValid())
+            {
+                return 0;
+            }
+            return JSApi.JS_IsInstanceOf(_ctx, _this_obj, ctor);
+        }
+        
+        public JSValue CloneValue()
+        {
+            if (!IsValid())
+            {
+                return JSApi.JS_UNDEFINED;
+            }
+            return JSApi.JS_DupValue(_ctx, _this_obj);
         }
 
         private void OnBindingJSFuncs(ScriptContext context)

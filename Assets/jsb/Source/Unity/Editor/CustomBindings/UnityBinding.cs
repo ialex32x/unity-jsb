@@ -127,7 +127,12 @@ namespace jsb.Editor
             bindingManager.AddExportedType(typeof(SphereCollider));
             bindingManager.AddExportedType(typeof(Rigidbody));
 
-            bindingManager.AddExportedType(typeof(Resources)).SetAllConstructorsBlocked();
+            bindingManager.AddExportedType(typeof(Resources))
+                .SetAllConstructorsBlocked()
+                // .SetMethodBlocked("FindObjectsOfTypeAll", typeof(Type)) 
+                .AddTSMethodDeclaration("static FindObjectsOfTypeAll<T extends Object>(type: { new(): T }): T[]", "FindObjectsOfTypeAll", typeof(Type))
+                .WriteCSMethodOverrideBinding("FindObjectsOfTypeAll", ResourcesFix.BindStatic_FindObjectsOfTypeAll)
+            ;
             bindingManager.AddExportedType(typeof(QuickJS.Unity.JSScriptProperties));
         }
         

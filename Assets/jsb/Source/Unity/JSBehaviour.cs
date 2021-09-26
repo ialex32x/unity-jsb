@@ -8,7 +8,7 @@ namespace QuickJS.Unity
     using UnityEngine;
     using UnityEngine.Serialization;
 
-    public class JSBehaviour : MonoBehaviour, ISerializationCallbackReceiver, IScriptEditorSupport
+    public class JSBehaviour : MonoBehaviour, ISerializationCallbackReceiver, IScriptEditorSupport, IScriptInstancedObject
     {
         // 在编辑器运行时下与 js 脚本建立链接关系
         [SerializeField]
