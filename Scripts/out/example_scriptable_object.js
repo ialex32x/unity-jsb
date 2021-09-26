@@ -12,33 +12,37 @@ if (js_data) {
 else {
     console.error("failed to load js_data, please create the asset at first.");
 }
-console.log("============ ScriptableObject.CreateInstance ============ 111");
-let so = UnityEngine_1.ScriptableObject.CreateInstance(my_scriptable_object_1.MyScriptableObject);
-if (so) {
-    // Resources.FindObjectsOfTypeAll can also properly process script type now
-    let results = UnityEngine_1.Resources.FindObjectsOfTypeAll(my_scriptable_object_1.MyScriptableObject);
-    do {
-        if (results) {
-            let len = results.length;
-            if (len > 0) {
-                for (let i = 0; i < len; i++) {
-                    console.log("find object:", results[i]);
+try {
+    console.log("============ ScriptableObject.CreateInstance ============ 111");
+    let so = UnityEngine_1.ScriptableObject.CreateInstance(my_scriptable_object_1.MyScriptableObject);
+    if (so) {
+        // Resources.FindObjectsOfTypeAll can also properly process script types now
+        let results = UnityEngine_1.Resources.FindObjectsOfTypeAll(my_scriptable_object_1.MyScriptableObject);
+        do {
+            if (results) {
+                let len = results.length;
+                if (len > 0) {
+                    for (let i = 0; i < len; i++) {
+                        console.log("!!! find object:", results[i]);
+                    }
+                    break;
                 }
-                break;
             }
+            console.warn("something wrong, no object found.");
+        } while (false);
+        for (let i of UnityEngine_1.Resources.FindObjectsOfTypeAll(UnityEngine_1.Camera)) {
+            console.log("!!! camera", i);
         }
-        console.warn("something wrong, no object found.");
-    } while (false);
-    //TODO BUG header.type_id == BridgeObjectType.None ( how to distinctly determine whether ctor is script-defined type )
-    // {
-    //     let x = Resources.FindObjectsOfTypeAll(Camera);
-    //     for (let i of x) {
-    //         console.log("camera", i);
-    //     }
-    // }
-    so.value3 = new UnityEngine_1.Vector3(1, 2, 3);
-    so.value2 = "Hello";
-    console.log("value1:", so.Process());
-    UnityEngine_1.Object.DestroyImmediate(so);
+        so.value3 = new UnityEngine_1.Vector3(1, 2, 3);
+        so.value2 = "Hello";
+        console.log("value1:", so.Process());
+        UnityEngine_1.Object.DestroyImmediate(so);
+    }
+    else {
+        console.error("fail to ScriptableObject.CreateInstance");
+    }
+}
+catch (err) {
+    console.error("fail to ScriptableObject.CreateInstance", err);
 }
 //# sourceMappingURL=example_scriptable_object.js.map

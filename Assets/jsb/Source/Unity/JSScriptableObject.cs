@@ -78,7 +78,7 @@ namespace QuickJS.Unity
             }
             return JSApi.JS_IsInstanceOf(_ctx, _this_obj, ctor);
         }
-        
+
         public JSValue CloneValue()
         {
             if (!IsValid())
@@ -304,20 +304,15 @@ namespace QuickJS.Unity
                         var payload = JSApi.jsb_get_payload_header(_this_obj);
                         if (payload.type_id == BridgeObjectType.ObjectRef)
                         {
-                            var runtime = ScriptEngine.GetRuntime(ctx);
-                            var objectCache = runtime.GetObjectCache();
-
-                            if (objectCache != null)
+                            object obj;
+                            try
                             {
-                                object obj;
-                                try
-                                {
-                                    objectCache.RemoveObject(payload.value, out obj);
-                                }
-                                catch (Exception exception)
-                                {
-                                    runtime.GetLogger()?.WriteException(exception);
-                                }
+                                cache.RemoveObject(payload.value, out obj);
+                            }
+                            catch (Exception exception)
+                            {
+                                var runtime = ScriptEngine.GetRuntime(ctx);
+                                runtime.GetLogger()?.WriteException(exception);
                             }
                         }
                     }

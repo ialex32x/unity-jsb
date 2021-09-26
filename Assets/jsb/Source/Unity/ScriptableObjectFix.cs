@@ -27,6 +27,7 @@ namespace QuickJS.Unity
                     {
                         return inject;
                     }
+                    Debug.LogWarning("fallback");
                     var ret = ScriptableObject.CreateInstance(arg_type);
                     return Values.js_push_classvalue(ctx, ret);
                 }
@@ -46,7 +47,8 @@ namespace QuickJS.Unity
                 var header = JSApi.jsb_get_payload_header(ctor);
                 if (header.type_id == BridgeObjectType.None) // it's a plain js value
                 {
-                    if (type == typeof(ScriptableObject))
+                    var typeDB = ScriptEngine.GetTypeDB(ctx);
+                    if (!typeDB.IsConstructorEquals(type, ctor))
                     {
                         var scriptableObject = ScriptableObject.CreateInstance<JSScriptableObject>();
                         var bridgeValue = scriptableObject.SetScriptInstance(ctx, ctor, false);
@@ -56,8 +58,14 @@ namespace QuickJS.Unity
                             return bridgeValue;
                         }
 
+                        scriptableObject.ReleaseScriptInstance();
                         Object.DestroyImmediate(scriptableObject);
                         return JSApi.JS_NULL;
+                    }
+
+                    if (type == typeof(ScriptableObject))
+                    {
+                        throw new InvalidOperationException();
                     }
                 }
             }

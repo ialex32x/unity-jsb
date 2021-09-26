@@ -251,10 +251,22 @@ namespace QuickJS.Utils
             return JSApi.JS_UNDEFINED;
         }
 
+        /// <summary>
+        /// get js contructor value of type (you need to free this returned value by yourself)
+        /// </summary>
         public JSValue GetConstructorOf(Type type)
         {
             var proto = GetPrototypeOf(type);
             return JSApi.JS_GetProperty(_context, proto, JSApi.JS_ATOM_constructor);
+        }
+
+        public bool IsConstructorEquals(Type type, JSValue ctor)
+        {
+            var proto = GetPrototypeOf(type);
+            var type_ctor = JSApi.JS_GetProperty(_context, proto, JSApi.JS_ATOM_constructor);
+            var result = type_ctor == ctor;
+            JSApi.JS_FreeValue(_context, type_ctor);
+            return result;
         }
 
         public void Destroy()

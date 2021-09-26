@@ -28,7 +28,7 @@ namespace QuickJS.Unity
                         return inject;
                     }
                     var ret = Resources.FindObjectsOfTypeAll(arg_type);
-                    return ObjectFix.js_push_as_array(ctx, ret);
+                    return Values.js_push_classvalue_array(ctx, ret);
                 }
 
                 throw new NotImplementedException();
@@ -45,10 +45,10 @@ namespace QuickJS.Unity
             {
                 var header = JSApi.jsb_get_payload_header(ctor);
 
-                //TODO how to distinctly determine whether ctor is script-defined type
                 if (header.type_id == BridgeObjectType.None) // it's a plain js value
                 {
-                    if (type == typeof(Object) || type.IsSubclassOf(typeof(Object)))
+                    var typeDB = ScriptEngine.GetTypeDB(ctx);
+                    if (!typeDB.IsConstructorEquals(type, ctor))
                     {
                         var objects = Resources.FindObjectsOfTypeAll(type);
                         var len = objects.Length;
