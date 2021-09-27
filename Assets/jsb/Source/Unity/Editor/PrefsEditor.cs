@@ -329,6 +329,7 @@ namespace QuickJS.Unity
                 var blocked = contenxt._bindingManager.InAssemblyBlacklist(name);
 
                 EditorGUILayout.LabelField("Assembly", _assembly.FullName);
+                EditorGUILayout.LabelField("Location", _assembly.Location);
                 var blocked_t = EditorGUILayout.Toggle("Blacklisted", blocked);
                 if (blocked_t != blocked)
                 {
@@ -357,6 +358,9 @@ namespace QuickJS.Unity
         private Action[] _tabViewDrawers = new Action[] { };
         private string[] _newlineValues = new string[] { "cr", "lf", "crlf", "" };
         private string[] _newlineNames = new string[] { "UNIX", "MacOS", "Windows", "Auto" };
+        private int _selectedBindingMethod;
+        private string[] _bindingMethodValues = new string[] { "Reflect Bind", "Static Bind", "In-Memory Bind" };
+        private string[] _bindingMethodDescriptions = new string[] { "Reflect Bind", "Static Bind", "In-Memory Bind (experimental)" };
 
         private GUIStyle _footStyle;
         private SearchField _searchField;
@@ -439,6 +443,7 @@ namespace QuickJS.Unity
             base.OnEnable();
 
             _prefs = UnityHelper.LoadPrefs(out _filePath);
+            _selectedBindingMethod = Array.IndexOf(_bindingMethodValues, _prefs.preferredBindingMethod);
             _bindingManager = new BindingManager(_prefs, new BindingManager.Args());
             _bindingManager.Collect();
             _bindingManager.Generate(TypeBindingFlags.None);
@@ -494,7 +499,12 @@ namespace QuickJS.Unity
         {
             EditorGUI.BeginChangeCheck();
             _prefs.editorScripting = EditorGUILayout.Toggle("Editor Scripting", _prefs.editorScripting);
-            _prefs.reflectBinding = EditorGUILayout.Toggle("Reflect Binding", _prefs.reflectBinding);
+            var selectedBindingMethod_t = EditorGUILayout.Popup("Binding Method", _selectedBindingMethod, _bindingMethodDescriptions);
+            if (_selectedBindingMethod != selectedBindingMethod_t)
+            {
+                _selectedBindingMethod = selectedBindingMethod_t;
+                _prefs.preferredBindingMethod = _bindingMethodValues[Mathf.Clamp(_selectedBindingMethod, 0, _bindingMethodValues.Length - 1)];
+            }
             _prefs.typescriptExt = EditorGUILayout.TextField("Typescript Ext", _prefs.typescriptExt);
             _prefs.sourceDir = EditorGUILayout.TextField("Source Dir", _prefs.sourceDir);
             _prefs.editorEntryPoint = EditorGUILayout.TextField("Editor Entry Script", _prefs.editorEntryPoint);

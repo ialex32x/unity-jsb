@@ -15,7 +15,7 @@ namespace QuickJS.Binding
             this.cg = cg;
             this.cg.cs.AppendLine("[{0}]", typeof(JSBindingAttribute).Name);
             // this.cg.cs.AppendLine("[UnityEngine.Scripting.Preserve]");
-            this.cg.cs.AppendLine("public partial class {0} : {1}", CodeGenerator.NameOfDelegates, typeof(Binding.Values).Name);
+            this.cg.cs.AppendLine("public class {0} : {1}", CodeGenerator.NameOfDelegates, typeof(Binding.Values).Name);
             this.cg.cs.AppendLine("{");
             this.cg.cs.AddTabLevel();
         }

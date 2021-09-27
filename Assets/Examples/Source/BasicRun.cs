@@ -48,6 +48,7 @@ namespace Example
                         {
                             var compilerParameters = new System.CodeDom.Compiler.CompilerParameters();
                             compilerParameters.GenerateInMemory = true;
+                            compilerParameters.OutputAssembly = "_GeneratedAssembly";
                             compilerParameters.TreatWarningsAsErrors = false;
                             compilerParameters.CompilerOptions = "-unsafe";
                             compilerParameters.ReferencedAssemblies.Add(typeof(Debug).Assembly.Location);
@@ -71,6 +72,7 @@ namespace Example
                             }
                             else
                             {
+                                Debug.Log($"Assembly: {result.CompiledAssembly} {result.CompiledAssembly.IsDynamic}");
                                 var Foo = result.CompiledAssembly.GetType("_Hidden.Foo");
                                 Call = Foo.GetMethod("Call");
                             }

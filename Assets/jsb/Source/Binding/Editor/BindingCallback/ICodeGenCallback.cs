@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using System.Collections.Generic;
 using System.Reflection;
+using System.Linq;
 
 namespace QuickJS.Binding
 {
@@ -13,9 +14,9 @@ namespace QuickJS.Binding
 
     public interface ICodeGenCallback
     {
-        void Begin(BindingManager bindingManager);
+        void OnCodeGenBegin(BindingManager bindingManager);
         
-        void End();
+        void OnCodeGenEnd();
 
         // return true to cancel the binding process
         bool OnTypeGenerating(TypeBindingInfo typeBindingInfo, int current, int total);
@@ -23,5 +24,7 @@ namespace QuickJS.Binding
         void OnGenerateFinish();
 
         void OnSourceCodeEmitted(CodeGenerator cg, string csOutDir, string csName, SourceCodeType type, string source);
+
+        void OnGenerateBindingList(CodeGenerator cg, IEnumerable<IGrouping<string, TypeBindingInfo>> modules);
     }
 }

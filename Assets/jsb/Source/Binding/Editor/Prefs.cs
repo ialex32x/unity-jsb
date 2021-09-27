@@ -70,8 +70,9 @@ namespace QuickJS.Binding
 
         /// <summary>
         /// [EDITOR_ONLY] preferred to bind types by reflection in editor without generating any binding code (useful for development stage in editor)
+        /// ("Reflect Bind", "In-Memory Bind", "Static Bind")
         /// </summary>
-        public bool reflectBinding = true;
+        public string preferredBindingMethod = "Reflect Bind";
 
         /// <summary>
         /// generate binding code for operator overloading support in QuickJS (not fully supported). 

@@ -203,7 +203,7 @@ namespace QuickJS.Binding
             this.cg.cs.AppendLine("// Type: {0}", typeBindingInfo.FullName);
             this.cg.cs.AppendLine("[{0}]", typeof(JSBindingAttribute).Name);
             // this.cg.cs.AppendLine("[UnityEngine.Scripting.Preserve]");
-            this.cg.cs.AppendLine("public class {0} : {1}", typeBindingInfo.csBindingName, typeof(Binding.Values).Name);
+            this.cg.cs.AppendLine("public class {0}", typeBindingInfo.csBindingName);
             this.cg.cs.AppendLine("{");
             this.cg.cs.AddTabLevel();
         }
@@ -222,12 +222,9 @@ namespace QuickJS.Binding
 
     public class PreservedCodeGen : IDisposable
     {
-        protected CodeGenerator cg;
-
         public PreservedCodeGen(CodeGenerator cg)
         {
-            this.cg = cg;
-            this.cg.cs.AppendLine("[UnityEngine.Scripting.Preserve]");
+            cg.cs.AppendLine("[UnityEngine.Scripting.Preserve]");
         }
 
         public void Dispose()

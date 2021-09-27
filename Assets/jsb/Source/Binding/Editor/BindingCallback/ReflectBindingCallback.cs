@@ -46,12 +46,12 @@ namespace QuickJS.Binding
 #endif
         }
 
-        public void Begin(BindingManager bindingManager)
+        public void OnBindingBegin(BindingManager bindingManager)
         {
             _bindingManager = bindingManager;
         }
 
-        public void End()
+        public void OnBindingEnd()
         {
         }
 

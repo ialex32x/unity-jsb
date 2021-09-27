@@ -160,7 +160,7 @@ namespace QuickJS.Unity
                     asyncManager = asyncManager,
                     logger = logger,
                     byteBufferAllocator = new ByteBufferPooledAllocator(),
-                    binder = DefaultBinder.GetBinder(_prefs.reflectBinding),
+                    binder = DefaultBinder.GetBinder(_prefs.preferredBindingMethod),
                 });
                 _ready = true;
             }

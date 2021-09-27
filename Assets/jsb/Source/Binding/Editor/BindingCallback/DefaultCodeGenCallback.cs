@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using System.Collections.Generic;
 using System.Reflection;
+using System.Linq;
 
 namespace QuickJS.Binding
 {
@@ -9,12 +10,12 @@ namespace QuickJS.Binding
     {
         private BindingManager _bindingManager;
 
-        public void Begin(BindingManager bindingManager)
+        public void OnCodeGenBegin(BindingManager bindingManager)
         {
             _bindingManager = bindingManager;
         }
 
-        public void End()
+        public void OnCodeGenEnd()
         {
 
         }
@@ -38,16 +39,27 @@ namespace QuickJS.Binding
 #endif
         }
 
-        public void OnSourceCodeEmitted(CodeGenerator cg, string csOutDir, string csName, SourceCodeType type, string source)
+        public void OnSourceCodeEmitted(CodeGenerator cg, string codeOutDir, string codeName, SourceCodeType type, string source)
         {
-            if (!Directory.Exists(csOutDir))
+            if (!Directory.Exists(codeOutDir))
             {
-                Directory.CreateDirectory(csOutDir);
+                Directory.CreateDirectory(codeOutDir);
             }
 
-            var csPath = Path.Combine(csOutDir, csName);
+            var filename = codeName;
+            switch (type)
+            {
+                case SourceCodeType.CSharp: filename += ".cs"; break;
+                case SourceCodeType.TSD: filename += "d.ts" + _bindingManager.prefs.extraExtForTypescript; break;
+            }
+            var csPath = Path.Combine(codeOutDir, filename);
             cg.WriteAllText(csPath, source);
-            _bindingManager.AddOutputFile(csOutDir, csPath);
+            _bindingManager.AddOutputFile(codeOutDir, csPath);
+        }
+
+        public void OnGenerateBindingList(CodeGenerator cg, IEnumerable<IGrouping<string, TypeBindingInfo>> modules)
+        {
+            cg.GenerateBindingList(typeof(Values).Namespace, typeof(Values).Name, modules, true);
         }
     }
 }
