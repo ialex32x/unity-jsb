@@ -94,6 +94,11 @@ namespace QuickJS.Utils
         //     };
         // }
 
+        public bool ContainsDelegate(Type type)
+        {
+            return _delegates.ContainsKey(type);
+        }
+
         public void AddDelegate(Type type, MethodInfo method)
         {
             _delegates[type] = method;

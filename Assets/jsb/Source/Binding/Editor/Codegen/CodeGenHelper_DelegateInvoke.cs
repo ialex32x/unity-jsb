@@ -10,7 +10,11 @@ namespace QuickJS.Binding
     public class DelegateCodeGen : IDisposable
     {
         protected CodeGenerator cg;
-        protected DelegateBridgeBindingInfo delegateBindingInfo;
+
+        protected string delegateName;
+        protected Type returnType;
+        protected ParameterInfo[] parameters;
+        protected HashSet<Type> delegateTypeRefs;
 
         private ParameterInfo[] GetInputParameters(ParameterInfo[] parameters)
         {
@@ -21,21 +25,41 @@ namespace QuickJS.Binding
         public DelegateCodeGen(CodeGenerator cg, DelegateBridgeBindingInfo delegateBindingInfo, int index)
         {
             this.cg = cg;
-            this.delegateBindingInfo = delegateBindingInfo;
-            var inputParameters = GetInputParameters(delegateBindingInfo.parameters);
-            var nargs = inputParameters.Length;
-            var retName = this.cg.bindingManager.GetUniqueName(delegateBindingInfo.parameters, "ret");
-            var firstArgument = typeof(ScriptDelegate) + " fn";
-            var returnTypeName = this.cg.bindingManager.GetCSTypeFullName(delegateBindingInfo.returnType);
-            var delegateName = CodeGenerator.NameOfDelegates + index;
-            var arglist = this.cg.bindingManager.GetCSArglistDecl(delegateBindingInfo.parameters);
+            this.delegateName = delegateBindingInfo.types.FirstOrDefault()?.Name ?? CodeGenerator.NameOfDelegates + index;
+            this.returnType = delegateBindingInfo.returnType;
+            this.parameters = delegateBindingInfo.parameters;
+            this.delegateTypeRefs = delegateBindingInfo.types;
+            _Emit();
+        }
 
-            foreach (var target in delegateBindingInfo.types)
+        public DelegateCodeGen(CodeGenerator cg, string delegateName, Type returnType, ParameterInfo[] parameters)
+        {
+            this.cg = cg;
+            this.delegateName = delegateName;
+            this.returnType = returnType;
+            this.parameters = parameters;
+            this.delegateTypeRefs = null;
+            _Emit();
+        }
+
+        protected void _Emit()
+        {
+            var inputParameters = GetInputParameters(parameters);
+            var nargs = inputParameters.Length;
+            var retName = this.cg.bindingManager.GetUniqueName(parameters, "ret");
+            var firstArgument = typeof(ScriptDelegate) + " fn";
+            var returnTypeName = this.cg.bindingManager.GetCSTypeFullName(returnType);
+            var arglist = this.cg.bindingManager.GetCSArglistDecl(parameters);
+
+            if (delegateTypeRefs != null)
             {
-                this.cg.cs.AppendLine("[{0}(typeof({1}))]",
-                    this.cg.bindingManager.GetCSTypeFullName(typeof(JSDelegateAttribute)),
-                    this.cg.bindingManager.GetCSTypeFullName(target));
-                this.cg.bindingManager.Info("emitting delegate decl: {0}", target);
+                foreach (var target in delegateTypeRefs)
+                {
+                    this.cg.cs.AppendLine("[{0}(typeof({1}))]",
+                        this.cg.bindingManager.GetCSTypeFullName(typeof(JSDelegateAttribute)),
+                        this.cg.bindingManager.GetCSTypeFullName(target));
+                    this.cg.bindingManager.Info("emitting delegate decl: {0}", target);
+                }
             }
             if (!string.IsNullOrEmpty(arglist))
             {
@@ -92,10 +116,10 @@ namespace QuickJS.Binding
             CheckReturnValue(nargs);
             _WriteBackParameters(nargs, inputParameters);
 
-            if (delegateBindingInfo.returnType != typeof(void))
+            if (returnType != typeof(void))
             {
-                this.cg.cs.AppendLine($"{this.cg.bindingManager.GetCSTypeFullName(delegateBindingInfo.returnType)} {retName};");
-                var getter = this.cg.bindingManager.GetScriptObjectGetter(delegateBindingInfo.returnType, "ctx", "rval", retName);
+                this.cg.cs.AppendLine($"{this.cg.bindingManager.GetCSTypeFullName(returnType)} {retName};");
+                var getter = this.cg.bindingManager.GetScriptObjectGetter(returnType, "ctx", "rval", retName);
 
                 this.cg.cs.AppendLine("var succ = {0};", getter);
                 FreeRVal();
@@ -110,7 +134,7 @@ namespace QuickJS.Binding
                 this.cg.cs.AppendLine("else");
                 this.cg.cs.AppendLine("{");
                 this.cg.cs.AddTabLevel();
-                this.cg.cs.AppendLine($"throw new Exception(\"js exception caught\");");
+                this.cg.cs.AppendLine($"throw new System.Exception(\"js exception caught\");");
                 this.cg.cs.DecTabLevel();
                 this.cg.cs.AppendLine("}");
             }
@@ -131,7 +155,7 @@ namespace QuickJS.Binding
                 this.cg.cs.AppendLine("JSApi.JS_FreeValue(ctx, argv[{0}]);", j);
             }
 
-            this.cg.cs.AppendLine("throw new Exception(ctx.GetExceptionString());");
+            this.cg.cs.AppendLine("throw new System.Exception(ctx.GetExceptionString());");
             this.cg.cs.DecTabLevel();
             this.cg.cs.AppendLine("}");
         }
@@ -150,14 +174,14 @@ namespace QuickJS.Binding
                 }
 
                 var refValVar = $"refVal{pIndex}";
-                this.cg.cs.AppendLine("var {0} = js_read_wrap(ctx, argv[{1}]);", refValVar, pIndex);
+                this.cg.cs.AppendLine("var {0} = Values.js_read_wrap(ctx, argv[{1}]);", refValVar, pIndex);
 
                 this.cg.cs.AppendLine("if ({0}.IsException())", refValVar);
                 using (this.cg.cs.CodeBlockScope())
                 {
                     FreeRVal();
                     FreeArgs(nargs);
-                    this.cg.cs.AppendLine("throw new Exception(ctx.GetExceptionString());");
+                    this.cg.cs.AppendLine("throw new System.Exception(ctx.GetExceptionString());");
                 }
 
                 var getter = this.cg.bindingManager.GetScriptObjectGetter(pType, "ctx", refValVar, parameter.Name);
@@ -169,7 +193,7 @@ namespace QuickJS.Binding
                     FreeRVal();
                     FreeArgs(nargs);
                     this.cg.cs.AppendLine("JSApi.JS_FreeValue(ctx, {0});", refValVar);
-                    this.cg.WriteParameterException(CodeGenerator.NameOfDelegates, this.delegateBindingInfo.types.ToArray()[0].Name, argTypeStr, pIndex);
+                    this.cg.WriteParameterException(CodeGenerator.NameOfDelegates, delegateName, argTypeStr, pIndex);
                 }
                 this.cg.cs.AppendLine("JSApi.JS_FreeValue(ctx, {0});", refValVar);
             }
@@ -181,7 +205,7 @@ namespace QuickJS.Binding
             this.cg.cs.AppendLine("{");
             this.cg.cs.AddTabLevel();
             FreeArgs(nargs);
-            this.cg.cs.AppendLine("throw new Exception(ctx.GetExceptionString());");
+            this.cg.cs.AppendLine("throw new System.Exception(ctx.GetExceptionString());");
             this.cg.cs.DecTabLevel();
             this.cg.cs.AppendLine("}");
         }

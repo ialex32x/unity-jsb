@@ -35,8 +35,6 @@ namespace Example.Editor
             bindingManager.AddExportedType(typeof(TWrapper<Vector3>));
             bindingManager.AddExportedType(typeof(DisposableObject)).SetDisposable();
 
-            bindingManager.CollectRefectedDelegateTemplates(typeof(CustomReflectBindDelegates));
-
 #if CUSTOM_DEF_FOO && UNITY_EDITOR
             bindingManager.AddExportedType(typeof(FOO)).AddRequiredDefines("CUSTOM_DEF_FOO", "UNITY_EDITOR")
 #if CUSTOM_DEF_PROP

@@ -19705,6 +19705,7 @@ declare module "Example" {
 declare module "Example" {
     import * as jsb from "jsb";
     import { Object, Array } from "System";
+    import { Vector3 } from "UnityEngine";
     class DelegateTest extends Object {
         constructor()
         TestComplexCall(): void
@@ -19723,6 +19724,9 @@ declare module "Example" {
         complexCall(op: "get"): (b: number, a: jsb.Ref<number>, v: jsb.Out<number>) => number
         complexCall(op: "add" | "remove" | "set", fn?: (b: number, a: jsb.Ref<number>, v: jsb.Out<number>) => number): void
         complexCall(op: "add" | "remove" | "set" | "get", fn?: (b: number, a: jsb.Ref<number>, v: jsb.Out<number>) => number): (b: number, a: jsb.Ref<number>, v: jsb.Out<number>) => number | void
+        complexCall2(op: "get"): (v: jsb.Ref<Vector3>) => void
+        complexCall2(op: "add" | "remove" | "set", fn?: (v: jsb.Ref<Vector3>) => void): void
+        complexCall2(op: "add" | "remove" | "set" | "get", fn?: (v: jsb.Ref<Vector3>) => void): (v: jsb.Ref<Vector3>) => void | void
         actionFieldRW(op: "get"): () => void
         actionFieldRW(op: "add" | "remove" | "set", fn?: () => void): void
         actionFieldRW(op: "add" | "remove" | "set" | "get", fn?: () => void): () => void | void

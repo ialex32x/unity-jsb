@@ -9,6 +9,7 @@ namespace QuickJS.Binding
     public class ReflectBindingCallback : IBindingCallback
     {
         private ScriptRuntime _runtime;
+        private BindingManager _bindingManager;
         private Module.ProxyModuleRegister _moduleReg;
 
         public ReflectBindingCallback(ScriptRuntime runtime)
@@ -46,9 +47,18 @@ namespace QuickJS.Binding
 #endif
         }
 
+        public void Begin(BindingManager bindingManager)
+        {
+            _bindingManager = bindingManager;
+        }
+
+        public void End()
+        {
+        }
+
         public void BeginStaticModule(string moduleName, int capacity)
         {
-            _moduleReg = _runtime.AddStaticModuleProxy(moduleName); 
+            _moduleReg = _runtime.AddStaticModuleProxy(moduleName);
             // _moduleReg = new Module.ProxyModuleRegister(_runtime);
         }
 
@@ -65,11 +75,17 @@ namespace QuickJS.Binding
         public void AddDelegate(DelegateBridgeBindingInfo bindingInfo)
         {
             var typeDB = _runtime.GetTypeDB();
-            var method = bindingInfo.reflect;
 
             foreach (var delegateType in bindingInfo.types)
             {
-                typeDB.AddDelegate(delegateType, method);
+                if (!typeDB.ContainsDelegate(delegateType))
+                {
+                    var method = _bindingManager.GetReflectedDelegateMethod(bindingInfo.returnType, bindingInfo.parameters);
+                    if (method != null)
+                    {
+                        typeDB.AddDelegate(delegateType, method);
+                    }
+                }
             }
 
         }

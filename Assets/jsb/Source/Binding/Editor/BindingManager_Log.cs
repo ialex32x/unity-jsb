@@ -27,6 +27,16 @@ namespace QuickJS.Binding
             _logWriter?.AppendLine(fmt, args);
         }
 
+        public void Error(Exception exception)
+        {
+            var str = string.Format("{0}\n{1}", exception.Message, exception.StackTrace);
+            if (exception.InnerException != null)
+            {
+                str += string.Format("=== Inner Exception ===\n{0}\n{1}", exception.InnerException.Message, exception.InnerException.StackTrace);
+            }
+            Error(str);
+        }
+
         public void Error(string message)
         {
             _bindingLogger?.LogError(message);

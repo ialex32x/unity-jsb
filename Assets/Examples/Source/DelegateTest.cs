@@ -5,10 +5,14 @@ namespace Example
 {
     public delegate int WithByRefParametersCallback(int b, ref int a, out int v);
 
+    public delegate void WithByRefParametersCallback2(ref UnityEngine.Vector3 v);
+
     [JSType]
     public class DelegateTest
     {
         public WithByRefParametersCallback complexCall;
+        public WithByRefParametersCallback2 complexCall2;
+
         public void TestComplexCall()
         {
             if (complexCall != null)
@@ -16,8 +20,17 @@ namespace Example
                 int b = 1;
                 int a = 2;
                 int v;
+                UnityEngine.Debug.Log($"TestComplexCall (before): b={b} a={a}");
                 int r = complexCall(b, ref a, out v);
-                UnityEngine.Debug.Log($"TestComplexCall: b={b} a={a} v={v} r={r}");
+                UnityEngine.Debug.Log($"TestComplexCall (after): b={b} a={a} v={v} r={r}");
+            }
+
+            if (complexCall2 != null)
+            {
+                var v = new UnityEngine.Vector3(1f, 2f, 3f);
+                UnityEngine.Debug.Log($"TestComplexCall2 (before): v={v}");
+                complexCall2(ref v);
+                UnityEngine.Debug.Log($"TestComplexCall2 (after): v={v}");
             }
         }
 

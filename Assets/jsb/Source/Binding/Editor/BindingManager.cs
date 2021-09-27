@@ -648,7 +648,7 @@ namespace QuickJS.Binding
                 }
                 var delegateBindingInfo = new DelegateBridgeBindingInfo(returnType, parameters, defs);
                 delegateBindingInfo.types.Add(delegateType);
-                delegateBindingInfo.reflect = GetReflect(returnType, parameters);
+                delegateBindingInfo.reflect = GetReflectedDelegateMethod(returnType, parameters);
                 _exportedDelegates.Add(delegateType, delegateBindingInfo);
                 Info("add delegate: {0} required defines: {1}", delegateType, defs);
                 for (var i = 0; i < parameters.Length; i++)
@@ -685,7 +685,7 @@ namespace QuickJS.Binding
             return false;
         }
 
-        public static bool IsGenericMethodSuitable(MethodInfo methodTemplate, int startIndex, ParameterInfo[] parameters, Type returnType)
+        public static bool IsDelegateMethodSuitable(MethodInfo methodTemplate, int startIndex, ParameterInfo[] parameters, Type returnType)
         {
             if (methodTemplate.ReturnType != returnType && methodTemplate.ReturnType == typeof(void))
             {
@@ -712,30 +712,104 @@ namespace QuickJS.Binding
             return true;
         }
 
-        public MethodInfo GetReflectedDelegateTemplate(List<MethodInfo> list, ParameterInfo[] parameters, Type returnType)
+        public MethodInfo GenerateReflectedDelegateMethod(List<MethodInfo> templates, Type returnType, ParameterInfo[] parameters)
         {
-            for (int i = 0, count = list.Count; i < count; ++i)
+            for (int i = 0, count = templates.Count; i < count; ++i)
             {
-                var methodTemplate = list[i];
-                if (IsGenericMethodSuitable(methodTemplate, 1, parameters, returnType))
+                var template = templates[i];
+                if (IsDelegateMethodSuitable(template, 1, parameters, returnType))
                 {
-                    if (!methodTemplate.IsGenericMethodDefinition)
+                    if (!template.IsGenericMethodDefinition)
                     {
-                        return methodTemplate;
+                        return template;
                     }
 
                     var parametersTypes = from p in parameters select p.ParameterType;
-                    return methodTemplate.MakeGenericMethod(
+                    return template.MakeGenericMethod(
                         returnType != typeof(void)
                         ? AppendEnumerable(parametersTypes, returnType)
                         : parametersTypes.ToArray());
                 }
             }
 
+            // dynamically emit method
+            var emittedMethod = _EmitDelegateMethod(returnType, parameters);
+            if (emittedMethod != null)
+            {
+                templates.Add(emittedMethod);
+                return emittedMethod;
+            }
+
             return null;
         }
 
-        public MethodInfo GetReflect(Type returnType, ParameterInfo[] parameters)
+        public MethodInfo _EmitDelegateMethod(Type returnType, ParameterInfo[] parameters)
+        {
+            try
+            {
+                var cg = new CodeGenerator(this, TypeBindingFlags.Default);
+                var ns = "_Generated" + Guid.NewGuid().ToString().Replace("-", "");
+                var className = CodeGenerator.NameOfDelegates;
+                var assemblies = new HashSet<Assembly>();
+
+                if (returnType != null)
+                {
+                    assemblies.Add(returnType.Assembly);
+                }
+                foreach (var parameterAssembly in from p in parameters select p.ParameterType.Assembly)
+                {
+                    assemblies.Add(parameterAssembly);
+                }
+                assemblies.Add(typeof(Values).Assembly);
+                assemblies.Add(typeof(Exception).Assembly);
+                using (new CSNamespaceCodeGen(cg, ns))
+                {
+                    cg.cs.AppendLine("public static class " + className);
+                    cg.cs.AppendLine("{");
+                    cg.cs.AddTabLevel();
+                    using (new DelegateCodeGen(cg, "_Generated", returnType, parameters))
+                    {
+                    }
+                    cg.cs.DecTabLevel();
+                    cg.cs.AppendLine("}");
+                }
+
+                var source = cg.cs.Submit();
+
+                using (var codeDomProvider = System.CodeDom.Compiler.CodeDomProvider.CreateProvider("cs"))
+                {
+                    var compilerParameters = new System.CodeDom.Compiler.CompilerParameters();
+                    compilerParameters.GenerateInMemory = true;
+                    compilerParameters.TreatWarningsAsErrors = false;
+                    compilerParameters.CompilerOptions = "-unsafe";
+                    compilerParameters.ReferencedAssemblies.AddRange((from a in assemblies select a.Location).ToArray());
+                    var result = codeDomProvider.CompileAssemblyFromSource(compilerParameters, source);
+
+                    if (result.Errors.HasErrors)
+                    {
+                        Error(string.Format("failed to compile source [{0} errors]", result.Errors.Count));
+                        foreach (var err in result.Errors)
+                        {
+                            Error(err.ToString());
+                        }
+                    }
+                    else
+                    {
+                        var Class = result.CompiledAssembly.GetType(ns + "." + className);
+                        return Class?.GetMethod("_Generated");
+                    }
+                }
+                // UnityEngine.Debug.Log("gen: \n" + cg.cs.Submit());
+            }
+            catch (Exception exception)
+            {
+                Error(exception);
+            }
+
+            return null;
+        }
+
+        public MethodInfo GetReflectedDelegateMethod(Type returnType, ParameterInfo[] parameters)
         {
             // skip unsupported types
             if (Binding.Values.IsVarargParameter(parameters))
@@ -743,15 +817,13 @@ namespace QuickJS.Binding
                 return null;
             }
 
+            List<MethodInfo> templates = null;
             var argc = parameters.Length;
-            List<MethodInfo> genMethods = null;
-
-            if (_reflectedDelegateTemplates.TryGetValue(argc, out genMethods))
+            if (!_reflectedDelegateTemplates.TryGetValue(argc, out templates))
             {
-                return GetReflectedDelegateTemplate(genMethods, parameters, returnType);
+                _reflectedDelegateTemplates[argc] = templates = new List<MethodInfo>();
             }
-
-            return null;
+            return GenerateReflectedDelegateMethod(templates, returnType, parameters);
         }
 
         public static T[] AppendEnumerable<T>(IEnumerable<T> e, T item)
@@ -809,11 +881,11 @@ namespace QuickJS.Binding
             {
                 if (type.IsPrimitive)
                 {
-                    return "js_get_primitive";
+                    return "Values.js_get_primitive";
                 }
                 if (type.IsEnum)
                 {
-                    return "js_get_enumvalue";
+                    return "Values.js_get_enumvalue";
                 }
                 if (type.IsGenericType)
                 {
@@ -822,29 +894,29 @@ namespace QuickJS.Binding
                         var gArgs = type.GetGenericArguments();
                         if (gArgs[0].IsValueType && gArgs[0].IsPrimitive)
                         {
-                            return "js_get_primitive";
+                            return "Values.js_get_primitive";
                         }
                     }
                 }
-                return "js_get_structvalue";
+                return "Values.js_get_structvalue";
             }
 
             if (type == typeof(string))
             {
-                return "js_get_primitive";
+                return "Values.js_get_primitive";
             }
 
             if (type == typeof(object))
             {
-                return "js_get_var";
+                return "Values.js_get_var";
             }
 
             if (type.BaseType == typeof(MulticastDelegate))
             {
-                return "js_get_delegate";
+                return "Values.js_get_delegate";
             }
 
-            return "js_get_classvalue";
+            return "Values.js_get_classvalue";
         }
 
         public string GetScriptObjectPusher(Type type, string ctx, string value)
@@ -875,19 +947,19 @@ namespace QuickJS.Binding
 
             if (type == typeof(Delegate) || type.BaseType == typeof(MulticastDelegate))
             {
-                return "js_push_delegate";
+                return "Values.js_push_delegate";
             }
 
             if (type.IsValueType)
             {
                 if (type.IsPrimitive)
                 {
-                    return "js_push_primitive";
+                    return "Values.js_push_primitive";
                 }
 
                 if (type.IsEnum)
                 {
-                    return "js_push_enumvalue";
+                    return "Values.js_push_enumvalue";
                 }
 
                 if (type.IsGenericType)
@@ -898,26 +970,26 @@ namespace QuickJS.Binding
 
                         if (gArgs[0].IsValueType && gArgs[0].IsPrimitive)
                         {
-                            return "js_push_primitive";
+                            return "Values.js_push_primitive";
                         }
                     }
                 }
 
                 // op = "ref ";
-                return "js_push_structvalue";
+                return "Values.js_push_structvalue";
             }
 
             if (type == typeof(string))
             {
-                return "js_push_primitive";
+                return "Values.js_push_primitive";
             }
 
             if (type == typeof(object))
             {
-                return "js_push_var";
+                return "Values.js_push_var";
             }
 
-            return "js_push_classvalue";
+            return "Values.js_push_classvalue";
         }
 
         public string GetTSVariable(string name)
@@ -1579,7 +1651,7 @@ namespace QuickJS.Binding
                     return true;
                 }
             }
-            
+
             return _assemblyBlacklist.Contains(GetSimplifiedAssemblyName(assembly));
         }
 
@@ -1813,6 +1885,7 @@ namespace QuickJS.Binding
             var total = _exportedTypes.Count;
 
             cg.Begin();
+            _bindingCallback?.Begin(this);
             foreach (var typeKV in _exportedTypes)
             {
                 var typeBindingInfo = typeKV.Value;
@@ -1917,6 +1990,7 @@ namespace QuickJS.Binding
                 }
             }
             cg.End();
+            _bindingCallback?.End();
 
             if (!cancel)
             {
