@@ -543,6 +543,7 @@ namespace QuickJS
             expectedReturnValue = null;
             JSApi.JS_SetProperty(ctx, require_obj, context.GetAtom("moduleId"), JSApi.JS_AtomToString(ctx, module_id_atom));
             JSApi.JS_SetProperty(ctx, require_obj, context.GetAtom("main"), main_mod_obj);
+            JSApi.JS_SetProperty(ctx, require_obj, context.GetAtom("cache"), JSApi.JS_DupValue(ctx, _moduleCache));
 
             var require_argv = new JSValue[5] { exports_obj, require_obj, module_obj, filename_obj, dirname_obj, };
 
