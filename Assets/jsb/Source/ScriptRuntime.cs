@@ -52,7 +52,7 @@ namespace QuickJS
         private List<IModuleResolver> _moduleResolvers = new List<IModuleResolver>();
         private Dictionary<Type, ProxyModuleRegister> _allProxyModuleRegisters = new Dictionary<Type, ProxyModuleRegister>();
         private ObjectCache _objectCache;
-        private TypeDB _typeDB;
+        private ITypeDB _typeDB;
         private TimerManager _timerManager;
         private IO.IByteBufferAllocator _byteBufferAllocator;
         private Utils.AutoReleasePool _autorelease;
@@ -458,9 +458,14 @@ namespace QuickJS
             return _logger;
         }
 
-        public TypeDB GetTypeDB()
+        public ITypeDB GetTypeDB()
         {
             return _typeDB;
+        }
+
+        public void ReplaceTypeDB(ITypeDB newTypeDB)
+        {
+            _typeDB = newTypeDB;
         }
 
         public Utils.ObjectCache GetObjectCache()

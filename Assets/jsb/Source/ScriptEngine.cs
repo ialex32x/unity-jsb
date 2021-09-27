@@ -70,7 +70,7 @@ namespace QuickJS
             return GetRuntime(ctx).GetObjectCache();
         }
 
-        public static TypeDB GetTypeDB(JSContext ctx)
+        public static ITypeDB GetTypeDB(JSContext ctx)
         {
             return GetRuntime(ctx).GetTypeDB();
         }

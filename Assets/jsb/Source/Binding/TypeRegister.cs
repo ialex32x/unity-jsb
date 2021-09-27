@@ -9,7 +9,7 @@ namespace QuickJS.Binding
     public class TypeRegister
     {
         private ScriptContext _context;
-        private TypeDB _db;
+        private ITypeDB _db;
         private int _refCount;
 
         // 注册过程中产生的 atom, 完成后自动释放 
@@ -58,7 +58,7 @@ namespace QuickJS.Binding
             _refCount++;
         }
 
-        public TypeDB GetTypeDB()
+        public ITypeDB GetTypeDB()
         {
             return _db;
         }

@@ -6,7 +6,36 @@ using System.Reflection;
 
 namespace QuickJS.Utils
 {
-    public class TypeDB
+    public interface ITypeDB
+    {
+        int Count { get; }
+        DynamicType GetDynamicType(Type type, bool privateAccess);
+        DynamicType CreateFreeDynamicType(Type type);
+        // bool ContainsDelegate(Type type);
+        void AddDelegate(Type type, MethodInfo method);
+        MethodInfo GetDelegateFunc(Type delegateType);
+        int AddType(Type type, JSValue proto);
+        Type GetType(int index);
+        int GetTypeID(Type type);
+        JSValue FindChainedPrototypeOf(Type cType, out int type_id);
+        JSValue FindChainedPrototypeOf(Type cType);
+        JSValue FindChainedPrototypeOf(Type cType, out Type pType);
+        bool TryGetPrototypeOf(Type type, out JSValue proto);
+        JSValue GetPrototypeOf(Type type);
+        JSValue FindPrototypeOf(Type type, out int type_id);
+        JSValue GetConstructorOf(Type type);
+        bool IsConstructorEquals(Type type, JSValue ctor);
+        void Destroy();
+        JSValue NewDynamicMethod(JSAtom name, JSCFunction method);
+        JSValue NewDynamicDelegate(JSAtom name, Delegate d);
+        JSValue NewDynamicMethod(JSAtom name, IDynamicMethod method);
+        JSValue NewDynamicConstructor(JSAtom name, IDynamicMethod method);
+        void NewDynamicFieldAccess(JSAtom name, IDynamicField field, out JSValue getter, out JSValue setter);
+        IDynamicMethod GetDynamicMethod(int index);
+        IDynamicField GetDynamicField(int index);
+    }
+
+    public class TypeDB : ITypeDB
     {
         private ScriptRuntime _runtime;
         private ScriptContext _context;
@@ -52,21 +81,6 @@ namespace QuickJS.Utils
             return dynamicType;
         }
 
-        // //TODO: 用于在动态类型注册过程中产生的关联类型注册
-        // public DynamicType RegisterDynamicType(TypeRegister register, Type type)
-        // {
-        //     DynamicType dynamicType;
-        //     if (_dynamicTypes.TryGetValue(type, out dynamicType))
-        //     {
-        //         return dynamicType;
-        //     }
-
-        //     dynamicType = new DynamicType(type, false);
-        //     dynamicType.Bind(register);
-        //     _dynamicTypes[type] = dynamicType;
-        //     return dynamicType;
-        // }
-
         /// <summary>
         /// 创建一个动态绑定类型对象 (不自动执行任何绑定)
         /// </summary>
@@ -83,21 +97,10 @@ namespace QuickJS.Utils
             return dynamicType;
         }
 
-        // public Module.ModuleExportsBind GetDynamicTypeBind(Type type, bool crossbind)
+        // public bool ContainsDelegate(Type type)
         // {
-        //     return register =>
-        //     {
-        //         var dynamicType = new DynamicType(type, false);
-        //         var cls = dynamicType.Bind(register, crossbind);
-        //         _dynamicTypes[type] = dynamicType;
-        //         return cls;
-        //     };
+        //     return _delegates.ContainsKey(type);
         // }
-
-        public bool ContainsDelegate(Type type)
-        {
-            return _delegates.ContainsKey(type);
-        }
 
         public void AddDelegate(Type type, MethodInfo method)
         {

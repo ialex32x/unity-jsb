@@ -2,11 +2,157 @@ using System;
 using System.IO;
 using System.Collections.Generic;
 using System.Reflection;
+using QuickJS.Native;
 
 namespace QuickJS.Binding
 {
     public class ReflectBindingCallback : IBindingCallback
     {
+        protected class LazyTypeDB : Utils.ITypeDB
+        {
+            private BindingManager _bindingManager;
+            private Utils.ITypeDB _backend;
+
+            public LazyTypeDB(BindingManager bindingManager, Utils.ITypeDB backend)
+            {
+                _bindingManager = bindingManager;
+                _backend = backend;
+            }
+
+            public int Count => _backend.Count;
+
+            public void AddDelegate(Type type, MethodInfo method)
+            {
+                _backend.AddDelegate(type, method);
+            }
+
+            public int AddType(Type type, JSValue proto)
+            {
+                return _backend.AddType(type, proto);
+            }
+
+            // public bool ContainsDelegate(Type type)
+            // {
+            //     return _backend.ContainsDelegate(type);
+            // }
+
+            public DynamicType CreateFreeDynamicType(Type type)
+            {
+                return _backend.CreateFreeDynamicType(type);
+            }
+
+            public void Destroy()
+            {
+                _backend.Destroy();
+            }
+
+            public JSValue FindChainedPrototypeOf(Type cType, out int type_id)
+            {
+                return _backend.FindChainedPrototypeOf(cType, out type_id);
+            }
+
+            public JSValue FindChainedPrototypeOf(Type cType)
+            {
+                return _backend.FindChainedPrototypeOf(cType);
+            }
+
+            public JSValue FindChainedPrototypeOf(Type cType, out Type pType)
+            {
+                return _backend.FindChainedPrototypeOf(cType, out pType);
+            }
+
+            public JSValue FindPrototypeOf(Type type, out int type_id)
+            {
+                return _backend.FindPrototypeOf(type, out type_id);
+            }
+
+            public JSValue GetConstructorOf(Type type)
+            {
+                return _backend.GetConstructorOf(type);
+            }
+
+            public MethodInfo GetDelegateFunc(Type delegateType)
+            {
+                var func = _backend.GetDelegateFunc(delegateType);
+                if (func == null)
+                {
+                    var invoke = delegateType.GetMethod("Invoke");
+                    var returnType = invoke.ReturnType;
+                    var parameters = invoke.GetParameters();
+                    var method = _bindingManager.GetReflectedDelegateMethod(returnType, parameters);
+                    
+                    _backend.AddDelegate(delegateType, method);
+                    return method;
+                }
+                return func;
+            }
+
+            public IDynamicField GetDynamicField(int index)
+            {
+                return _backend.GetDynamicField(index);
+            }
+
+            public IDynamicMethod GetDynamicMethod(int index)
+            {
+                return _backend.GetDynamicMethod(index);
+            }
+
+            public DynamicType GetDynamicType(Type type, bool privateAccess)
+            {
+                return _backend.GetDynamicType(type, privateAccess);
+            }
+
+            public JSValue GetPrototypeOf(Type type)
+            {
+                return _backend.GetPrototypeOf(type);
+            }
+
+            public Type GetType(int index)
+            {
+                return _backend.GetType(index);
+            }
+
+            public int GetTypeID(Type type)
+            {
+                return _backend.GetTypeID(type);
+            }
+
+            public bool IsConstructorEquals(Type type, JSValue ctor)
+            {
+                return _backend.IsConstructorEquals(type, ctor);
+            }
+
+            public JSValue NewDynamicConstructor(JSAtom name, IDynamicMethod method)
+            {
+                return _backend.NewDynamicConstructor(name, method);
+            }
+
+            public JSValue NewDynamicDelegate(JSAtom name, Delegate d)
+            {
+                return _backend.NewDynamicDelegate(name, d);
+            }
+
+            public void NewDynamicFieldAccess(JSAtom name, IDynamicField field, out JSValue getter, out JSValue setter)
+            {
+                _backend.NewDynamicFieldAccess(name, field, out getter, out setter);
+            }
+
+            public JSValue NewDynamicMethod(JSAtom name, JSCFunction method)
+            {
+                return _backend.NewDynamicMethod(name, method);
+            }
+
+            public JSValue NewDynamicMethod(JSAtom name, IDynamicMethod method)
+            {
+                return _backend.NewDynamicMethod(name, method);
+            }
+
+            public bool TryGetPrototypeOf(Type type, out JSValue proto)
+            {
+                return _backend.TryGetPrototypeOf(type, out proto);
+            }
+        }
+
         private ScriptRuntime _runtime;
         private BindingManager _bindingManager;
         private Module.ProxyModuleRegister _moduleReg;
@@ -49,6 +195,7 @@ namespace QuickJS.Binding
         public void OnBindingBegin(BindingManager bindingManager)
         {
             _bindingManager = bindingManager;
+            _runtime.ReplaceTypeDB(new LazyTypeDB(_bindingManager, _runtime.GetTypeDB()));
         }
 
         public void OnBindingEnd()
@@ -71,19 +218,18 @@ namespace QuickJS.Binding
 
         public void AddDelegate(DelegateBridgeBindingInfo bindingInfo)
         {
-            var typeDB = _runtime.GetTypeDB();
-
-            foreach (var delegateType in bindingInfo.types)
-            {
-                if (!typeDB.ContainsDelegate(delegateType))
-                {
-                    var method = _bindingManager.GetReflectedDelegateMethod(bindingInfo.returnType, bindingInfo.parameters);
-                    if (method != null)
-                    {
-                        typeDB.AddDelegate(delegateType, method);
-                    }
-                }
-            }
+            // var typeDB = _runtime.GetTypeDB();
+            // foreach (var delegateType in bindingInfo.types)
+            // {
+            //     if (!typeDB.ContainsDelegate(delegateType))
+            //     {
+            //         var method = _bindingManager.GetReflectedDelegateMethod(bindingInfo.returnType, bindingInfo.parameters);
+            //         if (method != null)
+            //         {
+            //             typeDB.AddDelegate(delegateType, method);
+            //         }
+            //     }
+            // }
         }
     }
 }

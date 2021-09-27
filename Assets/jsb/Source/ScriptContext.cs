@@ -164,7 +164,7 @@ namespace QuickJS
             return _runtime.GetLogger();
         }
 
-        public TypeDB GetTypeDB()
+        public ITypeDB GetTypeDB()
         {
             return _runtime.GetTypeDB();
         }
