@@ -5,7 +5,6 @@ using System.Reflection;
 
 namespace QuickJS.Binding
 {
-    //TODO: (未完成) 不导出绑定代码的情况下, 注册反射绑定
     public class ReflectBindingCallback : IBindingCallback
     {
         private ScriptRuntime _runtime;
@@ -59,7 +58,6 @@ namespace QuickJS.Binding
         public void BeginStaticModule(string moduleName, int capacity)
         {
             _moduleReg = _runtime.AddStaticModuleProxy(moduleName);
-            // _moduleReg = new Module.ProxyModuleRegister(_runtime);
         }
 
         public void AddTypeReference(string moduleName, TypeBindingInfo typeBindingInfo)
@@ -69,7 +67,6 @@ namespace QuickJS.Binding
 
         public void EndStaticModule(string moduleName)
         {
-            // _runtime.AddStaticModule(moduleName, _moduleReg);
         }
 
         public void AddDelegate(DelegateBridgeBindingInfo bindingInfo)
@@ -87,7 +84,6 @@ namespace QuickJS.Binding
                     }
                 }
             }
-
         }
     }
 }

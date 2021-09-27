@@ -259,22 +259,7 @@ namespace QuickJS.Binding
             }
         }
 
-        private void WriteAllText(string path, TextGenerator gen)
-        {
-            // if (File.Exists(path))
-            // {
-            //     var old = File.ReadAllText(path);
-            //     if (old == contents)
-            //     {
-            //         return;
-            //     }
-            // }
-            var contents = gen.Submit();
-            File.WriteAllText(path, contents);
-            this.bindingManager.Info($"output file: {path} ({contents.Length})");
-        }
-
-        private void WriteAllText(string path, string contents)
+        public void WriteAllText(string path, string contents)
         {
             File.WriteAllText(path, contents);
             this.bindingManager.Info($"output file: {path} ({contents.Length})");
@@ -301,82 +286,6 @@ namespace QuickJS.Binding
                 Directory.CreateDirectory(dir);
             }
             File.Copy(srcPath, Path.Combine(dir, filename));
-        }
-
-        public void WriteCSharp(string csOutDir, string filename, string tx)
-        {
-            try
-            {
-                if (this.cs.enabled && this.cs.size > 0)
-                {
-                    var csName = filename + ".cs" + tx;
-                    var csPath = Path.Combine(csOutDir, csName);
-                    this.bindingManager.AddOutputFile(csOutDir, csPath);
-
-                    if (!Directory.Exists(csOutDir))
-                    {
-                        Directory.CreateDirectory(csOutDir);
-                    }
-                    WriteAllText(csPath, this.cs);
-                }
-            }
-            catch (Exception exception)
-            {
-                this.bindingManager.Error("write csharp file failed [{0}]: {1}", filename, exception.Message);
-            }
-        }
-
-        public void WriteTSD(string tsOutDir, string tx)
-        {
-            var mod = "jsb.autogen";
-            try
-            {
-                if (bindingManager.prefs.singleTSD)
-                {
-                    if (this.tsDeclare.enabled && this.tsDeclare.size > 0)
-                    {
-                        var tsName = mod + ".d.ts" + tx;
-                        var tsPath = Path.Combine(tsOutDir, tsName);
-                        this.bindingManager.AddOutputFile(tsOutDir, tsPath);
-
-                        if (!Directory.Exists(tsOutDir))
-                        {
-                            Directory.CreateDirectory(tsOutDir);
-                        }
-                        WriteAllText(tsPath, this.tsDeclare);
-                    }
-                }
-            }
-            catch (Exception exception)
-            {
-                this.bindingManager.Error("write typescript declaration file failed [{0}]: {1}", mod, exception.Message);
-            }
-        }
-
-        public void WriteTSD(string tsOutDir, string filename, string tx)
-        {
-            try
-            {
-                if (!bindingManager.prefs.singleTSD)
-                {
-                    if (this.tsDeclare.enabled && this.tsDeclare.size > 0)
-                    {
-                        var tsName = filename + ".d.ts" + tx;
-                        var tsPath = Path.Combine(tsOutDir, tsName);
-                        this.bindingManager.AddOutputFile(tsOutDir, tsPath);
-
-                        if (!Directory.Exists(tsOutDir))
-                        {
-                            Directory.CreateDirectory(tsOutDir);
-                        }
-                        WriteAllText(tsPath, this.tsDeclare);
-                    }
-                }
-            }
-            catch (Exception exception)
-            {
-                this.bindingManager.Error("write typescript declaration file failed [{0}]: {1}", filename, exception.Message);
-            }
         }
 
         // 对参数进行取值, 如果此参数无需取值, 则返回 false
