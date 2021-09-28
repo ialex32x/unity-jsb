@@ -279,18 +279,13 @@ namespace QuickJS.Unity
         private static JSValue _new_js_editor_window(JSContext ctx, JSValue ctor, bool utility, string title, JSValue[] desiredDockNextTo, int desiredDockNextToOffset)
         {
             var editorWindow = ScriptableObject.CreateInstance<JSEditorWindow>();
-            var cache = ScriptEngine.GetObjectCache(ctx);
-            var object_id = cache.AddObject(editorWindow, false);
-            var val = JSApi.jsb_construct_bridge_object(ctx, ctor, object_id);
-            if (val.IsException())
+            var val = editorWindow.SetScriptInstance(ctx, ctor, true);
+
+            if (val.IsUndefined())
             {
-                cache.RemoveObject(object_id);
-            }
-            else
-            {
-                cache.AddJSValue(editorWindow, val);
-                editorWindow.SetBridge(ctx, val, ctor);
-                // JSApi.JSB_SetBridgeType(ctx, val, type_id);
+                editorWindow.ReleaseScriptInstance();
+                Object.DestroyImmediate(editorWindow);
+                return JSApi.JS_ThrowInternalError(ctx, "failed to bind script");
             }
 
             if (title != null)

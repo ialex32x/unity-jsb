@@ -12,6 +12,44 @@ const System_1 = require("System");
 const UnityEditor_1 = require("UnityEditor");
 const UnityEngine_1 = require("UnityEngine");
 const editor_decorators_1 = require("../plover/editor/editor_decorators");
+class TempWindow extends UnityEditor_1.EditorWindow {
+    constructor() {
+        super(...arguments);
+        this._greeting = false;
+    }
+    static show(rect, size) {
+        for (let w of UnityEngine_1.Resources.FindObjectsOfTypeAll(TempWindow)) {
+            w.Close();
+            UnityEngine_1.Object.DestroyImmediate(w);
+        }
+        let inst = UnityEngine_1.ScriptableObject.CreateInstance(TempWindow);
+        inst.ShowAsDropDown(UnityEngine_1.GUIUtility.GUIToScreenRect(rect), size);
+    }
+    Awake() {
+        console.log("awake temp window");
+    }
+    OnDestroy() {
+        console.log("destroy temp window");
+    }
+    OnEnable() {
+        console.log("enable temp window");
+    }
+    OnDisable() {
+        console.log("disable temp window");
+    }
+    OnGUI() {
+        if (UnityEngine_1.GUILayout.Button("Hi")) {
+            this._greeting = true;
+            this.Repaint();
+        }
+        if (UnityEngine_1.GUILayout.Button("Close")) {
+            this.Close();
+        }
+        if (this._greeting) {
+            UnityEditor_1.EditorGUILayout.HelpBox("Hi, nice to meet you.", UnityEditor_1.MessageType.Info);
+        }
+    }
+}
 let MyEditorWindow = MyEditorWindow_1 = class MyEditorWindow extends UnityEditor_1.EditorWindow {
     constructor() {
         super(...arguments);
@@ -98,6 +136,10 @@ let MyEditorWindow = MyEditorWindow_1 = class MyEditorWindow extends UnityEditor
         UnityEditor_1.EditorGUILayout.HelpBox("Hello", UnityEditor_1.MessageType.Info);
         if (UnityEngine_1.GUILayout.Button("I am Javascript")) {
             console.log("Thanks!", System_1.DateTime.Now);
+        }
+        let popRect = UnityEditor_1.EditorGUILayout.GetControlRect();
+        if (UnityEngine_1.GUI.Button(popRect, "Pop A Temp Window")) {
+            TempWindow.show(popRect, new UnityEngine_1.Vector2(200, 200));
         }
         if (UnityEngine_1.GUILayout.Button("CreateWindow")) {
             let child = UnityEditor_1.EditorWindow.CreateWindow(MyEditorWindow_1, MyEditorWindow_1);

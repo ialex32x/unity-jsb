@@ -16,7 +16,7 @@ namespace QuickJS.Unity
     public class JSEditorWindow : EditorWindow, IHasCustomMenu, IScriptInstancedObject
     {
         [NonSerialized]
-        private bool _scriptBinded;
+        private bool _isScriptInstanced;
 
         private string _moduleId;
         private string _className;
@@ -51,7 +51,7 @@ namespace QuickJS.Unity
 
         public int IsInstanceOf(JSValue ctor)
         {
-            if (!_scriptBinded)
+            if (!_isScriptInstanced)
             {
                 return 0;
             }
@@ -60,14 +60,75 @@ namespace QuickJS.Unity
 
         public JSValue CloneValue()
         {
-            if (!_scriptBinded)
+            if (!_isScriptInstanced)
             {
                 return JSApi.JS_UNDEFINED;
             }
             return JSApi.JS_DupValue(_ctx, _this_obj);
         }
 
-        public void SetBridge(JSContext ctx, JSValue this_obj, JSValue ctor)
+        public JSValue SetScriptInstance(JSContext ctx, JSValue ctor, bool execAwake)
+        {
+            if (JSApi.JS_IsConstructor(ctx, ctor) == 1)
+            {
+                var header = JSApi.jsb_get_payload_header(ctor);
+                if (header.type_id == BridgeObjectType.None) // it's a plain js value
+                {
+                    var cache = ScriptEngine.GetObjectCache(ctx);
+
+                    // 旧的绑定值释放？
+                    if (!_this_obj.IsNullish())
+                    {
+                        var payload = JSApi.jsb_get_payload_header(_this_obj);
+                        if (payload.type_id == BridgeObjectType.ObjectRef)
+                        {
+                            object obj;
+                            try
+                            {
+                                cache.RemoveObject(payload.value, out obj);
+                            }
+                            catch (Exception exception)
+                            {
+                                var runtime = ScriptEngine.GetRuntime(ctx);
+                                runtime.GetLogger()?.WriteException(exception);
+                            }
+                        }
+                    }
+
+                    var object_id = cache.AddObject(this, false);
+                    var val = JSApi.jsb_construct_bridge_object(ctx, ctor, object_id);
+                    if (val.IsException())
+                    {
+                        cache.RemoveObject(object_id);
+                        SetUnresolvedScriptInstance();
+                    }
+                    else
+                    {
+                        cache.AddJSValue(this, val);
+                        this._SetScriptInstance(ctx, val, ctor, execAwake);
+                        // JSApi.JSB_SetBridgeType(ctx, val, type_id);
+                    }
+
+                    return val;
+                }
+            }
+
+            SetUnresolvedScriptInstance();
+            return JSApi.JS_UNDEFINED;
+        }
+
+        public void ReleaseScriptInstance()
+        {
+            _isScriptInstanced = false;
+            ReleaseJSValues();
+        }
+
+        private void SetUnresolvedScriptInstance()
+        {
+            _isScriptInstanced = true;
+        }
+
+        private void _SetScriptInstance(JSContext ctx, JSValue this_obj, JSValue ctor, bool execAwake)
         {
             var context = ScriptEngine.GetContext(ctx);
             if (context == null || !context.IsValid())
@@ -75,8 +136,7 @@ namespace QuickJS.Unity
                 return;
             }
 
-            _moduleId = null;
-            _className = null;
+            ReleaseJSValues();
             context.ForEachModuleExport((mod_id_atom, exp_id_atom, exp_obj) =>
             {
                 if (exp_obj == ctor)
@@ -97,23 +157,30 @@ namespace QuickJS.Unity
                 context.OnScriptReloaded += OnScriptReloaded;
             }
 #endif
-            _scriptBinded = true;
             _ctx = ctx;
+            _isScriptInstanced = true;
             _this_obj = JSApi.JS_DupValue(ctx, this_obj);
 
-            BindJSMembers(context);
-
-            var awake_obj = JSApi.JS_GetProperty(ctx, this_obj, context.GetAtom("Awake"));
-
-            Call(awake_obj);
-            JSApi.JS_FreeValue(_ctx, awake_obj);
-            if (_onEnableValid)
+            if (!_this_obj.IsNullish())
             {
-                Call(_onEnableFunc);
+                OnBindingJSFuncs(context);
+
+                if (execAwake)
+                {
+                    var awake_obj = JSApi.JS_GetProperty(ctx, this_obj, context.GetAtom("Awake"));
+                    Call(awake_obj);
+                    JSApi.JS_FreeValue(_ctx, awake_obj);
+
+                }
+                
+                if (_onEnableValid)
+                {
+                    Call(_onEnableFunc);
+                }
             }
         }
 
-        private void BindJSMembers(ScriptContext context)
+        private void OnBindingJSFuncs(ScriptContext context)
         {
             var ctx = (JSContext)context;
 
@@ -142,7 +209,7 @@ namespace QuickJS.Unity
             _onAfterScriptReloadValid = JSApi.JS_IsFunction(ctx, _onAfterScriptReloadFunc) == 1;
         }
 
-        private void UnbindJSMembers()
+        private void OnUnbindingJSFuncs()
         {
             JSApi.JS_FreeValue(_ctx, _updateFunc);
             _updateFunc = JSApi.JS_UNDEFINED;
@@ -224,9 +291,9 @@ namespace QuickJS.Unity
 
                     if (prototype.IsObject())
                     {
-                        UnbindJSMembers();
+                        OnUnbindingJSFuncs();
                         JSApi.JS_SetPrototype(context, _this_obj, prototype);
-                        BindJSMembers(context);
+                        OnBindingJSFuncs(context);
 
                         if (_onAfterScriptReloadValid)
                         {
@@ -251,24 +318,25 @@ namespace QuickJS.Unity
 
         private void OnContextDestroy(ScriptContext context)
         {
-            Release();
+            ReleaseJSValues();
         }
 
-        void Release(bool noClose = false)
+        void ReleaseJSValues(bool noClose = false)
         {
-            if (!_scriptBinded)
-            {
-                return;
-            }
-
-            _scriptBinded = false;
+            _isScriptInstanced = false;
             _moduleId = null;
             _className = null;
-            UnbindJSMembers();
-            JSApi.JS_FreeValue(_ctx, _this_obj);
+
+            if (!_this_obj.IsNullish())
+            {
+                OnUnbindingJSFuncs();
+                JSApi.JS_FreeValue(_ctx, _this_obj);
+                _this_obj = JSApi.JS_UNDEFINED;
+            }
 
             var context = ScriptEngine.GetContext(_ctx);
-            if (context != null && context.IsValid())
+            _ctx = JSContext.Null;
+            if (context != null)
             {
                 context.OnDestroy -= OnContextDestroy;
 #if UNITY_EDITOR
@@ -279,7 +347,7 @@ namespace QuickJS.Unity
 
             try
             {
-                if (!noClose) 
+                if (!noClose)
                 {
                     Close();
                 }
@@ -336,7 +404,7 @@ namespace QuickJS.Unity
 
             if (UnityEditor.EditorApplication.isCompiling)
             {
-                Release();
+                ReleaseJSValues();
             }
         }
 
@@ -354,18 +422,18 @@ namespace QuickJS.Unity
                     JSApi.JS_FreeValue(_ctx, rval);
                 }
             }
-            Release(true);
+            ReleaseJSValues(true);
         }
 
         void OnGUI()
         {
             if (EditorApplication.isCompiling)
             {
-                Release();
+                ReleaseJSValues();
                 return;
             }
 
-            if (_onGUIValid && _scriptBinded && _ctx.IsValid())
+            if (_onGUIValid && _isScriptInstanced && _ctx.IsValid())
             {
                 var rval = JSApi.JS_Call(_ctx, _onGUIFunc, _this_obj);
                 if (rval.IsException())

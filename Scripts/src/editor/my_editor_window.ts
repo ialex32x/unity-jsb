@@ -1,7 +1,52 @@
 import { DateTime } from "System";
-import { EditorWindow, EditorGUILayout, MessageType, SceneView, Handles, GenericMenu, HandleUtility, EditorApplication } from "UnityEditor";
-import { FocusType, GUIContent, GUILayout, GUIUtility, Rect, Event, GUIStyle, GUI, Vector2, GUILayoutUtility, EventType, Vector3, Quaternion } from "UnityEngine";
+import { EditorWindow, EditorGUILayout, MessageType, SceneView, Handles, GenericMenu, HandleUtility, EditorApplication, EditorGUI } from "UnityEditor";
+import { FocusType, GUIContent, GUILayout, GUIUtility, Rect, Event, GUIStyle, GUI, Vector2, GUILayoutUtility, EventType, Vector3, Quaternion, Resources, ScriptableObject, Object } from "UnityEngine";
 import { ScriptEditorWindow } from "../plover/editor/editor_decorators";
+
+class TempWindow extends EditorWindow {
+    private _greeting = false;
+
+    static show(rect: Rect, size: Vector2) {
+        for (let w of Resources.FindObjectsOfTypeAll(TempWindow)) {
+            w.Close();
+            Object.DestroyImmediate(w);
+        }
+
+        let inst = ScriptableObject.CreateInstance(TempWindow);
+        inst.ShowAsDropDown(GUIUtility.GUIToScreenRect(rect), size);
+    }
+
+    Awake() {
+        console.log("awake temp window");
+    }
+
+    OnDestroy() {
+        console.log("destroy temp window");
+    }
+
+    OnEnable() {
+        console.log("enable temp window");
+    }
+
+    OnDisable() {
+        console.log("disable temp window");
+    }
+
+    OnGUI() {
+        if (GUILayout.Button("Hi")) {
+            this._greeting = true;
+            this.Repaint();
+        }
+
+        if (GUILayout.Button("Close")) {
+            this.Close();
+        }
+
+        if (this._greeting) {
+            EditorGUILayout.HelpBox("Hi, nice to meet you.", MessageType.Info);
+        }
+    }
+}
 
 @ScriptEditorWindow()
 export class MyEditorWindow extends EditorWindow {
@@ -104,6 +149,11 @@ export class MyEditorWindow extends EditorWindow {
         EditorGUILayout.HelpBox("Hello", MessageType.Info);
         if (GUILayout.Button("I am Javascript")) {
             console.log("Thanks!", DateTime.Now);
+        }
+
+        let popRect = EditorGUILayout.GetControlRect();
+        if (GUI.Button(popRect, "Pop A Temp Window")) {
+            TempWindow.show(popRect, new Vector2(200, 200));
         }
 
         if (GUILayout.Button("CreateWindow")) {

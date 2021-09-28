@@ -8,6 +8,8 @@ namespace QuickJS.Unity
     {
         int IsInstanceOf(JSValue ctor);
         JSValue CloneValue();
+        JSValue SetScriptInstance(JSContext ctx, JSValue ctor, bool execAwake);
+        void ReleaseScriptInstance();
     }
 }
 

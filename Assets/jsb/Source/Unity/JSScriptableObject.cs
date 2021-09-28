@@ -342,20 +342,20 @@ namespace QuickJS.Unity
         private void _SetScriptInstance(JSContext ctx, JSValue this_obj, bool execAwake)
         {
             var context = ScriptEngine.GetContext(ctx);
-            if (context == null)
+            if (context == null || !context.IsValid())
             {
                 return;
             }
 
             ReleaseJSValues();
 
-            _ctx = ctx;
             context.OnDestroy += OnContextDestroy;
 #if UNITY_EDITOR
             context.OnScriptReloading += OnScriptReloading;
             context.OnScriptReloaded += OnScriptReloaded;
 #endif
 
+            _ctx = ctx;
             _isScriptInstanced = true;
             _this_obj = JSApi.JS_DupValue(ctx, this_obj);
 

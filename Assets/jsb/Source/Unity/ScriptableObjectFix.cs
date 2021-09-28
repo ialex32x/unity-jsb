@@ -27,7 +27,6 @@ namespace QuickJS.Unity
                     {
                         return inject;
                     }
-                    Debug.LogWarning("fallback");
                     var ret = ScriptableObject.CreateInstance(arg_type);
                     return Values.js_push_classvalue(ctx, ret);
                 }
@@ -50,26 +49,39 @@ namespace QuickJS.Unity
                     var typeDB = ScriptEngine.GetTypeDB(ctx);
                     if (!typeDB.IsConstructorEquals(type, ctor))
                     {
-                        var scriptableObject = ScriptableObject.CreateInstance<JSScriptableObject>();
-                        var bridgeValue = scriptableObject.SetScriptInstance(ctx, ctor, false);
-
-                        if (!bridgeValue.IsUndefined())
+                        Type bridgeType = null;
+                        if (type == typeof(UnityEditor.EditorWindow))
                         {
-                            return bridgeValue;
+                            bridgeType = typeof(JSEditorWindow);
                         }
+                        else if (type == typeof(ScriptableObject))
+                        {
+                            bridgeType = typeof(JSScriptableObject);
+                        }
+                        else if (type == typeof(MonoBehaviour))
+                        {
+                            bridgeType = typeof(JSBehaviourFull);
+                        }
+                        
+                        if (bridgeType != null)
+                        {
+                            var scriptableObject = (IScriptInstancedObject)ScriptableObject.CreateInstance(bridgeType);
+                            var bridgeValue = scriptableObject.SetScriptInstance(ctx, ctor, false);
 
-                        scriptableObject.ReleaseScriptInstance();
-                        Object.DestroyImmediate(scriptableObject);
-                        return JSApi.JS_NULL;
-                    }
+                            if (!bridgeValue.IsUndefined())
+                            {
+                                return bridgeValue;
+                            }
 
-                    if (type == typeof(ScriptableObject))
-                    {
-                        throw new InvalidOperationException();
+                            scriptableObject.ReleaseScriptInstance();
+                            Object.DestroyImmediate((Object)scriptableObject);
+                            return JSApi.JS_NULL;
+                        }
                     }
                 }
             }
 
+            // fallthrough
             return JSApi.JS_UNDEFINED;
         }
     }
