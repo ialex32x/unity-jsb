@@ -50,7 +50,7 @@ namespace QuickJS.Binding
             switch (type)
             {
                 case SourceCodeType.CSharp: filename += ".cs"; break;
-                case SourceCodeType.TSD: filename += "d.ts" + _bindingManager.prefs.extraExtForTypescript; break;
+                case SourceCodeType.TSD: filename += ".d.ts" + _bindingManager.prefs.extraExtForTypescript; break;
             }
             var csPath = Path.Combine(codeOutDir, filename);
             cg.WriteAllText(csPath, source);
