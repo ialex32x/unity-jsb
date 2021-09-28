@@ -618,9 +618,12 @@ namespace QuickJS.Unity
             List<Type[]> aTypes = new List<Type[]>(assemblyList.Length);
             foreach (var assembly in assemblyList)
             {
-                var types = assembly.GetExportedTypes();
-                aTypes.Add(types);
-                _typeTreeConstructAll += types.Length;
+                if (!assembly.IsDynamic)
+                {
+                    var types = assembly.GetExportedTypes();
+                    aTypes.Add(types);
+                    _typeTreeConstructAll += types.Length;
+                }
             }
 
             for (int i = 0, count = assemblyList.Length; i < count; i++)

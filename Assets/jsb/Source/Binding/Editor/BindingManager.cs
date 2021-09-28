@@ -648,7 +648,6 @@ namespace QuickJS.Binding
                 }
                 var delegateBindingInfo = new DelegateBridgeBindingInfo(returnType, parameters, defs);
                 delegateBindingInfo.types.Add(delegateType);
-                delegateBindingInfo.reflect = GetReflectedDelegateMethod(returnType, parameters);
                 _exportedDelegates.Add(delegateType, delegateBindingInfo);
                 Info("add delegate: {0} required defines: {1}", delegateType, defs);
                 for (var i = 0; i < parameters.Length; i++)
@@ -782,6 +781,7 @@ namespace QuickJS.Binding
                     compilerParameters.GenerateInMemory = true;
                     compilerParameters.TreatWarningsAsErrors = false;
                     compilerParameters.CompilerOptions = "-unsafe";
+                    compilerParameters.OutputAssembly = "_GeneratedJSDelegates";
                     compilerParameters.ReferencedAssemblies.AddRange((from a in assemblies select a.Location).ToArray());
                     var result = codeDomProvider.CompileAssemblyFromSource(compilerParameters, source);
 
@@ -1743,7 +1743,7 @@ namespace QuickJS.Binding
         {
             try
             {
-                if (assembly == null)
+                if (assembly == null || assembly.IsDynamic)
                 {
                     return;
                 }
