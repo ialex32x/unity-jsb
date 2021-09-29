@@ -17,7 +17,7 @@ namespace QuickJS.Unity
 
             void AddChild(INode node);
             void Prepass(State state);
-            void Render(State state);
+            bool Render(State state);
             Vector2 CalcSize(GUIStyle style);
 
             bool CollapseAll();
@@ -36,7 +36,7 @@ namespace QuickJS.Unity
             private int _indent;
             private float _leftPadding = 4f;
             private Vector2 _position;
-            private Vector2 _scrollPosition;
+            protected Vector2 _scrollPosition;
             private float _maxWidth;
             private Rect _drawRect;
             private Rect _viewRect;
@@ -53,8 +53,11 @@ namespace QuickJS.Unity
             private int _toIndex;
             private int _itemCount;
             private bool _repaint;
+            private bool _isRendering;
 
             private HashSet<INode> _selection = new HashSet<INode>();
+
+            private Func<INode, bool> _itemValidator = null;
 
             public bool repaint => _repaint;
 
@@ -89,20 +92,33 @@ namespace QuickJS.Unity
                 }
             }
 
+            public void Begin(Func<INode, bool> itemValidator)
+            {
+                _index = 0;
+                _indent = 0;
+                _isRendering = false;
+                _itemValidator = itemValidator;
+            }
+
+            public void End()
+            {
+            }
+
             public void BeginView(Rect rect)
             {
+                Begin(null);
                 _repaint = false;
+                _isRendering = true;
                 _drawRect = rect;
                 _maxWidth = Mathf.Max(_drawRect.width, _viewRect.width);
                 _scrollPosition = GUI.BeginScrollView(_drawRect, _scrollPosition, _viewRect);
                 _fromIndex = Mathf.Max(Mathf.FloorToInt(_scrollPosition.y / _itemHeight) - 1, 0);
                 _toIndex = Mathf.Min(_fromIndex + Mathf.CeilToInt(_drawRect.height / _itemHeight) + 1, _itemCount - 1);
-                _index = 0;
-                _indent = 0;
             }
 
             public void EndView()
             {
+                End();
                 GUI.EndScrollView();
             }
 
@@ -129,12 +145,21 @@ namespace QuickJS.Unity
                 return false;
             }
 
-            public void Render(INode node)
+            public bool Render(INode node)
             {
-                var index = _index++;
-                var visible = index >= _fromIndex && index <= _toIndex;
+                if (_itemValidator != null && !_itemValidator(node))
+                {
+                    return false;
+                }
 
-                if (visible)
+                var index = _index++;
+
+                if (!_isRendering)
+                {
+                    return true;
+                }
+
+                if (index >= _fromIndex && index <= _toIndex)
                 {
                     var isSelected = _selection.Contains(node);
                     var isExpandable = node.childCount > 0;
@@ -210,7 +235,7 @@ namespace QuickJS.Unity
                                     {
                                         _selection.Clear();
                                         _selection.Add(node);
-                                        _treeView.OnSelectItem?.Invoke(_itemRect, index, node, _selection);
+                                        _treeView.OnSelectItem?.Invoke(node, _selection);
                                         _repaint = true;
                                         eventUsed = true;
                                     }
@@ -218,7 +243,24 @@ namespace QuickJS.Unity
                             }
                         }
                     }
+                } // end if visible
+                return true;
+            }
+
+            public void Select(INode node, bool doRaiseEvent)
+            {
+                _selection.Clear();
+                _selection.Add(node);
+                if (doRaiseEvent)
+                {
+                    _treeView.OnSelectItem?.Invoke(node, _selection);
                 }
+            }
+
+            public void SelectCurrent(INode node, bool doRaiseEvent)
+            {
+                _scrollPosition.y = Mathf.Min(_index * _itemHeight, _viewRect.height - _drawRect.height);
+                Select(node, doRaiseEvent);
             }
 
             public void CollapseAll()
@@ -256,7 +298,7 @@ namespace QuickJS.Unity
             }
         }
 
-        public Action<Rect, int, INode, HashSet<INode>> OnSelectItem;
+        public Action<INode, HashSet<INode>> OnSelectItem;
 
         private State _state;
         private List<INode> _children = new List<INode>();
@@ -284,6 +326,40 @@ namespace QuickJS.Unity
             _state.EndPrepass();
         }
 
+        public void Select(INode node, bool doScrollTo = true, bool doRaiseEvent = false)
+        {
+            if (_state == null)
+            {
+                _state = new State(this);
+            }
+
+            if (!doScrollTo)
+            {
+                _state.Select(node, doRaiseEvent);
+                return;
+            }
+
+            _state.Begin(it =>
+            {
+                if (it == node)
+                {
+                    _state.SelectCurrent(node, doRaiseEvent);
+                    return false;
+                }
+                return true;
+            });
+
+            for (int i = 0, count = _children.Count; i < count; ++i)
+            {
+                var child = _children[i];
+                if (!child.Render(_state))
+                {
+                    break;
+                }
+            }
+            _state.End();
+        }
+
         public bool Draw(Rect rect)
         {
             if (_state == null)
@@ -294,7 +370,10 @@ namespace QuickJS.Unity
             for (int i = 0, count = _children.Count; i < count; ++i)
             {
                 var child = _children[i];
-                child.Render(_state);
+                if (!child.Render(_state))
+                {
+                    break;
+                }
             }
             _state.EndView();
 

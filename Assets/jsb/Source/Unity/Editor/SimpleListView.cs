@@ -19,7 +19,7 @@ namespace QuickJS.Unity
         private Color _selectColor = new Color(44f / 255f, 93f / 255f, 135f / 255f);
 
         public Action<Rect, int, T> OnDrawItem;
-        public Action<Rect, int, T, HashSet<T>> OnSelectItem;
+        public Action<T, HashSet<T>> OnSelectItem;
 
         public SimpleListView()
         {
@@ -78,7 +78,7 @@ namespace QuickJS.Unity
                     {
                         _selection.Clear();
                         _selection.Add(currentItem);
-                        OnSelectItem?.Invoke(_itemRect, i, currentItem, _selection);
+                        OnSelectItem?.Invoke(currentItem, _selection);
                     }
                 }
             }

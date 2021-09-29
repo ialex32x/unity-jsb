@@ -112,18 +112,25 @@ namespace QuickJS.Unity
                 }
             }
 
-            public void Render(SimpleTreeView.State state)
+            public bool Render(SimpleTreeView.State state)
             {
-                state.Render(this);
-                if (_expanded)
+                if (state.Render(this))
                 {
-                    state.PushGroup();
-                    for (int i = 0, count = _children.Count; i < count; ++i)
+                    if (_expanded)
                     {
-                        _children[i].Render(state);
+                        state.PushGroup();
+                        for (int i = 0, count = _children.Count; i < count; ++i)
+                        {
+                            if (!_children[i].Render(state))
+                            {
+                                return false;
+                            }
+                        }
+                        state.PopGroup();
                     }
-                    state.PopGroup();
+                    return true;
                 }
+                return false;
             }
         }
 
@@ -729,7 +736,7 @@ namespace QuickJS.Unity
             return newView;
         }
 
-        private void OnSelectTreeViewItem(Rect rect, int index, SimpleTreeView.INode item, HashSet<SimpleTreeView.INode> selection)
+        private void OnSelectTreeViewItem(SimpleTreeView.INode item, HashSet<SimpleTreeView.INode> selection)
         {
             if (item is Assembly_TreeViewNode)
             {
@@ -750,8 +757,9 @@ namespace QuickJS.Unity
             Repaint();
         }
 
-        private void OnSelectListViewItem(Rect rect, int index, Type_TreeViewNode item, HashSet<Type_TreeViewNode> selection)
+        private void OnSelectListViewItem(Type_TreeViewNode item, HashSet<Type_TreeViewNode> selection)
         {
+            _treeView.Select(item);
             Defer(() => SetActiveView<TypeInfoView>().Show(item.value));
             Repaint();
         }
