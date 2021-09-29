@@ -7,8 +7,10 @@ namespace Example
     using System.Runtime.InteropServices;
     using size_t = QuickJS.Native.size_t;
 
-    // ! 仅用于开发阶段 !
-    // 通过 C# 无法直接读取打开中的 Excel 文件，用 native 接口可以绕过此限制
+    // ! ONLY FOR DEVELOPMENT !
+    /// <summary>
+    /// read content of file without io-exception of sharing violation (if you use System.IO.File)
+    /// </summary>
     [QuickJS.JSType]
     public static class NativeFileUtil
     {

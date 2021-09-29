@@ -49,6 +49,9 @@ namespace Example
         }
     }
 
+    /// <summary>
+    /// a simple demonstration of accessing remote file (sync)
+    /// </summary>
     public class HttpFileSystem : IFileSystem
     {
         private string _url;

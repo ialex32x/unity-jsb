@@ -60,11 +60,6 @@ namespace QuickJS.Unity
         private bool _onAfterScriptReloadValid;
         private JSValue _onAfterScriptReloadFunc = JSApi.JS_UNDEFINED;
 
-        public JSValue ToValue()
-        {
-            return _this_obj;
-        }
-
         public bool IsValid()
         {
             return _ctx.IsValid() && !_this_obj.IsNullish();

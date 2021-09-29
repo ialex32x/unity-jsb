@@ -77,11 +77,6 @@ namespace QuickJS.Unity
         private JSValue _onDrawGizmosFunc = JSApi.JS_UNDEFINED;
 #endif
 
-        public JSValue ToValue()
-        {
-            return _this_obj;
-        }
-
         public bool IsValid()
         {
             return _ctx.IsValid() && !_this_obj.IsNullish();

@@ -3,6 +3,9 @@ using System;
 
 namespace Example.New.World
 {
+    /// <summary>
+    /// demonstrates nested types
+    /// </summary>
     [JSType]
     public class Galaxy
     {

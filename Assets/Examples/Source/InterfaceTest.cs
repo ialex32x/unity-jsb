@@ -1,5 +1,8 @@
 using QuickJS;
 
+/// <summary>
+/// demonstrates the binding of types implementing interfaces
+/// </summary>
 [JSType]
 public interface MyInterface
 {

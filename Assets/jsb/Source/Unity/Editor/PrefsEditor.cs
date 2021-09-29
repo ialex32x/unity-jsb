@@ -459,7 +459,6 @@ namespace QuickJS.Unity
             AddTabView("Types", DrawView_Types);
             AddTabView("Codegen", DrawView_Codegen);
             AddTabView("Scripting", DrawView_Scripting);
-            AddTabView("Process", DrawView_Process);
             OnDirtyStateChanged();
         }
 
@@ -504,46 +503,40 @@ namespace QuickJS.Unity
 
         private void DrawView_Scripting()
         {
-            EditorGUI.BeginChangeCheck();
-            _prefs.editorScripting = EditorGUILayout.Toggle("Editor Scripting", _prefs.editorScripting);
-            var selectedBindingMethod_t = EditorGUILayout.Popup("Binding Method", _selectedBindingMethod, _bindingMethodDescriptions);
-            if (_selectedBindingMethod != selectedBindingMethod_t)
+            Block("Basic", () =>
             {
-                _selectedBindingMethod = selectedBindingMethod_t;
-                _prefs.preferredBindingMethod = _bindingMethodValues[Mathf.Clamp(_selectedBindingMethod, 0, _bindingMethodValues.Length - 1)];
-            }
-            _prefs.typescriptExt = EditorGUILayout.TextField("Typescript Ext", _prefs.typescriptExt);
-            _prefs.sourceDir = EditorGUILayout.TextField("Source Dir", _prefs.sourceDir);
-            _prefs.editorEntryPoint = EditorGUILayout.TextField("Editor Entry Script", _prefs.editorEntryPoint);
-            if (EditorGUI.EndChangeCheck())
-            {
-                MarkAsDirty();
-            }
-        }
-
-        private void DrawView_Process()
-        {
-            var list = _bindingManager.GetBindingProcessTypes();
-
-            for (int i = 0, count = list.Count; i < count; ++i)
-            {
-                var process = list[i];
-                var name = process.FullName;
-                var enabled = !_prefs.skipBinding.Contains(name);
-                var state = EditorGUILayout.ToggleLeft(name, enabled);
-                if (state != enabled)
+                EditorGUI.BeginChangeCheck();
+                _prefs.editorScripting = EditorGUILayout.Toggle("Editor Scripting", _prefs.editorScripting);
+                var selectedBindingMethod_t = EditorGUILayout.Popup("Binding Method", _selectedBindingMethod, _bindingMethodDescriptions);
+                if (_selectedBindingMethod != selectedBindingMethod_t)
                 {
-                    if (state)
-                    {
-                        _prefs.skipBinding.Remove(name);
-                    }
-                    else
-                    {
-                        _prefs.skipBinding.Add(name);
-                    }
+                    _selectedBindingMethod = selectedBindingMethod_t;
+                    _prefs.preferredBindingMethod = _bindingMethodValues[Mathf.Clamp(_selectedBindingMethod, 0, _bindingMethodValues.Length - 1)];
+                }
+                _prefs.typescriptExt = EditorGUILayout.TextField("Typescript Ext", _prefs.typescriptExt);
+                _prefs.sourceDir = EditorGUILayout.TextField("Source Dir", _prefs.sourceDir);
+                _prefs.editorEntryPoint = EditorGUILayout.TextField("Editor Entry Script", _prefs.editorEntryPoint);
+
+                if (EditorGUI.EndChangeCheck())
+                {
                     MarkAsDirty();
                 }
-            }
+            });
+
+            Block("AssetPost Processors", () =>
+            {
+                foreach (var assetPostProcessor in _prefs.assetPostProcessors)
+                {
+                    EditorGUILayout.TextField(assetPostProcessor);
+                }
+            }, () =>
+            {
+                if (GUILayout.Button("+", GUILayout.Width(22f)))
+                {
+                    _prefs.assetPostProcessors.Add("");
+                    MarkAsDirty();
+                }
+            });
         }
 
         private List<string> _repeatStringCache = new List<string>(new string[] { "" });
@@ -556,37 +549,81 @@ namespace QuickJS.Unity
             return _repeatStringCache[repeat];
         }
 
+        private Vector2 _scrollPosition_Codegen;
         private void DrawView_Codegen()
         {
-            EditorGUI.BeginChangeCheck();
-            _prefs.debugCodegen = EditorGUILayout.Toggle("Debug Codegen", _prefs.debugCodegen);
-            _prefs.verboseLog = EditorGUILayout.Toggle("Verbose Log", _prefs.verboseLog);
-            _prefs.optToString = EditorGUILayout.Toggle("Auto ToString", _prefs.optToString);
-            _prefs.enableOperatorOverloading = EditorGUILayout.Toggle("Operator Overloading", _prefs.enableOperatorOverloading);
-            _prefs.skipDelegateWithByRefParams = EditorGUILayout.Toggle("Omit ref param Delegates", _prefs.skipDelegateWithByRefParams);
-            _prefs.alwaysCheckArgType = EditorGUILayout.Toggle("Always check arg type", _prefs.alwaysCheckArgType);
-            _prefs.alwaysCheckArgc = EditorGUILayout.Toggle("Always check argc", _prefs.alwaysCheckArgc);
-            _prefs.randomizedBindingCode = EditorGUILayout.Toggle("Obfuscate", _prefs.randomizedBindingCode);
-            _prefs.genTypescriptDoc = EditorGUILayout.Toggle("Gen d.ts", _prefs.genTypescriptDoc);
-            _prefs.xmlDocDir = EditorGUILayout.TextField("XmlDoc Dir", _prefs.xmlDocDir);
-            _prefs.typescriptDir = EditorGUILayout.TextField("d.ts Output Dir", _prefs.typescriptDir);
-            _prefs.outDir = EditorGUILayout.TextField("Output Dir", _prefs.outDir);
-            _prefs.logPath = EditorGUILayout.TextField("Log", _prefs.logPath);
-            _prefs.jsModulePackInfoPath = EditorGUILayout.TextField("JS Module List", _prefs.jsModulePackInfoPath);
-            _prefs.typeBindingPrefix = EditorGUILayout.TextField("C# Binding Prefix", _prefs.typeBindingPrefix);
-            _prefs.ns = EditorGUILayout.TextField("C# Binding Namespace", _prefs.ns);
-            _prefs.defaultJSModule = EditorGUILayout.TextField("Default Module", _prefs.defaultJSModule);
-            _prefs.tab = RepeatString(" ", EditorGUILayout.IntSlider("Tab Size", _prefs.tab.Length, 0, 8));
-            var newlineIndex = Array.IndexOf(_newlineValues, _prefs.newLineStyle);
-            var newlineIndex_t = EditorGUILayout.Popup("Newline Style", newlineIndex, _newlineNames);
-            if (newlineIndex_t != newlineIndex && newlineIndex_t >= 0)
+            using (var scope = new EditorGUILayout.ScrollViewScope(_scrollPosition_Codegen))
             {
-                _prefs.newLineStyle = _newlineValues[newlineIndex_t];
-            }
+                EditorGUI.BeginChangeCheck();
+                _scrollPosition_Codegen = scope.scrollPosition;
+                Block("Binding Options", () =>
+                {
+                    _prefs.optToString = EditorGUILayout.Toggle("Auto ToString", _prefs.optToString);
+                    _prefs.enableOperatorOverloading = EditorGUILayout.Toggle("Operator Overloading", _prefs.enableOperatorOverloading);
+                    _prefs.skipDelegateWithByRefParams = EditorGUILayout.Toggle("Omit ref param Delegates", _prefs.skipDelegateWithByRefParams);
+                    _prefs.alwaysCheckArgType = EditorGUILayout.Toggle("Always check arg type", _prefs.alwaysCheckArgType);
+                    _prefs.alwaysCheckArgc = EditorGUILayout.Toggle("Always check argc", _prefs.alwaysCheckArgc);
+                    _prefs.typeBindingPrefix = EditorGUILayout.TextField("C# Binding Prefix", _prefs.typeBindingPrefix);
+                    _prefs.ns = EditorGUILayout.TextField("C# Binding Namespace", _prefs.ns);
+                    _prefs.outDir = EditorGUILayout.TextField("Output Dir", _prefs.outDir);
+                    _prefs.genTypescriptDoc = EditorGUILayout.Toggle("Gen d.ts", _prefs.genTypescriptDoc);
+                    _prefs.xmlDocDir = EditorGUILayout.TextField("XmlDoc Dir", _prefs.xmlDocDir);
+                    _prefs.typescriptDir = EditorGUILayout.TextField("d.ts Output Dir", _prefs.typescriptDir);
+                    _prefs.jsModulePackInfoPath = EditorGUILayout.TextField("JS Module List", _prefs.jsModulePackInfoPath);
+                    _prefs.defaultJSModule = EditorGUILayout.TextField("Default Module", _prefs.defaultJSModule);
+                });
 
-            if (EditorGUI.EndChangeCheck())
-            {
-                MarkAsDirty();
+                Block("Code Style", () =>
+                {
+                    _prefs.tab = RepeatString(" ", EditorGUILayout.IntSlider("Tab Size", _prefs.tab.Length, 0, 8));
+                    var newlineIndex = Array.IndexOf(_newlineValues, _prefs.newLineStyle);
+                    var newlineIndex_t = EditorGUILayout.Popup("Newline Style", newlineIndex, _newlineNames);
+                    if (newlineIndex_t != newlineIndex && newlineIndex_t >= 0)
+                    {
+                        _prefs.newLineStyle = _newlineValues[newlineIndex_t];
+                    }
+                });
+
+                Block("Advanced (Experimental)", () =>
+                {
+                    _prefs.randomizedBindingCode = EditorGUILayout.Toggle("Obfuscate", _prefs.randomizedBindingCode);
+                });
+
+                Block("Custom Binding Process", () =>
+                {
+                    var list = _bindingManager.GetBindingProcessTypes();
+                    for (int i = 0, count = list.Count; i < count; ++i)
+                    {
+                        var process = list[i];
+                        var name = process.FullName;
+                        var enabled = !_prefs.skipBinding.Contains(name);
+                        var state = EditorGUILayout.ToggleLeft(name, enabled);
+                        if (state != enabled)
+                        {
+                            if (state)
+                            {
+                                _prefs.skipBinding.Remove(name);
+                            }
+                            else
+                            {
+                                _prefs.skipBinding.Add(name);
+                            }
+                            MarkAsDirty();
+                        } // end if: enabled
+                    } // end for: list
+                }); // end block: custom binding process
+                
+                Block("Diagnostics", () =>
+                {
+                    _prefs.debugCodegen = EditorGUILayout.Toggle("Debug Codegen", _prefs.debugCodegen);
+                    _prefs.verboseLog = EditorGUILayout.Toggle("Verbose Log", _prefs.verboseLog);
+                    _prefs.logPath = EditorGUILayout.TextField("Log", _prefs.logPath);
+                });
+
+                if (EditorGUI.EndChangeCheck())
+                {
+                    MarkAsDirty();
+                }
             }
         }
 

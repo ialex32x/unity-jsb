@@ -624,7 +624,7 @@ namespace QuickJS.Binding
                 }
                 if (prefs.skipDelegateWithByRefParams && ContainsByRefParameters(invoke))
                 {
-                    Info("skip ByRef delegate (unsupported yet): [{0}] {1}", delegateType, invoke);
+                    Info("skip ByRef delegate: [{0}] {1}", delegateType, invoke);
                     return;
                 }
                 var requiredDefines = new HashSet<string>();

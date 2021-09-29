@@ -48,8 +48,8 @@ namespace Example
 
         public class NotExportedClass
         {
-            public string value = "未导出类的访问测试";
-            public static string value2 = "未导出类的访问测试2";
+            public string value = "testcase: instance field access of the not-exported type";
+            public static string value2 = "testcase: static field access of the not-exported type";
 
             public int Add(int a, int b)
             {
@@ -68,9 +68,10 @@ namespace Example
         {
             onAction += () =>
              {
-                 UnityEngine.Debug.Log("这是在 C# 中添加到委托上的一个 C# Action");
+                 UnityEngine.Debug.Log("testcase: add C# Action to delegate, and invoke the delegate in script");
              };
         }
+
         public Action<string, float, int> onActionWithArgs;
         public static Action<string, float, int> onStaticActionWithArgs;
         public Func<int, int> onFunc;

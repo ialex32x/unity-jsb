@@ -1,5 +1,6 @@
 
-// 测试: 不导出基类的情况
+// testcase: exporting class with parent class excluded
+
 public class NoNamespaceBase
 {
 }

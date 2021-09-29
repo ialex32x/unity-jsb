@@ -4,7 +4,7 @@ namespace QuickJS.Unity
 {
     using Native;
 
-    public interface IScriptEditorSupport
+    public interface IScriptEditorSupport : IScriptInstancedObject
     {
         bool isStandaloneScript { get; }
 
@@ -17,10 +17,6 @@ namespace QuickJS.Unity
         JSScriptProperties properties { get; }
 
         bool IsValid();
-
-        JSValue ToValue();
-
-        void ReleaseScriptInstance();
 
         bool CreateScriptInstance();
     }

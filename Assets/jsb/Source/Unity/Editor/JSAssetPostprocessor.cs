@@ -56,13 +56,15 @@ namespace QuickJS.Unity
 
         private static void CallJavascript(string module_id, AssetPostprocessor proc, string funcName, params object[] args)
         {
-            var rt = EditorRuntime.GetRuntime();
-            if (rt != null)
+            var runtime = EditorRuntime.GetRuntime();
+            if (runtime != null && runtime.isValid && !EditorApplication.isCompiling)
             {
-                var context = rt.GetMainContext();
-                var ctx = (JSContext)context;
+                runtime.ResolveModule(module_id);
 
+                var context = runtime.GetMainContext();
+                var ctx = (JSContext)context;
                 JSValue func;
+                
                 if (context.LoadModuleCacheExports(module_id, funcName, out func))
                 {
                     var globalThis = context.GetGlobalObject();

@@ -30,10 +30,13 @@ namespace QuickJS.Binding
             for (int i = 0, count = assemblies.Length; i < count; i++)
             {
                 var assembly = assemblies[i];
-                type = assembly.GetType(type_name);
-                if (type != null)
+                if (!assembly.IsDynamic)
                 {
-                    break;
+                    type = assembly.GetType(type_name);
+                    if (type != null)
+                    {
+                        break;
+                    }
                 }
             }
             return type;

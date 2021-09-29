@@ -155,6 +155,9 @@ namespace QuickJS
         }
     }
 
+    /// <summary>
+    /// NOT_IMPLEMENTED
+    /// </summary>
     [AttributeUsage(AttributeTargets.Parameter
                   | AttributeTargets.ReturnValue,
                     AllowMultiple = false)]

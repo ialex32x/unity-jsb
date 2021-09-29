@@ -181,17 +181,19 @@ namespace QuickJS.Unity
             }
 
             var editorClass = JSApi.JS_UNDEFINED;
-            var scriptFunc = runtime.GetMainContext().EvalSource<ScriptFunction>("require('plover/editor/editor_decorators').EditorUtil.getCustomEditor", "eval");
+            var context = runtime.GetMainContext();
+            var scriptFunc = context.EvalSource<ScriptFunction>("require('plover/editor/editor_decorators').EditorUtil.getCustomEditor", "eval");
             if (scriptFunc != null)
             {
                 unsafe
                 {
-                    JSValue targetValue = _target.ToValue();
-                    if (targetValue.IsObject())
+                    var safeRelease = new Utils.SafeRelease(context, _target.CloneValue());
+                    if (safeRelease[0].IsObject())
                     {
-                        var args = stackalloc JSValue[] { targetValue };
+                        var args = stackalloc JSValue[] { safeRelease[0] };
                         editorClass = scriptFunc._Invoke(1, args);
                     }
+                    safeRelease.Release();
                 }
                 scriptFunc.Dispose();
             }

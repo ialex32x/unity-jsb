@@ -6,8 +6,6 @@ namespace Example
     [JSType]
     public class ValueTest
     {
-        //TODO: 按 JSUseStringCache 属性配置使缓存行为可选功能未完成
-
         public static void TakeStringWithCache([JSUseStringCache] string v)
         {
         }
@@ -21,7 +19,6 @@ namespace Example
             throw new Exception("the intentionally thrown error");
         }
 
-        // 未完成
         [return: JSUseStringCache]
         public static string Foo([JSUseStringCache] string v)
         {
@@ -53,12 +50,11 @@ namespace Example
         };
     }
 
-    /** 
-     * 可以通过 .AddRequiredDefines(...) 为导出的绑定代码添加条件编译
-     * 以便在编译条件发生变化时无需重新生成绑定代码
-     * 详见 CustomBinding.cs 中的示意代码, 以及对应的生成代码
-     */
 #if CUSTOM_DEF_FOO && UNITY_EDITOR
+    /// <summary>
+    /// If the target type is defined only with specific define-symbols, you can export it with ```AddRequiredDefines```. 
+    /// <see href="https://github.com/ialex32x/unity-jsb/blob/c584aec2f2721faf0c76f0f80fc45f05ffd4cb26/Assets/Examples/Source/Editor/CustomBinding.cs">Example in CustomBinding</see>
+    /// </summary>
     public class FOO
     {
 #if CUSTOM_DEF_PROP

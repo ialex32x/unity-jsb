@@ -194,18 +194,6 @@ namespace QuickJS.Unity
             {
                 runtime.ResolveModule(module);
             }
-
-            // var editorScripts = new List<JSScriptClassPathHint>();
-            // JSScriptFinder.GetInstance().Search(JSScriptClassType.CustomEditor, editorScripts);
-            // foreach (var editorScript in editorScripts)
-            // {
-            //     runtime.ResolveModule(editorScript.modulePath);
-            // }
-
-            foreach (var assetPostProcessor in _prefs.assetPostProcessors)
-            {
-                runtime.ResolveModule(assetPostProcessor);
-            }
         }
 
         private void OnScriptRuntimeInitialized(ScriptRuntime runtime)
@@ -226,7 +214,8 @@ namespace QuickJS.Unity
 
         private void OnModuleSourceChanged(string modulePath, JSScriptClassType classTypes)
         {
-            if ((classTypes & JSScriptClassType.CustomEditor) != 0 || _prefs.assetPostProcessors.Contains(modulePath))
+            //TODO CustomEditor should support hotload itself (JSInspectorBase.cs)
+            if ((classTypes & JSScriptClassType.CustomEditor) != 0)
             {
                 if (_runtime != null && _runtime.isValid && !EditorApplication.isCompiling)
                 {

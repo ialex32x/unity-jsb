@@ -17,7 +17,7 @@ namespace Example
         {
             Default,
             Resources,
-            HMR,
+            Http,
         }
         public UnityEngine.UI.ScrollRect scrollRect;
         public UnityEngine.UI.Text text;
@@ -49,9 +49,8 @@ namespace Example
                 // it's the relative path under Unity Resources directory space
                 pathResolver.AddSearchPath("dist");
             }
-            else if (fileLoader == FileLoader.HMR)
+            else if (fileLoader == FileLoader.Http)
             {
-                Debug.LogWarningFormat("!!! not implemented feature !!!");
                 fileSystem = new HttpFileSystem(_mConsole, baseUrl);
             }
             else
