@@ -328,6 +328,7 @@ namespace QuickJS.Binding
             "UnityEditor.PackageManager",
             "UnityEditor.PackageManager.UI",
             "UnityEditor.PackageManager.Requests",
+            "SyntaxTree.VisualStudio.Unity.Messaging", 
         });
 
         public List<string> assemblyBlacklist = new List<string>(new string[]
