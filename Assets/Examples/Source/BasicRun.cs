@@ -1,6 +1,4 @@
-using QuickJS;
 using QuickJS.Native;
-using System.Collections;
 using System.Collections.Generic;
 
 namespace Example
@@ -42,6 +40,7 @@ namespace Example
                     }
                 case RunCase.Codegen:
                     {
+#if !NET_STANDARD_2_0
                         var options = new Dictionary<string, string>();
                         System.Reflection.MethodInfo Call = null;
                         using (var p = System.CodeDom.Compiler.CodeDomProvider.CreateProvider("cs", options))
@@ -85,6 +84,9 @@ namespace Example
                             Call.Invoke(null, ps);
                             Debug.Log($"Call: {ps[0]}");
                         }
+#else  
+                        Debug.LogError("CompilerCodeDomProvider is not supported in current settings (try to switch Api Compatibility Level to .NET 4.x in ProjectSettings->Player).");
+#endif
                         break;
                     }
             }
