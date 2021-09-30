@@ -249,6 +249,40 @@ namespace QuickJS.Native
             return null;
         }
 
+
+        public static unsafe string FindKeyOfProperty(JSContext ctx, JSValue this_obj, JSValue prop_value)
+        {
+            uint plen;
+            JSPropertyEnum* ptab;
+            if (JSApi.JS_GetOwnPropertyNames(ctx, out ptab, out plen, this_obj, JSGPNFlags.JS_GPN_STRING_MASK) < 0)
+            {
+                // failed
+                return null;
+            }
+
+            try
+            {
+                for (var i = 0; i < plen; i++)
+                {
+                    var prop = JSApi.JS_GetProperty(ctx, this_obj, ptab[i].atom);
+                    if (prop == prop_value)
+                    {
+                        JSApi.JS_FreeValue(ctx, prop);
+                        return JSApi.GetString(ctx, ptab[i].atom);
+                    }
+                    JSApi.JS_FreeValue(ctx, prop);
+                }
+            }
+            finally
+            {
+                for (var i = 0; i < plen; i++)
+                {
+                    JSApi.JS_FreeAtom(ctx, ptab[i].atom);
+                }
+            }
+            return null;
+        }
+
         public static unsafe bool ForEachProperty(JSContext ctx, JSValue this_obj, Func<JSAtom, JSValue, bool> callback)
         {
             JSPropertyEnum* ptab;

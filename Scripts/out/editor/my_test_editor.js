@@ -24,9 +24,12 @@ let MyTestEditorWindow = class MyTestEditorWindow extends UnityEditor_1.EditorWi
         this._scenes = System_1.Array.CreateInstance(System_1.String, 1);
         this._scenes.SetValue("Assets/Examples/Scenes/BasicRun.unity", 0);
     }
+    OnEnable() {
+        this.titleContent = new UnityEngine_1.GUIContent("Test EditorWindow");
+    }
     OnGUI() {
         this._testString = UnityEditor_1.EditorGUILayout.TextField("Test", this._testString || "");
-        this._sel = UnityEditor_1.EditorGUILayout.Popup("A", this._sel, ["1", "2", "3"]);
+        this._sel = UnityEditor_1.EditorGUILayout.Popup("A", this._sel, ["1", "2", "3", "4"]);
         if (UnityEngine_1.GUILayout.Button("Test Build")) {
             UnityEditor_1.BuildPipeline.BuildPlayer(this._scenes, "Build/macos.app", UnityEditor_1.BuildTarget.StandaloneOSX, UnityEditor_1.BuildOptions.Development);
         }

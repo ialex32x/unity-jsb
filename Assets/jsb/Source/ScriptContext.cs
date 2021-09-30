@@ -28,7 +28,7 @@ namespace QuickJS
         private JSValue _moduleCache; // commonjs module cache
 
         /// globally defined require function object, its only used in source evaluated from scratch (not module) (e.g dofile/eval)
-        private JSValue _require; 
+        private JSValue _require;
         private JSValue _mainModule;
         private bool _isValid;
         private Regex _stRegex;
@@ -394,6 +394,43 @@ namespace QuickJS
             return module_obj;
         }
 
+        public bool TrySetScriptRef(ref Unity.JSScriptRef scriptRef, JSValue ctor)
+        {
+            string modulePath = null;
+            string className = null;
+            JSApi.ForEachProperty(_ctx, _moduleCache, (mod_id, mod_obj) =>
+            {
+                var exports = JSApi.JS_GetProperty(_ctx, mod_obj, GetAtom("exports"));
+                try
+                {
+                    if (exports.IsObject())
+                    {
+                        className = JSApi.FindKeyOfProperty(_ctx, exports, ctor);
+                        if (className != null)
+                        {
+                            modulePath = JSApi.GetString(_ctx, mod_id);
+                            return true;
+                        }
+                        return false;
+                    }
+                }
+                finally
+                {
+                    JSApi.JS_FreeValue(_ctx, exports);
+                }
+                return false;
+            });
+
+            if (className != null)
+            {
+                scriptRef.modulePath = modulePath;
+                scriptRef.className = className;
+                return true;
+            }
+
+            return false;
+        }
+
         public void ForEachModuleExport(Func<JSAtom, JSAtom, JSValue, bool> callback)
         {
             JSApi.ForEachProperty(_ctx, _moduleCache, (mod_id, mod_obj) =>
@@ -405,6 +442,7 @@ namespace QuickJS
                     JSApi.JS_FreeValue(_ctx, exports);
                     return ret;
                 }
+                JSApi.JS_FreeValue(_ctx, exports);
                 return false;
             });
         }

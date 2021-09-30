@@ -18,8 +18,8 @@ namespace QuickJS.Unity
         [NonSerialized]
         private bool _isScriptInstanced;
 
-        private string _moduleId;
-        private string _className;
+        [SerializeField]
+        private JSScriptRef _scriptRef;
 
         private JSContext _ctx;
 
@@ -137,21 +137,10 @@ namespace QuickJS.Unity
             }
 
             ReleaseJSValues();
-            context.ForEachModuleExport((mod_id_atom, exp_id_atom, exp_obj) =>
-            {
-                if (exp_obj == ctor)
-                {
-                    _moduleId = JSApi.GetString(ctx, mod_id_atom);
-                    _className = JSApi.GetString(ctx, exp_id_atom);
-                    return true;
-                }
-
-                return false;
-            });
-
+            context.TrySetScriptRef(ref _scriptRef, ctor);
             context.OnDestroy += OnContextDestroy;
 #if UNITY_EDITOR
-            if (!string.IsNullOrEmpty(_moduleId) && !string.IsNullOrEmpty(_className))
+            if (!_scriptRef.IsEmpty())
             {
                 context.OnScriptReloading += OnScriptReloading;
                 context.OnScriptReloaded += OnScriptReloaded;
@@ -263,7 +252,7 @@ namespace QuickJS.Unity
 #if UNITY_EDITOR
         private void OnScriptReloading(ScriptContext context, string resolved_id)
         {
-            if (_moduleId == resolved_id)
+            if (context.CheckModuleId(_scriptRef, resolved_id))
             {
                 if (_onBeforeScriptReloadValid)
                 {
@@ -282,10 +271,10 @@ namespace QuickJS.Unity
 
         private void OnScriptReloaded(ScriptContext context, string resolved_id)
         {
-            if (_moduleId == resolved_id)
+            if (context.CheckModuleId(_scriptRef, resolved_id))
             {
                 JSValue newClass;
-                if (context.LoadModuleCacheExports(resolved_id, _className, out newClass))
+                if (context.LoadModuleCacheExports(resolved_id, _scriptRef.className, out newClass))
                 {
                     var prototype = JSApi.JS_GetProperty(context, newClass, context.GetAtom("prototype"));
 
@@ -324,8 +313,6 @@ namespace QuickJS.Unity
         void ReleaseJSValues(bool noClose = false)
         {
             _isScriptInstanced = false;
-            _moduleId = null;
-            _className = null;
 
             if (!_this_obj.IsNullish())
             {

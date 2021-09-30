@@ -139,17 +139,7 @@ namespace QuickJS.Unity
                     JSApi.JS_FreeValue(ctx, prototype);
                     var bridge = fullCap ? gameObject.AddComponent<JSBehaviourFull>() : gameObject.AddComponent<JSBehaviour>();
 #if UNITY_EDITOR
-                    context.ForEachModuleExport((mod_id_atom, exp_id_atom, exp_obj) =>
-                    {
-                        if (exp_obj == ctor)
-                        {
-                            bridge._scriptRef.modulePath = JSApi.GetString(ctx, mod_id_atom);
-                            bridge._scriptRef.className = JSApi.GetString(ctx, exp_id_atom);
-                            return true;
-                        }
-
-                        return false;
-                    });
+                    context.TrySetScriptRef(ref bridge._scriptRef, ctor);
 #endif
                     return bridge.SetScriptInstance(ctx, ctor, execAwake);
                 }
