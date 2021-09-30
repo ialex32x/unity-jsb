@@ -75,8 +75,6 @@ namespace Example
                 FSWatcher.Bind(register);
                 QuickJS.Extra.WebSocket.Bind(register);
                 QuickJS.Extra.XMLHttpRequest.Bind(register);
-                QuickJS.Extra.DOMCompatibleLayer.Bind(register, baseUrl);
-                QuickJS.Extra.NodeCompatibleLayer.Bind(register);
 #endif
             };
             _rt.Initialize(new ScriptRuntimeArgs
