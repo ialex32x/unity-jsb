@@ -17,13 +17,14 @@ namespace QuickJS.Unity
         {
             base.DrawSourceView();
 
-            var updatableOld = _target is JSBehaviourFull;
+            var target_t = GetTarget();
+            var updatableOld = target_t is JSBehaviourFull;
             var updatableNew = EditorGUILayout.Toggle("Updatable", updatableOld);
 
             if (updatableNew != updatableOld)
             {
                 this.ReleaseJSValues();
-                _target.ReleaseScriptInstance();
+                target_t.ReleaseScriptInstance();
 
                 var type = updatableNew ? typeof(JSBehaviourFull) : typeof(JSBehaviour);
                 var monoScript = UnityHelper.GetMonoScript(type);

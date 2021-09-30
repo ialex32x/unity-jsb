@@ -249,7 +249,6 @@ namespace QuickJS.Native
             return null;
         }
 
-
         public static unsafe string FindKeyOfProperty(JSContext ctx, JSValue this_obj, JSValue prop_value)
         {
             uint plen;

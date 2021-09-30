@@ -6,7 +6,12 @@ namespace QuickJS.Unity
     {
         None = 0,
         MonoBehaviour = 1,
+
+        /// <summary>
+        /// UnityEditor.Editor
+        /// </summary>
         CustomEditor = 2,
+
         ScriptableObject = 4,
         EditorWindow = 8,
     }

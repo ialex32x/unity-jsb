@@ -83,6 +83,22 @@ namespace QuickJS.Unity
             return JSApi.JS_DupValue(_ctx, _this_obj);
         }
 
+        public static void _CallJSFunc(JSContext ctx, JSValue this_obj, JSValue func_obj)
+        {
+            if (!this_obj.IsNullish() && JSApi.JS_IsFunction(ctx, func_obj) == 1)
+            {
+                var rval = JSApi.JS_Call(ctx, func_obj, this_obj);
+                if (rval.IsException())
+                {
+                    ctx.print_exception();
+                }
+                else
+                {
+                    JSApi.JS_FreeValue(ctx, rval);
+                }
+            }
+        }
+
         private void OnBindingJSFuncs(ScriptContext context)
         {
             var ctx = (JSContext)context;

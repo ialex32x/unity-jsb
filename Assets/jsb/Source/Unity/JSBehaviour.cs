@@ -240,10 +240,10 @@ namespace QuickJS.Unity
                 this._OnScriptingAfterDeserialize();
                 if (execAwake)
                 {
-                    _CallJSFunc(_awakeFunc);
+                    JSScriptableObject._CallJSFunc(context, _this_obj, _awakeFunc);
                     if (enabled && _onEnableValid)
                     {
-                        _CallJSFunc(_onEnableFunc);
+                        JSScriptableObject._CallJSFunc(context, _this_obj, _onEnableFunc);
                     }
                 }
             }
@@ -472,22 +472,6 @@ namespace QuickJS.Unity
             }
         }
 
-        private void _CallJSFunc(JSValue func_obj)
-        {
-            if (!_this_obj.IsNullish() && JSApi.JS_IsFunction(_ctx, func_obj) == 1)
-            {
-                var rval = JSApi.JS_Call(_ctx, func_obj, _this_obj);
-                if (rval.IsException())
-                {
-                    _ctx.print_exception();
-                }
-                else
-                {
-                    JSApi.JS_FreeValue(_ctx, rval);
-                }
-            }
-        }
-
         private void OnContextDestroy(ScriptContext context)
         {
             // it's dangerous, more protection are required during the process of context-destroying
@@ -538,15 +522,7 @@ namespace QuickJS.Unity
 
                             if (_onAfterScriptReloadValid)
                             {
-                                var rval = JSApi.JS_Call(_ctx, _onAfterScriptReloadFunc, _this_obj);
-                                if (rval.IsException())
-                                {
-                                    _ctx.print_exception();
-                                }
-                                else
-                                {
-                                    JSApi.JS_FreeValue(_ctx, rval);
-                                }
+                                JSScriptableObject._CallJSFunc(context, _this_obj, _onAfterScriptReloadFunc);
                             }
                         }
 

@@ -10,7 +10,10 @@ namespace QuickJS.Unity
     [Serializable]
     public struct JSScriptRef
     {
-        // 编辑器通过 sourceFile 尝试拆解出正确的 modulePath 和 className
+        /// <summary>
+        /// sourceFile will be broken down into modulePath and className by the editor, 
+        /// but not necessary for instantiating the script class instance
+        /// </summary>
         public string sourceFile;
 
         public string modulePath;

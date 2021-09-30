@@ -20,9 +20,11 @@ namespace QuickJS.Unity
 
         protected override void OnWaitingForScriptInstancing()
         {
-            if (_target.enabled)
+            var target_t = GetTarget();
+
+            if (target_t.enabled)
             {
-                _target.CreateScriptInstance();
+                target_t.CreateScriptInstance();
             }
         }
     }
