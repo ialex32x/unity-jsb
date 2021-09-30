@@ -154,6 +154,8 @@ let MyEditorWindow = MyEditorWindow_1 = class MyEditorWindow extends UnityEditor
         let rotSecond = UnityEngine_1.Quaternion.Euler(0, 0, 360 * this._lastSecond / 60 + 180);
         let rotHour = UnityEngine_1.Quaternion.Euler(0, 0, 360 * this._lastHour / 24 + 180);
         let rotMinute = UnityEngine_1.Quaternion.Euler(0, 0, 360 * this._lastMinute / 60 + 180);
+        let lastHandlesColor = UnityEditor_1.Handles.color;
+        UnityEditor_1.Handles.color = UnityEngine_1.Color.white;
         //@ts-ignore
         UnityEditor_1.Handles.DrawLine(center, center + rotSecond * new UnityEngine_1.Vector3(0, 90, 0));
         //@ts-ignore
@@ -161,6 +163,7 @@ let MyEditorWindow = MyEditorWindow_1 = class MyEditorWindow extends UnityEditor
         //@ts-ignore
         UnityEditor_1.Handles.DrawLine(center, center + rotHour * new UnityEngine_1.Vector3(0, 60, 0));
         UnityEditor_1.Handles.DrawWireDisc(center, UnityEngine_1.Vector3.back, 100);
+        UnityEditor_1.Handles.color = lastHandlesColor;
         UnityEditor_1.EditorGUILayout.BeginHorizontal();
         UnityEditor_1.EditorGUILayout.IntField(this._lastHour);
         UnityEditor_1.EditorGUILayout.IntField(this._lastMinute);

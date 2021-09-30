@@ -51,22 +51,19 @@ namespace QuickJS.Native
         [MonoPInvokeCallback(typeof(JSClassFinalizer))]
         public static void class_finalizer(JSRuntime rt, JSValue val)
         {
-            var runtime = ScriptEngine.GetRuntime(rt);
             var header = JSApi.JSB_FreePayloadRT(rt, val);
             if (header.type_id == BridgeObjectType.ObjectRef)
             {
-                var objectCache = runtime.GetObjectCache();
-
+                var objectCache = ScriptEngine.GetObjectCache(rt);
                 if (objectCache != null)
                 {
-                    object obj;
                     try
                     {
-                        objectCache.RemoveObject(header.value, out obj);
+                        objectCache.RemoveObject(header.value);
                     }
                     catch (Exception exception)
                     {
-                        runtime.GetLogger()?.WriteException(exception);
+                        ScriptEngine.GetLogger(rt)?.WriteException(exception);
                     }
                 }
             }

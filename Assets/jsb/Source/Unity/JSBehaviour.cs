@@ -167,44 +167,36 @@ namespace QuickJS.Unity
                 var header = JSApi.jsb_get_payload_header(ctor);
                 if (header.type_id == BridgeObjectType.None) // it's a plain js value
                 {
-                    var cache = ScriptEngine.GetObjectCache(ctx);
+                    var objectCache = ScriptEngine.GetObjectCache(ctx);
 
                     // 旧的绑定值释放？
                     if (!_this_obj.IsNullish())
                     {
-                        var payload = JSApi.jsb_get_payload_header(_this_obj);
+                        var payload = JSApi.JSB_FreePayload(ctx, _this_obj);
                         if (payload.type_id == BridgeObjectType.ObjectRef)
                         {
-                            var runtime = ScriptEngine.GetRuntime(ctx);
-                            var objectCache = runtime.GetObjectCache();
-
-                            if (objectCache != null)
+                            try
                             {
-                                object obj;
-                                try
-                                {
-                                    objectCache.RemoveObject(payload.value, out obj);
-                                }
-                                catch (Exception exception)
-                                {
-                                    runtime.GetLogger()?.WriteException(exception);
-                                }
+                                objectCache.RemoveObject(payload.value);
+                            }
+                            catch (Exception exception)
+                            {
+                                ScriptEngine.GetLogger(ctx)?.WriteException(exception);
                             }
                         }
                     }
 
-                    var object_id = cache.AddObject(this, false);
+                    var object_id = objectCache.AddObject(this, false);
                     var val = JSApi.jsb_construct_bridge_object(ctx, ctor, object_id);
                     if (val.IsException())
                     {
-                        cache.RemoveObject(object_id);
+                        objectCache.RemoveObject(object_id);
                         SetUnresolvedScriptInstance();
                     }
                     else
                     {
-                        cache.AddJSValue(this, val);
+                        objectCache.AddJSValue(this, val);
                         this._SetScriptInstance(ctx, val, execAwake);
-                        // JSApi.JSB_SetBridgeType(ctx, val, type_id);
                     }
 
                     return val;
@@ -780,11 +772,6 @@ namespace QuickJS.Unity
                                 var instValue = SetScriptInstance(ctx, typeValue, false);
                                 JSApi.JS_FreeValue(ctx, instValue);
                                 JSApi.JS_FreeValue(ctx, typeValue);
-
-                                // if (!instValue.IsObject())
-                                // {
-                                //     Debug.LogError("script instance error");
-                                // }
                             }
                         }
                     }

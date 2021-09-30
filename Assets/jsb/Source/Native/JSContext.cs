@@ -95,7 +95,9 @@ namespace QuickJS.Native
             }
         }
 
-        // 在外部已确定存在异常
+        /// <summary>
+        /// useful if you need a string from JS Exception and want to rethrow it as a C# Exception
+        /// </summary>
         public string GetExceptionString()
         {
             var ex = JSApi.JS_GetException(this);

@@ -31,11 +31,6 @@ namespace QuickJS
             _sharedAllocator = new IO.ByteBufferThreadedPooledAllocator();
         }
 
-        public static IScriptLogger GetLogger(JSContext ctx)
-        {
-            return GetRuntime(ctx)?.GetLogger();
-        }
-
         // unstable interface
         public static int ForEachRuntime(Action<ScriptRuntime> visitor)
         {
@@ -60,19 +55,29 @@ namespace QuickJS
             return count;
         }
 
+        public static IScriptLogger GetLogger(JSContext ctx)
+        {
+            return GetRuntime(ctx)?.GetLogger();
+        }
+
+        public static IScriptLogger GetLogger(JSRuntime rt)
+        {
+            return GetRuntime(rt)?.GetLogger();
+        }
+
         public static ObjectCache GetObjectCache(JSRuntime rt)
         {
-            return GetRuntime(rt).GetObjectCache();
+            return GetRuntime(rt)?.GetObjectCache();
         }
 
         public static ObjectCache GetObjectCache(JSContext ctx)
         {
-            return GetRuntime(ctx).GetObjectCache();
+            return GetRuntime(ctx)?.GetObjectCache();
         }
 
         public static ITypeDB GetTypeDB(JSContext ctx)
         {
-            return GetRuntime(ctx).GetTypeDB();
+            return GetRuntime(ctx)?.GetTypeDB();
         }
 
         // 可跨越运行时分配 (但内容非线程安全)
@@ -86,7 +91,7 @@ namespace QuickJS
         /// </summary>
         public static IO.ByteBuffer AllocByteBuffer(JSContext ctx, int size)
         {
-            return GetRuntime(ctx).GetByteBufferAllocator()?.Alloc(size);
+            return GetRuntime(ctx)?.GetByteBufferAllocator()?.Alloc(size);
         }
 
         public static bool IsEditorRuntime(ScriptRuntime runtime)
@@ -160,8 +165,7 @@ namespace QuickJS
 
         public static ScriptRuntime GetRuntime(JSContext ctx)
         {
-            var rt = JSApi.JS_GetRuntime(ctx);
-            return GetRuntime(rt);
+            return GetRuntime(JSApi.JS_GetRuntime(ctx));
         }
 
         public static ScriptRuntime GetRuntime(JSRuntime rt)

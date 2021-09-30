@@ -79,18 +79,16 @@ namespace QuickJS.Unity
                     // 旧的绑定值释放？
                     if (!_this_obj.IsNullish())
                     {
-                        var payload = JSApi.jsb_get_payload_header(_this_obj);
+                        var payload = JSApi.JSB_FreePayload(ctx, _this_obj);
                         if (payload.type_id == BridgeObjectType.ObjectRef)
                         {
-                            object obj;
                             try
                             {
-                                cache.RemoveObject(payload.value, out obj);
+                                cache.RemoveObject(payload.value);
                             }
                             catch (Exception exception)
                             {
-                                var runtime = ScriptEngine.GetRuntime(ctx);
-                                runtime.GetLogger()?.WriteException(exception);
+                                ScriptEngine.GetLogger(ctx)?.WriteException(exception);
                             }
                         }
                     }

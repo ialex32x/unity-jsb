@@ -1,6 +1,6 @@
 import { DateTime } from "System";
 import { EditorWindow, EditorGUILayout, MessageType, SceneView, Handles, GenericMenu, HandleUtility, EditorApplication, EditorGUI } from "UnityEditor";
-import { FocusType, GUIContent, GUILayout, GUIUtility, Rect, Event, GUIStyle, GUI, Vector2, GUILayoutUtility, EventType, Vector3, Quaternion, Resources, ScriptableObject, Object } from "UnityEngine";
+import { FocusType, GUIContent, GUILayout, GUIUtility, Rect, Event, GUIStyle, GUI, Vector2, GUILayoutUtility, EventType, Vector3, Quaternion, Resources, ScriptableObject, Object, Color } from "UnityEngine";
 import { ScriptEditorWindow } from "../plover/editor/editor_decorators";
 
 class TempWindow extends EditorWindow {
@@ -170,6 +170,8 @@ export class MyEditorWindow extends EditorWindow {
         let rotSecond = Quaternion.Euler(0, 0, 360 * this._lastSecond / 60 + 180);
         let rotHour = Quaternion.Euler(0, 0, 360 * this._lastHour / 24 + 180);
         let rotMinute = Quaternion.Euler(0, 0, 360 * this._lastMinute / 60 + 180);
+        let lastHandlesColor = Handles.color;
+        Handles.color = Color.white;
         //@ts-ignore
         Handles.DrawLine(center, center + rotSecond * new Vector3(0, 90, 0));
         //@ts-ignore
@@ -177,6 +179,7 @@ export class MyEditorWindow extends EditorWindow {
         //@ts-ignore
         Handles.DrawLine(center, center + rotHour * new Vector3(0, 60, 0));
         Handles.DrawWireDisc(center, Vector3.back, 100);
+        Handles.color = lastHandlesColor;
 
         EditorGUILayout.BeginHorizontal();
         EditorGUILayout.IntField(this._lastHour);
