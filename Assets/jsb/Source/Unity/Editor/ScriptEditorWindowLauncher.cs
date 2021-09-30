@@ -14,9 +14,14 @@ namespace QuickJS.Unity
 
     public class ScriptEditorWindowLauncher : BaseEditorWindow
     {
+        private int _selectedTabViewIndex;
+        private string[] _tabViews = new string[] { "EditorWindow", "Editor", };
+
         private GUIContent _scriptIcon;
-        private Vector2 _sv;
-        private List<JSScriptClassPathHint> _classPaths;
+        private Vector2 _editorViewScrollPosition;
+        private Vector2 _editorWindowViewScrollPosition;
+        private List<JSScriptClassPathHint> _editorWindowClassPaths;
+        private List<JSScriptClassPathHint> _editorClassPaths;
 
         void Awake()
         {
@@ -38,11 +43,11 @@ namespace QuickJS.Unity
 
         private void OnScriptClassPathsUpdated()
         {
-            _classPaths.Clear();
-            JSScriptFinder.GetInstance().Search(JSScriptClassType.EditorWindow, _classPaths);
+            _editorWindowClassPaths.Clear();
+            JSScriptFinder.GetInstance().Search(JSScriptClassType.EditorWindow, _editorWindowClassPaths);
         }
 
-        private void DrawScriptItem(Rect rect, JSScriptClassPathHint classPath)
+        private void DrawEditorWindowScriptItem(Rect rect, JSScriptClassPathHint classPath)
         {
             var labelHeight = Math.Min(EditorStyles.label.lineHeight, rect.height);
             var padding = 4f;
@@ -52,7 +57,7 @@ namespace QuickJS.Unity
             if (buttonSize > 8f)
             {
                 var buttonRect = new Rect(rect.x + (rect.width - buttonSize) * .5f, rect.y, buttonSize, buttonSize);
-                
+
                 if (GUI.Button(buttonRect, _scriptIcon))
                 {
                     EditorRuntime.ShowWindow(classPath.modulePath, classPath.className);
@@ -61,7 +66,7 @@ namespace QuickJS.Unity
                 var labelRect = new Rect(rect.x, rect.yMax - labelHeight, rect.width, labelHeight);
                 EditorGUI.LabelField(labelRect, name, EditorStyles.centeredGreyMiniLabel);
             }
-            else 
+            else
             {
                 if (GUI.Button(rect, name))
                 {
@@ -74,30 +79,26 @@ namespace QuickJS.Unity
         {
             JSScriptFinder.GetInstance().ScriptClassPathsUpdated -= OnScriptClassPathsUpdated;
             JSScriptFinder.GetInstance().ScriptClassPathsUpdated += OnScriptClassPathsUpdated;
-            _classPaths = new List<JSScriptClassPathHint>();
-            JSScriptFinder.GetInstance().Search(JSScriptClassType.EditorWindow, _classPaths);
+            _editorClassPaths = new List<JSScriptClassPathHint>();
+            _editorWindowClassPaths = new List<JSScriptClassPathHint>();
+            JSScriptFinder.GetInstance().Search(JSScriptClassType.CustomEditor, _editorClassPaths);
+            JSScriptFinder.GetInstance().Search(JSScriptClassType.EditorWindow, _editorWindowClassPaths);
         }
 
-        protected override void OnPaint()
+        private void DrawEditorWindowScripts()
         {
-            if (_classPaths == null)
-            {
-                Reset();
-            }
-
-            var size = _classPaths.Count;
-            EditorGUILayout.HelpBox("ScriptEditorWindowLauncher is an experimental unfinished feature. it could be used to open editor windows implemented in typescript, we need this because there is no open api in Unity to dynamically create menu item at the moment.", MessageType.Warning);
+            _editorWindowViewScrollPosition = EditorGUILayout.BeginScrollView(_editorWindowViewScrollPosition);
+            var size = _editorWindowClassPaths.Count;
             EditorGUILayout.HelpBox(string.Format("{0} EditorWindow Scripts", size), MessageType.Info);
-
-            _sv = EditorGUILayout.BeginScrollView(_sv);
+            GUILayout.Space(12f);
             var itemSize = new Vector2(120f, 80f);
             var rowRect = EditorGUILayout.GetControlRect(GUILayout.Height(itemSize.y));
             var itemRect = new Rect(rowRect.x, rowRect.y, itemSize.x, itemSize.y);
             for (var i = 0; i < size; i++)
             {
-                var item = _classPaths[i];
+                var item = _editorWindowClassPaths[i];
 
-                DrawScriptItem(itemRect, item);
+                DrawEditorWindowScriptItem(itemRect, item);
                 itemRect.x += itemSize.x;
                 if (itemRect.xMax > rowRect.xMax)
                 {
@@ -106,6 +107,40 @@ namespace QuickJS.Unity
                 }
             }
             EditorGUILayout.EndScrollView();
+            EditorGUILayout.HelpBox("ScriptEditorWindowLauncher is an experimental unfinished feature. it could be used to open editor windows implemented in typescript, we need this because there is no open api in Unity to dynamically create menu item at the moment.", MessageType.Warning);
+        }
+
+        private void DrawEditorScripts()
+        {
+            var size = _editorClassPaths.Count;
+            
+            _editorViewScrollPosition = EditorGUILayout.BeginScrollView(_editorViewScrollPosition);
+            EditorGUILayout.HelpBox(string.Format("{0} Editor Scripts", size), MessageType.Info);
+            GUILayout.Space(12f);
+            for (var i = 0; i < size; i++)
+            {
+                var item = _editorClassPaths[i];
+
+                EditorGUILayout.LabelField(item.ToClassPath());
+            }
+            EditorGUILayout.EndScrollView();
+        }
+
+        protected override void OnPaint()
+        {
+            if (_editorWindowClassPaths == null || _editorClassPaths == null)
+            {
+                Reset();
+            }
+
+            _selectedTabViewIndex = GUILayout.Toolbar(_selectedTabViewIndex, _tabViews);
+            GUILayout.Space(12f);
+            switch (_selectedTabViewIndex)
+            {
+                case 0: DrawEditorWindowScripts(); break;
+                case 1: DrawEditorScripts(); break;
+            }
+
         }
     }
 }
