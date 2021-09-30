@@ -482,15 +482,7 @@ namespace QuickJS.Unity
             {
                 if (_onBeforeScriptReloadValid)
                 {
-                    var rval = JSApi.JS_Call(_ctx, _onBeforeScriptReloadFunc, _this_obj);
-                    if (rval.IsException())
-                    {
-                        _ctx.print_exception();
-                    }
-                    else
-                    {
-                        JSApi.JS_FreeValue(_ctx, rval);
-                    }
+                    JSScriptableObject._CallJSFunc(_ctx, _this_obj, _onBeforeScriptReloadFunc);
                 }
             }
         }
@@ -559,15 +551,7 @@ namespace QuickJS.Unity
 
             if (_awakeValid)
             {
-                var rval = JSApi.JS_Call(_ctx, _awakeFunc, _this_obj);
-                if (rval.IsException())
-                {
-                    _ctx.print_exception();
-                }
-                else
-                {
-                    JSApi.JS_FreeValue(_ctx, rval);
-                }
+                JSScriptableObject._CallJSFunc(_ctx, _this_obj, _awakeFunc);
             }
         }
 
@@ -575,15 +559,7 @@ namespace QuickJS.Unity
         {
             if (_startValid)
             {
-                var rval = JSApi.JS_Call(_ctx, _startFunc, _this_obj);
-                if (rval.IsException())
-                {
-                    _ctx.print_exception();
-                }
-                else
-                {
-                    JSApi.JS_FreeValue(_ctx, rval);
-                }
+                JSScriptableObject._CallJSFunc(_ctx, _this_obj, _startFunc);
             }
         }
 
@@ -591,15 +567,7 @@ namespace QuickJS.Unity
         {
             if (_resetValid)
             {
-                var rval = JSApi.JS_Call(_ctx, _resetFunc, _this_obj);
-                if (rval.IsException())
-                {
-                    _ctx.print_exception();
-                }
-                else
-                {
-                    JSApi.JS_FreeValue(_ctx, rval);
-                }
+                JSScriptableObject._CallJSFunc(_ctx, _this_obj, _resetFunc);
             }
         }
 
@@ -607,15 +575,7 @@ namespace QuickJS.Unity
         {
             if (_onEnableValid)
             {
-                var rval = JSApi.JS_Call(_ctx, _onEnableFunc, _this_obj);
-                if (rval.IsException())
-                {
-                    _ctx.print_exception();
-                }
-                else
-                {
-                    JSApi.JS_FreeValue(_ctx, rval);
-                }
+                JSScriptableObject._CallJSFunc(_ctx, _this_obj, _onEnableFunc);
             }
         }
 
@@ -623,16 +583,9 @@ namespace QuickJS.Unity
         {
             if (_onDisableValid)
             {
-                var rval = JSApi.JS_Call(_ctx, _onDisableFunc, _this_obj);
-                if (rval.IsException())
-                {
-                    _ctx.print_exception();
-                }
-                else
-                {
-                    JSApi.JS_FreeValue(_ctx, rval);
-                }
+                JSScriptableObject._CallJSFunc(_ctx, _this_obj, _onDisableFunc);
             }
+
 #if UNITY_EDITOR
             if (UnityEditor.EditorApplication.isCompiling)
             {
@@ -646,15 +599,7 @@ namespace QuickJS.Unity
         {
             if (_onDrawGizmosValid)
             {
-                var rval = JSApi.JS_Call(_ctx, _onDrawGizmosFunc, _this_obj);
-                if (rval.IsException())
-                {
-                    _ctx.print_exception();
-                }
-                else
-                {
-                    JSApi.JS_FreeValue(_ctx, rval);
-                }
+                JSScriptableObject._CallJSFunc(_ctx, _this_obj, _onDrawGizmosFunc);
             }
         }
 #endif
@@ -663,15 +608,7 @@ namespace QuickJS.Unity
         {
             if (_onDestroyValid)
             {
-                var rval = JSApi.JS_Call(_ctx, _onDestroyFunc, _this_obj);
-                if (rval.IsException())
-                {
-                    _ctx.print_exception();
-                }
-                else
-                {
-                    JSApi.JS_FreeValue(_ctx, rval);
-                }
+                JSScriptableObject._CallJSFunc(_ctx, _this_obj, _onDestroyFunc);
             }
             ReleaseJSValues();
         }

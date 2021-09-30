@@ -18,7 +18,6 @@ namespace QuickJS.Unity
 
         protected virtual void OnEnable()
         {
-            _blockStyle.normal.background = MakeTex(100, 100, new Color32(56, 56, 56, 0));
         }
 
         protected virtual void OnDisable()
@@ -44,7 +43,7 @@ namespace QuickJS.Unity
             ExecuteDefers();
         }
 
-        protected Texture2D MakeTex(int width, int height, Color fillColor)
+        public static Texture2D MakeTex(int width, int height, Color fillColor)
         {
             var pixels = new Color[width * height];
             for (var x = 0; x < width; ++x)
@@ -61,7 +60,7 @@ namespace QuickJS.Unity
             return result;
         }
 
-        protected void BorderLine(Rect rect)
+        public static void BorderLine(Rect rect)
         {
             Handles.color = Color.black;
             Handles.DrawLine(new Vector3(rect.xMin, rect.yMin + rect.height * 0.5f), new Vector3(rect.xMax, rect.yMin + rect.height * 0.5f));
@@ -69,7 +68,7 @@ namespace QuickJS.Unity
             Handles.DrawLine(new Vector3(rect.xMin + 1f, rect.yMin + rect.height * 0.5f + 1f), new Vector3(rect.xMax, rect.yMin + rect.height * 0.5f + 1f));
         }
 
-        protected void BorderLine(float x1, float y1, float x2, float y2)
+        public static void BorderLine(float x1, float y1, float x2, float y2)
         {
             Handles.color = Color.black;
             Handles.DrawLine(new Vector3(x1, y1), new Vector3(x2, y2));
@@ -77,7 +76,7 @@ namespace QuickJS.Unity
             Handles.DrawLine(new Vector3(x1 + 1f, y1 + 1f), new Vector3(x2, y2));
         }
 
-        protected void Block(string title, Action contentDrawer, Action[] utilities, Action tailUtility)
+        public static void Block(string title, Action contentDrawer, Action[] utilities, Action tailUtility)
         {
             var li = new Action[utilities.Length + 1];
             for (var i = 0; i < utilities.Length; i++)
@@ -88,15 +87,20 @@ namespace QuickJS.Unity
             Block(title, Color.clear, contentDrawer, li);
         }
 
-        protected void Block(string title, Action contentDrawer, params Action[] utilities)
+        public static void Block(string title, Action contentDrawer, params Action[] utilities)
         {
             Block(title, Color.clear, contentDrawer, utilities);
         }
 
-        protected void Block(string title, Color titleColor, Action contentDrawer, params Action[] utilities)
+        public static void Block(string title, Color titleColor, Action contentDrawer, params Action[] utilities)
         {
             EditorGUILayout.BeginHorizontal();
             GUILayout.Space(10f);
+            if (_blockStyle == null)
+            {
+                _blockStyle = new GUIStyle();
+                _blockStyle.normal.background = MakeTex(100, 100, new Color32(56, 56, 56, 0));
+            }
             EditorGUILayout.BeginVertical(_blockStyle);
             EditorGUILayout.BeginHorizontal();
             var guiColor = GUI.color;

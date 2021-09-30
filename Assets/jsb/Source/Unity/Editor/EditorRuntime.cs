@@ -210,18 +210,25 @@ namespace QuickJS.Unity
             {
                 runtime.EvalMain(_prefs.editorEntryPoint);
             }
+
+            // in order to evaluate the decorator (the registration of CustomEditor), we need to load these modules before actually using them
+            var editorScripts = new List<JSScriptClassPathHint>();
+            JSScriptFinder.GetInstance().Search(JSScriptClassType.CustomEditor, editorScripts);
+            foreach (var editorScript in editorScripts)
+            {
+                runtime.ResolveModule(editorScript.modulePath);
+            }
         }
 
         private void OnModuleSourceChanged(string modulePath, JSScriptClassType classTypes)
         {
-            //TODO CustomEditor should support hotload itself (JSInspectorBase.cs)
-            if ((classTypes & JSScriptClassType.CustomEditor) != 0)
-            {
-                if (_runtime != null && _runtime.isValid && !EditorApplication.isCompiling)
-                {
-                    _runtime.ResolveModule(modulePath);
-                }
-            }
+            // if ((classTypes & JSScriptClassType.CustomEditor) != 0)
+            // {
+            //     if (_runtime != null && _runtime.isValid && !EditorApplication.isCompiling)
+            //     {
+            //         _runtime.ResolveModule(modulePath);
+            //     }
+            // }
         }
 
         private void OnPlayModeStateChanged(PlayModeStateChange mode)

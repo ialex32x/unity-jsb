@@ -13,6 +13,10 @@ namespace QuickJS.Unity
     where T : Object, IScriptEditorSupport
     {
         private T _target;
+        private JSScriptRef _scriptRef;
+
+        [NonSerialized]
+        private JSScriptRef _lastScriptRefOfTarget;
 
         private string[] _tabViews = new string[] { "Editor", "Source", "Primitive" };
         private int _selectedTabViewIndex = 0;
@@ -43,6 +47,12 @@ namespace QuickJS.Unity
         private bool _onInspectorGUIValid;
         private JSValue _onInspectorGUIFunc = JSApi.JS_UNDEFINED;
 
+        private bool _onBeforeScriptReloadValid;
+        private JSValue _onBeforeScriptReloadFunc = JSApi.JS_UNDEFINED;
+
+        private bool _onAfterScriptReloadValid;
+        private JSValue _onAfterScriptReloadFunc = JSApi.JS_UNDEFINED;
+
         protected T GetTarget()
         {
             if (_target == null)
@@ -58,9 +68,48 @@ namespace QuickJS.Unity
 
         protected abstract JSScriptClassType GetScriptClassType();
 
+        private void OnScriptReloading(ScriptContext context, string resolved_id)
+        {
+            if (context.CheckModuleId(_scriptRef, resolved_id))
+            {
+                if (_onBeforeScriptReloadValid)
+                {
+                    JSScriptableObject._CallJSFunc(_ctx, _this_obj, _onBeforeScriptReloadFunc);
+                }
+            }
+        }
+
         private void OnScriptReloaded(ScriptContext context, string resolved_id)
         {
-            if (context.CheckModuleId(GetTarget().scriptRef, resolved_id))
+            if (context.CheckModuleId(_scriptRef, resolved_id))
+            {
+                if (!_this_obj.IsNullish())
+                {
+                    JSValue newClass;
+                    if (context.LoadModuleCacheExports(resolved_id, _scriptRef.className, out newClass))
+                    {
+                        var prototype = JSApi.JS_GetProperty(context, newClass, context.GetAtom("prototype"));
+
+                        if (prototype.IsObject())
+                        {
+                            OnUnbindingJSMembers();
+                            JSApi.JS_SetPrototype(context, _this_obj, prototype);
+                            OnBindingJSMembers(context);
+
+                            if (_onAfterScriptReloadValid)
+                            {
+                                JSScriptableObject._CallJSFunc(context, _this_obj, _onAfterScriptReloadFunc);
+                            }
+                        }
+
+                        JSApi.JS_FreeValue(context, prototype);
+                        JSApi.JS_FreeValue(context, newClass);
+                    }
+                }
+            }
+
+            var scriptRefOfTarget = GetTarget().scriptRef;
+            if (!_lastScriptRefOfTarget.IsSameScript(scriptRefOfTarget) && context.CheckModuleId(scriptRefOfTarget, resolved_id))
             {
                 // trigger editor script reloading after the target being changed
                 if (_enabled)
@@ -91,6 +140,7 @@ namespace QuickJS.Unity
             if (context != null)
             {
                 context.OnDestroy -= OnContextDestroy;
+                context.OnScriptReloading -= OnScriptReloading;
                 context.OnScriptReloaded -= OnScriptReloaded;
             }
         }
@@ -100,6 +150,7 @@ namespace QuickJS.Unity
             if (!GetTarget().isStandaloneScript)
             {
                 GetTarget().ReleaseScriptInstance();
+                _lastScriptRefOfTarget.Reset();
             }
             ReleaseJSValues();
         }
@@ -113,13 +164,14 @@ namespace QuickJS.Unity
             }
 
             context.OnDestroy += OnContextDestroy;
+            context.OnScriptReloading += OnScriptReloading;
             context.OnScriptReloaded += OnScriptReloaded;
             _ctx = ctx;
             _this_obj = JSApi.JS_DupValue(ctx, this_obj);
 
             if (!_this_obj.IsNullish())
             {
-                OnBindindJSMembers(context);
+                OnBindingJSMembers(context);
 
                 var awakeFunc = JSApi.JS_GetProperty(ctx, this_obj, context.GetAtom("Awake"));
 
@@ -128,7 +180,7 @@ namespace QuickJS.Unity
             }
         }
 
-        private void OnBindindJSMembers(ScriptContext context)
+        private void OnBindingJSMembers(ScriptContext context)
         {
             var ctx = (JSContext)context;
 
@@ -143,6 +195,12 @@ namespace QuickJS.Unity
 
             _onInspectorGUIFunc = JSApi.JS_GetProperty(ctx, _this_obj, context.GetAtom("OnInspectorGUI"));
             _onInspectorGUIValid = JSApi.JS_IsFunction(ctx, _onInspectorGUIFunc) == 1;
+
+            _onBeforeScriptReloadFunc = JSApi.JS_GetProperty(ctx, _this_obj, context.GetAtom("OnBeforeScriptReload"));
+            _onBeforeScriptReloadValid = JSApi.JS_IsFunction(ctx, _onBeforeScriptReloadFunc) == 1;
+
+            _onAfterScriptReloadFunc = JSApi.JS_GetProperty(ctx, _this_obj, context.GetAtom("OnAfterScriptReload"));
+            _onAfterScriptReloadValid = JSApi.JS_IsFunction(ctx, _onAfterScriptReloadFunc) == 1;
         }
 
         private void OnUnbindingJSMembers()
@@ -162,13 +220,22 @@ namespace QuickJS.Unity
             JSApi.JS_FreeValue(_ctx, _onInspectorGUIFunc);
             _onInspectorGUIFunc = JSApi.JS_UNDEFINED;
             _onInspectorGUIValid = false;
+
+            JSApi.JS_FreeValue(_ctx, _onBeforeScriptReloadFunc);
+            _onBeforeScriptReloadFunc = JSApi.JS_UNDEFINED;
+            _onBeforeScriptReloadValid = false;
+
+            JSApi.JS_FreeValue(_ctx, _onAfterScriptReloadFunc);
+            _onAfterScriptReloadFunc = JSApi.JS_UNDEFINED;
+            _onAfterScriptReloadValid = false;
         }
 
         protected void CreateScriptInstance()
         {
             ReleaseJSValues();
 
-            var ctx = GetTarget().ctx;
+            var target_t = GetTarget();
+            var ctx = target_t.ctx;
             if (!ctx.IsValid())
             {
                 return;
@@ -187,7 +254,7 @@ namespace QuickJS.Unity
             {
                 unsafe
                 {
-                    var safeRelease = new Utils.SafeRelease(context, GetTarget().CloneValue());
+                    var safeRelease = new Utils.SafeRelease(context, target_t.CloneValue());
                     if (safeRelease[0].IsObject())
                     {
                         var args = stackalloc JSValue[] { safeRelease[0] };
@@ -228,7 +295,9 @@ namespace QuickJS.Unity
                 }
                 else
                 {
+                    _lastScriptRefOfTarget = target_t.scriptRef;
                     objectCache.AddJSValue(this, editorInstance);
+                    context.TrySetScriptRef(ref _scriptRef, editorClass);
                     CreateScriptInstance(ctx, editorInstance, editorClass);
                     JSApi.JS_FreeValue(ctx, editorInstance);
                 }
@@ -338,42 +407,50 @@ namespace QuickJS.Unity
 
         protected virtual void DrawSourceView()
         {
-            var target_t = GetTarget();
-
-            EditorGUILayout.BeginHorizontal();
-            EditorGUILayout.TextField("Source File", target_t.scriptRef.sourceFile);
-            var sourceFileRect = GUILayoutUtility.GetLastRect();
-
-            if (GUILayout.Button("F", GUILayout.Width(20f)))
+            BaseEditorWindow.Block("Target Script", () =>
             {
-                sourceFileRect.y += 10f;
-                if (JSScriptSearchWindow.Show(sourceFileRect, string.Empty, GetScriptClassType(), OnSelectedScript))
+                var target_t = GetTarget();
+                EditorGUILayout.BeginHorizontal();
+                EditorGUILayout.TextField("Source File", target_t.scriptRef.sourceFile);
+                var sourceFileRect = GUILayoutUtility.GetLastRect();
+
+                if (GUILayout.Button("F", GUILayout.Width(20f)))
                 {
-                    GUIUtility.ExitGUI();
+                    sourceFileRect.y += 10f;
+                    if (JSScriptSearchWindow.Show(sourceFileRect, string.Empty, GetScriptClassType(), OnSelectedScript))
+                    {
+                        GUIUtility.ExitGUI();
+                    }
                 }
-            }
 
-            EditorGUILayout.EndHorizontal();
+                EditorGUILayout.EndHorizontal();
 
-            if (!string.IsNullOrEmpty(target_t.scriptRef.sourceFile))
+                if (!string.IsNullOrEmpty(target_t.scriptRef.sourceFile))
+                {
+                    var sourceFileExists = File.Exists(target_t.scriptRef.sourceFile);
+
+                    if (!sourceFileExists)
+                    {
+                        EditorGUILayout.HelpBox("Source file is missing", MessageType.Warning);
+                    }
+                }
+                else
+                {
+                    if (EditorApplication.isPlaying)
+                    {
+                        EditorGUILayout.HelpBox("Script instance without relevant script reference info?", MessageType.Warning);
+                    }
+                }
+
+                EditorGUILayout.LabelField("Module Path", target_t.scriptRef.modulePath);
+                EditorGUILayout.LabelField("Class Name", target_t.scriptRef.className);
+            });
+
+            BaseEditorWindow.Block("Editor Script", () =>
             {
-                var sourceFileExists = File.Exists(target_t.scriptRef.sourceFile);
-
-                if (!sourceFileExists)
-                {
-                    EditorGUILayout.HelpBox("Source file is missing", MessageType.Warning);
-                }
-            }
-            else
-            {
-                if (EditorApplication.isPlaying)
-                {
-                    EditorGUILayout.HelpBox("Script instance without relevant script reference info?", MessageType.Warning);
-                }
-            }
-
-            EditorGUILayout.LabelField("Module Path", target_t.scriptRef.modulePath);
-            EditorGUILayout.LabelField("Class Name", target_t.scriptRef.className);
+                EditorGUILayout.LabelField("Module Path", _scriptRef.modulePath);
+                EditorGUILayout.LabelField("Class Name", _scriptRef.className);
+            });
         }
 
         private void DrawPrimitiveView()

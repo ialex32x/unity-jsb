@@ -19,9 +19,21 @@ namespace QuickJS.Unity
         public string modulePath;
         public string className;
 
+        public void Reset()
+        {
+            sourceFile = null;
+            modulePath = null;
+            className = null;
+        }
+
         public bool IsEmpty()
         {
             return string.IsNullOrEmpty(modulePath) && string.IsNullOrEmpty(className);
+        }
+
+        public bool IsSameScript(JSScriptRef other)
+        {
+            return modulePath == other.modulePath && className == other.className;
         }
 
         public static string ToClassPath(string modulePath, string className)
