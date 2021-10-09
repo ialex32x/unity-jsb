@@ -171,7 +171,11 @@ class SerializationUtil {
                             }
                             default: {
                                 slotByName[slot.name] = slot;
-                                target[slot.propertyKey] = impl.types[slot.type].defaultValue;
+                                let defaultValue = impl.types[slot.type].defaultValue;
+                                if (typeof defaultValue === "function") {
+                                    defaultValue = defaultValue();
+                                }
+                                target[slot.propertyKey] = defaultValue;
                                 break;
                             }
                         }

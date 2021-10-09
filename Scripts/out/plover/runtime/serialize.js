@@ -139,7 +139,7 @@ RegisterSerializer(1, "v1: without size check", {
     },
     "Vector2": {
         typeid: 7,
-        defaultValue: UnityEngine_1.Vector2.zero,
+        defaultValue: () => UnityEngine_1.Vector2.zero,
         serialize(buffer, value) {
             if (value instanceof UnityEngine_1.Vector2) {
                 buffer.WriteSingle(value.x);
@@ -156,7 +156,7 @@ RegisterSerializer(1, "v1: without size check", {
     },
     "Vector3": {
         typeid: 8,
-        defaultValue: UnityEngine_1.Vector3.zero,
+        defaultValue: () => UnityEngine_1.Vector3.zero,
         serialize(buffer, value) {
             if (value instanceof UnityEngine_1.Vector3) {
                 buffer.WriteSingle(value.x);
@@ -175,7 +175,7 @@ RegisterSerializer(1, "v1: without size check", {
     },
     "Vector4": {
         typeid: 9,
-        defaultValue: UnityEngine_1.Vector4.zero,
+        defaultValue: () => UnityEngine_1.Vector4.zero,
         serialize(buffer, value) {
             if (value instanceof UnityEngine_1.Vector4) {
                 buffer.WriteSingle(value.x);
@@ -196,7 +196,7 @@ RegisterSerializer(1, "v1: without size check", {
     },
     "Rect": {
         typeid: 10,
-        defaultValue: UnityEngine_1.Rect.zero,
+        defaultValue: () => UnityEngine_1.Rect.zero,
         serialize(buffer, value) {
             if (value instanceof UnityEngine_1.Rect) {
                 buffer.WriteSingle(value.x);
@@ -217,7 +217,7 @@ RegisterSerializer(1, "v1: without size check", {
     },
     "Quaternion": {
         typeid: 11,
-        defaultValue: UnityEngine_1.Quaternion.identity,
+        defaultValue: () => UnityEngine_1.Quaternion.identity,
         serialize(buffer, value) {
             if (value instanceof UnityEngine_1.Quaternion) {
                 buffer.WriteSingle(value.x);

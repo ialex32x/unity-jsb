@@ -159,7 +159,7 @@ RegisterSerializer(1, "v1: without size check", {
     },
     "Vector2": {
         typeid: 7,
-        defaultValue: Vector2.zero, 
+        defaultValue: () => Vector2.zero, 
         serialize(buffer: ByteBuffer, value: Vector2) {
             if (value instanceof Vector2) {
                 buffer.WriteSingle(value.x);
@@ -176,7 +176,7 @@ RegisterSerializer(1, "v1: without size check", {
     },
     "Vector3": {
         typeid: 8,
-        defaultValue: Vector3.zero, 
+        defaultValue: () => Vector3.zero, 
         serialize(buffer: ByteBuffer, value: Vector3) {
             if (value instanceof Vector3) {
                 buffer.WriteSingle(value.x);
@@ -195,7 +195,7 @@ RegisterSerializer(1, "v1: without size check", {
     },
     "Vector4": {
         typeid: 9,
-        defaultValue: Vector4.zero, 
+        defaultValue: () => Vector4.zero, 
         serialize(buffer: ByteBuffer, value: Vector4) {
             if (value instanceof Vector4) {
                 buffer.WriteSingle(value.x);
@@ -216,7 +216,7 @@ RegisterSerializer(1, "v1: without size check", {
     },
     "Rect": {
         typeid: 10,
-        defaultValue: Rect.zero, 
+        defaultValue: () => Rect.zero, 
         serialize(buffer: ByteBuffer, value: Rect) {
             if (value instanceof Rect) {
                 buffer.WriteSingle(value.x);
@@ -237,7 +237,7 @@ RegisterSerializer(1, "v1: without size check", {
     },
     "Quaternion": {
         typeid: 11,
-        defaultValue: Quaternion.identity, 
+        defaultValue: () => Quaternion.identity, 
         serialize(buffer: ByteBuffer, value: Quaternion) {
             if (value instanceof Quaternion) {
                 buffer.WriteSingle(value.x);
