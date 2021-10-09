@@ -617,33 +617,7 @@ namespace QuickJS.Unity
         {
             if (_onBeforeSerializeValid)
             {
-                if (_properties == null)
-                {
-                    _properties = new JSScriptProperties();
-                }
-                else
-                {
-                    _properties.Clear();
-                }
-
-                var buffer = ScriptEngine.AllocByteBuffer(_ctx, 512);
-
-                unsafe
-                {
-                    var argv = stackalloc[] { Binding.Values.js_push_classvalue(_ctx, _properties), Binding.Values.js_push_classvalue(_ctx, buffer) };
-                    var rval = JSApi.JS_Call(_ctx, _onBeforeSerializeFunc, _this_obj, 2, argv);
-                    JSApi.JS_FreeValue(_ctx, argv[0]);
-                    JSApi.JS_FreeValue(_ctx, argv[1]);
-                    if (rval.IsException())
-                    {
-                        _ctx.print_exception();
-                    }
-                    else
-                    {
-                        JSApi.JS_FreeValue(_ctx, rval);
-                    }
-                }
-                _properties.SetGenericValue(buffer);
+                JSScriptableObject.ExecOnBeforeSerialize(ref _properties, _ctx, _this_obj, _onBeforeSerializeFunc);
             }
         }
 
@@ -656,28 +630,7 @@ namespace QuickJS.Unity
         {
             if (_onAfterDeserializeValid)
             {
-                if (_properties == null)
-                {
-                    _properties = new JSScriptProperties();
-                }
-
-                var buffer = new IO.ByteBuffer(_properties.genericValueData);
-
-                unsafe
-                {
-                    var argv = stackalloc[] { Binding.Values.js_push_classvalue(_ctx, _properties), Binding.Values.js_push_classvalue(_ctx, buffer) };
-                    var rval = JSApi.JS_Call(_ctx, _onAfterDeserializeFunc, _this_obj, 2, argv);
-                    JSApi.JS_FreeValue(_ctx, argv[0]);
-                    JSApi.JS_FreeValue(_ctx, argv[1]);
-                    if (rval.IsException())
-                    {
-                        _ctx.print_exception();
-                    }
-                    else
-                    {
-                        JSApi.JS_FreeValue(_ctx, rval);
-                    }
-                }
+                JSScriptableObject.ExecOnAfterDeserialize(ref _properties, _ctx, _this_obj, _onAfterDeserializeFunc);
             }
         }
 

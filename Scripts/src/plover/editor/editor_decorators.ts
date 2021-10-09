@@ -38,8 +38,8 @@ export class EditorUtil {
     /**
      * 默认编辑器绘制行为
      */
-    static draw(target: any, extra?: any) {
-        SerializationUtil.forEach(target, extra, (propertyKey, slot, self, extra) => {
+    static draw(target: any) {
+        SerializationUtil.forEach(target, (propertyKey, slot) => {
             if (slot.visible) {
                 let label = slot.label || propertyKey;
                 let editablePE = slot.editable && (!slot.editorOnly || !EditorApplication.isPlaying);
@@ -47,12 +47,12 @@ export class EditorUtil {
                 if (typeof slot.type === "string") {
                     switch (slot.type) {
                         case "int": {
-                            let oldValue: number = self[propertyKey];
+                            let oldValue: number = target[propertyKey];
                             if (editablePE) {
                                 let newValue = EditorGUILayout.IntField(label, oldValue);
                                 if (newValue != oldValue) {
-                                    self[propertyKey] = newValue;
-                                    EditorUtility.SetDirty(self);
+                                    target[propertyKey] = newValue;
+                                    EditorUtility.SetDirty(target);
                                 }
                             } else {
                                 EditorGUI.BeginDisabledGroup(true);
@@ -62,12 +62,12 @@ export class EditorUtil {
                             break;
                         }
                         case "float": {
-                            let oldValue: number = self[propertyKey];
+                            let oldValue: number = target[propertyKey];
                             if (editablePE) {
                                 let newValue = EditorGUILayout.FloatField(label, oldValue);
                                 if (newValue != oldValue) {
-                                    self[propertyKey] = newValue;
-                                    EditorUtility.SetDirty(self);
+                                    target[propertyKey] = newValue;
+                                    EditorUtility.SetDirty(target);
                                 }
                             } else {
                                 EditorGUI.BeginDisabledGroup(true);
@@ -77,15 +77,15 @@ export class EditorUtil {
                             break;
                         }
                         case "string": {
-                            let oldValue: string = self[propertyKey];
+                            let oldValue: string = target[propertyKey];
                             if (typeof oldValue !== "string") {
                                 oldValue = "" + oldValue;
                             }
                             if (editablePE) {
                                 let newValue = EditorGUILayout.TextField(label, oldValue);
                                 if (newValue != oldValue) {
-                                    self[propertyKey] = newValue;
-                                    EditorUtility.SetDirty(self);
+                                    target[propertyKey] = newValue;
+                                    EditorUtility.SetDirty(target);
                                 }
                             } else {
                                 EditorGUI.BeginDisabledGroup(true);
@@ -95,7 +95,7 @@ export class EditorUtil {
                             break;
                         }
                         case "object": {
-                            let oldValue: Object = self[propertyKey];
+                            let oldValue: Object = target[propertyKey];
                             if (typeof oldValue !== "object") {
                                 oldValue = null;
                             }
@@ -106,8 +106,8 @@ export class EditorUtil {
                                     typeof allowSceneObjects === "boolean" ? allowSceneObjects : true);
 
                                 if (newValue != oldValue) {
-                                    self[propertyKey] = newValue;
-                                    EditorUtility.SetDirty(self);
+                                    target[propertyKey] = newValue;
+                                    EditorUtility.SetDirty(target);
                                 }
                             } else {
                                 EditorGUI.BeginDisabledGroup(true);

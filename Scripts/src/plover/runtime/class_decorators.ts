@@ -1,6 +1,6 @@
 import { ByteBuffer } from "QuickJS.IO";
 import { JSScriptProperties } from "QuickJS.Unity";
-import { DefaultSerializer } from "./serialize";
+import { DefaultSerializer, GetLatestSerializer, GetSerializer, ISerializer } from "./serialize";
 
 let Symbol_PropertiesTouched = Symbol.for("PropertiesTouched");
 let Symbol_MemberFuncs = Symbol.for("MemberFuncs");
@@ -14,7 +14,7 @@ export interface ClassMetaInfo {
 
 }
 
-export type PropertyTypeID = "bool" | "float" | "double" | "string" | "object" | "int" | "Vector3" | "Quaternion";
+export type PropertyTypeID = "bool" | "float" | "double" | "string" | "object" | "int" | "uint" | "Vector2" | "Vector3" | "Vector4" | "Rect" | "Quaternion";
 
 export interface WeakPropertyMetaInfo {
     /**
@@ -176,11 +176,11 @@ export function ScriptFunction(meta?: any) {
 }
 
 export class SerializationUtil {
-    static forEach(target: any, extra: any, cb: (propertyKey: string, slot: PropertyMetaInfo, target: any, extra: any) => void) {
+    static forEach(target: any, cb: (propertyKey: string, slot: PropertyMetaInfo) => void) {
         let slots: {} = target[Symbol_SerializedFields];
         if (typeof slots !== "undefined") {
             for (let propertyKey in slots) {
-                cb(propertyKey, slots[propertyKey], target, extra);
+                cb(propertyKey, slots[propertyKey]);
             }
         }
     }
@@ -192,36 +192,31 @@ export class SerializationUtil {
 
     static serialize(target: any, ps: JSScriptProperties, buffer: ByteBuffer) {
         this.markAsReady(target);
-        this.forEach(target, ps, (propertyKey, slot, self, extra: JSScriptProperties) => {
-            if (slot.serializable) {
-                let value = self[propertyKey];
+        let impl = GetLatestSerializer();
+        if (typeof impl === "object") {
+            ps.dataFormat = impl.dataFormat;
+            this.forEach(target, (propertyKey, slot) => {
+                if (slot.serializable) {
+                    let value = target[propertyKey];
 
-                // console.log("serializing", propertyKey, value);
-                switch (slot.type) {
-                    case "int": {
-                        extra.SetInteger(slot.name, typeof value === "number" ? value : 0);
-                        break;
-                    }
-                    case "float": {
-                        extra.SetNumber(slot.name, typeof value === "number" ? value : 0);
-                        break;
-                    }
-                    case "string": {
-                        extra.SetString(slot.name, value);
-                        break;
-                    }
-                    case "object": {
-                        extra.SetObject(slot.name, value);
-                        break;
-                    }
-                    default: {
-                        buffer.WriteString(slot.name);
-                        DefaultSerializer.serialize(slot.type, buffer, value);
-                        break;
+                    switch (slot.type) {
+                        case "object": {
+                            ps.SetObject(slot.name, value);
+                            break;
+                        }
+                        default: {
+                            let s: ISerializer = impl.types[slot.type];
+                            if (typeof s === "object") {
+                                buffer.WriteString(slot.name);
+                                buffer.WriteByte(s.typeid);
+                                s.serialize(buffer, value);
+                            }
+                            break;
+                        }
                     }
                 }
-            }
-        });
+            });
+        }
     }
 
     static deserialize(target: any, ps: JSScriptProperties, buffer: ByteBuffer) {
@@ -229,49 +224,40 @@ export class SerializationUtil {
         let slots: {} = target[Symbol_SerializedFields];
         if (typeof slots !== "undefined") {
             let slotByName = {};
-            for (let propertyKey in slots) {
-                let slot: PropertyMetaInfo = slots[propertyKey];
-                if (slot.serializable) {
-                    if (typeof slot.type === "object") {
-                        slotByName[slot.name] = slot;
-                    } else {
+            let dataFormat = ps.dataFormat || 0;
+            let impl = GetSerializer(dataFormat);
+            if (typeof impl === "object") {
+                for (let propertyKey in slots) {
+                    let slot: PropertyMetaInfo = slots[propertyKey];
+                    if (slot.serializable) {
                         switch (slot.type) {
-                            case "int": {
-                                target[propertyKey] = ps.GetInteger(slot.name);
-                                break;
-                            }
-                            case "float": {
-                                target[propertyKey] = ps.GetNumber(slot.name);
-                                break;
-                            }
-                            case "string": {
-                                target[propertyKey] = ps.GetString(slot.name);
-                                break;
-                            }
                             case "object": {
                                 target[propertyKey] = ps.GetObject(slot.name);
                                 break;
                             }
                             default: {
                                 slotByName[slot.name] = slot;
+                                target[slot.propertyKey] = impl.types[slot.type].defaultValue;
                                 break;
                             }
                         }
                     }
-                    // console.log("deserialize", propertyKey, value);
                 }
-            }
 
-            while (buffer.readableBytes > 0) {
-                let name = buffer.ReadString();
-                let slot: PropertyMetaInfo = slotByName[name];
-                if (slot) {
-                    target[slot.propertyKey] = DefaultSerializer.deserilize(slot.type, buffer);
-                } else {
-                    let size = buffer.ReadInt32();
-                    buffer.ReadBytes(size);
-                    target[slot.propertyKey] = null;
+                while (buffer.readableBytes > 0) {
+                    let name = buffer.ReadString();
+                    let typeid = buffer.ReadUByte();
+                    let s = impl.typeids[typeid];
+                    let slot_value = s.deserilize(buffer);
+
+                    let slot: PropertyMetaInfo = slotByName[name];
+                    if (slot) {
+                        console.assert(impl.types[slot.type].typeid == s.typeid);
+                        target[slot.propertyKey] = slot_value;
+                    }
                 }
+            } else {
+                console.error("no serializer for dataFormat", dataFormat);
             }
         }
     }

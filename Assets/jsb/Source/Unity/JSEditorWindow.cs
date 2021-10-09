@@ -13,13 +13,19 @@ namespace QuickJS.Unity
     /// 脚本实现编辑器窗口的基础类. 
     /// 此实现刻意放在非 Editor 目录下, 以便在非编辑器脚本中也可以使用, 实际仍然只在编辑器环境下可用.
     /// </summary>
-    public class JSEditorWindow : EditorWindow, IHasCustomMenu, IScriptInstancedObject
+    public class JSEditorWindow : EditorWindow, IHasCustomMenu, IScriptInstancedObject, ISerializationCallbackReceiver
     {
         [NonSerialized]
         private bool _isScriptInstanced;
 
         [SerializeField]
         private JSScriptRef _scriptRef;
+
+        [SerializeField]
+        private JSScriptProperties _properties;
+
+        // internal use only
+        public JSScriptProperties properties => _properties;
 
         private JSContext _ctx;
 
@@ -48,6 +54,12 @@ namespace QuickJS.Unity
 
         private bool _onAfterScriptReloadValid;
         private JSValue _onAfterScriptReloadFunc = JSApi.JS_UNDEFINED;
+
+        private bool _onBeforeSerializeValid;
+        private JSValue _onBeforeSerializeFunc = JSApi.JS_UNDEFINED;
+
+        private bool _onAfterDeserializeValid;
+        private JSValue _onAfterDeserializeFunc = JSApi.JS_UNDEFINED;
 
         public int IsInstanceOf(JSValue ctor)
         {
@@ -194,6 +206,12 @@ namespace QuickJS.Unity
 
             _onAfterScriptReloadFunc = JSApi.JS_GetProperty(ctx, _this_obj, context.GetAtom("OnAfterScriptReload"));
             _onAfterScriptReloadValid = JSApi.JS_IsFunction(ctx, _onAfterScriptReloadFunc) == 1;
+            
+            _onBeforeSerializeFunc = JSApi.JS_GetProperty(ctx, _this_obj, context.GetAtom("OnBeforeSerialize"));
+            _onBeforeSerializeValid = JSApi.JS_IsFunction(ctx, _onBeforeSerializeFunc) == 1;
+
+            _onAfterDeserializeFunc = JSApi.JS_GetProperty(ctx, _this_obj, context.GetAtom("OnAfterDeserialize"));
+            _onAfterDeserializeValid = JSApi.JS_IsFunction(ctx, _onAfterDeserializeFunc) == 1;
         }
 
         private void OnUnbindingJSFuncs()
@@ -229,6 +247,14 @@ namespace QuickJS.Unity
             JSApi.JS_FreeValue(_ctx, _onAfterScriptReloadFunc);
             _onAfterScriptReloadFunc = JSApi.JS_UNDEFINED;
             _onAfterScriptReloadValid = false;
+
+            JSApi.JS_FreeValue(_ctx, _onBeforeSerializeFunc);
+            _onBeforeSerializeFunc = JSApi.JS_UNDEFINED;
+            _onBeforeSerializeValid = false;
+
+            JSApi.JS_FreeValue(_ctx, _onAfterDeserializeFunc);
+            _onAfterDeserializeFunc = JSApi.JS_UNDEFINED;
+            _onAfterDeserializeValid = false;
         }
 
         private void Call(JSValue func_obj)
@@ -449,6 +475,22 @@ namespace QuickJS.Unity
                     JSApi.JS_FreeValue(_ctx, rval);
                 }
             }
+        }
+
+        public void OnBeforeSerialize()
+        {
+            //TODO: special lifecycle of EditorWindow which will be transfered across the different runtime assemblies
+
+            // if (_onBeforeSerializeValid)
+            // {
+            //     JSScriptableObject.ExecOnBeforeSerialize(ref _properties, _ctx, _this_obj, _onBeforeSerializeFunc);
+            // }
+        }
+
+        public void OnAfterDeserialize()
+        {
+            //TODO: special lifecycle of EditorWindow which will be transfered across the different runtime assemblies
+
         }
     }
 }

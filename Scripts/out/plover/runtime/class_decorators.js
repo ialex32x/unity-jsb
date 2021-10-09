@@ -114,11 +114,11 @@ function ScriptFunction(meta) {
 }
 exports.ScriptFunction = ScriptFunction;
 class SerializationUtil {
-    static forEach(target, extra, cb) {
+    static forEach(target, cb) {
         let slots = target[Symbol_SerializedFields];
         if (typeof slots !== "undefined") {
             for (let propertyKey in slots) {
-                cb(propertyKey, slots[propertyKey], target, extra);
+                cb(propertyKey, slots[propertyKey]);
             }
         }
     }
@@ -128,85 +128,69 @@ class SerializationUtil {
     }
     static serialize(target, ps, buffer) {
         this.markAsReady(target);
-        this.forEach(target, ps, (propertyKey, slot, self, extra) => {
-            if (slot.serializable) {
-                let value = self[propertyKey];
-                // console.log("serializing", propertyKey, value);
-                switch (slot.type) {
-                    case "int": {
-                        extra.SetInteger(slot.name, typeof value === "number" ? value : 0);
-                        break;
-                    }
-                    case "float": {
-                        extra.SetNumber(slot.name, typeof value === "number" ? value : 0);
-                        break;
-                    }
-                    case "string": {
-                        extra.SetString(slot.name, value);
-                        break;
-                    }
-                    case "object": {
-                        extra.SetObject(slot.name, value);
-                        break;
-                    }
-                    default: {
-                        buffer.WriteString(slot.name);
-                        serialize_1.DefaultSerializer.serialize(slot.type, buffer, value);
-                        break;
+        let impl = serialize_1.GetLatestSerializer();
+        if (typeof impl === "object") {
+            ps.dataFormat = impl.dataFormat;
+            this.forEach(target, (propertyKey, slot) => {
+                if (slot.serializable) {
+                    let value = target[propertyKey];
+                    switch (slot.type) {
+                        case "object": {
+                            ps.SetObject(slot.name, value);
+                            break;
+                        }
+                        default: {
+                            let s = impl.types[slot.type];
+                            if (typeof s === "object") {
+                                buffer.WriteString(slot.name);
+                                buffer.WriteByte(s.typeid);
+                                s.serialize(buffer, value);
+                            }
+                            break;
+                        }
                     }
                 }
-            }
-        });
+            });
+        }
     }
     static deserialize(target, ps, buffer) {
         this.markAsReady(target);
         let slots = target[Symbol_SerializedFields];
         if (typeof slots !== "undefined") {
             let slotByName = {};
-            for (let propertyKey in slots) {
-                let slot = slots[propertyKey];
-                if (slot.serializable) {
-                    if (typeof slot.type === "object") {
-                        slotByName[slot.name] = slot;
-                    }
-                    else {
+            let dataFormat = ps.dataFormat || 0;
+            let impl = serialize_1.GetSerializer(dataFormat);
+            if (typeof impl === "object") {
+                for (let propertyKey in slots) {
+                    let slot = slots[propertyKey];
+                    if (slot.serializable) {
                         switch (slot.type) {
-                            case "int": {
-                                target[propertyKey] = ps.GetInteger(slot.name);
-                                break;
-                            }
-                            case "float": {
-                                target[propertyKey] = ps.GetNumber(slot.name);
-                                break;
-                            }
-                            case "string": {
-                                target[propertyKey] = ps.GetString(slot.name);
-                                break;
-                            }
                             case "object": {
                                 target[propertyKey] = ps.GetObject(slot.name);
                                 break;
                             }
                             default: {
                                 slotByName[slot.name] = slot;
+                                target[slot.propertyKey] = impl.types[slot.type].defaultValue;
                                 break;
                             }
                         }
                     }
-                    // console.log("deserialize", propertyKey, value);
+                }
+                while (buffer.readableBytes > 0) {
+                    let name = buffer.ReadString();
+                    let typeid = buffer.ReadUByte();
+                    let s = impl.typeids[typeid];
+                    let slot_value = s.deserilize(buffer);
+                    let slot = slotByName[name];
+                    if (slot) {
+                        console.assert(impl.types[slot.type].typeid == s.typeid);
+                        target[slot.propertyKey] = slot_value;
+                    }
                 }
             }
-            while (buffer.readableBytes > 0) {
-                let name = buffer.ReadString();
-                let slot = slotByName[name];
-                if (slot) {
-                    target[slot.propertyKey] = serialize_1.DefaultSerializer.deserilize(slot.type, buffer);
-                }
-                else {
-                    let size = buffer.ReadInt32();
-                    buffer.ReadBytes(size);
-                    target[slot.propertyKey] = null;
-                }
+            else {
+                console.error("no serializer for dataFormat", dataFormat);
             }
         }
     }

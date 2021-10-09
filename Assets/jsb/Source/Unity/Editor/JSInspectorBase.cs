@@ -462,30 +462,17 @@ namespace QuickJS.Unity
                 return;
             }
 
+            EditorGUI.BeginDisabledGroup(true);
+            EditorGUILayout.IntField("Data Format", ps.dataFormat);
+            EditorGUILayout.IntField("Blob", ps.GenericCount);
+            EditorGUILayout.IntField("Objects", ps.ObjectCount);
+
             ps.ForEach((string key, Object value) =>
             {
                 //
                 EditorGUILayout.ObjectField(key, value, value != null ? value.GetType() : typeof(Object), true);
             });
-
-            ps.ForEach((string key, string value) =>
-            {
-                //
-                EditorGUILayout.LabelField(key);
-                EditorGUILayout.TextArea(value);
-            });
-
-            ps.ForEach((string key, int value) =>
-            {
-                // unsafe
-                EditorGUILayout.IntField(key, value);
-            });
-
-            ps.ForEach((string key, float value) =>
-            {
-                // unsafe
-                EditorGUILayout.FloatField(key, value);
-            });
+            EditorGUI.EndDisabledGroup();
         }
 
         private void DrawScriptingView()

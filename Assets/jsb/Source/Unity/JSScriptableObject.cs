@@ -398,33 +398,7 @@ namespace QuickJS.Unity
         {
             if (_onBeforeSerializeValid)
             {
-                if (_properties == null)
-                {
-                    _properties = new JSScriptProperties();
-                }
-                else
-                {
-                    _properties.Clear();
-                }
-
-                var buffer = ScriptEngine.AllocByteBuffer(_ctx, 512);
-
-                unsafe
-                {
-                    var argv = stackalloc[] { Binding.Values.js_push_classvalue(_ctx, _properties), Binding.Values.js_push_classvalue(_ctx, buffer) };
-                    var rval = JSApi.JS_Call(_ctx, _onBeforeSerializeFunc, _this_obj, 2, argv);
-                    JSApi.JS_FreeValue(_ctx, argv[0]);
-                    JSApi.JS_FreeValue(_ctx, argv[1]);
-                    if (rval.IsException())
-                    {
-                        _ctx.print_exception();
-                    }
-                    else
-                    {
-                        JSApi.JS_FreeValue(_ctx, rval);
-                    }
-                }
-                _properties.SetGenericValue(buffer);
+                ExecOnBeforeSerialize(ref _properties, _ctx, _this_obj, _onBeforeSerializeFunc);
             }
         }
 
@@ -432,13 +406,10 @@ namespace QuickJS.Unity
         {
             //NOTE: only Awake will be called if using Scriptable.CreateInstance
             //      only OnAfterDeserialize will be called if deserializing from asset
-
-            // Debug.LogFormat("ScriptableObject.Awake {0} {1}", _scriptRef.modulePath, _scriptRef.className);
         }
 
         public void OnAfterDeserialize()
         {
-            // Debug.LogFormat("ScriptableObject.OnAfterDeserialize {0} {1}", _scriptRef.modulePath, _scriptRef.className);
             CreateScriptInstance();
         }
 
@@ -446,29 +417,65 @@ namespace QuickJS.Unity
         {
             if (_onAfterDeserializeValid)
             {
-                if (_properties == null)
+                ExecOnAfterDeserialize(ref _properties, _ctx, _this_obj, _onAfterDeserializeFunc);
+            }
+        }
+
+        public static void ExecOnAfterDeserialize(ref JSScriptProperties properties, JSContext ctx, JSValue this_obj, JSValue onAfterDeserializeFunc)
+        {
+            if (properties == null)
+            {
+                properties = new JSScriptProperties();
+            }
+
+            var buffer = new IO.ByteBuffer(properties.genericValueData);
+
+            unsafe
+            {
+                var argv = stackalloc[] { Binding.Values.js_push_classvalue(ctx, properties), Binding.Values.js_push_classvalue(ctx, buffer) };
+                var rval = JSApi.JS_Call(ctx, onAfterDeserializeFunc, this_obj, 2, argv);
+                JSApi.JS_FreeValue(ctx, argv[0]);
+                JSApi.JS_FreeValue(ctx, argv[1]);
+                if (rval.IsException())
                 {
-                    _properties = new JSScriptProperties();
+                    ctx.print_exception();
                 }
-
-                var buffer = new IO.ByteBuffer(_properties.genericValueData);
-
-                unsafe
+                else
                 {
-                    var argv = stackalloc[] { Binding.Values.js_push_classvalue(_ctx, _properties), Binding.Values.js_push_classvalue(_ctx, buffer) };
-                    var rval = JSApi.JS_Call(_ctx, _onAfterDeserializeFunc, _this_obj, 2, argv);
-                    JSApi.JS_FreeValue(_ctx, argv[0]);
-                    JSApi.JS_FreeValue(_ctx, argv[1]);
-                    if (rval.IsException())
-                    {
-                        _ctx.print_exception();
-                    }
-                    else
-                    {
-                        JSApi.JS_FreeValue(_ctx, rval);
-                    }
+                    JSApi.JS_FreeValue(ctx, rval);
                 }
             }
+        }
+
+        public static void ExecOnBeforeSerialize(ref JSScriptProperties properties, JSContext ctx, JSValue this_obj, JSValue onBeforeSerializeFunc)
+        {
+            if (properties == null)
+            {
+                properties = new JSScriptProperties();
+            }
+            else
+            {
+                properties.Clear();
+            }
+
+            var buffer = ScriptEngine.AllocByteBuffer(ctx, 512);
+
+            unsafe
+            {
+                var argv = stackalloc[] { Binding.Values.js_push_classvalue(ctx, properties), Binding.Values.js_push_classvalue(ctx, buffer) };
+                var rval = JSApi.JS_Call(ctx, onBeforeSerializeFunc, this_obj, 2, argv);
+                JSApi.JS_FreeValue(ctx, argv[0]);
+                JSApi.JS_FreeValue(ctx, argv[1]);
+                if (rval.IsException())
+                {
+                    ctx.print_exception();
+                }
+                else
+                {
+                    JSApi.JS_FreeValue(ctx, rval);
+                }
+            }
+            properties.SetGenericValue(buffer);
         }
 
         void OnEnable()

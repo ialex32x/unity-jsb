@@ -32,20 +32,20 @@ class EditorUtil {
     /**
      * 默认编辑器绘制行为
      */
-    static draw(target, extra) {
-        class_decorators_1.SerializationUtil.forEach(target, extra, (propertyKey, slot, self, extra) => {
+    static draw(target) {
+        class_decorators_1.SerializationUtil.forEach(target, (propertyKey, slot) => {
             if (slot.visible) {
                 let label = slot.label || propertyKey;
                 let editablePE = slot.editable && (!slot.editorOnly || !UnityEditor_1.EditorApplication.isPlaying);
                 if (typeof slot.type === "string") {
                     switch (slot.type) {
                         case "int": {
-                            let oldValue = self[propertyKey];
+                            let oldValue = target[propertyKey];
                             if (editablePE) {
                                 let newValue = UnityEditor_1.EditorGUILayout.IntField(label, oldValue);
                                 if (newValue != oldValue) {
-                                    self[propertyKey] = newValue;
-                                    UnityEditor_1.EditorUtility.SetDirty(self);
+                                    target[propertyKey] = newValue;
+                                    UnityEditor_1.EditorUtility.SetDirty(target);
                                 }
                             }
                             else {
@@ -56,12 +56,12 @@ class EditorUtil {
                             break;
                         }
                         case "float": {
-                            let oldValue = self[propertyKey];
+                            let oldValue = target[propertyKey];
                             if (editablePE) {
                                 let newValue = UnityEditor_1.EditorGUILayout.FloatField(label, oldValue);
                                 if (newValue != oldValue) {
-                                    self[propertyKey] = newValue;
-                                    UnityEditor_1.EditorUtility.SetDirty(self);
+                                    target[propertyKey] = newValue;
+                                    UnityEditor_1.EditorUtility.SetDirty(target);
                                 }
                             }
                             else {
@@ -72,15 +72,15 @@ class EditorUtil {
                             break;
                         }
                         case "string": {
-                            let oldValue = self[propertyKey];
+                            let oldValue = target[propertyKey];
                             if (typeof oldValue !== "string") {
                                 oldValue = "" + oldValue;
                             }
                             if (editablePE) {
                                 let newValue = UnityEditor_1.EditorGUILayout.TextField(label, oldValue);
                                 if (newValue != oldValue) {
-                                    self[propertyKey] = newValue;
-                                    UnityEditor_1.EditorUtility.SetDirty(self);
+                                    target[propertyKey] = newValue;
+                                    UnityEditor_1.EditorUtility.SetDirty(target);
                                 }
                             }
                             else {
@@ -91,7 +91,7 @@ class EditorUtil {
                             break;
                         }
                         case "object": {
-                            let oldValue = self[propertyKey];
+                            let oldValue = target[propertyKey];
                             if (typeof oldValue !== "object") {
                                 oldValue = null;
                             }
@@ -99,8 +99,8 @@ class EditorUtil {
                                 let allowSceneObjects = slot.extra && slot.extra.allowSceneObjects;
                                 let newValue = UnityEditor_1.EditorGUILayout.ObjectField(label, oldValue, slot.extra && slot.extra.type || UnityEngine_1.Object, typeof allowSceneObjects === "boolean" ? allowSceneObjects : true);
                                 if (newValue != oldValue) {
-                                    self[propertyKey] = newValue;
-                                    UnityEditor_1.EditorUtility.SetDirty(self);
+                                    target[propertyKey] = newValue;
+                                    UnityEditor_1.EditorUtility.SetDirty(target);
                                 }
                             }
                             else {

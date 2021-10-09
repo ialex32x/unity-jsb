@@ -33,13 +33,23 @@ declare module "UnityEngine" {
         constructor(r: number, g: number, b: number)
         $GetValue(index: number): number
         $SetValue(index: number, value: number): void
-        /** Returns a nicely formatted string of this color.
+        /** Returns a formatted string of this color.
+         * @param format A numeric format string.
+         * @param formatProvider An object that specifies culture-specific formatting.
+         */
+        toString(format: string, formatProvider: any): string
+        /** Returns a formatted string of this color.
+         * @param format A numeric format string.
+         * @param formatProvider An object that specifies culture-specific formatting.
          */
         toString(format: string): string
         toString(): string
         GetHashCode(): number
         Equals(other: Object1): boolean
         Equals(other: Color): boolean
+        Compare(b: Color): boolean
+        CompareRGB(b: Color): boolean
+        MinAlpha(c2: Color): Color
         static op_Inequality(lhs: Color, rhs: Color): boolean
         /** Linearly interpolates between colors a and b by t.
          * @param a Color a.
@@ -150,10 +160,22 @@ declare module "UnityEngine" {
         constructor(r: jsb.byte, g: jsb.byte, b: jsb.byte, a: jsb.byte)
         $GetValue(index: number): jsb.byte
         $SetValue(index: number, value: jsb.byte): void
-        /** Returns a nicely formatted string of this color.
+        /** Returns a formatted string for this color.
+         * @param format A numeric format string.
+         * @param formatProvider An object that specifies culture-specific formatting.
+         */
+        toString(format: string, formatProvider: any): string
+        /** Returns a formatted string for this color.
+         * @param format A numeric format string.
+         * @param formatProvider An object that specifies culture-specific formatting.
          */
         toString(format: string): string
         toString(): string
+        Compare(b: Color32): boolean
+        CompareRGB(b: Color32): boolean
+        Multiply(c2: Color32): Color32
+        Tint(c2: Color32): Color32
+        Tint(tint: number): Color32
         static op_Implicit(c: Color): Color32
         static op_Implicit(c: Color32): Color
         /** Linearly interpolates between colors a and b by t.
@@ -192,7 +214,14 @@ declare module "UnityEngine" {
          */
         Scale(scale: Vector2): void
         Normalize(): void
-        /** Returns a nicely formatted string for this vector.
+        /** Returns a formatted string for this vector.
+         * @param format A numeric format string.
+         * @param formatProvider An object that specifies culture-specific formatting.
+         */
+        toString(format: string, formatProvider: any): string
+        /** Returns a formatted string for this vector.
+         * @param format A numeric format string.
+         * @param formatProvider An object that specifies culture-specific formatting.
          */
         toString(format: string): string
         toString(): string
@@ -352,6 +381,16 @@ declare module "UnityEngine" {
         Equals(other: Object1): boolean
         Equals(other: Vector2Int): boolean
         GetHashCode(): number
+        /** Returns a formatted string for this vector.
+         * @param format A numeric format string.
+         * @param formatProvider An object that specifies culture-specific formatting.
+         */
+        toString(format: string, formatProvider: any): string
+        /** Returns a formatted string for this vector.
+         * @param format A numeric format string.
+         * @param formatProvider An object that specifies culture-specific formatting.
+         */
+        toString(format: string): string
         toString(): string
         /** Returns the distance between a and b.
          */
@@ -397,22 +436,22 @@ declare module "UnityEngine" {
         /** Returns the squared length of this vector (Read Only).
          */
         readonly sqrMagnitude: number
-        /** Shorthand for writing Vector2Int (0, 0).
+        /** Shorthand for writing Vector2Int(0, 0).
          */
         static readonly zero: Vector2Int
-        /** Shorthand for writing Vector2Int (1, 1).
+        /** Shorthand for writing Vector2Int(1, 1).
          */
         static readonly one: Vector2Int
-        /** Shorthand for writing Vector2Int (0, 1).
+        /** Shorthand for writing Vector2Int(0, 1).
          */
         static readonly up: Vector2Int
-        /** Shorthand for writing Vector2Int (0, -1).
+        /** Shorthand for writing Vector2Int(0, -1).
          */
         static readonly down: Vector2Int
-        /** Shorthand for writing Vector2Int (-1, 0).
+        /** Shorthand for writing Vector2Int(-1, 0).
          */
         static readonly left: Vector2Int
-        /** Shorthand for writing Vector2Int (1, 0).
+        /** Shorthand for writing Vector2Int(1, 0).
          */
         static readonly right: Vector2Int
     }
@@ -439,10 +478,18 @@ declare module "UnityEngine" {
         Equals(other: Object1): boolean
         Equals(other: Vector3): boolean
         Normalize(): void
-        /** Returns a nicely formatted string for this vector.
+        /** Returns a formatted string for this vector.
+         * @param format A numeric format string.
+         * @param formatProvider An object that specifies culture-specific formatting.
+         */
+        toString(format: string, formatProvider: any): string
+        /** Returns a formatted string for this vector.
+         * @param format A numeric format string.
+         * @param formatProvider An object that specifies culture-specific formatting.
          */
         toString(format: string): string
         toString(): string
+        Compare(v2: Vector3, accuracy: number): boolean
         /** Spherically interpolates between two vectors.
          */
         static Slerp(a: Vector3, b: Vector3, t: number): Vector3
@@ -639,7 +686,14 @@ declare module "UnityEngine" {
         Equals(other: Object1): boolean
         Equals(other: Vector3Int): boolean
         GetHashCode(): number
-        /** Returns a nicely formatted string for this vector.
+        /** Returns a formatted string for this vector.
+         * @param format A numeric format string.
+         * @param formatProvider An object that specifies culture-specific formatting.
+         */
+        toString(format: string, formatProvider: any): string
+        /** Returns a formatted string for this vector.
+         * @param format A numeric format string.
+         * @param formatProvider An object that specifies culture-specific formatting.
          */
         toString(format: string): string
         toString(): string
@@ -690,24 +744,30 @@ declare module "UnityEngine" {
         /** Returns the squared length of this vector (Read Only).
          */
         readonly sqrMagnitude: number
-        /** Shorthand for writing Vector3Int (0, 0, 0).
+        /** Shorthand for writing Vector3Int(0, 0, 0).
          */
         static readonly zero: Vector3Int
-        /** Shorthand for writing Vector3Int (1, 1, 1).
+        /** Shorthand for writing Vector3Int(1, 1, 1).
          */
         static readonly one: Vector3Int
-        /** Shorthand for writing Vector3Int (0, 1, 0).
+        /** Shorthand for writing Vector3Int(0, 1, 0).
          */
         static readonly up: Vector3Int
-        /** Shorthand for writing Vector3Int (0, -1, 0).
+        /** Shorthand for writing Vector3Int(0, -1, 0).
          */
         static readonly down: Vector3Int
-        /** Shorthand for writing Vector3Int (-1, 0, 0).
+        /** Shorthand for writing Vector3Int(-1, 0, 0).
          */
         static readonly left: Vector3Int
-        /** Shorthand for writing Vector3Int (1, 0, 0).
+        /** Shorthand for writing Vector3Int(1, 0, 0).
          */
         static readonly right: Vector3Int
+        /** Shorthand for writing Vector3Int(0, 0, 1).
+         */
+        static readonly forward: Vector3Int
+        /** Shorthand for writing Vector3Int(0, 0, -1).
+         */
+        static readonly back: Vector3Int
     }
 }
 declare module "UnityEngine" {
@@ -732,7 +792,14 @@ declare module "UnityEngine" {
         Equals(other: Object1): boolean
         Equals(other: Vector4): boolean
         Normalize(): void
-        /** Returns a nicely formatted string for this vector.
+        /** Returns a formatted string for this vector.
+         * @param format A numeric format string.
+         * @param formatProvider An object that specifies culture-specific formatting.
+         */
+        toString(format: string, formatProvider: any): string
+        /** Returns a formatted string for this vector.
+         * @param format A numeric format string.
+         * @param formatProvider An object that specifies culture-specific formatting.
          */
         toString(format: string): string
         toString(): string
@@ -856,7 +923,14 @@ declare module "UnityEngine" {
         GetHashCode(): number
         Equals(other: Object1): boolean
         Equals(other: Rect): boolean
-        /** Returns a nicely formatted string for this Rect.
+        /** Returns a formatted string for this Rect.
+         * @param format A numeric format string.
+         * @param formatProvider An object that specifies culture-specific formatting.
+         */
+        toString(format: string, formatProvider: any): string
+        /** Returns a formatted string for this Rect.
+         * @param format A numeric format string.
+         * @param formatProvider An object that specifies culture-specific formatting.
          */
         toString(format: string): string
         toString(): string
@@ -956,10 +1030,18 @@ declare module "UnityEngine" {
         GetHashCode(): number
         Equals(other: Object1): boolean
         Equals(other: Quaternion): boolean
-        /** Returns a nicely formatted string of the Quaternion.
+        /** Returns a formatted string of the Quaternion.
+         * @param format A numeric format string.
+         * @param formatProvider An object that specifies culture-specific formatting.
+         */
+        toString(format: string, formatProvider: any): string
+        /** Returns a formatted string of the Quaternion.
+         * @param format A numeric format string.
+         * @param formatProvider An object that specifies culture-specific formatting.
          */
         toString(format: string): string
         toString(): string
+        Compare(q2: Quaternion, accuracy: number): boolean
         /** Creates a rotation which rotates from fromDirection to toDirection.
          */
         static FromToRotation(fromDirection: Vector3, toDirection: Vector3): Quaternion
@@ -1083,7 +1165,14 @@ declare module "UnityEngine" {
         /** Returns a plane that is transformed in space.
          */
         TransformPlane(plane: any): any
-        /** Returns a nicely formatted string for this matrix.
+        /** Returns a formatted string for this matrix.
+         * @param format A numeric format string.
+         * @param formatProvider An object that specifies culture-specific formatting.
+         */
+        toString(format: string, formatProvider: any): string
+        /** Returns a formatted string for this matrix.
+         * @param format A numeric format string.
+         * @param formatProvider An object that specifies culture-specific formatting.
          */
         toString(format: string): string
         toString(): string
@@ -1306,18 +1395,30 @@ declare module "UnityEngine" {
          * @param allowDestroyingAssets Set to true to allow assets to be destroyed.
          */
         static DestroyImmediate(obj: Object): void
-        /** The older, non-generic version of this method. In most cases you should use the generic version of this method.
+        /** Gets a list of all loaded objects of Type type.
          * @param type The type of object to find.
-         * @returns Returns an array of all active loaded objects of Type type. 
+         * @param includeInactive If true, components attached to inactive GameObjects are also included.
+         * @returns The array of objects found matching the type specified. 
+         */
+        static FindObjectsOfType(type: any, includeInactive: boolean): Array<Object>
+        /** Gets a list of all loaded objects of Type type.
+         * @param type The type of object to find.
+         * @param includeInactive If true, components attached to inactive GameObjects are also included.
+         * @returns The array of objects found matching the type specified. 
          */
         static FindObjectsOfType(type: any): Array<Object>
         /** Do not destroy the target Object when loading a new Scene.
          * @param target An Object not destroyed on Scene change.
          */
         static DontDestroyOnLoad(target: Object): void
-        /** The older, non-generic version of this method. In most cases you should use the generic version of this method.
+        /** Returns the first active loaded object of Type type.
          * @param type The type of object to find.
-         * @returns Returns an array of all active loaded objects of Type type. 
+         * @returns Object The first active loaded object that matches the specified type. It returns null if no Object matches the type. 
+         */
+        static FindObjectOfType(type: any, includeInactive: boolean): Object
+        /** Returns the first active loaded object of Type type.
+         * @param type The type of object to find.
+         * @returns Object The first active loaded object that matches the specified type. It returns null if no Object matches the type. 
          */
         static FindObjectOfType(type: any): Object
         static op_Equality(x: Object, y: Object): boolean
@@ -2527,6 +2628,7 @@ declare module "UnityEngine" {
         /** Resizes the texture.
          */
         Resize(width: number, height: number, format: any, hasMipMap: boolean): boolean
+        Resize(width: number, height: number, format: any, hasMipMap: boolean): boolean
         /** Resizes the texture.
          */
         Resize(width: number, height: number): boolean
@@ -2574,7 +2676,7 @@ declare module "UnityEngine" {
          */
         LoadImage(data: Array<jsb.byte>, markNonReadable: boolean): boolean
         LoadImage(data: Array<jsb.byte>): boolean
-        /** Creates Unity Texture out of externally created native texture object.
+        /** Creates a Unity Texture out of an externally created native texture object.
          * @param nativeTex Native 2D texture object.
          * @param width Width of texture in pixels.
          * @param height Height of texture in pixels.
@@ -2608,6 +2710,9 @@ declare module "UnityEngine" {
         /** Returns true if the Read/Write Enabled checkbox was checked when the texture was imported; otherwise returns false. For a dynamic Texture created from script, always returns true. For additional information, see TextureImporter.isReadable.
          */
         readonly isReadable: boolean
+        /** Returns true if the VTOnly checkbox was checked when the texture was imported; otherwise returns false. For additional information, see TextureImporter.vtOnly.
+         */
+        readonly vtOnly: boolean
         /** Determines whether mipmap streaming is enabled for this Texture.
          */
         readonly streamingMipmaps: boolean
@@ -2768,54 +2873,82 @@ declare module "UnityEngine" {
          * @param nameID Property name ID, use Shader.PropertyToID to get it.
          * @param name Property name, e.g. "_MainTex".
          * @param value Texture to set.
-         * @param element Optional parameter that specifies the type of data from the render texture to set.
+         * @param element Optional parameter that specifies the type of data to set from the RenderTexture.
          */
         SetTexture(name: string, value: any, element: any): void
         /** Sets a named texture.
          * @param nameID Property name ID, use Shader.PropertyToID to get it.
          * @param name Property name, e.g. "_MainTex".
          * @param value Texture to set.
-         * @param element Optional parameter that specifies the type of data from the render texture to set.
+         * @param element Optional parameter that specifies the type of data to set from the RenderTexture.
          */
         SetTexture(nameID: number, value: any, element: any): void
         /** Sets a named texture.
          * @param nameID Property name ID, use Shader.PropertyToID to get it.
          * @param name Property name, e.g. "_MainTex".
          * @param value Texture to set.
-         * @param element Optional parameter that specifies the type of data from the render texture to set.
+         * @param element Optional parameter that specifies the type of data to set from the RenderTexture.
          */
         SetTexture(name: string, value: Texture): void
         /** Sets a named texture.
          * @param nameID Property name ID, use Shader.PropertyToID to get it.
          * @param name Property name, e.g. "_MainTex".
          * @param value Texture to set.
-         * @param element Optional parameter that specifies the type of data from the render texture to set.
+         * @param element Optional parameter that specifies the type of data to set from the RenderTexture.
          */
         SetTexture(nameID: number, value: Texture): void
-        /** Sets a named ComputeBuffer value.
+        /** Sets a named buffer value.
          * @param nameID Property name ID, use Shader.PropertyToID to get it.
          * @param name Property name.
-         * @param value The ComputeBuffer value to set.
+         * @param value The ComputeBuffer or GraphicsBuffer value to set.
          */
         SetBuffer(name: string, value: any): void
-        /** Sets a named ComputeBuffer value.
+        /** Sets a named buffer value.
          * @param nameID Property name ID, use Shader.PropertyToID to get it.
          * @param name Property name.
-         * @param value The ComputeBuffer value to set.
+         * @param value The ComputeBuffer or GraphicsBuffer value to set.
          */
         SetBuffer(nameID: number, value: any): void
-        /** Sets a ComputeBuffer as a named constant buffer for the material.
+        /** Sets a named buffer value.
+         * @param nameID Property name ID, use Shader.PropertyToID to get it.
+         * @param name Property name.
+         * @param value The ComputeBuffer or GraphicsBuffer value to set.
+         */
+        SetBuffer(name: string, value: any): void
+        /** Sets a named buffer value.
+         * @param nameID Property name ID, use Shader.PropertyToID to get it.
+         * @param name Property name.
+         * @param value The ComputeBuffer or GraphicsBuffer value to set.
+         */
+        SetBuffer(nameID: number, value: any): void
+        /** Sets a ComputeBuffer or GraphicsBuffer as a named constant buffer for the material.
          * @param name The name of the constant buffer to override.
          * @param value The ComputeBuffer to override the constant buffer values with, or null to remove binding.
-         * @param offset Offset in bytes from the beginning of the ComputeBuffer to bind. Must be a multiple of SystemInfo.MinConstantBufferAlignment, or 0 if that value is 0.
+         * @param offset Offset in bytes from the beginning of the buffer to bind. Must be a multiple of SystemInfo.constantBufferOffsetAlignment, or 0 if that value is 0.
          * @param size The number of bytes to bind.
          * @param nameID The shader property ID of the constant buffer to override.
          */
         SetConstantBuffer(name: string, value: any, offset: number, size: number): void
-        /** Sets a ComputeBuffer as a named constant buffer for the material.
+        /** Sets a ComputeBuffer or GraphicsBuffer as a named constant buffer for the material.
          * @param name The name of the constant buffer to override.
          * @param value The ComputeBuffer to override the constant buffer values with, or null to remove binding.
-         * @param offset Offset in bytes from the beginning of the ComputeBuffer to bind. Must be a multiple of SystemInfo.MinConstantBufferAlignment, or 0 if that value is 0.
+         * @param offset Offset in bytes from the beginning of the buffer to bind. Must be a multiple of SystemInfo.constantBufferOffsetAlignment, or 0 if that value is 0.
+         * @param size The number of bytes to bind.
+         * @param nameID The shader property ID of the constant buffer to override.
+         */
+        SetConstantBuffer(nameID: number, value: any, offset: number, size: number): void
+        /** Sets a ComputeBuffer or GraphicsBuffer as a named constant buffer for the material.
+         * @param name The name of the constant buffer to override.
+         * @param value The ComputeBuffer to override the constant buffer values with, or null to remove binding.
+         * @param offset Offset in bytes from the beginning of the buffer to bind. Must be a multiple of SystemInfo.constantBufferOffsetAlignment, or 0 if that value is 0.
+         * @param size The number of bytes to bind.
+         * @param nameID The shader property ID of the constant buffer to override.
+         */
+        SetConstantBuffer(name: string, value: any, offset: number, size: number): void
+        /** Sets a ComputeBuffer or GraphicsBuffer as a named constant buffer for the material.
+         * @param name The name of the constant buffer to override.
+         * @param value The ComputeBuffer to override the constant buffer values with, or null to remove binding.
+         * @param offset Offset in bytes from the beginning of the buffer to bind. Must be a multiple of SystemInfo.constantBufferOffsetAlignment, or 0 if that value is 0.
          * @param size The number of bytes to bind.
          * @param nameID The shader property ID of the constant buffer to override.
          */
@@ -3072,21 +3205,36 @@ declare module "UnityEngine" {
         /** The time at the beginning of this frame (Read Only).
          */
         static readonly time: number
+        /** The double precision time at the beginning of this frame (Read Only). This is the time in seconds since the start of the game.
+         */
+        static readonly timeAsDouble: number
         /** The time since this frame started (Read Only). This is the time in seconds since the last non-additive scene has finished loading.
          */
         static readonly timeSinceLevelLoad: number
+        /** The double precision time since this frame started (Read Only). This is the time in seconds since the last non-additive scene has finished loading.
+         */
+        static readonly timeSinceLevelLoadAsDouble: number
         /** The interval in seconds from the last frame to the current one (Read Only).
          */
         static readonly deltaTime: number
         /** The time since the last MonoBehaviour.FixedUpdate started (Read Only). This is the time in seconds since the start of the game.
          */
         static readonly fixedTime: number
+        /** The double precision time since the last MonoBehaviour.FixedUpdate started (Read Only). This is the time in seconds since the start of the game.
+         */
+        static readonly fixedTimeAsDouble: number
         /** The timeScale-independent time for this frame (Read Only). This is the time in seconds since the start of the game.
          */
         static readonly unscaledTime: number
+        /** The double precision timeScale-independent time for this frame (Read Only). This is the time in seconds since the start of the game.
+         */
+        static readonly unscaledTimeAsDouble: number
         /** The timeScale-independent time at the beginning of the last MonoBehaviour.FixedUpdate phase (Read Only). This is the time in seconds since the start of the game.
          */
         static readonly fixedUnscaledTime: number
+        /** The double precision timeScale-independent time at the beginning of the last MonoBehaviour.FixedUpdate (Read Only). This is the time in seconds since the start of the game.
+         */
+        static readonly fixedUnscaledTimeAsDouble: number
         /** The timeScale-independent interval in seconds from the last frame to the current one (Read Only).
          */
         static readonly unscaledDeltaTime: number
@@ -3115,6 +3263,9 @@ declare module "UnityEngine" {
         /** The real time in seconds since the game started (Read Only).
          */
         static readonly realtimeSinceStartup: number
+        /** The real time in seconds since the game started (Read Only). Double precision version of Time.realtimeSinceStartup. 
+         */
+        static readonly realtimeSinceStartupAsDouble: number
         /** Slows your application’s playback time to allow Unity to save screenshots in between frames.
          */
         static captureDeltaTime: number
@@ -3128,82 +3279,81 @@ declare module "UnityEngine" {
 }
 declare module "UnityEngine" {
     import { Object as Object1, ValueType } from "System";
-    /** Class for generating random data.
+    /** Easily generate random data for games.
      */
-    class Random extends Object1 {
-        constructor()
+    abstract class Random extends Object1 {
         /** Initializes the random number generator state with a seed.
          * @param seed Seed used to initialize the random number generator.
          */
         static InitState(seed: number): void
-        /** Return a random float number between min [inclusive] and max [inclusive] (Read Only).
+        /** Returns a random float within [minInclusive..maxInclusive] (range is inclusive).
          */
-        static Range(min: number, max: number): number
-        /** Return a random integer number between min [inclusive] and max [exclusive] (Read Only).
+        static Range(minInclusive: number, maxInclusive: number): number
+        /** Return a random int within [minInclusive..maxExclusive) (Read Only).
          */
-        static Range(min: number, max: number): number
+        static Range(minInclusive: number, maxExclusive: number): number
         /** Generates a random color from HSV and alpha ranges.
          * @param hueMin Minimum hue [0..1].
          * @param hueMax Maximum hue [0..1].
          * @param saturationMin Minimum saturation [0..1].
-         * @param saturationMax Maximum saturation[0..1].
+         * @param saturationMax Maximum saturation [0..1].
          * @param valueMin Minimum value [0..1].
          * @param valueMax Maximum value [0..1].
          * @param alphaMin Minimum alpha [0..1].
          * @param alphaMax Maximum alpha [0..1].
-         * @returns A random color with HSV and alpha values in the input ranges. 
+         * @returns A random color with HSV and alpha values in the (inclusive) input ranges. Values for each component are derived via linear interpolation of value. 
          */
         static ColorHSV(hueMin: number, hueMax: number, saturationMin: number, saturationMax: number, valueMin: number, valueMax: number, alphaMin: number, alphaMax: number): Color
         /** Generates a random color from HSV and alpha ranges.
          * @param hueMin Minimum hue [0..1].
          * @param hueMax Maximum hue [0..1].
          * @param saturationMin Minimum saturation [0..1].
-         * @param saturationMax Maximum saturation[0..1].
+         * @param saturationMax Maximum saturation [0..1].
          * @param valueMin Minimum value [0..1].
          * @param valueMax Maximum value [0..1].
          * @param alphaMin Minimum alpha [0..1].
          * @param alphaMax Maximum alpha [0..1].
-         * @returns A random color with HSV and alpha values in the input ranges. 
+         * @returns A random color with HSV and alpha values in the (inclusive) input ranges. Values for each component are derived via linear interpolation of value. 
          */
         static ColorHSV(hueMin: number, hueMax: number, saturationMin: number, saturationMax: number, valueMin: number, valueMax: number): Color
         /** Generates a random color from HSV and alpha ranges.
          * @param hueMin Minimum hue [0..1].
          * @param hueMax Maximum hue [0..1].
          * @param saturationMin Minimum saturation [0..1].
-         * @param saturationMax Maximum saturation[0..1].
+         * @param saturationMax Maximum saturation [0..1].
          * @param valueMin Minimum value [0..1].
          * @param valueMax Maximum value [0..1].
          * @param alphaMin Minimum alpha [0..1].
          * @param alphaMax Maximum alpha [0..1].
-         * @returns A random color with HSV and alpha values in the input ranges. 
+         * @returns A random color with HSV and alpha values in the (inclusive) input ranges. Values for each component are derived via linear interpolation of value. 
          */
         static ColorHSV(hueMin: number, hueMax: number, saturationMin: number, saturationMax: number): Color
         /** Generates a random color from HSV and alpha ranges.
          * @param hueMin Minimum hue [0..1].
          * @param hueMax Maximum hue [0..1].
          * @param saturationMin Minimum saturation [0..1].
-         * @param saturationMax Maximum saturation[0..1].
+         * @param saturationMax Maximum saturation [0..1].
          * @param valueMin Minimum value [0..1].
          * @param valueMax Maximum value [0..1].
          * @param alphaMin Minimum alpha [0..1].
          * @param alphaMax Maximum alpha [0..1].
-         * @returns A random color with HSV and alpha values in the input ranges. 
+         * @returns A random color with HSV and alpha values in the (inclusive) input ranges. Values for each component are derived via linear interpolation of value. 
          */
         static ColorHSV(hueMin: number, hueMax: number): Color
         static ColorHSV(): Color
-        /** Gets/Sets the full internal state of the random number generator.
+        /** Gets or sets the full internal state of the random number generator.
          */
         static state: any
-        /** Returns a random number between 0.0 [inclusive] and 1.0 [inclusive] (Read Only).
+        /** Returns a random float within [0.0..1.0] (range is inclusive) (Read Only).
          */
         static readonly value: number
-        /** Returns a random point inside a sphere with radius 1 (Read Only).
+        /** Returns a random point inside or on a sphere with radius 1.0 (Read Only).
          */
         static readonly insideUnitSphere: Vector3
-        /** Returns a random point inside a circle with radius 1 (Read Only).
+        /** Returns a random point inside or on a circle with radius 1.0 (Read Only).
          */
         static readonly insideUnitCircle: Vector2
-        /** Returns a random point on the surface of a sphere with radius 1 (Read Only).
+        /** Returns a random point on the surface of a sphere with radius 1.0 (Read Only).
          */
         static readonly onUnitSphere: Vector3
         /** Returns a random rotation (Read Only).
@@ -3241,6 +3391,11 @@ declare module "UnityEngine" {
          * @returns A component of the matching type, if found. 
          */
         GetComponentInChildren<T extends Component>(type: { new(): T }): T
+        /** Retrieves the component of Type type in the GameObject or any of its parents.
+         * @param type Type of component to find.
+         * @returns Returns a component if a component matching the type is found. Returns null otherwise. 
+         */
+        GetComponentInParent(type: any, includeInactive: boolean): Component
         /** Retrieves the component of Type type in the GameObject or any of its parents.
          * @param type Type of component to find.
          * @returns Returns a component if a component matching the type is found. Returns null otherwise. 
@@ -3477,6 +3632,7 @@ declare module "UnityEngine" {
          */
         RenderWithShader(shader: any, replacementTag: string): void
         RenderDontRestore(): void
+        SubmitRenderRequests(renderRequests: any): void
         /** Makes this camera's settings match other camera.
          * @param other Copy camera settings to the other camera.
          */
@@ -3767,11 +3923,11 @@ declare module "UnityEngine" {
      */
     class Component extends Object {
         constructor()
-        /** Returns the component of Type type if the game object has one attached, null if it doesn't.
+        /** Returns the component of Type type if the GameObject has one attached, null if it doesn't. Will also return disabled components.
          * @param type The type of Component to retrieve.
          */
         GetComponent<T extends Component>(type: { new(): T }): T
-        /** Returns the component with name type if the game object has one attached, null if it doesn't.
+        /** Returns the component with name type if the GameObject has one attached, null if it doesn't.
          */
         GetComponent(type: string): Component
         /** Gets the component of the specified type, if it exists.
@@ -4368,7 +4524,6 @@ Returns NULL if there is no associated alpha texture for the source sprite. This
         /** Location of the Sprite's center point in the Rect on the original Texture, specified in pixels.
          */
         readonly pivot: Vector2
-        readonly isUsingPlaceholder: boolean
         /** Returns true if this Sprite is packed in an atlas.
          */
         readonly packed: boolean
@@ -5861,7 +6016,7 @@ declare module "UnityEngine" {
         /** Returns the keyboard input entered this frame. (Read Only)
          */
         static readonly inputString: string
-        /** The current mouse position in pixel coordinates. (Read Only)
+        /** The current mouse position in pixel coordinates. (Read Only).
          */
         static readonly mousePosition: Vector3
         /** The current mouse scroll delta. (Read Only)
@@ -5995,7 +6150,7 @@ declare module "UnityEngine" {
         /** The path to the StreamingAssets folder (Read Only).
          */
         static readonly streamingAssetsPath: string
-        /** Contains the path to a persistent data directory (Read Only).
+        /** (Read Only) Contains the path to a persistent data directory.
          */
         static readonly persistentDataPath: string
         /** Contains the path to a temporary data / cache directory (Read Only).
@@ -6072,6 +6227,7 @@ declare module "UnityEngine" {
         static deepLinkActivated(op: "add" | "remove", fn: (obj: string) => void): void
         static wantsToQuit(op: "add" | "remove", fn: () => boolean): void
         static quitting(op: "add" | "remove", fn: () => void): void
+        static unloading(op: "add" | "remove", fn: () => void): void
     }
 }
 declare module "UnityEngine" {
@@ -6083,7 +6239,14 @@ declare module "UnityEngine" {
         /** Returns a point at distance units along the ray.
          */
         GetPoint(distance: number): Vector3
-        /** Returns a nicely formatted string for this ray.
+        /** Returns a formatted string for this ray.
+         * @param format A numeric format string.
+         * @param formatProvider An object that specifies culture-specific formatting.
+         */
+        toString(format: string, formatProvider: any): string
+        /** Returns a formatted string for this ray.
+         * @param format A numeric format string.
+         * @param formatProvider An object that specifies culture-specific formatting.
          */
         toString(format: string): string
         toString(): string
@@ -6131,6 +6294,9 @@ declare module "UnityEngine" {
         /** The Rigidbody of the collider that was hit. If the collider is not attached to a rigidbody then it is null.
          */
         readonly rigidbody: Rigidbody
+        /** The ArticulationBody of the collider that was hit. If the collider is not attached to an articulation body then it is null.
+         */
+        readonly articulationBody: any
         /** The uv lightmap coordinate at the impact point.
          */
         readonly lightmapCoord: Vector2
@@ -6640,6 +6806,9 @@ Note that IgnoreLayerCollision will reset the trigger state of affected collider
         /** Two colliding objects with a relative velocity below this will not bounce (default 2). Must be positive.
          */
         static bounceThreshold: number
+        /** The maximum default velocity needed to move a Rigidbody's collider out of another collider's surface penetration. Must be positive.
+         */
+        static defaultMaxDepenetrationVelocity: number
         /** The defaultSolverIterations determines how accurately Rigidbody joints and collision contacts are resolved. (default 6). Must be positive.
          */
         static defaultSolverIterations: number
@@ -6711,6 +6880,9 @@ declare module "UnityEngine" {
         /** The rigidbody the collider is attached to.
          */
         readonly attachedRigidbody: Rigidbody
+        /** The articulation body the collider is attached to.
+         */
+        readonly attachedArticulationBody: any
         /** Is the collider a trigger?
          */
         isTrigger: boolean
@@ -6996,21 +7168,21 @@ declare module "UnityEngine" {
 }
 declare module "UnityEngine" {
     import * as jsb from "jsb";
-    import { Object as Object1, Array } from "System";
+    import { Object as Object1, Array, ValueType } from "System";
     /** The Resources class allows you to find and access Objects including assets.
      */
     class Resources extends Object1 {
         /** Returns a list of all objects of Type type.
          */
         static FindObjectsOfTypeAll<T extends Object>(type: { new(): T }): T[]
-        /** Loads an asset stored at path in a Resources folder.
-         * @param path Path to the target resource to load. When using an empty string (i.e., ""), the function loads the entire contents of the Resources folder.
+        /** Loads an asset stored at path in a Resources folder using an optional systemTypeInstance filter.
+         * @param path Path to the target resource to load.
          * @param systemTypeInstance Type filter for objects returned.
          * @returns The requested asset returned as an Object. 
          */
         static Load(path: string, systemTypeInstance: any): Object
-        /** Loads an asset stored at path in a Resources folder.
-         * @param path Path to the target resource to load. When using an empty string (i.e., ""), the function loads the entire contents of the Resources folder.
+        /** Loads an asset stored at path in a Resources folder using an optional systemTypeInstance filter.
+         * @param path Path to the target resource to load.
          * @param systemTypeInstance Type filter for objects returned.
          * @returns The requested asset returned as an Object. 
          */
@@ -7038,6 +7210,12 @@ declare module "UnityEngine" {
          */
         static UnloadAsset(assetToUnload: Object): void
         static UnloadUnusedAssets(): any
+        /** Translates an instance ID to an object reference.
+         * @param instanceID Instance ID of an Object.
+         * @returns Resolved reference or null if the instance ID didn't match anything. 
+         */
+        static InstanceIDToObject(instanceID: number): Object
+        static InstanceIDToObjectList(instanceIDs: any, objects: any): void
         protected constructor()
     }
 }
@@ -7049,21 +7227,15 @@ declare module "QuickJS.Unity" {
     class JSScriptProperties extends Object {
         constructor()
         ForEach(cb: (arg1: string, arg2: Object1) => void): void
-        ForEach(cb: (arg1: string, arg2: string) => void): void
-        ForEach(cb: (arg1: string, arg2: number) => void): void
-        ForEach(cb: (arg1: string, arg2: number) => void): void
         SetObject(key: string, value: Object1): void
         GetObject(key: string): Object1
-        SetString(key: string, value: string): void
-        GetString(key: string): string
-        SetInteger(key: string, value: number): void
-        GetInteger(key: string): number
-        SetNumber(key: string, value: number): void
-        GetNumber(key: string): number
         SetGenericValue(buffer: ByteBuffer): void
         Clear(): void
         readonly IsEmpty: boolean
+        readonly ObjectCount: number
+        readonly GenericCount: number
         genericValueData: Array<jsb.byte>
+        dataFormat: number
     }
 }
 declare module "UnityEngine" {
@@ -9495,6 +9667,16 @@ declare module "UnityEngine" {
          * @returns True if the other rectangle overlaps this one. 
          */
         Overlaps(other: RectInt): boolean
+        /** Returns the x, y, width and height of the RectInt.
+         * @param format A numeric format string.
+         * @param formatProvider An object that specifies culture-specific formatting.
+         */
+        toString(format: string, formatProvider: any): string
+        /** Returns the x, y, width and height of the RectInt.
+         * @param format A numeric format string.
+         * @param formatProvider An object that specifies culture-specific formatting.
+         */
+        toString(format: string): string
         toString(): string
         /** Returns true if the given RectInt is equal to this RectInt.
          */
@@ -9508,10 +9690,10 @@ declare module "UnityEngine" {
         /** Center coordinate of the rectangle.
          */
         readonly center: Vector2
-        /** Lower left corner of the rectangle.
+        /** The lower left corner of the rectangle; which is the minimal position of the rectangle along the x- and y-axes, when it is aligned to both axes.
          */
         min: Vector2Int
-        /** Upper right corner of the rectangle.
+        /** The upper right corner of the rectangle; which is the maximal position of the rectangle along the x- and y-axes, when it is aligned to both axes.
          */
         max: Vector2Int
         /** Width of the rectangle.
@@ -9520,16 +9702,16 @@ declare module "UnityEngine" {
         /** Height of the rectangle.
          */
         height: number
-        /** Returns the minimum X value of the RectInt.
+        /** Shows the minimum X value of the RectInt.
          */
         xMin: number
-        /** Returns the minimum Y value of the RectInt.
+        /** Show the minimum Y value of the RectInt.
          */
         yMin: number
-        /** Returns the maximum X value of the RectInt.
+        /** Shows the maximum X value of the RectInt.
          */
         xMax: number
-        /** Returns the maximum Y value of the RectInt.
+        /** Shows the maximum Y value of the RectInt.
          */
         yMax: number
         /** Returns the position (x, y) of the RectInt.
@@ -9577,7 +9759,14 @@ declare module "UnityEngine" {
         /** Does ray intersect this bounding box?
          */
         IntersectRay(ray: Ray): boolean
-        /** Returns a nicely formatted string for the bounds.
+        /** Returns a formatted string for the bounds.
+         * @param format A numeric format string.
+         * @param formatProvider An object that specifies culture-specific formatting.
+         */
+        toString(format: string, formatProvider: any): string
+        /** Returns a formatted string for the bounds.
+         * @param format A numeric format string.
+         * @param formatProvider An object that specifies culture-specific formatting.
          */
         toString(format: string): string
         toString(): string
@@ -9627,9 +9816,20 @@ declare module "UnityEngine" {
         ClampToBounds(bounds: BoundsInt): void
         /** Is point contained in the bounding box?
          * @param position Point to check.
+         * @param inclusive Whether the max limits are included in the check.
          * @returns Is point contained in the bounding box? 
          */
         Contains(position: Vector3Int): boolean
+        /** Returns a formatted string for the bounds.
+         * @param format A numeric format string.
+         * @param formatProvider An object that specifies culture-specific formatting.
+         */
+        toString(format: string, formatProvider: any): string
+        /** Returns a formatted string for the bounds.
+         * @param format A numeric format string.
+         * @param formatProvider An object that specifies culture-specific formatting.
+         */
+        toString(format: string): string
         toString(): string
         Equals(other: Object1): boolean
         Equals(other: BoundsInt): boolean
@@ -9905,18 +10105,18 @@ declare module "UnityEngine" {
         /** A keyboard key was pressed.
          */
         KeyDown = 4,
-        /** A keyboard key was released.
-         */
         KeyUp = 5,
-        /** The scroll wheel was moved.
-         */
         ScrollWheel = 6,
         Repaint = 7,
         /** A layout event.
          */
         Layout = 8,
+        /** Editor only: drag & drop operation updated.
+         */
         DragUpdated = 9,
         DragPerform = 10,
+        /** Event should be ignored.
+         */
         Ignore = 11,
         /** Already processed event.
          */
@@ -9939,6 +10139,24 @@ declare module "UnityEngine" {
         /** Mouse left a window (Editor views only).
          */
         MouseLeaveWindow = 21,
+        /** Direct manipulation device (finger, pen) touched the screen.
+         */
+        TouchDown = 30,
+        /** Direct manipulation device (finger, pen) left the screen.
+         */
+        TouchUp = 31,
+        /** Direct manipulation device (finger, pen) moved on the screen (drag).
+         */
+        TouchMove = 32,
+        /** Direct manipulation device (finger, pen) moving into the window (drag).
+         */
+        TouchEnter = 33,
+        /** Direct manipulation device (finger, pen) moved out of the window (drag).
+         */
+        TouchLeave = 34,
+        /** Direct manipulation device (finger, pen) stationary event (long touch down).
+         */
+        TouchStationary = 35,
     }
 }
 declare module "UnityEngine" {
@@ -10031,6 +10249,9 @@ declare module "UnityEditor" {
     @jsb.RequiredDefines("UNITY_EDITOR")
     class EditorStyles extends Object {
         constructor()
+        static FromUSS(baseStyle: GUIStyle, ussStyleRuleName: string, ussInPlaceStyleOverride: string): GUIStyle
+        static FromUSS(ussStyleRuleName: string, ussInPlaceStyleOverride: string): GUIStyle
+        static ApplyUSS(style: GUIStyle, ussStyleRuleName: string, ussInPlaceStyleOverride: string): GUIStyle
         /** Style used for the labelled on all EditorGUI overloads that take a prefix label.
          */
         static readonly label: GUIStyle
@@ -10301,7 +10522,7 @@ declare module "UnityEditor" {
 declare module "UnityEngine" {
     import * as jsb from "jsb";
     import { ValueType, Object as Object1 } from "System";
-    /** Represent the hash value.
+    /** Represents  a 128-bit hash value.
      */
     @jsb.RequiredDefines("UNITY_EDITOR")
     class Hash128 extends ValueType {
@@ -10310,20 +10531,46 @@ declare module "UnityEngine" {
         CompareTo(rhs: Hash128): number
         CompareTo(obj: Object1): number
         toString(): string
+        /** Hash new input string and combine with the current hash value.
+         * @param data Input data string. Note that Unity interprets the string as UTF-8 data, even if internally in C# strings are UTF-16.
+         */
+        Append(data: string): void
+        /** Hash new input data and combine with the current hash value.
+         * @param val Input value.
+         */
+        Append(val: number): void
+        /** Hash new input data and combine with the current hash value.
+         * @param val Input value.
+         */
+        Append(val: number): void
         Equals(obj: Object1): boolean
         Equals(obj: Hash128): boolean
         GetHashCode(): number
-        /** Convert the input string to Hash128.
+        /** Convert a hex-encoded string into Hash128 value.
+         * @param hashString A hexadecimal-encoded hash string.
+         * @returns The 128-bit hash. 
          */
         static Parse(hashString: string): Hash128
-        /** Compute a hash of the input string.
+        /** Compute a hash of input data string.
+         * @param data Input data string. Note that Unity interprets the string as UTF-8 data, even if internally in C# strings are UTF-16.
+         * @returns The 128-bit hash. 
          */
-        static Compute(hashString: string): Hash128
+        static Compute(data: string): Hash128
+        /** Compute a hash of input data.
+         * @param val Input value.
+         * @returns The 128-bit hash. 
+         */
+        static Compute(val: number): Hash128
+        /** Compute a hash of input data.
+         * @param val Input value.
+         * @returns The 128-bit hash. 
+         */
+        static Compute(val: number): Hash128
         static op_Inequality(hash1: Hash128, hash2: Hash128): boolean
         static op_GreaterThan(x: Hash128, y: Hash128): boolean
         // js_op_overloading: static ==(hash1: Hash128, hash2: Hash128): boolean
         // js_op_overloading: static <(x: Hash128, y: Hash128): boolean
-        /** Get if the hash value is valid or not. (Read Only)
+        /** Returns true is the hash value is valid. (Read Only)
          */
         readonly isValid: boolean
     }
@@ -10504,6 +10751,13 @@ declare module "UnityEditor" {
         /** Combine vertices that share the same position in space.
          */
         weldVertices: boolean
+        /** Computes the axis conversion on geometry and animation for Models defined in an axis system that differs from Unity's (left handed, Z forward, Y-up).
+
+                    When enabled, Unity transforms the geometry and animation data in order to convert the axis.
+
+                    When disabled, Unity transforms the root GameObject of the hierarchy in order to convert the axis.
+         */
+        bakeAxisConversion: boolean
         /** If this is true, any quad faces that exist in the mesh data before it is imported are kept as quads instead of being split into two triangles, for the purposes of tessellation. Set this to false to disable this behavior.
          */
         keepQuads: boolean
@@ -10525,9 +10779,18 @@ declare module "UnityEditor" {
         /** Hard angle (in degrees) for generating secondary UV.
          */
         secondaryUVHardAngle: number
+        /** Method to use for handling margins when generating secondary UV.
+         */
+        secondaryUVMarginMethod: ModelImporterSecondaryUVMarginMethod
         /** Margin to be left between charts when packing secondary UV.
          */
         secondaryUVPackMargin: number
+        /** The minimum lightmap resolution in texels per unit that the associated model is expected to have.
+         */
+        secondaryUVMinLightmapResolution: number
+        /** The minimum object scale that the associated model is expected to have.
+         */
+        secondaryUVMinObjectScale: number
         /** Animation generation options.
          */
         generateAnimations: ModelImporterGenerateAnimations
@@ -10555,7 +10818,7 @@ declare module "UnityEditor" {
         /** Skin weights import options.
          */
         skinWeights: ModelImporterSkinWeights
-        /** Maximum bones per vertex.
+        /** The maximum number of bones per vertex stored in this mesh data.
          */
         maxBonesPerVertex: number
         /** Minimum bone weight to keep.
@@ -10887,17 +11150,17 @@ declare module "UnityEditor" {
          */
         SetTextureSettings(src: TextureImporterSettings): void
         ReadTextureImportInstructions(target: BuildTarget, desiredFormat: jsb.Out<any>, colorSpace: jsb.Out<any>, compressionQuality: jsb.Out<number>): void
-        /** Validates TextureImporterFormat based on a specified import type (TextureImporterType) and a specified build target (BuildTarget.).
+        /** Validates ref::TextureImporterFormat:: based on a specified import type (ref::TextureImporterType::) and a specified build target (ref::BuildTarget::.).
          * @param textureType The TextureImporterType that the importer uses.
-         * @param target The platform that the setting targets, referred to as the BuilTarget.
+         * @param target The platform that the setting targets, referred to as the ref::BuilTarget::.
          * @param currentFormat The TextureImporterFormat to validate.
-         * @returns Returns true if TextureImporterFormat is valid and can be set. Returns false otherwise. 
+         * @returns Returns true if ref::TextureImporterFormat:: is valid and can be set. Returns false otherwise. 
          */
         static IsPlatformTextureFormatValid(textureType: TextureImporterType, target: BuildTarget, currentFormat: TextureImporterFormat): boolean
-        /** Validates TextureImporterFormat based on the type of the current format (TextureImporterType) and the default platform.
+        /** Validates ref::TextureImporterFormat:: based on the type of the current format (ref::TextureImporterType::) and the default platform.
          * @param currentFormat The TextureImporterType that the importer uses.
          * @param textureType The TextureImporterFormat to validate.
-         * @returns Returns true if TextureImporterFormat is valid and can be set. Returns false otherwise. 
+         * @returns Returns true if ref::TextureImporterFormat:: is valid and can be set. Returns false otherwise. 
          */
         static IsDefaultPlatformTextureFormatValid(textureType: TextureImporterType, currentFormat: TextureImporterFormat): boolean
         /** Maximum texture size.
@@ -10936,6 +11199,9 @@ declare module "UnityEditor" {
         /** Relative priority for this texture when reducing memory size in order to hit the memory budget.
          */
         streamingMipmapsPriority: number
+        /** When enabled, this texture can solely be used in combination with a Texture Stack for Virtual Texturing. When enabled the texture is not guaranteed to be available as a Texture2D in the Player (e.g., not accessible from a script). When disabled, the Player includes the texture both as a Texture2D (e.g., accessible from script) and as a streamable texture in a Texture Stack.
+         */
+        vtOnly: boolean
         /** Generate Mip Maps.
          */
         mipmapEnabled: boolean
@@ -11023,9 +11289,12 @@ declare module "UnityEditor" {
         /** Which type of texture are we dealing with here.
          */
         textureType: TextureImporterType
-        /** Shape of imported texture.
+        /** The shape of the imported texture.
          */
         textureShape: TextureImporterShape
+        /** Ignore the Gamma attribute in PNG files. This property does not effect other file formats.
+         */
+        ignorePngGamma: boolean
     }
 }
 declare module "UnityEditor" {
@@ -11549,6 +11818,9 @@ declare module "UnityEditor" {
         /** Additional BuildOptions, like whether to run the built player.
          */
         options: BuildOptions
+        /** User-specified preprocessor defines used while compiling assemblies for the player.
+         */
+        extraScriptingDefines: Array<string>
     }
 }
 declare module "UnityEditor" {
@@ -11560,7 +11832,7 @@ declare module "UnityEditor" {
         /** Build assetBundle without any special option.
          */
         None = 0,
-        /** Don't compress the data when creating the asset bundle.
+        /** Don't compress the data when creating the AssetBundle.
          */
         UncompressedAssetBundle = 1,
         /** Includes all dependencies.
@@ -11602,7 +11874,6 @@ declare module "UnityEditor" {
         /** Removes the Unity Version number in the Archive File & Serialized File headers during the build.
          */
         AssetBundleStripUnityVersion = 32768,
-        EnableProtection = 65536,
     }
 }
 declare module "UnityEditor" {
@@ -11758,7 +12029,6 @@ declare module "UnityEditor" {
         /** Sets the Player to connect to the Editor.
          */
         ConnectToHost = 4096,
-        EnableInstantGame = 8192,
         /** Options for building the standalone player in headless mode.
          */
         EnableHeadlessMode = 16384,
@@ -11798,6 +12068,12 @@ Supported platforms:
         /** Enables Deep Profiling support in the player.
          */
         EnableDeepProfilingSupport = 268435456,
+        /** Generates more information in the BuildReport.
+         */
+        DetailedBuildReport = 536870912,
+        /** Enable Shader Livelink support.
+         */
+        ShaderLivelinkSupport = 1073741824,
     }
 }
 declare module "UnityEditor" {
@@ -11850,6 +12126,7 @@ declare module "UnityEditor" {
     class CameraEditor extends Editor {
         constructor()
         OnEnable(): void
+        OnDisable(): void
         OnDestroy(): void
         OnInspectorGUI(): void
         OnOverlayGUI(target: Object, sceneView: SceneView): void
@@ -12036,6 +12313,12 @@ declare module "UnityEditor" {
          * @returns The number of MonoBehaviours with a missing script that were removed. 
          */
         static RemoveMonoBehavioursWithMissingScript(go: GameObject): number
+        /** Use this method if a custom scene culling mask is needed for renderers that should be shown or hidden in a Scene view when Prefab Mode in Context is active.
+         * @param sceneCullingMask The scene culling mask intended to be used with the custom renderer.
+         * @param gameObject The GameObject associated with the custom renderer.
+         * @returns If the GameObject is hidden for Prefab Mode in Context, a modified scene culling mask is returned. If it's not hidden, then the input scene culling mask is returned. 
+         */
+        static ModifyMaskIfGameObjectIsHiddenForPrefabModeInContext(sceneCullingMask: number, gameObject: GameObject): number
     }
 }
 declare module "UnityEditor" {
@@ -12114,7 +12397,7 @@ declare module "UnityEditor" {
 declare module "UnityEditor" {
     import * as jsb from "jsb";
     import { Object, Enum, Array } from "System";
-    import { Color, Matrix4x4, Camera, Vector3, Quaternion, EventType, Vector2, Transform, Texture2D, Rect, GUIStyle, GUIContent, Texture } from "UnityEngine";
+    import { Color, Matrix4x4, Camera, Vector3, Quaternion, EventType, Vector2, Transform, Texture2D, Rect, GUIStyle, GUIContent, Texture, Gradient } from "UnityEngine";
     /** Custom 3D GUI controls and drawing in the Scene view.
      */
     @jsb.RequiredDefines("UNITY_EDITOR")
@@ -12122,7 +12405,16 @@ declare module "UnityEditor" {
         /** Draw a line going through the list of points.
          */
         static DrawPolyLine(...points: Vector3[]): void
-        /** Draw a line from p1 to p2.
+        /** Draws a line from p1 to p2.
+         * @param p1 The position of the first line's end point in world space.
+         * @param p2 The position of the second line's end point in world space.
+         * @param thickness Line thickness in UI points (zero thickness draws single-pixel line).
+         */
+        static DrawLine(p1: Vector3, p2: Vector3, thickness: number): void
+        /** Draws a line from p1 to p2.
+         * @param p1 The position of the first line's end point in world space.
+         * @param p2 The position of the second line's end point in world space.
+         * @param thickness Line thickness in UI points (zero thickness draws single-pixel line).
          */
         static DrawLine(p1: Vector3, p2: Vector3): void
         /** Draw a list of indexed line segments.
@@ -12408,20 +12700,36 @@ Note: Use HandleUtility.GetHandleSize where you might want to have constant scre
          * @param width The width of the bezier line.
          */
         static DrawBezier(startPosition: Vector3, endPosition: Vector3, startTangent: Vector3, endTangent: Vector3, color: Color, texture: Texture2D, width: number): void
-        /** Draw the outline of a flat disc in 3D space.
-         * @param center The center of the disc.
-         * @param normal The normal of the disc.
-         * @param radius The radius of the disc.
+        /** Draws the outline of a flat disc in 3D space.
+         * @param center The center of the disc in world space.
+         * @param normal The normal of the disc in world space.
+         * @param radius The radius of the disc in world space units.
+         * @param thickness Line thickness in UI points (zero thickness draws single-pixel line).
+         */
+        static DrawWireDisc(center: Vector3, normal: Vector3, radius: number, thickness: number): void
+        /** Draws the outline of a flat disc in 3D space.
+         * @param center The center of the disc in world space.
+         * @param normal The normal of the disc in world space.
+         * @param radius The radius of the disc in world space units.
+         * @param thickness Line thickness in UI points (zero thickness draws single-pixel line).
          */
         static DrawWireDisc(center: Vector3, normal: Vector3, radius: number): void
-        /** Draw a circular arc in 3D space.
-         * @param center The center of the circle.
-         * @param normal The normal of the circle.
+        /** Draws a circular arc in 3D space.
+         * @param center The center of the circle in world space.
+         * @param normal The normal of the circle in world space.
          * @param from The direction of the point on the circle circumference, relative to the center, where the arc begins.
          * @param angle The angle of the arc, in degrees.
-         * @param radius The radius of the circle
-
-Note: Use HandleUtility.GetHandleSize where you might want to have constant screen-sized handles.
+         * @param radius The radius of the circle in world space units.
+         * @param thickness Line thickness in UI points (zero thickness draws single-pixel line).
+         */
+        static DrawWireArc(center: Vector3, normal: Vector3, from: Vector3, angle: number, radius: number, thickness: number): void
+        /** Draws a circular arc in 3D space.
+         * @param center The center of the circle in world space.
+         * @param normal The normal of the circle in world space.
+         * @param from The direction of the point on the circle circumference, relative to the center, where the arc begins.
+         * @param angle The angle of the arc, in degrees.
+         * @param radius The radius of the circle in world space units.
+         * @param thickness Line thickness in UI points (zero thickness draws single-pixel line).
          */
         static DrawWireArc(center: Vector3, normal: Vector3, from: Vector3, angle: number, radius: number): void
         static DrawSolidRectangleWithOutline(rectangle: Rect, faceColor: Color, outlineColor: Color): void
@@ -12505,6 +12813,7 @@ Note: Use HandleUtility.GetHandleSize where you might want to have constant scre
          * @param camera The camera to clear.
          */
         static ClearCamera(position: Rect, camera: Camera): void
+        static DrawCamera(position: Rect, camera: Camera, drawMode: DrawCameraMode, drawGizmos: boolean): void
         /** Draws a camera inside a rectangle.
          * @param position The area to draw the camera within in GUI coordinates.
          * @param camera The camera to draw.
@@ -12528,6 +12837,30 @@ Note: Use HandleUtility.GetHandleSize where you might want to have constant scre
         /** Retuns an array of points to representing the bezier curve.
          */
         static MakeBezierPoints(startPosition: Vector3, endPosition: Vector3, startTangent: Vector3, endTangent: Vector3, division: number): Array<Vector3>
+        /** Draws a 3D texture using Signed Distance Field rendering mode in 3D space.
+         * @param texture The volumetric texture to draw.
+         * @param stepScale The number by which to multiply the ray step size. The ray step size is the distance between 2 neighboring pixels. The default value is 1.
+         * @param surfaceOffset The intensity of the pixels at which the surface is rendered. When this value is positive, Unity will expand the rendered surface. When this value is negative, Unity will render empty space as a surface, and a surface as empty space. The default value is 0.
+         * @param customColorRamp The custom gradient that Unity uses as a color ramp. If this is not specified, Unity uses <a href="https:ai.googleblog.com201908turbo-improved-rainbow-colormap-for.html">Google Turbo color ramp<a>.
+         */
+        static DrawTexture3DSDF(texture: Texture, stepScale: number, surfaceOffset: number, customColorRamp: Gradient): void
+        /** Draws a 3D texture using Slice rendering mode in 3D space.
+         * @param texture The volumetric texture to draw.
+         * @param slicePositions The positions of the texture sampling planes.
+         * @param filterMode Sets the texture filtering mode to use.
+         * @param useColorRamp Enables color ramp visualization.
+         * @param customColorRamp The custom gradient that Unity uses as a color ramp. If this is not specified, Unity uses <a href="https:ai.googleblog.com201908turbo-improved-rainbow-colormap-for.html">Google Turbo color ramp<a>.
+         */
+        static DrawTexture3DSlice(texture: Texture, slicePositions: Vector3, filterMode: any, useColorRamp: boolean, customColorRamp: Gradient): void
+        /** Draws a 3D texture using Volume rendering mode in 3D space.
+         * @param texture The volumetric texture to draw.
+         * @param opacity The non-linear volume opacity modifier. Use this to control the opacity of the visualization. Valid values are 0-1, inclusive. A value of 1 is fully opaque and a value of 0 is fully transparent. The default value is 1.
+         * @param qualityModifier Sets the sample per texture pixel count. Higher values result in a higher quality render. The default value is 1.
+         * @param filterMode Sets the texture filtering mode to use.
+         * @param useColorRamp Enables color ramp visualization.
+         * @param customColorRamp The custom gradient that Unity uses as a color ramp. If this is not specified, Unity uses <a href="https:ai.googleblog.com201908turbo-improved-rainbow-colormap-for.html">Google Turbo color ramp<a>.
+         */
+        static DrawTexture3DVolume(texture: Texture, opacity: number, qualityModifier: number, filterMode: any, useColorRamp: boolean, customColorRamp: Gradient): void
         static DoPositionHandle(position: Vector3, rotation: Quaternion): Vector3
         static DoRotationHandle(rotation: Quaternion, position: Vector3): Quaternion
         static DoScaleHandle(scale: Vector3, position: Vector3, rotation: Quaternion, size: number): Vector3
@@ -12593,6 +12926,9 @@ Note: Use HandleUtility.GetHandleSize where you might want to have constant scre
         /** Soft color to use for for general things.
          */
         static readonly secondaryColor: Color
+        /** Retrieves the user preference setting that controls the thickness of tool handle lines. (Read Only)
+         */
+        static readonly lineThickness: number
         /** Setup viewport and stuff for a current camera.
          */
         currentCamera: Camera
@@ -12601,7 +12937,7 @@ Note: Use HandleUtility.GetHandleSize where you might want to have constant scre
 declare module "UnityEditor" {
     import * as jsb from "jsb";
     import { Object, Array } from "System";
-    import { Material, Vector3, Vector2, Quaternion, Ray, Rect, GUIContent, GUIStyle, GameObject, Camera } from "UnityEngine";
+    import { Material, GameObject, Camera, Vector2, Vector3, Quaternion, Ray, Rect, GUIContent, GUIStyle, Transform } from "UnityEngine";
     /** Helper functions for Scene View style 3D GUI.
      */
     @jsb.RequiredDefines("UNITY_EDITOR")
@@ -12626,13 +12962,27 @@ declare module "UnityEditor" {
         /** Calculate distance between a point and a line.
          */
         static DistancePointLine(point: Vector3, lineStart: Vector3, lineEnd: Vector3): number
-        /** Pixel distance from mouse pointer to line.
+        /** Returns the distance in pixels from the mouse pointer to a line.
          */
         static DistanceToLine(p1: Vector3, p2: Vector3): number
-        /** Pixel distance from mouse pointer to camera facing circle.
+        /** Returns the distance in pixels from the mouse pointer to a camera facing circle.
          */
         static DistanceToCircle(position: Vector3, radius: number): number
-        /** Pixel distance from mouse pointer to a rectangle on screen.
+        /** Returns the distance in pixels from the mouse pointer to a cone.
+         * @param position Position of the cone.
+         * @param rotation Rotation of the cone.
+         * @param size Size of the cone.
+         * @returns Distance from mouse to cone in pixels. 
+         */
+        static DistanceToCone(position: Vector3, rotation: Quaternion, size: number): number
+        /** Returns the distance in pixels from the mouse pointer to a cube.
+         * @param position Position of the cube.
+         * @param rotation Rotation of the cube.
+         * @param size Size of the cube.
+         * @returns Distance from mouse to cube in pixels. 
+         */
+        static DistanceToCube(position: Vector3, rotation: Quaternion, size: number): number
+        /** Returns the distance in pixels from the mouse pointer to a rectangle on screen.
          */
         static DistanceToRectangle(position: Vector3, rotation: Quaternion, size: number): number
         /** Distance from a point p in 2d to a line defined by two points a and b.
@@ -12641,19 +12991,19 @@ declare module "UnityEditor" {
         /** Distance from a point p in 2d to a line segment defined by two points a and b.
          */
         static DistancePointToLineSegment(p: Vector2, a: Vector2, b: Vector2): number
-        /** Pixel distance from mouse pointer to a 3D disc.
+        /** Returns the distance in pixels from the mouse pointer to a 3D disc.
          */
         static DistanceToDisc(center: Vector3, normal: Vector3, radius: number): number
         /** Get the point on an disc (in 3D space) which is closest to the current mouse position.
          */
         static ClosestPointToDisc(center: Vector3, normal: Vector3, radius: number): Vector3
-        /** Pixel distance from mouse pointer to a 3D section of a disc.
+        /** Returns the distance in pixels from the mouse pointer to a 3D section of a disc.
          */
         static DistanceToArc(center: Vector3, normal: Vector3, from: Vector3, angle: number, radius: number): number
         /** Get the point on an arc (in 3D space) which is closest to the current mouse position.
          */
         static ClosestPointToArc(center: Vector3, normal: Vector3, from: Vector3, angle: number, radius: number): Vector3
-        /** Pixel distance from mouse pointer to a polyline.
+        /** Returns the distance in pixels from the mouse pointer to a polyline.
          */
         static DistanceToPolyLine(...points: Vector3[]): number
         /** Get the point on a polyline (in 3D space) which is closest to the current mouse position.
@@ -12696,16 +13046,73 @@ declare module "UnityEditor" {
          * @param rect An screen rectangle specified with pixel coordinates.
          */
         static PickRectObjects(rect: Rect): Array<GameObject>
+        /** Returns the nearest vertex to a guiPoint within a maximum radius of 50 pixels.
+         * @param guiPoint A point in GUI space.
+         * @param vertex The nearest vertex position to guiPoint, or a default value if no vertex is within the minimum picking distance.
+         * @param objectsToSearch An array of Transform to consider when picking the nearest vertex. If null, all active objects in open scenes are considered.
+         * @param objectsToIgnore An array of Transform to exclude from consideration when picking nearest vertex.
+         * @returns Returns true if a vertex within 50 pixels of the guiPoint was found, false if no vertex found within the minimum picking radius. 
+         */
+        static FindNearestVertex(guiPoint: Vector2, objectsToSearch: Array<Transform>, objectsToIgnore: Array<Transform>, vertex: jsb.Out<Vector3>): boolean
+        /** Returns the nearest vertex to a guiPoint within a maximum radius of 50 pixels.
+         * @param guiPoint A point in GUI space.
+         * @param vertex The nearest vertex position to guiPoint, or a default value if no vertex is within the minimum picking distance.
+         * @param objectsToSearch An array of Transform to consider when picking the nearest vertex. If null, all active objects in open scenes are considered.
+         * @param objectsToIgnore An array of Transform to exclude from consideration when picking nearest vertex.
+         * @returns Returns true if a vertex within 50 pixels of the guiPoint was found, false if no vertex found within the minimum picking radius. 
+         */
+        static FindNearestVertex(guiPoint: Vector2, objectsToSearch: Array<Transform>, vertex: jsb.Out<Vector3>): boolean
+        /** Returns the nearest vertex to a guiPoint within a maximum radius of 50 pixels.
+         * @param guiPoint A point in GUI space.
+         * @param vertex The nearest vertex position to guiPoint, or a default value if no vertex is within the minimum picking distance.
+         * @param objectsToSearch An array of Transform to consider when picking the nearest vertex. If null, all active objects in open scenes are considered.
+         * @param objectsToIgnore An array of Transform to exclude from consideration when picking nearest vertex.
+         * @returns Returns true if a vertex within 50 pixels of the guiPoint was found, false if no vertex found within the minimum picking radius. 
+         */
+        static FindNearestVertex(guiPoint: Vector2, vertex: jsb.Out<Vector3>): boolean
+        /** Pick game object closest to specified position.
+         * @param selectPrefabRoot Select Prefab.
+         * @param materialIndex Returns index into material array of the Renderer component that is closest to specified position.
+         * @param position A position in GUI coordinates. The top-left of the window is (0,0), and the bottom-right is (Screen.width, Screen.height).
+         * @param ignore An array of GameObjects that will not be considered when selecting the nearest GameObject.
+         * @param filter An array of GameObjects to be exclusively considered for selection. If null, all GameObjects in open scenes are eligible for selection.
+         * @returns The GameObject that is under the requested position. 
+         */
+        static PickGameObject(position: Vector2, selectPrefabRoot: boolean, ignore: Array<GameObject>, filter: Array<GameObject>): GameObject
+        /** Pick game object closest to specified position.
+         * @param selectPrefabRoot Select Prefab.
+         * @param materialIndex Returns index into material array of the Renderer component that is closest to specified position.
+         * @param position A position in GUI coordinates. The top-left of the window is (0,0), and the bottom-right is (Screen.width, Screen.height).
+         * @param ignore An array of GameObjects that will not be considered when selecting the nearest GameObject.
+         * @param filter An array of GameObjects to be exclusively considered for selection. If null, all GameObjects in open scenes are eligible for selection.
+         * @returns The GameObject that is under the requested position. 
+         */
         static PickGameObject(position: Vector2, ignore: Array<GameObject>, materialIndex: jsb.Out<number>): GameObject
+        /** Pick game object closest to specified position.
+         * @param selectPrefabRoot Select Prefab.
+         * @param materialIndex Returns index into material array of the Renderer component that is closest to specified position.
+         * @param position A position in GUI coordinates. The top-left of the window is (0,0), and the bottom-right is (Screen.width, Screen.height).
+         * @param ignore An array of GameObjects that will not be considered when selecting the nearest GameObject.
+         * @param filter An array of GameObjects to be exclusively considered for selection. If null, all GameObjects in open scenes are eligible for selection.
+         * @returns The GameObject that is under the requested position. 
+         */
         static PickGameObject(position: Vector2, selectPrefabRoot: boolean, ignore: Array<GameObject>): GameObject
         /** Pick game object closest to specified position.
          * @param selectPrefabRoot Select Prefab.
          * @param materialIndex Returns index into material array of the Renderer component that is closest to specified position.
+         * @param position A position in GUI coordinates. The top-left of the window is (0,0), and the bottom-right is (Screen.width, Screen.height).
+         * @param ignore An array of GameObjects that will not be considered when selecting the nearest GameObject.
+         * @param filter An array of GameObjects to be exclusively considered for selection. If null, all GameObjects in open scenes are eligible for selection.
+         * @returns The GameObject that is under the requested position. 
          */
         static PickGameObject(position: Vector2, materialIndex: jsb.Out<number>): GameObject
         /** Pick game object closest to specified position.
          * @param selectPrefabRoot Select Prefab.
          * @param materialIndex Returns index into material array of the Renderer component that is closest to specified position.
+         * @param position A position in GUI coordinates. The top-left of the window is (0,0), and the bottom-right is (Screen.width, Screen.height).
+         * @param ignore An array of GameObjects that will not be considered when selecting the nearest GameObject.
+         * @param filter An array of GameObjects to be exclusively considered for selection. If null, all GameObjects in open scenes are eligible for selection.
+         * @returns The GameObject that is under the requested position. 
          */
         static PickGameObject(position: Vector2, selectPrefabRoot: boolean): GameObject
         /** Store all camera settings.
@@ -12718,6 +13125,13 @@ declare module "UnityEditor" {
          * @returns A boxed RaycastHit, null if nothing hit it. 
          */
         static RaySnap(ray: Ray): Object
+        /** Casts a ray against the loaded scenes and returns the nearest intersected point on a collider.
+         * @param guiPosition The GUI position in the SceneView. You can pass Event.current.mousePosition to this parameter in most cases.
+         * @param position Returns the nearest intersected point to a ray cast from the mouse position into the scene.
+         * @param normal Returns the normal of the nearest intersected point to a ray cast from the mouse position into the scene.
+         * @returns Returns true if the raycast intersected something in the scene; otherwise, false. 
+         */
+        static PlaceObject(guiPosition: Vector2, position: jsb.Out<Vector3>, normal: jsb.Out<Vector3>): boolean
         static Repaint(): void
         protected constructor()
         /** Get standard acceleration for dragging values (Read Only).
@@ -12731,6 +13145,8 @@ declare module "UnityEditor" {
         static readonly niceMouseDeltaZoom: number
         static nearestControl: number
         static readonly handleMaterial: Material
+        static pickGameObjectCustomPasses(op: "add" | "remove", fn: (cam: Camera, layers: number, position: Vector2, ignore: Array<GameObject>, filter: Array<GameObject>, materialIndex: jsb.Out<number>) => GameObject): void
+        static placeObjectCustomPasses(op: "add" | "remove", fn: (guiPosition: Vector2, position: jsb.Out<Vector3>, normal: jsb.Out<Vector3>) => boolean): void
     }
 }
 declare module "UnityEditor" {
@@ -12891,7 +13307,7 @@ declare module "UnityEditor" {
         /** The Camera that is rendering this SceneView.
          */
         readonly camera: Camera
-        /** The central point that the camera orbits within the Scene view.
+        /** The center point, or pivot, of the Scene view.
          */
         pivot: Vector3
         /** The direction of the camera to the pivot of the SceneView.
@@ -12912,7 +13328,7 @@ declare module "UnityEditor" {
 }
 declare module "UnityEditor" {
     import * as jsb from "jsb";
-    import { Object, Array } from "System";
+    import { Object, Array, ValueType } from "System";
     import { Object as Object1, Vector2 } from "UnityEngine";
     /** Various utilities for mesh manipulation.
      */
@@ -12933,6 +13349,19 @@ declare module "UnityEditor" {
         /** Will insert per-triangle uv2 in mesh and handle vertex splitting etc.
          */
         static SetPerTriangleUV2(src: any, triUV: Array<Vector2>): void
+        /** Gets a snapshot of Mesh data for read-only access in the Unity Editor.
+         * @param mesh The input mesh.
+         * @param meshes The input meshes.
+         * @returns Returns a read-only snapshot of Mesh data. See Mesh.MeshDataArray and Mesh.MeshData. 
+         */
+        static AcquireReadOnlyMeshData(mesh: any): any
+        /** Gets a snapshot of Mesh data for read-only access in the Unity Editor.
+         * @param mesh The input mesh.
+         * @param meshes The input meshes.
+         * @returns Returns a read-only snapshot of Mesh data. See Mesh.MeshDataArray and Mesh.MeshData. 
+         */
+        static AcquireReadOnlyMeshData(meshes: Array<any>): any
+        static AcquireReadOnlyMeshData(meshes: any): any
         protected constructor()
     }
 }
@@ -13020,7 +13449,7 @@ declare module "UnityEditor" {
          */
         static IsPartOfVariantPrefab(componentOrGameObject: Object1): boolean
         /** Is this object part of a Prefab that cannot be edited?
-         * @param gameObjectOrComponent The object to check. Must be a component or GameObject.
+         * @param componentOrGameObject The object to check. Must be a component or GameObject.
          * @returns True if the object is part of a Prefab that cannot be edited. 
          */
         static IsPartOfImmutablePrefab(componentOrGameObject: Object1): boolean
@@ -13306,6 +13735,9 @@ declare module "UnityEditor.Build.Reporting" {
         /** An array of all the PackedAssets generated by the build process.
          */
         readonly packedAssets: Array<PackedAssets>
+        /** An optional array of ScenesUsingAssets generated by the build process if BuildOptions.DetailedBuildReport was used during the build.
+         */
+        readonly scenesUsingAssets: Array<ScenesUsingAssets>
     }
 }
 declare module "UnityEngine" {
@@ -13349,7 +13781,6 @@ declare module "UnityEditor" {
          * @returns Target platform name represented by the passed in BuildTarget. 
          */
         static GetBuildTargetName(targetPlatform: BuildTarget): string
-        static SetAssetBundleEncryptKey(password: string): void
         /** Checks if Unity can append the build.
          * @param target The BuildTarget to build.
          * @param location The path where Unity builds the application.
@@ -13377,6 +13808,12 @@ declare module "UnityEditor" {
          * @returns A BuildReport giving build process information. 
          */
         static BuildPlayer(buildPlayerOptions: BuildPlayerOptions): BuildReport
+        /** Writes out a "boot.config" file that contains configuration information for the very early stages of engine startup.
+         * @param outputFile The location to write the file to.
+         * @param target The platform to target for this build.
+         * @param options Options for this build.
+         */
+        static WriteBootConfig(outputFile: string, target: BuildTarget, options: BuildOptions): void
         /** Build AssetBundles from a building map.
          * @param outputPath Output path for the AssetBundles.
          * @param builds AssetBundle building map.
@@ -13419,6 +13856,9 @@ In some cases the player directory path can be affected by BuildOptions.Developm
          * @param buildTargetGroup Build target group.
          */
         static GetPlaybackEngineDirectory(target: BuildTarget, options: BuildOptions): string
+        /** Returns the mode currently used by players to initiate a connect to the host.
+         */
+        static GetPlayerConnectionInitiateMode(targetPlatform: BuildTarget, buildOptions: BuildOptions): PlayerConnectionInitiateMode
         protected constructor()
         /** Is a player currently being built?
          */
@@ -13434,6 +13874,71 @@ declare module "UnityEditor" {
      */
     @jsb.RequiredDefines("UNITY_EDITOR")
     class AssetDatabase extends Object {
+        static CanOpenForEdit(assetOrMetaFilePaths: Array<string>, outNotEditablePaths: any, statusQueryOptions: StatusQueryOptions): void
+        /** Query whether an Asset file can be opened for editing in version control and is not exclusively locked by another user or otherwise unavailable.
+         * @param assetObject Object representing the asset whose status you wish to query.
+         * @param assetOrMetaFilePath Path to the asset file or its .meta file on disk, relative to project folder.
+         * @param message Returns a reason for the asset not being available for edit.
+         * @param statusOptions Options for how the version control system should be queried. These options can effect the speed and accuracy of the query. Default is StatusQueryOptions.UseCachedIfPossible.
+         * @returns True if the asset is considered available for edit by the selected version control system. 
+         */
+        static CanOpenForEdit(assetObject: Object1, message: jsb.Out<string>, statusOptions: StatusQueryOptions): boolean
+        /** Query whether an Asset file can be opened for editing in version control and is not exclusively locked by another user or otherwise unavailable.
+         * @param assetObject Object representing the asset whose status you wish to query.
+         * @param assetOrMetaFilePath Path to the asset file or its .meta file on disk, relative to project folder.
+         * @param message Returns a reason for the asset not being available for edit.
+         * @param statusOptions Options for how the version control system should be queried. These options can effect the speed and accuracy of the query. Default is StatusQueryOptions.UseCachedIfPossible.
+         * @returns True if the asset is considered available for edit by the selected version control system. 
+         */
+        static CanOpenForEdit(assetOrMetaFilePath: string, message: jsb.Out<string>, statusOptions: StatusQueryOptions): boolean
+        /** Query whether an Asset file can be opened for editing in version control and is not exclusively locked by another user or otherwise unavailable.
+         * @param assetObject Object representing the asset whose status you wish to query.
+         * @param assetOrMetaFilePath Path to the asset file or its .meta file on disk, relative to project folder.
+         * @param message Returns a reason for the asset not being available for edit.
+         * @param statusOptions Options for how the version control system should be queried. These options can effect the speed and accuracy of the query. Default is StatusQueryOptions.UseCachedIfPossible.
+         * @returns True if the asset is considered available for edit by the selected version control system. 
+         */
+        static CanOpenForEdit(assetObject: Object1, statusOptions: StatusQueryOptions): boolean
+        /** Query whether an Asset file can be opened for editing in version control and is not exclusively locked by another user or otherwise unavailable.
+         * @param assetObject Object representing the asset whose status you wish to query.
+         * @param assetOrMetaFilePath Path to the asset file or its .meta file on disk, relative to project folder.
+         * @param message Returns a reason for the asset not being available for edit.
+         * @param statusOptions Options for how the version control system should be queried. These options can effect the speed and accuracy of the query. Default is StatusQueryOptions.UseCachedIfPossible.
+         * @returns True if the asset is considered available for edit by the selected version control system. 
+         */
+        static CanOpenForEdit(assetOrMetaFilePath: string, statusOptions: StatusQueryOptions): boolean
+        /** Query whether an Asset file can be opened for editing in version control and is not exclusively locked by another user or otherwise unavailable.
+         * @param assetObject Object representing the asset whose status you wish to query.
+         * @param assetOrMetaFilePath Path to the asset file or its .meta file on disk, relative to project folder.
+         * @param message Returns a reason for the asset not being available for edit.
+         * @param statusOptions Options for how the version control system should be queried. These options can effect the speed and accuracy of the query. Default is StatusQueryOptions.UseCachedIfPossible.
+         * @returns True if the asset is considered available for edit by the selected version control system. 
+         */
+        static CanOpenForEdit(assetObject: Object1, message: jsb.Out<string>): boolean
+        /** Query whether an Asset file can be opened for editing in version control and is not exclusively locked by another user or otherwise unavailable.
+         * @param assetObject Object representing the asset whose status you wish to query.
+         * @param assetOrMetaFilePath Path to the asset file or its .meta file on disk, relative to project folder.
+         * @param message Returns a reason for the asset not being available for edit.
+         * @param statusOptions Options for how the version control system should be queried. These options can effect the speed and accuracy of the query. Default is StatusQueryOptions.UseCachedIfPossible.
+         * @returns True if the asset is considered available for edit by the selected version control system. 
+         */
+        static CanOpenForEdit(assetOrMetaFilePath: string, message: jsb.Out<string>): boolean
+        /** Query whether an Asset file can be opened for editing in version control and is not exclusively locked by another user or otherwise unavailable.
+         * @param assetObject Object representing the asset whose status you wish to query.
+         * @param assetOrMetaFilePath Path to the asset file or its .meta file on disk, relative to project folder.
+         * @param message Returns a reason for the asset not being available for edit.
+         * @param statusOptions Options for how the version control system should be queried. These options can effect the speed and accuracy of the query. Default is StatusQueryOptions.UseCachedIfPossible.
+         * @returns True if the asset is considered available for edit by the selected version control system. 
+         */
+        static CanOpenForEdit(assetObject: Object1): boolean
+        /** Query whether an Asset file can be opened for editing in version control and is not exclusively locked by another user or otherwise unavailable.
+         * @param assetObject Object representing the asset whose status you wish to query.
+         * @param assetOrMetaFilePath Path to the asset file or its .meta file on disk, relative to project folder.
+         * @param message Returns a reason for the asset not being available for edit.
+         * @param statusOptions Options for how the version control system should be queried. These options can effect the speed and accuracy of the query. Default is StatusQueryOptions.UseCachedIfPossible.
+         * @returns True if the asset is considered available for edit by the selected version control system. 
+         */
+        static CanOpenForEdit(assetOrMetaFilePath: string): boolean
         static IsOpenForEdit(assetOrMetaFilePaths: Array<string>, outNotEditablePaths: any, statusQueryOptions: StatusQueryOptions): void
         /** Query whether an Asset file is open for editing in version control.
          * @param assetObject Object representing the asset whose status you wish to query.
@@ -13590,13 +14095,18 @@ The parent folder string must start with the "Assets" folder, and all folders wi
          * @returns An empty string, if the asset has been successfully renamed, otherwise an error message. 
          */
         static RenameAsset(pathName: string, newName: string): string
-        /** Moves the asset at path to the trash.
+        /** Moves the specified asset  or folder to the OS trash.
+         * @param path Project relative path of the asset or folder to be deleted.
+         * @returns Returns true if the asset has been successfully removed, false if it doesn't exist or couldn't be removed. 
          */
         static MoveAssetToTrash(path: string): boolean
-        /** Deletes the asset file at path.
-         * @param path Filesystem path of the asset to be deleted.
+        static MoveAssetsToTrash(paths: Array<string>, outFailedPaths: any): boolean
+        /** Deletes the specified asset or folder.
+         * @param path Project relative path of the asset or folder to be deleted.
+         * @returns Returns true if the asset has been successfully removed, false if it doesn't exist or couldn't be removed. 
          */
         static DeleteAsset(path: string): boolean
+        static DeleteAssets(paths: Array<string>, outFailedPaths: any): boolean
         /** Import asset at path.
          */
         static ImportAsset(path: string, options: ImportAssetOptions): void
@@ -13668,6 +14178,8 @@ The parent folder string must start with the "Assets" folder, and all folders wi
          */
         static LoadAssetAtPath(assetPath: string, type: any): Object1
         /** Returns the main asset object at assetPath.
+
+The "main" Asset is the Asset at the root of a hierarchy (such as a Maya file which may contain multiples meshes and GameObjects).
          * @param assetPath Filesystem path of the asset to load.
          */
         static LoadMainAssetAtPath(assetPath: string): Object1
@@ -13675,6 +14187,12 @@ The parent folder string must start with the "Assets" folder, and all folders wi
          * @param assetPath Filesystem path of the asset to load.
          */
         static GetMainAssetTypeAtPath(assetPath: string): any
+        /** Gets an object's type from an Asset path and a local file identifier.
+         * @param assetPath The Asset's path.
+         * @param localIdentifierInFile The object's local file identifier.
+         * @returns The object's type. 
+         */
+        static GetTypeFromPathAndFileID(assetPath: string, localIdentifierInFile: number): any
         /** Returns true if the main asset object at assetPath is loaded in memory.
          * @param assetPath Filesystem path of the asset to load.
          */
@@ -13714,16 +14232,35 @@ The parent folder string must start with the "Assets" folder, and all folders wi
         /** Opens the asset(s) with associated application(s).
          */
         static OpenAsset(objects: Array<Object1>): boolean
+        /** Gets the corresponding asset path for the supplied GUID, or an empty string if the GUID can't be found.
+         * @param guid The GUID of an asset.
+         * @returns Path of the asset relative to the project folder. 
+         */
+        static GUIDToAssetPath(guid: string): string
+        /** Gets the corresponding asset path for the supplied GUID, or an empty string if the GUID can't be found.
+         * @param guid The GUID of an asset.
+         * @returns Path of the asset relative to the project folder. 
+         */
+        static GUIDToAssetPath(guid: GUID): string
+        /** Get the GUID for the asset at path.
+         * @param path Filesystem path for the asset. All paths are relative to the project folder.
+         * @returns The GUID of the asset. An all-zero GUID denotes an invalid asset path. 
+         */
+        static GUIDFromAssetPath(path: string): GUID
         /** Get the GUID for the asset at path.
          * @param path Filesystem path for the asset.
          * @returns GUID. 
          */
         static AssetPathToGUID(path: string): string
-        /** Gets the corresponding asset path for the supplied guid, or an empty string if the GUID can't be found.
-         */
-        static GUIDToAssetPath(guid: string): string
         /** Returns the hash of all the dependencies of an asset.
          * @param path Path to the asset.
+         * @param guid GUID of the asset.
+         * @returns Aggregate hash. 
+         */
+        static GetAssetDependencyHash(guid: GUID): Hash128
+        /** Returns the hash of all the dependencies of an asset.
+         * @param path Path to the asset.
+         * @param guid GUID of the asset.
          * @returns Aggregate hash. 
          */
         static GetAssetDependencyHash(path: string): Hash128
@@ -13734,6 +14271,7 @@ The parent folder string must start with the "Assets" folder, and all folders wi
         /** Replaces that list of labels on an asset.
          */
         static SetLabels(obj: Object1, labels: Array<string>): void
+        static GetLabels(guid: GUID): Array<string>
         /** Returns all labels attached to a given asset.
          */
         static GetLabels(obj: Object1): Array<string>
@@ -13846,24 +14384,20 @@ Note: GetDependencies() gets the Assets that are referenced by other Assets. For
         static GetBuiltinExtraResource(type: any, path: string): Object1
         static ForceReserializeAssets(assetPaths: IEnumerable<string>, options: ForceReserializeAssetsOptions): void
         static ForceReserializeAssets(): void
-        /** Warning Use the overload with a long localId parameter. Using the overload with an integer localId parameter can cause an integer overflow in localId. This can happen when the object passed to the API is part of a Prefab.
-
-Get the GUID and local file id from an object instance id.
+        /** Get the GUID and local file id from an object instance id.
          * @param instanceID InstanceID of the object to retrieve information for.
          * @param obj The object to retrieve GUID and File Id for.
          * @param assetRef The asset reference to retrieve GUID and File Id for.
-         * @param guid The GUID of the asset.
+         * @param guid The GUID of an asset.
          * @param localId The local file identifier of this asset.
          * @returns True if the guid and file id were successfully found, false if not. 
          */
         static TryGetGUIDAndLocalFileIdentifier(obj: Object1, guid: jsb.Out<string>, localId: jsb.Out<number>): boolean
-        /** Warning Use the overload with a long localId parameter. Using the overload with an integer localId parameter can cause an integer overflow in localId. This can happen when the object passed to the API is part of a Prefab.
-
-Get the GUID and local file id from an object instance id.
+        /** Get the GUID and local file id from an object instance id.
          * @param instanceID InstanceID of the object to retrieve information for.
          * @param obj The object to retrieve GUID and File Id for.
          * @param assetRef The asset reference to retrieve GUID and File Id for.
-         * @param guid The GUID of the asset.
+         * @param guid The GUID of an asset.
          * @param localId The local file identifier of this asset.
          * @returns True if the guid and file id were successfully found, false if not. 
          */
@@ -13876,11 +14410,63 @@ Get the GUID and local file id from an object instance id.
         static ImportPackage(packagePath: string, interactive: boolean): void
         static DisallowAutoRefresh(): void
         static AllowAutoRefresh(): void
+        /** Clears the importer override for the asset.
+         * @param path Asset path.
+         */
+        static ClearImporterOverride(path: string): void
+        static IsCacheServerEnabled(): boolean
+        /** Returns the type of the override importer.
+         * @param path Asset path.
+         * @returns Importer type. 
+         */
+        static GetImporterOverride(path: string): any
+        /** Gets the importer types associated with a given Asset type.
+         * @param path The Asset path.
+         * @returns Returns an array of importer types that can handle the specified Asset. 
+         */
+        static GetAvailableImporterTypes(path: string): Array<any>
+        /** Checks the availability of the Cache Server.
+         * @param ip The IP address of the Cache Server.
+         * @param port The Port number of the Cache Server.
+         * @returns Returns true when Editor can connect to the Cache Server. Returns false otherwise. 
+         */
+        static CanConnectToCacheServer(ip: string, port: number): boolean
+        static RefreshSettings(): void
+        static IsConnectedToCacheServer(): boolean
+        static ResetCacheServerReconnectTimer(): void
+        static CloseCacheServerConnection(): void
+        static GetCacheServerAddress(): string
+        static GetCacheServerPort(): number
+        static GetCacheServerNamespacePrefix(): string
+        static GetCacheServerEnableDownload(): boolean
+        static GetCacheServerEnableUpload(): boolean
+        static IsDirectoryMonitoringEnabled(): boolean
+        /** Allows you to register a custom dependency that Assets can be dependent on. If you register a custom dependency, and specify that an Asset is dependent on it, then the Asset will get re-imported if the custom dependency changes.
+         * @param dependency Name of dependency. You can use any name you like, but because these names are global across all your Assets, it can be useful to use a naming convention (eg a path-based naming system) to avoid clashes with other custom dependency names.
+         * @param hashOfValue A Hash128 value of the dependency.
+         */
+        static RegisterCustomDependency(dependency: string, hashOfValue: Hash128): void
+        /** Removes custom dependencies that match the prefixFilter.
+         * @param prefixFilter Prefix filter for the custom dependencies to unregister.
+         * @returns Number of custom dependencies removed. 
+         */
+        static UnregisterCustomDependencyPrefixFilter(prefixFilter: string): number
+        static IsAssetImportWorkerProcess(): boolean
         protected constructor()
+        /** Changes during Refresh if anything has changed that can invalidate any artifact.
+         */
+        static readonly GlobalArtifactDependencyVersion: number
+        /** Changes whenever a new artifact is added to the artifact database.
+         */
+        static readonly GlobalArtifactProcessedVersion: number
         static importPackageStarted(op: "add" | "remove", fn: (packageName: string) => void): void
         static importPackageCompleted(op: "add" | "remove", fn: (packageName: string) => void): void
         static importPackageCancelled(op: "add" | "remove", fn: (packageName: string) => void): void
         static importPackageFailed(op: "add" | "remove", fn: (packageName: string, errorMessage: string) => void): void
+        static cacheServerConnectionChanged(op: "add" | "remove", fn: (obj: CacheServerConnectionChangedParameters) => void): void
+        static onImportPackageItemsCompleted(op: "get"): (obj: Array<string>) => void
+        static onImportPackageItemsCompleted(op: "add" | "remove" | "set", fn?: (obj: Array<string>) => void): void
+        static onImportPackageItemsCompleted(op: "add" | "remove" | "set" | "get", fn?: (obj: Array<string>) => void): (obj: Array<string>) => void | void
     }
 }
 declare module "UnityEditor" {
@@ -14106,7 +14692,7 @@ declare module "UnityEditor" {
 }
 declare module "UnityEditor" {
     import * as jsb from "jsb";
-    import { Object, Array, Enum } from "System";
+    import { Object, Array, Enum, ValueType } from "System";
     import { Object as Object1, Texture2D, Texture, Renderer, Camera, Rect, GUIContent, GameObject } from "UnityEngine";
     /** Editor utility functions.
      */
@@ -14198,7 +14784,7 @@ declare module "UnityEditor" {
         /** Compress a cubemap texture.
          */
         static CompressCubemapTexture(texture: any, format: any, quality: TextureCompressionQuality): void
-        /** Marks target object as dirty. (Only suitable for non-scene objects).
+        /** Marks target object as dirty.
          * @param target The object to mark as dirty.
          */
         static SetDirty(target: Object1): void
@@ -14311,6 +14897,15 @@ declare module "UnityEditor" {
         static CreateGameObjectWithHideFlags(name: string, flags: any, ...components: any[]): GameObject
         static CompileCSharp(sources: Array<string>, references: Array<string>, defines: Array<string>, outputFile: string): Array<string>
         static DisplayCustomMenuWithSeparators(position: Rect, options: Array<string>, enabled: Array<boolean>, separator: Array<boolean>, selected: Array<number>, callback: (userData: Object, options: Array<string>, selected: number) => void, userData: Object): void
+        /** Sets the default parent object for the active Scene.
+         * @param defaultParentObject The GameObject to set as the default parent object.
+         */
+        static SetDefaultParentObject(defaultParentObject: GameObject): void
+        /** Clears the default parent GameObject from either a specific Scene or the active Scene.
+         * @param scene Specify a Scene to clear the default parent object for a specific Scene. If a Scene is not specified, this method clears the default parent object for the active Scene.
+         */
+        static ClearDefaultParentObject(scene: any): void
+        static ClearDefaultParentObject(): void
         protected constructor()
         static audioMasterMute: boolean
         /** True if there are any compilation error messages in the log.
@@ -14601,6 +15196,7 @@ declare module "UnityEditor" {
          * @returns The enum flags value modified by the user. This is a selection BitMask where each bit represents an Enum value index. (Note this returned value is not itself an Enum). 
          */
         static EnumFlagsField(position: Rect, enumValue: Enum): Enum
+        static ObjectField(position: Rect, label: string, obj: Object1, objType: any, targetBeingEdited: Object1): Object1
         /** Makes an object field. You can assign objects either by drag and drop objects or by selecting an object using the Object Picker.
          * @param position Rectangle on the screen to use for the field.
          * @param label Optional label in front of the field.
@@ -14610,6 +15206,7 @@ declare module "UnityEditor" {
          * @returns The object that has been set by the user. 
          */
         static ObjectField(position: Rect, label: string, obj: Object1, objType: any, allowSceneObjects: boolean): Object1
+        static ObjectField(position: Rect, label: GUIContent, obj: Object1, objType: any, targetBeingEdited: Object1): Object1
         /** Makes an object field. You can assign objects either by drag and drop objects or by selecting an object using the Object Picker.
          * @param position Rectangle on the screen to use for the field.
          * @param label Optional label in front of the field.
@@ -14626,6 +15223,7 @@ declare module "UnityEditor" {
          * @param label Optional label to display in front of the field. Pass GUIContent.none to hide the label.
          */
         static ObjectField(position: Rect, property: SerializedProperty, objType: any, label: GUIContent): void
+        static ObjectField(position: Rect, obj: Object1, objType: any, targetBeingEdited: Object1): Object1
         /** Makes an object field. You can assign objects either by drag and drop objects or by selecting an object using the Object Picker.
          * @param position Rectangle on the screen to use for the field.
          * @param label Optional label in front of the field.
@@ -15101,6 +15699,7 @@ It sets material _Mip property.
 It sets material _Mip property.
          */
         static DrawTextureAlpha(position: Rect, image: Texture): void
+        static DrawTextureTransparent(position: Rect, image: Texture, scaleMode: ScaleMode, imageAspect: number, mipLevel: number, colorWriteMask: any, exposure: number): void
         static DrawTextureTransparent(position: Rect, image: Texture, scaleMode: ScaleMode, imageAspect: number, mipLevel: number, colorWriteMask: any): void
         static DrawTextureTransparent(position: Rect, image: Texture, scaleMode: ScaleMode, imageAspect: number, mipLevel: number): void
         static DrawTextureTransparent(position: Rect, image: Texture, scaleMode: ScaleMode, imageAspect: number): void
@@ -15113,8 +15712,21 @@ It sets material _Mip property.
          * @param scaleMode How to scale the image when the aspect ratio of it doesn't fit the aspect ratio to be drawn within.
          * @param imageAspect Aspect ratio to use for the source image. If 0 (the default), the aspect ratio from the image is used.
          * @param mipLevel The mip-level to sample. If negative, the texture is sampled normally.
-Sets material _Mip property.
-         * @param colorWriteMask Specifies which color components of image will get written.
+Sets material's _Mip property.
+         * @param colorWriteMask Specifies which color components of image will get written. Sets material's _ColorMask property.
+         * @param exposure Specifies the exposure for the texture. Sets material's _Exposure property.
+         */
+        static DrawPreviewTexture(position: Rect, image: Texture, mat: Material, scaleMode: ScaleMode, imageAspect: number, mipLevel: number, colorWriteMask: any, exposure: number): void
+        /** Draws the texture within a rectangle.
+         * @param position Rectangle on the screen to draw the texture within.
+         * @param image Texture to display.
+         * @param mat Material to be used when drawing the texture.
+         * @param scaleMode How to scale the image when the aspect ratio of it doesn't fit the aspect ratio to be drawn within.
+         * @param imageAspect Aspect ratio to use for the source image. If 0 (the default), the aspect ratio from the image is used.
+         * @param mipLevel The mip-level to sample. If negative, the texture is sampled normally.
+Sets material's _Mip property.
+         * @param colorWriteMask Specifies which color components of image will get written. Sets material's _ColorMask property.
+         * @param exposure Specifies the exposure for the texture. Sets material's _Exposure property.
          */
         static DrawPreviewTexture(position: Rect, image: Texture, mat: Material, scaleMode: ScaleMode, imageAspect: number, mipLevel: number, colorWriteMask: any): void
         /** Draws the texture within a rectangle.
@@ -15124,8 +15736,9 @@ Sets material _Mip property.
          * @param scaleMode How to scale the image when the aspect ratio of it doesn't fit the aspect ratio to be drawn within.
          * @param imageAspect Aspect ratio to use for the source image. If 0 (the default), the aspect ratio from the image is used.
          * @param mipLevel The mip-level to sample. If negative, the texture is sampled normally.
-Sets material _Mip property.
-         * @param colorWriteMask Specifies which color components of image will get written.
+Sets material's _Mip property.
+         * @param colorWriteMask Specifies which color components of image will get written. Sets material's _ColorMask property.
+         * @param exposure Specifies the exposure for the texture. Sets material's _Exposure property.
          */
         static DrawPreviewTexture(position: Rect, image: Texture, mat: Material, scaleMode: ScaleMode, imageAspect: number, mipLevel: number): void
         /** Draws the texture within a rectangle.
@@ -15135,8 +15748,9 @@ Sets material _Mip property.
          * @param scaleMode How to scale the image when the aspect ratio of it doesn't fit the aspect ratio to be drawn within.
          * @param imageAspect Aspect ratio to use for the source image. If 0 (the default), the aspect ratio from the image is used.
          * @param mipLevel The mip-level to sample. If negative, the texture is sampled normally.
-Sets material _Mip property.
-         * @param colorWriteMask Specifies which color components of image will get written.
+Sets material's _Mip property.
+         * @param colorWriteMask Specifies which color components of image will get written. Sets material's _ColorMask property.
+         * @param exposure Specifies the exposure for the texture. Sets material's _Exposure property.
          */
         static DrawPreviewTexture(position: Rect, image: Texture, mat: Material, scaleMode: ScaleMode, imageAspect: number): void
         /** Draws the texture within a rectangle.
@@ -15146,8 +15760,9 @@ Sets material _Mip property.
          * @param scaleMode How to scale the image when the aspect ratio of it doesn't fit the aspect ratio to be drawn within.
          * @param imageAspect Aspect ratio to use for the source image. If 0 (the default), the aspect ratio from the image is used.
          * @param mipLevel The mip-level to sample. If negative, the texture is sampled normally.
-Sets material _Mip property.
-         * @param colorWriteMask Specifies which color components of image will get written.
+Sets material's _Mip property.
+         * @param colorWriteMask Specifies which color components of image will get written. Sets material's _ColorMask property.
+         * @param exposure Specifies the exposure for the texture. Sets material's _Exposure property.
          */
         static DrawPreviewTexture(position: Rect, image: Texture, mat: Material, scaleMode: ScaleMode): void
         /** Draws the texture within a rectangle.
@@ -15157,8 +15772,9 @@ Sets material _Mip property.
          * @param scaleMode How to scale the image when the aspect ratio of it doesn't fit the aspect ratio to be drawn within.
          * @param imageAspect Aspect ratio to use for the source image. If 0 (the default), the aspect ratio from the image is used.
          * @param mipLevel The mip-level to sample. If negative, the texture is sampled normally.
-Sets material _Mip property.
-         * @param colorWriteMask Specifies which color components of image will get written.
+Sets material's _Mip property.
+         * @param colorWriteMask Specifies which color components of image will get written. Sets material's _ColorMask property.
+         * @param exposure Specifies the exposure for the texture. Sets material's _Exposure property.
          */
         static DrawPreviewTexture(position: Rect, image: Texture, mat: Material): void
         /** Draws the texture within a rectangle.
@@ -15168,8 +15784,9 @@ Sets material _Mip property.
          * @param scaleMode How to scale the image when the aspect ratio of it doesn't fit the aspect ratio to be drawn within.
          * @param imageAspect Aspect ratio to use for the source image. If 0 (the default), the aspect ratio from the image is used.
          * @param mipLevel The mip-level to sample. If negative, the texture is sampled normally.
-Sets material _Mip property.
-         * @param colorWriteMask Specifies which color components of image will get written.
+Sets material's _Mip property.
+         * @param colorWriteMask Specifies which color components of image will get written. Sets material's _ColorMask property.
+         * @param exposure Specifies the exposure for the texture. Sets material's _Exposure property.
          */
         static DrawPreviewTexture(position: Rect, image: Texture): void
         /** Makes a label field. (Useful for showing read-only info.)
@@ -16163,6 +16780,16 @@ Sets material _Mip property.
          * @param label Optional label to display in front of the field.
          * @param gradient The gradient to edit.
          * @param hdr Display the HDR Gradient Editor.
+         * @param colorSpace Display the gradient and Gradient Editor in this color space.
+         * @returns The gradient edited by the user. 
+         */
+        static GradientField(position: Rect, label: GUIContent, gradient: Gradient, hdr: boolean, colorSpace: any): Gradient
+        /** Makes a field for editing a Gradient.
+         * @param position Rectangle on the screen to use for the field.
+         * @param label Optional label to display in front of the field.
+         * @param gradient The gradient to edit.
+         * @param hdr Display the HDR Gradient Editor.
+         * @param colorSpace Display the gradient and Gradient Editor in this color space.
          * @returns The gradient edited by the user. 
          */
         static GradientField(position: Rect, label: GUIContent, gradient: Gradient, hdr: boolean): Gradient
@@ -16171,6 +16798,7 @@ Sets material _Mip property.
          * @param label Optional label to display in front of the field.
          * @param gradient The gradient to edit.
          * @param hdr Display the HDR Gradient Editor.
+         * @param colorSpace Display the gradient and Gradient Editor in this color space.
          * @returns The gradient edited by the user. 
          */
         static GradientField(position: Rect, label: string, gradient: Gradient): Gradient
@@ -16179,6 +16807,7 @@ Sets material _Mip property.
          * @param label Optional label to display in front of the field.
          * @param gradient The gradient to edit.
          * @param hdr Display the HDR Gradient Editor.
+         * @param colorSpace Display the gradient and Gradient Editor in this color space.
          * @returns The gradient edited by the user. 
          */
         static GradientField(position: Rect, label: GUIContent, gradient: Gradient): Gradient
@@ -16187,6 +16816,7 @@ Sets material _Mip property.
          * @param label Optional label to display in front of the field.
          * @param gradient The gradient to edit.
          * @param hdr Display the HDR Gradient Editor.
+         * @param colorSpace Display the gradient and Gradient Editor in this color space.
          * @returns The gradient edited by the user. 
          */
         static GradientField(position: Rect, gradient: Gradient): Gradient
@@ -16229,6 +16859,10 @@ declare module "UnityEditor" {
         /** Send an input event into the game.
          */
         static QueueGameViewInputEvent(evt: Event): void
+        static GetMainWindowPosition(): Rect
+        /** Sets position of Unity Editor's main window.
+         */
+        static SetMainWindowPosition(position: Rect): void
         /** Converts a position from point to pixel space.
          * @param rect A GUI position in point space.
          * @returns The same position in pixel space. 
@@ -18050,6 +18684,7 @@ GUILayout.MaxHeight, GUILayout.ExpandWidth, GUILayout.ExpandHeight.
          * @returns The enum flags value modified by the user. This is a selection BitMask where each bit represents an Enum value index. (Note this returned value is not itself an Enum). 
          */
         static EnumFlagsField(enumValue: Enum, ...options: GUILayoutOption[]): Enum
+        static ObjectField(label: string, obj: Object1, objType: any, targetBeingEdited: Object1, ...options: GUILayoutOption[]): Object1
         /** Make a field to receive any object type.
          * @param label Optional label in front of the field.
          * @param obj The object the field shows.
@@ -18061,6 +18696,7 @@ GUILayout.MaxHeight, GUILayout.ExpandWidth, GUILayout.ExpandHeight.
          * @returns The object that has been set by the user. 
          */
         static ObjectField(label: string, obj: Object1, objType: any, allowSceneObjects: boolean, ...options: GUILayoutOption[]): Object1
+        static ObjectField(label: GUIContent, obj: Object1, objType: any, targetBeingEdited: Object1, ...options: GUILayoutOption[]): Object1
         /** Make a field to receive any object type.
          * @param label Optional label in front of the field.
          * @param obj The object the field shows.
@@ -18072,6 +18708,7 @@ GUILayout.MaxHeight, GUILayout.ExpandWidth, GUILayout.ExpandHeight.
          * @returns The object that has been set by the user. 
          */
         static ObjectField(label: GUIContent, obj: Object1, objType: any, allowSceneObjects: boolean, ...options: GUILayoutOption[]): Object1
+        static ObjectField(obj: Object1, objType: any, targetBeingEdited: Object1, ...options: GUILayoutOption[]): Object1
         /** Make a field to receive any object type.
          * @param label Optional label in front of the field.
          * @param obj The object the field shows.
@@ -18957,6 +19594,7 @@ declare module "UnityEditor" {
         Show(): void
         ShowAuxWindow(): void
         ShowModal(): void
+        SaveChanges(): void
         Close(): void
         Repaint(): void
         /** Sends an Event to a window.
@@ -18985,18 +19623,33 @@ declare module "UnityEditor" {
         /** Checks whether MouseEnterWindow and MouseLeaveWindow events are received in the GUI in this Editor window.
          */
         wantsMouseEnterLeaveWindow: boolean
+        /** Specifies whether a layout pass is performed before all user events (for example, EventType.MouseDown or EventType, KeyDown), or is only performed before repaint events.
+         */
+        wantsLessLayoutEvents: boolean
         /** Does the window automatically repaint whenever the Scene has changed?
          */
         autoRepaintOnSceneChange: boolean
         /** Is this window maximized?
          */
         maximized: boolean
+        /** Returns true if EditorWindow is focused.
+         */
+        readonly hasFocus: boolean
+        /** Returns true if EditorWindow is docked.
+         */
+        readonly docked: boolean
         /** The EditorWindow which currently has keyboard focus. (Read Only)
          */
         static readonly focusedWindow: EditorWindow
         /** The EditorWindow currently under the mouse cursor. (Read Only)
          */
         static readonly mouseOverWindow: EditorWindow
+        /** When set to true in a derived class, the editor will prompt the user to save unsaved changes if the window is about to be closed.
+         */
+        readonly hasUnsavedChanges: boolean
+        /** The message that displays to the user if they are prompted to save
+         */
+        readonly saveChangesMessage: string
         /** The minimum size of this window.
          */
         minSize: Vector2
@@ -19108,6 +19761,12 @@ declare module "UnityEngine" {
          * @param subEmitterIndex Index of the sub emitter to trigger.
          */
         TriggerSubEmitter(subEmitterIndex: number): void
+        AllocateAxisOfRotationAttribute(): void
+        AllocateMeshIndexAttribute(): void
+        /** Ensures that the ParticleSystemJobs.ParticleSystemJobData.customData1|customData1 and ParticleSystemJobs.ParticleSystemJobData.customData1|customData2 particle attribute arrays are allocated.
+         * @param stream The custom data stream to allocate.
+         */
+        AllocateCustomDataAttribute(stream: any): void
         /** Safe array size for use with ParticleSystem.GetCollisionEvents.
          */
         GetSafeCollisionEventSize(): number
@@ -19118,6 +19777,7 @@ declare module "UnityEngine" {
          * @returns Number of particles with this trigger event type. 
          */
         GetSafeTriggerParticlesSize(type: any): number
+        GetTriggerParticles(type: any, particles: any, colliderData: jsb.Out<any>): number
         GetTriggerParticles(type: any, particles: any): number
         SetTriggerParticles(type: any, particles: any, offset: number, count: number): void
         SetTriggerParticles(type: any, particles: any): void
@@ -19172,6 +19832,9 @@ declare module "UnityEngine" {
         /** Script interface for the InheritVelocityModule of a Particle System.
          */
         readonly inheritVelocity: any
+        /** Script interface for the Particle System Lifetime By Emitter Speed module.
+         */
+        readonly lifetimeByEmitterSpeed: any
         /** Script interface for the ForceOverLifetimeModule of a Particle System.
          */
         readonly forceOverLifetime: any
@@ -19279,7 +19942,7 @@ declare module "UnityEngine" {
         /** Specifies how to sort particles within a system.
          */
         sortMode: any
-        /** How much are the particles stretched in their direction of motion.
+        /** How much are the particles stretched in their direction of motion, defined as the length of the particle compared to its width.
          */
         lengthScale: number
         /** Specifies how much particles stretch depending on their velocity.
@@ -19321,6 +19984,12 @@ declare module "UnityEngine" {
         /** Allow billboard particles to roll around their z-axis.
          */
         allowRoll: boolean
+        /** Enables freeform stretching behavior.
+         */
+        freeformStretching: boolean
+        /** Rotate the particles based on the direction they are stretched in. This is added on top of other particle rotation.
+         */
+        rotateWithStretchDirection: boolean
         /** The Mesh that the particle uses instead of a billboarded Texture.
          */
         mesh: any
@@ -19624,17 +20293,6 @@ declare module "Example" {
         constructor()
         Dispose(): void
         static CreateDisposableObject(): DisposableObject
-    }
-}
-declare module "Example" {
-    import * as jsb from "jsb";
-    import { Object } from "System";
-    @jsb.RequiredDefines("CUSTOM_DEF_FOO", "UNITY_EDITOR")
-    class FOO extends Object {
-        constructor()
-        static Exclusive(i32: number): void
-        static Exclusive(): void
-        static value: string
     }
 }
 declare module "global" {
@@ -20048,6 +20706,7 @@ declare module "System" {
         GetEnumerator(): any
         ArrayListFromJson(): any
         HashtableFromJson(): any
+        ToIntArray(): Array<number>
         static Join(separator: string, value: Array<string>, startIndex: number, count: number): string
         static Join(separator: string, values: IEnumerable<string>): string
         static Join(separator: string, ...value: string[]): string
@@ -20387,6 +21046,17 @@ declare module "UnityEditor" {
 }
 declare module "UnityEditor" {
     import * as jsb from "jsb";
+    import { Object } from "System";
+    /** AssetModificationProcessor lets you hook into saving of serialized assets and
+      scenes which are edited inside Unity.
+     */
+    @jsb.RequiredDefines("UNITY_EDITOR")
+    class AssetModificationProcessor extends Object {
+        constructor()
+    }
+}
+declare module "UnityEditor" {
+    import * as jsb from "jsb";
     import { Enum } from "System";
     /** Result of Asset move
      */
@@ -20439,6 +21109,23 @@ declare module "UnityEditor" {
         /** Addressable name used to load an asset.
          */
         addressableNames: Array<string>
+    }
+}
+declare module "UnityEditor" {
+    import * as jsb from "jsb";
+    import { Enum } from "System";
+    /** Describes how the player connects to the Editor.
+     */
+    enum PlayerConnectionInitiateMode {
+        /** Player connection mode not set.
+         */
+        None = 0,
+        /** Player connection is initiated by the player connecting to the host, usually the host is the Editor.
+         */
+        PlayerConnectsToHost = 1,
+        /** Player connection is initiated by the player broadcasting its IP address, and then Editor connecting to the player.
+         */
+        PlayerListens = 2,
     }
 }
 declare module "UnityEditor" {
@@ -20984,6 +21671,9 @@ declare module "UnityEditor" {
         /** Always pack all the SpriteAtlas.
          */
         AlwaysOnAtlas = 4,
+        /** If enabled, will automatically migrate all *.spriteatlas assets to *.spriteatlasv2 assets. Old *.spriteatlas assets will be removed.
+         */
+        SpriteAtlasV2 = 5,
     }
 }
 declare module "UnityEditor" {
@@ -21045,56 +21735,125 @@ declare module "UnityEditor" {
 }
 declare module "UnityEditor" {
     import * as jsb from "jsb";
-    import { ValueType } from "System";
-    @jsb.RequiredDefines("UNITY_EDITOR")
-    class ExternalVersionControl extends ValueType {
-        constructor(value: string)
-        toString(): string
-        static op_Implicit(d: ExternalVersionControl): string
-        static op_Implicit(d: string): ExternalVersionControl
-        static readonly Disabled: string
-        static readonly AutoDetect: string
-        static readonly Generic: string
-    }
-}
-declare module "UnityEditor" {
-    import * as jsb from "jsb";
     import { Object } from "UnityEngine";
     import { Array } from "System";
+    /** User settings for Unity Editor.
+     */
     @jsb.RequiredDefines("UNITY_EDITOR")
     class EditorSettings extends Object {
         protected constructor()
+        /** Gets or sets device ID used for Unity Remote feature.
+         */
         static unityRemoteDevice: string
+        /** Gets or sets compression method used for Unity Remote screen stream.
+         */
         static unityRemoteCompression: string
+        /** Gets or sets resolution used for Unity Remote screen stream.
+         */
         static unityRemoteResolution: string
+        /** Gets or sets joystick source used in editor when Unity Remote is connected.
+         */
         static unityRemoteJoystickSource: string
-        static externalVersionControl: string
         static serializationMode: SerializationMode
         static lineEndingsForNewScripts: LineEndingsMode
         static defaultBehaviorMode: EditorBehaviorMode
+        /** Allows you to specify a Scene to use as the for Prefabs.
+         */
         static prefabRegularEnvironment: SceneAsset
+        /** Allows you to specify a Scene to use as the for UI Prefabs.
+         */
         static prefabUIEnvironment: SceneAsset
+        /** Allow Auto Save in Prefab Mode for this project.
+         */
+        static prefabModeAllowAutoSave: boolean
         static spritePackerMode: SpritePackerMode
+        /** Power of 2 value to add a boundary (padding) to Sprites packed to the Atlas (Legacy Sprite Packer).
+         */
         static spritePackerPaddingPower: number
         static etcTextureCompressorBehavior: number
         static etcTextureFastCompressor: number
         static etcTextureNormalCompressor: number
         static etcTextureBestCompressor: number
+        /** Enable texture mipmap streaming system when in Edit Mode.
+         */
         static enableTextureStreamingInEditMode: boolean
+        /** Enable texture mipmap streaming system when in Play Mode.
+         */
         static enableTextureStreamingInPlayMode: boolean
+        /** Enable asynchronous Shader compilation in Game and Scene view.
+         */
         static asyncShaderCompilation: boolean
+        /** Enables the Caching Shader Preprocessor (experimental).
+         */
+        static cachingShaderPreprocessor: boolean
+        /** Controls list of extensions of files that will be included in the c# .csproj projects that Unity generates.
+         */
         static projectGenerationUserExtensions: Array<string>
+        /** Built-in list of extensions of files that will be included in the c# projects Unity generates.
+         */
         static readonly projectGenerationBuiltinExtensions: Array<string>
+        /** Controls which root namespace gets written into the c# .csproj projects that Unity generates.
+         */
         static projectGenerationRootNamespace: string
+        /** Enable the legacy fixed sample counts for baking Light Probes with Progressive Lightmapper.
+         */
         static useLegacyProbeSampleCount: boolean
+        /** Determines whether cookies should be evaluated by the Progressive Lightmapper during Global Illumination calculations.
+         */
+        static enableCookiesInLightmapper: boolean
+        /** Determines whether the Enter Play Mode Options are enabled in the Unity Editor or not.
+         */
         static enterPlayModeOptionsEnabled: boolean
+        /** Determines the state of the Enter Play Mode Options in the Unity Editor.
+         */
         static enterPlayModeOptions: EnterPlayModeOptions
-        static assetPipelineMode: AssetPipelineMode
+        /** Forces Unity to write references and other inline mappings on one line, to help reduce version control noise.
+         */
+        static serializeInlineMappingsOnOneLine: boolean
+        /** Select the assetpipeline mode.
+         */
+        static readonly assetPipelineMode: AssetPipelineMode
+        /** Select cache server mode
+         */
         static cacheServerMode: CacheServerMode
+        /** Cache server endpoint IP address
+         */
         static cacheServerEndpoint: string
+        /** Sets the namespace prefix to use for the cache server.
+         */
         static cacheServerNamespacePrefix: string
+        /** Toggle whether to enable downloading from cache server.
+         */
         static cacheServerEnableDownload: boolean
+        /** Toggle whether to enable uploading from cache server.
+         */
         static cacheServerEnableUpload: boolean
+        /** Toggle whether to enable authentication to cache server.
+         */
+        static cacheServerEnableAuth: boolean
+        /** Toggle whether to enable TLS encryption to cache server.
+         */
+        static cacheServerEnableTls: boolean
+        /** Indicates the amount of digits to use for the numbers in a duplicated GameoObject's name.
+         */
+        static gameObjectNamingDigits: number
+        /** Indicates which naming scheme to use for duplicated GameObjects.
+         */
+        static gameObjectNamingScheme: EditorSettings.NamingScheme
+        /** Controls whether to insert a space before a number in duplicated Asset names.
+         */
+        static assetNamingUsesSpace: boolean
+    }
+}
+declare module "UnityEditor" {
+    import * as jsb from "jsb";
+    import { Enum } from "System";
+    namespace EditorSettings {
+        enum NamingScheme {
+            SpaceParenthesis = 0,
+            Dot = 1,
+            Underscore = 2,
+        }
     }
 }
 declare module "UnityEditor" {
@@ -21110,23 +21869,6 @@ declare module "UnityEditor" {
          */
         Package = 1,
         Iso = 2,
-    }
-}
-declare module "UnityEditor" {
-    import * as jsb from "jsb";
-    import { Enum } from "System";
-    enum PS5BuildSubtarget {
-        PCHosted = 0,
-        Package = 1,
-        GP5Project = 2,
-    }
-}
-declare module "UnityEditor" {
-    import * as jsb from "jsb";
-    import { Enum } from "System";
-    enum PS5BuildCompressionType {
-        Default = 0,
-        Kraken = 1,
     }
 }
 declare module "UnityEditor" {
@@ -21160,7 +21902,6 @@ declare module "UnityEditor" {
     import { Enum } from "System";
     enum XboxOneDeployMethod {
         Push = 0,
-        Pull = 1,
         RunFromPC = 2,
         Package = 3,
         PackageStreaming = 4,
@@ -21275,21 +22016,6 @@ declare module "UnityEditor" {
         /** Specifies which version of PS4 hardware to target.
          */
         static ps4HardwareTarget: PS4HardwareTarget
-        /** Target PS5 build type.
-         */
-        static ps5BuildSubtarget: PS5BuildSubtarget
-        /** PS5 file compression type.
-         */
-        static ps5BuildCompressionType: PS5BuildCompressionType
-        /** PS5 file compression level.
-         */
-        static ps5BuildCompressionLevel: number
-        /** Maintain package file between builds.
-         */
-        static ps5KeepPackageFiles: boolean
-        /** Destination Workspace name for build.
-         */
-        static ps5WorkspaceName: string
         /** Are null references actively validated?
          */
         static explicitNullChecks: boolean
@@ -21344,8 +22070,6 @@ declare module "UnityEditor" {
         static androidETC2Fallback: any
         static androidBuildSystem: any
         static androidBuildType: any
-        static androidDebugMinification: any
-        static androidReleaseMinification: any
         /** Set to true to create a symbols.zip file in the same location as the .apk or .aab file.
          */
         static androidCreateSymbolsZip: boolean
@@ -21408,15 +22132,16 @@ declare module "UnityEditor" {
         /** Scheme with which the project will be run in Xcode.
          */
         static iOSBuildConfigType: iOSBuildType
-        static switchCreateSolutionFile: boolean
         static switchCreateRomFile: boolean
         static switchNVNGraphicsDebugger: boolean
         static generateNintendoSwitchShaderInfo: boolean
         static switchNVNShaderDebugging: boolean
-        static switchNVNDrawValidation: boolean
+        static switchNVNDrawValidation_Light: boolean
+        static switchNVNDrawValidation_Heavy: boolean
         static switchEnableHeapInspector: boolean
         static switchEnableDebugPad: boolean
         static switchRedirectWritesToHostMount: boolean
+        static switchHTCSScriptDebugging: boolean
         static switchUseLegacyNvnPoolAllocator: boolean
         /** Place the built player in the build folder.
          */
@@ -21530,60 +22255,6 @@ declare module "UnityEditor" {
 }
 declare module "UnityEditor" {
     import * as jsb from "jsb";
-    import { ValueType, Array } from "System";
-    import { Object } from "UnityEngine";
-    /** Struct providing an API for stable, project-global object identifiers.
-     */
-    @jsb.RequiredDefines("UNITY_EDITOR")
-    class GlobalObjectId extends ValueType {
-        constructor()
-        toString(): string
-        /** Check equality between two GlobalObjectIds.
-         */
-        Equals(other: GlobalObjectId): boolean
-        /** Converts an Object reference to a GlobalObjectId.
-         * @param targetObject The Object to be converted.
-         * @returns The converted GlobalObjectId. If the conversion is unsuccessful, the GlobalObjectId is set to the default null ID: "GlobalObjectId_V1-0-00000000000000000000000000000000-0-0". 
-         */
-        static GetGlobalObjectIdSlow(targetObject: Object): GlobalObjectId
-        /** Creates an array of GlobalObjectIds based on an array of Objects.
-         * @param objects Array of Objects to convert.
-         * @param outputIdentifiers Resulting array of GlobalObjectIds.
-         */
-        static GetGlobalObjectIdsSlow(objects: Array<Object>, outputIdentifiers: Array<GlobalObjectId>): void
-        /** Parses the string representation of a GlobalObjectId into a GlobalObjectId struct.
-         * @param stringValue The string representation of a GlobalObjectId.
-Example: "GlobalObjectId_V1-2-74c253e3f16be4776bb2d88e01f77c8a-902906726-0".
-         * @param id The GlobalObjectId struct for the parsed values.
-         * @returns Returns true if the string representation is successfully parsed. Otherwise, returns false. 
-         */
-        static TryParse(stringValue: string, id: jsb.Out<GlobalObjectId>): boolean
-        /** Converts a GlobalObjectId to an Object reference.
-         * @param id The GlobalObjectId to lookup.
-         * @returns If the GlobalObjectId is found, this method returns the converted Object reference. Returns null if the GlobalObjectId is not found. 
-         */
-        static GlobalObjectIdentifierToObjectSlow(id: GlobalObjectId): Object
-        /** Creates an array of Objects based on an array of GlobalObjectIds.
-         * @param identifiers Array of GlobalObjectIds to convert.
-         * @param outputObjects Resulting array of Object references.
-         */
-        static GlobalObjectIdentifiersToObjectsSlow(identifiers: Array<GlobalObjectId>, outputObjects: Array<Object>): void
-        /** The local file ID of the object.
-         */
-        readonly targetObjectId: number
-        /** The prefab instance id of the object.
-         */
-        readonly targetPrefabId: number
-        /** The GUID for the asset to which this object belongs.
-         */
-        readonly assetGUID: GUID
-        /** The identifier type represented as an integer.
-         */
-        readonly identifierType: number
-    }
-}
-declare module "UnityEditor" {
-    import * as jsb from "jsb";
     import { ValueType, Array, Object } from "System";
     @jsb.RequiredDefines("UNITY_EDITOR")
     class GUID extends ValueType {
@@ -21601,6 +22272,84 @@ declare module "UnityEditor" {
         static Generate(): GUID
         // js_op_overloading: static ==(x: GUID, y: GUID): boolean
         // js_op_overloading: static <(x: GUID, y: GUID): boolean
+    }
+}
+declare module "UnityEditor" {
+    import * as jsb from "jsb";
+    import { ValueType, Array } from "System";
+    import { Object } from "UnityEngine";
+    /** Struct providing an API for stable, project-global object identifiers.
+     */
+    @jsb.RequiredDefines("UNITY_EDITOR")
+    class GlobalObjectId extends ValueType {
+        constructor()
+        toString(): string
+        /** Check equality between two GlobalObjectIds.
+         */
+        Equals(other: GlobalObjectId): boolean
+        /** Converts an Object reference or InstanceID to a GlobalObjectId.
+         * @param targetObject The Object to be converted.
+         * @param instanceId The InstanceID of the Object to be converted.
+         * @returns The converted GlobalObjectId. If the conversion is unsuccessful, the GlobalObjectId is set to the default null ID: "GlobalObjectId_V1-0-00000000000000000000000000000000-0-0". 
+         */
+        static GetGlobalObjectIdSlow(targetObject: Object): GlobalObjectId
+        /** Converts an Object reference or InstanceID to a GlobalObjectId.
+         * @param targetObject The Object to be converted.
+         * @param instanceId The InstanceID of the Object to be converted.
+         * @returns The converted GlobalObjectId. If the conversion is unsuccessful, the GlobalObjectId is set to the default null ID: "GlobalObjectId_V1-0-00000000000000000000000000000000-0-0". 
+         */
+        static GetGlobalObjectIdSlow(instanceId: number): GlobalObjectId
+        /** Creates an array of GlobalObjectIds based on an array of Objects or InstanceIDs.
+         * @param objects Array of Objects to convert.
+         * @param outputIdentifiers Resulting array of GlobalObjectIds.
+         * @param instanceIds Array of InstanceIDs to convert.
+         */
+        static GetGlobalObjectIdsSlow(objects: Array<Object>, outputIdentifiers: Array<GlobalObjectId>): void
+        /** Creates an array of GlobalObjectIds based on an array of Objects or InstanceIDs.
+         * @param objects Array of Objects to convert.
+         * @param outputIdentifiers Resulting array of GlobalObjectIds.
+         * @param instanceIds Array of InstanceIDs to convert.
+         */
+        static GetGlobalObjectIdsSlow(instanceIds: Array<number>, outputIdentifiers: Array<GlobalObjectId>): void
+        /** Parses the string representation of a GlobalObjectId into a GlobalObjectId struct.
+         * @param stringValue The string representation of a GlobalObjectId.
+Example: "GlobalObjectId_V1-2-74c253e3f16be4776bb2d88e01f77c8a-902906726-0".
+         * @param id The GlobalObjectId struct for the parsed values.
+         * @returns Returns true if the string representation is successfully parsed. Otherwise, returns false. 
+         */
+        static TryParse(stringValue: string, id: jsb.Out<GlobalObjectId>): boolean
+        /** Converts a GlobalObjectId to an Object reference.
+         * @param id The GlobalObjectId to lookup.
+         * @returns If the GlobalObjectId is found, this method returns the converted Object reference. Returns null if the GlobalObjectId is not found. 
+         */
+        static GlobalObjectIdentifierToObjectSlow(id: GlobalObjectId): Object
+        /** Creates an array of Objects based on an array of GlobalObjectIds.
+         * @param identifiers Array of GlobalObjectIds to convert.
+         * @param outputObjects Resulting array of Object references.
+         */
+        static GlobalObjectIdentifiersToObjectsSlow(identifiers: Array<GlobalObjectId>, outputObjects: Array<Object>): void
+        /** Converts a GlobalObjectId to an InstanceID.
+         * @param id The GlobalObjectId to lookup.
+         * @returns If the GlobalObjectId is found, this method returns the converted InstanceID. Returns 0 if the GlobalObjectId is not found. 
+         */
+        static GlobalObjectIdentifierToInstanceIDSlow(id: GlobalObjectId): number
+        /** Creates an array of InstanceIDs based on an array of GlobalObjectIds.
+         * @param identifiers Array of GlobalObjectIds to convert.
+         * @param outputInstanceIDs Resulting array of InstanceIDs.
+         */
+        static GlobalObjectIdentifiersToInstanceIDsSlow(identifiers: Array<GlobalObjectId>, outputInstanceIDs: Array<number>): void
+        /** The local file ID of the object.
+         */
+        readonly targetObjectId: number
+        /** The prefab instance id of the object.
+         */
+        readonly targetPrefabId: number
+        /** The GUID for the asset to which this object belongs.
+         */
+        readonly assetGUID: GUID
+        /** The identifier type represented as an integer.
+         */
+        readonly identifierType: number
     }
 }
 declare module "UnityEditor" {
@@ -21633,7 +22382,7 @@ declare module "UnityEditor" {
         static HasHelpForObject(obj: Object1): boolean
         /** Get the URL for this object's documentation.
          * @param obj The object to retrieve documentation for.
-         * @returns The documentation URL for the object. Note that this could use the http: or file: schemas. 
+         * @returns The documentation URL for the object. Note that this could use the https: or file: schemas. 
          */
         static GetHelpURLForObject(obj: Object1): string
         /** Show help page for this object.
@@ -21649,11 +22398,100 @@ declare module "UnityEditor" {
 }
 declare module "UnityEditor" {
     import * as jsb from "jsb";
+    import { Enum } from "System";
+    enum InspectorMode {
+        Normal = 0,
+        Debug = 1,
+        DebugInternal = 2,
+    }
+}
+declare module "UnityEditor" {
+    import * as jsb from "jsb";
+    import { Enum } from "System";
+    enum HierarchyType {
+        Assets = 1,
+        GameObjects = 2,
+    }
+}
+declare module "UnityEditor" {
+    import * as jsb from "jsb";
+    import { Enum } from "System";
+    enum IconDrawStyle {
+        NonTexture = 0,
+        Texture = 1,
+    }
+}
+declare module "UnityEditor" {
+    import * as jsb from "jsb";
+    import { Object, Array, ValueType } from "System";
+    import { Object as Object1, Texture2D } from "UnityEngine";
+    import { SceneHierarchyHooks } from "UnityEditor.SceneManagement";
+    @jsb.RequiredDefines("UNITY_EDITOR")
+    class HierarchyProperty extends Object {
+        constructor(hierarchyType: HierarchyType, rootPath: string, forceImport: boolean)
+        constructor(hierarchyType: HierarchyType, forceImport: boolean)
+        constructor(rootPath: string, forceImport: boolean)
+        constructor(hierarchyType: HierarchyType)
+        constructor(rootPath: string)
+        SetCustomScenes(sceneHandles: Array<number>): void
+        SetSubScenes(subScenes: Array<SceneHierarchyHooks.SubSceneInfo>): void
+        Reset(): void
+        GetScene(): any
+        IsExpanded(expanded: Array<number>): boolean
+        Next(expanded: Array<number>): boolean
+        NextWithDepthCheck(expanded: Array<number>, minDepth: number): boolean
+        Previous(expanded: Array<number>): boolean
+        Parent(): boolean
+        Find(instanceID: number, expanded: Array<number>): boolean
+        Skip(count: number, expanded: Array<number>): boolean
+        CountRemaining(expanded: Array<number>): number
+        GetInstanceIDIfImported(): number
+        SetSearchFilter(searchString: string, mode: number): void
+        FindAllAncestors(instanceIDs: Array<number>): Array<number>
+        static ClearSceneObjectsFilter(): void
+        static FilterSingleSceneObject(instanceID: number, otherVisibilityState: boolean): void
+        readonly instanceID: number
+        readonly pptrValue: Object1
+        readonly name: string
+        readonly hasChildren: boolean
+        readonly depth: number
+        readonly ancestors: Array<number>
+        readonly row: number
+        readonly colorCode: number
+        readonly guid: string
+        alphaSorted: boolean
+        showSceneHeaders: boolean
+        readonly isSceneHeader: boolean
+        readonly isValid: boolean
+        readonly isMainRepresentation: boolean
+        readonly hasFullPreviewImage: boolean
+        readonly iconDrawStyle: IconDrawStyle
+        readonly isFolder: boolean
+        readonly dynamicDependencies: Array<GUID>
+        readonly icon: Texture2D
+    }
+}
+declare module "UnityEditor" {
+    import * as jsb from "jsb";
     // @jsb.RequiredDefines("UNITY_EDITOR")
     interface IHasCustomMenu {
         /** Adds your custom menu items to an Editor Window.
          */
         AddItemsToMenu(menu: GenericMenu): void
+    }
+}
+declare module "UnityEditor" {
+    import * as jsb from "jsb";
+    import { Object } from "System";
+    import { Component } from "UnityEngine";
+    /** LOD Utility Helpers.
+     */
+    @jsb.RequiredDefines("UNITY_EDITOR")
+    class LODUtility extends Object {
+        constructor()
+        /** Recalculate the bounding region for the given LODGroup.
+         */
+        static CalculateLODGroupBoundingBox(group: any): void
     }
 }
 declare module "UnityEditor" {
@@ -21752,6 +22590,11 @@ declare module "UnityEditor" {
         /** Get the check status of the given menu.
          */
         static GetChecked(menuPath: string): boolean
+        /** Gets a menu item's enabled status.
+         * @param menuPath A slash-delimited path to the item's position in the menu. For example, "Scene/Place on Surface".
+         * @returns True if the menu item is enabled. False otherwise. 
+         */
+        static GetEnabled(menuPath: string): boolean
     }
 }
 declare module "UnityEditor" {
@@ -21801,12 +22644,12 @@ declare module "UnityEngine" {
         constructor(text: string)
         constructor()
         toString(): string
-        /** The text contents of the .txt file as a string. (Read Only)
-         */
-        readonly text: string
         /** The raw bytes of the text asset. (Read Only)
          */
         readonly bytes: Array<jsb.byte>
+        /** The text contents of the .txt file as a string. (Read Only)
+         */
+        readonly text: string
     }
 }
 declare module "UnityEditor" {
@@ -22093,6 +22936,34 @@ declare module "UnityEditor" {
 }
 declare module "UnityEditor" {
     import * as jsb from "jsb";
+    import { Enum } from "System";
+    /** Options for the shader precision model.
+     */
+    enum ShaderPrecisionModel {
+        /** Use the target platform defaults for sampler precision. This results in lower precision on mobile targets and full precision elsewhere.
+         */
+        PlatformDefault = 0,
+        /** Use full sampler precision by default and make it so you have to explicitly declare when you want to use lower precision. This sets Rendering.BuiltinShaderDefine.UNITY_UNIFIED_SHADER_PRECISION_MODEL when Unity compiles shaders.
+         */
+        Unified = 1,
+    }
+}
+declare module "UnityEditor" {
+    import * as jsb from "jsb";
+    import { Enum } from "System";
+    /** Describes the encoding of normal maps.
+     */
+    enum NormalMapEncoding {
+        /** Three-component normal map encoding.
+         */
+        XYZ = 0,
+        /** Two-component DXT5nm-style normal map encoding.
+         */
+        DXT5nm = 1,
+    }
+}
+declare module "UnityEditor" {
+    import * as jsb from "jsb";
     import { Object, Texture2D, Vector2 } from "UnityEngine";
     import { ValueType, Enum, Array } from "System";
     /** Player Settings is where you define various parameters for the final game that you will build in Unity. Some of these values are used in the Resolution Dialog that launches when you open a standalone game.
@@ -22129,14 +23000,40 @@ declare module "UnityEditor" {
          * @param automatic Should best available graphics API be used?
          */
         static SetUseDefaultGraphicsAPIs(platform: BuildTarget, automatic: boolean): void
+        /** Sets a value of a custom template variable.
+         * @param name Name of the variable.
+         * @param value Value of the custom template variable.
+         */
+        static SetTemplateCustomValue(name: string, value: string): void
+        /** Returns a value of a custom template variable.
+         * @param name Name of the variable.
+         * @returns The current value of the custom template variable. 
+         */
+        static GetTemplateCustomValue(name: string): string
+        static GetScriptingDefineSymbolsForGroup(targetGroup: BuildTargetGroup, defines: jsb.Out<Array<string>>): void
         /** Get user-specified symbols for script compilation for the given build target group.
          */
         static GetScriptingDefineSymbolsForGroup(targetGroup: BuildTargetGroup): string
         /** Set user-specified symbols for script compilation for the given build target group.
          * @param targetGroup The name of the group of devices.
-         * @param defines Symbols for this group separated by semicolons.
+         * @param defines Symbols for this group can be passed as an array or as a string separated by semicolons.
          */
         static SetScriptingDefineSymbolsForGroup(targetGroup: BuildTargetGroup, defines: string): void
+        /** Set user-specified symbols for script compilation for the given build target group.
+         * @param targetGroup The name of the group of devices.
+         * @param defines Symbols for this group can be passed as an array or as a string separated by semicolons.
+         */
+        static SetScriptingDefineSymbolsForGroup(targetGroup: BuildTargetGroup, defines: Array<string>): void
+        /** Gets an array of additional compiler arguments set for a specific BuildTargetGroup.
+         * @param targetGroup The BuildTargetGroup to get the compiler arguments for.
+         * @returns Returns an array with the compiler arguments associated with a BuildTargetGroup. 
+         */
+        static GetAdditionalCompilerArgumentsForGroup(targetGroup: BuildTargetGroup): Array<string>
+        /** Sets additional compiler arguments for a BuildTargetGroup.
+         * @param targetGroup The BuildTargetGroup to set the additional compiler arguments for.
+         * @param additionalCompilerArguments An array of the additional compiler arguments.
+         */
+        static SetAdditionalCompilerArgumentsForGroup(targetGroup: BuildTargetGroup, additionalCompilerArguments: Array<string>): void
         /** Gets the BuildTargetPlatformGroup architecture.
          */
         static GetArchitecture(targetGroup: BuildTargetGroup): number
@@ -22214,6 +23111,26 @@ declare module "UnityEditor" {
 Note: calling this function will implicitly call Application.SetStackTraceLogType.
          */
         static SetStackTraceLogType(logType: any, stackTraceType: any): void
+        static GetVirtualTexturingSupportEnabled(): boolean
+        /** Enable virtual texturing.
+         * @param enabled True to enable, false to disable.
+         */
+        static SetVirtualTexturingSupportEnabled(enabled: boolean): void
+        static GetShaderPrecisionModel(): ShaderPrecisionModel
+        /** Sets the shader precision model.
+         * @param model The new precision model to use.
+         */
+        static SetShaderPrecisionModel(model: ShaderPrecisionModel): void
+        /** Returns the NormalMapEncoding used for the given platform group.
+         * @param targetGroup The target platform group whose normal map encoding you want to retrieve.
+         * @returns The NormalMapEncoding for the given platform group. 
+         */
+        static GetNormalMapEncoding(platform: BuildTargetGroup): NormalMapEncoding
+        /** Sets the normal map encoding for the given platform.
+         * @param targetGroup The platform build target group whose normal map encoding you want to set.
+         * @param normalMapEncoding The desired normal map encoding.
+         */
+        static SetNormalMapEncoding(platform: BuildTargetGroup, encoding: NormalMapEncoding): void
         /** Returns the list of available icon slots for the specified platform and  PlatformIconKind|kind.
          * @param platform The full list of platforms that support this API and the supported icon kinds can be found in PlatformIconKind|icon kinds.
          * @param kind Each platform supports a different set of PlatformIconKind|icon kinds. These can be found in the specific platform namespace (for example iOSPlatformIconKind.
@@ -22294,6 +23211,9 @@ Note: calling this function will implicitly call Application.SetStackTraceLogTyp
         /** Platform agnostic setting to define fullscreen behavior. Not all platforms support all modes.
          */
         static fullScreenMode: any
+        /** Enable 360 Stereo Capture support on the current build target.
+         */
+        static enable360StereoCapture: boolean
         /** Active stereo rendering path
          */
         static stereoRenderingPath: StereoRenderingPath
@@ -22318,10 +23238,15 @@ Note: calling this function will implicitly call Application.SetStackTraceLogTyp
         /** Use DXGI Flip Model Swapchain for D3D11
          */
         static useFlipModelSwapchain: boolean
+        /** Specifies whether the application requires OpenGL ES 3.1 support.
+         */
         static openGLRequireES31: boolean
+        /** Specifies whether the application requires OpenGL ES 3.1 AEP support.
+         */
         static openGLRequireES31AEP: boolean
+        /** Specifies whether the application requires OpenGL ES 3.2 support.
+         */
         static openGLRequireES32: boolean
-        static readonly useSecurityBuild: boolean
         /** Virtual Reality specific splash screen.
          */
         static virtualRealitySplashScreen: Texture2D
@@ -22334,6 +23259,9 @@ Note: calling this function will implicitly call Application.SetStackTraceLogTyp
         /** Allow 'unsafe' C# code code to be compiled for predefined assemblies.
          */
         static allowUnsafeCode: boolean
+        /** Set to true to make Unity use Roslyn reference assemblies when compiling scripts. Enabled by default.
+         */
+        static useReferenceAssemblies: boolean
         /** Allows you to enable or disable incremental mode for garbage collection.
          */
         static gcIncremental: boolean
@@ -22408,6 +23336,9 @@ Note: calling this function will implicitly call Application.SetStackTraceLogTyp
         /** Should unused Mesh components be excluded from game build?
          */
         static stripUnusedMeshComponents: boolean
+        /** Enable mip stripping for all platforms.
+         */
+        static mipStripping: boolean
         /** Is the advanced version being used?
          */
         static readonly advancedLicense: boolean
@@ -22444,9 +23375,9 @@ Note: calling this function will implicitly call Application.SetStackTraceLogTyp
         /** Delays acquiring the swapchain image until after the frame is rendered.
          */
         static vulkanEnableLateAcquireNextImage: boolean
-        /** Enable 360 Stereo Capture support on the current build target.
+        /** Applies the display rotation during rendering.
          */
-        static enable360StereoCapture: boolean
+        static vulkanEnablePreTransform: boolean
     }
 }
 declare module "UnityEditor" {
@@ -22481,6 +23412,9 @@ declare module "UnityEditor" {
             static maxAspectRatio: number
             static startInFullscreen: boolean
             static renderOutsideSafeArea: boolean
+            static minifyWithR8: boolean
+            static minifyRelease: boolean
+            static minifyDebug: boolean
         }
     }
 }
@@ -22636,6 +23570,7 @@ declare module "UnityEditor" {
             static playerPrefsMaxSize: number
             static attribVROutputEnabled: boolean
             static compatibilityPS5: boolean
+            static allowPS5Detection: boolean
             static gpu800MHz: boolean
         }
     }
@@ -22687,45 +23622,6 @@ declare module "UnityEditor" {
             PerUser = 0,
             ForceDefault = 1,
             DynamicModeAtRuntime = 2,
-        }
-    }
-}
-declare module "UnityEditor" {
-    import * as jsb from "jsb";
-    import { Object, Array } from "System";
-    namespace PlayerSettings {
-        @jsb.RequiredDefines("UNITY_EDITOR")
-        class PS5 extends Object {
-            constructor()
-            static passcode: string
-            static monoEnv: string
-            static playerPrefsSupport: boolean
-            static restrictedAudioUsageRights: boolean
-            static paramFilePath: string
-            static videoOutPixelFormat: number
-            static videoOutInitialWidth: number
-            static useResolutionFallback: boolean
-            static videoOutOutputMode: number
-            static SdkOverride: string
-            static BackgroundImagePath: string
-            static Pic2Path: string
-            static StartupImagePath: string
-            static startupImagesFolder: string
-            static iconImagesFolder: string
-            static SaveDataImagePath: string
-            static BGMPath: string
-            static ShareOverlayImagePath: string
-            static npConfigZipPath: string
-            static scriptOptimizationLevel: number
-            static disableAutoHideSplash: boolean
-            static includedModules: Array<string>
-            static updateReferencePackage: string
-            static sharedBinaryContentLabels: Array<string>
-            static sharedBinarySystemFolders: Array<string>
-            static enableApplicationExit: boolean
-            static resetTempFolder: boolean
-            static playerPrefsMaxSize: number
-            static operatingSystemCanDisableSplashScreen: boolean
         }
     }
 }
@@ -22821,6 +23717,7 @@ declare module "UnityEditor" {
             static socketAllocatorPoolSize: number
             static socketConcurrencyLimit: number
             static useSwitchCPUProfiler: boolean
+            static useSwitchGOLDLinker: boolean
             static systemResourceMemory: number
             static queueCommandMemory: number
             static readonly defaultSwitchQueueCommandMemory: number
@@ -22836,6 +23733,8 @@ declare module "UnityEditor" {
             static NVNMaxPublicTextureIDCount: number
             static NVNMaxPublicSamplerIDCount: number
             static screenResolutionBehavior: PlayerSettings.Switch.ScreenResolutionBehavior
+            static readonly NMETAOverride: string
+            static readonly NMETAOverrideFullPath: string
             static applicationID: string
             static nsoDependencies: string
             static titleNames: Array<string>
@@ -22884,6 +23783,7 @@ declare module "UnityEditor" {
             static socketInitializeEnabled: boolean
             static networkInterfaceManagerInitializeEnabled: boolean
             static playerConnectionEnabled: boolean
+            static useNewStyleFilepaths: boolean
             static switchUseMicroSleepForYield: boolean
             static switchMicroSleepForYieldTime: number
         }
@@ -23023,57 +23923,6 @@ declare module "UnityEditor" {
             static buildNumber: string
             static targetOSVersionString: string
             static requireExtendedGameController: boolean
-        }
-    }
-}
-declare module "UnityEditor" {
-    import * as jsb from "jsb";
-    import { Object } from "System";
-    namespace PlayerSettings {
-        @jsb.RequiredDefines("UNITY_EDITOR")
-        abstract class VRCardboard extends Object {
-        }
-    }
-}
-declare module "UnityEditor" {
-    import * as jsb from "jsb";
-    import { Object } from "System";
-    namespace PlayerSettings {
-        @jsb.RequiredDefines("UNITY_EDITOR")
-        abstract class VRDaydream extends Object {
-        }
-    }
-}
-declare module "UnityEditor" {
-    import * as jsb from "jsb";
-    import { Object } from "System";
-    namespace PlayerSettings {
-        @jsb.RequiredDefines("UNITY_EDITOR")
-        class WebGL extends Object {
-            constructor()
-            static memorySize: number
-            static exceptionSupport: WebGLExceptionSupport
-            static dataCaching: boolean
-            static emscriptenArgs: string
-            static modulesDirectory: string
-            static template: string
-            static analyzeBuildSize: boolean
-            static useEmbeddedResources: boolean
-            static threadsSupport: boolean
-            static linkerTarget: WebGLLinkerTarget
-            static compressionFormat: WebGLCompressionFormat
-            static nameFilesAsHashes: boolean
-            static debugSymbols: boolean
-            static wasmStreaming: boolean
-        }
-    }
-}
-declare module "UnityEditor" {
-    import * as jsb from "jsb";
-    import { Object } from "System";
-    namespace PlayerSettings {
-        @jsb.RequiredDefines("UNITY_EDITOR")
-        abstract class VRWindowsMixedReality extends Object {
         }
     }
 }
@@ -23296,6 +24145,31 @@ declare module "UnityEditor" {
 }
 declare module "UnityEditor" {
     import * as jsb from "jsb";
+    import { Object } from "System";
+    namespace PlayerSettings {
+        @jsb.RequiredDefines("UNITY_EDITOR")
+        class WebGL extends Object {
+            constructor()
+            static memorySize: number
+            static exceptionSupport: WebGLExceptionSupport
+            static dataCaching: boolean
+            static emscriptenArgs: string
+            static modulesDirectory: string
+            static template: string
+            static analyzeBuildSize: boolean
+            static useEmbeddedResources: boolean
+            static threadsSupport: boolean
+            static linkerTarget: WebGLLinkerTarget
+            static compressionFormat: WebGLCompressionFormat
+            static nameFilesAsHashes: boolean
+            static debugSymbols: boolean
+            static decompressionFallback: boolean
+            static wasmArithmeticExceptions: WebGLWasmArithmeticExceptions
+        }
+    }
+}
+declare module "UnityEditor" {
+    import * as jsb from "jsb";
     import { Object, Array } from "System";
     namespace PlayerSettings {
         @jsb.RequiredDefines("UNITY_EDITOR")
@@ -23339,16 +24213,6 @@ declare module "UnityEditor" {
             static PersistentLocalStorageSize: number
             static EnableTypeOptimization: boolean
             static monoLoggingLevel: number
-        }
-    }
-}
-declare module "UnityEditor" {
-    import * as jsb from "jsb";
-    import { Object } from "System";
-    namespace PlayerSettings {
-        @jsb.RequiredDefines("UNITY_EDITOR")
-        class VROculus extends Object {
-            constructor()
         }
     }
 }
@@ -23512,6 +24376,9 @@ declare module "UnityEditor" {
         /** Use a custom launch screen image specified in the iOS Player Settings or with PlayerSettings.iOS.SetLaunchScreenImage and use its original dimensions.
          */
         ImageAndBackgroundConstant = 4,
+        /** Use a specified custom Storyboard (.storyboard) file in Player Settings.
+         */
+        CustomStoryboard = 5,
     }
 }
 declare module "UnityEditor" {
@@ -23610,6 +24477,20 @@ declare module "UnityEditor" {
         /** Both asm.js and WebAssembly output will be generated. The WebAssembly version of the generated content will be used if supported by the browser, otherwise, the asm.js version will be used. This setting has been deprecated.
          */
         Both = 2,
+    }
+}
+declare module "UnityEditor" {
+    import * as jsb from "jsb";
+    import { Enum } from "System";
+    /** An enum containing different trapping modes for WebAssembly code.
+     */
+    enum WebGLWasmArithmeticExceptions {
+        /** WebAssembly code will throw an exception on things like division by zero, rounding a very large float to an int, and so forth.
+         */
+        Throw = 0,
+        /** This mode avoids traps by clamping floating point value to a reasonable range when performing arithmetic operations.
+         */
+        Ignore = 1,
     }
 }
 declare module "UnityEditor" {
@@ -23721,12 +24602,14 @@ declare module "UnityEditor" {
          * @returns When includeDescendants is true, this method returns true when the GameObject and all its descendants are hidden. When includeDescendants is false, this method returns true when the GameObject is hidden. 
          */
         IsHidden(gameObject: GameObject, includeDescendants: boolean): boolean
+        IsHidden(scene: any): boolean
         /** Checks the picking state of a GameObject and, optionally, its descendants.
          * @param gameObject GameObject to check.
          * @param includeDescendants Specify true to check the GameObject and all its descendants. Set to false to check the GameObject.
          * @returns When includeDescendants is true, this method returns true when the GameObject and all its descendants have picking disabled. When includeDescendants is false, this method returns true when the GameObject has picking disabled. 
          */
         IsPickingDisabled(gameObject: GameObject, includeDescendants: boolean): boolean
+        IsPickingDisabled(scene: any): boolean
         /** Checks whether root GameObjects, and all their descendants, are hidden in a Scene.
          * @param scene Scene to check.
          * @returns Returns true if all root GameObjects of the Scene and all their descendants are hidden. 
@@ -23931,9 +24814,29 @@ declare module "UnityEditor" {
         /** Returns the guids of the selected assets.
          */
         static readonly assetGUIDs: Array<string>
+        /** Returns the number of objects in the Selection.
+         */
+        static readonly count: number
         static selectionChanged(op: "get"): () => void
         static selectionChanged(op: "add" | "remove" | "set", fn?: () => void): void
         static selectionChanged(op: "add" | "remove" | "set" | "get", fn?: () => void): () => void | void
+    }
+}
+declare module "UnityEditor" {
+    import * as jsb from "jsb";
+    import { Enum } from "System";
+    /** Sets the preprocessor that Unity uses to compile this shader.
+     */
+    enum PreprocessorOverride {
+        /** Use the preprocessor defined in your Project's Editor Settings.
+         */
+        UseProjectSettings = 0,
+        /** Use the platform compilers' preprocessors.
+         */
+        ForcePlatformPreprocessor = 1,
+        /** Use the Caching Shader Preprocessor.
+         */
+        ForceCachingPreprocessor = 2,
     }
 }
 declare module "UnityEditor" {
@@ -24172,6 +25075,7 @@ declare module "UnityEditor" {
          * @param name The name of the undo operation.
          */
         static RegisterCompleteObjectUndo(objectsToUndo: Array<Object1>, name: string): void
+        static SetTransformParent(transform: Transform, newParent: Transform, worldPositionStays: boolean, name: string): void
         /** Sets the parent of transform to the new parent and records an undo operation.
          * @param transform The Transform component whose parent is to be changed.
          * @param newParent The parent Transform to be assigned.
@@ -24200,6 +25104,11 @@ It is required that the GameObject is at the root of its current Scene.
          * @returns The newly added component. 
          */
         static AddComponent(gameObject: GameObject, type: any): Component
+        /** Copies the state of the importer for the given asset path.
+         * @param path Path of the asset importer to register for Undo.
+         * @param name The name of the undo operation.
+         */
+        static RegisterImporterUndo(path: string, name: string): void
         /** Copy the states of a hierarchy of objects onto the undo stack.
          * @param objectToUndo The object used to determine a hierarchy of objects whose state changes need to be undone.
          * @param name The name of the undo operation.
@@ -24247,6 +25156,48 @@ It is required that the GameObject is at the root of its current Scene.
 }
 declare module "UnityEditor" {
     import * as jsb from "jsb";
+    import { Object } from "System";
+    @jsb.RequiredDefines("UNITY_EDITOR")
+    class UnityStats extends Object {
+        constructor()
+        static readonly batches: number
+        static readonly drawCalls: number
+        static readonly dynamicBatchedDrawCalls: number
+        static readonly staticBatchedDrawCalls: number
+        static readonly instancedBatchedDrawCalls: number
+        static readonly dynamicBatches: number
+        static readonly staticBatches: number
+        static readonly instancedBatches: number
+        static readonly setPassCalls: number
+        static readonly triangles: number
+        static readonly vertices: number
+        static readonly shadowCasters: number
+        static readonly renderTextureChanges: number
+        static readonly frameTime: number
+        static readonly renderTime: number
+        static readonly audioLevel: number
+        static readonly audioClippingAmount: number
+        static readonly audioDSPLoad: number
+        static readonly audioStreamLoad: number
+        static readonly renderTextureCount: number
+        static readonly renderTextureBytes: number
+        static readonly usedTextureMemorySize: number
+        static readonly usedTextureCount: number
+        static readonly screenRes: string
+        static readonly screenBytes: number
+        static readonly vboTotal: number
+        static readonly vboTotalBytes: number
+        static readonly vboUploads: number
+        static readonly vboUploadBytes: number
+        static readonly ibUploads: number
+        static readonly ibUploadBytes: number
+        static readonly visibleSkinnedMeshes: number
+        static readonly animationComponentsPlaying: number
+        static readonly animatorComponentsPlaying: number
+    }
+}
+declare module "UnityEditor" {
+    import * as jsb from "jsb";
     import { Object, Array, ValueType } from "System";
     import { Object as Object1, ScriptableObject, Component, GameObject, Vector3 } from "UnityEngine";
     @jsb.RequiredDefines("UNITY_EDITOR")
@@ -24259,6 +25210,7 @@ declare module "UnityEditor" {
         static PrepareObjectContextMenu(c: Object1, contextUserData: number): void
         static IsDeveloperBuild(): boolean
         static IsDeveloperMode(): boolean
+        static IsSourceBuild(checkHumanControllingUs: boolean): boolean
         static IsSourceBuild(): boolean
         static IsBleedingEdgeBuild(): boolean
         static IsDestroyScriptableObject(target: ScriptableObject): boolean
@@ -24297,6 +25249,7 @@ declare module "UnityEditor" {
         static GetLocalIdentifierInFileForPersistentObject(obj: Object1): number
         static IsHiddenFile(path: string): boolean
         static ClearSkinCache(): void
+        static GetRenderSettings(): Object1
         static useScriptableRenderPipeline: boolean
     }
 }
@@ -24350,6 +25303,29 @@ declare module "UnityEditor" {
         /** Will auto generate uv2 with default settings for provided mesh, and fill them in.
          */
         static GenerateSecondaryUVSet(src: any): void
+    }
+}
+declare module "UnityEditor" {
+    import * as jsb from "jsb";
+    import { ValueType } from "System";
+    @jsb.RequiredDefines("UNITY_EDITOR")
+    class ExternalVersionControl extends ValueType {
+        constructor(value: string)
+        toString(): string
+        static op_Implicit(d: ExternalVersionControl): string
+        static op_Implicit(d: string): ExternalVersionControl
+        static readonly Disabled: string
+        static readonly AutoDetect: string
+        static readonly Generic: string
+    }
+}
+declare module "UnityEditor" {
+    import * as jsb from "jsb";
+    import { Object } from "UnityEngine";
+    @jsb.RequiredDefines("UNITY_EDITOR")
+    class VersionControlSettings extends Object {
+        protected constructor()
+        static mode: string
     }
 }
 declare module "UnityEditor" {
@@ -24424,7 +25400,17 @@ declare module "UnityEditor" {
 }
 declare module "UnityEditor" {
     import * as jsb from "jsb";
-    import { Object } from "System";
+    import { ScriptableObject } from "UnityEngine";
+    /** AnimationMode uses AnimationModeDriver to identify the animation driver.
+     */
+    @jsb.RequiredDefines("UNITY_EDITOR")
+    class AnimationModeDriver extends ScriptableObject {
+        constructor()
+    }
+}
+declare module "UnityEditor" {
+    import * as jsb from "jsb";
+    import { Object, ValueType } from "System";
     import { Color, Object as Object1, GameObject, AnimationClip } from "UnityEngine";
     /** AnimationMode is used by the AnimationWindow to store properties modified
       by the AnimationClip playback.
@@ -24432,21 +25418,37 @@ declare module "UnityEditor" {
     @jsb.RequiredDefines("UNITY_EDITOR")
     class AnimationMode extends Object {
         constructor()
-        /** Is the specified property currently in animation mode and being animated?
+        /** Checks whether the specified property is in Animation mode and is being animated.
          * @param target The object to determine if it contained the animation.
          * @param propertyPath The name of the animation to search for.
          * @returns Whether the property search is found or not. 
          */
         static IsPropertyAnimated(target: Object1, propertyPath: string): boolean
+        /** Stops the Animation mode and reverts any properties that were animated while in Animation mode.
+         * @param driver An AnimationModeDriver object must be specified if one was specified when the Animation mode was started (StartAnimationMode.)
+         */
+        static StopAnimationMode(driver: AnimationModeDriver): void
         static StopAnimationMode(): void
+        /** Checks whether the Editor is in Animation mode.
+         * @param driver An AnimationModeDriver object that tests if AnimationMode has been locked specifically for this driver.
+         */
+        static InAnimationMode(driver: AnimationModeDriver): boolean
         static InAnimationMode(): boolean
+        /** Starts the Animation mode.
+         * @param driver Specify an AnimationModeDriver object to lock the AnimationMode to a driver.
+         */
+        static StartAnimationMode(driver: AnimationModeDriver): void
         static StartAnimationMode(): void
         static BeginSampling(): void
         static EndSampling(): void
-        /** Samples an AnimationClip on the object and also records any modified
-        properties in AnimationMode.
+        /** Samples the AnimationClip for the GameObject and also records modified properties when in Animation mode.
+         * @param gameObject The root GameObject for the animation.
+         * @param clip The AnimationClip to sample.
+         * @param time The time at which to sample.
+         * @returns Returns true when the Editor is in Animation mode. Returns false otherwise. 
          */
         static SampleAnimationClip(gameObject: GameObject, clip: AnimationClip, time: number): void
+        static SamplePlayableGraph(graph: any, index: number, time: number): void
         /** Marks a property as currently being animated.
          * @param binding Description of the animation clip curve being modified.
          * @param modification Object property being modified.
@@ -24513,57 +25515,72 @@ declare module "UnityEditor" {
     @jsb.RequiredDefines("UNITY_EDITOR")
     class AnimationUtility extends Object {
         constructor()
-        /** Returns the array of Animation Clips associated with the GameObject or component.
+        /** Retrieves an array of animation clips associated with a GameObject or component.
          */
         static GetAnimationClips(gameObject: GameObject): Array<AnimationClip>
-        /** Sets the array of AnimationClips to be referenced in the Animation component.
+        /** Sets the array of animation clips to be referenced in the Animation component.
          */
         static SetAnimationClips(animation: Animation, clips: Array<AnimationClip>): void
-        /** Returns all the animatable bindings that a specific game object has.
+        /** Retrieves the animatable bindings for a specific GameObject.
          */
         static GetAnimatableBindings(targetObject: GameObject, root: GameObject): Array<EditorCurveBinding>
         static GetEditorCurveValueType(root: GameObject, binding: EditorCurveBinding): any
         static GetFloatValue(root: GameObject, binding: EditorCurveBinding, data: jsb.Out<number>): boolean
         static GetObjectReferenceValue(root: GameObject, binding: EditorCurveBinding, data: jsb.Out<Object1>): boolean
-        /** Returns the animated object that the binding is pointing to.
+        /** Retrieves the animated object that the binding points to.
          */
         static GetAnimatedObject(root: GameObject, binding: EditorCurveBinding): Object1
         static PropertyModificationToEditorCurveBinding(modification: PropertyModification, gameObject: GameObject, binding: jsb.Out<EditorCurveBinding>): any
-        /** Returns all the float curve bindings currently stored in the clip.
+        /** Retrieves the float curve bindings in an animation clip.
          */
         static GetCurveBindings(clip: AnimationClip): Array<EditorCurveBinding>
-        /** Returns all the object reference curve bindings currently stored in the clip.
+        /** Retrieves the object reference curve bindings stored in the animation clip.
          */
         static GetObjectReferenceCurveBindings(clip: AnimationClip): Array<EditorCurveBinding>
-        /** Return the object reference curve that the binding is pointing to.
+        /** Retrieves the object reference curve that the binding points to.
+         * @returns Returns an array of keyframes. 
          */
         static GetObjectReferenceCurve(clip: AnimationClip, binding: EditorCurveBinding): Array<ObjectReferenceKeyframe>
-        /** Adds, modifies or removes an object reference curve in a given clip.
-         * @param keyframes Setting this to null will remove the curve.
+        /** Adds, modifies, or removes an object reference curve in an animation clip.
+         * @param clip The animation clip to modify.
+         * @param binding The bindings that define the paths and the properties of each curve.
+         * @param keyframes Array of Object reference values over time. Setting this to null will remove the curve.
          */
         static SetObjectReferenceCurve(clip: AnimationClip, binding: EditorCurveBinding, keyframes: Array<ObjectReferenceKeyframe>): void
-        /** Return the float curve that the binding is pointing to.
+        /** Adds, modifies, or removes object references curve in an animation clip.
+         * @param clip The animation clip to modify.
+         * @param bindings The bindings that define the paths and the properties of each curve.
+         * @param keyframes Array of Object reference arrays, one per binding.
+         */
+        static SetObjectReferenceCurves(clip: AnimationClip, bindings: Array<EditorCurveBinding>, keyframes: Array<Array<ObjectReferenceKeyframe>>): void
+        /** Retrieves the float curve that the binding points to.
          */
         static GetEditorCurve(clip: AnimationClip, binding: EditorCurveBinding): AnimationCurve
-        /** Adds, modifies or removes an editor float curve in a given clip.
-         * @param clip The animation clip to which the curve will be added.
-         * @param binding The bindings which defines the path and the property of the curve.
-         * @param curve The curve to add. Setting this to null will remove the curve.
+        /** Adds, modifies, or removes an editor float curve in an animation clip.
+         * @param clip The animation clip to modify.
+         * @param binding The binding that defines the path and the properties of the curve.
+         * @param curve The curve to add. Set to null to remove the curve.
          */
         static SetEditorCurve(clip: AnimationClip, binding: EditorCurveBinding, curve: AnimationCurve): void
-        /** Retrieve the left tangent mode of the keyframe at specified index.
+        /** Adds, modifies, or removes multiple editor float curves in an animation clip.
+         * @param clip The animation clip to modify.
+         * @param binding The binding that defines the path and the properties of each curve.
+         * @param curves The curves to add. Setting curves in the array to null will remove these curves from the clip.
+         */
+        static SetEditorCurves(clip: AnimationClip, bindings: Array<EditorCurveBinding>, curves: Array<AnimationCurve>): void
+        /** Retrieves the left tangent mode of the keyframe at a specific index.
          * @param curve Curve to query.
          * @param index Keyframe index.
-         * @returns Tangent mode at specified index. 
+         * @returns Returns the tangent mode. 
          */
         static GetKeyLeftTangentMode(curve: AnimationCurve, index: number): AnimationUtility.TangentMode
-        /** Retrieve the right tangent mode of the keyframe at specified index.
+        /** Retrieves the right tangent mode of the keyframe at a specific index.
          * @param curve Curve to query.
          * @param index Keyframe index.
-         * @returns Tangent mode at specified index. 
+         * @returns Returns the tangent mode. 
          */
         static GetKeyRightTangentMode(curve: AnimationCurve, index: number): AnimationUtility.TangentMode
-        /** Retrieve the specified keyframe broken tangent flag.
+        /** Retrieves the broken tangent flag for a specfic keyframe.
          * @param curve Curve to query.
          * @param index Keyframe index.
          * @returns Broken flag at specified index. 
@@ -24577,21 +25594,22 @@ declare module "UnityEditor" {
          * @param broken Broken flag.
          */
         static SetKeyBroken(curve: AnimationCurve, index: number, broken: boolean): void
-        /** Retrieves all animation events associated with the animation clip.
+        /** Retrieves all animation events associated with an animation clip.
          */
         static GetAnimationEvents(clip: AnimationClip): Array<any>
         /** Replaces all animation events in the animation clip.
          */
         static SetAnimationEvents(clip: AnimationClip, events: Array<any>): void
-        /** Calculates path from root transform to target transform.
+        /** Retrieves the path from the root transform to the target transform.
+         * @returns Returns a string representing the path in the transform hierarchy. 
          */
         static CalculateTransformPath(targetTransform: Transform, root: Transform): string
         static GetAnimationClipSettings(clip: AnimationClip): AnimationClipSettings
         static SetAnimationClipSettings(clip: AnimationClip, srcClipInfo: AnimationClipSettings): void
-        /** Set the additive reference pose from referenceClip at time for animation clip clip.
-         * @param clip The animation clip to be used.
+        /** Sets the additive reference pose from referenceClip at time for animation clip clip.
+         * @param clip The animation clip to use.
          * @param referenceClip The animation clip containing the reference pose.
-         * @param time Time that defines the reference pose in referenceClip.
+         * @param time The time that when the reference pose occurs in referenceClip.
          */
         static SetAdditiveReferencePose(clip: AnimationClip, referenceClip: AnimationClip, time: number): void
         static ConstrainToPolynomialCurve(curve: AnimationCurve): void
@@ -24666,6 +25684,41 @@ declare module "UnityEditor" {
         /** The name of the property to be animated.
          */
         propertyName: string
+    }
+}
+declare module "UnityEditor" {
+    import * as jsb from "jsb";
+    import { AnimationClip } from "UnityEngine";
+    /** Use the AnimationWindow class to select and edit Animation clips.
+     */
+    @jsb.RequiredDefines("UNITY_EDITOR")
+    class AnimationWindow extends EditorWindow implements IHasCustomMenu {
+        AddItemsToMenu(menu: GenericMenu): void
+        protected constructor()
+        /** The animation clip selected in the Animation window.
+         */
+        animationClip: AnimationClip
+        /** This property toggles previewing in the Animation window.
+         */
+        previewing: boolean
+        /** True if Animation window can enable preview mode. False otherwise. (Read Only)
+         */
+        readonly canPreview: boolean
+        /** This property toggles recording in the Animation window.
+         */
+        recording: boolean
+        /** True if Animation window can enable recording mode. False otherwise. (Read Only)
+         */
+        readonly canRecord: boolean
+        /** This property toggles animation playback in the Animation window.
+         */
+        playing: boolean
+        /** The time value at which the Animation window playhead is located.
+         */
+        time: number
+        /** The frame number at which the Animation window playhead is located.
+         */
+        frame: number
     }
 }
 declare module "UnityEditor" {
@@ -24779,6 +25832,15 @@ declare module "UnityEditor" {
         /** Draw objects with visible lightmap texels highlighted.
          */
         BakedLightmapCulling = 34,
+        /** Draw Mesh Renderers and Terrains in different colors to show their StaticEditorFlags.ContributeGI  / ReceiveGI properties. With default colors:
+
+Yellow means 'ContributeGI' is off.
+Blue means that 'ContributeGI' is on and the object receives GI from lightmaps. See Also: ReceiveGI.Lightmaps
+Red means that 'ContributeGI' is on, but that the object receives GI from Light Probes instead. See Also: ReceiveGI.LightProbes.
+
+All colors can be adjusted under Preferences > Colors.
+         */
+        GIContributorsReceivers = 35,
         /** A custom mode defined by the user.
          */
         UserDefined = -2147483648,
@@ -24803,6 +25865,42 @@ declare module "UnityEditor" {
         /** Draw the camera like it would be drawn in-game. This uses the clear flags of the camera.
          */
         Normal = -1,
+    }
+}
+declare module "UnityEditor" {
+    import * as jsb from "jsb";
+    import { Vector2, Rect } from "UnityEngine";
+    /** Use this class to instantiate a SceneViewCameraWindow window.
+     */
+    @jsb.RequiredDefines("UNITY_EDITOR")
+    class SceneViewCameraWindow extends PopupWindowContent {
+        constructor(sceneView: SceneView)
+        GetWindowSize(): Vector2
+        /** A callback used for drawing the GUI controls of the SceneViewCameraWindow window.
+         * @param rect The rectangle where the GUI controls are drawn.
+         */
+        OnGUI(rect: Rect): void
+        static additionalSettingsGui(op: "add" | "remove", fn: (obj: SceneView) => void): void
+    }
+}
+declare module "UnityEditor" {
+    import * as jsb from "jsb";
+    import { Object } from "System";
+    import { Rect, Vector2 } from "UnityEngine";
+    /** Class used to implement content for a popup window.
+     */
+    @jsb.RequiredDefines("UNITY_EDITOR")
+    abstract class PopupWindowContent extends Object {
+        /** Callback for drawing GUI controls for the popup window.
+         * @param rect The rectangle to draw the GUI inside.
+         */
+        OnGUI(rect: Rect): void
+        GetWindowSize(): Vector2
+        OnOpen(): void
+        OnClose(): void
+        /** The EditorWindow that contains the popup content.
+         */
+        readonly editorWindow: EditorWindow
     }
 }
 declare module "UnityEditor" {
@@ -24846,6 +25944,18 @@ declare module "UnityEditor" {
             type: any
             name: string
         }
+    }
+}
+declare module "UnityEditor" {
+    import * as jsb from "jsb";
+    /** Define compute shader import settings in the Unity Editor.
+     */
+    @jsb.RequiredDefines("UNITY_EDITOR")
+    class ComputeShaderImporter extends AssetImporter {
+        constructor()
+        /** The preprocessor that Unity uses to compile this compute shader.
+         */
+        preprocessorOverride: PreprocessorOverride
     }
 }
 declare module "UnityEditor" {
@@ -24904,6 +26014,9 @@ declare module "UnityEditor" {
         /** Gets the non-modifiable texture assigned to the shader importer for the shader property with given name.
          */
         GetNonModifiableTexture(name: string): Texture
+        /** The preprocessor that Unity uses to compile this shader.
+         */
+        preprocessorOverride: PreprocessorOverride
     }
 }
 declare module "UnityEditor" {
@@ -25356,10 +26469,10 @@ declare module "UnityEditor" {
     enum TextureImporterType {
         /** This is the most common setting used for all the textures in general.
          */
-        Image = 0,
+        Default = 0,
         /** This is the most common setting used for all the textures in general.
          */
-        Default = 0,
+        Image = 0,
         /** Select this to turn the color channels into a format suitable for real-time normal mapping.
          */
         Bump = 1,
@@ -25369,8 +26482,8 @@ declare module "UnityEditor" {
         /** Use this if your texture is going to be used on any HUD/GUI Controls.
          */
         GUI = 2,
-        Reflection = 3,
         Cubemap = 3,
+        Reflection = 3,
         /** This sets up your texture with the basic parameters used for the Cookies of your lights.
          */
         Cookie = 4,
@@ -25388,6 +26501,9 @@ declare module "UnityEditor" {
         /** Use this for texture containing a single channel.
          */
         SingleChannel = 10,
+        /** Use this for textures that contain shadowmask data.
+         */
+        Shadowmask = 11,
         /** Use this for textures that contain directional lightmap data.
          */
         DirectionalLightmap = 12,
@@ -25430,15 +26546,21 @@ declare module "UnityEditor" {
 declare module "UnityEditor" {
     import * as jsb from "jsb";
     import { Enum } from "System";
-    /** Select the kind of shape of your texture.
+    /** The shape of the imported texture.
      */
     enum TextureImporterShape {
-        /** Texture is 2D.
+        /** Import the texture as a 2D texture (default).
          */
         Texture2D = 1,
-        /** Texture is a Cubemap.
+        /** Import the texture as a Cubemap.
          */
         TextureCube = 2,
+        /** Import the texture as a 2D Array texture.
+         */
+        Texture2DArray = 4,
+        /** Import the texture as a 3D texture.
+         */
+        Texture3D = 8,
     }
 }
 declare module "UnityEditor" {
@@ -25507,7 +26629,7 @@ declare module "UnityEditor" {
         /** Which type of texture are we dealing with here.
          */
         textureType: TextureImporterType
-        /** Shape of imported texture.
+        /** The shape of the imported texture.
          */
         textureShape: TextureImporterShape
         /** Mipmap filtering mode.
@@ -25552,6 +26674,12 @@ declare module "UnityEditor" {
         /** Color or Alpha component TextureImporterType|Single Channel Textures uses.
          */
         singleChannelComponent: TextureImporterSingleChannelComponent
+        /** The number of rows in the source image for a Texture2DArray or Texture3D.
+         */
+        flipbookRows: number
+        /** The number of columns in the source image for a Texture2DArray or Texture3D.
+         */
+        flipbookColumns: number
         /** Is texture data readable from scripts.
          */
         readable: boolean
@@ -25561,6 +26689,9 @@ declare module "UnityEditor" {
         /** Relative priority for this texture when reducing memory size in order to hit the memory budget.
          */
         streamingMipmapsPriority: number
+        /** Enable if the texture is purposed solely for use with a Texture Stack for Virtual Texturing.
+         */
+        vtOnly: boolean
         /** Scaling mode for non power of two textures.
          */
         npotScale: TextureImporterNPOTScale
@@ -25595,6 +26726,9 @@ declare module "UnityEditor" {
         /** If the provided alpha channel is transparency, enable this to dilate the color to avoid filtering artifacts on the edges.
          */
         alphaIsTransparency: boolean
+        /** Ignore the Gamma attribute in PNG files. This property does not effect other file formats.
+         */
+        ignorePngGamma: boolean
         /** Sprite texture import mode.
          */
         spriteMode: number
@@ -25765,6 +26899,37 @@ declare module "UnityEditor" {
 }
 declare module "UnityEditor" {
     import * as jsb from "jsb";
+    import { ValueType } from "System";
+    import { Camera, Vector2, Vector3 } from "UnityEngine";
+    /** Project points from world to screen space.
+     */
+    @jsb.RequiredDefines("UNITY_EDITOR")
+    class CameraProjectionCache extends ValueType {
+        constructor(camera: Camera)
+        /** Transforms position from world space into screen space using the cached camera projection and viewport.
+         * @param worldPoint A point in world space.
+         * @returns The converted point in screen space. 
+         */
+        WorldToScreenPoint(worldPoint: Vector3): Vector2
+        /** Converts a world space point to a 2D GUI position.
+         * @param worldPoint A point in world space.
+         * @returns A point in GUI space. 
+         */
+        WorldToGUIPoint(worldPoint: Vector3): Vector2
+        /** Converts a point from GUI position to screen space relative to the cached camera viewport.
+         * @param guiPoint A point in GUI space to convert to screen space.
+         * @returns .guiPoint in screen space relative to the cached camera viewport. 
+         */
+        GUIToScreenPoint(guiPoint: Vector2): Vector2
+        /** Converts a point from screen space to GUI position relative to the viewport at the time the CameraProjectionCache was created.
+         * @param screenPoint A point in screen space.
+         * @returns .screenPoint converted to GUI space relative to the cached camera viewport. 
+         */
+        ScreenToGUIPoint(screenPoint: Vector2): Vector2
+    }
+}
+declare module "UnityEditor" {
+    import * as jsb from "jsb";
     import { Enum } from "System";
     enum CommandHint {
         None = 0,
@@ -25815,6 +26980,8 @@ declare module "UnityEditor" {
     abstract class ModeService extends Object {
         static ChangeModeById(modeId: string): void
         static Update(): void
+        static HasContextMenu(menuId: string): boolean
+        static PopupContextMenu(menuId: string): void
         static readonly modeNames: Array<string>
         static readonly modeCount: number
         static readonly currentId: string
@@ -25836,22 +27003,6 @@ declare module "UnityEditor" {
 }
 declare module "UnityEditor" {
     import * as jsb from "jsb";
-    import { Enum } from "System";
-    enum GameViewSizeGroupType {
-        Standalone = 0,
-        WebPlayer = 1,
-        iOS = 2,
-        Android = 3,
-        PS3 = 4,
-        WiiU = 5,
-        Tizen = 6,
-        WP8 = 7,
-        N3DS = 8,
-        HMD = 9,
-    }
-}
-declare module "UnityEditor" {
-    import * as jsb from "jsb";
     import { Object } from "UnityEngine";
     /** The lighting data asset used by the active Scene.
      */
@@ -25863,183 +27014,33 @@ declare module "UnityEditor" {
 declare module "UnityEditor" {
     import * as jsb from "jsb";
     import { Object, Enum } from "System";
-    /** Various settings for the bake.
+    /** This class is now obsolete. Use LightingSettings.
      */
     @jsb.RequiredDefines("UNITY_EDITOR")
     abstract class LightmapEditorSettings extends Object {
-        /** Determines which backend to use for baking lightmaps.
-         */
-        static lightmapper: LightmapEditorSettings.Lightmapper
-        /** NonDirectional or CombinedDirectional lightmaps rendering mode.
-         */
-        static lightmapsMode: any
-        /** Indicates the Mixed mode that is used to bake the LightmapBakeType.Mixed lights, irrelevant for realtime and baked lights.
-         */
-        static mixedBakeMode: any
-        /** Determines which sampling strategy to use for baking lightmaps with the Progressive Lightmapper.
-         */
-        static sampling: LightmapEditorSettings.Sampling
-        /** Specifies the number of samples the Progressive Lightmapper uses for direct lighting calculations. The default value is 32. The range is 1 to 131072.
-         */
-        static directSampleCount: number
-        /** Specifies the number of samples the Progressive Lightmapper uses for indirect lighting calculations. The default value is 512. The range is 8 to 131072.
-         */
-        static indirectSampleCount: number
-        /** Specifies the maximum number of bounces the Progressive Lightmapper computes for indirect light. The default value is 2. The range is 0 to 4.
-         */
-        static bounces: number
-        /** Specifies whether the Progressive Lightmapper should prioritize baking texels within the Scene view. The default value is true.
-         */
-        static prioritizeView: boolean
-        /** Specifies the method used by the Progressive Lightmapper to reduce noise in baked lightmaps.
-         */
-        static filteringMode: LightmapEditorSettings.FilterMode
-        /** The type of denoising applied to the direct light for the lightmap.
-         */
-        static denoiserTypeDirect: LightmapEditorSettings.DenoiserType
-        /** The type of denoising applied to the indirect light for the lightmap.
-         */
-        static denoiserTypeIndirect: LightmapEditorSettings.DenoiserType
-        /** The type of denoising applied to the ambient occlusion for the lightmap.
-         */
-        static denoiserTypeAO: LightmapEditorSettings.DenoiserType
-        /** Configure a filter kernel for the direct light target.
-         */
-        static filterTypeDirect: LightmapEditorSettings.FilterType
-        /** Configure a filter kernel for the indirect light target.
-         */
-        static filterTypeIndirect: LightmapEditorSettings.FilterType
-        /** Configure a filter kernel for the ambient occlusion target.
-         */
-        static filterTypeAO: LightmapEditorSettings.FilterType
-        /** Specifies the radius the Progressive Lightmapper uses to filter for direct light stored in the lightmap when using Gaussian filter. The default value is one. The value range is 0 to 5.
-         */
-        static filteringGaussRadiusDirect: number
-        /** Specifies the radius the Progressive Lightmapper used to filter for indirect light stored in the lightmap when using Gaussian filter. The default value is 5. The value range is 0 to 5.
-         */
-        static filteringGaussRadiusIndirect: number
-        /** Specifies the radius the Progressive Lightmapper uses to filter for ambient occlusion in the lightmap when using Gaussian filter. The default value is 2. The value range is 0 to 5.
-         */
-        static filteringGaussRadiusAO: number
-        /** Specifies the threshold the Progressive Lightmapper uses to filter direct light stored in the lightmap when using A-Trous filter. The default value is 0.5. The value range is 0 to 2.
-         */
-        static filteringAtrousPositionSigmaDirect: number
-        /** Specifies the threshold the Progressive Lightmapper uses to filter indirect light stored in the lightmap when using A-Trous filter. The default value is 2. The value range is 0 to 2.
-         */
-        static filteringAtrousPositionSigmaIndirect: number
-        /** Specifies the threshold the Progressive Lightmapper uses to filter ambient occlusion stored in the lightmap when using A-Trous filter. The default value is 1. The value range is 0 to 2.
-         */
-        static filteringAtrousPositionSigmaAO: number
-        /** Specifies the number of samples the Progressive Lightmapper uses for direct environment lighting calculations. The default value is 256. The range is 8 to 131072.
-         */
-        static environmentSampleCount: number
-        /** Specifies the number of samples to use for Light Probes relative to lightmap texels. The default value is 4.
-         */
-        static lightProbeSampleCountMultiplier: number
-        /** The maximum size of an individual lightmap texture.
-         */
-        static maxAtlasSize: number
-        /** Lightmap resolution in texels per world unit. Defines the resolution of Realtime GI if enabled. If Baked GI is enabled, this defines the resolution used for indirect lighting. Higher resolution may take a long time to bake.
-         */
-        static realtimeResolution: number
-        /** Specifies the resolution of the Baked lightmap in texels per world unit. Specifying higher resolutions can significantly increase the time it takes to bake the lightmap. The default value is one texel per world unit. The minimum value is 0.0001.
-         */
-        static bakeResolution: number
-        /** Whether to use texture compression on the generated lightmaps.
-         */
-        static textureCompression: boolean
         /** Determines how Unity will compress baked reflection cubemap.
          */
         static reflectionCubemapCompression: any
-        /** Enable baked ambient occlusion (AO).
-         */
-        static enableAmbientOcclusion: boolean
-        /** Beyond this distance a ray is considered to be unoccluded.
-         */
-        static aoMaxDistance: number
-        /** Ambient occlusion (AO) for indirect lighting.
-         */
-        static aoExponentIndirect: number
-        /** Ambient occlusion (AO) for direct lighting.
-         */
-        static aoExponentDirect: number
-        /** Texel separation between shapes.
-         */
-        static padding: number
-        /** Exports training data in the project folder for the current bake. Only works with Progressive CPU.
-         */
-        static exportTrainingData: boolean
-        /** Controls the name of the destination folder for the exported textures. For example, "mySetup/30samples" would be located in the project folder.
-         */
-        static trainingDataDestination: string
-    }
-}
-declare module "UnityEditor" {
-    import * as jsb from "jsb";
-    import { Enum } from "System";
-    namespace LightmapEditorSettings {
-        enum Lightmapper {
-            Radiosity = 0,
-            Enlighten = 0,
-            PathTracer = 1,
-            ProgressiveCPU = 1,
-            ProgressiveGPU = 2,
-        }
-    }
-}
-declare module "UnityEditor" {
-    import * as jsb from "jsb";
-    import { Enum } from "System";
-    namespace LightmapEditorSettings {
-        enum Sampling {
-            Auto = 0,
-            Fixed = 1,
-        }
-    }
-}
-declare module "UnityEditor" {
-    import * as jsb from "jsb";
-    import { Enum } from "System";
-    namespace LightmapEditorSettings {
-        enum FilterMode {
-            None = 0,
-            Auto = 1,
-            Advanced = 2,
-        }
-    }
-}
-declare module "UnityEditor" {
-    import * as jsb from "jsb";
-    import { Enum } from "System";
-    namespace LightmapEditorSettings {
-        enum DenoiserType {
-            None = 0,
-            Optix = 1,
-            OpenImage = 2,
-            RadeonPro = 3,
-        }
-    }
-}
-declare module "UnityEditor" {
-    import * as jsb from "jsb";
-    import { Enum } from "System";
-    namespace LightmapEditorSettings {
-        enum FilterType {
-            Gaussian = 0,
-            ATrous = 1,
-            None = 2,
-        }
     }
 }
 declare module "UnityEditor" {
     import * as jsb from "jsb";
     import { Object } from "UnityEngine";
-    /** A collection of parameters that impact lightmap and realtime GI computations.
+    /** Configures how Unity bakes lighting and can be assigned to a LightingSettings instance or asset.
      */
     @jsb.RequiredDefines("UNITY_EDITOR")
     class LightmapParameters extends Object {
         constructor()
-        /** The texel resolution per meter used for realtime lightmaps. This value is multiplied by LightmapEditorSettings.resolution.
+        /** Assignes itself to a LightingSettings instance or asset.
+         */
+        AssignToLightingSettings(lightingSettings: any): void
+        /** Returns the assigned LightmapParameters for the specified LightingSettings.
+         */
+        static GetLightmapParametersForLightingSettings(lightingSettings: any): LightmapParameters
+        /** Sets the LightmapParameters for the specified LightingSettings.
+         */
+        static SetLightmapParametersForLightingSettings(parameters: LightmapParameters, lightingSettings: any): void
+        /** The texel resolution per meter used for realtime lightmaps. This value is multiplied by LightingSettings.indirectResolution.
          */
         resolution: number
         /** Controls the resolution at which Enlighten stores and can transfer input light.
@@ -26051,36 +27052,30 @@ declare module "UnityEditor" {
         /** The number of rays to cast for computing irradiance form factors.
          */
         irradianceQuality: number
-        /** The percentage of rays shot from a ray origin that must hit front faces to be considered usable.
-         */
-        backFaceTolerance: number
         /** Maximum size of gaps that can be ignored for GI (multiplier on pixel size).
          */
         modellingTolerance: number
         /** Whether pairs of edges should be stitched together.
          */
         stitchEdges: boolean
-        /** System tag is an integer identifier. It lets you force an object into a different Enlighten system even though all the other parameters are the same.
-         */
-        systemTag: number
         /** If enabled, the object appears transparent during GlobalIllumination lighting calculations.
          */
         isTransparent: boolean
-        /** The number of rays to cast for computing ambient occlusion.
+        /** System tag is an integer identifier. It lets you force an object into a different Enlighten system even though all the other parameters are the same.
          */
-        AOQuality: number
-        /** The maximum number of times to supersample a texel to reduce aliasing in AO.
-         */
-        AOAntiAliasingSamples: number
+        systemTag: number
         /** The radius (in texels) of the post-processing filter that blurs baked direct lighting.
          */
         blurRadius: number
-        /** The number of rays used for lights with an area. Allows for accurate soft shadowing.
-         */
-        directLightQuality: number
         /** The maximum number of times to supersample a texel to reduce aliasing.
          */
         antiAliasingSamples: number
+        /** The number of rays used for lights with an area. Allows for accurate soft shadowing.
+         */
+        directLightQuality: number
+        /** The distance to offset the ray origin from the geometry when performing ray tracing, in modelling units. Unity applies the offset to all baked lighting: direct lighting, indirect lighting, environment lighting and ambient occlusion.
+         */
+        pushoff: number
         /** BakedLightmapTag is an integer that affects the assignment to baked lightmaps. Objects with different values for bakedLightmapTag are guaranteed to not be assigned to the same lightmap even if the other baking parameters are the same.
          */
         bakedLightmapTag: number
@@ -26090,12 +27085,21 @@ declare module "UnityEditor" {
         /** The maximum number of lightmaps that will be created for objects sharing the same lightmap parameters. This property is ignored if LightmapParameters.limitLightmapCount is false.
          */
         maxLightmapCount: number
+        /** The number of rays to cast for computing ambient occlusion.
+         */
+        AOQuality: number
+        /** The maximum number of times to supersample a texel to reduce aliasing in AO.
+         */
+        AOAntiAliasingSamples: number
+        /** The percentage of rays shot from a ray origin that must hit front faces to be considered usable.
+         */
+        backFaceTolerance: number
     }
 }
 declare module "UnityEditor" {
     import * as jsb from "jsb";
-    import { Object, Array } from "System";
-    import { Vector3, Behaviour } from "UnityEngine";
+    import { Object, Array, ValueType } from "System";
+    import { Object as Object1, Vector3, Behaviour } from "UnityEngine";
     /** Allows to control the lightmapping job.
      */
     @jsb.RequiredDefines("UNITY_EDITOR")
@@ -26125,25 +27129,39 @@ declare module "UnityEditor" {
          * @param numChunksY Number of chunks in terrain length.
          */
         static GetTerrainGIChunks(terrain: any, numChunksX: jsb.Ref<number>, numChunksY: jsb.Ref<number>): void
+        /** Fetches the Lighting Settings for the current Scene. Will return false if it is null.
+         * @param settings See Lightmapping.lightingSettings.
+         * @returns Returns true if there is an object, and false if it isn't. 
+         */
+        static TryGetLightingSettings(settings: jsb.Out<any>): boolean
+        /** Applies the settings specified in the LightingSettings object to the SceneManagement.Scene object.
+         * @param scene The SceneManagement.Scene object. If the Scene.isLoaded property is false, the method does not apply the settings.
+         * @param lightingSettings The LightingSettings object.
+         */
+        static SetLightingSettingsForScene(scene: any, lightingSettings: any): void
+        /** Applies the settings specified in the LightingSettings object to an array of SceneManagement.Scene objects.
+         * @param scenes The array of SceneManagement.Scene objects. If the Scene.isLoaded property is false on a Scene object, the method does not apply the settings to that object.
+         * @param lightingSettings The LightingSettings object.
+         */
+        static SetLightingSettingsForScenes(scenes: Array<any>, lightingSettings: any): void
+        /** Gets the LightingSettings object of a SceneManagement.Scene object.
+         * @param scene The SceneManagement.Scene object.
+         * @returns The LightingSettings object if Scene.isLoaded is true. Otherwise returns null. 
+         */
+        static GetLightingSettingsForScene(scene: any): any
         /** Bakes an array of Scenes.
          * @param paths The path of the Scenes that should be baked.
          */
         static BakeMultipleScenes(paths: Array<string>): void
-        /** The lightmap baking workflow mode used. Iterative mode is default, but you can switch to on demand mode which bakes only when the user presses the bake button.
+        /** This property is now obsolete. Use LightingSettings.autoGenerate.
          */
         static giWorkflowMode: Lightmapping.GIWorkflowMode
-        /** Is realtime GI enabled?
+        /** This property is now obsolete. Use LightingSettings.realtimeGI.
          */
         static realtimeGI: boolean
-        /** Is baked GI enabled?
+        /** This property is now obsolete. Use LightingSettings.bakedGI.
          */
         static bakedGI: boolean
-        /** Scale for indirect lighting.
-         */
-        static indirectOutputScale: number
-        /** Boost the albedo.
-         */
-        static bounceBoost: number
         /** Returns true when the bake job is running, false otherwise (Read Only).
          */
         static readonly isRunning: boolean
@@ -26153,8 +27171,16 @@ declare module "UnityEditor" {
         /** The lighting data asset used by the active Scene.
          */
         static lightingDataAsset: LightingDataAsset
+        /** The LightingSettings that will be used for the current Scene. Will throw an exception if it is null.
+         */
+        static lightingSettings: any
+        /** Default LightingSettings that Unity uses for Scenes where lightingSettings is not assigned. (Read only)
+         */
+        static readonly lightingSettingsDefaults: any
         static bakeStarted(op: "add" | "remove", fn: () => void): void
         static lightingDataUpdated(op: "add" | "remove", fn: () => void): void
+        static lightingDataCleared(op: "add" | "remove", fn: () => void): void
+        static lightingDataAssetCleared(op: "add" | "remove", fn: () => void): void
         static bakeCompleted(op: "add" | "remove", fn: () => void): void
     }
 }
@@ -26167,62 +27193,6 @@ declare module "UnityEditor" {
             OnDemand = 1,
             Legacy = 2,
         }
-    }
-}
-declare module "UnityEditor" {
-    import * as jsb from "jsb";
-    import { Object, Array } from "System";
-    import { Material, Object as Object1, Texture } from "UnityEngine";
-    @jsb.RequiredDefines("UNITY_EDITOR")
-    class EditorMaterialUtility extends Object {
-        constructor()
-        static ResetDefaultTextures(material: Material, overrideSetTextures: boolean): void
-        static IsBackgroundMaterial(material: Material): boolean
-        static SetShaderDefaults(shader: any, name: Array<string>, textures: Array<Texture>): void
-        static SetShaderNonModifiableDefaults(shader: any, name: Array<string>, textures: Array<Texture>): void
-    }
-}
-declare module "UnityEditor" {
-    import * as jsb from "jsb";
-    import { Object } from "System";
-    import { Vector3 } from "UnityEngine";
-    /** Control the behavior of handle snapping in the editor.
-     */
-    @jsb.RequiredDefines("UNITY_EDITOR")
-    abstract class EditorSnapSettings extends Object {
-        static ResetSnapSettings(): void
-        /** Gets or sets whether grid snapping is enabled.
-         */
-        static gridSnapEnabled: boolean
-        /** Gets or sets the increment that translation handles snap to.
-         */
-        static move: Vector3
-        /** Gets or sets the increment that rotation handles snap to.
-         */
-        static rotate: number
-        /** Gets or sets the increment that scale handles snap to.
-         */
-        static scale: number
-    }
-}
-declare module "UnityEditor" {
-    import * as jsb from "jsb";
-    import { Object } from "System";
-    import { Rect, Vector2 } from "UnityEngine";
-    /** Class used to implement content for a popup window.
-     */
-    @jsb.RequiredDefines("UNITY_EDITOR")
-    abstract class PopupWindowContent extends Object {
-        /** Callback for drawing GUI controls for the popup window.
-         * @param rect The rectangle to draw the GUI inside.
-         */
-        OnGUI(rect: Rect): void
-        GetWindowSize(): Vector2
-        OnOpen(): void
-        OnClose(): void
-        /** The EditorWindow that contains the popup content.
-         */
-        readonly editorWindow: EditorWindow
     }
 }
 declare module "UnityEditor" {
@@ -26337,6 +27307,9 @@ declare module "UnityEditor" {
         /** The option that is currently active for the View tool in the Scene view.
          */
         static viewTool: ViewTool
+        /** Returns true if the active tool is a view or navigation tool.
+         */
+        static readonly viewToolActive: boolean
         /** The position of the tool handle in world space.
          */
         static readonly handlePosition: Vector3
@@ -26365,6 +27338,58 @@ declare module "UnityEditor" {
          */
         static visibleLayers: number
         static lockedLayers: number
+    }
+}
+declare module "UnityEditor" {
+    import * as jsb from "jsb";
+    import { Enum } from "System";
+    enum GameViewSizeGroupType {
+        Standalone = 0,
+        WebPlayer = 1,
+        iOS = 2,
+        Android = 3,
+        PS3 = 4,
+        WiiU = 5,
+        Tizen = 6,
+        WP8 = 7,
+        N3DS = 8,
+        HMD = 9,
+    }
+}
+declare module "UnityEditor" {
+    import * as jsb from "jsb";
+    import { Object, Array } from "System";
+    import { Material, Object as Object1, Texture } from "UnityEngine";
+    @jsb.RequiredDefines("UNITY_EDITOR")
+    class EditorMaterialUtility extends Object {
+        constructor()
+        static ResetDefaultTextures(material: Material, overrideSetTextures: boolean): void
+        static IsBackgroundMaterial(material: Material): boolean
+        static SetShaderDefaults(shader: any, name: Array<string>, textures: Array<Texture>): void
+        static SetShaderNonModifiableDefaults(shader: any, name: Array<string>, textures: Array<Texture>): void
+    }
+}
+declare module "UnityEditor" {
+    import * as jsb from "jsb";
+    import { Object } from "System";
+    import { Vector3 } from "UnityEngine";
+    /** Control the behavior of handle snapping in the editor.
+     */
+    @jsb.RequiredDefines("UNITY_EDITOR")
+    abstract class EditorSnapSettings extends Object {
+        static ResetSnapSettings(): void
+        /** Gets or sets whether grid snapping is enabled.
+         */
+        static gridSnapEnabled: boolean
+        /** Gets or sets the increment that translation handles snap to.
+         */
+        static move: Vector3
+        /** Gets or sets the increment that rotation handles snap to.
+         */
+        static rotate: number
+        /** Gets or sets the increment that scale handles snap to.
+         */
+        static scale: number
     }
 }
 declare module "UnityEditor" {
@@ -26535,7 +27560,7 @@ declare module "UnityEditor" {
             OnDestroy(): void
             Update(): void
             DrawLightType(): void
-            DrawRange(showAreaOptions: boolean): void
+            DrawRange(): void
             DrawSpotAngle(): void
             DrawInnerAndOuterSpotAngle(): void
             DrawArea(): void
@@ -27098,6 +28123,20 @@ declare module "UnityEditor" {
 }
 declare module "UnityEditor" {
     import * as jsb from "jsb";
+    import { ValueType } from "System";
+    import { GameObject } from "UnityEngine";
+    namespace PrefabUtility {
+        @jsb.RequiredDefines("UNITY_EDITOR")
+        class EditPrefabContentsScope extends ValueType {
+            constructor(assetPath: string)
+            Dispose(): void
+            readonly assetPath: string
+            readonly prefabContentsRoot: GameObject
+        }
+    }
+}
+declare module "UnityEditor" {
+    import * as jsb from "jsb";
     import { Enum } from "System";
     /** Enum used to determine how a Prefab should be unpacked.
      */
@@ -27139,6 +28178,333 @@ declare module "UnityEditor" {
     enum SaveType {
         Binary = 0,
         Text = 1,
+    }
+}
+declare module "UnityEditor" {
+    import * as jsb from "jsb";
+    import { Object, ValueType, Array } from "System";
+    import { IEnumerable } from "System.Collections.Generic";
+    /** The Progress utility class reports the progress of asynchronous tasks to Unity.
+     */
+    @jsb.RequiredDefines("UNITY_EDITOR")
+    abstract class Progress extends Object {
+        static Start(name: string, description: string, options: Progress.Options, parentId: number): number
+        static Finish(id: number, status: Progress.Status): void
+        /** Finishes and removes an active progress indicator.
+         * @param id The progress indicator's unique ID.
+         * @param forceSynchronous When you set this parameter to true it forces this method to remove the progress indicator synchronously.
+         * @returns -1 if the progress indicator is removed. Otherwise, returns the progress indicator's ID. 
+         */
+        static Remove(id: number, forceSynchronous: boolean): number
+        /** Finishes and removes an active progress indicator.
+         * @param id The progress indicator's unique ID.
+         * @param forceSynchronous When you set this parameter to true it forces this method to remove the progress indicator synchronously.
+         * @returns -1 if the progress indicator is removed. Otherwise, returns the progress indicator's ID. 
+         */
+        static Remove(id: number): number
+        /** Reports a running progress indicator's current status.
+         * @param id The progress indicator's unique ID.
+         * @param progress A new progress value between 0 and 1.
+         * @param description An updated description of the progress indicator. If the the progress status has not changed, or you do not set a description, this is null. To clear the current progress description, pass an empty string such as "".
+         * @param currentStep An updated current step.
+         * @param totalSteps An updated total number of steps, from start to finish.
+         */
+        static Report(id: number, currentStep: number, totalSteps: number, description: string): void
+        /** Reports a running progress indicator's current status.
+         * @param id The progress indicator's unique ID.
+         * @param progress A new progress value between 0 and 1.
+         * @param description An updated description of the progress indicator. If the the progress status has not changed, or you do not set a description, this is null. To clear the current progress description, pass an empty string such as "".
+         * @param currentStep An updated current step.
+         * @param totalSteps An updated total number of steps, from start to finish.
+         */
+        static Report(id: number, currentStep: number, totalSteps: number): void
+        /** Reports a running progress indicator's current status.
+         * @param id The progress indicator's unique ID.
+         * @param progress A new progress value between 0 and 1.
+         * @param description An updated description of the progress indicator. If the the progress status has not changed, or you do not set a description, this is null. To clear the current progress description, pass an empty string such as "".
+         * @param currentStep An updated current step.
+         * @param totalSteps An updated total number of steps, from start to finish.
+         */
+        static Report(id: number, progress: number, description: string): void
+        /** Reports a running progress indicator's current status.
+         * @param id The progress indicator's unique ID.
+         * @param progress A new progress value between 0 and 1.
+         * @param description An updated description of the progress indicator. If the the progress status has not changed, or you do not set a description, this is null. To clear the current progress description, pass an empty string such as "".
+         * @param currentStep An updated current step.
+         * @param totalSteps An updated total number of steps, from start to finish.
+         */
+        static Report(id: number, progress: number): void
+        /** Cancels a runnning progress indicator, and invokes the cancel callback for the associated task.
+         * @param id The progress indicator's unique ID.
+         * @returns True if the associated task is cancelled, false if it cannot be cancelled. 
+         */
+        static Cancel(id: number): boolean
+        static RegisterCancelCallback(id: number, callback: () => boolean): void
+        /** Unregisters a previously registered progress cancellation callback.
+         * @param id The progress indicator's unique ID.
+         */
+        static UnregisterCancelCallback(id: number): void
+        /** Pauses a runnning progress indicator, and invokes the pause callback for its task.
+         * @param id The progress indicator's unique ID.
+         * @returns True if the task is paused, false if it cannot be paused. 
+         */
+        static Pause(id: number): boolean
+        /** Resumes a paused progress indicator, and invokes the pause callback for the associated task.
+         * @param id The progress indicator's unique ID.
+         * @returns True if the task resumes, false if it cannot resume. 
+         */
+        static Resume(id: number): boolean
+        static RegisterPauseCallback(id: number, callback: (arg: boolean) => boolean): void
+        /** Unregisters a previously registered progress pause callback.
+         * @param id The progress indicator's unique ID.
+         */
+        static UnregisterPauseCallback(id: number): void
+        static GetCount(): number
+        static GetCountPerStatus(): Array<number>
+        /** Gets a progress indicator's progress.
+         * @param id The progress indicator's unique ID.
+         * @returns The currrent progress. 
+         */
+        static GetProgress(id: number): number
+        /** Gets the current step for a progress indicator.
+         * @param id The progress indicator's unique ID.
+         * @returns The current step. 
+         */
+        static GetCurrentStep(id: number): number
+        /** Gets the total number of steps, from start to finish, for a progress indicator.
+         * @param id The progress indicator's unique ID.
+         * @returns The number of steps. 
+         */
+        static GetTotalSteps(id: number): number
+        /** Gets a progress indicator's name.
+         * @param id The progress indicator's unique ID.
+         * @returns The matching progress indicator's name. 
+         */
+        static GetName(id: number): string
+        /** Gets a progress indicator's description.
+         * @param id The progress indicator's unique ID.
+         * @returns The description, if one exists. 
+         */
+        static GetDescription(id: number): string
+        /** Sets the progress indicator's description. To clear the description pass null.
+         * @param id The progress indicator's unique ID.
+         * @param description The progress indicator's new description.
+         */
+        static SetDescription(id: number, description: string): void
+        /** Gets the timestamp of when the progress indicator started.
+         * @param id The progress indicator's unique ID.
+         * @returns The progress indicator's start timestamp. 
+         */
+        static GetStartDateTime(id: number): number
+        /** Gets the time that the progress indicator last changed, or finished.
+         * @param id The progress indicator's unique ID.
+         * @returns The timestamp of the progress indicator's last update. 
+         */
+        static GetUpdateDateTime(id: number): number
+        /** Gets the unique ID of the progress indicator's parent, if any.
+         * @param id The progress indicator's unique ID.
+         * @returns The unique ID of the progress indicator's parent. If the progress indicator is not a child of any other progress indicators, returns -1. 
+         */
+        static GetParentId(id: number): number
+        /** Finds a progress indicator's unique ID using its index in the set of all available progress indicators.
+         * @param index The valid index for a progress indicator.
+         * @returns The progress indicator's unique ID, or -1 if the unique ID is not available. 
+         */
+        static GetId(index: number): number
+        /** Indicates whether you can cancel the progress indicator's associated task.
+         * @param id The progress indicator's unique ID.
+         * @returns True if you can cancel the task, false otherwise. 
+         */
+        static IsCancellable(id: number): boolean
+        /** Indicates whether you can pause the progress indicator's task.
+         * @param id The progress indicator's unique ID.
+         * @returns True if you can pause the task, false otherwise. 
+         */
+        static IsPausable(id: number): boolean
+        /** Gets the progress indicator's status.
+         * @param id The progress indicator's unique ID.
+         * @returns The progress indicator's current status. 
+         */
+        static GetStatus(id: number): Progress.Status
+        /** Gets the options that you specified when you started the progress indicator.
+         * @param id The progress indicator's unique ID.
+         * @returns The progress indicator's option flags. 
+         */
+        static GetOptions(id: number): Progress.Options
+        static SetTimeDisplayMode(id: number, displayMode: Progress.TimeDisplayMode): void
+        /** Sets the progress indicator's remaining time, in seconds.
+         * @param id The progress indicator's unique ID.
+         * @param seconds The progress indicator's remaining time, in seconds.
+         */
+        static SetRemainingTime(id: number, seconds: number): void
+        /** Sets a progress indicator's priority.
+         * @param id The progress indicator's unique ID.
+         * @param priority The priority.
+         */
+        static SetPriority(id: number, priority: number): void
+        static SetPriority(id: number, priority: Progress.Priority): void
+        /** Get a progress indicator's time display mode.
+         * @param id The progress indicator's unique ID.
+         * @returns The progress indicator's time display mode. 
+         */
+        static GetTimeDisplayMode(id: number): Progress.TimeDisplayMode
+        /** Checks whether a progress indicator with the specified ID exists.
+         * @param id The unique ID to search for.
+         * @returns True if the progress indicator exists, false otherwise. 
+         */
+        static Exists(id: number): boolean
+        /** Gets a progress indicator's remaining time, in seconds.
+         * @param id The progress indicator's unique ID.
+         * @returns The number of seconds remaining. 
+         */
+        static GetRemainingTime(id: number): number
+        /** Gets a progress indicator's priority.
+         * @param id The progress indicator's unique ID.
+         * @returns The priority. 
+         */
+        static GetPriority(id: number): number
+        /** Resets the computation of a progress indicator's remaining time.
+         * @param id The progress indicator's unique ID.
+         */
+        static ClearRemainingTime(id: number): void
+        /** Sets the label that displays a progress indicator's steps.
+         * @param id The progress indicator's unique ID.
+         * @param label The steps label.
+         */
+        static SetStepLabel(id: number, label: string): void
+        /** Gets the label that displays a progress indicator's steps.
+         * @param id The progress indicator's unique ID.
+         * @returns The step label. 
+         */
+        static GetStepLabel(id: number): string
+        /** Opens the progress window for background tasks.
+         * @param shouldReposition To place the window in the bottom right corner of the main Editor window, pass True. To restore the last window position, pass False.
+         */
+        static ShowDetails(shouldReposition: boolean): void
+        static EnumerateItems(): any
+        /** Gets information about a progress indicator.
+         * @param id The progress indicator's unique ID.
+         * @returns The progress indicator's data structure. 
+         */
+        static GetProgressById(id: number): Progress.Item
+        static GetRunningProgressCount(): number
+        /** Returns true if there is at least one running progress indicator, false otherwise.
+         */
+        static readonly running: boolean
+        /** Returns the global average progression of all running tasks.
+         */
+        static readonly globalProgress: number
+        /** Returns the maximum time remaining for all running progress indicators.
+         */
+        static readonly globalRemainingTime: any
+        static added(op: "add" | "remove", fn: (obj: Array<Progress.Item>) => void): void
+        static updated(op: "add" | "remove", fn: (obj: Array<Progress.Item>) => void): void
+        static removed(op: "add" | "remove", fn: (obj: Array<Progress.Item>) => void): void
+    }
+}
+declare module "UnityEditor" {
+    import * as jsb from "jsb";
+    import { Enum } from "System";
+    namespace Progress {
+        enum Status {
+            Running = 0,
+            Succeeded = 1,
+            Failed = 2,
+            Canceled = 3,
+            Paused = 4,
+        }
+    }
+}
+declare module "UnityEditor" {
+    import * as jsb from "jsb";
+    import { Enum } from "System";
+    namespace Progress {
+        enum Options {
+            None = 0,
+            Sticky = 1,
+            Indefinite = 2,
+            Synchronous = 4,
+            Managed = 8,
+            Unmanaged = 16,
+        }
+    }
+}
+declare module "UnityEditor" {
+    import * as jsb from "jsb";
+    import { Enum } from "System";
+    namespace Progress {
+        enum TimeDisplayMode {
+            NoTimeShown = 0,
+            ShowRunningTime = 1,
+            ShowRemainingTime = 2,
+        }
+    }
+}
+declare module "UnityEditor" {
+    import * as jsb from "jsb";
+    import { Enum } from "System";
+    namespace Progress {
+        enum Priority {
+            Unresponsive = 0,
+            Idle = 1,
+            Low = 2,
+            Normal = 6,
+            High = 10,
+        }
+    }
+}
+declare module "UnityEditor" {
+    import * as jsb from "jsb";
+    import { Object, DateTime, ValueType } from "System";
+    namespace Progress {
+        @jsb.RequiredDefines("UNITY_EDITOR")
+        class Item extends Object {
+            Report(newCurrentStep: number, newTotalSteps: number, newDescription: string): void
+            Report(newCurrentStep: number, newTotalSteps: number): void
+            Report(newProgress: number, newDescription: string): void
+            Report(newProgress: number): void
+            Cancel(): boolean
+            Pause(): boolean
+            Resume(): boolean
+            Finish(finishedStatus: Progress.Status): void
+            Remove(): number
+            RegisterCancelCallback(callback: () => boolean): void
+            UnregisterCancelCallback(): void
+            RegisterPauseCallback(callback: (arg: boolean) => boolean): void
+            UnregisterPauseCallback(): void
+            SetDescription(newDescription: string): void
+            SetTimeDisplayMode(mode: Progress.TimeDisplayMode): void
+            SetRemainingTime(seconds: number): void
+            SetPriority(priority: number): void
+            SetPriority(priority: Progress.Priority): void
+            ClearRemainingTime(): void
+            SetStepLabel(label: string): void
+            protected constructor()
+            readonly name: string
+            readonly description: string
+            readonly id: number
+            readonly progress: number
+            readonly currentStep: number
+            readonly totalSteps: number
+            readonly stepLabel: string
+            readonly parentId: number
+            readonly startTime: DateTime
+            readonly updateTime: DateTime
+            readonly status: Progress.Status
+            readonly options: Progress.Options
+            readonly timeDisplayMode: Progress.TimeDisplayMode
+            readonly priority: number
+            readonly remainingTime: any
+            readonly finished: boolean
+            readonly running: boolean
+            readonly paused: boolean
+            readonly responding: boolean
+            readonly cancellable: boolean
+            readonly pausable: boolean
+            readonly indefinite: boolean
+            readonly elapsedTime: number
+            readonly exists: boolean
+        }
     }
 }
 declare module "UnityEditor" {
@@ -27290,6 +28656,7 @@ See Also: PhysicsVisualizationSettings.
     class PhysicsDebugWindow extends EditorWindow {
         constructor()
         OnEnable(): void
+        OnDisable(): void
         static ShowWindow(): PhysicsDebugWindow
     }
 }
@@ -27333,13 +28700,22 @@ declare module "UnityEditor" {
             constructor(other: SceneView.SceneViewState)
             constructor()
             SetAllEnabled(value: boolean): void
+            alwaysRefresh: boolean
+            readonly fogEnabled: boolean
+            readonly alwaysRefreshEnabled: boolean
+            readonly skyboxEnabled: boolean
+            readonly flaresEnabled: boolean
+            readonly imageEffectsEnabled: boolean
+            readonly particleSystemsEnabled: boolean
+            readonly visualEffectGraphsEnabled: boolean
             readonly allEnabled: boolean
+            fxEnabled: boolean
             showFog: boolean
-            showMaterialUpdate: boolean
             showSkybox: boolean
             showFlares: boolean
             showImageEffects: boolean
             showParticleSystems: boolean
+            showVisualEffectGraphs: boolean
         }
     }
 }
@@ -27537,6 +28913,7 @@ declare module "UnityEditor" {
          */
         static OpenUserPreferences(settingsPath: string): EditorWindow
         static NotifySettingsProviderChanged(): void
+        static RepaintAllSettingsWindow(): void
     }
 }
 declare module "UnityEditor" {
@@ -27640,6 +29017,356 @@ declare module "UnityEditor" {
 }
 declare module "UnityEditor" {
     import * as jsb from "jsb";
+    import { Enum } from "System";
+    /** This enumeration describes the different kind of changes that can be tracked in an ObjectChangeEventStream. Each event has a corresponding type in ObjectChangeEvents.
+     */
+    enum ObjectChangeKind {
+        /** Indicates an uninitialized value.
+         */
+        None = 0,
+        /** A change of this type indicates that an open scene has been changed ("dirtied") without any more specific information available. This happens for example when EditorSceneManager.MarkSceneDirty is used.
+         */
+        ChangeScene = 1,
+        /** A change of this type indicates that a GameObject has been created, possibly with additional objects below it in the hierarchy. This happens for example when Undo.RegisterCreatedObjectUndo is used with a GameObject.
+         */
+        CreateGameObjectHierarchy = 2,
+        /** A change of this type indicates that the structure of a GameObject has changed and any GameObject in the hierarchy below it might have changed. This happens for example when Undo.RegisterFullObjectHierarchyUndo is used.
+         */
+        ChangeGameObjectStructureHierarchy = 3,
+        /** A change of this type indicates that the structure of a GameObject has changed. This happens when a component is added to or removed from the GameObject using Undo.AddComponent or Undo.DestroyObjectImmediate.
+         */
+        ChangeGameObjectStructure = 4,
+        /** A change of this type indicates that the parent of a GameObject has changed. This happens when Undo.SetTransformParent or SceneManager.MoveGameObjectToScene is used.
+         */
+        ChangeGameObjectParent = 5,
+        /** A change of this type indicates that a property of a GameObject or Component has changed. This happens for example when Undo.RecordObject is used with an instance of a Component.
+         */
+        ChangeGameObjectOrComponentProperties = 6,
+        /** A change of this type indicates that a GameObject and the entire hierarchy below it has been destroyed. This happens for example when Undo.DestroyObjectImmediate is used with an GameObject.
+         */
+        DestroyGameObjectHierarchy = 7,
+        /** A change of this type indicates that an asset object has been created. This happens for example when Undo.RegisterCreatedObjectUndo is used with an instance of an asset (e.g. Texture).
+         */
+        CreateAssetObject = 8,
+        /** A change of this type indicates that an asset object has been destroyed. This happens for example when Undo.DestroyObjectImmediate is used with an instance of an asset (e.g. Texture).
+         */
+        DestroyAssetObject = 9,
+        /** A change of this type indicates that a property of an asset object in memory has changed. This happens for example when Undo.RecordObject is used with an instance of an asset (e.g. Texture).
+         */
+        ChangeAssetObjectProperties = 10,
+        /** A change of this type indicates that prefab instances in an open scene have been updated due to a change to the source prefab.
+         */
+        UpdatePrefabInstances = 11,
+    }
+}
+declare module "UnityEditor" {
+    import * as jsb from "jsb";
+    import { Object, Array } from "System";
+    /** Exposes events that allow you to track undoable changes to objects in the editor.
+     */
+    @jsb.RequiredDefines("UNITY_EDITOR")
+    abstract class ObjectChangeEvents extends Object {
+        static changesPublished(op: "add" | "remove", fn: (stream: jsb.Ref<ObjectChangeEventStream>) => void): void
+    }
+}
+declare module "UnityEditor" {
+    import * as jsb from "jsb";
+    import { ValueType } from "System";
+    /** A change of this type indicates that the parent of a GameObject has changed. This happens when Undo.SetTransformParent or SceneManager.MoveGameObjectToScene is used.
+     */
+    @jsb.RequiredDefines("UNITY_EDITOR")
+    class ChangeGameObjectParentEventArgs extends ValueType {
+        constructor(instanceId: number, previousScene: any, previousParentInstanceId: number, newScene: any, newParentInstanceId: number)
+        /** The instance ID of the GameObject whose parent changed. Note that this is not the instance ID of the Transform component.
+         */
+        readonly instanceId: number
+        /** The instance ID of the GameObject that was the previous parent of the target. Note that this is not the instance ID of its Transform.
+         */
+        readonly previousParentInstanceId: number
+        /** The instance ID of the GameObject that is the new parent of the target. Note that this is not the instance ID of its Transform.
+         */
+        readonly newParentInstanceId: number
+        /** The scene containing the previous parent. This is useful to detect whether a GameObject was moved to another scene.
+         */
+        readonly previousScene: any
+        /** The Scene containing the new parent. This is useful to detect whether a GameObject was moved to another scene or moved to the root of a scene.
+         */
+        readonly newScene: any
+    }
+}
+declare module "UnityEditor" {
+    import * as jsb from "jsb";
+    import { ValueType } from "System";
+    /** A change of this type indicates that an open scene has been changed ("dirtied") without any more specific information available. This happens for example when EditorSceneManager.MarkSceneDirty is used.
+     */
+    @jsb.RequiredDefines("UNITY_EDITOR")
+    class ChangeSceneEventArgs extends ValueType {
+        constructor(scene: any)
+        /** The Scene that was changed.
+         */
+        readonly scene: any
+    }
+}
+declare module "UnityEditor" {
+    import * as jsb from "jsb";
+    import { ValueType } from "System";
+    /** A change of this type indicates that a GameObject has been created, possibly with additional objects below it in the hierarchy. This happens for example when Undo.RegisterCreatedObjectUndo is used with a GameObject.
+     */
+    @jsb.RequiredDefines("UNITY_EDITOR")
+    class CreateGameObjectHierarchyEventArgs extends ValueType {
+        constructor(instanceId: number, scene: any)
+        /** The instance ID of the GameObject that has been created.
+         */
+        readonly instanceId: number
+        /** The scene containing the GameObject that has been created.
+         */
+        readonly scene: any
+    }
+}
+declare module "UnityEditor" {
+    import * as jsb from "jsb";
+    import { ValueType } from "System";
+    /** A change of this type indicates that the structure of a GameObject has changed and any GameObject in the hierarchy below it might have changed. This happens for example when Undo.RegisterFullObjectHierarchyUndo is used.
+     */
+    @jsb.RequiredDefines("UNITY_EDITOR")
+    class ChangeGameObjectStructureHierarchyEventArgs extends ValueType {
+        constructor(instanceId: number, scene: any)
+        /** The instance ID of the GameObject that has been changed.
+         */
+        readonly instanceId: number
+        /** The scene containing the GameObject that has been changed.
+         */
+        readonly scene: any
+    }
+}
+declare module "UnityEditor" {
+    import * as jsb from "jsb";
+    import { ValueType } from "System";
+    /** A change of this type indicates that the structure of a GameObject has changed. This happens when a component is added to or removed from the GameObject using Undo.AddComponent or Undo.DestroyObjectImmediate.
+     */
+    @jsb.RequiredDefines("UNITY_EDITOR")
+    class ChangeGameObjectStructureEventArgs extends ValueType {
+        constructor(instanceId: number, scene: any)
+        /** The instance ID of the GameObject that has been changed.
+         */
+        readonly instanceId: number
+        /** The Scene containing the GameObject that has been changed.
+         */
+        readonly scene: any
+    }
+}
+declare module "UnityEditor" {
+    import * as jsb from "jsb";
+    import { ValueType } from "System";
+    /** A change of this type indicates that a property of a GameObject or Component has changed. This happens for example when Undo.RecordObject is used with an instance of a Component.
+     */
+    @jsb.RequiredDefines("UNITY_EDITOR")
+    class ChangeGameObjectOrComponentPropertiesEventArgs extends ValueType {
+        constructor(instanceId: number, scene: any)
+        /** The instance ID of the modified GameObject or Component.
+         */
+        readonly instanceId: number
+        /** The Scene that contains the GameObject associated with the change. If a Component is changed, this is the GameObject to which the component belongs.
+         */
+        readonly scene: any
+    }
+}
+declare module "UnityEditor" {
+    import * as jsb from "jsb";
+    import { ValueType } from "System";
+    /** A change of this type indicates that a GameObject and the entire hierarchy below it has been destroyed. This happens for example when Undo.DestroyObjectImmediate is used with an GameObject.
+     */
+    @jsb.RequiredDefines("UNITY_EDITOR")
+    class DestroyGameObjectHierarchyEventArgs extends ValueType {
+        constructor(instanceId: number, scene: any)
+        /** The instance ID of the GameObject that has been destroyed.
+         */
+        readonly instanceId: number
+        /** The scene containing the GameObject that has been destroyed.
+         */
+        readonly scene: any
+    }
+}
+declare module "UnityEditor" {
+    import * as jsb from "jsb";
+    import { ValueType } from "System";
+    /** A change of this type indicates that an asset object has been created. This happens for example when Undo.RegisterCreatedObjectUndo is used with an instance of an asset (e.g. Texture).
+     */
+    @jsb.RequiredDefines("UNITY_EDITOR")
+    class CreateAssetObjectEventArgs extends ValueType {
+        constructor(guid: GUID, instanceId: number, scene: any)
+        /** The GUID of the new asset.
+         */
+        readonly guid: GUID
+        /** The instance ID of the modified asset.
+         */
+        readonly instanceId: number
+        /** The Scene that contains the new asset. This is usually an invalid scene unless the asset is explicitly associated in a scene (e.g. RenderSettings).
+         */
+        readonly scene: any
+    }
+}
+declare module "UnityEditor" {
+    import * as jsb from "jsb";
+    import { ValueType } from "System";
+    /** A change of this type indicates that an asset object has been destroyed. This happens for example when Undo.DestroyObjectImmediate is used with an instance of an asset (e.g. Texture).
+     */
+    @jsb.RequiredDefines("UNITY_EDITOR")
+    class DestroyAssetObjectEventArgs extends ValueType {
+        constructor(guid: GUID, instanceId: number, scene: any)
+        /** The GUID of the removed asset.
+         */
+        readonly guid: GUID
+        /** The instance ID of the modified asset.
+         */
+        readonly instanceId: number
+        /** The scene that contained the asset. This is usually an invalid scene unless the asset is explicitly associated in a scene (e.g. RenderSettings).
+         */
+        readonly scene: any
+    }
+}
+declare module "UnityEditor" {
+    import * as jsb from "jsb";
+    import { ValueType } from "System";
+    /** A change of this type indicates that a property of an asset object in memory has changed. This happens for example when Undo.RecordObject is used with an instance of an asset (e.g. Texture).
+     */
+    @jsb.RequiredDefines("UNITY_EDITOR")
+    class ChangeAssetObjectPropertiesEventArgs extends ValueType {
+        constructor(guid: GUID, instanceId: number, scene: any)
+        /** The GUID of the changed asset.
+         */
+        readonly guid: GUID
+        /** The instance ID of the modified asset.
+         */
+        readonly instanceId: number
+        /** The Scene that contains the modified asset. This is usually an invalid scene unless the asset is explicitly associated in a scene (e.g. RenderSettings).
+         */
+        readonly scene: any
+    }
+}
+declare module "UnityEditor" {
+    import * as jsb from "jsb";
+    import { ValueType } from "System";
+    /** A change of this type indicates that prefab instances in an open scene have been updated due to a change to the source prefab.
+     */
+    @jsb.RequiredDefines("UNITY_EDITOR")
+    class UpdatePrefabInstancesEventArgs extends ValueType {
+        constructor(scene: any, instanceIds: any)
+        /** The scene containing all of the prefab instances that have been updated.
+         */
+        readonly scene: any
+        /** The instance ID for each root GameObject of the prefab instances that have been updated.
+         */
+        readonly instanceIds: any
+    }
+}
+declare module "UnityEditor" {
+    import * as jsb from "jsb";
+    import { ValueType, Array, Enum } from "System";
+    /** Represents a stream of events that describes the changes applied to objects in memory over the course of a frame.
+     */
+    @jsb.RequiredDefines("UNITY_EDITOR")
+    class ObjectChangeEventStream extends ValueType {
+        constructor()
+        /** Returns the type of the event at the specified index.
+         * @param eventIdx The index of the event whose type should be returned.
+         * @returns The type of the event at the specified index. 
+         */
+        GetEventType(eventIdx: number): ObjectChangeKind
+        /** Retrieves the event data at the given index as a ChangeSceneEventArgs. Throws an exception if the event type requested does not match the event stored in the stream.
+         * @param eventIdx The index of the event to get the data for.
+         */
+        GetChangeSceneEvent(eventIdx: number, data: jsb.Out<ChangeSceneEventArgs>): void
+        /** Retrieves the event data at the given index as a CreateGameObjectHierarchyEventArgs. Throws an exception if the event type requested does not match the event stored in the stream.
+         * @param eventIdx The index of the event to get the data for.
+         * @param data The data associated with the event.
+         */
+        GetCreateGameObjectHierarchyEvent(eventIdx: number, data: jsb.Out<CreateGameObjectHierarchyEventArgs>): void
+        /** Retrieves the event data at the given index as a DestroyGameObjectHierarchyEventArgs. Throws an exception if the event type requested does not match the event stored in the stream.
+         * @param eventIdx The index of the event to get the data for.
+         * @param data The data associated with the event.
+         */
+        GetDestroyGameObjectHierarchyEvent(eventIdx: number, data: jsb.Out<DestroyGameObjectHierarchyEventArgs>): void
+        /** Retrieves the event data at the given index as a ChangeGameObjectStructureHierarchyEventArgs. Throws an exception if the event type requested does not match the event stored in the stream.
+         * @param eventIdx The index of the event to get the data for.
+         * @param data The data associated with the event.
+         */
+        GetChangeGameObjectStructureHierarchyEvent(eventIdx: number, data: jsb.Out<ChangeGameObjectStructureHierarchyEventArgs>): void
+        /** Retrieves the event data at the given index as a ChangeGameObjectStructureEventArgs. Throws an exception if the event type requested does not match the event stored in the stream.
+         * @param eventIdx The index of the event to get the data for.
+         * @param data The data associated with the event.
+         */
+        GetChangeGameObjectStructureEvent(eventIdx: number, data: jsb.Out<ChangeGameObjectStructureEventArgs>): void
+        /** Retrieves the event data at the given index as a ChangeGameObjectParentEventArgs. Throws an exception if the event type requested does not match the event stored in the stream.
+         * @param eventIdx The index of the event to get the data for.
+         * @param data The data associated with the event.
+         */
+        GetChangeGameObjectParentEvent(eventIdx: number, data: jsb.Out<ChangeGameObjectParentEventArgs>): void
+        /** Retrieves the event data at the given index as a ChangeAssetObjectPropertiesEventArgs. Throws an exception if the event type requested does not match the event stored in the stream.
+         * @param eventIdx The index of the event to get the data for.
+         * @param data The data associated with the event.
+         */
+        GetChangeGameObjectOrComponentPropertiesEvent(eventIdx: number, data: jsb.Out<ChangeGameObjectOrComponentPropertiesEventArgs>): void
+        /** Retrieves the event data at the given index as a CreateAssetObjectEventArgs. Throws an exception if the event type requested does not match the event stored in the stream.
+         * @param eventIdx The index of the event to get the data for.
+         * @param data The data associated with the event.
+         */
+        GetCreateAssetObjectEvent(eventIdx: number, data: jsb.Out<CreateAssetObjectEventArgs>): void
+        /** Retrieves the event data at the given index as a DestroyAssetObjectEventArgs. Throws an exception if the event type requested does not match the event stored in the stream.
+         * @param eventIdx The index of the event to get the data for.
+         * @param data The data associated with the event.
+         */
+        GetDestroyAssetObjectEvent(eventIdx: number, data: jsb.Out<DestroyAssetObjectEventArgs>): void
+        /** Retrieves the event data at the given index as a ChangeAssetObjectPropertiesEventArgs. Throws an exception if the event type requested does not match the event stored in the stream.
+         * @param eventIdx The index of the event to get the data for.
+         * @param data The data associated with the event.
+         */
+        GetChangeAssetObjectPropertiesEvent(eventIdx: number, data: jsb.Out<ChangeAssetObjectPropertiesEventArgs>): void
+        /** Retrieves the event data at the given index as a UpdatePrefabInstancesEventArgs. Throws an exception if the event type requested does not match the event stored in the stream.
+         * @param eventIdx The index of the event to get the data for.
+         * @param data The data associated with the event.
+         */
+        GetUpdatePrefabInstancesEvent(eventIdx: number, data: jsb.Out<UpdatePrefabInstancesEventArgs>): void
+        /** Creates a copy of this stream with the specified allocator.
+         * @param allocator The allocator to use to allocate the memory for the copy.
+         * @returns A copy of the stream that contains the same events, but in a separate memory lcoation. 
+         */
+        Clone(allocator: any): ObjectChangeEventStream
+        Dispose(): void
+        /** The number of events in the stream.
+         */
+        readonly length: number
+        /** Indicates whether the ObjectChangeEventStream has an allocated memory buffer.
+         */
+        readonly isCreated: boolean
+    }
+}
+declare module "UnityEditor" {
+    import * as jsb from "jsb";
+    import { ValueType, Enum, Array } from "System";
+    namespace ObjectChangeEventStream {
+        @jsb.RequiredDefines("UNITY_EDITOR")
+        class Builder extends ValueType {
+            constructor(allocator: any)
+            ToStream(allocator: any): ObjectChangeEventStream
+            Dispose(): void
+            PushChangeSceneEvent(data: jsb.Ref<ChangeSceneEventArgs>): void
+            PushCreateGameObjectHierarchyEvent(data: jsb.Ref<CreateGameObjectHierarchyEventArgs>): void
+            PushDestroyGameObjectHierarchyEvent(data: jsb.Ref<DestroyGameObjectHierarchyEventArgs>): void
+            PushChangeGameObjectStructureHierarchyEvent(data: jsb.Ref<ChangeGameObjectStructureHierarchyEventArgs>): void
+            PushChangeGameObjectStructureEvent(data: jsb.Ref<ChangeGameObjectStructureEventArgs>): void
+            PushChangeGameObjectParentEvent(data: jsb.Ref<ChangeGameObjectParentEventArgs>): void
+            PushChangeGameObjectOrComponentPropertiesEvent(data: jsb.Ref<ChangeGameObjectOrComponentPropertiesEventArgs>): void
+            PushCreateAssetObjectEvent(data: jsb.Ref<CreateAssetObjectEventArgs>): void
+            PushDestroyAssetObjectEvent(data: jsb.Ref<DestroyAssetObjectEventArgs>): void
+            PushChangeAssetObjectPropertiesEvent(data: jsb.Ref<ChangeAssetObjectPropertiesEventArgs>): void
+            PushUpdatePrefabInstancesEvent(data: jsb.Ref<UpdatePrefabInstancesEventArgs>): void
+            readonly eventCount: number
+        }
+    }
+}
+declare module "UnityEditor" {
+    import * as jsb from "jsb";
     import { ValueType } from "System";
     /** See Also: Undo.postprocessModifications.
      */
@@ -27739,6 +29466,25 @@ declare module "UnityEditor" {
         /** Delete the asset without moving it to the trash.
          */
         DeleteAssets = 2,
+    }
+}
+declare module "UnityEditor" {
+    import * as jsb from "jsb";
+    import { ValueType } from "System";
+    @jsb.RequiredDefines("UNITY_EDITOR")
+    class CacheServerConnectionChangedParameters extends ValueType {
+        constructor()
+    }
+}
+declare module "UnityEditor" {
+    import * as jsb from "jsb";
+    import { Array } from "System";
+    /** Represents an Android asset pack directory in a project.
+     */
+    @jsb.RequiredDefines("UNITY_EDITOR")
+    class AndroidAssetPackImporter extends AssetImporter {
+        constructor()
+        static GetAllImporters(): Array<AndroidAssetPackImporter>
     }
 }
 declare module "UnityEditor" {
@@ -28516,6 +30262,20 @@ declare module "UnityEditor" {
 declare module "UnityEditor" {
     import * as jsb from "jsb";
     import { Enum } from "System";
+    /** Methods for handling margins during lightmap UV generation in ModelImporter.
+     */
+    enum ModelImporterSecondaryUVMarginMethod {
+        /** Specify pack margin manually.
+         */
+        Manual = 0,
+        /** Calculate suitable lightmap UV margins based on expected lightmap resolution and object scale.
+         */
+        Calculate = 1,
+    }
+}
+declare module "UnityEditor" {
+    import * as jsb from "jsb";
+    import { Enum } from "System";
     /** Set the Avatar generation mode for ModelImporter.
      */
     enum ModelImporterAvatarSetup {
@@ -28542,6 +30302,24 @@ declare module "UnityEditor" {
         /** Import a custom number of bones per vertex.
          */
         Custom = 1,
+    }
+}
+declare module "UnityEditor" {
+    import * as jsb from "jsb";
+    import { Object } from "System";
+    import { Behaviour } from "UnityEngine";
+    /** This provides an auto dispose Localization system. This can be called recursively.
+     */
+    @jsb.RequiredDefines("UNITY_EDITOR")
+    class LocalizationGroup extends Object {
+        constructor(behaviour: Behaviour)
+        constructor(type: any)
+        constructor(obj: Object)
+        constructor()
+        Dispose(): void
+        /** A current group name for the localization.
+         */
+        readonly locGroupName: string
     }
 }
 declare module "UnityEditor" {
@@ -28965,12 +30743,19 @@ declare module "UnityEditor" {
 }
 declare module "UnityEditor" {
     import * as jsb from "jsb";
-    import { ScriptableObject } from "UnityEngine";
+    import { ScriptableObject, Vector3 } from "UnityEngine";
+    import { Enum } from "System";
     /** GridPalette stores settings for Palette assets when shown in the Palette window.
      */
     @jsb.RequiredDefines("UNITY_EDITOR")
     class GridPalette extends ScriptableObject {
         constructor()
+        /** Determines the Transparency Sorting Mode of Renderers in the Palette.
+         */
+        transparencySortMode: any
+        /** Determines the sorting axis if the Transparency Sort Mode is set to Custom Axis.
+         */
+        transparencySortAxis: Vector3
         /** Determines the sizing of cells for a Palette.
          */
         cellSizing: GridPalette.CellSizing
@@ -29068,214 +30853,394 @@ declare module "UnityEditor" {
         static readonly userId: string
     }
 }
-declare module "UnityEditor" {
+declare module "UnityEditor.MPE" {
     import * as jsb from "jsb";
-    import { Object } from "System";
-    /** AssetModificationProcessor lets you hook into saving of serialized assets and
-      scenes which are edited inside Unity.
+    import { Object, Array } from "System";
+    /** ChannelClient is a WebSocket client that connects to Unity's ChannelService, which is a WebSocket server.
      */
     @jsb.RequiredDefines("UNITY_EDITOR")
-    class AssetModificationProcessor extends Object {
-        constructor()
-    }
-}
-declare module "UnityEditor" {
-    import * as jsb from "jsb";
-    import { Enum } from "System";
-    enum InspectorMode {
-        Normal = 0,
-        Debug = 1,
-        DebugInternal = 2,
-    }
-}
-declare module "UnityEditor" {
-    import * as jsb from "jsb";
-    import { Enum } from "System";
-    enum HierarchyType {
-        Assets = 1,
-        GameObjects = 2,
-    }
-}
-declare module "UnityEditor" {
-    import * as jsb from "jsb";
-    import { Enum } from "System";
-    enum IconDrawStyle {
-        NonTexture = 0,
-        Texture = 1,
-    }
-}
-declare module "UnityEditor" {
-    import * as jsb from "jsb";
-    import { Object, Array, ValueType } from "System";
-    import { Object as Object1, Texture2D } from "UnityEngine";
-    import { SceneHierarchyHooks } from "UnityEditor.SceneManagement";
-    @jsb.RequiredDefines("UNITY_EDITOR")
-    class HierarchyProperty extends Object {
-        constructor(hierarchyType: HierarchyType, rootPath: string, forceImport: boolean)
-        constructor(hierarchyType: HierarchyType, forceImport: boolean)
-        constructor(rootPath: string, forceImport: boolean)
-        constructor(hierarchyType: HierarchyType)
-        constructor(rootPath: string)
-        SetCustomScenes(sceneHandles: Array<number>): void
-        SetSubScenes(subScenes: Array<SceneHierarchyHooks.SubSceneInfo>): void
-        Reset(): void
-        GetScene(): any
-        IsExpanded(expanded: Array<number>): boolean
-        Next(expanded: Array<number>): boolean
-        NextWithDepthCheck(expanded: Array<number>, minDepth: number): boolean
-        Previous(expanded: Array<number>): boolean
-        Parent(): boolean
-        Find(instanceID: number, expanded: Array<number>): boolean
-        Skip(count: number, expanded: Array<number>): boolean
-        CountRemaining(expanded: Array<number>): number
-        GetInstanceIDIfImported(): number
-        SetSearchFilter(searchString: string, mode: number): void
-        FindAllAncestors(instanceIDs: Array<number>): Array<number>
-        static ClearSceneObjectsFilter(): void
-        static FilterSingleSceneObject(instanceID: number, otherVisibilityState: boolean): void
-        readonly instanceID: number
-        readonly pptrValue: Object1
-        readonly name: string
-        readonly hasChildren: boolean
-        readonly depth: number
-        readonly ancestors: Array<number>
-        readonly row: number
-        readonly colorCode: number
-        readonly guid: string
-        alphaSorted: boolean
-        showSceneHeaders: boolean
-        readonly isValid: boolean
-        readonly isMainRepresentation: boolean
-        readonly hasFullPreviewImage: boolean
-        readonly iconDrawStyle: IconDrawStyle
-        readonly isFolder: boolean
-        readonly dynamicDependencies: Array<GUID>
-        readonly icon: Texture2D
-    }
-}
-declare module "UnityEditor" {
-    import * as jsb from "jsb";
-    import { Object } from "System";
-    import { Component } from "UnityEngine";
-    /** LOD Utility Helpers.
-     */
-    @jsb.RequiredDefines("UNITY_EDITOR")
-    class LODUtility extends Object {
-        constructor()
-        /** Recalculate the bounding region for the given LODGroup.
+    class ChannelClient extends Object {
+        IsConnected(): boolean
+        /** Starts an existing ChannelClient so it listens to incoming and outgoing messages.
+         * @param autoTick Specifies whether Unity processes (ticks) this ChannelClient's incoming and outgoing messages automatically, or the user processes (ticks) them manually, either in the main thread or a dedicated thread.
          */
-        static CalculateLODGroupBoundingBox(group: any): void
+        Start(autoTick: boolean): void
+        Stop(): void
+        Close(): void
+        Tick(): void
+        /** Sends an ASCII or binary message to the ChannelService. Depending on how the channel's handler processes the message, it may also be sent to other connections.
+         * @param data Data to send.
+         * @param connectionId The connection ID of the client sending the data.
+         */
+        Send(data: string): void
+        /** Sends an ASCII or binary message to the ChannelService. Depending on how the channel's handler processes the message, it may also be sent to other connections.
+         * @param data Data to send.
+         * @param connectionId The connection ID of the client sending the data.
+         */
+        Send(data: Array<jsb.byte>): void
+        RegisterMessageHandler(handler: (obj: string) => void): () => void
+        RegisterMessageHandler(handler: (obj: Array<jsb.byte>) => void): () => void
+        UnregisterMessageHandler(handler: (obj: string) => void): void
+        UnregisterMessageHandler(handler: (obj: Array<jsb.byte>) => void): void
+        NewRequestId(): number
+        GetChannelClientInfo(): ChannelClientInfo
+        /** Sends an ASCII or binary message to the ChannelService. Depending on how the channel's handler processes the message, it may also be sent to other connections.
+         * @param data Data to send.
+         * @param connectionId The connection ID of the client sending the data.
+         */
+        static Send(connectionId: number, data: Array<jsb.byte>): void
+        /** Closes the ChannelClient. This closes the WebSocket client but not the Channel in the ChannelService. Other ChannelClients can still connect on the same Channel.
+         * @param channelName The name of the channel to close.
+         */
+        static Close(channelName: string): void
+        /** Creates a new ChannelClient on a specific channel. If a client already exists, this method gets the client.
+         * @param channelName The name of the channel to open. This matches the last part of a WebSocket URL. For example, "127.0.0.1:9090/<channelName>".
+         * @returns Instance of the newly-created or existing ChannelClient. 
+         */
+        static GetOrCreateClient(channelName: string): ChannelClient
+        static Shutdown(): void
+        /** Gets the ChannelClientInfo for a specific channel.
+         * @param channelName The name of the channel to get information about.
+         * @param clientId The ID of the channel to get information about.
+         * @returns A structure that describes the channel. 
+         */
+        static GetChannelClientInfo(channelName: string): ChannelClientInfo
+        /** Gets the ChannelClientInfo for a specific channel.
+         * @param channelName The name of the channel to get information about.
+         * @param clientId The ID of the channel to get information about.
+         * @returns A structure that describes the channel. 
+         */
+        static GetChannelClientInfo(clientId: number): ChannelClientInfo
+        /** Creates a unique request ID for this ChannelClient in this instance of Unity. For more information about requests, see ChannelClient.Request.
+         * @param clientId The ChannelClient ID to generate the request from.
+         * @returns The request ID. 
+         */
+        static NewRequestId(clientId: number): number
+        static GetChannelClientList(): Array<ChannelClientInfo>
+        protected constructor()
+        /** The channel ID, which essentially a hash of the channel name. See ChannelService.ChannelNameToId.
+         */
+        readonly clientId: number
+        /** The name of the channel this ChannelClient is connected to. The name matches the route of the URL used to connect to Unity's ChannelService. For example, 127.0.0.1:8928/<my Channel Name>.
+         */
+        readonly channelName: string
+        /** Specifies whether Unity processes (ticks) this ChannelClient's incoming and outgoing messages automatically, or the user processes (ticks) them manually, either in the main thread or a dedicated thread.
+         */
+        readonly isAutoTick: boolean
     }
 }
-declare module "UnityEditor" {
+declare module "UnityEditor.MPE" {
     import * as jsb from "jsb";
-    import { Object } from "System";
+    import { ValueType, Array } from "System";
+    /** Scope that can be use to open a channel client on a specific channel and close the channel when the scope ends.
+     */
     @jsb.RequiredDefines("UNITY_EDITOR")
-    class UnityStats extends Object {
-        constructor()
-        static readonly batches: number
-        static readonly drawCalls: number
-        static readonly dynamicBatchedDrawCalls: number
-        static readonly staticBatchedDrawCalls: number
-        static readonly instancedBatchedDrawCalls: number
-        static readonly dynamicBatches: number
-        static readonly staticBatches: number
-        static readonly instancedBatches: number
-        static readonly setPassCalls: number
-        static readonly triangles: number
-        static readonly vertices: number
-        static readonly shadowCasters: number
-        static readonly renderTextureChanges: number
-        static readonly frameTime: number
-        static readonly renderTime: number
-        static readonly audioLevel: number
-        static readonly audioClippingAmount: number
-        static readonly audioDSPLoad: number
-        static readonly audioStreamLoad: number
-        static readonly renderTextureCount: number
-        static readonly renderTextureBytes: number
-        static readonly usedTextureMemorySize: number
-        static readonly usedTextureCount: number
-        static readonly screenRes: string
-        static readonly screenBytes: number
-        static readonly vboTotal: number
-        static readonly vboTotalBytes: number
-        static readonly vboUploads: number
-        static readonly vboUploadBytes: number
-        static readonly ibUploads: number
-        static readonly ibUploadBytes: number
-        static readonly visibleSkinnedMeshes: number
-        static readonly visibleAnimations: number
+    class ChannelClientScope extends ValueType {
+        constructor(autoTick: boolean, channelName: string, handler: (obj: string) => void, closeClientOnExit: boolean)
+        constructor(autoTick: boolean, channelName: string, handler: (obj: Array<jsb.byte>) => void, closeClientOnExit: boolean)
+        Dispose(): void
+        /** Get the Chanel client of this scope.
+         */
+        readonly client: ChannelClient
     }
 }
-declare module "UnityEditor.Hardware" {
-    import * as jsb from "jsb";
-    import { ValueType } from "System";
-    @jsb.RequiredDefines("UNITY_EDITOR")
-    class UsbDevice extends ValueType {
-        constructor()
-        toString(): string
-        readonly vendorId: number
-        readonly productId: number
-        readonly revision: number
-        readonly udid: string
-        readonly name: string
-    }
-}
-declare module "UnityEditor.Hardware" {
+declare module "UnityEditor.MPE" {
     import * as jsb from "jsb";
     import { Object, Array } from "System";
+    /** The ChannelService encapsulates a WebSocket server running in Unity.
+     */
     @jsb.RequiredDefines("UNITY_EDITOR")
-    class Usb extends Object {
-        constructor()
-        static OnDevicesChanged(devices: Array<UsbDevice>): void
-        static DevicesChanged(op: "add" | "remove", fn: (devices: Array<UsbDevice>) => void): void
+    abstract class ChannelService extends Object {
+        static GetOrCreateChannel(channelName: string, handler: (arg1: number, arg2: Array<jsb.byte>) => void): () => void
+        static RegisterMessageHandler(channelName: string, handler: (arg1: number, arg2: Array<jsb.byte>) => void): () => void
+        static UnregisterMessageHandler(channelName: string, handler: (arg1: number, arg2: Array<jsb.byte>) => void): void
+        /** Closes a specific channel and all connections to that channel.
+         * @param channelName The name of the channel to close.
+         */
+        static CloseChannel(channelName: string): void
+        /** Sends a message to all  of a specific channel's ChannelClient connections.
+         * @param channelId The ID of the channel to send the message to.
+         * @param data The message to send. It can be binary or UTF8.
+         */
+        static Broadcast(channelId: number, data: Array<jsb.byte>): void
+        /** Sends a message to all  of a specific channel's ChannelClient connections.
+         * @param channelId The ID of the channel to send the message to.
+         * @param data The message to send. It can be binary or UTF8.
+         */
+        static Broadcast(channelId: number, data: string): void
+        /** Sends a message to a specific connection. The message can be binary or UTF8.
+         * @param connectionId The connection ID. This matches ChannelClientInfo.channelClientId.
+         * @param data Data to send to the connected client.
+         */
+        static Send(connectionId: number, data: Array<jsb.byte>): void
+        /** Sends a message to a specific connection. The message can be binary or UTF8.
+         * @param connectionId The connection ID. This matches ChannelClientInfo.channelClientId.
+         * @param data Data to send to the connected client.
+         */
+        static Send(connectionId: number, data: string): void
+        static GetAddress(): string
+        static GetPort(): number
+        static Start(): void
+        static Stop(): void
+        static IsRunning(): boolean
+        static GetChannelList(): Array<ChannelInfo>
+        static GetChannelClientList(): Array<ChannelClientInfo>
+        /** Sends a message to all  of a specific channel's ChannelClient connections.
+         * @param channelId The ID of the channel to send the message to.
+         * @param data The binary data to send.
+         */
+        static BroadcastBinary(channelId: number, data: Array<jsb.byte>): void
+        /** Closes a specific channel and all connections to that channel.
+         * @param channelName The ChannelName.
+         * @returns The ChannelId. 
+         */
+        static ChannelNameToId(channelName: string): number
     }
 }
-declare module "UnityEditor.Hardware" {
+declare module "UnityEditor.MPE" {
+    import * as jsb from "jsb";
+    import { ValueType, Array } from "System";
+    /** Scope that cna be use to open a channel and that will close the channel when the scope ends.
+     */
+    @jsb.RequiredDefines("UNITY_EDITOR")
+    class ChannelScope extends ValueType {
+        constructor(channelName: string, handler: (arg1: number, arg2: Array<jsb.byte>) => void, closeChannelOnExit: boolean)
+        Dispose(): void
+    }
+}
+declare module "UnityEditor.MPE" {
+    import * as jsb from "jsb";
+    import { Enum } from "System";
+    /** The Serialization type for sending a message, with arguments, using the EventService. For more information about argument serialization, see ChannelService.Broadcast and ChannelService.Emit.
+     */
+    enum EventDataSerialization {
+        /** Use normal JSON to send a message using the [[EventService]. The receiving handler gets JSON objects (Dictionary<string, object>, List<object>, primitive types) as arguments of his ChannelHandler.
+         */
+        StandardJson = 0,
+        /** Use JsonUtility.ToJson to serialize a message argument. Additional metadata is added to the message to specify which type to convert the JSON to when it is received.
+         */
+        JsonUtility = 1,
+    }
+}
+declare module "UnityEditor.MPE" {
+    import * as jsb from "jsb";
+    import { Object, Array, Exception, Enum } from "System";
+    /** The EventService is a singleton implementation of a ChannelClient that runs on all instances of Unity. It is connected to the "events" channel and allows a Unity instance to send JSON messages to other EventServices in external process, or other instances of Unity.
+     */
+    @jsb.RequiredDefines("UNITY_EDITOR")
+    abstract class EventService extends Object {
+        static Start(): void
+        static Close(): void
+        static RegisterEventHandler(eventType: string, handler: (arg1: string, arg2: Array<Object>) => void): () => void
+        static RegisterEventHandler(eventType: string, handler: (arg1: string, arg2: Array<Object>) => Object): () => void
+        static UnregisterEventHandler(eventType: string, handler: (arg1: string, arg2: Array<Object>) => Object): void
+        static Clear(): void
+        /** Sends a fire-and-forget message to all ChannelClients connected to the "events" route.
+         * @param eventType The message's type name.
+         * @param args The arguments sent with the message.
+         * @param targetId When you send the event to a specific connection, this is the connection ID. By default it is set to -1, which sends the message to all other EventServices.
+         * @param eventDataSerialization Specifies how to serialize the request's arguments. This can be standard JSON, or JSON annotated with JsonUtility. You can use the latter to convert the argument to a concrete Unity object that supports JsonUtility.FromJson.
+         */
+        static Emit(eventType: string, args: Object, targetId: number, eventDataSerialization: EventDataSerialization): void
+        /** Sends a fire-and-forget message to all ChannelClients connected to the "events" route.
+         * @param eventType The message's type name.
+         * @param args The arguments sent with the message.
+         * @param targetId When you send the event to a specific connection, this is the connection ID. By default it is set to -1, which sends the message to all other EventServices.
+         * @param eventDataSerialization Specifies how to serialize the request's arguments. This can be standard JSON, or JSON annotated with JsonUtility. You can use the latter to convert the argument to a concrete Unity object that supports JsonUtility.FromJson.
+         */
+        static Emit(eventType: string, args: Array<Object>, targetId: number, eventDataSerialization: EventDataSerialization): void
+        /** Checks whether a request is pending on a specific event. For more information about Request, see EventService.Request.
+         * @param eventType Event type name.
+         * @returns True if there is a pending request for this event. False otherwise. 
+         */
+        static IsRequestPending(eventType: string): boolean
+        /** Checks whether there is a pending request for a specific event and, if there is, cancels it. See EventService.Request for more details on Request.
+         * @param eventType The event to cancel.
+         * @param message The error message sent to the pending request.
+         * @returns Returns true if a pending request was found and cancelled false otherwise. 
+         */
+        static CancelRequest(eventType: string, message: string): boolean
+        static Request(eventType: string, promiseHandler: (arg1: Exception, arg2: Array<Object>) => void, args: Object, timeoutInMs: number, eventDataSerialization: EventDataSerialization): void
+        static Request(eventType: string, promiseHandler: (arg1: Exception, arg2: Array<Object>) => void, args: Array<Object>, timeoutInMs: number, eventDataSerialization: EventDataSerialization): void
+        /** Sends a log message to the ChannelService. Log messages are printed to the Console window.
+         * @param msg The message to send.
+         * @param logType The type of the message (i.e. Info, Warning or Error).
+         */
+        static Log(msg: string, logType: any): void
+        /** Sends a log message to the ChannelService. Log messages are printed to the Console window.
+         * @param msg The message to send.
+         * @param logType The type of the message (i.e. Info, Warning or Error).
+         */
+        static Log(msg: string): void
+        static Tick(): void
+        /** The EventService connected to the ChannelService's "events" channel.
+         */
+        static readonly isConnected: boolean
+    }
+}
+declare module "UnityEditor.MPE" {
+    import * as jsb from "jsb";
+    import { Enum } from "System";
+    /** Enum that represents the events a RoleProvider can receive.
+     */
+    enum ProcessEvent {
+        UMP_EVENT_UNDEFINED = 0,
+        Undefined = 0,
+        UMP_EVENT_CREATE = 1,
+        Create = 1,
+        UMP_EVENT_INITIALIZE = 2,
+        Initialize = 2,
+        /** Domain reload occurs.
+         */
+        UMP_EVENT_AFTER_DOMAIN_RELOAD = 3,
+        /** Domain reload occurs.
+         */
+        AfterDomainReload = 3,
+        UMP_EVENT_SHUTDOWN = 4,
+        Shutdown = 4,
+    }
+}
+declare module "UnityEditor.MPE" {
+    import * as jsb from "jsb";
+    import { Enum } from "System";
+    /** The type of the current process. It can be a Unity master instance, or a slave instance connected to the master.
+     */
+    enum ProcessLevel {
+        UMP_UNDEFINED = 0,
+        Undefined = 0,
+        UMP_MASTER = 1,
+        Master = 1,
+        UMP_SLAVE = 2,
+        Slave = 2,
+    }
+}
+declare module "UnityEditor.MPE" {
+    import * as jsb from "jsb";
+    import { Enum } from "System";
+    /** Describes the state of a specifc UnityEditor process.
+     */
+    enum ProcessState {
+        /** The queried UnityEditor process is unknown.
+         */
+        UMP_UNKNOWN_PROCESS = 0,
+        /** The queried UnityEditor process is unknown.
+         */
+        UnknownProcess = 0,
+        /** The queried UnityEditor process ended successfully.
+         */
+        UMP_FINISHED_SUCCESSFULLY = 1,
+        /** The queried UnityEditor process ended successfully.
+         */
+        FinishedSuccessfully = 1,
+        /** The queried UnityEditor process finished with an error.
+         */
+        UMP_FINISHED_WITH_ERROR = 2,
+        /** The queried UnityEditor process finished with an error.
+         */
+        FinishedWithError = 2,
+        UMP_RUNNING = 3,
+        Running = 3,
+    }
+}
+declare module "UnityEditor.MPE" {
+    import * as jsb from "jsb";
+    import { ValueType, Object } from "System";
+    /** A structure that contains the connection information of a Channel in ChannelService.
+     */
+    @jsb.RequiredDefines("UNITY_EDITOR")
+    class ChannelInfo extends ValueType {
+        constructor()
+        Equals(obj: ChannelInfo): boolean
+        Equals(obj: Object): boolean
+        GetHashCode(): number
+        static op_Inequality(x: ChannelInfo, y: ChannelInfo): boolean
+        // js_op_overloading: static ==(x: ChannelInfo, y: ChannelInfo): boolean
+        /** The name of the channel. This matches the route of the URL that connects to the ChannelService. For example, "127.0.0.1:9292/<channelName>".
+         */
+        readonly name: string
+        /** The ID of a specific channel. Normally this is the hash of the channel name.
+         */
+        readonly id: number
+        static invalidChannel: ChannelInfo
+    }
+}
+declare module "UnityEditor.MPE" {
+    import * as jsb from "jsb";
+    import { ValueType, Object } from "System";
+    /** A structure that contains all of a ChannelClient's connection data.
+     */
+    @jsb.RequiredDefines("UNITY_EDITOR")
+    class ChannelClientInfo extends ValueType {
+        constructor()
+        Equals(obj: ChannelClientInfo): boolean
+        Equals(obj: Object): boolean
+        GetHashCode(): number
+        static op_Inequality(x: ChannelClientInfo, y: ChannelClientInfo): boolean
+        // js_op_overloading: static ==(x: ChannelClientInfo, y: ChannelClientInfo): boolean
+        /** The ChannelClient's name (see ChannelClient.channelName. This matches the route of the URL connecting to the ChannelService. For example, "127.0.0.1:9292/<channelName>".
+         */
+        readonly name: string
+        /** The channel's channel ID (see ChannelClient.clientId).
+         */
+        readonly clientId: number
+        /** The ChannelClient's connection ID.
+         */
+        readonly connectionId: number
+        static invalidClient: ChannelClientInfo
+    }
+}
+declare module "UnityEditor.MPE" {
     import * as jsb from "jsb";
     import { Object, Array } from "System";
+    import { PropertyModification } from "UnityEditor";
+    import { Object as Object1 } from "UnityEngine";
+    /** *This is an experimental feature.* The ProcessService allows you to start slave instance of UnityEditor, opened to the same Project as the master instance, with a specific RoleProviderAttribute.
+     */
     @jsb.RequiredDefines("UNITY_EDITOR")
-    class DevDeviceList extends Object {
+    class ProcessService extends Object {
         constructor()
-        static OnChanged(): void
-        static FindDevice(deviceId: string, device: jsb.Out<DevDevice>): boolean
-        static GetDevices(): Array<DevDevice>
-        static Changed(op: "add" | "remove", fn: () => void): void
-    }
-}
-declare module "UnityEditor.Hardware" {
-    import * as jsb from "jsb";
-    import { Enum } from "System";
-    enum DevDeviceState {
-        Disconnected = 0,
-        Connected = 1,
-    }
-}
-declare module "UnityEditor.Hardware" {
-    import * as jsb from "jsb";
-    import { Enum } from "System";
-    enum DevDeviceFeatures {
-        None = 0,
-        PlayerConnection = 1,
-        RemoteConnection = 2,
-    }
-}
-declare module "UnityEditor.Hardware" {
-    import * as jsb from "jsb";
-    import { ValueType } from "System";
-    @jsb.RequiredDefines("UNITY_EDITOR")
-    class DevDevice extends ValueType {
-        constructor(id: string, name: string, type: string, module_: string, state: DevDeviceState, features: DevDeviceFeatures)
-        toString(): string
-        readonly isConnected: boolean
-        static readonly none: DevDevice
-        readonly id: string
-        readonly name: string
-        readonly type: string
-        readonly module_: string
-        readonly state: DevDeviceState
-        readonly features: DevDeviceFeatures
+        static IsChannelServiceStarted(): boolean
+        /** A utility function to read command line arguments passed to the current process.
+         * @param paramName Specific name of a command line parameter.
+         * @returns The parameter value. If empty, the parameter wasn't used on the command line. 
+         */
+        static ReadParameter(paramName: string): string
+        /** Launches a slave instance of UnityEditor on the same project as the master instance.
+         * @param roleName The name that corresponds to the RoleProviderAttribute of the process to start.
+         * @param keyValuePairs Arguments passed to the slave process.
+         * @returns The process ID of the slave process. A value of 0 means the slave process could not be started. 
+         */
+        static LaunchSlave(roleName: string, ...keyValuePairs: string[]): number
+        /** Terminates a slave process.
+         * @param pid The process ID of the slave process to terminate.
+         */
+        static TerminateSlave(pid: number): void
+        /** Gets the ProcessState of a given instance of UnityEditor.
+         * @param pid The process ID.
+         * @returns The state of the queried process. 
+         */
+        static GetSlaveProcessState(pid: number): ProcessState
+        /** Checks whether the current process has a given capability.
+         * @param capName The capability name.
+         * @returns True if the process has the capability. False otherwise. 
+         */
+        static HasCapability(capName: string): boolean
+        static ApplyPropertyModifications(modifications: Array<PropertyModification>): void
+        static SerializeObject(instanceId: number): Array<jsb.byte>
+        static DeserializeObject(bytes: Array<jsb.byte>): Object1
+        /** Enables a connection to the Profiler. The standalone Profiler uses this method.
+         * @param dataPath Where to save profiling data. Normally this is set to Application.dataPath.
+         * @returns Greater than 0 if successful. 
+         */
+        static EnableProfileConnection(dataPath: string): number
+        static DisableProfileConnection(): void
+        /** The ProcessLevel of the running instance of UnityEditor.
+         */
+        static readonly level: ProcessLevel
+        /** The role name of the running UnityEditor process. For more information about how to register handlers for a specific process role, see RoleProviderAttribute. For a UnityEditor process of ProcessLevel Master, the roleName is always empty.
+         */
+        static readonly roleName: string
+        static SlaveProcessExitedEvent(op: "add" | "remove", fn: (arg1: number, arg2: ProcessState) => void): void
     }
 }
 declare module "UnityEditor.Purchasing" {
@@ -29315,6 +31280,9 @@ declare module "UnityEditor.Analytics" {
         /** Set the Analytics config end point.
          */
         static configUrl: string
+        /** Get the Analytics dashboard endpoint.
+         */
+        static dashboardUrl: string
         static OnRequireInBuildHandler(op: "add" | "remove", fn: () => boolean): void
     }
 }
@@ -29444,6 +31412,322 @@ declare module "UnityEditor.Connect" {
             AuthCode: string
             Exception: Exception
         }
+    }
+}
+declare module "UnityEditor.SearchService" {
+    import * as jsb from "jsb";
+    import { Enum } from "System";
+    /** A bit field that contains the different categories of object that the object selector window can display.
+     */
+    enum VisibleObjects {
+        /** The object selector window cannot display any objects.
+         */
+        None = 0,
+        /** The object selector window can only display Assets.
+         */
+        Assets = 1,
+        /** The object selector window can only display GameObjects.
+         */
+        Scene = 2,
+        /** The object selector window can display all categories.
+         */
+        All = 3,
+    }
+}
+declare module "UnityEditor.SearchService" {
+    import * as jsb from "jsb";
+    import { ValueType, Object as Object1 } from "System";
+    import { GlobalObjectId } from "UnityEditor";
+    import { Object } from "UnityEngine";
+    /** A structure that contains information about an item that is about to be shown.
+     */
+    @jsb.RequiredDefines("UNITY_EDITOR")
+    class ObjectSelectorTargetInfo extends ValueType {
+        constructor(globalObjectId: GlobalObjectId, targetObject: Object, type: any)
+        LoadObject(): Object
+        /** The object's global identifier. It is always valid.
+         */
+        readonly globalObjectId: GlobalObjectId
+        /** If the object is already loaded in Unity, this is its instance. The instance can be null.
+         */
+        readonly targetObject: Object
+        /** If the object is currently loaded in Unity, this is its underlying type. The type can be null.
+         */
+        readonly type: any
+    }
+}
+declare module "UnityEditor.SearchService" {
+    import * as jsb from "jsb";
+    import { Object, ValueType, Array } from "System";
+    import { Object as Object1 } from "UnityEngine";
+    import { IEnumerable } from "System.Collections.Generic";
+    /** A search context implementation for ObjectSelector search engines. All methods that are called on an ObjectSelector search engine, and expect a SearchService.ISearchContext, receive an object of this type.
+     */
+    @jsb.RequiredDefines("UNITY_EDITOR")
+    class ObjectSelectorSearchContext extends Object implements ISearchContext {
+        constructor()
+        /** A unique identifier for this search context.
+         */
+        readonly guid: any
+        /** An enum that identifies the scope of the current search. This property is automatically set to SearchService.ObjectSelector.EngineScope.
+         */
+        readonly engineScope: SearchEngineScope
+        /** Identifies the currently selected object.
+         */
+        currentObject: Object1
+        /** When the object selector is opened from an Inspector, this property indicates which objects are currently being edited.
+         */
+        editedObjects: Array<Object1>
+        /** An IEnumerable of types that contains the type constraints for this search.
+         */
+        requiredTypes: any
+        /** An IEnumerable of strings that contains the type name constraints for this search.
+         */
+        requiredTypeNames: IEnumerable<string>
+        /** Indicates which categories of objects are visible in the window. For example, GameObjects, Assets, or both.
+         */
+        visibleObjects: VisibleObjects
+        /** IEnumerable of integers that contains the instanceIds of objects that the search can include in its results.
+         */
+        allowedInstanceIds: any
+        selectorConstraint(op: "get"): (arg1: ObjectSelectorTargetInfo, arg2: Array<Object1>, arg3: ObjectSelectorSearchContext) => boolean
+        selectorConstraint(op: "add" | "remove" | "set", fn?: (arg1: ObjectSelectorTargetInfo, arg2: Array<Object1>, arg3: ObjectSelectorSearchContext) => boolean): void
+        selectorConstraint(op: "add" | "remove" | "set" | "get", fn?: (arg1: ObjectSelectorTargetInfo, arg2: Array<Object1>, arg3: ObjectSelectorSearchContext) => boolean): (arg1: ObjectSelectorTargetInfo, arg2: Array<Object1>, arg3: ObjectSelectorSearchContext) => boolean | void
+    }
+}
+declare module "UnityEditor.SearchService" {
+    import * as jsb from "jsb";
+    // @jsb.RequiredDefines("UNITY_EDITOR")
+    interface IObjectSelectorEngine extends ISelectorEngine, ISearchEngineBase {
+    }
+}
+declare module "UnityEditor.SearchService" {
+    import * as jsb from "jsb";
+    import { Object } from "System";
+    /** Use this API to select objects. Engines for this type of search implement the SearchService.IObjectSelectorEngine interface.
+     */
+    @jsb.RequiredDefines("UNITY_EDITOR")
+    abstract class ObjectSelector extends Object {
+        /** Registers an ObjectSelector search engine dynamically.
+         * @param engine The ObjectSelector search engine to register.
+         */
+        static RegisterEngine(engine: IObjectSelectorEngine): void
+        /** Unregisters a dynamically registered engine.
+         * @param engine The ObjectSelector search engine to unregister.
+         */
+        static UnregisterEngine(engine: IObjectSelectorEngine): void
+        /** A enum that indicates the search scope of ObjectSelector engines. Used by ObjectSelectorSearchContext.
+         */
+        static readonly EngineScope: SearchEngineScope
+    }
+}
+declare module "UnityEditor.SearchService" {
+    import * as jsb from "jsb";
+    import { Object, ValueType } from "System";
+    import { IEnumerable } from "System.Collections.Generic";
+    /** A search context implementation for Project search engines. All methods that are called on a Project search engine, and expect a SearchService.ISearchContext, receive an object of this type.
+     */
+    @jsb.RequiredDefines("UNITY_EDITOR")
+    class ProjectSearchContext extends Object implements ISearchContext {
+        constructor()
+        /** A unique identifier for this search context.
+         */
+        readonly guid: any
+        /** An enum that identifies the scope of the current search. This property is automatically set to SearchService.Project.EngineScope.
+         */
+        readonly engineScope: SearchEngineScope
+        /** An IEnumerable of types that contains the type constraints for this search.
+         */
+        requiredTypes: any
+        /** An IEnumerable of strings that contains the type name constraints for this search.
+         */
+        requiredTypeNames: IEnumerable<string>
+    }
+}
+declare module "UnityEditor.SearchService" {
+    import * as jsb from "jsb";
+    // @jsb.RequiredDefines("UNITY_EDITOR")
+    interface IProjectSearchEngine extends ISearchEngineBase {
+    }
+}
+declare module "UnityEditor.SearchService" {
+    import * as jsb from "jsb";
+    import { Object } from "System";
+    /** Use this API to perform searches in the Project. Engines for this type of search implement the SearchService.IProjectSearchEngine interface.
+     */
+    @jsb.RequiredDefines("UNITY_EDITOR")
+    abstract class Project extends Object {
+        /** Registers a Project search engine dynamically.
+         * @param engine The Project search engine to register.
+         */
+        static RegisterEngine(engine: IProjectSearchEngine): void
+        /** Unregisters a dynamically registered engine.
+         * @param engine The Project search engine to unregister.
+         */
+        static UnregisterEngine(engine: IProjectSearchEngine): void
+        /** A enum that indicates the search scope for Project engines. It is used by ProjectSearchContext.
+         */
+        static readonly EngineScope: SearchEngineScope
+    }
+}
+declare module "UnityEditor.SearchService" {
+    import * as jsb from "jsb";
+    import { Object, ValueType } from "System";
+    import { IEnumerable } from "System.Collections.Generic";
+    import { HierarchyProperty } from "UnityEditor";
+    /** A search context implementation for Scene search engines. All methods that are called on a Scene search engine, and expect a SearchService.ISearchContext, receive an object of this type.
+     */
+    @jsb.RequiredDefines("UNITY_EDITOR")
+    class SceneSearchContext extends Object implements ISearchContext {
+        constructor()
+        /** A unique identifier for this search context.
+         */
+        readonly guid: any
+        /** An enum that identifies the scope of the current search. This property is automatically set to SearchService.Scene.EngineScope.
+         */
+        readonly engineScope: SearchEngineScope
+        /** An IEnumerable of types that contains the type constraints for this search.
+         */
+        requiredTypes: any
+        /** An IEnumerable of strings that contains the type name constraints for this search.
+         */
+        requiredTypeNames: IEnumerable<string>
+        /** The root HierarchyProperty on which the search is started.
+         */
+        rootProperty: HierarchyProperty
+    }
+}
+declare module "UnityEditor.SearchService" {
+    import * as jsb from "jsb";
+    import { HierarchyProperty } from "UnityEditor";
+    // @jsb.RequiredDefines("UNITY_EDITOR")
+    interface ISceneSearchEngine extends ISearchEngineBase {
+    }
+}
+declare module "UnityEditor.SearchService" {
+    import * as jsb from "jsb";
+    import { Object } from "System";
+    /** Use this API to perform searches in the Scene. Engines for this type of search implement the SearchService.ISceneSearchEngine interface.
+     */
+    @jsb.RequiredDefines("UNITY_EDITOR")
+    abstract class Scene extends Object {
+        /** Registers a Scene search engine dynamically.
+         * @param engine The Scene search engine to register.
+         */
+        static RegisterEngine(engine: ISceneSearchEngine): void
+        /** Unregisters a dynamically registered engine.
+         * @param engine The Scene search engine to unregister.
+         */
+        static UnregisterEngine(engine: ISceneSearchEngine): void
+        /** A enum that indicates the search scope for Scene engines. It is used by SceneSearchContext.
+         */
+        static readonly EngineScope: SearchEngineScope
+    }
+}
+declare module "UnityEditor.SearchService" {
+    import * as jsb from "jsb";
+    import { Enum } from "System";
+    /** An enumeration that contains the available search engine scopes.
+     */
+    enum SearchEngineScope {
+        /** Identifies a search for Scene engines.
+         */
+        Scene = 0,
+        /** Identifies a search for Project engines.
+         */
+        Project = 1,
+        /** Identifies a search for ObjectSelector engines.
+         */
+        ObjectSelector = 2,
+    }
+}
+declare module "UnityEditor.SearchService" {
+    import * as jsb from "jsb";
+    import { ValueType, Object } from "System";
+    import { IEnumerable } from "System.Collections.Generic";
+    // @jsb.RequiredDefines("UNITY_EDITOR")
+    interface ISearchContext {
+        /** A unique identifier for this search context.
+         */
+        readonly guid: any
+        /** An enum that identifies the current search scope.
+         */
+        readonly engineScope: SearchEngineScope
+        /** IEnumerable of types that contains the type constraints for this search.
+         */
+        readonly requiredTypes: any
+        /** An IEnumerable of strings that contains the type name constraints for this search.
+         */
+        readonly requiredTypeNames: IEnumerable<string>
+    }
+}
+declare module "UnityEditor.SearchService" {
+    import * as jsb from "jsb";
+    // @jsb.RequiredDefines("UNITY_EDITOR")
+    interface ISearchEngineBase {
+        /** A function called at the beginning of a search session.
+         * @param context The search context.
+         */
+        BeginSession(context: ISearchContext): void
+        /** A function called at the end of a search session.
+         * @param context The search context.
+         */
+        EndSession(context: ISearchContext): void
+        /** A function called at the beginning of each search.
+         * @param context The search context.
+         * @param query The query string used for the search.
+         */
+        BeginSearch(context: ISearchContext, query: string): void
+        /** A function called at the end of a search.
+         * @param context The search context.
+         */
+        EndSearch(context: ISearchContext): void
+        /** The name displayed in the Preferences window in the Unity Editor. This name is used to store the active engine in the preferences.
+         */
+        readonly name: string
+    }
+}
+declare module "UnityEditor.SearchService" {
+    import * as jsb from "jsb";
+    // @jsb.RequiredDefines("UNITY_EDITOR")
+    interface ISearchEngine<T> extends ISearchEngineBase {
+    }
+}
+declare module "UnityEditor.SearchService" {
+    import * as jsb from "jsb";
+    // @jsb.RequiredDefines("UNITY_EDITOR")
+    interface IFilterEngine<T> extends ISearchEngineBase {
+    }
+}
+declare module "UnityEditor.SearchService" {
+    import * as jsb from "jsb";
+    import { Object } from "UnityEngine";
+    // @jsb.RequiredDefines("UNITY_EDITOR")
+    interface ISelectorEngine extends ISearchEngineBase {
+        SelectObject(context: ISearchContext, onObjectSelectorClosed: (arg1: Object, arg2: boolean) => void, onObjectSelectedUpdated: (obj: Object) => void): boolean
+        /** This function is called when the initial search text for the object selector window is set.
+         * @param context The search context.
+         * @param searchFilter The search filter to set on the object selector window.
+         */
+        SetSearchFilter(context: ISearchContext, searchFilter: string): void
+    }
+}
+declare module "UnityEditor.Scripting" {
+    import * as jsb from "jsb";
+    import { Object } from "System";
+    /** Representation of managed debugger in UnityEditor.
+     */
+    @jsb.RequiredDefines("UNITY_EDITOR")
+    class ManagedDebugger extends Object {
+        constructor()
+        static Disconnect(): void
+        /** Returns true if there is a managed debugger attached to the UnityEditor, or false if there is not.
+         */
+        static readonly isAttached: boolean
+        /** Returns true if managed debugger is enabled, or false if it is not.
+         */
+        static readonly isEnabled: boolean
+        static debuggerAttached(op: "add" | "remove", fn: (obj: boolean) => void): void
     }
 }
 declare module "UnityEditor.ProjectWindowCallback" {
@@ -29640,6 +31924,8 @@ declare module "UnityEditor.EditorTools" {
      */
     @jsb.RequiredDefines("UNITY_EDITOR")
     abstract class EditorTool extends ScriptableObject {
+        OnActivated(): void
+        OnWillBeDeactivated(): void
         /** Use this method to implement a custom editor tool.
          * @param window The window that is displaying the custom editor tool.
          */
@@ -29658,19 +31944,52 @@ declare module "UnityEditor.EditorTools" {
 }
 declare module "UnityEditor.EditorTools" {
     import * as jsb from "jsb";
+    import { ScriptableObject } from "UnityEngine";
+    import { EditorWindow, Tool } from "UnityEditor";
     import { Object } from "System";
-    /** Use this class to manipulate editor tools in the Scene View.
+    /** Use this class to implement specialized versions of the built-in transform tools. Built-in transform tools include Move, Rotate, Scale, Rect, and Transform.
      */
     @jsb.RequiredDefines("UNITY_EDITOR")
-    abstract class EditorTools extends Object {
+    abstract class EditorToolContext extends ScriptableObject {
+        /** Implements any common functionality for the set of manipulation tools available for this context.
+         * @param window The window that is displaying the active EditorTool.
+         */
+        OnToolGUI(window: EditorWindow): void
+        /** Returns the matching EditorTool type for the specified Tool given the context.
+         * @param tool The Tool to resolve to an EditorTool type.
+         * @returns An EditorTool type for the requested Tool. 
+         */
+        ResolveTool(tool: Tool): any
+    }
+}
+declare module "UnityEditor.EditorTools" {
+    import * as jsb from "jsb";
+    /** This class represents the default context for manipulation tools. When GameObjectToolContext is active, manipulation tools affect the transform property of GameObjects in the SceneView Selection.
+     */
+    @jsb.RequiredDefines("UNITY_EDITOR")
+    class GameObjectToolContext extends EditorToolContext {
+        protected constructor()
+    }
+}
+declare module "UnityEditor.EditorTools" {
+    import * as jsb from "jsb";
+    import { Object } from "System";
+    /** This class manipulates editor tools in the Scene view.
+     */
+    @jsb.RequiredDefines("UNITY_EDITOR")
+    abstract class ToolManager extends Object {
+        /** Sets the active EditorToolContext.
+         * @param context The EditorToolContext type to be set as the active tool.
+         */
+        static SetActiveContext(context: any): void
         /** Sets the active EditorTool.
-         * @param type The EditorTool type to be set as the active tool.
-         * @param tool The EditorTool instance to be set as the active tool.
+         * @param type The EditorTool type to set as the active tool.
+         * @param tool The EditorTool instance to set as the active tool.
          */
         static SetActiveTool(type: any): void
         /** Sets the active EditorTool.
-         * @param type The EditorTool type to be set as the active tool.
-         * @param tool The EditorTool instance to be set as the active tool.
+         * @param type The EditorTool type to set as the active tool.
+         * @param tool The EditorTool instance to set as the active tool.
          */
         static SetActiveTool(tool: EditorTool): void
         static RestorePreviousTool(): void
@@ -29680,11 +31999,16 @@ declare module "UnityEditor.EditorTools" {
          * @returns Returns true if the tool is active, false if it is not the active tool. 
          */
         static IsActiveTool(tool: EditorTool): boolean
-        /** The type of EditorTool that is currently active.
+        /** Gets the type of EditorToolContext that is currently active. The default value is GameObjectToolContext.
+         */
+        static readonly activeContextType: any
+        /** Gets the type of the EditorTool that is currently active.
          */
         static readonly activeToolType: any
         static activeToolChanging(op: "add" | "remove", fn: () => void): void
         static activeToolChanged(op: "add" | "remove", fn: () => void): void
+        static activeContextChanging(op: "add" | "remove", fn: () => void): void
+        static activeContextChanged(op: "add" | "remove", fn: () => void): void
     }
 }
 declare module "UnityEditor.IMGUI.Controls" {
@@ -30454,6 +32778,15 @@ declare module "UnityEditor.Build" {
 }
 declare module "UnityEditor.Build" {
     import * as jsb from "jsb";
+    import { Object } from "UnityEngine";
+    import { ValueType } from "System";
+    // @jsb.RequiredDefines("UNITY_EDITOR")
+    interface IPreprocessComputeShaders extends IOrderedCallback {
+        OnProcessComputeShader(shader: any, kernelName: string, data: any): void
+    }
+}
+declare module "UnityEditor.Build" {
+    import * as jsb from "jsb";
     import { BuildReport } from "UnityEditor.Build.Reporting";
     import { Object } from "System";
     // @jsb.RequiredDefines("UNITY_EDITOR")
@@ -30747,6 +33080,36 @@ declare module "UnityEditor.Build.Reporting" {
 }
 declare module "UnityEditor.Build.Reporting" {
     import * as jsb from "jsb";
+    import { ValueType, Array } from "System";
+    /** Contains information about which scenes in a build have references to an Asset in the build.
+     */
+    @jsb.RequiredDefines("UNITY_EDITOR")
+    class ScenesUsingAsset extends ValueType {
+        constructor()
+        /** The asset path.
+         */
+        readonly assetPath: string
+        /** The list of scenes in the build referring to the asset, identified by a string containing the scene index in the BuildPlayerOptions.scenes list, as well as the scene path.
+         */
+        readonly scenePaths: Array<string>
+    }
+}
+declare module "UnityEditor.Build.Reporting" {
+    import * as jsb from "jsb";
+    import { Object } from "UnityEngine";
+    import { Array } from "System";
+    /** An extension to the BuildReport class that tracks which scenes in the build have references to a specific asset in the build.
+     */
+    @jsb.RequiredDefines("UNITY_EDITOR")
+    class ScenesUsingAssets extends Object {
+        constructor()
+        /** An array of ScenesUsingAsset that holds information about the Assets that are included in the build.
+         */
+        readonly list: Array<ScenesUsingAsset>
+    }
+}
+declare module "UnityEditor.Build.Reporting" {
+    import * as jsb from "jsb";
     import { ScriptableObject } from "UnityEngine";
     import { IEnumerable } from "System.Collections.Generic";
     /** The StrippingInfo object contains information about which native code modules in the engine are still present in the build, and the reasons why they are still present.
@@ -30764,6 +33127,76 @@ declare module "UnityEditor.Build.Reporting" {
         readonly includedModules: IEnumerable<string>
     }
 }
+declare module "UnityEditor.Hardware" {
+    import * as jsb from "jsb";
+    import { ValueType } from "System";
+    @jsb.RequiredDefines("UNITY_EDITOR")
+    class UsbDevice extends ValueType {
+        constructor()
+        toString(): string
+        readonly vendorId: number
+        readonly productId: number
+        readonly revision: number
+        readonly udid: string
+        readonly name: string
+    }
+}
+declare module "UnityEditor.Hardware" {
+    import * as jsb from "jsb";
+    import { Object, Array } from "System";
+    @jsb.RequiredDefines("UNITY_EDITOR")
+    class Usb extends Object {
+        constructor()
+        static OnDevicesChanged(devices: Array<UsbDevice>): void
+        static DevicesChanged(op: "add" | "remove", fn: (devices: Array<UsbDevice>) => void): void
+    }
+}
+declare module "UnityEditor.Hardware" {
+    import * as jsb from "jsb";
+    import { Enum } from "System";
+    enum DevDeviceState {
+        Disconnected = 0,
+        Connected = 1,
+    }
+}
+declare module "UnityEditor.Hardware" {
+    import * as jsb from "jsb";
+    import { Enum } from "System";
+    enum DevDeviceFeatures {
+        None = 0,
+        PlayerConnection = 1,
+        RemoteConnection = 2,
+    }
+}
+declare module "UnityEditor.Hardware" {
+    import * as jsb from "jsb";
+    import { ValueType } from "System";
+    @jsb.RequiredDefines("UNITY_EDITOR")
+    class DevDevice extends ValueType {
+        constructor(id: string, name: string, type: string, module_: string, state: DevDeviceState, features: DevDeviceFeatures)
+        toString(): string
+        readonly isConnected: boolean
+        static readonly none: DevDevice
+        readonly id: string
+        readonly name: string
+        readonly type: string
+        readonly module_: string
+        readonly state: DevDeviceState
+        readonly features: DevDeviceFeatures
+    }
+}
+declare module "UnityEditor.Hardware" {
+    import * as jsb from "jsb";
+    import { Object, Array } from "System";
+    @jsb.RequiredDefines("UNITY_EDITOR")
+    class DevDeviceList extends Object {
+        constructor()
+        static OnChanged(): void
+        static FindDevice(deviceId: string, device: jsb.Out<DevDevice>): boolean
+        static GetDevices(): Array<DevDevice>
+        static Changed(op: "add" | "remove", fn: () => void): void
+    }
+}
 declare module "UnityEditor.SceneManagement" {
     import * as jsb from "jsb";
     import { SceneManager } from "UnityEngine.SceneManagement";
@@ -30775,6 +33208,7 @@ declare module "UnityEditor.SceneManagement" {
     @jsb.RequiredDefines("UNITY_EDITOR")
     class EditorSceneManager extends SceneManager {
         constructor()
+        static IsReloading(scene: any): boolean
         /** Open a Scene in the Editor.
          * @param scenePath The path of the Scene. This should be relative to the Project folder; for example, "AssetsMyScenesMyScene.unity".
          * @param mode Allows you to select how to open the specified Scene, and whether to keep existing Scenes in the Hierarchy. See SceneManagement.OpenSceneMode for more information about the options.
@@ -30890,6 +33324,7 @@ Cameras will only render objects in Scenes that have the same bits set in their 
         /** The number of loaded Scenes.
          */
         static readonly loadedSceneCount: number
+        static readonly loadedRootSceneCount: number
         /** The current amount of active preview Scenes.
          */
         static readonly previewSceneCount: number
@@ -30899,8 +33334,7 @@ Cameras will only render objects in Scenes that have the same bits set in their 
         /** Loads this SceneAsset when you start Play Mode.
          */
         static playModeStartScene: SceneAsset
-        /** The Scene culling mask that is drawn by all Cameras.
-All Scenes start with this culling mask by default.
+        /** Use SceneCullingMasks.DefaultSceneCullingMask instead.
          */
         static readonly DefaultSceneCullingMask: number
         static activeSceneChangedInEditMode(op: "add" | "remove", fn: (arg0: any, arg1: any) => void): void
@@ -31092,6 +33526,24 @@ declare module "UnityEngine.SceneManagement" {
 }
 declare module "UnityEditor.SceneManagement" {
     import * as jsb from "jsb";
+    import { Object } from "System";
+    /** Masks that control what kind of Scene views and Game views Unity should render a GameObject in.
+     */
+    @jsb.RequiredDefines("UNITY_EDITOR")
+    abstract class SceneCullingMasks extends Object {
+        /** Specifies the default culling mask for a Scene.  Use the bits from this Scene culling mask for objects that you want to render in both in the Game view and the Scene view.
+         */
+        static readonly DefaultSceneCullingMask: number
+        /** The bits from this mask specify GameObjects that Unity should render in Game view.
+         */
+        static readonly GameViewObjects: number
+        /** The bits from this mask specify GameObjects that Unity should render in Scene views showing the main stage.
+         */
+        static readonly MainStageSceneViewObjects: number
+    }
+}
+declare module "UnityEditor.SceneManagement" {
+    import * as jsb from "jsb";
     import { Enum } from "System";
     /** Used when opening a Scene in the Editor to specify how a Scene should be opened.
      */
@@ -31147,6 +33599,8 @@ declare module "UnityEditor.SceneManagement" {
         static CanMoveTransformToScene(transform: Transform, scene: any): boolean
         static addItemsToGameObjectContextMenu(op: "add" | "remove", fn: (arg1: GenericMenu, arg2: GameObject) => void): void
         static addItemsToSceneHeaderContextMenu(op: "add" | "remove", fn: (arg1: GenericMenu, arg2: any) => void): void
+        static addItemsToSubSceneHeaderContextMenu(op: "add" | "remove", fn: (arg1: GenericMenu, arg2: SceneHierarchyHooks.SubSceneInfo) => void): void
+        static addItemsToCreateMenu(op: "add" | "remove", fn: (obj: GenericMenu) => void): void
         static provideSubScenes(op: "get"): () => Array<SceneHierarchyHooks.SubSceneInfo>
         static provideSubScenes(op: "add" | "remove" | "set", fn?: () => Array<SceneHierarchyHooks.SubSceneInfo>): void
         static provideSubScenes(op: "add" | "remove" | "set" | "get", fn?: () => Array<SceneHierarchyHooks.SubSceneInfo>): () => Array<SceneHierarchyHooks.SubSceneInfo> | void
@@ -31195,6 +33649,46 @@ declare module "UnityEditor.SceneManagement" {
 }
 declare module "UnityEditor.SceneManagement" {
     import * as jsb from "jsb";
+    /** The Main Stage contains all the currently open regular Scenes and is always available.
+     */
+    @jsb.RequiredDefines("UNITY_EDITOR")
+    class MainStage extends Stage {
+        constructor()
+    }
+}
+declare module "UnityEditor.SceneManagement" {
+    import * as jsb from "jsb";
+    import { ScriptableObject } from "UnityEngine";
+    /** The Stage class represents an editing context which includes a collection of Scenes.
+     */
+    @jsb.RequiredDefines("UNITY_EDITOR")
+    abstract class Stage extends ScriptableObject {
+        GetCombinedSceneCullingMaskForCamera(): number
+        /** The path of the Asset file associated with the stage, relative to the project root folder.
+         */
+        readonly assetPath: string
+        /** The StageHandle struct for this stage.
+         */
+        readonly stageHandle: StageHandle
+    }
+}
+declare module "UnityEditor.SceneManagement" {
+    import * as jsb from "jsb";
+    import { ValueType } from "System";
+    /** The PreviewSceneStage class represents an editing context based on a single preview Scene.
+     */
+    @jsb.RequiredDefines("UNITY_EDITOR")
+    abstract class PreviewSceneStage extends Stage {
+        /** The preview Scene this stage controls. Stage content should be moved into this Scene.
+         */
+        readonly scene: any
+        /** See Stage.stageHandle.
+         */
+        readonly stageHandle: StageHandle
+    }
+}
+declare module "UnityEditor.SceneManagement" {
+    import * as jsb from "jsb";
     import { ValueType, Object } from "System";
     import { GameObject } from "UnityEngine";
     /** Struct that represents a stage handle.
@@ -31229,6 +33723,22 @@ declare module "UnityEditor.SceneManagement" {
          * @returns True if the GameObject is rendered by the camera. 
          */
         static IsGameObjectRenderedByCamera(gameObject: GameObject, camera: Camera): boolean
+        /** Specifies whether the given Camera currently renders the given GameObject and the GameObject is also part of an editable scene.
+         * @param gameObject The GameObject to check.
+         * @param camera The Camera to check.
+         * @returns True if the GameObject is rendered by the camera and part of an editable scene. 
+         */
+        static IsGameObjectRenderedByCameraAndPartOfEditableScene(gameObject: GameObject, camera: Camera): boolean
+        static GetCurrentStage(): Stage
+        static GetMainStage(): MainStage
+        /** Get the Stage object that contains the input GameObject or Scene.
+         * @returns The Stage that contains either the GameObject or the Scene. 
+         */
+        static GetStage(gameObject: GameObject): Stage
+        /** Get the Stage object that contains the input GameObject or Scene.
+         * @returns The Stage that contains either the GameObject or the Scene. 
+         */
+        static GetStage(scene: any): Stage
         static GetCurrentStageHandle(): StageHandle
         static GetMainStageHandle(): StageHandle
         /** Get the stage in which the given GameObject exists.
@@ -31243,6 +33753,11 @@ declare module "UnityEditor.SceneManagement" {
         static GetStageHandle(scene: any): StageHandle
         static GoToMainStage(): void
         static GoBackToPreviousStage(): void
+        /** Navigates the Editor to the specified stage.
+         * @param stage The stage to navigate to.
+         * @param setAsFirstItemAfterMainStage When set to true, the new stage replaces existing stages in the breadcrumbs, apart from the main stage.
+         */
+        static GoToStage(stage: Stage, setAsFirstItemAfterMainStage: boolean): void
         /** Place the given GameObject in the current stage being edited.
          * @param gameObject The GameObject to be placed in the current stage.
          */
@@ -31408,7 +33923,7 @@ declare module "UnityEngine.UI" {
         disabledColor: Color
         colorMultiplier: number
         fadeDuration: number
-        static readonly defaultColorBlock: ColorBlock
+        static defaultColorBlock: ColorBlock
     }
 }
 declare module "UnityEngine.UI" {
@@ -31519,7 +34034,7 @@ declare module "UnityEngine.UI" {
 }
 declare module "UnityEngine.UI" {
     import { UIBehaviour } from "UnityEngine.EventSystems";
-    import { Material, Color, RectTransform, Behaviour, Component, Texture, Vector2, Camera, Rect } from "UnityEngine";
+    import { Material, Color, Vector4, RectTransform, Behaviour, Component, Texture, Vector2, Camera, Rect } from "UnityEngine";
     abstract class Graphic extends UIBehaviour implements ICanvasElement {
         SetAllDirty(): void
         SetLayoutDirty(): void
@@ -31545,6 +34060,7 @@ declare module "UnityEngine.UI" {
         static readonly defaultGraphicMaterial: Material
         color: Color
         raycastTarget: boolean
+        raycastPadding: Vector4
         readonly depth: number
         readonly rectTransform: RectTransform
         readonly canvas: any
@@ -31557,7 +34073,7 @@ declare module "UnityEngine.UI" {
 }
 declare module "UnityEngine.UI" {
     import { BaseRaycaster, PointerEventData, RaycastResult } from "UnityEngine.EventSystems";
-    import { Camera } from "UnityEngine";
+    import { LayerMask, Camera } from "UnityEngine";
     import { Object } from "System";
     class GraphicRaycaster extends BaseRaycaster {
         Raycast(eventData: PointerEventData, resultAppendList: any): void
@@ -31566,6 +34082,7 @@ declare module "UnityEngine.UI" {
         readonly renderOrderPriority: number
         ignoreReversedGraphics: boolean
         blockingObjects: GraphicRaycaster.BlockingObjects
+        blockingMask: LayerMask
         readonly eventCamera: Camera
     }
 }
@@ -31586,8 +34103,11 @@ declare module "UnityEngine.UI" {
     import { Behaviour } from "UnityEngine";
     class GraphicRegistry extends Object {
         static RegisterGraphicForCanvas(c: any, graphic: Graphic): void
+        static RegisterRaycastGraphicForCanvas(c: any, graphic: Graphic): void
         static UnregisterGraphicForCanvas(c: any, graphic: Graphic): void
+        static UnregisterRaycastGraphicForCanvas(c: any, graphic: Graphic): void
         static GetGraphicsForCanvas(canvas: any): any
+        static GetRaycastableGraphicsForCanvas(canvas: any): any
         protected constructor()
         static readonly instance: GraphicRegistry
     }
@@ -31719,6 +34239,8 @@ declare module "UnityEngine.UI" {
     class AspectRatioFitter extends UIBehaviour implements ILayoutController {
         SetLayoutHorizontal(): void
         SetLayoutVertical(): void
+        IsComponentValidOnObject(): boolean
+        IsAspectModeValid(): boolean
         /*protected*/ constructor()
         aspectMode: AspectRatioFitter.AspectMode
         aspectRatio: number
@@ -31805,6 +34327,7 @@ declare module "UnityEngine.UI" {
         childControlHeight: boolean
         childScaleWidth: boolean
         childScaleHeight: boolean
+        reverseArrangement: boolean
     }
 }
 declare module "UnityEngine.UI" {
@@ -31930,6 +34453,7 @@ declare module "UnityEngine.UI" {
         constructor()
         Equals(other: Navigation): boolean
         mode: Navigation.Mode
+        wrapAround: boolean
         selectOnUp: Selectable
         selectOnDown: Selectable
         selectOnLeft: Selectable
@@ -32153,6 +34677,7 @@ declare module "UnityEngine.UI" {
         EnsureValidState(): void
         AnyTogglesOn(): boolean
         ActiveToggles(): any
+        GetFirstActiveToggle(): Toggle
         SetAllTogglesOff(sendCallback: boolean): void
         /*protected*/ constructor()
         allowSwitchOff: boolean
@@ -32161,7 +34686,7 @@ declare module "UnityEngine.UI" {
 declare module "UnityEngine.UI" {
     import * as jsb from "jsb";
     import { Object, Array, ValueType } from "System";
-    import { Object as Object1, Vector3, Color32, Vector2, Vector4 } from "UnityEngine";
+    import { Object as Object1, Vector3, Color32, Vector4 } from "UnityEngine";
     class VertexHelper extends Object {
         constructor(m: any)
         constructor()
@@ -32170,9 +34695,9 @@ declare module "UnityEngine.UI" {
         PopulateUIVertex(vertex: jsb.Ref<any>, i: number): void
         SetUIVertex(vertex: any, i: number): void
         FillMesh(mesh: any): void
-        AddVert(position: Vector3, color: Color32, uv0: Vector2, uv1: Vector2, uv2: Vector2, uv3: Vector2, normal: Vector3, tangent: Vector4): void
-        AddVert(position: Vector3, color: Color32, uv0: Vector2, uv1: Vector2, normal: Vector3, tangent: Vector4): void
-        AddVert(position: Vector3, color: Color32, uv0: Vector2): void
+        AddVert(position: Vector3, color: Color32, uv0: Vector4, uv1: Vector4, uv2: Vector4, uv3: Vector4, normal: Vector3, tangent: Vector4): void
+        AddVert(position: Vector3, color: Color32, uv0: Vector4, uv1: Vector4, normal: Vector3, tangent: Vector4): void
+        AddVert(position: Vector3, color: Color32, uv0: Vector4): void
         AddVert(v: any): void
         AddTriangle(idx0: number, idx1: number, idx2: number): void
         AddUIVertexQuad(verts: Array<any>): void
@@ -32251,6 +34776,7 @@ declare module "UnityEngine.EventSystems" {
         readonly lastPress: GameObject
         rawPointerPress: GameObject
         pointerDrag: GameObject
+        pointerClick: GameObject
         pointerCurrentRaycast: RaycastResult
         pointerPressRaycast: RaycastResult
         eligibleForClick: boolean
@@ -32623,6 +35149,12 @@ declare module "UnityEngine.Events" {
          * @param argumentTypes Argument types for the function.
          */
         static GetValidMethodInfo(obj: Object, functionName: string, argumentTypes: Array<any>): any
+        /** Given an object type, function name, and a list of argument types; find the method that matches.
+         * @param objectType Object type to search for the method.
+         * @param functionName Function name to search for.
+         * @param argumentTypes Argument types for the function.
+         */
+        static GetValidMethodInfo(objectType: any, functionName: string, argumentTypes: Array<any>): any
     }
 }
 declare module "UnityEngine.UI" {
@@ -32683,14 +35215,15 @@ declare module "UnityEngine.UI" {
     }
 }
 declare module "UnityEngine.Events" {
-    abstract class UnityEvent_Int32 extends UnityEventBase implements UnityEvent1<number> {
+    class UnityEvent_Int32 extends UnityEventBase implements UnityEvent1<number> {
+        constructor()
         AddListener(call: (id: number) => void): void
         RemoveListener(call: (id: number) => void): void
         Invoke(arg0: number): void
     }
 }
 declare module "UnityEngine.Events" {
-    abstract class UnityEvent1<T0> extends UnityEventBase {
+    class UnityEvent1<T0> extends UnityEventBase {
     }
 }
 declare module "UnityEngine.UI" {
@@ -32837,7 +35370,8 @@ declare module "UnityEngine.UI" {
     }
 }
 declare module "UnityEngine.Events" {
-    abstract class UnityEvent_String extends UnityEventBase implements UnityEvent1<string> {
+    class UnityEvent_String extends UnityEventBase implements UnityEvent1<string> {
+        constructor()
         AddListener(call: (obj: string) => void): void
         RemoveListener(call: (obj: string) => void): void
         Invoke(arg0: string): void
@@ -32944,7 +35478,8 @@ declare module "UnityEngine.UI" {
     }
 }
 declare module "UnityEngine.Events" {
-    abstract class UnityEvent_Boolean extends UnityEventBase implements UnityEvent1<boolean> {
+    class UnityEvent_Boolean extends UnityEventBase implements UnityEvent1<boolean> {
+        constructor()
         AddListener(call: (obj: boolean) => void): void
         RemoveListener(call: (obj: boolean) => void): void
         Invoke(arg0: boolean): void
@@ -32993,7 +35528,8 @@ declare module "UnityEngine.UI" {
 }
 declare module "UnityEngine.Events" {
     import { Vector2 } from "UnityEngine";
-    abstract class UnityEvent_Vector2 extends UnityEventBase implements UnityEvent1<Vector2> {
+    class UnityEvent_Vector2 extends UnityEventBase implements UnityEvent1<Vector2> {
+        constructor()
         AddListener(call: (arg0: Vector2) => void): void
         RemoveListener(call: (arg0: Vector2) => void): void
         Invoke(arg0: Vector2): void
@@ -33019,7 +35555,8 @@ declare module "UnityEngine.UI" {
     }
 }
 declare module "UnityEngine.Events" {
-    abstract class UnityEvent_Single extends UnityEventBase implements UnityEvent1<number> {
+    class UnityEvent_Single extends UnityEventBase implements UnityEvent1<number> {
+        constructor()
         AddListener(call: (arg0: number) => void): void
         RemoveListener(call: (arg0: number) => void): void
         Invoke(arg0: number): void
@@ -33103,7 +35640,8 @@ declare module "UnityEngine.EventSystems" {
 }
 declare module "UnityEngine.Events" {
     import { BaseEventData } from "UnityEngine.EventSystems";
-    abstract class UnityEvent_BaseEventData extends UnityEventBase implements UnityEvent1<BaseEventData> {
+    class UnityEvent_BaseEventData extends UnityEventBase implements UnityEvent1<BaseEventData> {
+        constructor()
         AddListener(call: (arg0: BaseEventData) => void): void
         RemoveListener(call: (arg0: BaseEventData) => void): void
         Invoke(arg0: BaseEventData): void
