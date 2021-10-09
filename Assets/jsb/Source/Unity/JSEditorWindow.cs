@@ -384,6 +384,8 @@ namespace QuickJS.Unity
 
         void OnEnable()
         {
+            //TODO: restore EditorWindow scripting (transfer serialized states)
+
             if (_onEnableValid)
             {
                 var rval = JSApi.JS_Call(_ctx, _onEnableFunc, _this_obj);
