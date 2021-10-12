@@ -134,20 +134,11 @@ class SerializationUtil {
             this.forEach(target, (propertyKey, slot) => {
                 if (slot.serializable) {
                     let value = target[propertyKey];
-                    switch (slot.type) {
-                        case "object": {
-                            ps.SetObject(slot.name, value);
-                            break;
-                        }
-                        default: {
-                            let s = impl.types[slot.type];
-                            if (typeof s === "object") {
-                                buffer.WriteString(slot.name);
-                                buffer.WriteByte(s.typeid);
-                                s.serialize(buffer, value);
-                            }
-                            break;
-                        }
+                    let s = impl.types[slot.type];
+                    if (typeof s === "object") {
+                        buffer.WriteString(slot.name);
+                        buffer.WriteByte(s.typeid);
+                        s.serialize(ps, buffer, value);
                     }
                 }
             });
@@ -164,28 +155,19 @@ class SerializationUtil {
                 for (let propertyKey in slots) {
                     let slot = slots[propertyKey];
                     if (slot.serializable) {
-                        switch (slot.type) {
-                            case "object": {
-                                target[propertyKey] = ps.GetObject(slot.name);
-                                break;
-                            }
-                            default: {
-                                slotByName[slot.name] = slot;
-                                let defaultValue = impl.types[slot.type].defaultValue;
-                                if (typeof defaultValue === "function") {
-                                    defaultValue = defaultValue();
-                                }
-                                target[slot.propertyKey] = defaultValue;
-                                break;
-                            }
+                        slotByName[slot.name] = slot;
+                        let defaultValue = impl.types[slot.type].defaultValue;
+                        if (typeof defaultValue === "function") {
+                            defaultValue = defaultValue();
                         }
+                        target[slot.propertyKey] = defaultValue;
                     }
                 }
                 while (buffer.readableBytes > 0) {
                     let name = buffer.ReadString();
                     let typeid = buffer.ReadUByte();
                     let s = impl.typeids[typeid];
-                    let slot_value = s.deserilize(buffer);
+                    let slot_value = s.deserilize(ps, buffer);
                     let slot = slotByName[name];
                     if (slot) {
                         console.assert(impl.types[slot.type].typeid == s.typeid);

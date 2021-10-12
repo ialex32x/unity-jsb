@@ -465,13 +465,7 @@ namespace QuickJS.Unity
             EditorGUI.BeginDisabledGroup(true);
             EditorGUILayout.IntField("Data Format", ps.dataFormat);
             EditorGUILayout.IntField("Blob", ps.GenericCount);
-            EditorGUILayout.IntField("Objects", ps.ObjectCount);
-
-            ps.ForEach((string key, Object value) =>
-            {
-                //
-                EditorGUILayout.ObjectField(key, value, value != null ? value.GetType() : typeof(Object), true);
-            });
+            EditorGUILayout.IntField("Referenced Objects", ps.ReferencedObjectCount);
             EditorGUI.EndDisabledGroup();
         }
 

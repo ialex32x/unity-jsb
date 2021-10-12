@@ -1,6 +1,6 @@
 import { ByteBuffer } from "QuickJS.IO";
 import { JSScriptProperties } from "QuickJS.Unity";
-import { DefaultSerializer, GetLatestSerializer, GetSerializer, ISerializer } from "./serialize";
+import { GetLatestSerializer, GetSerializer, ISerializer } from "./serialize";
 
 let Symbol_PropertiesTouched = Symbol.for("PropertiesTouched");
 let Symbol_MemberFuncs = Symbol.for("MemberFuncs");
@@ -198,21 +198,11 @@ export class SerializationUtil {
             this.forEach(target, (propertyKey, slot) => {
                 if (slot.serializable) {
                     let value = target[propertyKey];
-
-                    switch (slot.type) {
-                        case "object": {
-                            ps.SetObject(slot.name, value);
-                            break;
-                        }
-                        default: {
-                            let s: ISerializer = impl.types[slot.type];
-                            if (typeof s === "object") {
-                                buffer.WriteString(slot.name);
-                                buffer.WriteByte(s.typeid);
-                                s.serialize(buffer, value);
-                            }
-                            break;
-                        }
+                    let s: ISerializer = impl.types[slot.type];
+                    if (typeof s === "object") {
+                        buffer.WriteString(slot.name);
+                        buffer.WriteByte(s.typeid);
+                        s.serialize(ps, buffer, value);
                     }
                 }
             });
@@ -230,22 +220,13 @@ export class SerializationUtil {
                 for (let propertyKey in slots) {
                     let slot: PropertyMetaInfo = slots[propertyKey];
                     if (slot.serializable) {
-                        switch (slot.type) {
-                            case "object": {
-                                target[propertyKey] = ps.GetObject(slot.name);
-                                break;
-                            }
-                            default: {
-                                slotByName[slot.name] = slot;
+                        slotByName[slot.name] = slot;
 
-                                let defaultValue = impl.types[slot.type].defaultValue;
-                                if (typeof defaultValue === "function") {
-                                    defaultValue = defaultValue();
-                                }
-                                target[slot.propertyKey] = defaultValue;
-                                break;
-                            }
+                        let defaultValue = impl.types[slot.type].defaultValue;
+                        if (typeof defaultValue === "function") {
+                            defaultValue = defaultValue();
                         }
+                        target[slot.propertyKey] = defaultValue;
                     }
                 }
 
@@ -253,7 +234,7 @@ export class SerializationUtil {
                     let name = buffer.ReadString();
                     let typeid = buffer.ReadUByte();
                     let s = impl.typeids[typeid];
-                    let slot_value = s.deserilize(buffer);
+                    let slot_value = s.deserilize(ps, buffer);
 
                     let slot: PropertyMetaInfo = slotByName[name];
                     if (slot) {

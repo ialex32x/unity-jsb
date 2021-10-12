@@ -1,29 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.RegisterSerializer = exports.GetSerializer = exports.GetLatestSerializer = exports.DefaultSerializer = void 0;
+exports.RegisterSerializer = exports.GetSerializer = exports.GetLatestSerializer = void 0;
 const UnityEngine_1 = require("UnityEngine");
-class DefaultSerializer {
-    static serialize(type, buffer, value) {
-        let p = _LatestSerializer;
-        if (typeof p === "object") {
-            let s = p[type];
-            if (typeof s === "object") {
-                s.serialize(buffer, value);
-            }
-        }
-    }
-    static deserilize(dataFormat, type, buffer) {
-        let p = _DefaultSerializers[dataFormat] || _LatestSerializer;
-        if (typeof p === "object") {
-            let s = p[type];
-            if (typeof s === "object") {
-                return s.deserilize(buffer);
-            }
-        }
-        return undefined;
-    }
-}
-exports.DefaultSerializer = DefaultSerializer;
 let _DefaultSerializers = [];
 let _LatestSerializer;
 function GetLatestSerializer() {
@@ -55,17 +33,17 @@ RegisterSerializer(1, "v1: without size check", {
     "bool": {
         typeid: 1,
         defaultValue: false,
-        serialize(buffer, value) {
+        serialize(ps, buffer, value) {
             buffer.WriteBoolean(!!value);
         },
-        deserilize(buffer) {
+        deserilize(ps, buffer) {
             return buffer.ReadBoolean();
         }
     },
     "float": {
         typeid: 2,
         defaultValue: 0,
-        serialize(buffer, value) {
+        serialize(ps, buffer, value) {
             if (typeof value === "number") {
                 buffer.WriteSingle(value);
             }
@@ -73,14 +51,14 @@ RegisterSerializer(1, "v1: without size check", {
                 buffer.WriteSingle(0);
             }
         },
-        deserilize(buffer) {
+        deserilize(ps, buffer) {
             return buffer.ReadSingle();
         }
     },
     "double": {
         typeid: 3,
         defaultValue: 0,
-        serialize(buffer, value) {
+        serialize(ps, buffer, value) {
             if (typeof value === "number") {
                 buffer.WriteDouble(value);
             }
@@ -88,14 +66,14 @@ RegisterSerializer(1, "v1: without size check", {
                 buffer.WriteDouble(0);
             }
         },
-        deserilize(buffer) {
+        deserilize(ps, buffer) {
             return buffer.ReadDouble();
         }
     },
     "string": {
         typeid: 4,
         defaultValue: null,
-        serialize(buffer, value) {
+        serialize(ps, buffer, value) {
             if (typeof value === "string") {
                 buffer.WriteString(value);
             }
@@ -103,14 +81,14 @@ RegisterSerializer(1, "v1: without size check", {
                 buffer.WriteString(null);
             }
         },
-        deserilize(buffer) {
+        deserilize(ps, buffer) {
             return buffer.ReadString();
         }
     },
     "int": {
         typeid: 5,
         defaultValue: 0,
-        serialize(buffer, value) {
+        serialize(ps, buffer, value) {
             if (typeof value === "number") {
                 buffer.WriteInt32(value);
             }
@@ -118,14 +96,14 @@ RegisterSerializer(1, "v1: without size check", {
                 buffer.WriteInt32(0);
             }
         },
-        deserilize(buffer) {
+        deserilize(ps, buffer) {
             return buffer.ReadInt32();
         }
     },
     "uint": {
         typeid: 6,
         defaultValue: 0,
-        serialize(buffer, value) {
+        serialize(ps, buffer, value) {
             if (typeof value === "number") {
                 buffer.WriteUInt32(value);
             }
@@ -133,14 +111,14 @@ RegisterSerializer(1, "v1: without size check", {
                 buffer.WriteUInt32(0);
             }
         },
-        deserilize(buffer) {
+        deserilize(ps, buffer) {
             return buffer.ReadUInt32();
         }
     },
     "Vector2": {
         typeid: 7,
         defaultValue: () => UnityEngine_1.Vector2.zero,
-        serialize(buffer, value) {
+        serialize(ps, buffer, value) {
             if (value instanceof UnityEngine_1.Vector2) {
                 buffer.WriteSingle(value.x);
                 buffer.WriteSingle(value.y);
@@ -150,14 +128,14 @@ RegisterSerializer(1, "v1: without size check", {
                 buffer.WriteSingle(0);
             }
         },
-        deserilize(buffer) {
+        deserilize(ps, buffer) {
             return new UnityEngine_1.Vector2(buffer.ReadSingle(), buffer.ReadSingle());
         }
     },
     "Vector3": {
         typeid: 8,
         defaultValue: () => UnityEngine_1.Vector3.zero,
-        serialize(buffer, value) {
+        serialize(ps, buffer, value) {
             if (value instanceof UnityEngine_1.Vector3) {
                 buffer.WriteSingle(value.x);
                 buffer.WriteSingle(value.y);
@@ -169,14 +147,14 @@ RegisterSerializer(1, "v1: without size check", {
                 buffer.WriteSingle(0);
             }
         },
-        deserilize(buffer) {
+        deserilize(ps, buffer) {
             return new UnityEngine_1.Vector3(buffer.ReadSingle(), buffer.ReadSingle(), buffer.ReadSingle());
         }
     },
     "Vector4": {
         typeid: 9,
         defaultValue: () => UnityEngine_1.Vector4.zero,
-        serialize(buffer, value) {
+        serialize(ps, buffer, value) {
             if (value instanceof UnityEngine_1.Vector4) {
                 buffer.WriteSingle(value.x);
                 buffer.WriteSingle(value.y);
@@ -190,14 +168,14 @@ RegisterSerializer(1, "v1: without size check", {
                 buffer.WriteSingle(0);
             }
         },
-        deserilize(buffer) {
+        deserilize(ps, buffer) {
             return new UnityEngine_1.Vector4(buffer.ReadSingle(), buffer.ReadSingle(), buffer.ReadSingle(), buffer.ReadSingle());
         }
     },
     "Rect": {
         typeid: 10,
         defaultValue: () => UnityEngine_1.Rect.zero,
-        serialize(buffer, value) {
+        serialize(ps, buffer, value) {
             if (value instanceof UnityEngine_1.Rect) {
                 buffer.WriteSingle(value.x);
                 buffer.WriteSingle(value.y);
@@ -211,14 +189,14 @@ RegisterSerializer(1, "v1: without size check", {
                 buffer.WriteSingle(0);
             }
         },
-        deserilize(buffer) {
+        deserilize(ps, buffer) {
             return new UnityEngine_1.Rect(buffer.ReadSingle(), buffer.ReadSingle(), buffer.ReadSingle(), buffer.ReadSingle());
         }
     },
     "Quaternion": {
         typeid: 11,
         defaultValue: () => UnityEngine_1.Quaternion.identity,
-        serialize(buffer, value) {
+        serialize(ps, buffer, value) {
             if (value instanceof UnityEngine_1.Quaternion) {
                 buffer.WriteSingle(value.x);
                 buffer.WriteSingle(value.y);
@@ -232,8 +210,28 @@ RegisterSerializer(1, "v1: without size check", {
                 buffer.WriteSingle(1);
             }
         },
-        deserilize(buffer) {
+        deserilize(ps, buffer) {
             return new UnityEngine_1.Quaternion(buffer.ReadSingle(), buffer.ReadSingle(), buffer.ReadSingle(), buffer.ReadSingle());
+        }
+    },
+    "object": {
+        typeid: 12,
+        defaultValue: null,
+        serialize(ps, buffer, value) {
+            if (value instanceof UnityEngine_1.Object) {
+                let index = ps.AddReferencedObject(value);
+                buffer.WriteInt32(index);
+            }
+            else {
+                if (!!value) {
+                    console.error("only types inheriting UnityEngine.Object is unsupported", value);
+                }
+                buffer.WriteInt32(-1);
+            }
+        },
+        deserilize(ps, buffer) {
+            let index = buffer.ReadInt32();
+            return ps.GetReferencedObject(index);
         }
     },
 }, true);
