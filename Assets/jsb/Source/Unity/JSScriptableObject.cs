@@ -476,6 +476,7 @@ namespace QuickJS.Unity
                 }
             }
             properties.SetGenericValue(buffer);
+            buffer.Release();
         }
 
         void OnEnable()
