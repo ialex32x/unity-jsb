@@ -21,6 +21,9 @@ namespace QuickJS.Unity
         private List<ObjectKeyValuePair> _objects;
 
         [SerializeField]
+        private List<Object> _referencedObjects;
+
+        [SerializeField]
         public byte[] genericValueData;
 
         [SerializeField]
@@ -45,6 +48,36 @@ namespace QuickJS.Unity
                     cb(pair.key, pair.value);
                 }
             }
+        }
+
+        public int AddReferencedObject(Object value)
+        {
+            if (_referencedObjects == null)
+            {
+                _referencedObjects = new List<Object>();
+                _referencedObjects.Add(value);
+                return 0;
+            }
+            var count = _referencedObjects.Count;
+            for (var i = 0; i < count; ++i)
+            {
+                var item = _referencedObjects[i];
+                if (item == value) 
+                {
+                    return i;
+                }
+            }
+            _referencedObjects.Add(value);
+            return count;
+        }
+
+        public Object GetReferencedObject(int index)
+        {
+            if (_referencedObjects != null && index >= 0 && index < _referencedObjects.Count)
+            {
+                return _referencedObjects[index];
+            }
+            return null;
         }
 
         public void SetObject(string key, Object value)
@@ -92,6 +125,7 @@ namespace QuickJS.Unity
 
         public void Clear()
         {
+            _referencedObjects?.Clear();
             _objects?.Clear();
         }
     }

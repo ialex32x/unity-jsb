@@ -7227,6 +7227,8 @@ declare module "QuickJS.Unity" {
     class JSScriptProperties extends Object {
         constructor()
         ForEach(cb: (arg1: string, arg2: Object1) => void): void
+        AddReferencedObject(value: Object1): number
+        GetReferencedObject(index: number): Object1
         SetObject(key: string, value: Object1): void
         GetObject(key: string): Object1
         SetGenericValue(buffer: ByteBuffer): void
