@@ -515,7 +515,18 @@ namespace QuickJS.Unity
                 }
                 _prefs.typescriptExt = EditorGUILayout.TextField("Typescript Ext", _prefs.typescriptExt);
                 _prefs.sourceDir = EditorGUILayout.TextField("Source Dir", _prefs.sourceDir);
-                _prefs.editorEntryPoint = EditorGUILayout.TextField("Editor Entry Script", _prefs.editorEntryPoint);
+
+                if (EditorGUI.EndChangeCheck())
+                {
+                    MarkAsDirty();
+                }
+            });
+
+            Block("Editor Scripts", () =>
+            {
+                EditorGUI.BeginChangeCheck();
+                _prefs.editorEntryPoint = EditorGUILayout.TextField("Entry Point", _prefs.editorEntryPoint);
+                _prefs.editorDecoratorScript = EditorGUILayout.TextField("Decorator Definition", _prefs.editorDecoratorScript);
 
                 if (EditorGUI.EndChangeCheck())
                 {

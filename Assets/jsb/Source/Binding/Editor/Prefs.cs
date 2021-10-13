@@ -98,6 +98,8 @@ namespace QuickJS.Binding
             "plover/editor/js_reload",
         });
 
+        public string editorDecoratorScript = "plover/editor/editor_decorators";
+
         /// <summary>
         /// generate totally commented staticbind code for more conveniently debugging the codegen process itself
         /// </summary>

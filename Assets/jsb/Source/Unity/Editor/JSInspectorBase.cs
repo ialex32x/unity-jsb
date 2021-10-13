@@ -158,8 +158,8 @@ namespace QuickJS.Unity
 
         protected void CreateScriptInstance(JSContext ctx, JSValue this_obj, JSValue ctor)
         {
-            var runtime = ScriptEngine.GetRuntime(_ctx);
-            var context = runtime?.GetContext(_ctx);
+            var runtime = ScriptEngine.GetRuntime(ctx);
+            var context = runtime?.GetContext(ctx);
             if (context == null || !context.IsValid())
             {
                 return;
@@ -249,9 +249,11 @@ namespace QuickJS.Unity
                 return;
             }
 
+            var prefs = EditorRuntime.GetPrefs();
             var editorClass = JSApi.JS_UNDEFINED;
             var context = runtime.GetMainContext();
-            var scriptFunc = context.EvalSource<ScriptFunction>("require('plover/editor/editor_decorators').EditorUtil.getCustomEditor", "eval");
+            var decorator_module = prefs.editorDecoratorScript;
+            var scriptFunc = context.EvalSource<ScriptFunction>($"require('{decorator_module}').EditorUtil.getCustomEditor", "eval");
             if (scriptFunc != null)
             {
                 unsafe
@@ -265,6 +267,10 @@ namespace QuickJS.Unity
                     safeRelease.Release();
                 }
                 scriptFunc.Dispose();
+            }
+            else
+            {
+                Debug.LogError($"failed to get EditorUtil.getCustomEditor in {decorator_module}");
             }
 
             if (JSApi.JS_IsConstructor(ctx, editorClass) == 1)
