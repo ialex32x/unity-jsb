@@ -7,6 +7,10 @@ namespace QuickJS.Unity
     using Native;
     using UnityEngine;
 
+    /// <summary>
+    /// indicates a script class
+    /// (case-sensitive)
+    /// </summary>
     [Serializable]
     public struct JSScriptRef
     {
@@ -16,7 +20,14 @@ namespace QuickJS.Unity
         /// </summary>
         public string sourceFile;
 
+        /// <summary>
+        /// the actual script loaded, it's parsed from sourceFile and be resolved by ScriptRuntime.pathResolver. 
+        /// </summary>
         public string modulePath;
+
+        /// <summary>
+        /// it specifies the exported target class used for bridging of Unity's facilities
+        /// </summary>
         public string className;
 
         public void Reset()
@@ -42,7 +53,7 @@ namespace QuickJS.Unity
             {
                 return className ?? string.Empty;
             }
-            
+
             return string.IsNullOrEmpty(className) ? string.Empty : $"{modulePath.Replace('/', '.')}.{className}";
         }
 

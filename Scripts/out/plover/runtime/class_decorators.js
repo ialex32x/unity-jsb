@@ -129,6 +129,7 @@ class SerializationUtil {
     static serialize(target, ps, buffer) {
         this.markAsReady(target);
         let impl = serialize_1.GetLatestSerializer();
+        console.assert(typeof ps === "object");
         if (typeof impl === "object") {
             ps.dataFormat = impl.dataFormat;
             this.forEach(target, (propertyKey, slot) => {
@@ -176,7 +177,9 @@ class SerializationUtil {
                 }
             }
             else {
-                console.error("no serializer for dataFormat", dataFormat);
+                if (ps.GenericCount > 0 && ps.dataFormat >= 0) {
+                    console.error("no serializer for dataFormat", dataFormat);
+                }
             }
         }
     }

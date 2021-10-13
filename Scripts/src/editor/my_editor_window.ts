@@ -2,6 +2,7 @@ import { DateTime } from "System";
 import { EditorWindow, EditorGUILayout, MessageType, SceneView, Handles, GenericMenu, HandleUtility, EditorApplication, EditorGUI } from "UnityEditor";
 import { FocusType, GUIContent, GUILayout, GUIUtility, Rect, Event, GUIStyle, GUI, Vector2, GUILayoutUtility, EventType, Vector3, Quaternion, Resources, ScriptableObject, Object, Color } from "UnityEngine";
 import { ScriptEditorWindow } from "../plover/editor/editor_decorators";
+import { ScriptInteger, ScriptProperty, ScriptString } from "../plover/runtime/class_decorators";
 
 class TempWindow extends EditorWindow {
     private _greeting = false;
@@ -55,13 +56,29 @@ export class MyEditorWindow extends EditorWindow {
     private _onWindowGUI: () => void;
     private _styleWindowResize: GUIStyle;
 
+    @ScriptProperty({ type: "Rect" })
     private _parentWindowRect = new Rect(0, 0, 0, 0);
+
+    @ScriptProperty({ type: "Rect" })
     private _resizeStart = new Rect(0, 0, 0, 0);
+
+    @ScriptProperty({ type: "Vector2" })
     private _minWindowSize = new Vector2(120, 100);
+
+    @ScriptProperty({ type: "Rect" })
     private _thisWindowRect = new Rect(50, 50, 400, 300);
+
+    @ScriptProperty({ type: "object" })
     private _resizerContent = new GUIContent("* ", "Resize");
+
+    @ScriptProperty({ type: "bool" })
     private _isResizing = false;
+
+    @ScriptProperty({ type: "int" })
     private _windowIndex = 0;
+
+    @ScriptInteger()
+    continuousInteger = 0;
 
     Awake() {
         this._onSceneGui = this.onSceneGui.bind(this);
@@ -147,6 +164,9 @@ export class MyEditorWindow extends EditorWindow {
 
     OnGUI() {
         EditorGUILayout.HelpBox("Hello", MessageType.Info);
+        EditorGUILayout.LabelField(typeof this.continuousInteger);
+        this.continuousInteger = EditorGUILayout.IntField("ContinuousInteger", this.continuousInteger || 0) + 1;
+
         if (GUILayout.Button("I am Javascript")) {
             console.log("Thanks!", DateTime.Now);
         }

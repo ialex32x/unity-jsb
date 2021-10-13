@@ -120,7 +120,7 @@ namespace QuickJS
             }
 
             var runtime = ScriptEngine.GetRuntime(ctx);
-            if (runtime == null)
+            if (runtime == null || !runtime.isValid)
             {
                 return JSApi.JS_UNDEFINED;
             }

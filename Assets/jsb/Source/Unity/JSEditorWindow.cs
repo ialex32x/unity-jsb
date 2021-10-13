@@ -18,6 +18,12 @@ namespace QuickJS.Unity
         [NonSerialized]
         private bool _isScriptInstanced;
 
+        [NonSerialized]
+        private bool _isWaitingRuntime = false;
+
+        [NonSerialized]
+        private bool _checkInstanceOnce = true;
+
         [SerializeField]
         private JSScriptRef _scriptRef;
 
@@ -27,37 +33,48 @@ namespace QuickJS.Unity
         // internal use only
         public JSScriptProperties properties => _properties;
 
+        [NonSerialized]
         private JSContext _ctx;
 
         private JSValue _this_obj = JSApi.JS_UNDEFINED;
 
+        [NonSerialized]
         private bool _updateValid;
         private JSValue _updateFunc = JSApi.JS_UNDEFINED;
 
+        [NonSerialized]
         private bool _onEnableValid;
         private JSValue _onEnableFunc = JSApi.JS_UNDEFINED;
 
+        [NonSerialized]
         private bool _onDisableValid;
         private JSValue _onDisableFunc = JSApi.JS_UNDEFINED;
 
+        [NonSerialized]
         private bool _onDestroyValid;
         private JSValue _onDestroyFunc = JSApi.JS_UNDEFINED;
 
+        [NonSerialized]
         private bool _onGUIValid;
         private JSValue _onGUIFunc = JSApi.JS_UNDEFINED;
 
+        [NonSerialized]
         private bool _addItemsToMenuValid;
         private JSValue _addItemsToMenuFunc = JSApi.JS_UNDEFINED;
 
+        [NonSerialized]
         private bool _onBeforeScriptReloadValid;
         private JSValue _onBeforeScriptReloadFunc = JSApi.JS_UNDEFINED;
 
+        [NonSerialized]
         private bool _onAfterScriptReloadValid;
         private JSValue _onAfterScriptReloadFunc = JSApi.JS_UNDEFINED;
 
+        [NonSerialized]
         private bool _onBeforeSerializeValid;
         private JSValue _onBeforeSerializeFunc = JSApi.JS_UNDEFINED;
 
+        [NonSerialized]
         private bool _onAfterDeserializeValid;
         private JSValue _onAfterDeserializeFunc = JSApi.JS_UNDEFINED;
 
@@ -138,6 +155,67 @@ namespace QuickJS.Unity
             _isScriptInstanced = true;
         }
 
+        public bool CreateScriptInstance()
+        {
+            if (!_isScriptInstanced)
+            {
+                if (!string.IsNullOrEmpty(_scriptRef.modulePath) && !string.IsNullOrEmpty(_scriptRef.className))
+                {
+                    var runtime = ScriptEngine.GetRuntime();
+                    if (runtime != null && runtime.isValid && runtime.isInitialized)
+                    {
+                        var context = runtime.GetMainContext();
+                        if (context != null)
+                        {
+                            var ctx = (JSContext)context;
+                            var snippet = $"require('{_scriptRef.modulePath}')['{_scriptRef.className}']";
+                            var bytes = System.Text.Encoding.UTF8.GetBytes(snippet);
+                            var typeValue = ScriptRuntime.EvalSource(ctx, bytes, _scriptRef.sourceFile, false);
+                            if (typeValue.IsException())
+                            {
+                                ctx.print_exception();
+                                SetUnresolvedScriptInstance();
+                            }
+                            else
+                            {
+                                var instValue = SetScriptInstance(ctx, typeValue, false);
+                                JSApi.JS_FreeValue(ctx, instValue);
+                                JSApi.JS_FreeValue(ctx, typeValue);
+                            }
+                        }
+                        else
+                        {
+                            SetUnresolvedScriptInstance();
+                        }
+                    }
+                    else
+                    {
+                        if (!_isWaitingRuntime)
+                        {
+                            _isWaitingRuntime = true;
+                            ScriptEngine.RuntimeInitialized += OnRuntimeInitialized;
+                        }
+                    }
+                }
+                else
+                {
+                    SetUnresolvedScriptInstance();
+                }
+            }
+
+            return _isScriptInstanced;
+        }
+
+        private void OnRuntimeInitialized(ScriptRuntime runtime)
+        {
+            if (_isWaitingRuntime)
+            {
+                _isWaitingRuntime = false;
+                ScriptEngine.RuntimeInitialized -= OnRuntimeInitialized;
+                CreateScriptInstance();
+            }
+        }
+
         private void _SetScriptInstance(JSContext ctx, JSValue this_obj, JSValue ctor, bool execAwake)
         {
             var context = ScriptEngine.GetContext(ctx);
@@ -148,7 +226,8 @@ namespace QuickJS.Unity
 
             ReleaseJSValues();
             context.TrySetScriptRef(ref _scriptRef, ctor);
-            context.OnDestroy += OnContextDestroy;
+            var runtime = context.GetRuntime();
+            runtime.OnDestroy += OnScriptRuntimeDestroy;
 #if UNITY_EDITOR
             if (!_scriptRef.IsEmpty())
             {
@@ -167,14 +246,15 @@ namespace QuickJS.Unity
                 if (execAwake)
                 {
                     var awake_obj = JSApi.JS_GetProperty(ctx, this_obj, context.GetAtom("Awake"));
-                    Call(awake_obj);
+                    JSScriptableObject._CallJSFunc(_ctx, _this_obj, awake_obj);
                     JSApi.JS_FreeValue(_ctx, awake_obj);
 
                 }
-                
+
+                this._OnScriptingAfterDeserialize();
                 if (_onEnableValid)
                 {
-                    Call(_onEnableFunc);
+                    JSScriptableObject._CallJSFunc(_ctx, _this_obj, _onEnableFunc);
                 }
             }
         }
@@ -206,7 +286,7 @@ namespace QuickJS.Unity
 
             _onAfterScriptReloadFunc = JSApi.JS_GetProperty(ctx, _this_obj, context.GetAtom("OnAfterScriptReload"));
             _onAfterScriptReloadValid = JSApi.JS_IsFunction(ctx, _onAfterScriptReloadFunc) == 1;
-            
+
             _onBeforeSerializeFunc = JSApi.JS_GetProperty(ctx, _this_obj, context.GetAtom("OnBeforeSerialize"));
             _onBeforeSerializeValid = JSApi.JS_IsFunction(ctx, _onBeforeSerializeFunc) == 1;
 
@@ -257,22 +337,6 @@ namespace QuickJS.Unity
             _onAfterDeserializeValid = false;
         }
 
-        private void Call(JSValue func_obj)
-        {
-            if (JSApi.JS_IsFunction(_ctx, func_obj) == 1)
-            {
-                var rval = JSApi.JS_Call(_ctx, func_obj, _this_obj);
-                if (rval.IsException())
-                {
-                    _ctx.print_exception();
-                }
-                else
-                {
-                    JSApi.JS_FreeValue(_ctx, rval);
-                }
-            }
-        }
-
 #if UNITY_EDITOR
         private void OnScriptReloading(ScriptContext context, string resolved_id)
         {
@@ -280,15 +344,7 @@ namespace QuickJS.Unity
             {
                 if (_onBeforeScriptReloadValid)
                 {
-                    var rval = JSApi.JS_Call(_ctx, _onBeforeScriptReloadFunc, _this_obj);
-                    if (rval.IsException())
-                    {
-                        _ctx.print_exception();
-                    }
-                    else
-                    {
-                        JSApi.JS_FreeValue(_ctx, rval);
-                    }
+                    JSScriptableObject._CallJSFunc(_ctx, _this_obj, _onBeforeScriptReloadFunc);
                 }
             }
         }
@@ -302,7 +358,7 @@ namespace QuickJS.Unity
                 {
                     var prototype = JSApi.JS_GetProperty(context, newClass, context.GetAtom("prototype"));
 
-                    if (prototype.IsObject())
+                    if (prototype.IsObject() && _this_obj.IsObject())
                     {
                         OnUnbindingJSFuncs();
                         JSApi.JS_SetPrototype(context, _this_obj, prototype);
@@ -310,15 +366,7 @@ namespace QuickJS.Unity
 
                         if (_onAfterScriptReloadValid)
                         {
-                            var rval = JSApi.JS_Call(_ctx, _onAfterScriptReloadFunc, _this_obj);
-                            if (rval.IsException())
-                            {
-                                _ctx.print_exception();
-                            }
-                            else
-                            {
-                                JSApi.JS_FreeValue(_ctx, rval);
-                            }
+                            JSScriptableObject._CallJSFunc(_ctx, _this_obj, _onAfterScriptReloadFunc);
                         }
                     }
 
@@ -329,14 +377,20 @@ namespace QuickJS.Unity
         }
 #endif
 
-        private void OnContextDestroy(ScriptContext context)
+        private void OnScriptRuntimeDestroy(ScriptRuntime runtime)
         {
+            OnBeforeSerialize();
             ReleaseJSValues();
         }
 
         void ReleaseJSValues(bool noClose = false)
         {
             _isScriptInstanced = false;
+            if (_isWaitingRuntime)
+            {
+                _isWaitingRuntime = false;
+                ScriptEngine.RuntimeInitialized -= OnRuntimeInitialized;
+            }
 
             if (!_this_obj.IsNullish())
             {
@@ -349,7 +403,11 @@ namespace QuickJS.Unity
             _ctx = JSContext.Null;
             if (context != null)
             {
-                context.OnDestroy -= OnContextDestroy;
+                var runtime = context.GetRuntime();
+                if (runtime != null)
+                {
+                    runtime.OnDestroy -= OnScriptRuntimeDestroy;
+                }
 #if UNITY_EDITOR
                 context.OnScriptReloading -= OnScriptReloading;
                 context.OnScriptReloaded -= OnScriptReloaded;
@@ -358,7 +416,7 @@ namespace QuickJS.Unity
 
             try
             {
-                if (!noClose)
+                if (!noClose && _scriptRef.IsEmpty())
                 {
                     Close();
                 }
@@ -368,56 +426,38 @@ namespace QuickJS.Unity
 
         void Update()
         {
-            if (_updateValid)
+            if (_updateValid && _ctx.IsValid())
             {
-                var rval = JSApi.JS_Call(_ctx, _updateFunc, _this_obj);
-                if (rval.IsException())
+                JSScriptableObject._CallJSFunc(_ctx, _this_obj, _updateFunc);
+            }
+            else
+            {
+                // there is no callback available to restore the script reference after getting back to edit mode.
+                // it seems that checking is the only way.
+
+                if (_checkInstanceOnce && !Application.isPlaying)
                 {
-                    _ctx.print_exception();
-                }
-                else
-                {
-                    JSApi.JS_FreeValue(_ctx, rval);
+                    _checkInstanceOnce = false;
+                    CreateScriptInstance();
                 }
             }
         }
 
         void OnEnable()
         {
-            //TODO: restore EditorWindow scripting (transfer serialized states)
+            CreateScriptInstance();
 
-            if (_onEnableValid)
-            {
-                var rval = JSApi.JS_Call(_ctx, _onEnableFunc, _this_obj);
-                if (rval.IsException())
-                {
-                    _ctx.print_exception();
-                }
-                else
-                {
-                    JSApi.JS_FreeValue(_ctx, rval);
-                }
-            }
+            // if (_onEnableValid)
+            // {
+            //     JSScriptableObject._CallJSFunc(_ctx, _this_obj, _onEnableFunc);
+            // }
         }
 
         void OnDisable()
         {
             if (_onDisableValid)
             {
-                var rval = JSApi.JS_Call(_ctx, _onDisableFunc, _this_obj);
-                if (rval.IsException())
-                {
-                    _ctx.print_exception();
-                }
-                else
-                {
-                    JSApi.JS_FreeValue(_ctx, rval);
-                }
-            }
-
-            if (UnityEditor.EditorApplication.isCompiling)
-            {
-                ReleaseJSValues();
+                JSScriptableObject._CallJSFunc(_ctx, _this_obj, _onDisableFunc);
             }
         }
 
@@ -425,15 +465,7 @@ namespace QuickJS.Unity
         {
             if (_onDestroyValid)
             {
-                var rval = JSApi.JS_Call(_ctx, _onDestroyFunc, _this_obj);
-                if (rval.IsException())
-                {
-                    _ctx.print_exception();
-                }
-                else
-                {
-                    JSApi.JS_FreeValue(_ctx, rval);
-                }
+                JSScriptableObject._CallJSFunc(_ctx, _this_obj, _onDestroyFunc);
             }
             ReleaseJSValues(true);
         }
@@ -448,15 +480,15 @@ namespace QuickJS.Unity
 
             if (_onGUIValid && _isScriptInstanced && _ctx.IsValid())
             {
-                var rval = JSApi.JS_Call(_ctx, _onGUIFunc, _this_obj);
-                if (rval.IsException())
-                {
-                    _ctx.print_exception();
-                }
-                else
-                {
-                    JSApi.JS_FreeValue(_ctx, rval);
-                }
+                JSScriptableObject._CallJSFunc(_ctx, _this_obj, _onGUIFunc);
+            }
+            else 
+            {
+                var promptMessage = @"script callback not ready:
+    1. runtime unavailable
+    2. script instance not ready
+    3. callback of OnGUI not provided in target script";
+                EditorGUILayout.HelpBox(promptMessage, MessageType.Warning);
             }
         }
 
@@ -481,18 +513,28 @@ namespace QuickJS.Unity
 
         public void OnBeforeSerialize()
         {
-            //TODO: special lifecycle of EditorWindow which will be transfered across the different runtime assemblies
+            if (_onBeforeSerializeValid)
+            {
+                JSScriptableObject.ExecOnBeforeSerialize(ref _properties, _ctx, _this_obj, _onBeforeSerializeFunc);
+            }
 
-            // if (_onBeforeSerializeValid)
-            // {
-            //     JSScriptableObject.ExecOnBeforeSerialize(ref _properties, _ctx, _this_obj, _onBeforeSerializeFunc);
-            // }
+            if (UnityEditor.EditorApplication.isCompiling)
+            {
+                ReleaseJSValues();
+            }
+        }
+
+        public void _OnScriptingAfterDeserialize()
+        {
+            if (_onAfterDeserializeValid)
+            {
+                JSScriptableObject.ExecOnAfterDeserialize(ref _properties, _ctx, _this_obj, _onAfterDeserializeFunc);
+            }
         }
 
         public void OnAfterDeserialize()
         {
-            //TODO: special lifecycle of EditorWindow which will be transfered across the different runtime assemblies
-
+            CreateScriptInstance();
         }
     }
 }

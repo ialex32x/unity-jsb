@@ -12,6 +12,7 @@ const System_1 = require("System");
 const UnityEditor_1 = require("UnityEditor");
 const UnityEngine_1 = require("UnityEngine");
 const editor_decorators_1 = require("../plover/editor/editor_decorators");
+const class_decorators_1 = require("../plover/runtime/class_decorators");
 class TempWindow extends UnityEditor_1.EditorWindow {
     constructor() {
         super(...arguments);
@@ -60,6 +61,7 @@ let MyEditorWindow = MyEditorWindow_1 = class MyEditorWindow extends UnityEditor
         this._resizerContent = new UnityEngine_1.GUIContent("* ", "Resize");
         this._isResizing = false;
         this._windowIndex = 0;
+        this.continuousInteger = 0;
         this._lastHour = -1;
         this._lastMinute = -1;
         this._lastSecond = -1;
@@ -134,6 +136,8 @@ let MyEditorWindow = MyEditorWindow_1 = class MyEditorWindow extends UnityEditor
     }
     OnGUI() {
         UnityEditor_1.EditorGUILayout.HelpBox("Hello", UnityEditor_1.MessageType.Info);
+        UnityEditor_1.EditorGUILayout.LabelField(typeof this.continuousInteger);
+        this.continuousInteger = UnityEditor_1.EditorGUILayout.IntField("ContinuousInteger", this.continuousInteger || 0) + 1;
         if (UnityEngine_1.GUILayout.Button("I am Javascript")) {
             console.log("Thanks!", System_1.DateTime.Now);
         }
@@ -171,6 +175,30 @@ let MyEditorWindow = MyEditorWindow_1 = class MyEditorWindow extends UnityEditor
         UnityEditor_1.EditorGUILayout.EndHorizontal();
     }
 };
+__decorate([
+    class_decorators_1.ScriptProperty({ type: "Rect" })
+], MyEditorWindow.prototype, "_parentWindowRect", void 0);
+__decorate([
+    class_decorators_1.ScriptProperty({ type: "Rect" })
+], MyEditorWindow.prototype, "_resizeStart", void 0);
+__decorate([
+    class_decorators_1.ScriptProperty({ type: "Vector2" })
+], MyEditorWindow.prototype, "_minWindowSize", void 0);
+__decorate([
+    class_decorators_1.ScriptProperty({ type: "Rect" })
+], MyEditorWindow.prototype, "_thisWindowRect", void 0);
+__decorate([
+    class_decorators_1.ScriptProperty({ type: "object" })
+], MyEditorWindow.prototype, "_resizerContent", void 0);
+__decorate([
+    class_decorators_1.ScriptProperty({ type: "bool" })
+], MyEditorWindow.prototype, "_isResizing", void 0);
+__decorate([
+    class_decorators_1.ScriptProperty({ type: "int" })
+], MyEditorWindow.prototype, "_windowIndex", void 0);
+__decorate([
+    class_decorators_1.ScriptInteger()
+], MyEditorWindow.prototype, "continuousInteger", void 0);
 MyEditorWindow = MyEditorWindow_1 = __decorate([
     editor_decorators_1.ScriptEditorWindow()
 ], MyEditorWindow);

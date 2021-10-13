@@ -242,9 +242,9 @@ namespace QuickJS.Unity
                 if (!string.IsNullOrEmpty(_scriptRef.modulePath) && !string.IsNullOrEmpty(_scriptRef.className))
                 {
                     var runtime = ScriptEngine.GetRuntime();
-                    if (runtime != null)
+                    if (runtime != null && runtime.isInitialized && runtime.isValid)
                     {
-                        var context = runtime.isInitialized ? runtime.GetMainContext() : null;
+                        var context = runtime.GetMainContext();
                         if (context != null)
                         {
                             var ctx = (JSContext)context;

@@ -10,13 +10,6 @@ namespace QuickJS.Unity
     [Serializable]
     public class JSScriptProperties
     {
-        [Serializable]
-        public class ObjectKeyValuePair
-        {
-            public string key;
-            public Object value;
-        }
-
         [SerializeField]
         private List<Object> _referencedObjects;
 
@@ -24,7 +17,7 @@ namespace QuickJS.Unity
         public byte[] genericValueData;
 
         [SerializeField]
-        public int dataFormat;
+        public int dataFormat = -1;
 
         public bool IsEmpty
         {

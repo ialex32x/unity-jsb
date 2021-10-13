@@ -1,7 +1,6 @@
 import { ByteBuffer } from "QuickJS.IO";
 import { JSScriptProperties } from "QuickJS.Unity";
 import { Object, Quaternion, Rect, Vector2, Vector3, Vector4 } from "UnityEngine";
-import { PropertyTypeID } from "./class_decorators";
 
 export interface ISerializer {
     typeid: number;

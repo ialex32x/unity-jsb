@@ -14,9 +14,7 @@ function ScriptEditor(forType) {
 }
 exports.ScriptEditor = ScriptEditor;
 function ScriptEditorWindow(meta) {
-    return function (target) {
-        return target;
-    };
+    return class_decorators_1.ScriptType(meta);
 }
 exports.ScriptEditorWindow = ScriptEditorWindow;
 class DefaultEditor extends UnityEditor_1.Editor {

@@ -884,11 +884,13 @@ namespace QuickJS
         public void Shutdown()
         {
             //TODO: lock?
-            _isInitialized = false;
-            _isRunning = false;
             if (!_isWorker)
             {
                 Destroy();
+            }
+            else
+            {
+                _isRunning = false;
             }
         }
 
@@ -913,10 +915,9 @@ namespace QuickJS
 
             _isInitialized = false;
             _isRunning = false;
+
             _timerManager.Destroy();
             _objectCache.Destroy();
-            _typeDB.Destroy();
-
             GC.Collect();
             GC.WaitForPendingFinalizers();
             ExecutePendingActions();
@@ -928,6 +929,7 @@ namespace QuickJS
                 contextRef.target.Destroy();
             }
 
+            _typeDB.Destroy();
             _contextRefs.Clear();
             _mainContext = null;
             // _rwlock.ExitWriteLock();

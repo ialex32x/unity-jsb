@@ -2,12 +2,12 @@ import { ByteBuffer } from "QuickJS.IO";
 import { JSScriptProperties } from "QuickJS.Unity";
 import { Editor, EditorApplication, EditorGUI, EditorGUILayout, EditorUtility, MessageType } from "UnityEditor";
 import { Object, Vector3 } from "UnityEngine";
-import { SerializationUtil } from "../runtime/class_decorators";
+import { ClassMetaInfo, ScriptType, SerializationUtil } from "../runtime/class_decorators";
 import { DefaultPropertyDrawer } from "./drawer";
 
 let Symbol_CustomEditor = Symbol.for("CustomEditor");
 
-export interface EditorWindowMetaInfo {
+export interface EditorWindowMetaInfo extends ClassMetaInfo {
 
 }
 
@@ -19,9 +19,7 @@ export function ScriptEditor(forType: any) {
 }
 
 export function ScriptEditorWindow(meta?: EditorWindowMetaInfo) {
-    return function (target: any) {
-        return target;
-    }
+    return ScriptType(meta);
 }
 
 export class DefaultEditor extends Editor {

@@ -91,7 +91,7 @@ export function ScriptType(meta?: ClassMetaInfo) {
                 SerializationUtil.deserialize(this, ps, buffer);
             }
         }
-
+        
         return target;
     }
 }
@@ -193,6 +193,7 @@ export class SerializationUtil {
     static serialize(target: any, ps: JSScriptProperties, buffer: ByteBuffer) {
         this.markAsReady(target);
         let impl = GetLatestSerializer();
+        console.assert(typeof ps === "object");
         if (typeof impl === "object") {
             ps.dataFormat = impl.dataFormat;
             this.forEach(target, (propertyKey, slot) => {
@@ -243,7 +244,9 @@ export class SerializationUtil {
                     }
                 }
             } else {
-                console.error("no serializer for dataFormat", dataFormat);
+                if (ps.GenericCount > 0 && ps.dataFormat >= 0) {
+                    console.error("no serializer for dataFormat", dataFormat);
+                }
             }
         }
     }
