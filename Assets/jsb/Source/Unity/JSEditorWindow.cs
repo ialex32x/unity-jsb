@@ -170,7 +170,7 @@ namespace QuickJS.Unity
                             var ctx = (JSContext)context;
                             var snippet = $"require('{_scriptRef.modulePath}')['{_scriptRef.className}']";
                             var bytes = System.Text.Encoding.UTF8.GetBytes(snippet);
-                            var typeValue = ScriptRuntime.EvalSource(ctx, bytes, _scriptRef.sourceFile, false);
+                            var typeValue = ScriptRuntime.EvalSource(ctx, bytes, _scriptRef.sourceFile ?? _scriptRef.modulePath, false);
                             if (typeValue.IsException())
                             {
                                 ctx.print_exception();

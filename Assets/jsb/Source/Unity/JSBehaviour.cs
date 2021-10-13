@@ -209,7 +209,8 @@ namespace QuickJS.Unity
 
         private void _SetScriptInstance(JSContext ctx, JSValue this_obj, bool execAwake)
         {
-            var context = ScriptEngine.GetContext(ctx);
+            var runtime = ScriptEngine.GetRuntime(ctx);
+            var context = runtime?.GetContext(ctx);
             if (context == null)
             {
                 return;
@@ -217,7 +218,7 @@ namespace QuickJS.Unity
 
             ReleaseJSValues();
             _ctx = ctx;
-            context.OnDestroy += OnContextDestroy;
+            runtime.OnDestroy += OnScriptRuntimeDestroy;
 #if UNITY_EDITOR
             context.OnScriptReloading += OnScriptReloading;
             context.OnScriptReloaded += OnScriptReloaded;
@@ -464,7 +465,7 @@ namespace QuickJS.Unity
             }
         }
 
-        private void OnContextDestroy(ScriptContext context)
+        private void OnScriptRuntimeDestroy(ScriptRuntime runtime)
         {
             // it's dangerous, more protection are required during the process of context-destroying
 
@@ -528,12 +529,13 @@ namespace QuickJS.Unity
             }
 
             _isScriptInstanced = false;
-            var context = ScriptEngine.GetContext(_ctx);
+            var runtime = ScriptEngine.GetRuntime(_ctx);
+            var context = runtime?.GetContext(_ctx);
             _ctx = JSContext.Null;
 
             if (context != null)
             {
-                context.OnDestroy -= OnContextDestroy;
+                runtime.OnDestroy -= OnScriptRuntimeDestroy;
 #if UNITY_EDITOR
                 context.OnScriptReloading -= OnScriptReloading;
                 context.OnScriptReloaded -= OnScriptReloaded;

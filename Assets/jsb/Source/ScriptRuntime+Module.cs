@@ -80,6 +80,11 @@ namespace QuickJS
 
         public static unsafe JSValue EvalSource(JSContext ctx, byte[] source, string fileName, bool bModule)
         {
+            if (source == null || source.Length == 0)
+            {
+                return JSApi.JS_UNDEFINED;
+            }
+
             var tagValue = TryReadByteCodeTagValue(source);
 
             if (tagValue == BYTECODE_ES6_MODULE_TAG)

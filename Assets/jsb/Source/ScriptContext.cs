@@ -13,7 +13,14 @@ namespace QuickJS
 {
     public partial class ScriptContext
     {
+        /// <summary>
+        /// FOR INTERNAL USE ONLY
+        /// </summary>
         public event Action<ScriptContext> OnDestroy;
+        
+        /// <summary>
+        /// DEPRECATED, DO NOT USE IT
+        /// </summary>
         public event Action<int> OnAfterDestroy;
 
         public event Action<ScriptContext, string> OnScriptReloading;

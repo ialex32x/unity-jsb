@@ -25,13 +25,39 @@ namespace QuickJS.Unity
         // internal use only
         public JSScriptProperties properties => _properties;
 
+        [NonSerialized]
         private bool _enabled;
 
-        public bool enabled => _enabled;
-
+        [NonSerialized]
         private bool _isScriptInstanced = false;
 
+        [NonSerialized]
         private bool _isWaitingRuntime = false;
+
+        private JSContext _ctx = JSContext.Null;
+        private JSValue _this_obj = JSApi.JS_UNDEFINED;
+
+        [NonSerialized]
+        private bool _resetValid;
+        private JSValue _resetFunc = JSApi.JS_UNDEFINED;
+
+        [NonSerialized]
+        private bool _onBeforeSerializeValid;
+        private JSValue _onBeforeSerializeFunc = JSApi.JS_UNDEFINED;
+
+        [NonSerialized]
+        private bool _onAfterDeserializeValid;
+        private JSValue _onAfterDeserializeFunc = JSApi.JS_UNDEFINED;
+
+        [NonSerialized]
+        private bool _onBeforeScriptReloadValid;
+        private JSValue _onBeforeScriptReloadFunc = JSApi.JS_UNDEFINED;
+
+        [NonSerialized]
+        private bool _onAfterScriptReloadValid;
+        private JSValue _onAfterScriptReloadFunc = JSApi.JS_UNDEFINED;
+
+        public bool enabled => _enabled;
 
         public bool isScriptInstanced => _isScriptInstanced;
 
@@ -41,24 +67,6 @@ namespace QuickJS.Unity
         JSScriptRef IScriptEditorSupport.scriptRef { get { return _scriptRef; } set { _scriptRef = value; } }
 
         public JSContext ctx => _ctx;
-
-        private JSContext _ctx = JSContext.Null;
-        private JSValue _this_obj = JSApi.JS_UNDEFINED;
-
-        private bool _resetValid;
-        private JSValue _resetFunc = JSApi.JS_UNDEFINED;
-
-        private bool _onBeforeSerializeValid;
-        private JSValue _onBeforeSerializeFunc = JSApi.JS_UNDEFINED;
-
-        private bool _onAfterDeserializeValid;
-        private JSValue _onAfterDeserializeFunc = JSApi.JS_UNDEFINED;
-
-        private bool _onBeforeScriptReloadValid;
-        private JSValue _onBeforeScriptReloadFunc = JSApi.JS_UNDEFINED;
-
-        private bool _onAfterScriptReloadValid;
-        private JSValue _onAfterScriptReloadFunc = JSApi.JS_UNDEFINED;
 
         public bool IsValid()
         {
@@ -151,7 +159,8 @@ namespace QuickJS.Unity
                 _this_obj = JSApi.JS_UNDEFINED;
             }
 
-            var context = ScriptEngine.GetContext(_ctx);
+            var runtime = ScriptEngine.GetRuntime(_ctx);
+            var context = runtime?.GetContext(_ctx);
             _isScriptInstanced = false;
             if (_isWaitingRuntime)
             {
@@ -162,7 +171,7 @@ namespace QuickJS.Unity
 
             if (context != null)
             {
-                context.OnDestroy -= OnContextDestroy;
+                runtime.OnDestroy -= OnScriptRuntimeDestroy;
 #if UNITY_EDITOR
                 context.OnScriptReloading -= OnScriptReloading;
                 context.OnScriptReloaded -= OnScriptReloaded;
@@ -229,7 +238,7 @@ namespace QuickJS.Unity
         }
 #endif
 
-        private void OnContextDestroy(ScriptContext context)
+        private void OnScriptRuntimeDestroy(ScriptRuntime runtime)
         {
             ReleaseJSValues();
         }
@@ -342,7 +351,8 @@ namespace QuickJS.Unity
 
         private void _SetScriptInstance(JSContext ctx, JSValue this_obj, bool execAwake)
         {
-            var context = ScriptEngine.GetContext(ctx);
+            var runtime = ScriptEngine.GetRuntime(ctx);
+            var context = runtime?.GetContext(ctx);
             if (context == null || !context.IsValid())
             {
                 return;
@@ -350,7 +360,7 @@ namespace QuickJS.Unity
 
             ReleaseJSValues();
 
-            context.OnDestroy += OnContextDestroy;
+            runtime.OnDestroy += OnScriptRuntimeDestroy;
 #if UNITY_EDITOR
             context.OnScriptReloading += OnScriptReloading;
             context.OnScriptReloaded += OnScriptReloaded;

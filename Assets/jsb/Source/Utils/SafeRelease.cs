@@ -19,14 +19,14 @@ namespace QuickJS.Utils
         public SafeRelease(ScriptContext context)
         {
             _context = context;
-            _context.OnDestroy += OnDestroy;
+            _context.GetRuntime().OnDestroy += OnDestroy;
         }
 
         public SafeRelease(ScriptContext context, JSValue value)
         {
             _context = context;
             _values.Add(value);
-            _context.OnDestroy += OnDestroy;
+            _context.GetRuntime().OnDestroy += OnDestroy;
         }
 
         public SafeRelease(ScriptContext context, JSValue value1, JSValue value2)
@@ -34,7 +34,7 @@ namespace QuickJS.Utils
             _context = context;
             _values.Add(value1);
             _values.Add(value2);
-            _context.OnDestroy += OnDestroy;
+            _context.GetRuntime().OnDestroy += OnDestroy;
         }
 
         public JSValue[] ToArray()
@@ -52,7 +52,7 @@ namespace QuickJS.Utils
             return this;
         }
 
-        private void OnDestroy(ScriptContext context)
+        private void OnDestroy(ScriptRuntime runtime)
         {
             Release();
         }
@@ -63,7 +63,11 @@ namespace QuickJS.Utils
             {
                 var context = _context;
                 _context = null;
-                context.OnDestroy -= OnDestroy;
+                var runtime = context.GetRuntime();
+                if (runtime != null)
+                {
+                    runtime.OnDestroy -= OnDestroy;
+                }
                 var len = _values.Count;
                 for (var i = 0; i < len; i++)
                 {

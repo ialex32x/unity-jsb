@@ -168,7 +168,7 @@ namespace QuickJS.Unity
 
         private void OnScriptRuntimeCreated(ScriptRuntime runtime)
         {
-            runtime.OnInitializing += OnScriptRuntimeInitialized;
+            runtime.OnInitializing += OnScriptRuntimeInitializing;
             runtime.OnMainModuleLoaded += OnScriptRuntimeMainModuleLoaded;
         }
 
@@ -196,7 +196,7 @@ namespace QuickJS.Unity
             }
         }
 
-        private void OnScriptRuntimeInitialized(ScriptRuntime runtime)
+        private void OnScriptRuntimeInitializing(ScriptRuntime runtime)
         {
             var tsconfig = GetTSConfig();
 

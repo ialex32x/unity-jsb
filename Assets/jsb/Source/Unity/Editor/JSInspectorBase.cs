@@ -119,7 +119,7 @@ namespace QuickJS.Unity
             }
         }
 
-        private void OnContextDestroy(ScriptContext context)
+        private void OnScriptRuntimeDestroy(ScriptRuntime runtime)
         {
             Release();
         }
@@ -134,12 +134,13 @@ namespace QuickJS.Unity
                 _this_obj = JSApi.JS_UNDEFINED;
             }
 
-            var context = ScriptEngine.GetContext(_ctx);
+            var runtime = ScriptEngine.GetRuntime(_ctx);
+            var context = runtime?.GetContext(_ctx);
             _ctx = JSContext.Null;
 
             if (context != null)
             {
-                context.OnDestroy -= OnContextDestroy;
+                runtime.OnDestroy -= OnScriptRuntimeDestroy;
                 context.OnScriptReloading -= OnScriptReloading;
                 context.OnScriptReloaded -= OnScriptReloaded;
             }
@@ -157,13 +158,14 @@ namespace QuickJS.Unity
 
         protected void CreateScriptInstance(JSContext ctx, JSValue this_obj, JSValue ctor)
         {
-            var context = ScriptEngine.GetContext(ctx);
+            var runtime = ScriptEngine.GetRuntime(_ctx);
+            var context = runtime?.GetContext(_ctx);
             if (context == null || !context.IsValid())
             {
                 return;
             }
 
-            context.OnDestroy += OnContextDestroy;
+            runtime.OnDestroy += OnScriptRuntimeDestroy;
             context.OnScriptReloading += OnScriptReloading;
             context.OnScriptReloaded += OnScriptReloaded;
             _ctx = ctx;

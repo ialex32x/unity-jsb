@@ -165,7 +165,7 @@ namespace QuickJS
 
         public static ScriptRuntime GetRuntime(JSContext ctx)
         {
-            return GetRuntime(JSApi.JS_GetRuntime(ctx));
+            return ctx.IsValid() ? GetRuntime(JSApi.JS_GetRuntime(ctx)) : null;
         }
 
         public static ScriptRuntime GetRuntime(JSRuntime rt)
