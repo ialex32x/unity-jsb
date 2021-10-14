@@ -1,13 +1,25 @@
 import { Animator, Input, KeyCode, MonoBehaviour, SpriteRenderer, Time, Vector3 } from "UnityEngine";
-import { ScriptType, ScriptObject, ScriptNumber } from "../plover/runtime/class_decorators";
+import { ScriptType, ScriptObject, ScriptNumber, ScriptSerializable, ScriptString, ScriptProperty } from "../plover/runtime/class_decorators";
+
+@ScriptSerializable()
+export class MyNestedPlainObject {
+    @ScriptString()
+    nestedString = "nestedString";
+
+    @ScriptProperty({ type: "Vector3" })
+    nestedVector3 = Vector3.zero;
+}
 
 @ScriptType()
 export class KingHumanController extends MonoBehaviour {
-    @ScriptObject({editorOnly: true})
+    @ScriptObject({ editorOnly: true })
     animator: Animator;
 
     @ScriptNumber()
     moveSpeed = 1.8;
+
+    @ScriptProperty({ type: MyNestedPlainObject })
+    nestedValue: MyNestedPlainObject;
 
     private moving = false;
     private spriteRenderer: SpriteRenderer;

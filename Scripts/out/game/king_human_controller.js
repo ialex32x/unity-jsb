@@ -6,9 +6,25 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.KingHumanController = void 0;
+exports.KingHumanController = exports.MyNestedPlainObject = void 0;
 const UnityEngine_1 = require("UnityEngine");
 const class_decorators_1 = require("../plover/runtime/class_decorators");
+let MyNestedPlainObject = class MyNestedPlainObject {
+    constructor() {
+        this.nestedString = "nestedString";
+        this.nestedVector3 = UnityEngine_1.Vector3.zero;
+    }
+};
+__decorate([
+    class_decorators_1.ScriptString()
+], MyNestedPlainObject.prototype, "nestedString", void 0);
+__decorate([
+    class_decorators_1.ScriptProperty({ type: "Vector3" })
+], MyNestedPlainObject.prototype, "nestedVector3", void 0);
+MyNestedPlainObject = __decorate([
+    class_decorators_1.ScriptSerializable()
+], MyNestedPlainObject);
+exports.MyNestedPlainObject = MyNestedPlainObject;
 let KingHumanController = class KingHumanController extends UnityEngine_1.MonoBehaviour {
     constructor() {
         super(...arguments);
@@ -71,6 +87,9 @@ __decorate([
 __decorate([
     class_decorators_1.ScriptNumber()
 ], KingHumanController.prototype, "moveSpeed", void 0);
+__decorate([
+    class_decorators_1.ScriptProperty({ type: MyNestedPlainObject })
+], KingHumanController.prototype, "nestedValue", void 0);
 KingHumanController = __decorate([
     class_decorators_1.ScriptType()
 ], KingHumanController);

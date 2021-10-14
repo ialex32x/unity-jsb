@@ -1,20 +1,9 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.DefaultPropertyDrawer = void 0;
+exports.DefaultPropertyDrawers = void 0;
 const UnityEditor_1 = require("UnityEditor");
 const UnityEngine_1 = require("UnityEngine");
-class DefaultPropertyDrawer {
-    static draw(type, target, prop, label, editablePE) {
-        let d = DefaultPropertyDrawers[type];
-        if (typeof d !== "undefined") {
-            d.draw(target, prop, label, editablePE);
-            return true;
-        }
-        return false;
-    }
-}
-exports.DefaultPropertyDrawer = DefaultPropertyDrawer;
-let DefaultPropertyDrawers = {
+exports.DefaultPropertyDrawers = {
     "bool": {
         draw(self, prop, label, editablePE) {
             let propertyKey = prop.propertyKey;

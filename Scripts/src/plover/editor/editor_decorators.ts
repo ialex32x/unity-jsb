@@ -3,7 +3,7 @@ import { JSScriptProperties } from "QuickJS.Unity";
 import { Editor, EditorApplication, EditorGUI, EditorGUILayout, EditorUtility, MessageType } from "UnityEditor";
 import { Object, Vector3 } from "UnityEngine";
 import { ClassMetaInfo, ScriptType, SerializationUtil } from "../runtime/class_decorators";
-import { DefaultPropertyDrawer } from "./drawer";
+import { DefaultPropertyDrawers } from "./drawer";
 
 let Symbol_CustomEditor = Symbol.for("CustomEditor");
 
@@ -37,7 +37,8 @@ export class EditorUtil {
      * 默认编辑器绘制行为
      */
     static draw(target: any) {
-        SerializationUtil.forEach(target, (propertyKey, slot) => {
+        SerializationUtil.forEach(target, (slots, propertyKey) => {
+            let slot = slots[propertyKey];
             if (slot.visible) {
                 let label = slot.label || propertyKey;
                 let editablePE = slot.editable && (!slot.editorOnly || !EditorApplication.isPlaying);
@@ -115,9 +116,19 @@ export class EditorUtil {
                             break;
                         }
                         default: {
-                            if (!DefaultPropertyDrawer.draw(slot.type, target, slot, label, editablePE)) {
+                            if (typeof slot.type === "string") {
+                                let d = DefaultPropertyDrawers[slot.type];
+                                if (typeof d !== "undefined") {
+                                    d.draw(target, slot, label, editablePE);
+                                    return true;
+                                } else {
+                                    EditorGUILayout.LabelField(label);
+                                    EditorGUILayout.HelpBox("no draw operation for this type", MessageType.Warning);
+                                }
+                            } else {
+                                //TODO draw nested value
                                 EditorGUILayout.LabelField(label);
-                                EditorGUILayout.HelpBox("no draw operation for this type", MessageType.Warning);
+                                EditorGUILayout.HelpBox("not implemented for nested values", MessageType.Warning);
                             }
                             break;
                         }

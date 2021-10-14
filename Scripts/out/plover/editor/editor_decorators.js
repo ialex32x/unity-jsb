@@ -31,7 +31,8 @@ class EditorUtil {
      * 默认编辑器绘制行为
      */
     static draw(target) {
-        class_decorators_1.SerializationUtil.forEach(target, (propertyKey, slot) => {
+        class_decorators_1.SerializationUtil.forEach(target, (slots, propertyKey) => {
+            let slot = slots[propertyKey];
             if (slot.visible) {
                 let label = slot.label || propertyKey;
                 let editablePE = slot.editable && (!slot.editorOnly || !UnityEditor_1.EditorApplication.isPlaying);
@@ -109,9 +110,21 @@ class EditorUtil {
                             break;
                         }
                         default: {
-                            if (!drawer_1.DefaultPropertyDrawer.draw(slot.type, target, slot, label, editablePE)) {
+                            if (typeof slot.type === "string") {
+                                let d = drawer_1.DefaultPropertyDrawers[slot.type];
+                                if (typeof d !== "undefined") {
+                                    d.draw(target, slot, label, editablePE);
+                                    return true;
+                                }
+                                else {
+                                    UnityEditor_1.EditorGUILayout.LabelField(label);
+                                    UnityEditor_1.EditorGUILayout.HelpBox("no draw operation for this type", UnityEditor_1.MessageType.Warning);
+                                }
+                            }
+                            else {
+                                //TODO draw nested value
                                 UnityEditor_1.EditorGUILayout.LabelField(label);
-                                UnityEditor_1.EditorGUILayout.HelpBox("no draw operation for this type", UnityEditor_1.MessageType.Warning);
+                                UnityEditor_1.EditorGUILayout.HelpBox("not implemented for nested values", UnityEditor_1.MessageType.Warning);
                             }
                             break;
                         }

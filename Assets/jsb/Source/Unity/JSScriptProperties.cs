@@ -82,6 +82,22 @@ namespace QuickJS.Unity
         {
             _referencedObjects?.Clear();
         }
+
+        public IO.ByteBuffer NewSection(ScriptRuntime runtime)
+        {
+            var buffer = runtime.GetByteBufferAllocator().Alloc(64);
+            runtime.AutoRelease(buffer);
+            return buffer;
+        }
+
+        public IO.ByteBuffer ReadSection(ScriptRuntime runtime, IO.ByteBuffer parent, int size)
+        {
+            var buffer = runtime.GetByteBufferAllocator().Alloc(size);
+            runtime.AutoRelease(buffer);
+            parent.ReadBytes(buffer.data, 0, size);
+            buffer.writerIndex += size;
+            return buffer;
+        }
     }
 }
 #endif

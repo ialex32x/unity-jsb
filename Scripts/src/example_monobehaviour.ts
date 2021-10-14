@@ -6,11 +6,11 @@ import { ScriptType, ScriptProperty, ScriptFunction, ScriptNumber, ScriptInteger
 
 @ScriptType()
 export class ASimpleGuiDialog extends MonoBehaviour {
-    //TODO: [此功能未完成] 自动绑定界面组件
+    //TODO: [NOT_IMPLEMENTED] 自动绑定界面组件
     @ScriptProperty({ type: "object", bind: { widget: Button } })
     nameLabel: Button;
 
-    //TODO: [此功能未完成] 使 UnityEvent 识别并接受脚本函数作为回调
+    //TODO: [NOT_IMPLEMENTED] 使 UnityEvent 识别并接受脚本函数作为回调
     @ScriptFunction()
     onClicked() {
         console.log("you clicked the button");

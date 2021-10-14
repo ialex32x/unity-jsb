@@ -18,6 +18,11 @@ let KingHumanControllerInspector = class KingHumanControllerInspector extends Un
         UnityEditor_1.EditorGUI.BeginChangeCheck();
         p.animator = UnityEditor_1.EditorGUILayout.ObjectField("Animator", p.animator, UnityEngine_1.Animator, true);
         p.moveSpeed = UnityEditor_1.EditorGUILayout.FloatField("Move Speed", p.moveSpeed);
+        if (!p.nestedValue) {
+            p.nestedValue = new king_human_controller_1.MyNestedPlainObject();
+        }
+        p.nestedValue.nestedString = UnityEditor_1.EditorGUILayout.TextField("nestedString", p.nestedValue.nestedString);
+        p.nestedValue.nestedVector3 = UnityEditor_1.EditorGUILayout.Vector3Field("nestedVector3", p.nestedValue.nestedVector3);
         if (UnityEditor_1.EditorGUI.EndChangeCheck()) {
             UnityEditor_1.EditorUtility.SetDirty(p);
         }

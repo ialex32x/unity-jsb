@@ -6,18 +6,7 @@ interface IPropertyDrawer {
     draw(target: any, prop: PropertyMetaInfo, label: string, editablePE: boolean): void;
 }
 
-export class DefaultPropertyDrawer {
-    static draw(type: PropertyTypeID, target: any, prop: PropertyMetaInfo, label: string, editablePE: boolean): boolean {
-        let d = DefaultPropertyDrawers[type];
-        if (typeof d !== "undefined") {
-            d.draw(target, prop, label, editablePE);
-            return true;
-        } 
-        return false;
-    }
-}
-
-let DefaultPropertyDrawers: { [key: string]: IPropertyDrawer } = {
+export let DefaultPropertyDrawers: { [key: string]: IPropertyDrawer } = {
     "bool": {
         draw(self: any, prop: PropertyMetaInfo, label: string, editablePE: boolean) {
             let propertyKey = prop.propertyKey;

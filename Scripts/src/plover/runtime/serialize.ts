@@ -9,7 +9,7 @@ export interface ISerializer {
     deserilize(ps: JSScriptProperties, buffer: ByteBuffer): any;
 }
 
-interface SerializerImpl {
+export interface SerializerImpl {
     dataFormat: number;
     description: string
     types: { [key: string]: ISerializer }
@@ -37,6 +37,8 @@ export function RegisterSerializer(dataFormat: number, description: string, type
 
     for (let typename in types) {
         let type = types[typename];
+
+        console.assert(type.typeid > 0, "typeid must be greater than 0");
         impl.typeids[type.typeid] = type;
     }
 

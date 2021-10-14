@@ -1,6 +1,7 @@
 import { ByteBuffer } from "QuickJS.IO";
 import { JSScriptProperties } from "QuickJS.Unity";
-import { GetLatestSerializer, GetSerializer, ISerializer } from "./serialize";
+import { Object as UObject } from "UnityEngine";
+import { GetLatestSerializer, GetSerializer, ISerializer, SerializerImpl } from "./serialize";
 
 let Symbol_PropertiesTouched = Symbol.for("PropertiesTouched");
 let Symbol_MemberFuncs = Symbol.for("MemberFuncs");
@@ -14,7 +15,7 @@ export interface ClassMetaInfo {
 
 }
 
-export type PropertyTypeID = "bool" | "float" | "double" | "string" | "object" | "int" | "uint" | "Vector2" | "Vector3" | "Vector4" | "Rect" | "Quaternion";
+export type PropertyTypeID = "bool" | "float" | "double" | "string" | "object" | "int" | "uint" | "Vector2" | "Vector3" | "Vector4" | "Rect" | "Quaternion" | Function;
 
 export interface WeakPropertyMetaInfo {
     /**
@@ -63,6 +64,10 @@ export interface PropertyMetaInfo extends WeakPropertyMetaInfo {
     type: PropertyTypeID;
 }
 
+export function ScriptSerializable(meta?: any) {
+    return ScriptType(meta);
+}
+
 export function ScriptAsset(meta?: any) {
     return ScriptType(meta);
 }
@@ -91,7 +96,7 @@ export function ScriptType(meta?: ClassMetaInfo) {
                 SerializationUtil.deserialize(this, ps, buffer);
             }
         }
-        
+
         return target;
     }
 }
@@ -176,11 +181,11 @@ export function ScriptFunction(meta?: any) {
 }
 
 export class SerializationUtil {
-    static forEach(target: any, cb: (propertyKey: string, slot: PropertyMetaInfo) => void) {
+    static forEach(target: any, cb: (slots: { [key: string]: PropertyMetaInfo }, propertyKey: string) => void) {
         let slots: {} = target[Symbol_SerializedFields];
         if (typeof slots !== "undefined") {
             for (let propertyKey in slots) {
-                cb(propertyKey, slots[propertyKey]);
+                cb(slots, propertyKey);
             }
         }
     }
@@ -196,17 +201,54 @@ export class SerializationUtil {
         console.assert(typeof ps === "object");
         if (typeof impl === "object") {
             ps.dataFormat = impl.dataFormat;
-            this.forEach(target, (propertyKey, slot) => {
-                if (slot.serializable) {
-                    let value = target[propertyKey];
+
+            let slots: {} = target[Symbol_SerializedFields];
+            if (typeof slots !== "undefined") {
+                this._serializeField(target, slots, ps, buffer, impl);
+            }
+        }
+    }
+
+    private static _serializeField(target: any, slots: { [key: string]: PropertyMetaInfo }, ps: JSScriptProperties, parent: ByteBuffer, impl: SerializerImpl) {
+        for (let propertyKey in slots) {
+            let slot = slots[propertyKey];
+            if (slot.serializable) {
+                let value = target && target[propertyKey];
+                if (typeof slot.type === "string") {
                     let s: ISerializer = impl.types[slot.type];
                     if (typeof s === "object") {
-                        buffer.WriteString(slot.name);
-                        buffer.WriteByte(s.typeid);
-                        s.serialize(ps, buffer, value);
+                        parent.WriteString(slot.name);
+                        parent.WriteByte(s.typeid);
+                        s.serialize(ps, parent, value);
+                    }
+                } else {
+                    // typeof slot.type === "function" (a constructor)
+                    // nested value
+
+                    if (typeof value === "object") {
+                        if (value instanceof UObject) {
+                            let s: ISerializer = impl.types["object"];
+                            parent.WriteString(slot.name);
+                            parent.WriteByte(s.typeid);
+                            s.serialize(ps, parent, value);
+                        } else {
+                            let fieldSlots = slot.type.prototype[Symbol_SerializedFields];
+                            if (typeof fieldSlots !== "undefined") {
+                                let fieldBuffer = ps.NewSection();
+                                this._serializeField(value, fieldSlots, ps, fieldBuffer, impl);
+                                parent.WriteString(slot.name);
+                                parent.WriteByte(0);
+                                parent.WriteInt32(fieldBuffer.readableBytes);
+                                parent.WriteBytes(fieldBuffer);
+                            } else {
+                                console.error("no serialization info on field", slot.name);
+                            }
+                        }
+                    } else {
+                        // skip invalid value
                     }
                 }
-            });
+            }
         }
     }
 
@@ -214,38 +256,71 @@ export class SerializationUtil {
         this.markAsReady(target);
         let slots: {} = target[Symbol_SerializedFields];
         if (typeof slots !== "undefined") {
-            let slotByName = {};
             let dataFormat = ps.dataFormat || 0;
             let impl = GetSerializer(dataFormat);
+
             if (typeof impl === "object") {
-                for (let propertyKey in slots) {
-                    let slot: PropertyMetaInfo = slots[propertyKey];
-                    if (slot.serializable) {
-                        slotByName[slot.name] = slot;
-
-                        let defaultValue = impl.types[slot.type].defaultValue;
-                        if (typeof defaultValue === "function") {
-                            defaultValue = defaultValue();
-                        }
-                        target[slot.propertyKey] = defaultValue;
-                    }
-                }
-
-                while (buffer.readableBytes > 0) {
-                    let name = buffer.ReadString();
-                    let typeid = buffer.ReadUByte();
-                    let s = impl.typeids[typeid];
-                    let slot_value = s.deserilize(ps, buffer);
-
-                    let slot: PropertyMetaInfo = slotByName[name];
-                    if (slot) {
-                        console.assert(impl.types[slot.type].typeid == s.typeid);
-                        target[slot.propertyKey] = slot_value;
-                    }
-                }
+                this._deserializeField(target, slots, ps, buffer, impl);
             } else {
                 if (ps.GenericCount > 0 && ps.dataFormat >= 0) {
                     console.error("no serializer for dataFormat", dataFormat);
+                }
+            }
+        }
+    }
+
+    private static _deserializeField(target: any, slots: { [key: string]: PropertyMetaInfo }, ps: JSScriptProperties, parent: ByteBuffer, impl: SerializerImpl) {
+        let slotByName = {};
+        for (let propertyKey in slots) {
+            let slot: PropertyMetaInfo = slots[propertyKey];
+            if (slot.serializable) {
+                slotByName[slot.name] = slot;
+
+                if (typeof slot.type === "string") {
+                    let defaultValue = impl.types[slot.type].defaultValue;
+                    if (typeof defaultValue === "function") {
+                        defaultValue = defaultValue();
+                    }
+                    target[slot.propertyKey] = defaultValue;
+                } else {
+                    target[slot.propertyKey] = null;
+                }
+            }
+        }
+
+        while (parent.readableBytes > 0) {
+            let name = parent.ReadString();
+            let typeid = parent.ReadUByte();
+            let slot: PropertyMetaInfo = slotByName[name];
+
+            if (typeid > 0) {
+                let s = impl.typeids[typeid];
+                let slot_value = s.deserilize(ps, parent);
+
+                if (slot) {
+                    if (typeof slot.type === "string") {
+                        console.assert(typeid == impl.types[slot.type].typeid, "slot type mismatch");
+                    } else {
+                        if (typeof slot_value === "object") {
+                            console.assert(slot_value instanceof slot.type, "slot type mismatch");
+                        }
+                    }
+                    target[slot.propertyKey] = slot_value;
+                } else {
+                    console.warn("failed to read slot", name);
+                }
+            } else {
+                let size = parent.ReadInt32();
+                let fieldBuffer = ps.ReadSection(parent, size);
+                if (slot && typeof slot.type === "function") {
+                    let fieldSlots = slot.type.prototype[Symbol_SerializedFields];
+                    if (fieldSlots) {
+                        let fieldValue = Object.create(slot.type);
+                        this._deserializeField(fieldValue, fieldSlots, ps, fieldBuffer, impl);
+                        target[slot.propertyKey] = fieldValue;
+                    } else {
+                        console.error("no serialization info on field", slot.name);
+                    }
                 }
             }
         }

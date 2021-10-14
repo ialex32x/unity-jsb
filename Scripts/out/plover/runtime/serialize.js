@@ -21,6 +21,7 @@ function RegisterSerializer(dataFormat, description, types, bSetAsLatest) {
     };
     for (let typename in types) {
         let type = types[typename];
+        console.assert(type.typeid > 0, "typeid must be greater than 0");
         impl.typeids[type.typeid] = type;
     }
     _DefaultSerializers[dataFormat] = impl;
