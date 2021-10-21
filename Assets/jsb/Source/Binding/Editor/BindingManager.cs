@@ -850,7 +850,7 @@ namespace QuickJS.Binding
         public string GetValueOperation(string operation, Type forType)
         {
             //TODO codegen: lookup js_* (push/get/rebind) for specified type (instead of the partial class 'Values')
-            return operation;
+            return "Values." + operation;
         }
 
         public string GetCSNamespace(Type type)
@@ -1566,6 +1566,11 @@ namespace QuickJS.Binding
             _logWriter?.AddTabLevel();
             typeBindingInfo.Collect();
             _logWriter?.DecTabLevel();
+        }
+
+        public void AddTypeFullNameBlacklist(string fullName)
+        {
+            _typeFullNameBlacklist.Add(fullName);
         }
 
         public bool IsNamespaceInBlacklist(string ns)

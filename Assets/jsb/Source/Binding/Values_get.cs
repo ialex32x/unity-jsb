@@ -952,6 +952,14 @@ namespace QuickJS.Binding
             return ret;
         }
 
+        //TODO remove this method after fix high dimension array support of the codegen
+        public static bool js_get_structvalue_array_array<T>(JSContext ctx, JSValue val, out T[][] o)
+        where T : struct
+        {
+            o = null;
+            return false;
+        }
+
         public static bool js_get_structvalue_array<T>(JSContext ctx, JSValue val, out T[] o)
         where T : struct
         {

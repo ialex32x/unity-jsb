@@ -62,11 +62,11 @@ namespace QuickJS.Binding
 
                 if (parameter.ParameterType.IsByRef)
                 {
-                    snippet += $"js_match_type_hint(ctx, argv[{argIndex}], typeof({typename}))";
+                    snippet += $"Values.js_match_type_hint(ctx, argv[{argIndex}], typeof({typename}))";
                 }
                 else
                 {
-                    snippet += $"js_match_type(ctx, argv[{argIndex}], typeof({typename}))";
+                    snippet += $"Values.js_match_type(ctx, argv[{argIndex}], typeof({typename}))";
                 }
 
                 if (pIndex != length - 1)
@@ -366,11 +366,11 @@ namespace QuickJS.Binding
 
                                 if (fixedMatchers.Length > 0)
                                 {
-                                    cg.cs.AppendLine($"if ({fixedMatchers} && js_match_param_types(ctx, {expectedArgCount}, argv, {variantMatchers}))");
+                                    cg.cs.AppendLine($"if ({fixedMatchers} && Values.js_match_param_types(ctx, {expectedArgCount}, argv, {variantMatchers}))");
                                 }
                                 else
                                 {
-                                    cg.cs.AppendLine($"if (js_match_param_types(ctx, {expectedArgCount}, argv, {variantMatchers}))");
+                                    cg.cs.AppendLine($"if (Values.js_match_param_types(ctx, {expectedArgCount}, argv, {variantMatchers}))");
                                 }
 
                                 using (cg.cs.CodeBlockScope())
@@ -637,7 +637,7 @@ namespace QuickJS.Binding
         {
             var decalringTypeName = this.cg.bindingManager.GetCSTypeFullName(this.methodBindingInfo.decalringType);
             this.cg.cs.AppendLine("var o = new {0}();", decalringTypeName);
-            this.cg.cs.AppendLine("var val = NewBridgeClassObject(ctx, new_target, o, magic, {0});", CodeGenUtils.ToLiteral(this.disposable));
+            this.cg.cs.AppendLine("var val = Values.NewBridgeClassObject(ctx, new_target, o, magic, {0});", CodeGenUtils.ToLiteral(this.disposable));
             this.cg.cs.AppendLine("return val;");
 
             this.cg.tsDeclare.AppendLine($"{this.methodBindingInfo.jsName}()");
@@ -657,7 +657,7 @@ namespace QuickJS.Binding
 
         protected override void EndInvokeBinding()
         {
-            this.cg.cs.AppendLine("var val = NewBridgeClassObject(ctx, new_target, o, magic, {0});", CodeGenUtils.ToLiteral(this.disposable));
+            this.cg.cs.AppendLine("var val = Values.NewBridgeClassObject(ctx, new_target, o, magic, {0});", CodeGenUtils.ToLiteral(this.disposable));
         }
 
         protected override void InvokeVoidReturn()

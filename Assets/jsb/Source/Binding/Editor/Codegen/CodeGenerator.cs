@@ -68,7 +68,7 @@ namespace QuickJS.Binding
                     {
                         using (new CSNamespaceCodeGen(this, @namespace))
                         {
-                            using (new PreservedCodeGen(this))
+                            // using (new PreservedCodeGen(this))
                             {
                                 using (new PlainClassCodeGen(this, className))
                                 {
@@ -344,7 +344,7 @@ namespace QuickJS.Binding
                 if (isRefWrapper)
                 {
                     refValVar = $"refVal{index}";
-                    this.cs.AppendLine("var {0} = js_read_wrap(ctx, argv[{1}]);", refValVar, index);
+                    this.cs.AppendLine("var {0} = Values.js_read_wrap(ctx, argv[{1}]);", refValVar, index);
                     getVal = refValVar;
 
                     this.cs.AppendLine("if ({0}.IsException())", refValVar);

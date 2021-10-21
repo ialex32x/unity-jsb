@@ -25,7 +25,7 @@ namespace QuickJS.Binding
         public DelegateCodeGen(CodeGenerator cg, DelegateBridgeBindingInfo delegateBindingInfo, int index)
         {
             this.cg = cg;
-            this.delegateName = delegateBindingInfo.types.FirstOrDefault()?.Name ?? CodeGenerator.NameOfDelegates + index;
+            this.delegateName = CodeGenerator.NameOfDelegates + index;
             this.returnType = delegateBindingInfo.returnType;
             this.parameters = delegateBindingInfo.parameters;
             this.delegateTypeRefs = delegateBindingInfo.types;

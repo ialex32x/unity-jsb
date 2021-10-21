@@ -29242,22 +29242,6 @@ declare module "UnityEditor" {
 }
 declare module "UnityEditor" {
     import * as jsb from "jsb";
-    import { ValueType } from "System";
-    /** A change of this type indicates that prefab instances in an open scene have been updated due to a change to the source prefab.
-     */
-    @jsb.RequiredDefines("UNITY_EDITOR")
-    class UpdatePrefabInstancesEventArgs extends ValueType {
-        constructor(scene: any, instanceIds: any)
-        /** The scene containing all of the prefab instances that have been updated.
-         */
-        readonly scene: any
-        /** The instance ID for each root GameObject of the prefab instances that have been updated.
-         */
-        readonly instanceIds: any
-    }
-}
-declare module "UnityEditor" {
-    import * as jsb from "jsb";
     import { ValueType, Array, Enum } from "System";
     /** Represents a stream of events that describes the changes applied to objects in memory over the course of a frame.
      */
@@ -29322,7 +29306,7 @@ declare module "UnityEditor" {
          * @param eventIdx The index of the event to get the data for.
          * @param data The data associated with the event.
          */
-        GetUpdatePrefabInstancesEvent(eventIdx: number, data: jsb.Out<UpdatePrefabInstancesEventArgs>): void
+        GetUpdatePrefabInstancesEvent(eventIdx: number, data: jsb.Out<any>): void
         /** Creates a copy of this stream with the specified allocator.
          * @param allocator The allocator to use to allocate the memory for the copy.
          * @returns A copy of the stream that contains the same events, but in a separate memory lcoation. 
@@ -29356,7 +29340,7 @@ declare module "UnityEditor" {
             PushCreateAssetObjectEvent(data: jsb.Ref<CreateAssetObjectEventArgs>): void
             PushDestroyAssetObjectEvent(data: jsb.Ref<DestroyAssetObjectEventArgs>): void
             PushChangeAssetObjectPropertiesEvent(data: jsb.Ref<ChangeAssetObjectPropertiesEventArgs>): void
-            PushUpdatePrefabInstancesEvent(data: jsb.Ref<UpdatePrefabInstancesEventArgs>): void
+            PushUpdatePrefabInstancesEvent(data: jsb.Ref<any>): void
             readonly eventCount: number
         }
     }

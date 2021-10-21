@@ -16,7 +16,7 @@ namespace QuickJS.Binding
             this.cg = cg;
             this.bindingInfo = bindingInfo;
 
-            this.cg.cs.AppendLine("var op = js_parse_event_op(ctx, argv[0]);");
+            this.cg.cs.AppendLine("var op = Values.js_parse_event_op(ctx, argv[0]);");
             var caller = this.cg.AppendGetThisCS(bindingInfo);
             var eventTypeName = this.cg.bindingManager.GetCSTypeFullName(bindingInfo.delegateType);
 
@@ -27,7 +27,7 @@ namespace QuickJS.Binding
                 {
                     if (this.bindingInfo.readable)
                     {
-                        this.cg.cs.AppendLine("case EVT_OP_ADD:");
+                        this.cg.cs.AppendLine("case Values.EVT_OP_ADD:");
                         using (this.cg.cs.CodeBlockScope())
                         {
                             this.cg.cs.AppendLine("{0} value;", eventTypeName);
@@ -40,7 +40,7 @@ namespace QuickJS.Binding
                             this.cg.cs.AppendLine("{0}.{1} += value;", caller, bindingInfo.csName);
                             this.cg.cs.AppendLine("return JSApi.JS_UNDEFINED;");
                         }
-                        this.cg.cs.AppendLine("case EVT_OP_REMOVE:");
+                        this.cg.cs.AppendLine("case Values.EVT_OP_REMOVE:");
                         using (this.cg.cs.CodeBlockScope())
                         {
                             this.cg.cs.AppendLine("{0} value;", eventTypeName);
@@ -54,7 +54,7 @@ namespace QuickJS.Binding
                             this.cg.cs.AppendLine("return JSApi.JS_UNDEFINED;");
                         }
                     }
-                    this.cg.cs.AppendLine("case EVT_OP_SET:");
+                    this.cg.cs.AppendLine("case Values.EVT_OP_SET:");
                     using (this.cg.cs.CodeBlockScope())
                     {
                         this.cg.cs.AppendLine("{0} value;", eventTypeName);
@@ -70,7 +70,7 @@ namespace QuickJS.Binding
                 }
                 if (this.bindingInfo.readable)
                 {
-                    this.cg.cs.AppendLine("case EVT_OP_GET:");
+                    this.cg.cs.AppendLine("case Values.EVT_OP_GET:");
                     using (this.cg.cs.CodeBlockScope())
                     {
                         this.cg.cs.AppendLine("var ret = {0}.{1};", caller, bindingInfo.csName);

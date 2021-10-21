@@ -19,14 +19,14 @@ namespace QuickJS.Binding
             var eventInfo = this.bindingInfo.eventInfo;
             var declaringType = eventInfo.DeclaringType;
 
-            this.cg.cs.AppendLine("var op = js_parse_event_op(ctx, argv[0]);");
+            this.cg.cs.AppendLine("var op = Values.js_parse_event_op(ctx, argv[0]);");
             var caller = this.cg.AppendGetThisCS(bindingInfo);
             var eventTypeName = this.cg.bindingManager.GetCSTypeFullName(eventInfo.EventHandlerType);
             this.cg.cs.AppendLine("{0} value;", eventTypeName);
             this.cg.cs.AppendLine("switch(op)");
             using (this.cg.cs.CodeBlockScope())
             {
-                this.cg.cs.AppendLine("case EVT_OP_ADD:");
+                this.cg.cs.AppendLine("case Values.EVT_OP_ADD:");
                 using (this.cg.cs.IndentBlockScope())
                 {
                     var getter = this.cg.bindingManager.GetScriptObjectGetter(eventInfo.EventHandlerType, "ctx", "argv[1]", "value");
@@ -38,7 +38,7 @@ namespace QuickJS.Binding
                     this.cg.cs.AppendLine("{0}.{1} += value;", caller, eventInfo.Name);
                     this.cg.cs.AppendLine("break;");
                 }
-                this.cg.cs.AppendLine("case EVT_OP_REMOVE:");
+                this.cg.cs.AppendLine("case Values.EVT_OP_REMOVE:");
                 using (this.cg.cs.IndentBlockScope())
                 {
                     var getter = this.cg.bindingManager.GetScriptObjectGetter(eventInfo.EventHandlerType, "ctx", "argv[1]", "value");
