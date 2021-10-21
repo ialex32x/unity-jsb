@@ -7220,22 +7220,16 @@ declare module "UnityEngine" {
     }
 }
 declare module "QuickJS.Unity" {
-    import * as jsb from "jsb";
-    import { Object, Array } from "System";
+    import { Object } from "System";
     import { Object as Object1 } from "UnityEngine";
     import { ByteBuffer } from "QuickJS.IO";
-    class JSScriptProperties extends Object {
-        constructor()
+    class JSSerializationContext extends Object {
         AddReferencedObject(value: Object1): number
         GetReferencedObject(index: number): Object1
-        SetGenericValue(buffer: ByteBuffer): void
-        Clear(): void
-        NewSection(): ByteBuffer
-        ReadSection(parent: ByteBuffer, size: number): ByteBuffer
-        readonly IsEmpty: boolean
-        readonly ReferencedObjectCount: number
-        readonly GenericCount: number
-        genericValueData: Array<jsb.byte>
+        Flush(byteBuffer: ByteBuffer): void
+        AllocByteBuffer(): ByteBuffer
+        Release(): void
+        protected constructor()
         dataFormat: number
     }
 }
@@ -20707,6 +20701,7 @@ declare module "System" {
         GetEnumerator(): any
         ArrayListFromJson(): any
         HashtableFromJson(): any
+        ToIntArray(): Array<number>
         static Join(separator: string, value: Array<string>, startIndex: number, count: number): string
         static Join(separator: string, values: IEnumerable<string>): string
         static Join(separator: string, ...value: string[]): string
@@ -20938,6 +20933,7 @@ declare module "QuickJS.IO" {
         toString(): string
         Release(): void
         Retain(): ByteBuffer
+        Slice(size: number): ByteBuffer
         CheckReadalbe(size: number): void
         ReadBytes(dst: Array<jsb.byte>, dstOffset: number, size: number): number
         ReadBytes(pointer: any, size: number): number
@@ -22255,6 +22251,27 @@ declare module "UnityEditor" {
 }
 declare module "UnityEditor" {
     import * as jsb from "jsb";
+    import { ValueType, Array, Object } from "System";
+    @jsb.RequiredDefines("UNITY_EDITOR")
+    class GUID extends ValueType {
+        constructor(hexRepresentation: string)
+        Equals(obj: Object): boolean
+        Equals(obj: GUID): boolean
+        GetHashCode(): number
+        CompareTo(obj: Object): number
+        CompareTo(rhs: GUID): number
+        Empty(): boolean
+        toString(): string
+        static op_Inequality(x: GUID, y: GUID): boolean
+        static op_GreaterThan(x: GUID, y: GUID): boolean
+        static TryParse(hex: string, result: jsb.Out<GUID>): boolean
+        static Generate(): GUID
+        // js_op_overloading: static ==(x: GUID, y: GUID): boolean
+        // js_op_overloading: static <(x: GUID, y: GUID): boolean
+    }
+}
+declare module "UnityEditor" {
+    import * as jsb from "jsb";
     import { ValueType, Array } from "System";
     import { Object } from "UnityEngine";
     /** Struct providing an API for stable, project-global object identifiers.
@@ -22333,27 +22350,6 @@ Example: "GlobalObjectId_V1-2-74c253e3f16be4776bb2d88e01f77c8a-902906726-0".
 }
 declare module "UnityEditor" {
     import * as jsb from "jsb";
-    import { ValueType, Array, Object } from "System";
-    @jsb.RequiredDefines("UNITY_EDITOR")
-    class GUID extends ValueType {
-        constructor(hexRepresentation: string)
-        Equals(obj: Object): boolean
-        Equals(obj: GUID): boolean
-        GetHashCode(): number
-        CompareTo(obj: Object): number
-        CompareTo(rhs: GUID): number
-        Empty(): boolean
-        toString(): string
-        static op_Inequality(x: GUID, y: GUID): boolean
-        static op_GreaterThan(x: GUID, y: GUID): boolean
-        static TryParse(hex: string, result: jsb.Out<GUID>): boolean
-        static Generate(): GUID
-        // js_op_overloading: static ==(x: GUID, y: GUID): boolean
-        // js_op_overloading: static <(x: GUID, y: GUID): boolean
-    }
-}
-declare module "UnityEditor" {
-    import * as jsb from "jsb";
     import { ValueType } from "System";
     import { Color, Matrix4x4 } from "UnityEngine";
     namespace Handles {
@@ -22382,7 +22378,7 @@ declare module "UnityEditor" {
         static HasHelpForObject(obj: Object1): boolean
         /** Get the URL for this object's documentation.
          * @param obj The object to retrieve documentation for.
-         * @returns The documentation URL for the object. Note that this could use the http: or file: schemas. 
+         * @returns The documentation URL for the object. Note that this could use the https: or file: schemas. 
          */
         static GetHelpURLForObject(obj: Object1): string
         /** Show help page for this object.
@@ -23570,6 +23566,7 @@ declare module "UnityEditor" {
             static playerPrefsMaxSize: number
             static attribVROutputEnabled: boolean
             static compatibilityPS5: boolean
+            static allowPS5Detection: boolean
             static gpu800MHz: boolean
         }
     }
@@ -23927,31 +23924,6 @@ declare module "UnityEditor" {
 }
 declare module "UnityEditor" {
     import * as jsb from "jsb";
-    import { Object } from "System";
-    namespace PlayerSettings {
-        @jsb.RequiredDefines("UNITY_EDITOR")
-        class WebGL extends Object {
-            constructor()
-            static memorySize: number
-            static exceptionSupport: WebGLExceptionSupport
-            static dataCaching: boolean
-            static emscriptenArgs: string
-            static modulesDirectory: string
-            static template: string
-            static analyzeBuildSize: boolean
-            static useEmbeddedResources: boolean
-            static threadsSupport: boolean
-            static linkerTarget: WebGLLinkerTarget
-            static compressionFormat: WebGLCompressionFormat
-            static nameFilesAsHashes: boolean
-            static debugSymbols: boolean
-            static decompressionFallback: boolean
-            static wasmArithmeticExceptions: WebGLWasmArithmeticExceptions
-        }
-    }
-}
-declare module "UnityEditor" {
-    import * as jsb from "jsb";
     import { Enum } from "System";
     namespace PlayerSettings {
         enum WSAApplicationShowName {
@@ -24164,6 +24136,31 @@ declare module "UnityEditor" {
         abstract class Declarations extends Object {
             static protocolName: string
             static fileTypeAssociations: PlayerSettings.WSAFileTypeAssociations
+        }
+    }
+}
+declare module "UnityEditor" {
+    import * as jsb from "jsb";
+    import { Object } from "System";
+    namespace PlayerSettings {
+        @jsb.RequiredDefines("UNITY_EDITOR")
+        class WebGL extends Object {
+            constructor()
+            static memorySize: number
+            static exceptionSupport: WebGLExceptionSupport
+            static dataCaching: boolean
+            static emscriptenArgs: string
+            static modulesDirectory: string
+            static template: string
+            static analyzeBuildSize: boolean
+            static useEmbeddedResources: boolean
+            static threadsSupport: boolean
+            static linkerTarget: WebGLLinkerTarget
+            static compressionFormat: WebGLCompressionFormat
+            static nameFilesAsHashes: boolean
+            static debugSymbols: boolean
+            static decompressionFallback: boolean
+            static wasmArithmeticExceptions: WebGLWasmArithmeticExceptions
         }
     }
 }
@@ -27002,22 +26999,6 @@ declare module "UnityEditor" {
 }
 declare module "UnityEditor" {
     import * as jsb from "jsb";
-    import { Enum } from "System";
-    enum GameViewSizeGroupType {
-        Standalone = 0,
-        WebPlayer = 1,
-        iOS = 2,
-        Android = 3,
-        PS3 = 4,
-        WiiU = 5,
-        Tizen = 6,
-        WP8 = 7,
-        N3DS = 8,
-        HMD = 9,
-    }
-}
-declare module "UnityEditor" {
-    import * as jsb from "jsb";
     import { Object } from "UnityEngine";
     /** The lighting data asset used by the active Scene.
      */
@@ -27212,42 +27193,6 @@ declare module "UnityEditor" {
 }
 declare module "UnityEditor" {
     import * as jsb from "jsb";
-    import { Object, Array } from "System";
-    import { Material, Object as Object1, Texture } from "UnityEngine";
-    @jsb.RequiredDefines("UNITY_EDITOR")
-    class EditorMaterialUtility extends Object {
-        constructor()
-        static ResetDefaultTextures(material: Material, overrideSetTextures: boolean): void
-        static IsBackgroundMaterial(material: Material): boolean
-        static SetShaderDefaults(shader: any, name: Array<string>, textures: Array<Texture>): void
-        static SetShaderNonModifiableDefaults(shader: any, name: Array<string>, textures: Array<Texture>): void
-    }
-}
-declare module "UnityEditor" {
-    import * as jsb from "jsb";
-    import { Object } from "System";
-    import { Vector3 } from "UnityEngine";
-    /** Control the behavior of handle snapping in the editor.
-     */
-    @jsb.RequiredDefines("UNITY_EDITOR")
-    abstract class EditorSnapSettings extends Object {
-        static ResetSnapSettings(): void
-        /** Gets or sets whether grid snapping is enabled.
-         */
-        static gridSnapEnabled: boolean
-        /** Gets or sets the increment that translation handles snap to.
-         */
-        static move: Vector3
-        /** Gets or sets the increment that rotation handles snap to.
-         */
-        static rotate: number
-        /** Gets or sets the increment that scale handles snap to.
-         */
-        static scale: number
-    }
-}
-declare module "UnityEditor" {
-    import * as jsb from "jsb";
     import { Rect } from "UnityEngine";
     /** Class used to display popup windows that inherit from PopupWindowContent.
      */
@@ -27389,6 +27334,58 @@ declare module "UnityEditor" {
          */
         static visibleLayers: number
         static lockedLayers: number
+    }
+}
+declare module "UnityEditor" {
+    import * as jsb from "jsb";
+    import { Enum } from "System";
+    enum GameViewSizeGroupType {
+        Standalone = 0,
+        WebPlayer = 1,
+        iOS = 2,
+        Android = 3,
+        PS3 = 4,
+        WiiU = 5,
+        Tizen = 6,
+        WP8 = 7,
+        N3DS = 8,
+        HMD = 9,
+    }
+}
+declare module "UnityEditor" {
+    import * as jsb from "jsb";
+    import { Object, Array } from "System";
+    import { Material, Object as Object1, Texture } from "UnityEngine";
+    @jsb.RequiredDefines("UNITY_EDITOR")
+    class EditorMaterialUtility extends Object {
+        constructor()
+        static ResetDefaultTextures(material: Material, overrideSetTextures: boolean): void
+        static IsBackgroundMaterial(material: Material): boolean
+        static SetShaderDefaults(shader: any, name: Array<string>, textures: Array<Texture>): void
+        static SetShaderNonModifiableDefaults(shader: any, name: Array<string>, textures: Array<Texture>): void
+    }
+}
+declare module "UnityEditor" {
+    import * as jsb from "jsb";
+    import { Object } from "System";
+    import { Vector3 } from "UnityEngine";
+    /** Control the behavior of handle snapping in the editor.
+     */
+    @jsb.RequiredDefines("UNITY_EDITOR")
+    abstract class EditorSnapSettings extends Object {
+        static ResetSnapSettings(): void
+        /** Gets or sets whether grid snapping is enabled.
+         */
+        static gridSnapEnabled: boolean
+        /** Gets or sets the increment that translation handles snap to.
+         */
+        static move: Vector3
+        /** Gets or sets the increment that rotation handles snap to.
+         */
+        static rotate: number
+        /** Gets or sets the increment that scale handles snap to.
+         */
+        static scale: number
     }
 }
 declare module "UnityEditor" {
@@ -29477,6 +29474,17 @@ declare module "UnityEditor" {
 }
 declare module "UnityEditor" {
     import * as jsb from "jsb";
+    import { Array } from "System";
+    /** Represents an Android asset pack directory in a project.
+     */
+    @jsb.RequiredDefines("UNITY_EDITOR")
+    class AndroidAssetPackImporter extends AssetImporter {
+        constructor()
+        static GetAllImporters(): Array<AndroidAssetPackImporter>
+    }
+}
+declare module "UnityEditor" {
+    import * as jsb from "jsb";
     import { Enum } from "System";
     /** The sample rate setting used within the AudioImporter. This defines the sample rate conversion of audio on import.
      */
@@ -31486,7 +31494,7 @@ declare module "UnityEditor.SearchService" {
 declare module "UnityEditor.SearchService" {
     import * as jsb from "jsb";
     // @jsb.RequiredDefines("UNITY_EDITOR")
-    interface IObjectSelectorEngine extends ISearchEngineBase, ISelectorEngine {
+    interface IObjectSelectorEngine extends ISelectorEngine, ISearchEngineBase {
     }
 }
 declare module "UnityEditor.SearchService" {

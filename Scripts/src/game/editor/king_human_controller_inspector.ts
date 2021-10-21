@@ -1,5 +1,5 @@
 import { Editor, EditorGUI, EditorGUILayout, EditorUtility, MessageType } from "UnityEditor";
-import { Animator, GUILayout, Object } from "UnityEngine";
+import { Animator, GUILayout, Object, Vector2 } from "UnityEngine";
 import { EditorUtil, ScriptEditor } from "../../plover/editor/editor_decorators";
 import { KingHumanController, MyNestedPlainObject } from "../king_human_controller";
 
@@ -17,7 +17,20 @@ export class KingHumanControllerInspector extends Editor {
         }
         p.nestedValue.nestedString = EditorGUILayout.TextField("nestedString", p.nestedValue.nestedString);
         p.nestedValue.nestedVector3 = EditorGUILayout.Vector3Field("nestedVector3", p.nestedValue.nestedVector3);
-        
+
+        if (GUILayout.Button("Add Position")) {
+            if (p.nestedValue.positions == null) {
+                p.nestedValue.positions = [];
+            }
+            p.nestedValue.positions.push(Vector2.zero);
+            EditorUtility.SetDirty(p);
+        }
+
+        let positionCount = p.nestedValue.positions != null ? p.nestedValue.positions.length : 0;
+        for (let i = 0; i < positionCount; i++) {
+            p.nestedValue.positions[i] = EditorGUILayout.Vector2Field("Position", p.nestedValue.positions[i] || Vector2.zero);
+        }
+
         if (EditorGUI.EndChangeCheck()) {
             EditorUtility.SetDirty(p);
         }

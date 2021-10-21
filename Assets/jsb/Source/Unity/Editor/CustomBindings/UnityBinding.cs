@@ -133,7 +133,7 @@ namespace jsb.Editor
                 .AddTSMethodDeclaration("static FindObjectsOfTypeAll<T extends Object>(type: { new(): T }): T[]", "FindObjectsOfTypeAll", typeof(Type))
                 .WriteCSMethodOverrideBinding("FindObjectsOfTypeAll", ResourcesFix.BindStatic_FindObjectsOfTypeAll)
             ;
-            bindingManager.AddExportedType(typeof(QuickJS.Unity.JSScriptProperties));
+            bindingManager.AddExportedType(typeof(QuickJS.Unity.JSSerializationContext)).SetAllConstructorsBlocked();
         }
         
         private static TypeTransform HackGetComponents(TypeTransform typeTransform)

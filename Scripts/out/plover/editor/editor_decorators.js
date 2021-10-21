@@ -37,97 +37,38 @@ class EditorUtil {
                 let label = slot.label || propertyKey;
                 let editablePE = slot.editable && (!slot.editorOnly || !UnityEditor_1.EditorApplication.isPlaying);
                 if (typeof slot.type === "string") {
-                    switch (slot.type) {
-                        case "int": {
-                            let oldValue = target[propertyKey];
-                            if (editablePE) {
-                                let newValue = UnityEditor_1.EditorGUILayout.IntField(label, oldValue);
-                                if (newValue != oldValue) {
-                                    target[propertyKey] = newValue;
+                    let d = drawer_1.DefaultPropertyDrawers[slot.type];
+                    if (typeof d !== "undefined") {
+                        let propertyKey = slot.propertyKey;
+                        let oldValue = target[propertyKey];
+                        if (oldValue instanceof Array) {
+                            let length = oldValue.length;
+                            for (let i = 0; i < length; i++) {
+                                let newValue = d.draw(oldValue[i], slot, label, editablePE);
+                                if (editablePE && oldValue[i] != newValue) {
+                                    oldValue[i] = newValue;
                                     UnityEditor_1.EditorUtility.SetDirty(target);
                                 }
                             }
-                            else {
-                                UnityEditor_1.EditorGUI.BeginDisabledGroup(true);
-                                UnityEditor_1.EditorGUILayout.IntField(label, oldValue);
-                                UnityEditor_1.EditorGUI.EndDisabledGroup();
-                            }
-                            break;
-                        }
-                        case "float": {
-                            let oldValue = target[propertyKey];
                             if (editablePE) {
-                                let newValue = UnityEditor_1.EditorGUILayout.FloatField(label, oldValue);
-                                if (newValue != oldValue) {
-                                    target[propertyKey] = newValue;
+                                if (UnityEngine_1.GUILayout.Button("Add Element")) {
+                                    oldValue.push(null);
                                     UnityEditor_1.EditorUtility.SetDirty(target);
                                 }
                             }
-                            else {
-                                UnityEditor_1.EditorGUI.BeginDisabledGroup(true);
-                                UnityEditor_1.EditorGUILayout.FloatField(label, oldValue);
-                                UnityEditor_1.EditorGUI.EndDisabledGroup();
-                            }
-                            break;
                         }
-                        case "string": {
-                            let oldValue = target[propertyKey];
-                            if (typeof oldValue !== "string") {
-                                oldValue = "" + oldValue;
+                        else {
+                            let newValue = d.draw(oldValue, slot, label, editablePE);
+                            if (editablePE && oldValue != newValue) {
+                                target[propertyKey] = newValue;
+                                UnityEditor_1.EditorUtility.SetDirty(target);
                             }
-                            if (editablePE) {
-                                let newValue = UnityEditor_1.EditorGUILayout.TextField(label, oldValue);
-                                if (newValue != oldValue) {
-                                    target[propertyKey] = newValue;
-                                    UnityEditor_1.EditorUtility.SetDirty(target);
-                                }
-                            }
-                            else {
-                                UnityEditor_1.EditorGUI.BeginDisabledGroup(true);
-                                UnityEditor_1.EditorGUILayout.TextField(label, oldValue);
-                                UnityEditor_1.EditorGUI.EndDisabledGroup();
-                            }
-                            break;
                         }
-                        case "object": {
-                            let oldValue = target[propertyKey];
-                            if (typeof oldValue !== "object") {
-                                oldValue = null;
-                            }
-                            if (editablePE) {
-                                let allowSceneObjects = slot.extra && slot.extra.allowSceneObjects;
-                                let newValue = UnityEditor_1.EditorGUILayout.ObjectField(label, oldValue, slot.extra && slot.extra.type || UnityEngine_1.Object, typeof allowSceneObjects === "boolean" ? allowSceneObjects : true);
-                                if (newValue != oldValue) {
-                                    target[propertyKey] = newValue;
-                                    UnityEditor_1.EditorUtility.SetDirty(target);
-                                }
-                            }
-                            else {
-                                UnityEditor_1.EditorGUI.BeginDisabledGroup(true);
-                                UnityEditor_1.EditorGUILayout.ObjectField(label, oldValue, UnityEngine_1.Object, false);
-                                UnityEditor_1.EditorGUI.EndDisabledGroup();
-                            }
-                            break;
-                        }
-                        default: {
-                            if (typeof slot.type === "string") {
-                                let d = drawer_1.DefaultPropertyDrawers[slot.type];
-                                if (typeof d !== "undefined") {
-                                    d.draw(target, slot, label, editablePE);
-                                    return true;
-                                }
-                                else {
-                                    UnityEditor_1.EditorGUILayout.LabelField(label);
-                                    UnityEditor_1.EditorGUILayout.HelpBox("no draw operation for this type", UnityEditor_1.MessageType.Warning);
-                                }
-                            }
-                            else {
-                                //TODO draw nested value
-                                UnityEditor_1.EditorGUILayout.LabelField(label);
-                                UnityEditor_1.EditorGUILayout.HelpBox("not implemented for nested values", UnityEditor_1.MessageType.Warning);
-                            }
-                            break;
-                        }
+                        return true;
+                    }
+                    else {
+                        UnityEditor_1.EditorGUILayout.LabelField(label);
+                        UnityEditor_1.EditorGUILayout.HelpBox("no draw operation for this type", UnityEditor_1.MessageType.Warning);
                     }
                 }
                 else {

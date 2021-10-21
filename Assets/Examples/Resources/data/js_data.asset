@@ -13,10 +13,10 @@ MonoBehaviour:
   m_Name: js_data
   m_EditorClassIdentifier: 
   _scriptRef:
-    sourceFile: F:\projects\unity-jsb\Scripts\src\my_scriptable_object.ts
+    sourceFile: /Users/huliangjie/Projects/github.com/ialex32x/unity-jsb/Scripts/src/my_scriptable_object.ts
     modulePath: my_scriptable_object
     className: MyScriptableObject
   _properties:
-    _objects: []
-    genericValueData: 0000000676616c756531020000803f0000000676616c756532040000000568656c6c6f0000000676616c75653308cdcccc3dcdcc4c3e9a99993e
+    _referencedObjects: []
+    genericValueData: 0000000676616c756531020000803f0000000676616c756532040000000573617364660000000676616c756533080000803f00000040000040400000000676616c7565356502000000180000803f0000004000004040000080400000a0400000c040
     dataFormat: 1

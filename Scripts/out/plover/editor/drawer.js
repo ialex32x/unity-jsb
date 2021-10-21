@@ -5,15 +5,11 @@ const UnityEditor_1 = require("UnityEditor");
 const UnityEngine_1 = require("UnityEngine");
 exports.DefaultPropertyDrawers = {
     "bool": {
-        draw(self, prop, label, editablePE) {
-            let propertyKey = prop.propertyKey;
-            let oldValue = !!self[propertyKey];
+        draw(rawValue, prop, label, editablePE) {
+            let oldValue = !!rawValue;
             if (editablePE) {
                 let newValue = UnityEditor_1.EditorGUILayout.Toggle(label, oldValue);
-                if (newValue != oldValue) {
-                    self[propertyKey] = newValue;
-                    UnityEditor_1.EditorUtility.SetDirty(self);
-                }
+                return newValue;
             }
             else {
                 UnityEditor_1.EditorGUI.BeginDisabledGroup(true);
@@ -22,16 +18,26 @@ exports.DefaultPropertyDrawers = {
             }
         },
     },
+    "int": {
+        draw(rawValue, prop, label, editablePE) {
+            let oldValue = rawValue || 0;
+            if (editablePE) {
+                let newValue = UnityEditor_1.EditorGUILayout.IntField(label, oldValue);
+                return newValue;
+            }
+            else {
+                UnityEditor_1.EditorGUI.BeginDisabledGroup(true);
+                UnityEditor_1.EditorGUILayout.IntField(label, oldValue);
+                UnityEditor_1.EditorGUI.EndDisabledGroup();
+            }
+        },
+    },
     "float": {
-        draw(self, prop, label, editablePE) {
-            let propertyKey = prop.propertyKey;
-            let oldValue = self[propertyKey] || 0;
+        draw(rawValue, prop, label, editablePE) {
+            let oldValue = rawValue || 0;
             if (editablePE) {
                 let newValue = UnityEditor_1.EditorGUILayout.FloatField(label, oldValue);
-                if (newValue != oldValue) {
-                    self[propertyKey] = newValue;
-                    UnityEditor_1.EditorUtility.SetDirty(self);
-                }
+                return newValue;
             }
             else {
                 UnityEditor_1.EditorGUI.BeginDisabledGroup(true);
@@ -41,15 +47,11 @@ exports.DefaultPropertyDrawers = {
         },
     },
     "double": {
-        draw(self, prop, label, editablePE) {
-            let propertyKey = prop.propertyKey;
-            let oldValue = self[propertyKey] || 0;
+        draw(rawValue, prop, label, editablePE) {
+            let oldValue = rawValue || 0;
             if (editablePE) {
                 let newValue = UnityEditor_1.EditorGUILayout.FloatField(label, oldValue);
-                if (newValue != oldValue) {
-                    self[propertyKey] = newValue;
-                    UnityEditor_1.EditorUtility.SetDirty(self);
-                }
+                return newValue;
             }
             else {
                 UnityEditor_1.EditorGUI.BeginDisabledGroup(true);
@@ -58,16 +60,55 @@ exports.DefaultPropertyDrawers = {
             }
         },
     },
+    "string": {
+        draw(rawValue, prop, label, editablePE) {
+            let oldValue = rawValue || "";
+            if (editablePE) {
+                let newValue = UnityEditor_1.EditorGUILayout.TextField(label, oldValue);
+                return newValue;
+            }
+            else {
+                UnityEditor_1.EditorGUI.BeginDisabledGroup(true);
+                UnityEditor_1.EditorGUILayout.TextField(label, oldValue);
+                UnityEditor_1.EditorGUI.EndDisabledGroup();
+            }
+        },
+    },
+    "object": {
+        draw(rawValue, prop, label, editablePE) {
+            let oldValue = rawValue instanceof UnityEngine_1.Object || null;
+            if (editablePE) {
+                let allowSceneObjects = prop.extra && prop.extra.allowSceneObjects;
+                let newValue = UnityEditor_1.EditorGUILayout.ObjectField(label, oldValue, prop.extra && prop.extra.type || Object, typeof allowSceneObjects === "boolean" ? allowSceneObjects : true);
+                return newValue;
+            }
+            else {
+                UnityEditor_1.EditorGUI.BeginDisabledGroup(true);
+                UnityEditor_1.EditorGUILayout.ObjectField(label, oldValue, Object, false);
+                UnityEditor_1.EditorGUI.EndDisabledGroup();
+            }
+        },
+    },
+    "Vector2": {
+        draw(rawValue, prop, label, editablePE) {
+            let oldValue = rawValue || UnityEngine_1.Vector2.zero;
+            if (editablePE) {
+                let newValue = UnityEditor_1.EditorGUILayout.Vector2Field(label, oldValue);
+                return newValue;
+            }
+            else {
+                UnityEditor_1.EditorGUI.BeginDisabledGroup(true);
+                UnityEditor_1.EditorGUILayout.Vector2Field(label, oldValue);
+                UnityEditor_1.EditorGUI.EndDisabledGroup();
+            }
+        },
+    },
     "Vector3": {
-        draw(self, prop, label, editablePE) {
-            let propertyKey = prop.propertyKey;
-            let oldValue = self[propertyKey] || UnityEngine_1.Vector3.zero;
+        draw(rawValue, prop, label, editablePE) {
+            let oldValue = rawValue || UnityEngine_1.Vector3.zero;
             if (editablePE) {
                 let newValue = UnityEditor_1.EditorGUILayout.Vector3Field(label, oldValue);
-                if (newValue != oldValue) {
-                    self[propertyKey] = newValue;
-                    UnityEditor_1.EditorUtility.SetDirty(self);
-                }
+                return newValue;
             }
             else {
                 UnityEditor_1.EditorGUI.BeginDisabledGroup(true);
@@ -77,15 +118,11 @@ exports.DefaultPropertyDrawers = {
         },
     },
     "Vector4": {
-        draw(self, prop, label, editablePE) {
-            let propertyKey = prop.propertyKey;
-            let oldValue = self[propertyKey] || UnityEngine_1.Vector4.zero;
+        draw(rawValue, prop, label, editablePE) {
+            let oldValue = rawValue || UnityEngine_1.Vector4.zero;
             if (editablePE) {
                 let newValue = UnityEditor_1.EditorGUILayout.Vector4Field(label, oldValue);
-                if (newValue != oldValue) {
-                    self[propertyKey] = newValue;
-                    UnityEditor_1.EditorUtility.SetDirty(self);
-                }
+                return newValue;
             }
             else {
                 UnityEditor_1.EditorGUI.BeginDisabledGroup(true);
@@ -95,15 +132,11 @@ exports.DefaultPropertyDrawers = {
         },
     },
     "Quaternion": {
-        draw(self, prop, label, editablePE) {
-            let propertyKey = prop.propertyKey;
-            let oldValue = self[propertyKey] || UnityEngine_1.Quaternion.identity;
+        draw(rawValue, prop, label, editablePE) {
+            let oldValue = rawValue || UnityEngine_1.Quaternion.identity;
             if (editablePE) {
                 let newValue = UnityEditor_1.EditorGUILayout.Vector4Field(label, oldValue);
-                if (newValue != oldValue) {
-                    self[propertyKey] = newValue;
-                    UnityEditor_1.EditorUtility.SetDirty(self);
-                }
+                return newValue;
             }
             else {
                 UnityEditor_1.EditorGUI.BeginDisabledGroup(true);

@@ -1,4 +1,4 @@
-import { Animator, Input, KeyCode, MonoBehaviour, SpriteRenderer, Time, Vector3 } from "UnityEngine";
+import { Animator, Input, KeyCode, MonoBehaviour, SpriteRenderer, Time, Vector2, Vector3 } from "UnityEngine";
 import { ScriptType, ScriptObject, ScriptNumber, ScriptSerializable, ScriptString, ScriptProperty } from "../plover/runtime/class_decorators";
 
 @ScriptSerializable()
@@ -8,6 +8,9 @@ export class MyNestedPlainObject {
 
     @ScriptProperty({ type: "Vector3" })
     nestedVector3 = Vector3.zero;
+
+    @ScriptProperty({ type: "Vector2"})
+    positions: Array<Vector2>;
 }
 
 @ScriptType()

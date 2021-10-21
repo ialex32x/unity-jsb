@@ -15,6 +15,7 @@ let MyScriptableObject = class MyScriptableObject extends UnityEngine_1.Scriptab
         this.value1 = 1;
         this.value2 = "hello";
         this.value3 = UnityEngine_1.Vector3.zero;
+        this.value5 = [];
     }
     Process() {
         return `${this.value2} ${this.value3}`;
@@ -23,6 +24,7 @@ let MyScriptableObject = class MyScriptableObject extends UnityEngine_1.Scriptab
         this.value1 = 0;
         this.value2 = "";
         this.value3 = UnityEngine_1.Vector3.zero;
+        this.value5 = [1, 2, 3];
     }
 };
 __decorate([
@@ -34,6 +36,9 @@ __decorate([
 __decorate([
     class_decorators_1.ScriptProperty({ type: "Vector3" })
 ], MyScriptableObject.prototype, "value3", void 0);
+__decorate([
+    class_decorators_1.ScriptNumber()
+], MyScriptableObject.prototype, "value5", void 0);
 MyScriptableObject = __decorate([
     class_decorators_1.ScriptAsset()
 ], MyScriptableObject);

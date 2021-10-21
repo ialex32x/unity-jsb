@@ -1,22 +1,18 @@
 import { EditorGUI, EditorGUILayout, EditorUtility } from "UnityEditor";
-import { Quaternion, Vector3, Vector4 } from "UnityEngine";
+import { Object as UObject, Quaternion, Vector2, Vector3, Vector4 } from "UnityEngine";
 import { PropertyMetaInfo, PropertyTypeID } from "../runtime/class_decorators";
 
 interface IPropertyDrawer {
-    draw(target: any, prop: PropertyMetaInfo, label: string, editablePE: boolean): void;
+    draw(value: any, prop: PropertyMetaInfo, label: string, editablePE: boolean): any;
 }
 
 export let DefaultPropertyDrawers: { [key: string]: IPropertyDrawer } = {
     "bool": {
-        draw(self: any, prop: PropertyMetaInfo, label: string, editablePE: boolean) {
-            let propertyKey = prop.propertyKey;
-            let oldValue: boolean = !!self[propertyKey];
+        draw(rawValue: any, prop: PropertyMetaInfo, label: string, editablePE: boolean) {
+            let oldValue: boolean = !!rawValue;
             if (editablePE) {
                 let newValue = EditorGUILayout.Toggle(label, oldValue);
-                if (newValue != oldValue) {
-                    self[propertyKey] = newValue;
-                    EditorUtility.SetDirty(self);
-                }
+                return newValue;
             } else {
                 EditorGUI.BeginDisabledGroup(true);
                 EditorGUILayout.Toggle(label, oldValue);
@@ -24,16 +20,25 @@ export let DefaultPropertyDrawers: { [key: string]: IPropertyDrawer } = {
             }
         },
     },
+    "int": {
+        draw(rawValue: any, prop: PropertyMetaInfo, label: string, editablePE: boolean) {
+            let oldValue: number = rawValue || 0;
+            if (editablePE) {
+                let newValue = EditorGUILayout.IntField(label, oldValue);
+                return newValue;
+            } else {
+                EditorGUI.BeginDisabledGroup(true);
+                EditorGUILayout.IntField(label, oldValue);
+                EditorGUI.EndDisabledGroup();
+            }
+        },
+    },
     "float": {
-        draw(self: any, prop: PropertyMetaInfo, label: string, editablePE: boolean) {
-            let propertyKey = prop.propertyKey;
-            let oldValue: number = self[propertyKey] || 0;
+        draw(rawValue: any, prop: PropertyMetaInfo, label: string, editablePE: boolean) {
+            let oldValue: number = rawValue || 0;
             if (editablePE) {
                 let newValue = EditorGUILayout.FloatField(label, oldValue);
-                if (newValue != oldValue) {
-                    self[propertyKey] = newValue;
-                    EditorUtility.SetDirty(self);
-                }
+                return newValue;
             } else {
                 EditorGUI.BeginDisabledGroup(true);
                 EditorGUILayout.FloatField(label, oldValue);
@@ -42,15 +47,11 @@ export let DefaultPropertyDrawers: { [key: string]: IPropertyDrawer } = {
         },
     },
     "double": {
-        draw(self: any, prop: PropertyMetaInfo, label: string, editablePE: boolean) {
-            let propertyKey = prop.propertyKey;
-            let oldValue: number = self[propertyKey] || 0;
+        draw(rawValue: any, prop: PropertyMetaInfo, label: string, editablePE: boolean) {
+            let oldValue: number = rawValue || 0;
             if (editablePE) {
                 let newValue = EditorGUILayout.FloatField(label, oldValue);
-                if (newValue != oldValue) {
-                    self[propertyKey] = newValue;
-                    EditorUtility.SetDirty(self);
-                }
+                return newValue;
             } else {
                 EditorGUI.BeginDisabledGroup(true);
                 EditorGUILayout.FloatField(label, oldValue);
@@ -58,16 +59,55 @@ export let DefaultPropertyDrawers: { [key: string]: IPropertyDrawer } = {
             }
         },
     },
+    "string": {
+        draw(rawValue: any, prop: PropertyMetaInfo, label: string, editablePE: boolean) {
+            let oldValue: string = rawValue || "";
+            if (editablePE) {
+                let newValue = EditorGUILayout.TextField(label, oldValue);
+                return newValue;
+            } else {
+                EditorGUI.BeginDisabledGroup(true);
+                EditorGUILayout.TextField(label, oldValue);
+                EditorGUI.EndDisabledGroup();
+            }
+        },
+    },
+    "object": {
+        draw(rawValue: any, prop: PropertyMetaInfo, label: string, editablePE: boolean) {
+            let oldValue: any = rawValue instanceof UObject || null;
+            if (editablePE) {
+                let allowSceneObjects = prop.extra && prop.extra.allowSceneObjects;
+                let newValue = EditorGUILayout.ObjectField(label, oldValue,
+                    prop.extra && prop.extra.type || Object,
+                    typeof allowSceneObjects === "boolean" ? allowSceneObjects : true);
+
+                return newValue;
+            } else {
+                EditorGUI.BeginDisabledGroup(true);
+                EditorGUILayout.ObjectField(label, oldValue, Object, false);
+                EditorGUI.EndDisabledGroup();
+            }
+        },
+    },
+    "Vector2": {
+        draw(rawValue: any, prop: PropertyMetaInfo, label: string, editablePE: boolean) {
+            let oldValue: Vector2 = rawValue || Vector2.zero;
+            if (editablePE) {
+                let newValue = EditorGUILayout.Vector2Field(label, oldValue);
+                return newValue;
+            } else {
+                EditorGUI.BeginDisabledGroup(true);
+                EditorGUILayout.Vector2Field(label, oldValue);
+                EditorGUI.EndDisabledGroup();
+            }
+        },
+    },
     "Vector3": {
-        draw(self: any, prop: PropertyMetaInfo, label: string, editablePE: boolean) {
-            let propertyKey = prop.propertyKey;
-            let oldValue: Vector3 = self[propertyKey] || Vector3.zero;
+        draw(rawValue: any, prop: PropertyMetaInfo, label: string, editablePE: boolean) {
+            let oldValue: Vector3 = rawValue || Vector3.zero;
             if (editablePE) {
                 let newValue = EditorGUILayout.Vector3Field(label, oldValue);
-                if (newValue != oldValue) {
-                    self[propertyKey] = newValue;
-                    EditorUtility.SetDirty(self);
-                }
+                return newValue;
             } else {
                 EditorGUI.BeginDisabledGroup(true);
                 EditorGUILayout.Vector3Field(label, oldValue);
@@ -76,15 +116,11 @@ export let DefaultPropertyDrawers: { [key: string]: IPropertyDrawer } = {
         },
     },
     "Vector4": {
-        draw(self: any, prop: PropertyMetaInfo, label: string, editablePE: boolean) {
-            let propertyKey = prop.propertyKey;
-            let oldValue: Vector4 = self[propertyKey] || Vector4.zero;
+        draw(rawValue: any, prop: PropertyMetaInfo, label: string, editablePE: boolean) {
+            let oldValue: Vector4 = rawValue || Vector4.zero;
             if (editablePE) {
                 let newValue = EditorGUILayout.Vector4Field(label, oldValue);
-                if (newValue != oldValue) {
-                    self[propertyKey] = newValue;
-                    EditorUtility.SetDirty(self);
-                }
+                return newValue;
             } else {
                 EditorGUI.BeginDisabledGroup(true);
                 EditorGUILayout.Vector4Field(label, oldValue);
@@ -93,15 +129,11 @@ export let DefaultPropertyDrawers: { [key: string]: IPropertyDrawer } = {
         },
     },
     "Quaternion": {
-        draw(self: any, prop: PropertyMetaInfo, label: string, editablePE: boolean) {
-            let propertyKey = prop.propertyKey;
-            let oldValue: Vector4 = self[propertyKey] || Quaternion.identity;
+        draw(rawValue: any, prop: PropertyMetaInfo, label: string, editablePE: boolean) {
+            let oldValue: Vector4 = rawValue || Quaternion.identity;
             if (editablePE) {
                 let newValue = EditorGUILayout.Vector4Field(label, oldValue);
-                if (newValue != oldValue) {
-                    self[propertyKey] = newValue;
-                    EditorUtility.SetDirty(self);
-                }
+                return newValue;
             } else {
                 EditorGUI.BeginDisabledGroup(true);
                 EditorGUILayout.Vector4Field(label, oldValue);

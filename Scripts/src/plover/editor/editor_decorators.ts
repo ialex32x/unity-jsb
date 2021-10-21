@@ -1,7 +1,5 @@
-import { ByteBuffer } from "QuickJS.IO";
-import { JSScriptProperties } from "QuickJS.Unity";
 import { Editor, EditorApplication, EditorGUI, EditorGUILayout, EditorUtility, MessageType } from "UnityEditor";
-import { Object, Vector3 } from "UnityEngine";
+import { GUILayout, Object } from "UnityEngine";
 import { ClassMetaInfo, ScriptType, SerializationUtil } from "../runtime/class_decorators";
 import { DefaultPropertyDrawers } from "./drawer";
 
@@ -44,94 +42,36 @@ export class EditorUtil {
                 let editablePE = slot.editable && (!slot.editorOnly || !EditorApplication.isPlaying);
 
                 if (typeof slot.type === "string") {
-                    switch (slot.type) {
-                        case "int": {
-                            let oldValue: number = target[propertyKey];
-                            if (editablePE) {
-                                let newValue = EditorGUILayout.IntField(label, oldValue);
-                                if (newValue != oldValue) {
-                                    target[propertyKey] = newValue;
+                    let d = DefaultPropertyDrawers[slot.type];
+                    if (typeof d !== "undefined") {
+                        let propertyKey = slot.propertyKey;
+                        let oldValue = target[propertyKey];
+                        if (oldValue instanceof Array) {
+                            let length = oldValue.length;
+                            for (let i = 0; i < length; i++) {
+                                let newValue = d.draw(oldValue[i], slot, label, editablePE);
+                                if (editablePE && oldValue[i] != newValue) {
+                                    oldValue[i] = newValue;
                                     EditorUtility.SetDirty(target);
                                 }
-                            } else {
-                                EditorGUI.BeginDisabledGroup(true);
-                                EditorGUILayout.IntField(label, oldValue);
-                                EditorGUI.EndDisabledGroup();
-                            }
-                            break;
-                        }
-                        case "float": {
-                            let oldValue: number = target[propertyKey];
-                            if (editablePE) {
-                                let newValue = EditorGUILayout.FloatField(label, oldValue);
-                                if (newValue != oldValue) {
-                                    target[propertyKey] = newValue;
-                                    EditorUtility.SetDirty(target);
-                                }
-                            } else {
-                                EditorGUI.BeginDisabledGroup(true);
-                                EditorGUILayout.FloatField(label, oldValue);
-                                EditorGUI.EndDisabledGroup();
-                            }
-                            break;
-                        }
-                        case "string": {
-                            let oldValue: string = target[propertyKey];
-                            if (typeof oldValue !== "string") {
-                                oldValue = "" + oldValue;
                             }
                             if (editablePE) {
-                                let newValue = EditorGUILayout.TextField(label, oldValue);
-                                if (newValue != oldValue) {
-                                    target[propertyKey] = newValue;
+                                if (GUILayout.Button("Add Element")) {
+                                    oldValue.push(null);
                                     EditorUtility.SetDirty(target);
                                 }
-                            } else {
-                                EditorGUI.BeginDisabledGroup(true);
-                                EditorGUILayout.TextField(label, oldValue);
-                                EditorGUI.EndDisabledGroup();
                             }
-                            break;
+                        } else {
+                            let newValue = d.draw(oldValue, slot, label, editablePE);
+                            if (editablePE && oldValue != newValue) {
+                                target[propertyKey] = newValue;
+                                EditorUtility.SetDirty(target);
+                            }
                         }
-                        case "object": {
-                            let oldValue: Object = target[propertyKey];
-                            if (typeof oldValue !== "object") {
-                                oldValue = null;
-                            }
-                            if (editablePE) {
-                                let allowSceneObjects = slot.extra && slot.extra.allowSceneObjects;
-                                let newValue = EditorGUILayout.ObjectField(label, oldValue,
-                                    slot.extra && slot.extra.type || Object,
-                                    typeof allowSceneObjects === "boolean" ? allowSceneObjects : true);
-
-                                if (newValue != oldValue) {
-                                    target[propertyKey] = newValue;
-                                    EditorUtility.SetDirty(target);
-                                }
-                            } else {
-                                EditorGUI.BeginDisabledGroup(true);
-                                EditorGUILayout.ObjectField(label, oldValue, Object, false);
-                                EditorGUI.EndDisabledGroup();
-                            }
-                            break;
-                        }
-                        default: {
-                            if (typeof slot.type === "string") {
-                                let d = DefaultPropertyDrawers[slot.type];
-                                if (typeof d !== "undefined") {
-                                    d.draw(target, slot, label, editablePE);
-                                    return true;
-                                } else {
-                                    EditorGUILayout.LabelField(label);
-                                    EditorGUILayout.HelpBox("no draw operation for this type", MessageType.Warning);
-                                }
-                            } else {
-                                //TODO draw nested value
-                                EditorGUILayout.LabelField(label);
-                                EditorGUILayout.HelpBox("not implemented for nested values", MessageType.Warning);
-                            }
-                            break;
-                        }
+                        return true;
+                    } else {
+                        EditorGUILayout.LabelField(label);
+                        EditorGUILayout.HelpBox("no draw operation for this type", MessageType.Warning);
                     }
                 } else {
                     EditorGUILayout.LabelField(label);

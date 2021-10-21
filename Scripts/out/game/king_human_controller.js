@@ -21,6 +21,9 @@ __decorate([
 __decorate([
     class_decorators_1.ScriptProperty({ type: "Vector3" })
 ], MyNestedPlainObject.prototype, "nestedVector3", void 0);
+__decorate([
+    class_decorators_1.ScriptProperty({ type: "Vector2" })
+], MyNestedPlainObject.prototype, "positions", void 0);
 MyNestedPlainObject = __decorate([
     class_decorators_1.ScriptSerializable()
 ], MyNestedPlainObject);

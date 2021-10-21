@@ -4,7 +4,6 @@ using System.Collections.Generic;
 
 namespace QuickJS.Unity
 {
-    using Native;
     using UnityEngine;
 
     [Serializable]
@@ -40,7 +39,7 @@ namespace QuickJS.Unity
             for (var i = 0; i < count; ++i)
             {
                 var item = _referencedObjects[i];
-                if (item == value) 
+                if (item == value)
                 {
                     return i;
                 }
@@ -60,7 +59,7 @@ namespace QuickJS.Unity
 
         public void SetGenericValue(IO.ByteBuffer buffer)
         {
-            if (buffer != null)
+            if (buffer != null && buffer.readableBytes > 0)
             {
                 if (genericValueData == null)
                 {
@@ -76,27 +75,15 @@ namespace QuickJS.Unity
                     buffer.ReadBytes(genericValueData, 0, buffer.readableBytes);
                 }
             }
+            else
+            {
+                genericValueData = null;
+            }
         }
 
         public void Clear()
         {
             _referencedObjects?.Clear();
-        }
-
-        public IO.ByteBuffer NewSection(ScriptRuntime runtime)
-        {
-            var buffer = runtime.GetByteBufferAllocator().Alloc(64);
-            runtime.AutoRelease(buffer);
-            return buffer;
-        }
-
-        public IO.ByteBuffer ReadSection(ScriptRuntime runtime, IO.ByteBuffer parent, int size)
-        {
-            var buffer = runtime.GetByteBufferAllocator().Alloc(size);
-            runtime.AutoRelease(buffer);
-            parent.ReadBytes(buffer.data, 0, size);
-            buffer.writerIndex += size;
-            return buffer;
         }
     }
 }

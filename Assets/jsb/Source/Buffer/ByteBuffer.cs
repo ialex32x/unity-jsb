@@ -130,6 +130,16 @@ namespace QuickJS.IO
             return this;
         }
 
+        public ByteBuffer Slice(int size)
+        {
+            CheckReadalbe(size);
+            var slice = new ByteBuffer(data, data.Length).Retain();
+            slice._writePosition = this._readPosition + size;
+            slice._readPosition = this._readPosition;
+            this._readPosition += size;
+            return slice;
+        }
+
         #region reader operations
 
         public void CheckReadalbe(int size)

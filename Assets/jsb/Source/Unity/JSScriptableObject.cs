@@ -439,10 +439,11 @@ namespace QuickJS.Unity
             }
 
             var buffer = new IO.ByteBuffer(properties.genericValueData);
+            var context = new JSSerializationContext(properties);
 
             unsafe
             {
-                var argv = stackalloc[] { Binding.Values.js_push_classvalue(ctx, properties), Binding.Values.js_push_classvalue(ctx, buffer) };
+                var argv = stackalloc[] { Binding.Values.js_push_classvalue(ctx, context), Binding.Values.js_push_classvalue(ctx, buffer) };
                 var rval = JSApi.JS_Call(ctx, onAfterDeserializeFunc, this_obj, 2, argv);
                 JSApi.JS_FreeValue(ctx, argv[0]);
                 JSApi.JS_FreeValue(ctx, argv[1]);
@@ -455,6 +456,7 @@ namespace QuickJS.Unity
                     JSApi.JS_FreeValue(ctx, rval);
                 }
             }
+            context.Release();
         }
 
         public static void ExecOnBeforeSerialize(ref JSScriptProperties properties, JSContext ctx, JSValue this_obj, JSValue onBeforeSerializeFunc)
@@ -468,12 +470,12 @@ namespace QuickJS.Unity
                 properties.Clear();
             }
 
-            var buffer = ScriptEngine.AllocByteBuffer(ctx, 512);
+            var context = new JSSerializationContext(properties);
 
             unsafe
             {
-                var argv = stackalloc[] { Binding.Values.js_push_classvalue(ctx, properties), Binding.Values.js_push_classvalue(ctx, buffer) };
-                var rval = JSApi.JS_Call(ctx, onBeforeSerializeFunc, this_obj, 2, argv);
+                var argv = stackalloc[] { Binding.Values.js_push_classvalue(ctx, context) };
+                var rval = JSApi.JS_Call(ctx, onBeforeSerializeFunc, this_obj, 1, argv);
                 JSApi.JS_FreeValue(ctx, argv[0]);
                 JSApi.JS_FreeValue(ctx, argv[1]);
                 if (rval.IsException())
@@ -485,8 +487,7 @@ namespace QuickJS.Unity
                     JSApi.JS_FreeValue(ctx, rval);
                 }
             }
-            properties.SetGenericValue(buffer);
-            buffer.Release();
+            context.Release();
         }
 
         void OnEnable()
