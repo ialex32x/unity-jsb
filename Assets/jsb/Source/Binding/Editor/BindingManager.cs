@@ -871,10 +871,17 @@ namespace QuickJS.Binding
                 return GetScriptObjectPropertyGetter(type.GetElementType());
             }
 
-            if (type.IsArray && type.GetArrayRank() == 1)
+            if (type.IsArray)
             {
-                var elementType = type.GetElementType();
-                return GetScriptObjectPropertyGetter(elementType) + "_array";
+                if (type.GetArrayRank() == 1)
+                {
+                    var elementType = type.GetElementType();
+                    if (!elementType.IsArray)
+                    {
+                        return GetScriptObjectPropertyGetter(elementType) + "_array";
+                    }
+                }
+                return "Values.js_get_classvalue";
             }
 
             if (type.IsValueType)
