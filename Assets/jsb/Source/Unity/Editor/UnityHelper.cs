@@ -38,6 +38,7 @@ namespace QuickJS.Unity
                 codeGenCallback = new DefaultCodeGenCallback(),
                 bindingLogger = new DefaultBindingLogger(),
                 useLogWriter = true,
+                utils = new UnityBindingUtils(),
             });
             bm.Collect();
             bm.Generate(TypeBindingFlags.Default);
@@ -54,6 +55,7 @@ namespace QuickJS.Unity
                 codeGenCallback = new DefaultCodeGenCallback(),
                 bindingLogger = new DefaultBindingLogger(),
                 useLogWriter = true,
+                utils = new UnityBindingUtils(),
             });
             bm.Collect();
             bm.Generate(TypeBindingFlags.TypeDefinition);
@@ -129,6 +131,7 @@ namespace QuickJS.Unity
             var bm = new BindingManager(LoadPrefs(), new BindingManager.Args
             {
                 bindingCallback = new ReflectBindingCallback(runtime),
+                utils = new UnityBindingUtils(),
             });
             bm.Collect();
             bm.Generate(TypeBindingFlags.None);
@@ -147,6 +150,7 @@ namespace QuickJS.Unity
             {
                 bindingCallback = callback,
                 codeGenCallback = callback,
+                utils = new UnityBindingUtils(),
             });
             bm.Collect();
             bm.Generate(TypeBindingFlags.BindingCode | TypeBindingFlags.BuildTargetPlatformOnly);
@@ -233,117 +237,6 @@ namespace QuickJS.Unity
                 case BuildTarget.XboxOne: return "XboxOne";
                 default: return buildTarget.ToString();
             }
-        }
-
-        public static BuildTargetGroup GetBuildTargetGroup()
-        {
-            var buildTarget = EditorUserBuildSettings.activeBuildTarget;
-            switch (buildTarget)
-            {
-                case BuildTarget.Android: return BuildTargetGroup.Android;
-                case BuildTarget.iOS: return BuildTargetGroup.iOS;
-                case BuildTarget.WSAPlayer: return BuildTargetGroup.WSA;
-#if !UNITY_2019_2_OR_NEWER
-                case BuildTarget.StandaloneLinux:
-                case BuildTarget.StandaloneLinuxUniversal: 
-#endif
-                case BuildTarget.StandaloneLinux64: 
-                case BuildTarget.StandaloneOSX: 
-                case BuildTarget.StandaloneWindows:
-                case BuildTarget.StandaloneWindows64: return BuildTargetGroup.Standalone;
-                case BuildTarget.Switch: return BuildTargetGroup.Switch;
-                case BuildTarget.PS4: return BuildTargetGroup.PS4;
-                case BuildTarget.XboxOne: return BuildTargetGroup.XboxOne;
-            }
-            throw new NotImplementedException();
-        }
-
-        public static List<string> GetDefinedSymbols()
-        {
-            var defines = new List<string>();
-
-#if UNITY_EDITOR // #define directive to call Unity Editor scripts from your game code.
-            defines.Add("UNITY_EDITOR");
-#endif
-#if UNITY_EDITOR_WIN // #define directive for Editor code on Windows.
-            defines.Add("UNITY_EDITOR_WIN");
-#endif
-#if UNITY_EDITOR_OSX // #define directive for Editor code on Mac OS X.
-            defines.Add("UNITY_EDITOR_OSX");
-#endif
-#if UNITY_EDITOR_LINUX // #define directive for Editor code on Linux.
-            defines.Add("UNITY_EDITOR_LINUX");
-#endif
-#if UNITY_STANDALONE_OSX // #define directive to compile or execute code specifically for Mac OS X (including Universal, PPC and Intel architectures).
-            defines.Add("UNITY_STANDALONE_OSX");
-#endif
-#if UNITY_STANDALONE_WIN // #define directive for compiling/executing code specifically for Windows standalone applications.
-            defines.Add("UNITY_STANDALONE_WIN");
-#endif
-#if UNITY_STANDALONE_LINUX // #define directive for compiling/executing code specifically for Linux standalone applications.
-            defines.Add("UNITY_STANDALONE_LINUX");
-#endif
-#if UNITY_STANDALONE // #define directive for compiling/executing code for any standalone platform (Mac OS X, Windows or Linux).
-            defines.Add("UNITY_STANDALONE");
-#endif
-#if UNITY_WII // #define directive for compiling/executing code for the Wii console.
-            defines.Add("UNITY_WII");
-#endif
-#if UNITY_IOS // #define directive for compiling/executing code for the iOS platform.
-            defines.Add("UNITY_IOS");
-#endif
-#if UNITY_IPHONE // 	Deprecated. Use UNITY_IOS instead.
-            defines.Add("UNITY_IPHONE");
-#endif
-#if UNITY_ANDROID // #define directive for the Android platform.
-            defines.Add("UNITY_ANDROID");
-#endif
-#if UNITY_PS4 // #define directive for running PlayStation 4 code.
-            defines.Add("UNITY_PS4");
-#endif
-#if UNITY_XBOXONE // #define directive for executing Xbox One code.
-            defines.Add("UNITY_XBOXONE");
-#endif
-#if UNITY_LUMIN // #define directive for the Magic Leap OS platform. You can also use PLATFORM_LUMIN.
-            defines.Add("UNITY_LUMIN");
-#endif
-#if UNITY_TIZEN // #define directive for the Tizen platform.
-            defines.Add("UNITY_TIZEN");
-#endif
-#if UNITY_TVOS // #define directive for the Apple TV platform.
-            defines.Add("UNITY_TVOS");
-#endif
-#if UNITY_WSA // #define directive for Universal Windows Platform
-            defines.Add("UNITY_WSA");
-#endif
-#if UNITY_WSA_10_0 // #define directive for Universal Windows Platform. Additionally WINDOWS_UWP is defined when compiling C# files against .NET Core.
-            defines.Add("UNITY_WSA_10_0");
-#endif
-#if UNITY_WINRT // 	Same as UNITY_WSA.
-            defines.Add("UNITY_WINRT");
-#endif
-#if UNITY_WINRT_10_0 // 	Equivalent to UNITY_WSA_10_0
-            defines.Add("UNITY_WINRT_10_0");
-#endif
-#if UNITY_WEBGL // #define directive for WebGL
-            defines.Add("UNITY_WEBGL");
-#endif
-#if UNITY_FACEBOOK // #define directive for the Facebook platform (WebGL or Windows standalone).
-            defines.Add("UNITY_FACEBOOK");
-#endif
-#if UNITY_ANALYTICS // #define directive for calling Unity Analytics
-            defines.Add("UNITY_ANALYTICS");
-#endif
-#if UNITY_ASSERTIONS // #define directive for assertions control process.
-            defines.Add("UNITY_ASSERTIONS");
-#endif
-#if UNITY_64 // #define directive for 64-bit platforms.
-            defines.Add("UNITY_64");
-#endif
-#if UNITY_SERVER
-            defines.Add("UNITY_SERVER");
-#endif
-            return defines;
         }
 
         /// <summary>

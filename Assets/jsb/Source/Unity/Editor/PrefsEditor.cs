@@ -449,9 +449,14 @@ namespace QuickJS.Unity
         {
             base.OnEnable();
 
+            var args = new BindingManager.Args()
+            {
+                utils = new UnityBindingUtils(),
+            };
+            
             _prefs = UnityHelper.LoadPrefs(out _filePath);
             _selectedBindingMethod = Array.IndexOf(_bindingMethodValues, _prefs.preferredBindingMethod);
-            _bindingManager = new BindingManager(_prefs, new BindingManager.Args());
+            _bindingManager = new BindingManager(_prefs, args);
             _bindingManager.Collect();
             _bindingManager.Generate(TypeBindingFlags.None);
             _bindingManager.Report();

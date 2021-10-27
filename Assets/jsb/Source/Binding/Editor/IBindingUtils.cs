@@ -16,21 +16,13 @@ namespace QuickJS.Binding
     {
         public string ReplacePathVars(string value)
         {
-#if JSB_UNITYLESS
             value = value.Replace("${platform}", "unityless");
             return value;
-#else
-            return Unity.UnityHelper.ReplacePathVars(value);
-#endif
         }
 
         public bool IsExplicitEditorType(Type type)
         {
-#if JSB_UNITYLESS
             return false;
-#else
-            return Unity.UnityHelper.IsExplicitEditorType(type);
-#endif
         }
     }
 }
