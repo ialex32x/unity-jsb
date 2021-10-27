@@ -6,7 +6,6 @@ namespace QuickJS.Binding
 {
     using Native;
 
-
     public partial class Values
     {
         public static JSValue js_push_primitive(JSContext ctx, JSValue o)

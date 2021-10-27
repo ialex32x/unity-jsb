@@ -4,7 +4,9 @@ using QuickJS.Native;
 
 namespace QuickJS.Binding
 {
-    // 处理委托的绑定
+    /// <summary>
+    /// raw methods for handling delegates/events
+    /// </summary>
     public partial class Values
     {
         public const int EVT_OP_NONE = 0;
