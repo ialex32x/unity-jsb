@@ -24,6 +24,7 @@ namespace QuickJS.Unity
             public bool alive;
 
             public Native.JSMemoryUsage memoryUsage;
+            public bool isStaticBinding;
             public int exportedTypes;
             public int managedObjectCount;
             public int managedObjectCap;
@@ -132,6 +133,7 @@ namespace QuickJS.Unity
 
                 var typeDB = runtime.GetTypeDB();
                 snapshot.exportedTypes = typeDB.Count;
+                snapshot.isStaticBinding = runtime.isStaticBinding;
 
                 var objectCache = runtime.GetObjectCache();
                 var stringCache = runtime.GetMainContext().GetStringCache();
@@ -212,6 +214,7 @@ namespace QuickJS.Unity
 
             Block("Misc.", () =>
             {
+                EditorGUILayout.Toggle("Static Bind", snapshot.isStaticBinding);
                 EditorGUILayout.IntField("Exported Types", snapshot.exportedTypes);
                 EditorGUILayout.BeginHorizontal();
                 EditorGUILayout.TextField("ManagedObject Count", snapshot.managedObjectCount + "/" + snapshot.managedObjectCap, GUILayout.ExpandWidth(false));
