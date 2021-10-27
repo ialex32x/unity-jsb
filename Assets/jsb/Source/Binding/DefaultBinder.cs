@@ -30,10 +30,29 @@ namespace QuickJS.Binding
             return bindAction == StaticBind;
         }
 
-        public static void StaticBind(ScriptRuntime runtime)
+        public static BindAction StaticBind = (runtime) =>
+        {
+            var assemblies = AppDomain.CurrentDomain.GetAssemblies();
+            Type type = null;
+            for (var i = assemblies.Length - 1; i >= 0; --i)
+            {
+                var assembly = assemblies[i];
+                if (!assembly.IsDynamic)
+                {
+                    type = assembly.GetType($"{Values.NamespaceOfStaticBinder}.{Values.ClassNameOfStaticBinder}");
+                    if (type != null)
+                    {
+                        break;
+                    }
+                }
+            }
+            _StaticBindInternal(runtime, type);
+        };
+
+        public static void _StaticBindInternal(ScriptRuntime runtime, Type type)
         {
             var logger = runtime.GetLogger();
-            var bindAll = typeof(Binding.Values).GetMethod("BindAll", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static);
+            var bindAll = type?.GetMethod(Values.MethodNameOfStaticBinder, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static);
             if (bindAll == null)
             {
                 if (logger != null)
@@ -43,7 +62,7 @@ namespace QuickJS.Binding
                 return;
             }
 
-            var codeGenVersionField = typeof(Binding.Values).GetField("CodeGenVersion");
+            var codeGenVersionField = type.GetField("CodeGenVersion");
             if (codeGenVersionField == null || !codeGenVersionField.IsStatic || !codeGenVersionField.IsLiteral || codeGenVersionField.FieldType != typeof(uint))
             {
                 if (logger != null)

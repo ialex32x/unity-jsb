@@ -11,7 +11,7 @@ namespace QuickJS.Binding
         private ScriptRuntime _runtime;
         private BindingManager _bindingManager;
 
-        private string _namespace = typeof(Values).Namespace;
+        private string _namespace = Values.NamespaceOfStaticBinder;
         private string _className;
         private HashSet<Assembly> _referencedAssemblies = new HashSet<Assembly>();
         private List<Assembly> _generatedAssemblies = new List<Assembly>();
@@ -104,7 +104,7 @@ namespace QuickJS.Binding
                     list.AddRange(_referencedAssemblies);
                     var assembly = CompileSource(source, codeName, list);
                     var Class = assembly.GetType(_namespace + "." + _className);
-                    var BindAll = Class?.GetMethod("BindAll");
+                    var BindAll = Class?.GetMethod(Values.MethodNameOfStaticBinder);
 
                     BindAll.Invoke(null, new object[] { _runtime });
                 }

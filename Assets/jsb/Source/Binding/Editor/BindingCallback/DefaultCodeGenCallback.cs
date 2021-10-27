@@ -59,7 +59,7 @@ namespace QuickJS.Binding
 
         public void OnGenerateBindingList(CodeGenerator cg, IEnumerable<IGrouping<string, TypeBindingInfo>> modules)
         {
-            cg.GenerateBindingList(typeof(Values).Namespace, typeof(Values).Name, modules, true);
+            cg.GenerateBindingList(Values.NamespaceOfStaticBinder, Values.ClassNameOfStaticBinder, modules, true);
         }
     }
 }

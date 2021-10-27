@@ -10,10 +10,17 @@ namespace QuickJS.Binding
     {
         protected CodeGenerator cg;
 
-        public PlainClassCodeGen(CodeGenerator cg, string name)
+        public PlainClassCodeGen(CodeGenerator cg, string name, bool isPartial)
         {
             this.cg = cg;
-            this.cg.cs.AppendLine("public partial class {0}", name);
+            if (isPartial)
+            {
+                this.cg.cs.AppendLine("public partial class {0}", name);
+            }
+            else
+            {
+                this.cg.cs.AppendLine("public class {0}", name);
+            }
             this.cg.cs.AppendLine("{");
             this.cg.cs.AddTabLevel();
         }

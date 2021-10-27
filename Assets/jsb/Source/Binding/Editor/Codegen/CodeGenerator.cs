@@ -68,9 +68,9 @@ namespace QuickJS.Binding
                     {
                         using (new CSNamespaceCodeGen(this, @namespace))
                         {
-                            // using (new PreservedCodeGen(this))
+                            using (new PreservedCodeGen(this))
                             {
-                                using (new PlainClassCodeGen(this, className))
+                                using (new PlainClassCodeGen(this, className, false))
                                 {
                                     using (new PreservedCodeGen(this))
                                     {
@@ -79,7 +79,7 @@ namespace QuickJS.Binding
 
                                     using (new PreservedCodeGen(this))
                                     {
-                                        using (var method = new PlainMethodCodeGen(this, "private static void BindAll(ScriptRuntime runtime)"))
+                                        using (var method = new PlainMethodCodeGen(this, $"private static void {Values.MethodNameOfStaticBinder}(ScriptRuntime runtime)"))
                                         {
                                             foreach (var module in modules)
                                             {
