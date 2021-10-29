@@ -211,7 +211,7 @@ namespace QuickJS.Unity
                 runtime.EvalMain(_prefs.editorEntryPoint);
             }
 
-            // in order to evaluate the decorator (the registration of CustomEditor), we need to load these modules before actually using them
+            // in order to evaluate the decorator (the registration of CustomEditor), we need to load these modules before actually using
             var editorScripts = new List<JSScriptClassPathHint>();
             JSScriptFinder.GetInstance().Search(JSScriptClassType.CustomEditor, editorScripts);
             foreach (var editorScript in editorScripts)
@@ -222,13 +222,15 @@ namespace QuickJS.Unity
 
         private void OnModuleSourceChanged(string modulePath, JSScriptClassType classTypes)
         {
-            // if ((classTypes & JSScriptClassType.CustomEditor) != 0)
-            // {
-            //     if (_runtime != null && _runtime.isValid && !EditorApplication.isCompiling)
-            //     {
-            //         _runtime.ResolveModule(modulePath);
-            //     }
-            // }
+            // the already loaded CustomEditor scripts could be reloaded automatically by file-watcher
+            // but if it's freshly added, resolve it here
+            if ((classTypes & JSScriptClassType.CustomEditor) != 0)
+            {
+                if (_runtime != null && _runtime.isValid && !EditorApplication.isCompiling)
+                {
+                    _runtime.ResolveModule(modulePath);
+                }
+            }
         }
 
         private void OnPlayModeStateChanged(PlayModeStateChange mode)
