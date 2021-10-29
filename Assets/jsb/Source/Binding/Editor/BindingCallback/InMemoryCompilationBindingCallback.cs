@@ -6,6 +6,9 @@ using System.Linq;
 
 namespace QuickJS.Binding
 {
+    /// <summary>
+    /// [experimental] do StaticBind but in the memory with the CodeDomProvider for csharp. 
+    /// </summary>
     public class InMemoryCompilationBindingCallback : IBindingCallback, ICodeGenCallback
     {
         private ScriptRuntime _runtime;
@@ -207,6 +210,7 @@ namespace QuickJS.Binding
         {
         }
 
+        //TODO [IMPROVMENT] delay the compilation util using the type at runtime
         public void OnSourceCodeEmitted(CodeGenerator cg, string codeOutDir, string codeName, SourceCodeType type, string source)
         {
             if (type == SourceCodeType.CSharp)

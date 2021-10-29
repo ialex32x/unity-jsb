@@ -6,8 +6,15 @@ using QuickJS.Native;
 
 namespace QuickJS.Binding
 {
+    /// <summary>
+    /// the BindingCallback implementation of ReflectBind mode, no source will be actually emitted in ReflectBind mode.
+    /// Dynamic types bridges will be generated at the runtime for all types, methods and delegates.
+    /// </summary>
     public class ReflectBindingCallback : IBindingCallback
     {
+        /// <summary>
+        /// With this lazy typedb the delegates implementations will be dynamically generated util the first time use
+        /// </summary>
         protected class LazyTypeDB : Utils.ITypeDB
         {
             private BindingManager _bindingManager;
@@ -30,11 +37,6 @@ namespace QuickJS.Binding
             {
                 return _backend.AddType(type, proto);
             }
-
-            // public bool ContainsDelegate(Type type)
-            // {
-            //     return _backend.ContainsDelegate(type);
-            // }
 
             public DynamicType CreateFreeDynamicType(Type type)
             {
@@ -218,18 +220,7 @@ namespace QuickJS.Binding
 
         public void AddDelegate(DelegateBridgeBindingInfo bindingInfo)
         {
-            // var typeDB = _runtime.GetTypeDB();
-            // foreach (var delegateType in bindingInfo.types)
-            // {
-            //     if (!typeDB.ContainsDelegate(delegateType))
-            //     {
-            //         var method = _bindingManager.GetReflectedDelegateMethod(bindingInfo.returnType, bindingInfo.parameters);
-            //         if (method != null)
-            //         {
-            //             typeDB.AddDelegate(delegateType, method);
-            //         }
-            //     }
-            // }
+            // unnecessary to generate delegate binding at the bind-generating phase
         }
     }
 }

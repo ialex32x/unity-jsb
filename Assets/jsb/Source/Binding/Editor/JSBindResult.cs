@@ -1,18 +1,17 @@
-using System;
 using System.Collections.Generic;
 
 namespace QuickJS.Binding
 {
     /// <summary>
-    /// 用于记录导出过程中的辅助信息
-    /// 可供 webpack 配置使用
+    /// some useful information collected in the binding process
     /// </summary>
     public class JSBindResult
     {
         public string comment;
 
         /// <summary>
-        /// 导出的模块名列表 (可用于 webpack externals 配置)
+        /// a list of all js modules corresponding to exported csharp types. 
+        /// (useful for configuring webpack's externals)
         /// </summary>
         public List<string> modules = new List<string>();
     }

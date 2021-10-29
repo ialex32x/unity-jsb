@@ -5,6 +5,9 @@ using System.Reflection;
 
 namespace QuickJS.Binding
 {
+    /// <summary>
+    /// the BindingManager will invoke a specific method at the specific stage of the binding process
+    /// </summary>
     public interface IBindingCallback
     {
         void OnBindingBegin(BindingManager bindingManager);
