@@ -8,7 +8,7 @@ namespace QuickJS.Binding
 
     public partial class Values
     {
-        // 用于根据 Type 信息将 JSValue 专为对应的 CS Object
+        // 用于根据 Type 信息处理 JSValue 和 CS Object 的相互转换
         private static Dictionary<Type, MethodInfo> _JSCastMap = new Dictionary<Type, MethodInfo>();
 
         private static Dictionary<Type, MethodInfo> _CSCastMap = new Dictionary<Type, MethodInfo>();
@@ -21,52 +21,59 @@ namespace QuickJS.Binding
         private static void init_cast_map()
         {
             var methods = typeof(Values).GetMethods();
-            foreach (var method in methods)
+            for (int i = 0, len = methods.Length; i < len; ++i)
             {
-                if (!method.IsGenericMethodDefinition)
+                register_type_caster(methods[i]);
+            }
+        }
+
+        public static void register_type_caster(MethodInfo method)
+        {
+            if (!method.IsGenericMethodDefinition)
+            {
+                var parameters = method.GetParameters();
+
+                if (method.Name == "NewBridgeClassObject")
                 {
-                    var parameters = method.GetParameters();
-
-                    if (method.Name == "NewBridgeClassObject")
+                    if (parameters.Length == 5)
                     {
-                        if (parameters.Length == 5)
+                        var type = parameters[2].ParameterType;
+                        _JSNewMap[type] = method;
+                    }
+                }
+                else if (method.Name == "js_rebind_this")
+                {
+                    if (parameters.Length == 3 && parameters[2].ParameterType.IsByRef)
+                    {
+                        var type = parameters[2].ParameterType.GetElementType();
+                        _JSRebindMap[type] = method;
+                    }
+                }
+                else if (method.Name.StartsWith("js_get_"))
+                {
+                    // only collect the method name with the expected signature
+                    // bool js_get_*(JSContext ctx, JSValue val, out T o);
+                    if (parameters.Length == 3 && parameters[2].ParameterType.IsByRef)
+                    {
+                        var type = parameters[2].ParameterType.GetElementType();
+
+                        switch (method.Name)
                         {
-                            var type = parameters[2].ParameterType;
-                            _JSNewMap[type] = method;
+                            case "js_get_primitive":
+                            case "js_get_structvalue":
+                            case "js_get_classvalue":
+                                _JSCastMap[type] = method;
+                                break;
                         }
                     }
-                    else if (method.Name == "js_rebind_this")
+                }
+                else if (method.Name.StartsWith("js_push_"))
+                {
+                    if (parameters.Length == 2)
                     {
-                        if (parameters.Length == 3 && parameters[2].ParameterType.IsByRef)
-                        {
-                            var type = parameters[2].ParameterType.GetElementType();
-                            _JSRebindMap[type] = method;
-                        }
-                    }
-                    else if (method.Name.StartsWith("js_get_"))
-                    {
-                        if (parameters.Length == 3 && parameters[2].ParameterType.IsByRef)
-                        {
-                            var type = parameters[2].ParameterType.GetElementType();
+                        var type = parameters[1].ParameterType;
 
-                            switch (method.Name)
-                            {
-                                case "js_get_primitive":
-                                case "js_get_structvalue":
-                                case "js_get_classvalue":
-                                    _JSCastMap[type] = method;
-                                    break;
-                            }
-                        }
-                    }
-                    else if (method.Name.StartsWith("js_push_"))
-                    {
-                        if (parameters.Length == 2)
-                        {
-                            var type = parameters[1].ParameterType;
-
-                            _CSCastMap[type] = method;
-                        }
+                        _CSCastMap[type] = method;
                     }
                 }
             }

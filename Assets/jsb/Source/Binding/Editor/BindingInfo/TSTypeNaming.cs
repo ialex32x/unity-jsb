@@ -5,13 +5,12 @@ namespace QuickJS.Binding
 {
     public class TSTypeNaming
     {
-        // public bool topLevel => string.IsNullOrEmpty(jsModule) && string.IsNullOrEmpty(jsNamespace);
         public bool topLevel => false;
 
         public readonly Type type;
 
         /// <summary>
-        /// js 模块名
+        /// js module name
         /// </summary>
         public readonly string jsModule;
 
@@ -23,7 +22,7 @@ namespace QuickJS.Binding
         public readonly string[] jsNamespaceSlice;
 
         ///<summary>
-        /// 不带泛型部分的js注册名
+        /// the purified name for js (without the suffix for generic type args). 
         ///</summary>
         public readonly string jsPureName;
 
@@ -192,7 +191,6 @@ namespace QuickJS.Binding
         public string MakeGenericJSFullTypeName(string templateArgs)
         {
             var name = CodeGenUtils.Concat(".", this.jsNamespace, this.jsPureName);
-            // var name = string.IsNullOrEmpty(this.jsNamespace) ? this.jsPureName : this.jsNamespace + "." + this.jsPureName;
             return string.Format("{0}<{1}>, ", name, templateArgs);
         }
     }
