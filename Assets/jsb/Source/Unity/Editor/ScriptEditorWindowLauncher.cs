@@ -25,7 +25,7 @@ namespace QuickJS.Unity
 
         void Awake()
         {
-            var image = (Texture)AssetDatabase.LoadAssetAtPath("Assets/jsb/Editor/Icons/JsScript.png", typeof(Texture));
+            var image = UnityHelper.LoadPackageAsset<Texture>("Editor/Icons/JsScript.png");
             _scriptIcon = new GUIContent(image);
             Reset();
         }

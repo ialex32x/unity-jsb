@@ -101,6 +101,21 @@ namespace QuickJS.Unity
             return defaultPrefs;
         }
 
+        public static T LoadPackageAsset<T>(string assetPath)
+        where T : Object
+        {
+            return LoadAssetAtPath<T>("Assets/jsb/" + assetPath)
+            //TODO: uncomment this line after providing as a UMP package
+            //    ?? LoadAssetAtPath<T>("Packages/com.starlessnight.unity-jsb/" + assetPath)
+            ;
+        }
+
+        public static T LoadAssetAtPath<T>(string assetPath)
+        where T : Object
+        {
+            return AssetDatabase.LoadAssetAtPath(assetPath, typeof(T)) as T;
+        }
+
         /// <summary>
         /// Get MonoScript by type
         /// </summary>
