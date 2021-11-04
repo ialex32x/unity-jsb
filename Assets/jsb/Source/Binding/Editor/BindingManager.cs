@@ -1799,7 +1799,7 @@ namespace QuickJS.Binding
                         continue;
                     }
 
-                    TryExportExtensionMethods(type);
+                    TryCollectMethods(type);
                     Info("skip: {0}", type.FullName);
                 }
                 _logWriter?.DecTabLevel();
@@ -1811,22 +1811,41 @@ namespace QuickJS.Binding
         }
 
         /// <summary>
-        /// try to export extension methods contained in specified type (the type itself will not be exported)
+        /// collect extension methods and value operation methods (the type itself will not be exported)
         /// </summary>
-        public void TryExportExtensionMethods(Type type)
+        public void TryCollectMethods(Type type)
         {
             var methods = type.GetMethods(QuickJS.Binding.DynamicType.PublicFlags);
             var methodCount = methods.Length;
             for (var methodIndex = 0; methodIndex < methodCount; methodIndex++)
             {
                 var method = methods[methodIndex];
-                if (IsExtensionMethod(method))
+                if (TryCollectExtensionMethod(type, method) || TryCollectValueOperator(type, method))
                 {
-                    var parameters = method.GetParameters();
-                    var declType = parameters[0].ParameterType;
-                    TransformType(declType).AddExtensionMethod(method);
                 }
             }
+        }
+
+        public bool TryCollectExtensionMethod(Type type, MethodInfo method)
+        {
+            if (IsExtensionMethod(method))
+            {
+                var parameters = method.GetParameters();
+                var declType = parameters[0].ParameterType;
+                TransformType(declType).AddExtensionMethod(method);
+                return true;
+            }
+            return false;
+        }
+
+        public bool TryCollectValueOperator(Type type, MethodInfo method)
+        {
+            if (type != typeof(Values) && Values.register_type_caster(method))
+            {
+                return true;
+            }
+
+            return false;
         }
 
         /// <summary>

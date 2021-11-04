@@ -27,7 +27,7 @@ namespace QuickJS.Binding
             }
         }
 
-        public static void register_type_caster(MethodInfo method)
+        public static bool register_type_caster(MethodInfo method)
         {
             if (!method.IsGenericMethodDefinition)
             {
@@ -39,6 +39,7 @@ namespace QuickJS.Binding
                     {
                         var type = parameters[2].ParameterType;
                         _JSNewMap[type] = method;
+                        return true;
                     }
                 }
                 else if (method.Name == "js_rebind_this")
@@ -47,6 +48,7 @@ namespace QuickJS.Binding
                     {
                         var type = parameters[2].ParameterType.GetElementType();
                         _JSRebindMap[type] = method;
+                        return true;
                     }
                 }
                 else if (method.Name.StartsWith("js_get_"))
@@ -63,7 +65,7 @@ namespace QuickJS.Binding
                             case "js_get_structvalue":
                             case "js_get_classvalue":
                                 _JSCastMap[type] = method;
-                                break;
+                                return true;
                         }
                     }
                 }
@@ -74,9 +76,11 @@ namespace QuickJS.Binding
                         var type = parameters[1].ParameterType;
 
                         _CSCastMap[type] = method;
+                        return true;
                     }
                 }
             }
+            return false;
         }
 
         public static bool js_rebind_var(JSContext ctx, JSValue this_obj, Type type, object o)
