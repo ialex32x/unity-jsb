@@ -2,9 +2,10 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.EventDispatcher = exports.Dispatcher = exports.Handler = void 0;
 class Handler {
-    constructor(caller, fn) {
+    constructor(caller, fn, once) {
         this.caller = caller;
         this.fn = fn;
+        this.once = !!once;
     }
     invoke(arg0, arg1, arg2) {
         if (this.fn) {
@@ -24,6 +25,11 @@ class Dispatcher {
     }
     on(caller, fn) {
         let handler = new Handler(caller, fn);
+        this._handlers.push(handler);
+        return handler;
+    }
+    once(caller, fn) {
+        let handler = new Handler(caller, fn, true);
         this._handlers.push(handler);
         return handler;
     }
@@ -70,18 +76,41 @@ class Dispatcher {
         }
         if (size == 1) {
             let item = this._handlers[0];
+            if (item.once) {
+                this._handlers.splice(0, 1);
+            }
             item.invoke(arg0, arg1, arg2);
             return;
         }
         if (size == 2) {
             let item0 = this._handlers[0];
             let item1 = this._handlers[1];
+            if (item0.once) {
+                if (item1.once) {
+                    this._handlers.splice(0, 2);
+                }
+                else {
+                    this._handlers.splice(0, 1);
+                }
+            }
+            else {
+                if (item1.once) {
+                    this._handlers.splice(1, 1);
+                }
+            }
             item0.invoke(arg0, arg1, arg2);
             item1.invoke(arg0, arg1, arg2);
             return;
         }
         let copy = new Array(...this._handlers);
         for (let i = 0; i < size; i++) {
+            let item = copy[i];
+            if (item.once) {
+                let found = this._handlers.indexOf(item);
+                if (found >= 0) {
+                    this._handlers.splice(found, 1);
+                }
+            }
             copy[i].invoke(arg0, arg1, arg2);
         }
     }
@@ -100,6 +129,13 @@ class EventDispatcher {
             dispatcher = this._dispatcher[evt] = new Dispatcher();
         }
         dispatcher.on(caller, fn);
+    }
+    once(evt, caller, fn) {
+        let dispatcher = this._dispatcher[evt];
+        if (typeof dispatcher === "undefined") {
+            dispatcher = this._dispatcher[evt] = new Dispatcher();
+        }
+        dispatcher.once(caller, fn);
     }
     off(evt, caller, fn) {
         let dispatcher = this._dispatcher[evt];
