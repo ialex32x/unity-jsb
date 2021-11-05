@@ -6,18 +6,23 @@ namespace QuickJS.Binding
 {
     using Native;
 
+    // collect all built-in js-cs conversion helper methods
     public partial class Values
     {
-        // 用于根据 Type 信息处理 JSValue 和 CS Object 的相互转换
+        // cast js value to csharp value
         private static Dictionary<Type, MethodInfo> _JSCastMap = new Dictionary<Type, MethodInfo>();
 
+        // cast csharp value to js value
         private static Dictionary<Type, MethodInfo> _CSCastMap = new Dictionary<Type, MethodInfo>();
 
-        private static Dictionary<Type, MethodInfo> _JSRebindMap = new Dictionary<Type, MethodInfo>();
-
+        // construct a js value with given csharp value
         private static Dictionary<Type, MethodInfo> _JSNewMap = new Dictionary<Type, MethodInfo>();
 
-        // 初始化, 在 Values 静态构造时调用
+        // replace the js value reference with another csharp value (for struct)
+        private static Dictionary<Type, MethodInfo> _JSRebindMap = new Dictionary<Type, MethodInfo>();
+
+        //TODO in reflectbind mode, it should be finished by BindingManager.TryCollectMethods (without skipping this type 'Values').
+        //TODO in staticbind mode, it could be statically regstered by generated glue code.
         private static void init_cast_map()
         {
             var methods = typeof(Values).GetMethods();
@@ -33,30 +38,27 @@ namespace QuickJS.Binding
             {
                 var parameters = method.GetParameters();
 
-                if (method.Name == "NewBridgeClassObject")
+                if (parameters.Length == 5)
                 {
-                    if (parameters.Length == 5)
+                    if (method.Name == "NewBridgeClassObject")
                     {
                         var type = parameters[2].ParameterType;
                         _JSNewMap[type] = method;
                         return true;
                     }
                 }
-                else if (method.Name == "js_rebind_this")
+                else if (parameters.Length == 3 && parameters[2].ParameterType.IsByRef)
                 {
-                    if (parameters.Length == 3 && parameters[2].ParameterType.IsByRef)
+                    if (method.Name == "js_rebind_this")
                     {
                         var type = parameters[2].ParameterType.GetElementType();
                         _JSRebindMap[type] = method;
                         return true;
                     }
-                }
-                else if (method.Name.StartsWith("js_get_"))
-                {
-                    // only collect the method name with the expected signature
-                    // bool js_get_*(JSContext ctx, JSValue val, out T o);
-                    if (parameters.Length == 3 && parameters[2].ParameterType.IsByRef)
+                    else if (method.Name.StartsWith("js_get_"))
                     {
+                        // only collect the method name with the expected signature
+                        // bool js_get_*(JSContext ctx, JSValue val, out T o);
                         var type = parameters[2].ParameterType.GetElementType();
 
                         switch (method.Name)
@@ -69,9 +71,9 @@ namespace QuickJS.Binding
                         }
                     }
                 }
-                else if (method.Name.StartsWith("js_push_"))
+                else if (parameters.Length == 2)
                 {
-                    if (parameters.Length == 2)
+                    if (method.Name.StartsWith("js_push_"))
                     {
                         var type = parameters[1].ParameterType;
 
@@ -94,7 +96,9 @@ namespace QuickJS.Binding
             return false;
         }
 
-        // 自动判断类型
+        /// <summary>
+        /// convert csharp object `o` to jsvalue with o.GetType()
+        /// </summary>
         public static JSValue js_push_var(JSContext ctx, object o)
         {
             if (o == null)
