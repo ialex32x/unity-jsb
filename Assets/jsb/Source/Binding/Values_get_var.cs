@@ -56,7 +56,7 @@ namespace QuickJS.Binding
 
         public static bool register_type_caster(MethodInfo method)
         {
-            if (!method.IsGenericMethodDefinition && method.IsStatic)
+            if (!method.IsGenericMethodDefinition && method.IsStatic && method.IsPublic)
             {
                 var parameters = method.GetParameters();
 
