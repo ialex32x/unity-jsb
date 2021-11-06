@@ -28,7 +28,7 @@ namespace QuickJS.Unity
                         return inject;
                     }
                     var ret = Resources.FindObjectsOfTypeAll(arg_type);
-                    return Values.js_push_classvalue_array(ctx, ret);
+                    return Values.PushArray(ctx, ret);
                 }
 
                 throw new NotImplementedException();

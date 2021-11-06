@@ -531,7 +531,7 @@ namespace QuickJS.Binding
             {
                 if (!string.IsNullOrEmpty(caller))
                 {
-                    var js_rebind_this = this.cg.bindingManager.GetValueOperation("js_rebind_this", callerType);
+                    var js_rebind_this = this.cg.bindingManager.GetRebindOperation(callerType);
                     cg.cs.AppendLine($"{js_rebind_this}(ctx, this_obj, ref {caller});");
                 }
             }
@@ -636,8 +636,9 @@ namespace QuickJS.Binding
         private void WriteDefaultConstructorBinding()
         {
             var decalringTypeName = this.cg.bindingManager.GetCSTypeFullName(this.methodBindingInfo.decalringType);
+            var castOperation = this.cg.bindingManager.GetNewOperation(this.methodBindingInfo.decalringType);
             this.cg.cs.AppendLine("var o = new {0}();", decalringTypeName);
-            this.cg.cs.AppendLine("var val = Values.NewBridgeClassObject(ctx, new_target, o, magic, {0});", CodeGenUtils.ToLiteral(this.disposable));
+            this.cg.cs.AppendLine("var val = {0}(ctx, new_target, o, magic, {1});", castOperation, CodeGenUtils.ToLiteral(this.disposable));
             this.cg.cs.AppendLine("return val;");
 
             this.cg.tsDeclare.AppendLine($"{this.methodBindingInfo.jsName}()");
@@ -657,7 +658,8 @@ namespace QuickJS.Binding
 
         protected override void EndInvokeBinding()
         {
-            this.cg.cs.AppendLine("var val = Values.NewBridgeClassObject(ctx, new_target, o, magic, {0});", CodeGenUtils.ToLiteral(this.disposable));
+            var castOperation = this.cg.bindingManager.GetNewOperation(this.methodBindingInfo.decalringType);
+            this.cg.cs.AppendLine("var val = {0}(ctx, new_target, o, magic, {1});", castOperation, CodeGenUtils.ToLiteral(this.disposable));
         }
 
         protected override void InvokeVoidReturn()

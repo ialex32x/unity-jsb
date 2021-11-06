@@ -184,7 +184,7 @@ namespace QuickJS.Binding
                 if (JSApi.JS_IsException(lengthVal))
                 {
                     o = null;
-                    return js_script_error(ctx);
+                    return WriteScriptError(ctx);
                 }
                 int length;
                 JSApi.JS_ToInt32(ctx, out length, lengthVal);
@@ -260,7 +260,7 @@ namespace QuickJS.Binding
                     if (JSApi.JS_IsException(lengthVal))
                     {
                         o = null;
-                        return js_script_error(ctx);
+                        return WriteScriptError(ctx);
                     }
 
                     var elementType = type.GetElementType();

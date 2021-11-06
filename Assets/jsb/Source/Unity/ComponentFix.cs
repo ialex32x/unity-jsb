@@ -153,7 +153,7 @@ namespace QuickJS.Unity
                             return inject;
                         }
                         var ret = self.GetComponentsInChildren(arg0, arg1);
-                        return Values.js_push_classvalue_array(ctx, ret);
+                        return Values.PushArray(ctx, ret);
                     }
                     if (argc == 1)
                     {
@@ -173,7 +173,7 @@ namespace QuickJS.Unity
                             return inject;
                         }
                         var ret = self.GetComponentsInChildren(arg0);
-                        return Values.js_push_classvalue_array(ctx, ret);
+                        return Values.PushArray(ctx, ret);
                     }
                 } while (false);
                 throw new NoSuitableMethodException("GetComponentsInChildren", argc);
@@ -245,7 +245,7 @@ namespace QuickJS.Unity
                             return inject;
                         }
                         var ret = self.GetComponentsInParent(arg0, arg1);
-                        return Values.js_push_classvalue_array(ctx, ret);
+                        return Values.PushArray(ctx, ret);
                     }
                     if (argc == 1)
                     {
@@ -265,7 +265,7 @@ namespace QuickJS.Unity
                             return inject;
                         }
                         var ret = self.GetComponentsInParent(arg0);
-                        return Values.js_push_classvalue_array(ctx, ret);
+                        return Values.PushArray(ctx, ret);
                     }
                 } while (false);
                 throw new NoSuitableMethodException("GetComponentsInParent", argc);
@@ -325,7 +325,7 @@ namespace QuickJS.Unity
                             return inject;
                         }
                         var ret = self.GetComponents(arg0);
-                        return Values.js_push_classvalue_array(ctx, ret);
+                        return Values.PushArray(ctx, ret);
                     }
                 } while (false);
                 throw new NoSuitableMethodException("GetComponents", argc);

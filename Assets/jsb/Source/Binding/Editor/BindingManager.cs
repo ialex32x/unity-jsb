@@ -847,10 +847,15 @@ namespace QuickJS.Binding
             return "jsb.";
         }
 
-        public string GetValueOperation(string operation, Type forType)
+        public string GetNewOperation(Type forType)
+        {
+            return "Values.NewBridgeClassObject";
+        }
+
+        public string GetRebindOperation(Type forType)
         {
             //TODO codegen: lookup js_* (push/get/rebind) for specified type (instead of the partial class 'Values')
-            return "Values." + operation;
+            return "Values.js_rebind_this";
         }
 
         public string GetCSNamespace(Type type)

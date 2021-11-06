@@ -147,7 +147,7 @@ namespace QuickJS.Binding
                 var pType = parameterInfo.ParameterType;
                 if (Values.IsContextualType(pType))
                 {
-                    args[paramIndex] = Values.js_get_context(ctx, pType);
+                    args[paramIndex] = Values.GetContext(ctx, pType);
                 }
                 else
                 {

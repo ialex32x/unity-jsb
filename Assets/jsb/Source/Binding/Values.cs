@@ -24,7 +24,7 @@ namespace QuickJS.Binding
         }
 
         /// <summary>
-        /// 全局查找目标类型
+        /// globally find a type with FullName
         /// </summary>
         public static Type FindType(string type_name)
         {
@@ -51,7 +51,40 @@ namespace QuickJS.Binding
                 || pType == typeof(ScriptContext) || pType == typeof(ScriptRuntime);
         }
 
-        public static object js_get_context(JSContext ctx, Type type)
+        /// <summary>
+        /// explicitly push as JSArray
+        /// </summary>
+        public static unsafe JSValue PushArray(JSContext ctx, object o)
+        {
+            if (o == null)
+            {
+                return JSApi.JS_UNDEFINED;
+            }
+            if (!(o is Array))
+            {
+                return JSApi.ThrowException(ctx, new InvalidCastException($"fail to cast type to Array"));
+            }
+            var arr = (Array)o;
+            var length = arr.Length;
+            var rval = JSApi.JS_NewArray(ctx);
+            try
+            {
+                for (var i = 0; i < length; i++)
+                {
+                    var obj = arr.GetValue(i);
+                    var elem = Values.js_push_object(ctx, obj);
+                    JSApi.JS_SetPropertyUint32(ctx, rval, (uint)i, elem);
+                }
+            }
+            catch (Exception exception)
+            {
+                JSApi.JS_FreeValue(ctx, rval);
+                return JSApi.ThrowException(ctx, exception);
+            }
+            return rval;
+        }
+
+        public static object GetContext(JSContext ctx, Type type)
         {
             if (type == typeof(JSContext))
             {
@@ -90,7 +123,7 @@ namespace QuickJS.Binding
             return types.FindChainedPrototypeOf(type, out type_id);
         }
 
-        protected static bool js_script_error(JSContext ctx)
+        protected static bool WriteScriptError(JSContext ctx)
         {
             var logger = ScriptEngine.GetLogger(ctx);
             if (logger != null)

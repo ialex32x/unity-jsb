@@ -78,13 +78,13 @@ namespace QuickJS.Binding
                         this.cg.cs.AppendLine("throw new Exception(ctx.GetExceptionString());");
                     }
                 }
-                this.cg.cs.AppendLine("var this_obj = js_push_classvalue_hotfix(ctx, {0});", self_name);
+                this.cg.cs.AppendLine("var this_obj = hotfix_push_classvalue(ctx, {0});", self_name);
                 this.cg.cs.AppendLine("var rval = fn.Invoke(ctx, this_obj, {0}, argv);", nargs);
                 this.cg.cs.AppendLine("JSApi.JS_FreeValue(ctx, this_obj);");
             }
             else
             {
-                this.cg.cs.AppendLine("var this_obj = js_push_classvalue_hotfix(ctx, {0});", self_name);
+                this.cg.cs.AppendLine("var this_obj = hotfix_push_classvalue(ctx, {0});", self_name);
                 this.cg.cs.AppendLine("var rval = fn.Invoke(ctx, this_obj);");
                 this.cg.cs.AppendLine("JSApi.JS_FreeValue(ctx, this_obj);");
             }
