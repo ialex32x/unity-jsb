@@ -132,5 +132,40 @@ namespace QuickJS.Binding
             }
             return false;
         }
+        
+        public static bool GetObjectFallthrough(JSContext ctx, JSValue val, out object o)
+        {
+            if (val.IsNullish())
+            {
+                o = null;
+                return true;
+            }
+
+            if (val.IsString())
+            {
+                string t;
+                var r = js_get_primitive(ctx, val, out t);
+                o = t;
+                return r;
+            }
+
+            if (val.IsBoolean())
+            {
+                bool t;
+                var r = js_get_primitive(ctx, val, out t);
+                o = t;
+                return r;
+            }
+
+            if (val.IsNumber())
+            {
+                double t;
+                var r = js_get_primitive(ctx, val, out t);
+                o = t;
+                return r;
+            }
+
+            return js_get_cached_object(ctx, val, out o);
+        }
     }
 }

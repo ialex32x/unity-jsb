@@ -1259,41 +1259,6 @@ namespace QuickJS.Binding
             return false;
         }
 
-        public static bool js_get_fallthrough(JSContext ctx, JSValue val, out object o)
-        {
-            if (val.IsNullish())
-            {
-                o = null;
-                return true;
-            }
-
-            if (val.IsString())
-            {
-                string t;
-                var r = js_get_primitive(ctx, val, out t);
-                o = t;
-                return r;
-            }
-
-            if (val.IsBoolean())
-            {
-                bool t;
-                var r = js_get_primitive(ctx, val, out t);
-                o = t;
-                return r;
-            }
-
-            if (val.IsNumber())
-            {
-                double t;
-                var r = js_get_primitive(ctx, val, out t);
-                o = t;
-                return r;
-            }
-
-            return js_get_cached_object(ctx, val, out o);
-        }
-
         public static bool js_get_classvalue_array<T>(JSContext ctx, JSValue val, out T[] o)
         where T : class
         {
