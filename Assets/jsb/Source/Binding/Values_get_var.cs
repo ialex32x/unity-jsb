@@ -9,20 +9,27 @@ namespace QuickJS.Binding
     // collect all built-in js-cs conversion helper methods
     public partial class Values
     {
-        // cast js value to csharp value
-        private static Dictionary<Type, MethodInfo> _JSCastMap = new Dictionary<Type, MethodInfo>();
-
-        // cast csharp value to js value
-        private static Dictionary<Type, MethodInfo> _CSCastMap = new Dictionary<Type, MethodInfo>();
-
-        // construct a js value with given csharp value
-        private static Dictionary<Type, MethodInfo> _JSNewMap = new Dictionary<Type, MethodInfo>();
+        // cast js value to csharp value 
+        // TypeCastGet ~ get/rebind: bool js_get_*(JSContext ctx, JSValue val, out T o);
+        public static Dictionary<Type, MethodInfo> _JSCastMap = new Dictionary<Type, MethodInfo>();
 
         // replace the js value reference with another csharp value (for struct)
-        private static Dictionary<Type, MethodInfo> _JSRebindMap = new Dictionary<Type, MethodInfo>();
+        public static Dictionary<Type, MethodInfo> _JSRebindMap = new Dictionary<Type, MethodInfo>();
 
-        //TODO in reflectbind mode, it should be finished by BindingManager.TryCollectMethods (without skipping this type 'Values').
-        //TODO in staticbind mode, it could be statically regstered by generated glue code.
+        // cast csharp value to js value
+        // TypeCastPush ~ push: JSValue js_push_primitive(JSContext ctx, T o)
+        public static Dictionary<Type, MethodInfo> _CSCastMap = new Dictionary<Type, MethodInfo>();
+
+        // construct a js value with given csharp value
+        // TypeCastNew ~ new: JSValue NewBridgeClassObject(JSContext ctx, JSValue new_target, T o, int type_id, bool disposable)
+        public static Dictionary<Type, MethodInfo> _JSNewMap = new Dictionary<Type, MethodInfo>();
+
+        public delegate bool TypeCastGet<T>(JSContext ctx, JSValue val, out T o);
+
+        public delegate JSValue TypeCastPush<T>(JSContext ctx, T o);
+
+        public delegate JSValue TypeCastNew<T>(JSContext ctx, JSValue new_target, T o, int type_id, bool disposable);
+
         private static void init_cast_map()
         {
             var methods = typeof(Values).GetMethods();
@@ -32,37 +39,57 @@ namespace QuickJS.Binding
             }
         }
 
+        public static bool register_type_caster<T>(TypeCastGet<T> fn)
+        {
+            return register_type_caster(fn.Method);
+        }
+
+        public static bool register_type_caster<T>(TypeCastPush<T> fn)
+        {
+            return register_type_caster(fn.Method);
+        }
+
+        public static bool register_type_caster<T>(TypeCastNew<T> fn)
+        {
+            return register_type_caster(fn.Method);
+        }
+
         public static bool register_type_caster(MethodInfo method)
         {
-            if (!method.IsGenericMethodDefinition)
+            if (!method.IsGenericMethodDefinition && method.IsStatic)
             {
                 var parameters = method.GetParameters();
 
+                if (parameters.Length < 2 || parameters[0].ParameterType != typeof(JSContext))
+                {
+                    return false;
+                }
+
                 if (parameters.Length == 5)
                 {
-                    if (method.Name == "NewBridgeClassObject")
+                    if (parameters[1].ParameterType == typeof(JSValue))
                     {
-                        var type = parameters[2].ParameterType;
-                        _JSNewMap[type] = method;
-                        return true;
+                        // JSValue NewBridgeClassObject(JSContext ctx, JSValue new_target, T o, int type_id, bool disposable)
+                        if (method.Name == "NewBridgeClassObject")
+                        {
+                            var type = parameters[2].ParameterType;
+                            _JSNewMap[type] = method;
+                            return true;
+                        }
                     }
                 }
-                else if (parameters.Length == 3 && parameters[2].ParameterType.IsByRef)
+                else if (parameters.Length == 3)
                 {
-                    if (method.Name == "js_rebind_this")
+                    // should only collect the method name with the expected signature, 
+                    // bool js_get_*(JSContext ctx, JSValue val, out T o);
+                    if (parameters[2].ParameterType.IsByRef && parameters[1].ParameterType == typeof(JSValue))
                     {
                         var type = parameters[2].ParameterType.GetElementType();
-                        _JSRebindMap[type] = method;
-                        return true;
-                    }
-                    else if (method.Name.StartsWith("js_get_"))
-                    {
-                        // only collect the method name with the expected signature
-                        // bool js_get_*(JSContext ctx, JSValue val, out T o);
-                        var type = parameters[2].ParameterType.GetElementType();
-
                         switch (method.Name)
                         {
+                            case "js_rebind_this":
+                                _JSRebindMap[type] = method;
+                                return true;
                             case "js_get_primitive":
                             case "js_get_structvalue":
                             case "js_get_classvalue":
@@ -73,6 +100,7 @@ namespace QuickJS.Binding
                 }
                 else if (parameters.Length == 2)
                 {
+                    // JSValue js_push_primitive(JSContext ctx, T o)
                     if (method.Name.StartsWith("js_push_"))
                     {
                         var type = parameters[1].ParameterType;

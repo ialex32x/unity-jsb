@@ -4,8 +4,26 @@ using System;
 namespace Example
 {
     [JSType]
+    public class Jankfest
+    {
+        
+    }
+
+    [JSType]
     public class ValueTest
     {
+        // test for external definition of type cast operation
+        public static QuickJS.Native.JSValue js_push_classvalue(QuickJS.Native.JSContext ctx, Jankfest o)
+        {
+            return QuickJS.Native.JSApi.JS_NewInt32(ctx, 1);
+        }
+
+        public static bool js_get_classvalue(QuickJS.Native.JSContext ctx, QuickJS.Native.JSValue val, out Jankfest o)
+        {
+            o = new Jankfest();
+            return true;
+        }
+
         public static void TakeStringWithCache([JSUseStringCache] string v)
         {
         }

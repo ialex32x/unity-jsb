@@ -233,6 +233,12 @@ namespace QuickJS.Binding
                 return;
             }
 
+            if (Values.register_type_caster(methodInfo))
+            {
+                bindingManager.Info("collected as type caster method: {0}.{1}", methodInfo.DeclaringType.FullName, methodInfo.Name);
+                return;
+            }
+
             // if (type.IsConstructedGenericType)
             // {
             //     var gTransform = bindingManager.GetTypeTransform(type.GetGenericTypeDefinition());

@@ -50,6 +50,17 @@ namespace QuickJS.Binding
             }
         }
 
+        public void GenRegistrationCodeForTypeCaster(MethodInfo methodInfo, int indexOfRegardingType)
+        {
+            var declaringType = methodInfo.DeclaringType;
+            if (declaringType != typeof(Values))
+            {
+                var ps = methodInfo.GetParameters();
+                var pattern = bindingManager.GetCSTypeFullName(ps[indexOfRegardingType].ParameterType, true);
+                cs.AppendLine("Values.register_type_caster<{0}>({1});", pattern, bindingManager.GetCSTypeFullName(methodInfo));
+            }
+        }
+
         public void GenerateBindingList(string @namespace, string className, IEnumerable<IGrouping<string, TypeBindingInfo>> modules, bool writeModules)
         {
             this.cs.enabled = (typeBindingFlags & TypeBindingFlags.BindingCode) != 0;
@@ -81,6 +92,26 @@ namespace QuickJS.Binding
                                     {
                                         using (var method = new PlainMethodCodeGen(this, $"private static void {Values.MethodNameOfStaticBinder}(ScriptRuntime runtime)"))
                                         {
+                                            foreach (var kv in Values._JSCastMap)
+                                            {
+                                                GenRegistrationCodeForTypeCaster(kv.Value, 2);
+                                            }
+
+                                            foreach (var kv in Values._JSRebindMap)
+                                            {
+                                                GenRegistrationCodeForTypeCaster(kv.Value, 2);
+                                            }
+
+                                            foreach (var kv in Values._CSCastMap)
+                                            {
+                                                GenRegistrationCodeForTypeCaster(kv.Value, 1);
+                                            }
+
+                                            foreach (var kv in Values._JSNewMap)
+                                            {
+                                                GenRegistrationCodeForTypeCaster(kv.Value, 2);
+                                            }
+
                                             foreach (var module in modules)
                                             {
                                                 if (module.Count() > 0)
