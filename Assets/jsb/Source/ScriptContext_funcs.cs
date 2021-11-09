@@ -314,7 +314,7 @@ namespace QuickJS
             }
 
             byte[] o;
-            if (!Values.js_get_primitive_array(ctx, argv[0], out o))
+            if (!Values.js_get_primitive(ctx, argv[0], out o))
             {
                 return JSApi.JS_ThrowInternalError(ctx, "byte[] expected");
             }

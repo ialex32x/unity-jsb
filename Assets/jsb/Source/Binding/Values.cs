@@ -133,6 +133,25 @@ namespace QuickJS.Binding
             return false;
         }
         
+        public static bool GetObjectFallthrough<T>(JSContext ctx, JSValue val, out T o)
+        where T: class
+        {
+            object o_t;
+            if (GetObjectFallthrough(ctx, val, out o_t))
+            {
+                o = o_t as T;
+                if (o_t != null && o == null)
+                {
+                    // throw new InvalidCastException(string.Format("{0} type mismatch {1}", o_t.GetType(), typeof(T)));
+                    return false;
+                }
+                return true;
+            }
+
+            o = default(T);
+            return false;
+        }
+
         public static bool GetObjectFallthrough(JSContext ctx, JSValue val, out object o)
         {
             if (val.IsNullish())

@@ -6,7 +6,12 @@ namespace Example
     [JSType]
     public class Jankfest
     {
-        
+        // the generated glue code for this function will use the given cast operation functions in ValueTest below
+        // it means you could extend your custom type cast operations out of jsb's assembly
+        public static Jankfest DoNothing(Jankfest jankfest)
+        {
+            return jankfest;
+        }
     }
 
     [JSType]

@@ -849,12 +849,21 @@ namespace QuickJS.Binding
 
         public string GetNewOperation(Type forType)
         {
+            MethodInfo methodInfo;
+            if (Values._JSNewMap.TryGetValue(forType, out methodInfo))
+            {
+                return GetCSTypeFullName(methodInfo);
+            }
             return "Values.NewBridgeClassObject";
         }
 
         public string GetRebindOperation(Type forType)
         {
-            //TODO codegen: lookup js_* (push/get/rebind) for specified type (instead of the partial class 'Values')
+            MethodInfo methodInfo;
+            if (Values._JSRebindMap.TryGetValue(forType, out methodInfo))
+            {
+                return GetCSTypeFullName(methodInfo);
+            }
             return "Values.js_rebind_this";
         }
 
@@ -871,6 +880,12 @@ namespace QuickJS.Binding
 
         private string GetScriptObjectPropertyGetter(Type type)
         {
+            MethodInfo methodInfo;
+            if (Values._JSCastMap.TryGetValue(type, out methodInfo))
+            {
+                return GetCSTypeFullName(methodInfo);
+            }
+
             if (type.IsByRef)
             {
                 return GetScriptObjectPropertyGetter(type.GetElementType());
@@ -883,7 +898,7 @@ namespace QuickJS.Binding
                     var elementType = type.GetElementType();
                     if (!elementType.IsArray)
                     {
-                        return GetScriptObjectPropertyGetter(elementType) + "_array";
+                        return GetScriptObjectPropertyGetter(elementType);
                     }
                 }
                 return "Values.js_get_classvalue";
@@ -945,6 +960,13 @@ namespace QuickJS.Binding
 
         public string GetScriptObjectPusher(Type type, out string op)
         {
+            MethodInfo methodInfo;
+            if (Values._CSCastMap.TryGetValue(type, out methodInfo))
+            {
+                op = "";
+                return GetCSTypeFullName(methodInfo);
+            }
+
             if (type.IsByRef)
             {
                 return GetScriptObjectPusher(type.GetElementType(), out op);

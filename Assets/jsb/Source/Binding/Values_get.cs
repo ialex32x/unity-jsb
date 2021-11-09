@@ -31,7 +31,7 @@ namespace QuickJS.Binding
             return ret;
         }
 
-        public static bool js_get_primitive_array(JSContext ctx, JSValue val, out IntPtr[] o)
+        public static bool js_get_primitive(JSContext ctx, JSValue val, out IntPtr[] o)
         {
             var isArray = JSApi.JS_IsArray(ctx, val);
             if (isArray == 1)
@@ -105,7 +105,7 @@ namespace QuickJS.Binding
             return r >= 0;
         }
 
-        public static bool js_get_primitive_array(JSContext ctx, JSValue val, out bool[] o)
+        public static bool js_get_primitive(JSContext ctx, JSValue val, out bool[] o)
         {
             var isArray = JSApi.JS_IsArray(ctx, val);
             if (isArray == 1)
@@ -167,7 +167,7 @@ namespace QuickJS.Binding
             return true;
         }
 
-        public static bool js_get_primitive_array(JSContext ctx, JSValue val, out sbyte[] o)
+        public static bool js_get_primitive(JSContext ctx, JSValue val, out sbyte[] o)
         {
             var isArray = JSApi.JS_IsArray(ctx, val);
             if (isArray == 1)
@@ -229,7 +229,7 @@ namespace QuickJS.Binding
             return true;
         }
 
-        public static bool js_get_primitive_array(JSContext ctx, JSValue val, out byte[] o)
+        public static bool js_get_primitive(JSContext ctx, JSValue val, out byte[] o)
         {
             var isArray = JSApi.JS_IsArray(ctx, val);
             if (isArray == 1)
@@ -322,7 +322,7 @@ namespace QuickJS.Binding
             return true;
         }
 
-        public static bool js_get_primitive_array(JSContext ctx, JSValue val, out char[] o)
+        public static bool js_get_primitive(JSContext ctx, JSValue val, out char[] o)
         {
             var isArray = JSApi.JS_IsArray(ctx, val);
             if (isArray == 1)
@@ -377,7 +377,7 @@ namespace QuickJS.Binding
             return true;
         }
 
-        public static bool js_get_primitive_array(JSContext ctx, JSValue val, out string[] o)
+        public static bool js_get_primitive(JSContext ctx, JSValue val, out string[] o)
         {
             var isArray = JSApi.JS_IsArray(ctx, val);
             if (isArray == 1)
@@ -439,7 +439,7 @@ namespace QuickJS.Binding
             return true;
         }
 
-        public static bool js_get_primitive_array(JSContext ctx, JSValue val, out short[] o)
+        public static bool js_get_primitive(JSContext ctx, JSValue val, out short[] o)
         {
             var isArray = JSApi.JS_IsArray(ctx, val);
             if (isArray == 1)
@@ -501,7 +501,7 @@ namespace QuickJS.Binding
             return true;
         }
 
-        public static bool js_get_primitive_array(JSContext ctx, JSValue val, out ushort[] o)
+        public static bool js_get_primitive(JSContext ctx, JSValue val, out ushort[] o)
         {
             var isArray = JSApi.JS_IsArray(ctx, val);
             if (isArray == 1)
@@ -563,7 +563,7 @@ namespace QuickJS.Binding
             return true;
         }
 
-        public static bool js_get_primitive_array(JSContext ctx, JSValue val, out int[] o)
+        public static bool js_get_primitive(JSContext ctx, JSValue val, out int[] o)
         {
             var isArray = JSApi.JS_IsArray(ctx, val);
             if (isArray == 1)
@@ -625,7 +625,7 @@ namespace QuickJS.Binding
             return true;
         }
 
-        public static bool js_get_primitive_array(JSContext ctx, JSValue val, out uint[] o)
+        public static bool js_get_primitive(JSContext ctx, JSValue val, out uint[] o)
         {
             var isArray = JSApi.JS_IsArray(ctx, val);
             if (isArray == 1)
@@ -687,7 +687,7 @@ namespace QuickJS.Binding
             return true;
         }
 
-        public static bool js_get_primitive_array(JSContext ctx, JSValue val, out long[] o)
+        public static bool js_get_primitive(JSContext ctx, JSValue val, out long[] o)
         {
             var isArray = JSApi.JS_IsArray(ctx, val);
             if (isArray == 1)
@@ -749,7 +749,7 @@ namespace QuickJS.Binding
             return true;
         }
 
-        public static bool js_get_primitive_array(JSContext ctx, JSValue val, out ulong[] o)
+        public static bool js_get_primitive(JSContext ctx, JSValue val, out ulong[] o)
         {
             var isArray = JSApi.JS_IsArray(ctx, val);
             if (isArray == 1)
@@ -825,7 +825,7 @@ namespace QuickJS.Binding
             return res == 0;
         }
 
-        public static bool js_get_primitive_array(JSContext ctx, JSValue val, out float[] o)
+        public static bool js_get_primitive(JSContext ctx, JSValue val, out float[] o)
         {
             var isArray = JSApi.JS_IsArray(ctx, val);
             if (isArray == 1)
@@ -887,7 +887,7 @@ namespace QuickJS.Binding
             return true;
         }
 
-        public static bool js_get_primitive_array(JSContext ctx, JSValue val, out double[] o)
+        public static bool js_get_primitive(JSContext ctx, JSValue val, out double[] o)
         {
             var isArray = JSApi.JS_IsArray(ctx, val);
             if (isArray == 1)
@@ -952,7 +952,7 @@ namespace QuickJS.Binding
             return ret;
         }
 
-        public static bool js_get_structvalue_array<T>(JSContext ctx, JSValue val, out T[] o)
+        public static bool js_get_structvalue<T>(JSContext ctx, JSValue val, out T[] o)
         where T : struct
         {
             var isArray = JSApi.JS_IsArray(ctx, val);
@@ -994,7 +994,7 @@ namespace QuickJS.Binding
             return js_get_classvalue<T[]>(ctx, val, out o);
         }
 
-        public static bool js_get_structvalue_array<T>(JSContext ctx, JSValue val, out T?[] o)
+        public static bool js_get_structvalue<T>(JSContext ctx, JSValue val, out T?[] o)
         where T : struct
         {
             var isArray = JSApi.JS_IsArray(ctx, val);
@@ -1088,7 +1088,9 @@ namespace QuickJS.Binding
             return js_get_delegate_unsafe(ctx, val, out o);
         }
 
-        // not value type (except string/array)
+        /// <summary>
+        /// be equivalent to js_get_cached_object, but will cast as expecting type T.
+        /// </summary>
         public static bool js_get_classvalue<T>(JSContext ctx, JSValue val, out T o)
         where T : class
         {
@@ -1259,7 +1261,10 @@ namespace QuickJS.Binding
             return false;
         }
 
-        public static bool js_get_classvalue_array<T>(JSContext ctx, JSValue val, out T[] o)
+        /// <summary>
+        /// try to translate a JSArray to a C# Array, otherwise fallback to break down a wrapped object
+        /// </summary>
+        public static bool js_get_classvalue<T>(JSContext ctx, JSValue val, out T[] o)
         where T : class
         {
             var isArray = JSApi.JS_IsArray(ctx, val);
@@ -1300,6 +1305,7 @@ namespace QuickJS.Binding
                 return false;
             }
 
+            // fallback to get_object
             return js_get_classvalue<T[]>(ctx, val, out o);
         }
 
@@ -1320,7 +1326,7 @@ namespace QuickJS.Binding
             return ret;
         }
 
-        public static bool js_get_enumvalue_array<T>(JSContext ctx, JSValue val, out T[] o)
+        public static bool js_get_enumvalue<T>(JSContext ctx, JSValue val, out T[] o)
         where T : Enum
         {
             var isArray = JSApi.JS_IsArray(ctx, val);

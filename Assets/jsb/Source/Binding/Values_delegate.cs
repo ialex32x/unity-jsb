@@ -45,7 +45,7 @@ namespace QuickJS.Binding
             return js_push_object(ctx, (object)o);
         }
 
-        public static bool js_get_delegate_array<T>(JSContext ctx, JSValue val, out T[] o)
+        public static bool js_get_delegate<T>(JSContext ctx, JSValue val, out T[] o)
         where T : class
         {
             if (JSApi.JS_IsArray(ctx, val) == 1)

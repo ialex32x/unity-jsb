@@ -182,6 +182,44 @@ namespace QuickJS.Binding
             return GetObjectFallthrough(ctx, val, out o);
         }
 
+        public static bool js_get_var(JSContext ctx, JSValue val, out object[] o)
+        {
+            if (JSApi.JS_IsArray(ctx, val) == 1)
+            {
+                var lengthVal = JSApi.JS_GetProperty(ctx, val, JSApi.JS_ATOM_length);
+                if (JSApi.JS_IsException(lengthVal))
+                {
+                    o = null;
+                    return WriteScriptError(ctx);
+                }
+
+                int length;
+                JSApi.JS_ToInt32(ctx, out length, lengthVal);
+                JSApi.JS_FreeValue(ctx, lengthVal);
+                var array = new object[length];
+                for (var i = 0U; i < length; i++)
+                {
+                    var eVal = JSApi.JS_GetPropertyUint32(ctx, val, i);
+                    object e;
+                    if (js_get_var(ctx, eVal, out e))
+                    {
+                        array.SetValue(e, i);
+                        JSApi.JS_FreeValue(ctx, eVal);
+                    }
+                    else
+                    {
+                        o = null;
+                        JSApi.JS_FreeValue(ctx, eVal);
+                        return false;
+                    }
+                }
+                o = array;
+                return true;
+            }
+
+            return GetObjectFallthrough(ctx, val, out o);
+        }
+
         // type: expected type of object o
         public static bool js_get_var(JSContext ctx, JSValue val, Type type, out object o)
         {
