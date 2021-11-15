@@ -1,0 +1,21 @@
+name: split_upm
+
+on: 
+  push:
+    paths: 
+      - Packages/cc.starlessnight.unity-jsb/package.json
+      - .github/workflows/upm.yml
+
+jobs:
+  split-upm:
+      name: split upm branch
+      runs-on: ubuntu-latest
+      steps:
+        - uses: actions/checkout@v2
+          with: 
+            fetch-depth: 0
+        - name: split upm branch
+          run: |
+            git subtree split -P "Packages/cc.starlessnight.unity-jsb" -b upm
+            git push -u origin upm
+            
