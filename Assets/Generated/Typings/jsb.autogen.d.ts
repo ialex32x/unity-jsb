@@ -1,5 +1,635 @@
 declare module "UnityEngine" {
     import * as jsb from "jsb";
+    import { ValueType, Array, Object as Object1, Enum } from "System";
+    /** Script interface for ParticleSystem. Unity's powerful and versatile particle system implementation.
+     */
+    class ParticleSystem extends Component {
+        constructor()
+        SetParticles(particles: Array<any>, size: number, offset: number): void
+        SetParticles(particles: any, size: number, offset: number): void
+        SetParticles(particles: Array<any>, size: number): void
+        SetParticles(particles: any, size: number): void
+        SetParticles(particles: Array<any>): void
+        SetParticles(particles: any): void
+        GetParticles(particles: Array<any>, size: number, offset: number): number
+        GetParticles(particles: any, size: number, offset: number): number
+        GetParticles(particles: Array<any>, size: number): number
+        GetParticles(particles: any, size: number): number
+        GetParticles(particles: Array<any>): number
+        GetParticles(particles: any): number
+        SetCustomParticleData(customData: any, streamIndex: any): void
+        GetCustomParticleData(customData: any, streamIndex: any): number
+        GetPlaybackState(): any
+        SetPlaybackState(playbackState: any): void
+        GetTrails(): any
+        SetTrails(trailData: any): void
+        /** Fast-forwards the Particle System by simulating particles over the given period of time, then pauses it.
+         * @param t Time period in seconds to advance the ParticleSystem simulation by. If restart is true, the ParticleSystem will be reset to 0 time, and then advanced by this value. If restart is false, the ParticleSystem simulation will be advanced in time from its current state by this value.
+         * @param withChildren Fast-forward all child Particle Systems as well.
+         * @param restart Restart and start from the beginning.
+         * @param fixedTimeStep Only update the system at fixed intervals, based on the value in "Fixed Time" in the Time options.
+         */
+        Simulate(t: number, withChildren: boolean, restart: boolean, fixedTimeStep: boolean): void
+        /** Fast-forwards the Particle System by simulating particles over the given period of time, then pauses it.
+         * @param t Time period in seconds to advance the ParticleSystem simulation by. If restart is true, the ParticleSystem will be reset to 0 time, and then advanced by this value. If restart is false, the ParticleSystem simulation will be advanced in time from its current state by this value.
+         * @param withChildren Fast-forward all child Particle Systems as well.
+         * @param restart Restart and start from the beginning.
+         * @param fixedTimeStep Only update the system at fixed intervals, based on the value in "Fixed Time" in the Time options.
+         */
+        Simulate(t: number, withChildren: boolean, restart: boolean): void
+        /** Fast-forwards the Particle System by simulating particles over the given period of time, then pauses it.
+         * @param t Time period in seconds to advance the ParticleSystem simulation by. If restart is true, the ParticleSystem will be reset to 0 time, and then advanced by this value. If restart is false, the ParticleSystem simulation will be advanced in time from its current state by this value.
+         * @param withChildren Fast-forward all child Particle Systems as well.
+         * @param restart Restart and start from the beginning.
+         * @param fixedTimeStep Only update the system at fixed intervals, based on the value in "Fixed Time" in the Time options.
+         */
+        Simulate(t: number, withChildren: boolean): void
+        /** Fast-forwards the Particle System by simulating particles over the given period of time, then pauses it.
+         * @param t Time period in seconds to advance the ParticleSystem simulation by. If restart is true, the ParticleSystem will be reset to 0 time, and then advanced by this value. If restart is false, the ParticleSystem simulation will be advanced in time from its current state by this value.
+         * @param withChildren Fast-forward all child Particle Systems as well.
+         * @param restart Restart and start from the beginning.
+         * @param fixedTimeStep Only update the system at fixed intervals, based on the value in "Fixed Time" in the Time options.
+         */
+        Simulate(t: number): void
+        /** Starts the Particle System.
+         * @param withChildren Play all child Particle Systems as well.
+         */
+        Play(withChildren: boolean): void
+        Play(): void
+        /** Pauses the system so no new particles are emitted and the existing particles are not updated.
+         * @param withChildren Pause all child Particle Systems as well.
+         */
+        Pause(withChildren: boolean): void
+        Pause(): void
+        /** Stops playing the Particle System using the supplied stop behaviour.
+         * @param withChildren Stop all child Particle Systems as well.
+         * @param stopBehavior Stop emitting or stop emitting and clear the system.
+         */
+        Stop(withChildren: boolean, stopBehavior: any): void
+        /** Stops playing the Particle System using the supplied stop behaviour.
+         * @param withChildren Stop all child Particle Systems as well.
+         * @param stopBehavior Stop emitting or stop emitting and clear the system.
+         */
+        Stop(withChildren: boolean): void
+        Stop(): void
+        /** Remove all particles in the Particle System.
+         * @param withChildren Clear all child Particle Systems as well.
+         */
+        Clear(withChildren: boolean): void
+        Clear(): void
+        /** Does the Particle System contain any live particles, or will it produce more?
+         * @param withChildren Check all child Particle Systems as well.
+         * @returns True if the Particle System contains live particles or is still creating new particles. False if the Particle System has stopped emitting particles and all particles are dead. 
+         */
+        IsAlive(withChildren: boolean): boolean
+        IsAlive(): boolean
+        Emit(emitParams: any, count: number): void
+        /** Emit count particles immediately.
+         * @param count Number of particles to emit.
+         */
+        Emit(count: number): void
+        TriggerSubEmitter(subEmitterIndex: number, particle: jsb.Ref<any>): void
+        TriggerSubEmitter(subEmitterIndex: number, particles: any): void
+        /** Triggers the specified sub emitter on all particles of the Particle System.
+         * @param subEmitterIndex Index of the sub emitter to trigger.
+         */
+        TriggerSubEmitter(subEmitterIndex: number): void
+        AllocateAxisOfRotationAttribute(): void
+        AllocateMeshIndexAttribute(): void
+        /** Ensures that the ParticleSystemJobs.ParticleSystemJobData.customData1|customData1 and ParticleSystemJobs.ParticleSystemJobData.customData1|customData2 particle attribute arrays are allocated.
+         * @param stream The custom data stream to allocate.
+         */
+        AllocateCustomDataAttribute(stream: any): void
+        /** Safe array size for use with ParticleSystem.GetCollisionEvents.
+         */
+        GetSafeCollisionEventSize(): number
+        GetCollisionEvents(go: GameObject, collisionEvents: any): number
+        /** Safe array size for use with ParticleSystem.GetTriggerParticles.
+         * @param ps Particle system.
+         * @param type Type of trigger to return size for.
+         * @returns Number of particles with this trigger event type. 
+         */
+        GetSafeTriggerParticlesSize(type: any): number
+        GetTriggerParticles(type: any, particles: any, colliderData: jsb.Out<any>): number
+        GetTriggerParticles(type: any, particles: any): number
+        SetTriggerParticles(type: any, particles: any, offset: number, count: number): void
+        SetTriggerParticles(type: any, particles: any): void
+        static ResetPreMappedBufferMemory(): void
+        /** Limits the amount of graphics memory Unity reserves for efficient rendering of Particle Systems.
+         * @param vertexBuffersCount The maximum number of cached vertex buffers.
+         * @param indexBuffersCount The maximum number of cached index buffers.
+         */
+        static SetMaximumPreMappedBufferCounts(vertexBuffersCount: number, indexBuffersCount: number): void
+        /** Determines whether the Particle System is playing.
+         */
+        readonly isPlaying: boolean
+        /** Determines whether the Particle System is emitting particles. A Particle System may stop emitting when its emission module has finished, it has been paused or if the system has been stopped using ParticleSystem.Stop|Stop with the ParticleSystemStopBehavior.StopEmitting|StopEmitting flag. Resume emitting by calling ParticleSystem.Play|Play.
+         */
+        readonly isEmitting: boolean
+        /** Determines whether the Particle System is in the stopped state.
+         */
+        readonly isStopped: boolean
+        /** Determines whether the Particle System is paused.
+         */
+        readonly isPaused: boolean
+        /** The current number of particles (Read Only).
+         */
+        readonly particleCount: number
+        /** Playback position in seconds.
+         */
+        time: number
+        /** Override the random seed used for the Particle System emission.
+         */
+        randomSeed: number
+        /** Controls whether the Particle System uses an automatically-generated random number to seed the random number generator.
+         */
+        useAutoRandomSeed: boolean
+        /** Does this system support Procedural Simulation?
+         */
+        readonly proceduralSimulationSupported: boolean
+        /** Access the main Particle System settings.
+         */
+        readonly main: ParticleSystem.MainModule
+        /** Script interface for the EmissionModule of a Particle System.
+         */
+        readonly emission: any
+        /** Script interface for the ShapeModule of a Particle System. 
+         */
+        readonly shape: any
+        /** Script interface for the VelocityOverLifetimeModule of a Particle System.
+         */
+        readonly velocityOverLifetime: any
+        /** Script interface for the LimitVelocityOverLifetimeModule of a Particle System. .
+         */
+        readonly limitVelocityOverLifetime: any
+        /** Script interface for the InheritVelocityModule of a Particle System.
+         */
+        readonly inheritVelocity: any
+        /** Script interface for the Particle System Lifetime By Emitter Speed module.
+         */
+        readonly lifetimeByEmitterSpeed: any
+        /** Script interface for the ForceOverLifetimeModule of a Particle System.
+         */
+        readonly forceOverLifetime: any
+        /** Script interface for the ColorOverLifetimeModule of a Particle System.
+         */
+        readonly colorOverLifetime: any
+        /** Script interface for the ColorByLifetimeModule of a Particle System.
+         */
+        readonly colorBySpeed: any
+        /** Script interface for the SizeOverLifetimeModule of a Particle System. 
+         */
+        readonly sizeOverLifetime: any
+        /** Script interface for the SizeBySpeedModule of a Particle System.
+         */
+        readonly sizeBySpeed: any
+        /** Script interface for the RotationOverLifetimeModule of a Particle System.
+         */
+        readonly rotationOverLifetime: any
+        /** Script interface for the RotationBySpeedModule of a Particle System.
+         */
+        readonly rotationBySpeed: any
+        /** Script interface for the ExternalForcesModule of a Particle System.
+         */
+        readonly externalForces: any
+        /** Script interface for the NoiseModule of a Particle System.
+         */
+        readonly noise: any
+        /** Script interface for the CollisionModule of a Particle System.
+         */
+        readonly collision: any
+        /** Script interface for the TriggerModule of a Particle System.
+         */
+        readonly trigger: any
+        /** Script interface for the SubEmittersModule of a Particle System.
+         */
+        readonly subEmitters: any
+        /** Script interface for the TextureSheetAnimationModule of a Particle System.
+         */
+        readonly textureSheetAnimation: any
+        /** Script interface for the LightsModule of a Particle System.
+         */
+        readonly lights: any
+        /** Script interface for the TrailsModule of a Particle System.
+         */
+        readonly trails: any
+        /** Script interface for the CustomDataModule of a Particle System.
+         */
+        readonly customData: any
+    }
+}
+declare module "UnityEngine" {
+    import * as jsb from "jsb";
+    import { Enum, Array, Object as Object1 } from "System";
+    /** Use this class to render particles on to the screen.
+     */
+    class ParticleSystemRenderer extends Renderer {
+        constructor()
+        /** Get the array of Meshes to be used as particles.
+         * @param meshes This array is populated with the list of Meshes being used for particle rendering.
+         * @returns The number of Meshes actually written to the destination array. 
+         */
+        GetMeshes(meshes: Array<any>): number
+        /** Set an array of Meshes to use as particles when the ParticleSystemRenderer.renderMode is set to ParticleSystemRenderMode.Mesh.
+         * @param meshes Array of Meshes to use.
+         * @param size Number of elements from the Mesh array to apply.
+         */
+        SetMeshes(meshes: Array<any>, size: number): void
+        /** Set an array of Meshes to use as particles when the ParticleSystemRenderer.renderMode is set to ParticleSystemRenderMode.Mesh.
+         * @param meshes Array of Meshes to use.
+         * @param size Number of elements from the Mesh array to apply.
+         */
+        SetMeshes(meshes: Array<any>): void
+        /** Creates a snapshot of ParticleSystemRenderer and stores it in mesh.
+         * @param mesh A static Mesh to receive the snapshot of the particles.
+         * @param camera The Camera used to determine which way camera-space particles face.
+         * @param useTransform Specifies whether to include the rotation and scale of the Transform in the baked Mesh.
+         */
+        BakeMesh(mesh: any, camera: Camera, useTransform: boolean): void
+        /** Creates a snapshot of ParticleSystemRenderer and stores it in mesh.
+         * @param mesh A static Mesh to receive the snapshot of the particles.
+         * @param camera The Camera used to determine which way camera-space particles face.
+         * @param useTransform Specifies whether to include the rotation and scale of the Transform in the baked Mesh.
+         */
+        BakeMesh(mesh: any, useTransform: boolean): void
+        /** Creates a snapshot of ParticleSystem Trails and stores them in mesh.
+         * @param mesh A static Mesh to receive the snapshot of the particle trails.
+         * @param camera The Camera used to determine which way camera-space trails face.
+         * @param useTransform Specifies whether to include the rotation and scale of the Transform in the baked Mesh.
+         */
+        BakeTrailsMesh(mesh: any, camera: Camera, useTransform: boolean): void
+        /** Creates a snapshot of ParticleSystem Trails and stores them in mesh.
+         * @param mesh A static Mesh to receive the snapshot of the particle trails.
+         * @param camera The Camera used to determine which way camera-space trails face.
+         * @param useTransform Specifies whether to include the rotation and scale of the Transform in the baked Mesh.
+         */
+        BakeTrailsMesh(mesh: any, useTransform: boolean): void
+        SetActiveVertexStreams(streams: any): void
+        GetActiveVertexStreams(streams: any): void
+        /** Control the direction that particles face.
+         */
+        alignment: any
+        /** Specifies how the system draws particles.
+         */
+        renderMode: any
+        /** Specifies how to sort particles within a system.
+         */
+        sortMode: any
+        /** How much are the particles stretched in their direction of motion, defined as the length of the particle compared to its width.
+         */
+        lengthScale: number
+        /** Specifies how much particles stretch depending on their velocity.
+         */
+        velocityScale: number
+        /** How much do the particles stretch depending on the Camera's speed.
+         */
+        cameraVelocityScale: number
+        /** Specifies how much a billboard particle orients its normals towards the Camera.
+         */
+        normalDirection: number
+        /** Apply a shadow bias to prevent self-shadowing artifacts. The specified value is the proportion of the particle size.
+         */
+        shadowBias: number
+        /** Biases Particle System sorting amongst other transparencies.
+         */
+        sortingFudge: number
+        /** Clamp the minimum particle size.
+         */
+        minParticleSize: number
+        /** Clamp the maximum particle size.
+         */
+        maxParticleSize: number
+        /** Modify the pivot point used for rotating particles.
+         */
+        pivot: Vector3
+        /** Flip a percentage of the particles, along each axis.
+         */
+        flip: Vector3
+        /** Specifies how the Particle System Renderer interacts with SpriteMask.
+         */
+        maskInteraction: any
+        /** Set the Material that the TrailModule uses to attach trails to particles.
+         */
+        trailMaterial: Material
+        /** Enables GPU Instancing on platforms that support it.
+         */
+        enableGPUInstancing: boolean
+        /** Allow billboard particles to roll around their z-axis.
+         */
+        allowRoll: boolean
+        /** Enables freeform stretching behavior.
+         */
+        freeformStretching: boolean
+        /** Rotate the particles based on the direction they are stretched in. This is added on top of other particle rotation.
+         */
+        rotateWithStretchDirection: boolean
+        /** The Mesh that the particle uses instead of a billboarded Texture.
+         */
+        mesh: any
+        /** The number of Meshes the system uses for particle rendering.
+         */
+        readonly meshCount: number
+        /** The number of currently active custom vertex streams.
+         */
+        readonly activeVertexStreamsCount: number
+    }
+}
+declare module "UnityEngine" {
+    import { ValueType, Enum } from "System";
+    namespace ParticleSystem {
+        class MainModule extends ValueType {
+            constructor()
+            duration: number
+            loop: boolean
+            prewarm: boolean
+            startDelay: any
+            startDelayMultiplier: number
+            startLifetime: any
+            startLifetimeMultiplier: number
+            startSpeed: any
+            startSpeedMultiplier: number
+            startSize3D: boolean
+            startSize: any
+            startSizeMultiplier: number
+            startSizeX: any
+            startSizeXMultiplier: number
+            startSizeY: any
+            startSizeYMultiplier: number
+            startSizeZ: any
+            startSizeZMultiplier: number
+            startRotation3D: boolean
+            startRotation: any
+            startRotationMultiplier: number
+            startRotationX: any
+            startRotationXMultiplier: number
+            startRotationY: any
+            startRotationYMultiplier: number
+            startRotationZ: any
+            startRotationZMultiplier: number
+            flipRotation: number
+            startColor: any
+            gravityModifier: any
+            gravityModifierMultiplier: number
+            simulationSpace: ParticleSystemSimulationSpace
+            customSimulationSpace: Transform
+            simulationSpeed: number
+            useUnscaledTime: boolean
+            scalingMode: any
+            playOnAwake: boolean
+            maxParticles: number
+            emitterVelocityMode: any
+            stopAction: any
+            ringBufferMode: any
+            ringBufferLoopRange: Vector2
+            cullingMode: any
+        }
+    }
+}
+declare module "UnityEngine" {
+    import { Enum } from "System";
+    /** The space to simulate particles in.
+     */
+    enum ParticleSystemSimulationSpace {
+        /** Simulate particles in local space.
+         */
+        Local = 0,
+        /** Simulate particles in world space.
+         */
+        World = 1,
+        /** Simulate particles relative to a custom transform component, defined by ParticleSystem.MainModule.customSimulationSpace.
+         */
+        Custom = 2,
+    }
+}
+declare module "System.Net" {
+    import * as jsb from "jsb";
+    import { Object, Array } from "System";
+    class IPHostEntry extends Object {
+        constructor()
+        HostName: string
+        Aliases: Array<string>
+        AddressList: Array<any>
+    }
+}
+declare module "System" {
+    import * as jsb from "jsb";
+    class DateTime extends ValueType {
+        constructor(year: number, month: number, day: number, hour: number, minute: number, second: number, millisecond: number, calendar: any, kind: any)
+        constructor(year: number, month: number, day: number, hour: number, minute: number, second: number, millisecond: number, kind: any)
+        constructor(year: number, month: number, day: number, hour: number, minute: number, second: number, millisecond: number, calendar: any)
+        constructor(year: number, month: number, day: number, hour: number, minute: number, second: number, kind: any)
+        constructor(year: number, month: number, day: number, hour: number, minute: number, second: number, calendar: any)
+        constructor(year: number, month: number, day: number, hour: number, minute: number, second: number, millisecond: number)
+        constructor(year: number, month: number, day: number, hour: number, minute: number, second: number)
+        constructor(year: number, month: number, day: number, calendar: any)
+        constructor(year: number, month: number, day: number)
+        constructor(ticks: number, kind: any)
+        constructor(ticks: number)
+        Add(value: any): DateTime
+        AddDays(value: number): DateTime
+        AddHours(value: number): DateTime
+        AddMilliseconds(value: number): DateTime
+        AddMinutes(value: number): DateTime
+        AddMonths(months: number): DateTime
+        AddSeconds(value: number): DateTime
+        AddTicks(value: number): DateTime
+        AddYears(value: number): DateTime
+        CompareTo(value: Object): number
+        CompareTo(value: DateTime): number
+        Equals(value: Object): boolean
+        Equals(value: DateTime): boolean
+        IsDaylightSavingTime(): boolean
+        ToBinary(): number
+        GetHashCode(): number
+        Subtract(value: DateTime): any
+        Subtract(value: any): DateTime
+        ToOADate(): number
+        ToFileTime(): number
+        ToFileTimeUtc(): number
+        ToLocalTime(): DateTime
+        ToLongDateString(): string
+        ToLongTimeString(): string
+        ToShortDateString(): string
+        ToShortTimeString(): string
+        toString(format: string, provider: any): string
+        toString(format: string): string
+        toString(provider: any): string
+        toString(): string
+        ToUniversalTime(): DateTime
+        GetDateTimeFormats(format: string, provider: any): Array<string>
+        GetDateTimeFormats(provider: any): Array<string>
+        GetDateTimeFormats(format: string): Array<string>
+        GetDateTimeFormats(): Array<string>
+        GetTypeCode(): any
+        static Compare(t1: DateTime, t2: DateTime): number
+        static DaysInMonth(year: number, month: number): number
+        static Equals(t1: DateTime, t2: DateTime): boolean
+        static FromBinary(dateData: number): DateTime
+        static FromFileTime(fileTime: number): DateTime
+        static FromFileTimeUtc(fileTime: number): DateTime
+        static FromOADate(d: number): DateTime
+        static SpecifyKind(value: DateTime, kind: any): DateTime
+        static IsLeapYear(year: number): boolean
+        static Parse(s: string, provider: any, styles: any): DateTime
+        static Parse(s: string, provider: any): DateTime
+        static Parse(s: string): DateTime
+        static ParseExact(s: string, format: string, provider: any, style: any): DateTime
+        static ParseExact(s: string, formats: Array<string>, provider: any, style: any): DateTime
+        static ParseExact(s: string, format: string, provider: any): DateTime
+        static TryParse(s: string, provider: any, styles: any, result: jsb.Out<DateTime>): boolean
+        static TryParse(s: string, result: jsb.Out<DateTime>): boolean
+        static TryParseExact(s: string, format: string, provider: any, style: any, result: jsb.Out<DateTime>): boolean
+        static TryParseExact(s: string, formats: Array<string>, provider: any, style: any, result: jsb.Out<DateTime>): boolean
+        static op_Addition(d: DateTime, t: any): DateTime
+        static op_Subtraction(d: DateTime, t: any): DateTime
+        static op_Subtraction(d1: DateTime, d2: DateTime): any
+        static op_Equality(d1: DateTime, d2: DateTime): boolean
+        static op_Inequality(d1: DateTime, d2: DateTime): boolean
+        static op_LessThan(t1: DateTime, t2: DateTime): boolean
+        static op_LessThanOrEqual(t1: DateTime, t2: DateTime): boolean
+        static op_GreaterThan(t1: DateTime, t2: DateTime): boolean
+        static op_GreaterThanOrEqual(t1: DateTime, t2: DateTime): boolean
+        readonly Date: DateTime
+        readonly Day: number
+        readonly DayOfWeek: any
+        readonly DayOfYear: number
+        readonly Hour: number
+        readonly Kind: any
+        readonly Millisecond: number
+        readonly Minute: number
+        readonly Month: number
+        static readonly Now: DateTime
+        static readonly UtcNow: DateTime
+        readonly Second: number
+        readonly Ticks: number
+        readonly TimeOfDay: any
+        static readonly Today: DateTime
+        readonly Year: number
+        static readonly MinValue: DateTime
+        static readonly MaxValue: DateTime
+    }
+}
+declare module "System.IO" {
+    import { Object, Enum } from "System";
+    class FileInfo extends Object {
+        constructor(fileName: string)
+        OpenText(): any
+        CreateText(): any
+        AppendText(): any
+        CopyTo(destFileName: string, overwrite: boolean): FileInfo
+        CopyTo(destFileName: string): FileInfo
+        Create(): any
+        Delete(): void
+        Decrypt(): void
+        Encrypt(): void
+        Open(mode: any, access: any, share: any): any
+        Open(mode: any, access: any): any
+        Open(mode: any): any
+        OpenRead(): any
+        OpenWrite(): any
+        MoveTo(destFileName: string): void
+        Replace(destinationFileName: string, destinationBackupFileName: string, ignoreMetadataErrors: boolean): FileInfo
+        Replace(destinationFileName: string, destinationBackupFileName: string): FileInfo
+        toString(): string
+        readonly Name: string
+        readonly Length: number
+        readonly DirectoryName: string
+        readonly Directory: any
+        IsReadOnly: boolean
+        readonly Exists: boolean
+    }
+}
+declare module "System.IO" {
+    import * as jsb from "jsb";
+    import { Object, Enum, DateTime, Array } from "System";
+    import { IEnumerable } from "System.Collections.Generic";
+    abstract class File extends Object {
+        static AppendAllText(path: string, contents: string, encoding: any): void
+        static AppendAllText(path: string, contents: string): void
+        static AppendText(path: string): any
+        static Copy(sourceFileName: string, destFileName: string, overwrite: boolean): void
+        static Copy(sourceFileName: string, destFileName: string): void
+        static Create(path: string, bufferSize: number, options: any): any
+        static Create(path: string, bufferSize: number): any
+        static Create(path: string): any
+        static CreateText(path: string): any
+        static Delete(path: string): void
+        static Exists(path: string): boolean
+        static GetAttributes(path: string): any
+        static GetCreationTime(path: string): DateTime
+        static GetCreationTimeUtc(path: string): DateTime
+        static GetLastAccessTime(path: string): DateTime
+        static GetLastAccessTimeUtc(path: string): DateTime
+        static GetLastWriteTime(path: string): DateTime
+        static GetLastWriteTimeUtc(path: string): DateTime
+        static Move(sourceFileName: string, destFileName: string): void
+        static Open(path: string, mode: any, access: any): any
+        static Open(path: string, mode: any): any
+        static OpenRead(path: string): any
+        static OpenText(path: string): any
+        static OpenWrite(path: string): any
+        static Replace(sourceFileName: string, destinationFileName: string, destinationBackupFileName: string): void
+        static SetAttributes(path: string, fileAttributes: any): void
+        static SetCreationTime(path: string, creationTime: DateTime): void
+        static SetCreationTimeUtc(path: string, creationTimeUtc: DateTime): void
+        static SetLastAccessTime(path: string, lastAccessTime: DateTime): void
+        static SetLastAccessTimeUtc(path: string, lastAccessTimeUtc: DateTime): void
+        static SetLastWriteTime(path: string, lastWriteTime: DateTime): void
+        static SetLastWriteTimeUtc(path: string, lastWriteTimeUtc: DateTime): void
+        static ReadAllBytes(path: string): Array<jsb.byte>
+        static ReadAllLines(path: string, encoding: any): Array<string>
+        static ReadAllLines(path: string): Array<string>
+        static ReadAllText(path: string, encoding: any): string
+        static ReadAllText(path: string): string
+        static WriteAllBytes(path: string, bytes: Array<jsb.byte>): void
+        static WriteAllLines(path: string, contents: Array<string>, encoding: any): void
+        static WriteAllLines(path: string, contents: IEnumerable<string>, encoding: any): void
+        static WriteAllLines(path: string, contents: Array<string>): void
+        static WriteAllLines(path: string, contents: IEnumerable<string>): void
+        static WriteAllText(path: string, contents: string, encoding: any): void
+        static WriteAllText(path: string, contents: string): void
+        static Encrypt(path: string): void
+        static Decrypt(path: string): void
+        static ReadLines(path: string, encoding: any): IEnumerable<string>
+        static ReadLines(path: string): IEnumerable<string>
+        static AppendAllLines(path: string, contents: IEnumerable<string>, encoding: any): void
+        static AppendAllLines(path: string, contents: IEnumerable<string>): void
+    }
+}
+declare module "global" {
+    import { Object } from "System";
+    class TWrapper_Int32 extends Object implements TWrapper<number> {
+        constructor(obj: number)
+        GetValue(): number
+        SetValue(obj: number): void
+        static GetIntWrapper(): TWrapper<number>
+    }
+}
+declare module "global" {
+    import { Object } from "System";
+    class TWrapper<T> extends Object {
+    }
+}
+declare module "global" {
+    import { Object } from "System";
+    import { Vector3 } from "UnityEngine";
+    class TWrapper_Vector3 extends Object implements TWrapper<Vector3> {
+        constructor(obj: Vector3)
+        GetValue(): Vector3
+        SetValue(obj: Vector3): void
+        static GetIntWrapper(): TWrapper<number>
+    }
+}
+declare module "Example" {
+    import { Object } from "System";
+    class DisposableObject extends Object {
+        constructor()
+        Dispose(): void
+        static CreateDisposableObject(): DisposableObject
+    }
+}
+declare module "UnityEngine" {
+    import * as jsb from "jsb";
     import { ValueType, Array } from "System";
     /** Specifies Layers to use in a Physics.Raycast.
      */
@@ -7231,6 +7861,45 @@ declare module "QuickJS.Unity" {
         Release(): void
         protected constructor()
         dataFormat: number
+    }
+}
+declare module "QuickJS.Unity" {
+    import * as jsb from "jsb";
+    import { Object, Array, ValueType } from "System";
+    import { Texture } from "UnityEngine";
+    import { MonoScript } from "UnityEditor";
+    @jsb.RequiredDefines("UNITY_EDITOR")
+    abstract class UnityHelper extends Object {
+        static GetIcon(name: string): Texture
+        static GenerateBindingsAndTypeDefinition(): void
+        static GenerateTypeDefinition(): void
+        static LoadPrefs(filePath: jsb.Out<string>): any
+        static LoadPrefs(): any
+        static GetMonoScript(type: any): MonoScript
+        static IsReflectBindingSupported(): boolean
+        static InvokeReflectBinding(): void
+        static IsInMemoryBindingSupported(): boolean
+        static InvokeInMemoryBinding(): void
+        static CompileScripts(): void
+        static ClearBindings(): void
+        static OpenPrefsEditor(): void
+        static ShowJSConsole(): void
+        static ShowJSModuleView(): void
+        static ShowScriptEditorWindowLauncher(): void
+        static GetPlatform(): string
+        static IsExplicitEditorType(type: any): boolean
+        static IsExplicitEditorDomain(assembly: any): boolean
+        static ReplacePathVars(value: string): string
+        static CheckAnyScriptExists(): boolean
+        static CompileBytecodeValidate(): boolean
+        static CompileBytecode(workspace: string): void
+        static CompileBytecode(): void
+        static NormalizePathString(path: string): string
+        static ResolveScriptRef(sourceDirBase: string, sourceFile: string, normalizedPath: jsb.Out<string>, modulePath: jsb.Out<string>, hints: any): boolean
+        static JSBehaviourClassNameRegex: any
+        static JSAssetClassNameRegex: any
+        static JSCustomEditorClassNameRegex: any
+        static JSEditorWindowClassNameRegex: any
     }
 }
 declare module "UnityEngine" {
@@ -19660,636 +20329,6 @@ declare module "UnityEditor" {
         position: Rect
     }
 }
-declare module "UnityEngine" {
-    import * as jsb from "jsb";
-    import { ValueType, Array, Object as Object1, Enum } from "System";
-    /** Script interface for ParticleSystem. Unity's powerful and versatile particle system implementation.
-     */
-    class ParticleSystem extends Component {
-        constructor()
-        SetParticles(particles: Array<any>, size: number, offset: number): void
-        SetParticles(particles: any, size: number, offset: number): void
-        SetParticles(particles: Array<any>, size: number): void
-        SetParticles(particles: any, size: number): void
-        SetParticles(particles: Array<any>): void
-        SetParticles(particles: any): void
-        GetParticles(particles: Array<any>, size: number, offset: number): number
-        GetParticles(particles: any, size: number, offset: number): number
-        GetParticles(particles: Array<any>, size: number): number
-        GetParticles(particles: any, size: number): number
-        GetParticles(particles: Array<any>): number
-        GetParticles(particles: any): number
-        SetCustomParticleData(customData: any, streamIndex: any): void
-        GetCustomParticleData(customData: any, streamIndex: any): number
-        GetPlaybackState(): any
-        SetPlaybackState(playbackState: any): void
-        GetTrails(): any
-        SetTrails(trailData: any): void
-        /** Fast-forwards the Particle System by simulating particles over the given period of time, then pauses it.
-         * @param t Time period in seconds to advance the ParticleSystem simulation by. If restart is true, the ParticleSystem will be reset to 0 time, and then advanced by this value. If restart is false, the ParticleSystem simulation will be advanced in time from its current state by this value.
-         * @param withChildren Fast-forward all child Particle Systems as well.
-         * @param restart Restart and start from the beginning.
-         * @param fixedTimeStep Only update the system at fixed intervals, based on the value in "Fixed Time" in the Time options.
-         */
-        Simulate(t: number, withChildren: boolean, restart: boolean, fixedTimeStep: boolean): void
-        /** Fast-forwards the Particle System by simulating particles over the given period of time, then pauses it.
-         * @param t Time period in seconds to advance the ParticleSystem simulation by. If restart is true, the ParticleSystem will be reset to 0 time, and then advanced by this value. If restart is false, the ParticleSystem simulation will be advanced in time from its current state by this value.
-         * @param withChildren Fast-forward all child Particle Systems as well.
-         * @param restart Restart and start from the beginning.
-         * @param fixedTimeStep Only update the system at fixed intervals, based on the value in "Fixed Time" in the Time options.
-         */
-        Simulate(t: number, withChildren: boolean, restart: boolean): void
-        /** Fast-forwards the Particle System by simulating particles over the given period of time, then pauses it.
-         * @param t Time period in seconds to advance the ParticleSystem simulation by. If restart is true, the ParticleSystem will be reset to 0 time, and then advanced by this value. If restart is false, the ParticleSystem simulation will be advanced in time from its current state by this value.
-         * @param withChildren Fast-forward all child Particle Systems as well.
-         * @param restart Restart and start from the beginning.
-         * @param fixedTimeStep Only update the system at fixed intervals, based on the value in "Fixed Time" in the Time options.
-         */
-        Simulate(t: number, withChildren: boolean): void
-        /** Fast-forwards the Particle System by simulating particles over the given period of time, then pauses it.
-         * @param t Time period in seconds to advance the ParticleSystem simulation by. If restart is true, the ParticleSystem will be reset to 0 time, and then advanced by this value. If restart is false, the ParticleSystem simulation will be advanced in time from its current state by this value.
-         * @param withChildren Fast-forward all child Particle Systems as well.
-         * @param restart Restart and start from the beginning.
-         * @param fixedTimeStep Only update the system at fixed intervals, based on the value in "Fixed Time" in the Time options.
-         */
-        Simulate(t: number): void
-        /** Starts the Particle System.
-         * @param withChildren Play all child Particle Systems as well.
-         */
-        Play(withChildren: boolean): void
-        Play(): void
-        /** Pauses the system so no new particles are emitted and the existing particles are not updated.
-         * @param withChildren Pause all child Particle Systems as well.
-         */
-        Pause(withChildren: boolean): void
-        Pause(): void
-        /** Stops playing the Particle System using the supplied stop behaviour.
-         * @param withChildren Stop all child Particle Systems as well.
-         * @param stopBehavior Stop emitting or stop emitting and clear the system.
-         */
-        Stop(withChildren: boolean, stopBehavior: any): void
-        /** Stops playing the Particle System using the supplied stop behaviour.
-         * @param withChildren Stop all child Particle Systems as well.
-         * @param stopBehavior Stop emitting or stop emitting and clear the system.
-         */
-        Stop(withChildren: boolean): void
-        Stop(): void
-        /** Remove all particles in the Particle System.
-         * @param withChildren Clear all child Particle Systems as well.
-         */
-        Clear(withChildren: boolean): void
-        Clear(): void
-        /** Does the Particle System contain any live particles, or will it produce more?
-         * @param withChildren Check all child Particle Systems as well.
-         * @returns True if the Particle System contains live particles or is still creating new particles. False if the Particle System has stopped emitting particles and all particles are dead. 
-         */
-        IsAlive(withChildren: boolean): boolean
-        IsAlive(): boolean
-        Emit(emitParams: any, count: number): void
-        /** Emit count particles immediately.
-         * @param count Number of particles to emit.
-         */
-        Emit(count: number): void
-        TriggerSubEmitter(subEmitterIndex: number, particle: jsb.Ref<any>): void
-        TriggerSubEmitter(subEmitterIndex: number, particles: any): void
-        /** Triggers the specified sub emitter on all particles of the Particle System.
-         * @param subEmitterIndex Index of the sub emitter to trigger.
-         */
-        TriggerSubEmitter(subEmitterIndex: number): void
-        AllocateAxisOfRotationAttribute(): void
-        AllocateMeshIndexAttribute(): void
-        /** Ensures that the ParticleSystemJobs.ParticleSystemJobData.customData1|customData1 and ParticleSystemJobs.ParticleSystemJobData.customData1|customData2 particle attribute arrays are allocated.
-         * @param stream The custom data stream to allocate.
-         */
-        AllocateCustomDataAttribute(stream: any): void
-        /** Safe array size for use with ParticleSystem.GetCollisionEvents.
-         */
-        GetSafeCollisionEventSize(): number
-        GetCollisionEvents(go: GameObject, collisionEvents: any): number
-        /** Safe array size for use with ParticleSystem.GetTriggerParticles.
-         * @param ps Particle system.
-         * @param type Type of trigger to return size for.
-         * @returns Number of particles with this trigger event type. 
-         */
-        GetSafeTriggerParticlesSize(type: any): number
-        GetTriggerParticles(type: any, particles: any, colliderData: jsb.Out<any>): number
-        GetTriggerParticles(type: any, particles: any): number
-        SetTriggerParticles(type: any, particles: any, offset: number, count: number): void
-        SetTriggerParticles(type: any, particles: any): void
-        static ResetPreMappedBufferMemory(): void
-        /** Limits the amount of graphics memory Unity reserves for efficient rendering of Particle Systems.
-         * @param vertexBuffersCount The maximum number of cached vertex buffers.
-         * @param indexBuffersCount The maximum number of cached index buffers.
-         */
-        static SetMaximumPreMappedBufferCounts(vertexBuffersCount: number, indexBuffersCount: number): void
-        /** Determines whether the Particle System is playing.
-         */
-        readonly isPlaying: boolean
-        /** Determines whether the Particle System is emitting particles. A Particle System may stop emitting when its emission module has finished, it has been paused or if the system has been stopped using ParticleSystem.Stop|Stop with the ParticleSystemStopBehavior.StopEmitting|StopEmitting flag. Resume emitting by calling ParticleSystem.Play|Play.
-         */
-        readonly isEmitting: boolean
-        /** Determines whether the Particle System is in the stopped state.
-         */
-        readonly isStopped: boolean
-        /** Determines whether the Particle System is paused.
-         */
-        readonly isPaused: boolean
-        /** The current number of particles (Read Only).
-         */
-        readonly particleCount: number
-        /** Playback position in seconds.
-         */
-        time: number
-        /** Override the random seed used for the Particle System emission.
-         */
-        randomSeed: number
-        /** Controls whether the Particle System uses an automatically-generated random number to seed the random number generator.
-         */
-        useAutoRandomSeed: boolean
-        /** Does this system support Procedural Simulation?
-         */
-        readonly proceduralSimulationSupported: boolean
-        /** Access the main Particle System settings.
-         */
-        readonly main: ParticleSystem.MainModule
-        /** Script interface for the EmissionModule of a Particle System.
-         */
-        readonly emission: any
-        /** Script interface for the ShapeModule of a Particle System. 
-         */
-        readonly shape: any
-        /** Script interface for the VelocityOverLifetimeModule of a Particle System.
-         */
-        readonly velocityOverLifetime: any
-        /** Script interface for the LimitVelocityOverLifetimeModule of a Particle System. .
-         */
-        readonly limitVelocityOverLifetime: any
-        /** Script interface for the InheritVelocityModule of a Particle System.
-         */
-        readonly inheritVelocity: any
-        /** Script interface for the Particle System Lifetime By Emitter Speed module.
-         */
-        readonly lifetimeByEmitterSpeed: any
-        /** Script interface for the ForceOverLifetimeModule of a Particle System.
-         */
-        readonly forceOverLifetime: any
-        /** Script interface for the ColorOverLifetimeModule of a Particle System.
-         */
-        readonly colorOverLifetime: any
-        /** Script interface for the ColorByLifetimeModule of a Particle System.
-         */
-        readonly colorBySpeed: any
-        /** Script interface for the SizeOverLifetimeModule of a Particle System. 
-         */
-        readonly sizeOverLifetime: any
-        /** Script interface for the SizeBySpeedModule of a Particle System.
-         */
-        readonly sizeBySpeed: any
-        /** Script interface for the RotationOverLifetimeModule of a Particle System.
-         */
-        readonly rotationOverLifetime: any
-        /** Script interface for the RotationBySpeedModule of a Particle System.
-         */
-        readonly rotationBySpeed: any
-        /** Script interface for the ExternalForcesModule of a Particle System.
-         */
-        readonly externalForces: any
-        /** Script interface for the NoiseModule of a Particle System.
-         */
-        readonly noise: any
-        /** Script interface for the CollisionModule of a Particle System.
-         */
-        readonly collision: any
-        /** Script interface for the TriggerModule of a Particle System.
-         */
-        readonly trigger: any
-        /** Script interface for the SubEmittersModule of a Particle System.
-         */
-        readonly subEmitters: any
-        /** Script interface for the TextureSheetAnimationModule of a Particle System.
-         */
-        readonly textureSheetAnimation: any
-        /** Script interface for the LightsModule of a Particle System.
-         */
-        readonly lights: any
-        /** Script interface for the TrailsModule of a Particle System.
-         */
-        readonly trails: any
-        /** Script interface for the CustomDataModule of a Particle System.
-         */
-        readonly customData: any
-    }
-}
-declare module "UnityEngine" {
-    import * as jsb from "jsb";
-    import { Enum, Array, Object as Object1 } from "System";
-    /** Use this class to render particles on to the screen.
-     */
-    class ParticleSystemRenderer extends Renderer {
-        constructor()
-        /** Get the array of Meshes to be used as particles.
-         * @param meshes This array is populated with the list of Meshes being used for particle rendering.
-         * @returns The number of Meshes actually written to the destination array. 
-         */
-        GetMeshes(meshes: Array<any>): number
-        /** Set an array of Meshes to use as particles when the ParticleSystemRenderer.renderMode is set to ParticleSystemRenderMode.Mesh.
-         * @param meshes Array of Meshes to use.
-         * @param size Number of elements from the Mesh array to apply.
-         */
-        SetMeshes(meshes: Array<any>, size: number): void
-        /** Set an array of Meshes to use as particles when the ParticleSystemRenderer.renderMode is set to ParticleSystemRenderMode.Mesh.
-         * @param meshes Array of Meshes to use.
-         * @param size Number of elements from the Mesh array to apply.
-         */
-        SetMeshes(meshes: Array<any>): void
-        /** Creates a snapshot of ParticleSystemRenderer and stores it in mesh.
-         * @param mesh A static Mesh to receive the snapshot of the particles.
-         * @param camera The Camera used to determine which way camera-space particles face.
-         * @param useTransform Specifies whether to include the rotation and scale of the Transform in the baked Mesh.
-         */
-        BakeMesh(mesh: any, camera: Camera, useTransform: boolean): void
-        /** Creates a snapshot of ParticleSystemRenderer and stores it in mesh.
-         * @param mesh A static Mesh to receive the snapshot of the particles.
-         * @param camera The Camera used to determine which way camera-space particles face.
-         * @param useTransform Specifies whether to include the rotation and scale of the Transform in the baked Mesh.
-         */
-        BakeMesh(mesh: any, useTransform: boolean): void
-        /** Creates a snapshot of ParticleSystem Trails and stores them in mesh.
-         * @param mesh A static Mesh to receive the snapshot of the particle trails.
-         * @param camera The Camera used to determine which way camera-space trails face.
-         * @param useTransform Specifies whether to include the rotation and scale of the Transform in the baked Mesh.
-         */
-        BakeTrailsMesh(mesh: any, camera: Camera, useTransform: boolean): void
-        /** Creates a snapshot of ParticleSystem Trails and stores them in mesh.
-         * @param mesh A static Mesh to receive the snapshot of the particle trails.
-         * @param camera The Camera used to determine which way camera-space trails face.
-         * @param useTransform Specifies whether to include the rotation and scale of the Transform in the baked Mesh.
-         */
-        BakeTrailsMesh(mesh: any, useTransform: boolean): void
-        SetActiveVertexStreams(streams: any): void
-        GetActiveVertexStreams(streams: any): void
-        /** Control the direction that particles face.
-         */
-        alignment: any
-        /** Specifies how the system draws particles.
-         */
-        renderMode: any
-        /** Specifies how to sort particles within a system.
-         */
-        sortMode: any
-        /** How much are the particles stretched in their direction of motion, defined as the length of the particle compared to its width.
-         */
-        lengthScale: number
-        /** Specifies how much particles stretch depending on their velocity.
-         */
-        velocityScale: number
-        /** How much do the particles stretch depending on the Camera's speed.
-         */
-        cameraVelocityScale: number
-        /** Specifies how much a billboard particle orients its normals towards the Camera.
-         */
-        normalDirection: number
-        /** Apply a shadow bias to prevent self-shadowing artifacts. The specified value is the proportion of the particle size.
-         */
-        shadowBias: number
-        /** Biases Particle System sorting amongst other transparencies.
-         */
-        sortingFudge: number
-        /** Clamp the minimum particle size.
-         */
-        minParticleSize: number
-        /** Clamp the maximum particle size.
-         */
-        maxParticleSize: number
-        /** Modify the pivot point used for rotating particles.
-         */
-        pivot: Vector3
-        /** Flip a percentage of the particles, along each axis.
-         */
-        flip: Vector3
-        /** Specifies how the Particle System Renderer interacts with SpriteMask.
-         */
-        maskInteraction: any
-        /** Set the Material that the TrailModule uses to attach trails to particles.
-         */
-        trailMaterial: Material
-        /** Enables GPU Instancing on platforms that support it.
-         */
-        enableGPUInstancing: boolean
-        /** Allow billboard particles to roll around their z-axis.
-         */
-        allowRoll: boolean
-        /** Enables freeform stretching behavior.
-         */
-        freeformStretching: boolean
-        /** Rotate the particles based on the direction they are stretched in. This is added on top of other particle rotation.
-         */
-        rotateWithStretchDirection: boolean
-        /** The Mesh that the particle uses instead of a billboarded Texture.
-         */
-        mesh: any
-        /** The number of Meshes the system uses for particle rendering.
-         */
-        readonly meshCount: number
-        /** The number of currently active custom vertex streams.
-         */
-        readonly activeVertexStreamsCount: number
-    }
-}
-declare module "UnityEngine" {
-    import { ValueType, Enum } from "System";
-    namespace ParticleSystem {
-        class MainModule extends ValueType {
-            constructor()
-            duration: number
-            loop: boolean
-            prewarm: boolean
-            startDelay: any
-            startDelayMultiplier: number
-            startLifetime: any
-            startLifetimeMultiplier: number
-            startSpeed: any
-            startSpeedMultiplier: number
-            startSize3D: boolean
-            startSize: any
-            startSizeMultiplier: number
-            startSizeX: any
-            startSizeXMultiplier: number
-            startSizeY: any
-            startSizeYMultiplier: number
-            startSizeZ: any
-            startSizeZMultiplier: number
-            startRotation3D: boolean
-            startRotation: any
-            startRotationMultiplier: number
-            startRotationX: any
-            startRotationXMultiplier: number
-            startRotationY: any
-            startRotationYMultiplier: number
-            startRotationZ: any
-            startRotationZMultiplier: number
-            flipRotation: number
-            startColor: any
-            gravityModifier: any
-            gravityModifierMultiplier: number
-            simulationSpace: ParticleSystemSimulationSpace
-            customSimulationSpace: Transform
-            simulationSpeed: number
-            useUnscaledTime: boolean
-            scalingMode: any
-            playOnAwake: boolean
-            maxParticles: number
-            emitterVelocityMode: any
-            stopAction: any
-            ringBufferMode: any
-            ringBufferLoopRange: Vector2
-            cullingMode: any
-        }
-    }
-}
-declare module "UnityEngine" {
-    import { Enum } from "System";
-    /** The space to simulate particles in.
-     */
-    enum ParticleSystemSimulationSpace {
-        /** Simulate particles in local space.
-         */
-        Local = 0,
-        /** Simulate particles in world space.
-         */
-        World = 1,
-        /** Simulate particles relative to a custom transform component, defined by ParticleSystem.MainModule.customSimulationSpace.
-         */
-        Custom = 2,
-    }
-}
-declare module "System.Net" {
-    import * as jsb from "jsb";
-    import { Object, Array } from "System";
-    class IPHostEntry extends Object {
-        constructor()
-        HostName: string
-        Aliases: Array<string>
-        AddressList: Array<any>
-    }
-}
-declare module "System" {
-    import * as jsb from "jsb";
-    class DateTime extends ValueType {
-        constructor(year: number, month: number, day: number, hour: number, minute: number, second: number, millisecond: number, calendar: any, kind: any)
-        constructor(year: number, month: number, day: number, hour: number, minute: number, second: number, millisecond: number, kind: any)
-        constructor(year: number, month: number, day: number, hour: number, minute: number, second: number, millisecond: number, calendar: any)
-        constructor(year: number, month: number, day: number, hour: number, minute: number, second: number, kind: any)
-        constructor(year: number, month: number, day: number, hour: number, minute: number, second: number, calendar: any)
-        constructor(year: number, month: number, day: number, hour: number, minute: number, second: number, millisecond: number)
-        constructor(year: number, month: number, day: number, hour: number, minute: number, second: number)
-        constructor(year: number, month: number, day: number, calendar: any)
-        constructor(year: number, month: number, day: number)
-        constructor(ticks: number, kind: any)
-        constructor(ticks: number)
-        Add(value: any): DateTime
-        AddDays(value: number): DateTime
-        AddHours(value: number): DateTime
-        AddMilliseconds(value: number): DateTime
-        AddMinutes(value: number): DateTime
-        AddMonths(months: number): DateTime
-        AddSeconds(value: number): DateTime
-        AddTicks(value: number): DateTime
-        AddYears(value: number): DateTime
-        CompareTo(value: Object): number
-        CompareTo(value: DateTime): number
-        Equals(value: Object): boolean
-        Equals(value: DateTime): boolean
-        IsDaylightSavingTime(): boolean
-        ToBinary(): number
-        GetHashCode(): number
-        Subtract(value: DateTime): any
-        Subtract(value: any): DateTime
-        ToOADate(): number
-        ToFileTime(): number
-        ToFileTimeUtc(): number
-        ToLocalTime(): DateTime
-        ToLongDateString(): string
-        ToLongTimeString(): string
-        ToShortDateString(): string
-        ToShortTimeString(): string
-        toString(format: string, provider: any): string
-        toString(format: string): string
-        toString(provider: any): string
-        toString(): string
-        ToUniversalTime(): DateTime
-        GetDateTimeFormats(format: string, provider: any): Array<string>
-        GetDateTimeFormats(provider: any): Array<string>
-        GetDateTimeFormats(format: string): Array<string>
-        GetDateTimeFormats(): Array<string>
-        GetTypeCode(): any
-        static Compare(t1: DateTime, t2: DateTime): number
-        static DaysInMonth(year: number, month: number): number
-        static Equals(t1: DateTime, t2: DateTime): boolean
-        static FromBinary(dateData: number): DateTime
-        static FromFileTime(fileTime: number): DateTime
-        static FromFileTimeUtc(fileTime: number): DateTime
-        static FromOADate(d: number): DateTime
-        static SpecifyKind(value: DateTime, kind: any): DateTime
-        static IsLeapYear(year: number): boolean
-        static Parse(s: string, provider: any, styles: any): DateTime
-        static Parse(s: string, provider: any): DateTime
-        static Parse(s: string): DateTime
-        static ParseExact(s: string, format: string, provider: any, style: any): DateTime
-        static ParseExact(s: string, formats: Array<string>, provider: any, style: any): DateTime
-        static ParseExact(s: string, format: string, provider: any): DateTime
-        static TryParse(s: string, provider: any, styles: any, result: jsb.Out<DateTime>): boolean
-        static TryParse(s: string, result: jsb.Out<DateTime>): boolean
-        static TryParseExact(s: string, format: string, provider: any, style: any, result: jsb.Out<DateTime>): boolean
-        static TryParseExact(s: string, formats: Array<string>, provider: any, style: any, result: jsb.Out<DateTime>): boolean
-        static op_Addition(d: DateTime, t: any): DateTime
-        static op_Subtraction(d: DateTime, t: any): DateTime
-        static op_Subtraction(d1: DateTime, d2: DateTime): any
-        static op_Equality(d1: DateTime, d2: DateTime): boolean
-        static op_Inequality(d1: DateTime, d2: DateTime): boolean
-        static op_LessThan(t1: DateTime, t2: DateTime): boolean
-        static op_LessThanOrEqual(t1: DateTime, t2: DateTime): boolean
-        static op_GreaterThan(t1: DateTime, t2: DateTime): boolean
-        static op_GreaterThanOrEqual(t1: DateTime, t2: DateTime): boolean
-        readonly Date: DateTime
-        readonly Day: number
-        readonly DayOfWeek: any
-        readonly DayOfYear: number
-        readonly Hour: number
-        readonly Kind: any
-        readonly Millisecond: number
-        readonly Minute: number
-        readonly Month: number
-        static readonly Now: DateTime
-        static readonly UtcNow: DateTime
-        readonly Second: number
-        readonly Ticks: number
-        readonly TimeOfDay: any
-        static readonly Today: DateTime
-        readonly Year: number
-        static readonly MinValue: DateTime
-        static readonly MaxValue: DateTime
-    }
-}
-declare module "System.IO" {
-    import { Object, Enum } from "System";
-    class FileInfo extends Object {
-        constructor(fileName: string)
-        OpenText(): any
-        CreateText(): any
-        AppendText(): any
-        CopyTo(destFileName: string, overwrite: boolean): FileInfo
-        CopyTo(destFileName: string): FileInfo
-        Create(): any
-        Delete(): void
-        Decrypt(): void
-        Encrypt(): void
-        Open(mode: any, access: any, share: any): any
-        Open(mode: any, access: any): any
-        Open(mode: any): any
-        OpenRead(): any
-        OpenWrite(): any
-        MoveTo(destFileName: string): void
-        Replace(destinationFileName: string, destinationBackupFileName: string, ignoreMetadataErrors: boolean): FileInfo
-        Replace(destinationFileName: string, destinationBackupFileName: string): FileInfo
-        toString(): string
-        readonly Name: string
-        readonly Length: number
-        readonly DirectoryName: string
-        readonly Directory: any
-        IsReadOnly: boolean
-        readonly Exists: boolean
-    }
-}
-declare module "System.IO" {
-    import * as jsb from "jsb";
-    import { Object, Enum, DateTime, Array } from "System";
-    import { IEnumerable } from "System.Collections.Generic";
-    abstract class File extends Object {
-        static AppendAllText(path: string, contents: string, encoding: any): void
-        static AppendAllText(path: string, contents: string): void
-        static AppendText(path: string): any
-        static Copy(sourceFileName: string, destFileName: string, overwrite: boolean): void
-        static Copy(sourceFileName: string, destFileName: string): void
-        static Create(path: string, bufferSize: number, options: any): any
-        static Create(path: string, bufferSize: number): any
-        static Create(path: string): any
-        static CreateText(path: string): any
-        static Delete(path: string): void
-        static Exists(path: string): boolean
-        static GetAttributes(path: string): any
-        static GetCreationTime(path: string): DateTime
-        static GetCreationTimeUtc(path: string): DateTime
-        static GetLastAccessTime(path: string): DateTime
-        static GetLastAccessTimeUtc(path: string): DateTime
-        static GetLastWriteTime(path: string): DateTime
-        static GetLastWriteTimeUtc(path: string): DateTime
-        static Move(sourceFileName: string, destFileName: string): void
-        static Open(path: string, mode: any, access: any): any
-        static Open(path: string, mode: any): any
-        static OpenRead(path: string): any
-        static OpenText(path: string): any
-        static OpenWrite(path: string): any
-        static Replace(sourceFileName: string, destinationFileName: string, destinationBackupFileName: string): void
-        static SetAttributes(path: string, fileAttributes: any): void
-        static SetCreationTime(path: string, creationTime: DateTime): void
-        static SetCreationTimeUtc(path: string, creationTimeUtc: DateTime): void
-        static SetLastAccessTime(path: string, lastAccessTime: DateTime): void
-        static SetLastAccessTimeUtc(path: string, lastAccessTimeUtc: DateTime): void
-        static SetLastWriteTime(path: string, lastWriteTime: DateTime): void
-        static SetLastWriteTimeUtc(path: string, lastWriteTimeUtc: DateTime): void
-        static ReadAllBytes(path: string): Array<jsb.byte>
-        static ReadAllLines(path: string, encoding: any): Array<string>
-        static ReadAllLines(path: string): Array<string>
-        static ReadAllText(path: string, encoding: any): string
-        static ReadAllText(path: string): string
-        static WriteAllBytes(path: string, bytes: Array<jsb.byte>): void
-        static WriteAllLines(path: string, contents: Array<string>, encoding: any): void
-        static WriteAllLines(path: string, contents: IEnumerable<string>, encoding: any): void
-        static WriteAllLines(path: string, contents: Array<string>): void
-        static WriteAllLines(path: string, contents: IEnumerable<string>): void
-        static WriteAllText(path: string, contents: string, encoding: any): void
-        static WriteAllText(path: string, contents: string): void
-        static Encrypt(path: string): void
-        static Decrypt(path: string): void
-        static ReadLines(path: string, encoding: any): IEnumerable<string>
-        static ReadLines(path: string): IEnumerable<string>
-        static AppendAllLines(path: string, contents: IEnumerable<string>, encoding: any): void
-        static AppendAllLines(path: string, contents: IEnumerable<string>): void
-    }
-}
-declare module "global" {
-    import { Object } from "System";
-    class TWrapper_Int32 extends Object implements TWrapper<number> {
-        constructor(obj: number)
-        GetValue(): number
-        SetValue(obj: number): void
-        static GetIntWrapper(): TWrapper<number>
-    }
-}
-declare module "global" {
-    import { Object } from "System";
-    class TWrapper<T> extends Object {
-    }
-}
-declare module "global" {
-    import { Object } from "System";
-    import { Vector3 } from "UnityEngine";
-    class TWrapper_Vector3 extends Object implements TWrapper<Vector3> {
-        constructor(obj: Vector3)
-        GetValue(): Vector3
-        SetValue(obj: Vector3): void
-        static GetIntWrapper(): TWrapper<number>
-    }
-}
-declare module "Example" {
-    import { Object } from "System";
-    class DisposableObject extends Object {
-        constructor()
-        Dispose(): void
-        static CreateDisposableObject(): DisposableObject
-    }
-}
 declare module "global" {
     import * as jsb from "jsb";
     import { Object, Array } from "System";
@@ -20418,6 +20457,13 @@ declare module "Example" {
     abstract class NativeFileUtil extends Object {
         static ReadAllText(path: string): string
         static ReadAllBytes(path: string): Array<jsb.byte>
+    }
+}
+declare module "Example" {
+    import { Object } from "System";
+    class Jankfest extends Object {
+        constructor()
+        static DoNothing(jankfest: Jankfest): Jankfest
     }
 }
 declare module "Example" {

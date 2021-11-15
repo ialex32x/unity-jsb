@@ -23,8 +23,7 @@ namespace QuickJS.Unity
             Texture icon;
             if (!_iconCache.TryGetValue(name, out icon))
             {
-                var assetPath = $"Assets/jsb/Editor/Icons/{name}.png";
-                icon = _iconCache[name] = AssetDatabase.LoadMainAssetAtPath(assetPath) as Texture;
+                icon = _iconCache[name] = LoadPackageAsset<Texture>($"Editor/Icons/{name}.png");
             }
             return icon;
         }

@@ -37,6 +37,7 @@ namespace QuickJS
         /// globally defined require function object, its only used in source evaluated from scratch (not module) (e.g dofile/eval)
         private JSValue _require;
         private JSValue _mainModule;
+        private bool _mainModuleLoaded;
         private bool _isValid;
         private Regex _stRegex;
 
@@ -66,8 +67,10 @@ namespace QuickJS
             JSApi.JS_AddIntrinsicOperators(_ctx);
             _atoms = new AtomCache(_ctx);
             _stringCache = new JSStringCache(_ctx);
-            _mainModule = JSApi.JS_UNDEFINED;
+            _mainModule = JSApi.JS_NewObject(_ctx);
+            _mainModuleLoaded = false;
             _moduleCache = JSApi.JS_NewObject(_ctx);
+            JSApi.JS_SetProperty(_ctx, _mainModule, GetAtom("cache"), JSApi.JS_DupValue(_ctx, _moduleCache));
             _globalObject = JSApi.JS_GetGlobalObject(_ctx);
             _objectConstructor = JSApi.JS_GetProperty(_ctx, _globalObject, JSApi.JS_ATOM_Object);
             _numberConstructor = JSApi.JS_GetProperty(_ctx, _globalObject, JSApi.JS_ATOM_Number);
@@ -234,6 +237,7 @@ namespace QuickJS
 
             JSApi.JS_FreeValue(_ctx, _moduleCache);
             JSApi.JS_FreeValue(_ctx, _mainModule);
+            _mainModuleLoaded = false;
             JSApi.JS_FreeValue(_ctx, _require);
             JSApi.JS_FreeContext(_ctx);
             var id = _contextId;
@@ -352,7 +356,7 @@ namespace QuickJS
         //NOTE: 返回值需要调用者 free
         public JSValue _new_commonjs_module_entry(string parent_module_id, string module_id, string filename, string resolvername, JSValue exports_obj, bool loaded, bool set_as_main)
         {
-            var module_obj = JSApi.JS_NewObject(_ctx);
+            var module_obj = set_as_main && !IsMainModuleLoaded() ? JSApi.JS_DupValue(_ctx, _mainModule) : JSApi.JS_NewObject(_ctx);
             var module_id_atom = GetAtom(module_id);
             var module_id_obj = JSApi.JS_AtomToString(_ctx, module_id_atom);
             var filename_atom = GetAtom(filename);
@@ -367,11 +371,6 @@ namespace QuickJS
             JSApi.JS_SetProperty(_ctx, module_obj, GetAtom("resolvername"), JSApi.JS_AtomToString(_ctx, resolvername_atom));
             JSApi.JS_SetProperty(_ctx, module_obj, GetAtom("children"), JSApi.JS_NewArray(_ctx));
             JSApi.JS_FreeValue(_ctx, module_id_obj);
-
-            if (set_as_main && _mainModule.IsUndefined())
-            {
-                _mainModule = JSApi.JS_DupValue(_ctx, module_obj);
-            }
 
             // set parent/children here
             if (!string.IsNullOrEmpty(parent_module_id))
@@ -539,7 +538,7 @@ namespace QuickJS
 
         public bool IsMainModuleLoaded()
         {
-            return !_mainModule.IsUndefined();
+            return _mainModuleLoaded;
         }
 
 #if !JSB_UNITYLESS
@@ -798,7 +797,6 @@ namespace QuickJS
             var ctx = (JSContext)this;
             var global_object = this.GetGlobalObject();
             {
-                _mainModule = JSApi.JS_UNDEFINED;
                 _require = JSApi.JSB_NewCFunction(ctx, ScriptRuntime.module_require, GetAtom("require"), 1, JSCFunctionEnum.JS_CFUNC_generic, 0);
                 JSApi.JS_SetProperty(ctx, _require, GetAtom("moduleId"), JSApi.JS_NewString(ctx, ""));
                 JSApi.JS_SetProperty(ctx, _require, GetAtom("cache"), JSApi.JS_DupValue(ctx, _moduleCache));

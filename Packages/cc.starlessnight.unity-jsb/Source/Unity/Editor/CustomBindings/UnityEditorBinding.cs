@@ -23,6 +23,7 @@ namespace jsb.Editor
             // bindingManager.AddTypePrefixBlacklist("Unity.");
             // bindingManager.AddTypePrefixBlacklist("TreeEditor.");
             bindingManager.AddTypeFullNameBlacklist("UnityEditor.UpdatePrefabInstancesEventArgs");
+            bindingManager.AddExportedType(typeof(QuickJS.Unity.UnityHelper)).EditorRuntime();
             
             bindingManager.AddExportedType(typeof(GUI)).SetAllConstructorsBlocked();
             bindingManager.AddExportedType(typeof(GUIUtility)).SetAllConstructorsBlocked();
