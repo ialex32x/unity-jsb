@@ -39,6 +39,38 @@ namespace QuickJS
             }
         }
 
+        /// <summary>
+        /// the 'define' function for minimalistic AMD module support
+        /// </summary>
+        [MonoPInvokeCallback(typeof(JSCFunction))]
+        public static unsafe JSValue module_define(JSContext ctx, JSValue this_obj, int argc, JSValue[] argv)
+        {
+            if (argc != 3 || !argv[0].IsString() || JSApi.JS_IsArray(ctx, argv[1]) != 1 || JSApi.JS_IsFunction(ctx, argv[2]) != 1)
+            {
+                return JSApi.JS_ThrowInternalError(ctx, "unsupported 'define' invocation");
+            }
+
+            string[] deps;
+            if (!Binding.Values.js_get_primitive(ctx, argv[1], out deps))
+            {
+                return JSApi.JS_ThrowInternalError(ctx, "unsupported 'define' invocation");
+            }
+            var module_id = JSApi.GetString(ctx, argv[0]);
+            if (string.IsNullOrEmpty(module_id))
+            {
+                return JSApi.JS_ThrowInternalError(ctx, "unsupported 'define' invocation");
+            }
+
+            var runtime = ScriptEngine.GetRuntime(ctx);
+            var staticModuleResolver = runtime.FindModuleResolver<Module.StaticModuleResolver>();
+            if (staticModuleResolver != null)
+            {
+                var amd = new Module.AMDModuleRegister(ctx, deps, argv[2]);
+                staticModuleResolver.AddStaticModule(module_id, amd);
+            }
+            return JSApi.JS_UNDEFINED;
+        }
+
         // require(id);
         [MonoPInvokeCallback(typeof(JSCFunction))]
         public static unsafe JSValue module_require(JSContext ctx, JSValue this_obj, int argc, JSValue[] argv)

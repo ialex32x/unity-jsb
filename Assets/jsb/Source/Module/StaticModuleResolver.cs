@@ -10,6 +10,21 @@ namespace QuickJS.Module
     {
         private Dictionary<string, IModuleRegister> _modRegisters = new Dictionary<string, IModuleRegister>();
 
+        public void Release()
+        {
+            var count = _modRegisters.Count;
+            if (count > 0)
+            {
+                var values = new IModuleRegister[count];
+                _modRegisters.Values.CopyTo(values, 0);
+                _modRegisters.Clear();
+                for (var i = 0; i < count; ++i)
+                {
+                    values[i].Unload();
+                }
+            }
+        }
+
         public StaticModuleResolver AddStaticModule(string module_id, ModuleExportsBind bind)
         {
             return AddStaticModule(module_id, new FuncModuleRegister(bind));
@@ -49,8 +64,22 @@ namespace QuickJS.Module
 
         public bool ReloadModule(ScriptContext context, string resolved_id, JSValue module_obj, out JSValue exports_obj)
         {
-            // unsupported
             exports_obj = JSApi.JS_UNDEFINED;
+            IModuleRegister moduleRegister;
+            if (_modRegisters.TryGetValue(resolved_id, out moduleRegister) && moduleRegister.isReloadSupported)
+            {
+                var ctx = (JSContext)context;
+                exports_obj = JSApi.JS_GetProperty(ctx, module_obj, context.GetAtom("exports"));
+
+                moduleRegister.Load(context, module_obj, exports_obj);
+
+                JSApi.JS_FreeValue(ctx, exports_obj);
+                JSApi.JS_SetProperty(ctx, module_obj, context.GetAtom("loaded"), JSApi.JS_NewBool(ctx, true));
+                exports_obj = JSApi.JS_GetProperty(ctx, module_obj, context.GetAtom("exports"));
+
+                return true;
+            }
+
             return false;
         }
 
@@ -64,10 +93,10 @@ namespace QuickJS.Module
                 var module_obj = context._new_commonjs_resolver_module(resolved_id, "static", exports_obj, false, set_as_main);
 
                 moduleRegister.Load(context, module_obj, exports_obj);
-                
+
                 JSApi.JS_SetProperty(ctx, module_obj, context.GetAtom("loaded"), JSApi.JS_NewBool(ctx, true));
                 var rval = JSApi.JS_GetProperty(ctx, module_obj, context.GetAtom("exports"));
-                
+
                 JSApi.JS_FreeValue(ctx, exports_obj);
                 JSApi.JS_FreeValue(ctx, module_obj);
 
@@ -77,10 +106,14 @@ namespace QuickJS.Module
             return JSApi.JS_ThrowInternalError(context, "invalid static module loader");
         }
 
-        public IModuleRegister GetModuleRegister(string module_id)
+        public T GetModuleRegister<T>(string module_id) where T : class, IModuleRegister
         {
             IModuleRegister moduleRegister;
-            return _modRegisters.TryGetValue(module_id, out moduleRegister) ? moduleRegister : null;
+            if (_modRegisters.TryGetValue(module_id, out moduleRegister))
+            {
+                return moduleRegister as T;
+            }
+            return default(T);
         }
     }
 }

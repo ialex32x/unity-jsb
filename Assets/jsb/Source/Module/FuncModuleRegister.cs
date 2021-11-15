@@ -12,6 +12,8 @@ namespace QuickJS.Module
     {
         private ModuleExportsBind _bind;
 
+        public bool isReloadSupported => true;
+
         public FuncModuleRegister(ModuleExportsBind bind)
         {
             _bind = bind;

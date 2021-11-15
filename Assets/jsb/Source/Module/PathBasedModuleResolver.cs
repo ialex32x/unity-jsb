@@ -12,6 +12,8 @@ namespace QuickJS.Module
         {
         }
 
+        public abstract void Release();
+
         // 验证模块名可接受
         protected abstract bool OnValidating(string module_id);
 

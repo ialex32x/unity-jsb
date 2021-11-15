@@ -564,6 +564,16 @@ namespace QuickJS
             return false;
         }
 
+        public JSValue _CreateRequireFunction(JSValue module_obj)
+        {
+            var require_obj = JSApi.JSB_NewCFunction(_ctx, ScriptRuntime.module_require, GetAtom("require"), 1, JSCFunctionEnum.JS_CFUNC_generic, 0);
+
+            JSApi.JS_SetProperty(_ctx, require_obj, GetAtom("moduleId"), JSApi.JS_GetProperty(_ctx, module_obj, GetAtom("id")));
+            JSApi.JS_SetProperty(_ctx, require_obj, GetAtom("main"), JSApi.JS_DupValue(_ctx, _mainModule));
+            JSApi.JS_SetProperty(_ctx, require_obj, GetAtom("cache"), JSApi.JS_DupValue(_ctx, _moduleCache));
+            return require_obj;
+        }
+
         // this method will consume the module_obj refcount 
         public unsafe JSValue LoadModuleFromSource(byte[] source, string resolved_id, JSValue module_obj)
         {
@@ -793,6 +803,7 @@ namespace QuickJS
                 JSApi.JS_SetProperty(ctx, _require, GetAtom("moduleId"), JSApi.JS_NewString(ctx, ""));
                 JSApi.JS_SetProperty(ctx, _require, GetAtom("cache"), JSApi.JS_DupValue(ctx, _moduleCache));
                 JSApi.JS_SetProperty(ctx, global_object, GetAtom("require"), JSApi.JS_DupValue(ctx, _require));
+                JSApi.JS_SetProperty(ctx, global_object, GetAtom("define"), JSApi.JSB_NewCFunction(ctx, ScriptRuntime.module_define, GetAtom("define"), 3, JSCFunctionEnum.JS_CFUNC_generic, 0));
 
                 JSApi.JS_SetPropertyStr(ctx, global_object, "print", JSApi.JS_NewCFunctionMagic(ctx, _print, "print", 1, JSCFunctionEnum.JS_CFUNC_generic_magic, 0));
                 var console = JSApi.JS_NewObject(ctx);

@@ -13,5 +13,7 @@ namespace QuickJS.Module
         
         // this method will not consume module_obj refcount
         bool ReloadModule(ScriptContext context, string resolved_id, JSValue module_obj, out JSValue exports_obj);
+
+        void Release();
     }
 }

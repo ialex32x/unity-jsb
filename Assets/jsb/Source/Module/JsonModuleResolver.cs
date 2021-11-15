@@ -12,6 +12,10 @@ namespace QuickJS.Module
         {
         }
 
+        public override void Release()
+        {
+        }
+
         protected override bool OnValidating(string module_id)
         {
             // 必须指明后缀

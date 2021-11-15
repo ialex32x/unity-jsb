@@ -128,7 +128,8 @@ namespace QuickJS
 
         public JSValue _LoadType(ScriptContext context, string module_id, string topLevelNamespace)
         {
-            var reg = FindModuleResolver<StaticModuleResolver>()?.GetModuleRegister(module_id) as ProxyModuleRegister;
+            var reg = FindModuleResolver<StaticModuleResolver>()?.GetModuleRegister<ProxyModuleRegister>(module_id);
+            //TODO improvement: dirty code
             return reg != null ? reg._LoadType(context, topLevelNamespace) : JSApi.JS_UNDEFINED;
         }
 
@@ -905,6 +906,11 @@ namespace QuickJS
                 _isValid = false;
                 try
                 {
+                    for (int i = 0, count = _moduleResolvers.Count; i < count; i++)
+                    {
+                        var resolver = _moduleResolvers[i];
+                        resolver.Release();
+                    }
                     OnDestroy?.Invoke(this);
                 }
                 catch (Exception e)

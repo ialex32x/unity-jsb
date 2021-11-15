@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Runtime.InteropServices;
 
 namespace QuickJS.Module
 {
@@ -19,6 +18,8 @@ namespace QuickJS.Module
         private string _module_id;
         private JSValue _typeCache = JSApi.JS_UNDEFINED;
 
+        public bool isReloadSupported => false;
+
         public ProxyModuleRegister(ScriptRuntime runtime, string module_id)
         {
             _module_id = module_id;
@@ -26,21 +27,14 @@ namespace QuickJS.Module
             _cluster = new Dictionary<string, List<Type>>();
             _preload = new List<Type>();
             _runtime = runtime;
-            _runtime.OnDestroy += OnDestroy;
         }
 
         public void Unload()
-        {
-            OnDestroy(_runtime);
-        }
-
-        private void OnDestroy(ScriptRuntime runtime)
         {
             if (!_typeCache.IsUndefined())
             {
                 var exports = _typeCache;
                 _typeCache = JSApi.JS_UNDEFINED;
-                _runtime.OnDestroy -= OnDestroy;
                 _runtime.FreeValue(exports);
             }
         }

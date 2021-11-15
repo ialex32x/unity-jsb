@@ -25,6 +25,10 @@ namespace QuickJS.Module
             _jsonConv = jsonConv;
         }
 
+        public override void Release()
+        {
+        }
+
         protected override bool OnValidating(string module_id)
         {
             // 接受无后缀路径
