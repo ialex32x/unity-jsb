@@ -1,0 +1,18 @@
+{
+    "name": "jsb.editor.unity",
+    "references": [
+        "GUID:118b4ca3a1852354bac065cf952c1e85",
+        "GUID:eda0539582471264796e5affb41fe082"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": true,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

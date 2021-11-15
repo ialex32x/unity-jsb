@@ -1,0 +1,23 @@
+{
+    "name": "cc.starlessnight.unity-jsb",
+    "version": "1.6.3",
+    "description": " It brings Javascript runtime capability to Unity3D by integrating QuickJS.",
+    "displayName": "unity-jsb",
+    "unity": "2018.4",
+    
+    "author": {
+        "name": "ialex32x", 
+        "email": "lin_032@hotmail.com"
+    },
+    "keywords": [
+        "typescript", 
+        "javascript", 
+        "quickjs"
+    ],
+
+    "repository": {
+      "url": "https://github.com/ialex32x/unity-jsb.git",
+      "type": "git"
+    }
+  }
+  
