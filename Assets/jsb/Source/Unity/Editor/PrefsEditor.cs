@@ -453,7 +453,7 @@ namespace QuickJS.Unity
             {
                 utils = new UnityBindingUtils(),
             };
-            
+
             _prefs = UnityHelper.LoadPrefs(out _filePath);
             _selectedBindingMethod = Array.IndexOf(_bindingMethodValues, _prefs.preferredBindingMethod);
             _bindingManager = new BindingManager(_prefs, args);
@@ -463,6 +463,7 @@ namespace QuickJS.Unity
 
             AddTabView("Types", DrawView_Types);
             AddTabView("Codegen", DrawView_Codegen);
+            AddTabView("Type Cast Registry", DrawView_TypeCastRegistry);
             AddTabView("Scripting", DrawView_Scripting);
             OnDirtyStateChanged();
         }
@@ -565,6 +566,47 @@ namespace QuickJS.Unity
             return _repeatStringCache[repeat];
         }
 
+        private Vector2 _scrollPosition_TypeCastRegistry;
+        private void DrawView_TypeCastRegistry()
+        {
+            //TODO jsb.editor/prefs: draw it as a tree
+            using (var scope = new EditorGUILayout.ScrollViewScope(_scrollPosition_TypeCastRegistry))
+            {
+                _scrollPosition_TypeCastRegistry = scope.scrollPosition;
+                Block("js_get: " + Values._JSCastMap.Count, () =>
+                {
+                    foreach (var kv in Values._JSCastMap)
+                    {
+                        EditorGUILayout.TextField(string.Format("{0}: {1}", _bindingManager.GetCSTypeFullName(kv.Value), _bindingManager.GetCSTypeFullName(kv.Key)));
+                    }
+                });
+
+                Block("js_rebind: " + Values._JSRebindMap.Count, () =>
+                {
+                    foreach (var kv in Values._JSRebindMap)
+                    {
+                        EditorGUILayout.TextField(string.Format("{0}: {1}", _bindingManager.GetCSTypeFullName(kv.Value), _bindingManager.GetCSTypeFullName(kv.Key)));
+                    }
+                });
+
+                Block("js_push: " + Values._CSCastMap.Count, () =>
+                {
+                    foreach (var kv in Values._CSCastMap)
+                    {
+                        EditorGUILayout.TextField(string.Format("{0}: {1}", _bindingManager.GetCSTypeFullName(kv.Value), _bindingManager.GetCSTypeFullName(kv.Key)));
+                    }
+                });
+
+                Block("js_new: " + Values._JSNewMap.Count, () =>
+                {
+                    foreach (var kv in Values._JSNewMap)
+                    {
+                        EditorGUILayout.TextField(string.Format("{0}: {1}", _bindingManager.GetCSTypeFullName(kv.Value), _bindingManager.GetCSTypeFullName(kv.Key)));
+                    }
+                });
+            }
+        }
+
         private Vector2 _scrollPosition_Codegen;
         private void DrawView_Codegen()
         {
@@ -628,7 +670,7 @@ namespace QuickJS.Unity
                         } // end if: enabled
                     } // end for: list
                 }); // end block: custom binding process
-                
+
                 Block("Diagnostics", () =>
                 {
                     _prefs.debugCodegen = EditorGUILayout.Toggle("Debug Codegen", _prefs.debugCodegen);
