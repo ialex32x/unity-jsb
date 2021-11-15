@@ -4,13 +4,15 @@ using System.Reflection;
 
 namespace jsb.Editor
 {
-    using QuickJS.Native;
     using QuickJS.Unity;
     using QuickJS.Binding;
     using UnityEngine;
-    using UnityEditor;
-    using UnityEditor.IMGUI.Controls;
 
+    /// <summary>
+    /// the most essential types for scripting.
+    /// you could define your own BindingProcess anywhere in your project's 'Assets' editor directory, 
+    /// add more types to export and transform even the types already added here.
+    /// </summary>
     public class UnityBinding : AbstractBindingProcess
     {
         public bool IsAvailable(MethodInfo methodInfo)

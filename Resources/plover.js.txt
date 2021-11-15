@@ -758,14 +758,14 @@ define("plover/runtime/class_decorators", ["require", "exports", "UnityEngine", 
             target[Symbol_PropertiesTouched] = true;
         }
         static serialize(target, ps) {
-            this.markAsReady(target);
+            SerializationUtil.markAsReady(target);
             let impl = serialize_1.GetLatestSerializer();
             console.assert(typeof ps === "object");
             if (typeof impl === "object") {
                 ps.dataFormat = impl.dataFormat;
                 let slots = target[Symbol_SerializedFields];
                 if (typeof slots !== "undefined") {
-                    let buffer = this._serializeObject({ impl: impl, ps: ps }, target, slots);
+                    let buffer = SerializationUtil._serializeObject({ impl: impl, ps: ps }, target, slots);
                     ps.Flush(buffer);
                 }
             }
@@ -783,7 +783,7 @@ define("plover/runtime/class_decorators", ["require", "exports", "UnityEngine", 
                 let s = context.impl.types[slotType];
                 if (typeof s === "object") {
                     if (isArray) {
-                        let section = this._serializePrimitiveArray(context, s, value);
+                        let section = SerializationUtil._serializePrimitiveArray(context, s, value);
                         buffer.WriteByte(serialize_1.SerializedTypeID.Array);
                         buffer.WriteByte(s.typeid);
                         buffer.WriteInt32(section.readableBytes);
@@ -804,14 +804,14 @@ define("plover/runtime/class_decorators", ["require", "exports", "UnityEngine", 
                 let fieldSlots = slotType.prototype[Symbol_SerializedFields];
                 if (typeof fieldSlots !== "undefined") {
                     if (isArray) {
-                        let section = this._serializeObjectArray(context, fieldSlots, value);
+                        let section = SerializationUtil._serializeObjectArray(context, fieldSlots, value);
                         buffer.WriteByte(serialize_1.SerializedTypeID.Array);
                         buffer.WriteByte(serialize_1.SerializedTypeID.Object);
                         buffer.WriteInt32(section.readableBytes);
                         buffer.WriteBytes(section);
                     }
                     else {
-                        let section = this._serializeObject(context, value, fieldSlots);
+                        let section = SerializationUtil._serializeObject(context, value, fieldSlots);
                         buffer.WriteByte(serialize_1.SerializedTypeID.Object);
                         buffer.WriteInt32(section.readableBytes);
                         buffer.WriteBytes(section);
@@ -826,7 +826,7 @@ define("plover/runtime/class_decorators", ["require", "exports", "UnityEngine", 
             let length = value.length;
             let buffer = context.ps.AllocByteBuffer();
             for (let i = 0; i < length; ++i) {
-                let section = this._serializeObject(context, value[i], slots);
+                let section = SerializationUtil._serializeObject(context, value[i], slots);
                 buffer.WriteInt32(section.readableBytes);
                 buffer.WriteBytes(section);
             }
@@ -851,19 +851,19 @@ define("plover/runtime/class_decorators", ["require", "exports", "UnityEngine", 
                         continue;
                     }
                     buffer.WriteString(slot.name);
-                    this._serializeValue(context, slot, value, buffer);
+                    SerializationUtil._serializeValue(context, slot, value, buffer);
                 }
             }
             return buffer;
         }
         static deserialize(target, ps, buffer) {
-            this.markAsReady(target);
+            SerializationUtil.markAsReady(target);
             let slots = target[Symbol_SerializedFields];
             if (typeof slots !== "undefined") {
                 let dataFormat = ps.dataFormat || 0;
                 let impl = serialize_1.GetSerializer(dataFormat);
                 if (typeof impl === "object") {
-                    this._deserializeObjectInternal({ impl: impl, ps: ps }, target, slots, buffer);
+                    SerializationUtil._deserializeObjectInternal({ impl: impl, ps: ps }, target, slots, buffer);
                 }
                 else {
                     if (buffer.readableBytes > 0 && ps.dataFormat >= 0) {
@@ -876,7 +876,7 @@ define("plover/runtime/class_decorators", ["require", "exports", "UnityEngine", 
             if (typeof slot.type === "function") {
                 let fieldValue = Object.create(slot.type);
                 let fieldSlots = slot.type.prototype[Symbol_SerializedFields];
-                this._deserializeObjectInternal(context, fieldValue, fieldSlots, buffer);
+                SerializationUtil._deserializeObjectInternal(context, fieldValue, fieldSlots, buffer);
                 return fieldValue;
             }
             else {
@@ -888,7 +888,7 @@ define("plover/runtime/class_decorators", ["require", "exports", "UnityEngine", 
             while (buffer.readableBytes > 0) {
                 let size = buffer.ReadInt32();
                 let section = buffer.Slice(size);
-                let value = this._deserializeObject(context, slot, section);
+                let value = SerializationUtil._deserializeObject(context, slot, section);
                 items.push(value);
             }
             return items;
@@ -947,7 +947,7 @@ define("plover/runtime/class_decorators", ["require", "exports", "UnityEngine", 
                         case serialize_1.SerializedTypeID.Object: {
                             let size = buffer.ReadInt32();
                             let section = buffer.Slice(size);
-                            target[slot.propertyKey] = this._deserializeObject(context, slot, section);
+                            target[slot.propertyKey] = SerializationUtil._deserializeObject(context, slot, section);
                             break;
                         }
                         case serialize_1.SerializedTypeID.Array: {
@@ -956,10 +956,10 @@ define("plover/runtime/class_decorators", ["require", "exports", "UnityEngine", 
                             let section = buffer.Slice(size);
                             let s = context.impl.typeids[elementTypeID];
                             if (typeof s === "undefined") {
-                                target[slot.propertyKey] = this._deserializeObjectArray(context, slot, section);
+                                target[slot.propertyKey] = SerializationUtil._deserializeObjectArray(context, slot, section);
                             }
                             else {
-                                target[slot.propertyKey] = this._deserializePrimitiveArray(context, s, section);
+                                target[slot.propertyKey] = SerializationUtil._deserializePrimitiveArray(context, s, section);
                             }
                             break;
                         }
@@ -1475,9 +1475,9 @@ define("plover/text/string_utils", ["require", "exports", "jsb"], function (requ
         static prefix2(num, length1, length2) {
             let p = num.toString().split(".");
             if (p.length == 1) {
-                return this.prefix(p[0], length1) + "." + this.prefix(0, length2);
+                return StringUtil.prefix(p[0], length1) + "." + StringUtil.prefix(0, length2);
             }
-            return this.prefix(p[0], length1) + "." + this.prefix(p[1].substring(0, length2), length2);
+            return StringUtil.prefix(p[0], length1) + "." + StringUtil.prefix(p[1].substring(0, length2), length2);
         }
         /**
          * 简单字符串表示的时长 (mm:ss.mmm)
@@ -2002,15 +2002,15 @@ define("plover/editor/base/treeview", ["require", "exports", "UnityEditor", "Uni
     exports.UTreeView = UTreeView;
     UTreeView.CONTEXT_MENU = "CONTEXT_MENU";
 });
-define("plover/editor/base/treenode", ["require", "exports", "UnityEditor", "UnityEngine", "plover/events/dispatcher", "plover/editor/base/menu_builder", "plover/editor/base/treeview"], function (require, exports, UnityEditor_8, UnityEngine_10, dispatcher_4, menu_builder_1, treeview_1) {
+define("plover/editor/base/treenode", ["require", "exports", "QuickJS.Unity", "UnityEditor", "UnityEngine", "plover/events/dispatcher", "plover/editor/base/menu_builder", "plover/editor/base/treeview"], function (require, exports, QuickJS_Unity_1, UnityEditor_8, UnityEngine_10, dispatcher_4, menu_builder_1, treeview_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.UTreeNode = exports.BuiltinIcons = void 0;
     class BuiltinIcons {
         static getIcon(name) {
-            let icon = this._cache[name];
+            let icon = BuiltinIcons._cache[name];
             if (typeof icon === "undefined") {
-                icon = this._cache[name] = UnityEditor_8.AssetDatabase.LoadAssetAtPath(`Assets/jsb/Editor/Icons/${name}.png`, UnityEngine_10.Texture);
+                icon = BuiltinIcons._cache[name] = QuickJS_Unity_1.UnityHelper.GetIcon(name);
             }
             return icon;
         }
@@ -2452,21 +2452,14 @@ define("plover/editor/base/editor_window_base", ["require", "exports", "UnityEdi
         TContent(name, icon, tooltip, text) {
             let content = this._contents[name];
             if (typeof content === "undefined") {
-                if (typeof text === "string") {
-                    if (typeof tooltip === "string") {
-                        content = new UnityEngine_12.GUIContent(text, treenode_2.BuiltinIcons.getIcon(icon), tooltip);
-                    }
-                    else {
-                        content = new UnityEngine_12.GUIContent(text, treenode_2.BuiltinIcons.getIcon(icon));
-                    }
+                if (typeof text !== "string") {
+                    text = name;
+                }
+                if (typeof tooltip === "string") {
+                    content = new UnityEngine_12.GUIContent(text, treenode_2.BuiltinIcons.getIcon(icon), tooltip);
                 }
                 else {
-                    if (typeof tooltip === "string") {
-                        content = new UnityEngine_12.GUIContent(treenode_2.BuiltinIcons.getIcon(icon), tooltip);
-                    }
-                    else {
-                        content = new UnityEngine_12.GUIContent(treenode_2.BuiltinIcons.getIcon(icon));
-                    }
+                    content = new UnityEngine_12.GUIContent(text, treenode_2.BuiltinIcons.getIcon(icon));
                 }
                 this._contents[name] = content;
             }
@@ -2619,13 +2612,13 @@ define("plover/editor/js_module_view", ["require", "exports", "UnityEditor", "Un
             }
         }
         drawToolBar() {
-            if (UnityEngine_13.GUILayout.Button(this.TContent("Expand All", "Hierarchy", "Expand All"), UnityEditor_11.EditorStyles.toolbarButton, UnityEngine_13.GUILayout.Width(32), UnityEngine_13.GUILayout.Height(32))) {
+            if (UnityEngine_13.GUILayout.Button(this.TContent("Expand All", "Hierarchy", "Expand All"), UnityEditor_11.EditorStyles.toolbarButton, UnityEngine_13.GUILayout.Width(128), UnityEngine_13.GUILayout.Height(this.toobarHeight))) {
                 this._treeView.expandAll();
             }
-            if (UnityEngine_13.GUILayout.Button(this.TContent("Collapse All", "Collapsed", "Collapse All"), UnityEditor_11.EditorStyles.toolbarButton, UnityEngine_13.GUILayout.Width(32), UnityEngine_13.GUILayout.Height(32))) {
+            if (UnityEngine_13.GUILayout.Button(this.TContent("Collapse All", "Collapsed", "Collapse All"), UnityEditor_11.EditorStyles.toolbarButton, UnityEngine_13.GUILayout.Width(128), UnityEngine_13.GUILayout.Height(this.toobarHeight))) {
                 this._treeView.collapseAll();
             }
-            if (UnityEngine_13.GUILayout.Button(this.TContent("Refresh", "Refresh", "Refresh"), UnityEditor_11.EditorStyles.toolbarButton, UnityEngine_13.GUILayout.Width(32), UnityEngine_13.GUILayout.Height(32))) {
+            if (UnityEngine_13.GUILayout.Button(this.TContent("Refresh", "Refresh", "Refresh"), UnityEditor_11.EditorStyles.toolbarButton, UnityEngine_13.GUILayout.Width(128), UnityEngine_13.GUILayout.Height(this.toobarHeight))) {
                 this.updateModules();
             }
         }
@@ -2670,9 +2663,9 @@ define("plover/editor/base/content_cache", ["require", "exports", "UnityEngine"]
     exports.EdCache = void 0;
     class EdCache {
         static T(title, tooltip = null, image = null) {
-            let item = this.cache[title];
+            let item = EdCache.cache[title];
             if (typeof item === "undefined") {
-                item = this.cache[title] = tooltip == null ? new UnityEngine_14.GUIContent(title, image) : new UnityEngine_14.GUIContent(title, image, tooltip);
+                item = EdCache.cache[title] = tooltip == null ? new UnityEngine_14.GUIContent(title, image) : new UnityEngine_14.GUIContent(title, image, tooltip);
             }
             return item;
         }

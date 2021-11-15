@@ -65,7 +65,7 @@ namespace QuickJS.Module
                 {
                     var packageData = System.Text.Encoding.UTF8.GetString(packageDataBytes);
                     var packageConfig = _jsonConv.Deserialize(packageData, typeof(PackageConfig)) as PackageConfig;
-                    if (packageConfig != null)
+                    if (packageConfig != null && !string.IsNullOrEmpty(packageConfig.main))
                     {
                         var main = PathUtils.Combine(searchPath, fileName, packageConfig.main);
                         if (!main.EndsWith(".js"))

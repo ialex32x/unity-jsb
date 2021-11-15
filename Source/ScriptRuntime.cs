@@ -201,14 +201,17 @@ namespace QuickJS
 
         public void ResolveModule(string module_id, bool set_as_main)
         {
-            var rval = ResolveModule(_mainContext, "", module_id, set_as_main);
-            if (rval.IsException())
+            if (!string.IsNullOrEmpty(module_id))
             {
-                JSContext.print_exception(_mainContext, _logger, LogLevel.Error, "failed to load module: " + module_id);
-            }
-            else
-            {
-                JSApi.JS_FreeValueRT(_rt, rval);
+                var rval = ResolveModule(_mainContext, "", module_id, set_as_main);
+                if (rval.IsException())
+                {
+                    JSContext.print_exception(_mainContext, _logger, LogLevel.Error, "failed to load module: " + module_id);
+                }
+                else
+                {
+                    JSApi.JS_FreeValueRT(_rt, rval);
+                }
             }
         }
 
