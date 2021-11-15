@@ -8,7 +8,7 @@
         "outDir": "Scripts/out",
         // "outFile": "Scripts/out/code.js",
         "typeRoots": [
-            "Assets/jsb/Typings",
+            "Packages/cc.starlessnight.unity-jsb/Typings",
             "Assets/Generated/Typings",
             "Scripts/types"
         ],
@@ -33,7 +33,7 @@
     },
     "compileOnSave": true,
     "include": [
-        "Assets/jsb/Typings/**/*.ts",
+        "Packages/cc.starlessnight.unity-jsb/Typings/**/*.ts",
         "Assets/Generated/**/*.ts",
         "Scripts/types/**/*.ts",
         "Scripts/src/**/*.ts",
