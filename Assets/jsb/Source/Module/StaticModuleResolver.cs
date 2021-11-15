@@ -59,16 +59,19 @@ namespace QuickJS.Module
             IModuleRegister moduleRegister;
             if (_modRegisters.TryGetValue(resolved_id, out moduleRegister))
             {
-                var exports_obj = JSApi.JS_NewObject(context);
-                var module_obj = context._new_commonjs_resolver_module(resolved_id, "static", exports_obj, true, set_as_main);
+                var ctx = (JSContext)context;
+                var exports_obj = JSApi.JS_NewObject(ctx);
+                var module_obj = context._new_commonjs_resolver_module(resolved_id, "static", exports_obj, false, set_as_main);
 
                 moduleRegister.Load(context, module_obj, exports_obj);
+                
+                JSApi.JS_SetProperty(ctx, module_obj, context.GetAtom("loaded"), JSApi.JS_NewBool(ctx, true));
+                var rval = JSApi.JS_GetProperty(ctx, module_obj, context.GetAtom("exports"));
+                
+                JSApi.JS_FreeValue(ctx, exports_obj);
+                JSApi.JS_FreeValue(ctx, module_obj);
 
-                JSApi.JS_FreeValue(context, exports_obj);
-                JSApi.JS_FreeValue(context, module_obj);
-
-                var exports = context.GetAtom("exports");
-                return JSApi.JS_GetProperty(context, module_obj, exports);
+                return rval;
             }
 
             return JSApi.JS_ThrowInternalError(context, "invalid static module loader");
