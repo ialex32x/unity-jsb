@@ -2,7 +2,7 @@ import { AddCacheString } from "jsb";
 import { Array, String } from "System";
 import { BuildOptions, BuildPipeline, BuildTarget, EditorGUILayout, EditorWindow } from "UnityEditor";
 import { GUIContent, GUILayout } from "UnityEngine";
-import { ScriptEditorWindow } from "../plover/editor/editor_decorators";
+import { ScriptEditorWindow } from "plover/editor/editor_decorators";
 
 @ScriptEditorWindow()
 export class MyTestEditorWindow extends EditorWindow {

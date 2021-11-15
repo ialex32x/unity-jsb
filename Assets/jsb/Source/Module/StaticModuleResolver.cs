@@ -69,14 +69,12 @@ namespace QuickJS.Module
             if (_modRegisters.TryGetValue(resolved_id, out moduleRegister) && moduleRegister.isReloadSupported)
             {
                 var ctx = (JSContext)context;
-                exports_obj = JSApi.JS_GetProperty(ctx, module_obj, context.GetAtom("exports"));
+                var old_exports_obj = JSApi.JS_GetProperty(ctx, module_obj, context.GetAtom("exports"));
 
-                moduleRegister.Load(context, module_obj, exports_obj);
+                exports_obj = moduleRegister.Load(context, module_obj, old_exports_obj);
 
-                JSApi.JS_FreeValue(ctx, exports_obj);
+                JSApi.JS_FreeValue(ctx, old_exports_obj);
                 JSApi.JS_SetProperty(ctx, module_obj, context.GetAtom("loaded"), JSApi.JS_NewBool(ctx, true));
-                exports_obj = JSApi.JS_GetProperty(ctx, module_obj, context.GetAtom("exports"));
-
                 return true;
             }
 
@@ -92,14 +90,11 @@ namespace QuickJS.Module
                 var exports_obj = JSApi.JS_NewObject(ctx);
                 var module_obj = context._new_commonjs_resolver_module(resolved_id, "static", exports_obj, false, set_as_main);
 
-                moduleRegister.Load(context, module_obj, exports_obj);
+                var rval = moduleRegister.Load(context, module_obj, exports_obj);
 
                 JSApi.JS_SetProperty(ctx, module_obj, context.GetAtom("loaded"), JSApi.JS_NewBool(ctx, true));
-                var rval = JSApi.JS_GetProperty(ctx, module_obj, context.GetAtom("exports"));
-
                 JSApi.JS_FreeValue(ctx, exports_obj);
                 JSApi.JS_FreeValue(ctx, module_obj);
-
                 return rval;
             }
 

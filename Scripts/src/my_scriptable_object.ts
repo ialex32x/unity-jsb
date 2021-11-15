@@ -1,5 +1,5 @@
 import { ScriptableObject, Vector3 } from "UnityEngine";
-import { ScriptAsset, ScriptNumber, ScriptString, ScriptProperty, ScriptSerializable } from "./plover/runtime/class_decorators";
+import { ScriptAsset, ScriptNumber, ScriptString, ScriptProperty, ScriptSerializable } from "plover/runtime/class_decorators";
 
 @ScriptAsset()
 export class MyScriptableObject extends ScriptableObject {

@@ -11,7 +11,7 @@ const jsb_1 = require("jsb");
 const System_1 = require("System");
 const UnityEditor_1 = require("UnityEditor");
 const UnityEngine_1 = require("UnityEngine");
-const editor_decorators_1 = require("../plover/editor/editor_decorators");
+const editor_decorators_1 = require("plover/editor/editor_decorators");
 let MyTestEditorWindow = class MyTestEditorWindow extends UnityEditor_1.EditorWindow {
     constructor() {
         super(...arguments);

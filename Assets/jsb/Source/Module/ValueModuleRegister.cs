@@ -30,9 +30,12 @@ namespace QuickJS.Module
             }
         }
 
-        public void Load(ScriptContext context, JSValue module_obj, JSValue exports_obj)
+        public JSValue Load(ScriptContext context, JSValue module_obj, JSValue exports_obj)
         {
-            JSApi.JS_SetPropertyStr(context, module_obj, "exports", JSApi.JS_DupValue(context, _rawValue));
+            var ctx = (JSContext)context;
+            
+            JSApi.JS_SetPropertyStr(ctx, module_obj, "exports", JSApi.JS_DupValue(ctx, _rawValue));
+            return JSApi.JS_DupValue(ctx, _rawValue);
         }
     }
 }

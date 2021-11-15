@@ -1,8 +1,8 @@
 import { DateTime } from "System";
 import { EditorWindow, EditorGUILayout, MessageType, SceneView, Handles, GenericMenu, HandleUtility, EditorApplication, EditorGUI } from "UnityEditor";
 import { FocusType, GUIContent, GUILayout, GUIUtility, Rect, Event, GUIStyle, GUI, Vector2, GUILayoutUtility, EventType, Vector3, Quaternion, Resources, ScriptableObject, Object, Color } from "UnityEngine";
-import { ScriptEditorWindow } from "../plover/editor/editor_decorators";
-import { ScriptInteger, ScriptProperty, ScriptString } from "../plover/runtime/class_decorators";
+import { ScriptEditorWindow } from "plover/editor/editor_decorators";
+import { ScriptInteger, ScriptProperty, ScriptString } from "plover/runtime/class_decorators";
 
 class TempWindow extends EditorWindow {
     private _greeting = false;

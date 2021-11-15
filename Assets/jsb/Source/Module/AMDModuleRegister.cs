@@ -7,6 +7,9 @@ namespace QuickJS.Module
     using Native;
     using Binding;
 
+    /// <summary>
+    /// a minimalistic implementation of AMD modules
+    /// </summary>
     public class AMDModuleRegister : IModuleRegister
     {
         private JSContext _ctx;
@@ -36,38 +39,76 @@ namespace QuickJS.Module
             }
         }
 
-        public unsafe void Load(ScriptContext context, JSValue module_obj, JSValue exports_obj)
+        public unsafe JSValue Load(ScriptContext context, JSValue module_obj, JSValue exports_obj)
         {
-            var len = _deps.Length;
-            var values = stackalloc JSValue[len];
             var ctx = (JSContext)context;
-            var require_obj = context._CreateRequireFunction(module_obj);
-            var filename_obj = JSApi.JS_GetProperty(ctx, module_obj, context.GetAtom("filename"));
-            var dirname_obj = JSApi.JS_NULL;
-            var require_argv = stackalloc JSValue[5] { JSApi.JS_DupValue(ctx, exports_obj), JSApi.JS_DupValue(ctx, require_obj), JSApi.JS_DupValue(ctx, module_obj), filename_obj, dirname_obj, };
 
-            for (var i = 0; i < len; ++i)
+            try
             {
-                var dep_id = _deps[i];
-                switch (dep_id)
+                var len = _deps.Length;
+                var values = stackalloc JSValue[len];
+                var require_obj = context._CreateRequireFunction(module_obj);
+                var filename_obj = JSApi.JS_GetProperty(ctx, module_obj, context.GetAtom("filename"));
+                var dirname_obj = JSApi.JS_NULL;
+                var require_argv = stackalloc JSValue[5] { JSApi.JS_DupValue(ctx, exports_obj), JSApi.JS_DupValue(ctx, require_obj), JSApi.JS_DupValue(ctx, module_obj), filename_obj, dirname_obj, };
+                var rval = JSApi.JS_UNDEFINED;
+
+                for (var i = 0; i < len; ++i)
                 {
-                    case "require": values[i] = JSApi.JS_DupValue(ctx, require_obj); break;
-                    case "exports": values[i] = JSApi.JS_DupValue(ctx, exports_obj); break;
-                    default:
-                        var rval = JSApi.JS_Call(ctx, require_obj, JSApi.JS_UNDEFINED, 5, require_argv);
-                        JSApi.JS_FreeValue(ctx, rval);
-                        break;
-                }
-            }
+                    var dep_id = _deps[i];
+                    switch (dep_id)
+                    {
+                        case "require": values[i] = JSApi.JS_DupValue(ctx, require_obj); break;
+                        case "exports": values[i] = JSApi.JS_DupValue(ctx, exports_obj); break;
+                        default:
+                            var dep_exports = context.GetRuntime().ResolveModule(context, "", dep_id, false);
+                            if (dep_exports.IsException())
+                            {
+                                rval = dep_exports;
+                            }
+                            else
+                            {
+                                values[i] = dep_exports;
+                            }
+                            break;
+                    }
 
-            JSApi.JS_FreeValue(ctx, require_obj);
-            for (var i = 0; i < len; ++i)
-            {
-                JSApi.JS_FreeValue(ctx, values[i]);
+                    if (!rval.IsUndefined())
+                    {
+                        break;
+                    }
+                }
+
+
+                // call loader if all dependencies are successfully evaludated
+                if (rval.IsUndefined())
+                {
+                    rval = JSApi.JS_Call(ctx, _loader, JSApi.JS_UNDEFINED, len, values);
+
+                    if (!rval.IsException())
+                    {
+                        // drop the return value of 'define' call (the 'define' should returns 'undefined')
+                        JSApi.JS_FreeValue(ctx, rval);
+                        rval = JSApi.JS_GetProperty(ctx, module_obj, context.GetAtom("exports"));
+                    }
+                }
+
+                JSApi.JS_FreeValue(ctx, require_obj);
+                for (var i = 0; i < len; ++i)
+                {
+                    JSApi.JS_FreeValue(ctx, values[i]);
+                }
+                for (var i = 0; i < 5; ++i)
+                {
+                    JSApi.JS_FreeValue(ctx, require_argv[i]);
+                }
+
+                return rval;
             }
-            for (var i = 0; i < 5; ++i)
+            catch (Exception exception)
             {
-                JSApi.JS_FreeValue(ctx, require_argv[i]);
+                // unexpected exception (should never happen)
+                return JSApi.ThrowException(ctx, exception);
             }
         }
     }

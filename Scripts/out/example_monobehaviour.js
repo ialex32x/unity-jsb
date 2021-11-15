@@ -10,7 +10,7 @@ exports.Something5Behaviour = exports.RotateBehaviour = exports.MySubClass = exp
 const UnityEngine_1 = require("UnityEngine");
 const jsb = require("jsb");
 const UnityEngine_UI_1 = require("UnityEngine.UI");
-const class_decorators_1 = require("./plover/runtime/class_decorators");
+const class_decorators_1 = require("plover/runtime/class_decorators");
 let ASimpleGuiDialog = class ASimpleGuiDialog extends UnityEngine_1.MonoBehaviour {
     //TODO: [NOT_IMPLEMENTED] 使 UnityEvent 识别并接受脚本函数作为回调
     onClicked() {

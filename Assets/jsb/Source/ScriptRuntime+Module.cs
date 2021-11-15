@@ -68,6 +68,11 @@ namespace QuickJS
                 var amd = new Module.AMDModuleRegister(ctx, deps, argv[2]);
                 staticModuleResolver.AddStaticModule(module_id, amd);
             }
+            else
+            {
+                return JSApi.JS_ThrowInternalError(ctx, "no static module resolver");
+            }
+
             return JSApi.JS_UNDEFINED;
         }
 

@@ -1,5 +1,5 @@
 import { Animator, Input, KeyCode, MonoBehaviour, SpriteRenderer, Time, Vector2, Vector3 } from "UnityEngine";
-import { ScriptType, ScriptObject, ScriptNumber, ScriptSerializable, ScriptString, ScriptProperty } from "../plover/runtime/class_decorators";
+import { ScriptType, ScriptObject, ScriptNumber, ScriptSerializable, ScriptString, ScriptProperty } from "plover/runtime/class_decorators";
 
 @ScriptSerializable()
 export class MyNestedPlainObject {

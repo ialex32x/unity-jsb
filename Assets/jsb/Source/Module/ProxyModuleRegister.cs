@@ -131,7 +131,7 @@ namespace QuickJS.Module
         }
 
         // the given exports object is ignored, type loader uses a Proxy object as new exports
-        public unsafe void Load(ScriptContext context, JSValue module_obj, JSValue exports_obj)
+        public unsafe JSValue Load(ScriptContext context, JSValue module_obj, JSValue exports_obj)
         {
             var ctx = (JSContext)context;
             var sourceBytes = Utils.TextUtils.GetNullTerminatedBytes(@"(function (cache, resolved_id) {
@@ -167,7 +167,8 @@ namespace QuickJS.Module
             JSApi.JS_FreeValue(ctx, proxyGen);
             JSApi.JS_FreeValue(ctx, argv[0]);
             JSApi.JS_FreeValue(ctx, argv[1]);
-            JSApi.JS_SetProperty(ctx, module_obj, context.GetAtom("exports"), retVal);
+            JSApi.JS_SetProperty(ctx, module_obj, context.GetAtom("exports"), JSApi.JS_DupValue(ctx, retVal));
+            return retVal;
         }
     }
 }

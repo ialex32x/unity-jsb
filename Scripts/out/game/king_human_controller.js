@@ -8,7 +8,7 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.KingHumanController = exports.MyNestedPlainObject = void 0;
 const UnityEngine_1 = require("UnityEngine");
-const class_decorators_1 = require("../plover/runtime/class_decorators");
+const class_decorators_1 = require("plover/runtime/class_decorators");
 let MyNestedPlainObject = class MyNestedPlainObject {
     constructor() {
         this.nestedString = "nestedString";

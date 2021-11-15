@@ -1,7 +1,7 @@
 import { Editor, EditorGUILayout, MessageType } from "UnityEditor";
 import { GUILayout, Object } from "UnityEngine";
 import { RotateBehaviour } from "../../example_monobehaviour";
-import { ScriptEditor } from "../../plover/editor/editor_decorators";
+import { ScriptEditor } from "plover/editor/editor_decorators";
 
 @ScriptEditor(RotateBehaviour)
 export class RotateBehaviourInspector extends Editor {

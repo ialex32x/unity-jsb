@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-const data_binding_1 = require("./plover/events/data_binding");
-const dispatcher_1 = require("./plover/events/dispatcher");
+const data_binding_1 = require("plover/events/data_binding");
+const dispatcher_1 = require("plover/events/dispatcher");
 // data
 let data = {
     name: "test name",

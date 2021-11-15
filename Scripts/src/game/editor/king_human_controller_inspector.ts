@@ -1,6 +1,6 @@
 import { Editor, EditorGUI, EditorGUILayout, EditorUtility, MessageType } from "UnityEditor";
 import { Animator, GUILayout, Object, Vector2 } from "UnityEngine";
-import { EditorUtil, ScriptEditor } from "../../plover/editor/editor_decorators";
+import { EditorUtil, ScriptEditor } from "plover/editor/editor_decorators";
 import { KingHumanController, MyNestedPlainObject } from "../king_human_controller";
 
 @ScriptEditor(KingHumanController)

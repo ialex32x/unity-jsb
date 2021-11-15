@@ -151,7 +151,7 @@ namespace QuickJS.Module
                 JSApi.JS_FreeValue(ctx, module_obj);
             }
 
-            var filename = fileSystem.GetFullPath(resolved_id);
+            var filename = fileSystem.GetFullPath(resolved_id) ?? resolved_id;
             exports_obj = JSApi.JS_NewObject(ctx); 
             module_obj = context._new_commonjs_script_module(parent_module_id, resolved_id, filename, exports_obj, false, set_as_main);
             JSApi.JS_FreeValue(ctx, exports_obj);

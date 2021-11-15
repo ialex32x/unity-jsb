@@ -12,8 +12,11 @@ namespace QuickJS.Module
     public interface IModuleRegister
     {
         bool isReloadSupported { get; }
-        
-        void Load(ScriptContext context, JSValue module_obj, JSValue exports_obj);
+
+        /// <summary>
+        /// setup module members and return the final exports object (usually equals to exports_obj, but with an additional reference counting)
+        /// </summary>
+        JSValue Load(ScriptContext context, JSValue module_obj, JSValue exports_obj);
         void Unload();
     }
 }

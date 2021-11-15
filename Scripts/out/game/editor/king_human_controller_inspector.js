@@ -9,7 +9,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.KingHumanControllerInspector = void 0;
 const UnityEditor_1 = require("UnityEditor");
 const UnityEngine_1 = require("UnityEngine");
-const editor_decorators_1 = require("../../plover/editor/editor_decorators");
+const editor_decorators_1 = require("plover/editor/editor_decorators");
 const king_human_controller_1 = require("../king_human_controller");
 let KingHumanControllerInspector = class KingHumanControllerInspector extends UnityEditor_1.Editor {
     OnInspectorGUI() {

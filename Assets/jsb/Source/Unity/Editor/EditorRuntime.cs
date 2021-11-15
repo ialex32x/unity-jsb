@@ -77,7 +77,7 @@ namespace QuickJS.Unity
 
         private void OnFileChanged(object sender, FileSystemEventArgs e)
         {
-            _runtime.EnqueueAction(OnFileChangedSync, e.FullPath);
+            _runtime?.EnqueueAction(OnFileChangedSync, e.FullPath);
         }
 
         private void OnFileChangedSync(ScriptRuntime runtime, JSAction action)
@@ -205,6 +205,16 @@ namespace QuickJS.Unity
                 runtime.AddSearchPath(tsconfig.compilerOptions.outDir);
             }
             JSScriptFinder.GetInstance().ModuleSourceChanged += OnModuleSourceChanged;
+
+            var plover = Resources.Load<TextAsset>("plover.js");
+            if (plover != null)
+            {
+                runtime.GetMainContext().EvalSource(plover.text, "plover.js");
+            }
+            else
+            {
+                runtime.GetLogger()?.Write(LogLevel.Error, "failed to load plover.js from Resources");
+            }
 
             if (!string.IsNullOrEmpty(_prefs.editorEntryPoint) && !Application.isPlaying)
             {

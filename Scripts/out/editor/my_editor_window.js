@@ -11,8 +11,8 @@ exports.MyEditorWindow = void 0;
 const System_1 = require("System");
 const UnityEditor_1 = require("UnityEditor");
 const UnityEngine_1 = require("UnityEngine");
-const editor_decorators_1 = require("../plover/editor/editor_decorators");
-const class_decorators_1 = require("../plover/runtime/class_decorators");
+const editor_decorators_1 = require("plover/editor/editor_decorators");
+const class_decorators_1 = require("plover/runtime/class_decorators");
 class TempWindow extends UnityEditor_1.EditorWindow {
     constructor() {
         super(...arguments);

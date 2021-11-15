@@ -23,12 +23,15 @@ namespace QuickJS.Module
         {
         }
 
-        public void Load(ScriptContext context, JSValue module_obj, JSValue exports_obj)
+        public JSValue Load(ScriptContext context, JSValue module_obj, JSValue exports_obj)
         {
             var register = context.CreateTypeRegister();
             var clazz = _bind(register);
-            JSApi.JS_SetProperty(context, module_obj, register.GetAtom("exports"), clazz.GetConstructor());
+            var rval = clazz.GetConstructor();
+            var ctx = (JSContext)context;
+            JSApi.JS_SetProperty(ctx, module_obj, register.GetAtom("exports"), JSApi.JS_DupValue(ctx, rval));
             register.Finish();
+            return rval;
         }
     }
 }
