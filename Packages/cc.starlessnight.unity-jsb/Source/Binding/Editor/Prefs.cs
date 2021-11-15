@@ -83,7 +83,7 @@ namespace QuickJS.Binding
         /// <summary>
         /// optional entry point for editor scripting
         /// </summary>
-        public string editorEntryPoint = "editor/main";
+        public string editorEntryPoint = "";
 
         /// <summary>
         /// Asset Postprocessor(s) implemented in scripts

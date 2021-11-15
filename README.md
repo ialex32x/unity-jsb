@@ -295,8 +295,16 @@ jsb.hotfix.before_single("HotfixTest", "AnotherCall", function () {
 ### Strong-typed
 ![ts_code_complete](jsb_build/res/ts_code_complete.png)
 
-# Howto
-## Clone
+# How to get the minimalistic jsb package
+
+You could add jsb as a UPM package with this URL: [https://github.com/ialex32x/unity-jsb.git#upm](https://github.com/ialex32x/unity-jsb.git#upm). 
+> ! Samples are not included in UPM package.
+
+# How to get the sample project
+
+You could clone this repository as a complete sample project.
+
+## Clone 
 ```
 git clone https://github.com/ialex32x/unity-jsb --depth=1
 ```
@@ -315,6 +323,8 @@ Open ```Assets/Examples/Scenes/SampleScene.unity``` and select specific example 
 
 ### Example for dotnetcore
 Open this project directory in VSCode, select ```dotnetcore example``` in ```Run And Debug``` panel, then just run it.
+
+## How 
 
 # Some experimental works
 
