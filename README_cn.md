@@ -1,5 +1,7 @@
 # unity-jsb
 
+[![openupm](https://img.shields.io/npm/v/cc.starlessnight.unity-jsb?label=openupm&registry_uri=https://package.openupm.com)](https://openupm.com/packages/cc.starlessnight.unity-jsb/)
+
 使用 [QuickJS](https://bellard.org/quickjs/) 为 Unity3D 项目提供 Javascript 运行时支持.<br/>
 通过生成静态绑定代码的方式提供性能良好的 C#/JS 互操作支持. 支持移动平台. <br/>
 

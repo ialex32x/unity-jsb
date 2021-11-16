@@ -1,6 +1,6 @@
 # unity-jsb
 
-[中文说明](README_cn.md)
+[![openupm](https://img.shields.io/npm/v/cc.starlessnight.unity-jsb?label=openupm&registry_uri=https://package.openupm.com)](https://openupm.com/packages/cc.starlessnight.unity-jsb/)
 
 It brings Javascript runtime capability to Unity3D by integrating [QuickJS](https://bellard.org/quickjs/).<br/> 
 
