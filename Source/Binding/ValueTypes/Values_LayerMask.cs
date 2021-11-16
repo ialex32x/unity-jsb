@@ -48,8 +48,15 @@ namespace QuickJS.Binding
         public static bool js_get_structvalue(JSContext ctx, JSValue val, out LayerMask o)
         {
             int pres;
-            JSApi.JS_ToInt32(ctx, out pres, val);
-            o = (LayerMask)pres; // no check
+            if (JSApi.jsb_get_int_1(val, out pres) == 0)
+            {
+                if (JSApi.JS_ToInt32(ctx, out pres, val) < 0)
+                {
+                    o = (LayerMask)0;
+                    return false;
+                }
+            }
+            o = (LayerMask)pres;
             return true;
         }
 
@@ -61,8 +68,15 @@ namespace QuickJS.Binding
                 return true;
             }
             int pres;
-            JSApi.JS_ToInt32(ctx, out pres, val);
-            o = (LayerMask)pres; // no check
+            if (JSApi.jsb_get_int_1(val, out pres) == 0)
+            {
+                if (JSApi.JS_ToInt32(ctx, out pres, val) < 0)
+                {
+                    o = (LayerMask)0;
+                    return false;
+                }
+            }
+            o = (LayerMask)pres;
             return true;
         }
 
