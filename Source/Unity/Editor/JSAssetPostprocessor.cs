@@ -56,7 +56,7 @@ namespace QuickJS.Unity
 
         private static void CallJavascript(string module_id, AssetPostprocessor proc, string funcName, params object[] args)
         {
-            var runtime = EditorRuntime.GetRuntime();
+            var runtime = ScriptEngine.GetRuntime();
             if (runtime != null && runtime.isValid && !EditorApplication.isCompiling)
             {
                 runtime.ResolveModule(module_id);
