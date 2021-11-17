@@ -60,7 +60,7 @@ namespace QuickJS.Unity
             }
             catch (Exception exception)
             {
-                return JSApi.ThrowException(ctx, exception);
+                return ctx.ThrowException(exception);
             }
         }
         [MonoPInvokeCallbackAttribute(typeof(JSCFunction))]
@@ -120,7 +120,7 @@ namespace QuickJS.Unity
             }
             catch (Exception exception)
             {
-                return JSApi.ThrowException(ctx, exception);
+                return ctx.ThrowException(exception);
             }
         }
         [MonoPInvokeCallbackAttribute(typeof(JSCFunction))]
@@ -180,7 +180,7 @@ namespace QuickJS.Unity
             }
             catch (Exception exception)
             {
-                return JSApi.ThrowException(ctx, exception);
+                return ctx.ThrowException(exception);
             }
         }
         [MonoPInvokeCallbackAttribute(typeof(JSCFunction))]
@@ -212,7 +212,7 @@ namespace QuickJS.Unity
             }
             catch (Exception exception)
             {
-                return JSApi.ThrowException(ctx, exception);
+                return ctx.ThrowException(exception);
             }
         }
         [MonoPInvokeCallbackAttribute(typeof(JSCFunction))]
@@ -272,7 +272,7 @@ namespace QuickJS.Unity
             }
             catch (Exception exception)
             {
-                return JSApi.ThrowException(ctx, exception);
+                return ctx.ThrowException(exception);
             }
         }
         [MonoPInvokeCallbackAttribute(typeof(JSCFunction))]
@@ -332,7 +332,7 @@ namespace QuickJS.Unity
             }
             catch (Exception exception)
             {
-                return JSApi.ThrowException(ctx, exception);
+                return ctx.ThrowException(exception);
             }
         }
     }

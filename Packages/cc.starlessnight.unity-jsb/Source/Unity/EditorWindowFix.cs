@@ -123,7 +123,7 @@ namespace QuickJS.Unity
             }
             catch (Exception exception)
             {
-                return JSApi.ThrowException(ctx, exception);
+                return ctx.ThrowException(exception);
             }
         }
 

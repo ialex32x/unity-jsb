@@ -671,7 +671,7 @@ namespace QuickJS.Extra
             }
             catch (Exception exception)
             {
-                return JSApi.ThrowException(ctx, exception);
+                return ctx.ThrowException(exception);
             }
         }
 
@@ -690,7 +690,7 @@ namespace QuickJS.Extra
             }
             catch (Exception exception)
             {
-                return JSApi.ThrowException(ctx, exception);
+                return ctx.ThrowException(exception);
             }
         }
 
@@ -708,7 +708,7 @@ namespace QuickJS.Extra
             }
             catch (Exception exception)
             {
-                return JSApi.ThrowException(ctx, exception);
+                return ctx.ThrowException(exception);
             }
         }
 
@@ -726,7 +726,7 @@ namespace QuickJS.Extra
             }
             catch (Exception exception)
             {
-                return JSApi.ThrowException(ctx, exception);
+                return ctx.ThrowException(exception);
             }
         }
 
@@ -830,7 +830,7 @@ namespace QuickJS.Extra
             }
             catch (Exception exception)
             {
-                return JSApi.ThrowException(ctx, exception);
+                return ctx.ThrowException(exception);
             }
         }
 

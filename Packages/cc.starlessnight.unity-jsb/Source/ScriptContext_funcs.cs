@@ -387,7 +387,7 @@ namespace QuickJS
             catch (Exception exception)
             {
                 JSApi.JS_FreeValue(ctx, rval);
-                return JSApi.ThrowException(ctx, exception);
+                return ctx.ThrowException(exception);
             }
             return rval;
         }

@@ -108,7 +108,7 @@ namespace QuickJS.Module
             catch (Exception exception)
             {
                 // unexpected exception (should never happen)
-                return JSApi.ThrowException(ctx, exception);
+                return ctx.ThrowException(exception);
             }
         }
     }

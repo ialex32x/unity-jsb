@@ -327,7 +327,7 @@ namespace QuickJS
             }
             catch (Exception exception)
             {
-                return JSApi.ThrowException(ctx, exception);
+                return ctx.ThrowException(exception);
             }
         }
 
@@ -352,7 +352,7 @@ namespace QuickJS
             catch (Exception e)
             {
                 JSApi.JS_FreeValue(ctx, val);
-                return JSApi.ThrowException(ctx, e);
+                return ctx.ThrowException(e);
             }
             return val;
         }
@@ -406,7 +406,7 @@ namespace QuickJS
             }
             catch (Exception exception)
             {
-                return JSApi.ThrowException(ctx, exception);
+                return ctx.ThrowException(exception);
             }
         }
 
@@ -426,7 +426,7 @@ namespace QuickJS
             }
             catch (Exception exception)
             {
-                return JSApi.ThrowException(ctx, exception);
+                return ctx.ThrowException(exception);
             }
         }
 
