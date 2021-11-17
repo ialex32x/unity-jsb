@@ -62,7 +62,7 @@ namespace QuickJS.Binding
             }
             if (!(o is Array))
             {
-                return JSApi.ThrowException(ctx, new InvalidCastException($"fail to cast type to Array"));
+                return ctx.ThrowException(new InvalidCastException($"fail to cast type to Array"));
             }
             var arr = (Array)o;
             var length = arr.Length;
@@ -79,7 +79,7 @@ namespace QuickJS.Binding
             catch (Exception exception)
             {
                 JSApi.JS_FreeValue(ctx, rval);
-                return JSApi.ThrowException(ctx, exception);
+                return ctx.ThrowException(exception);
             }
             return rval;
         }

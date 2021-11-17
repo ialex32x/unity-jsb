@@ -355,7 +355,7 @@ namespace QuickJS.Binding
             this.cg.cs.AppendLine("{");
             this.cg.cs.AddTabLevel();
             {
-                this.cg.cs.AppendLine("return JSApi.ThrowException(ctx, {0});", varName);
+                this.cg.cs.AppendLine("return ctx.ThrowException({0});", varName);
             }
             this.cg.cs.DecTabLevel();
             this.cg.cs.AppendLine("}");

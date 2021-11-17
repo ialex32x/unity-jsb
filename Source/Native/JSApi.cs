@@ -311,11 +311,6 @@ namespace QuickJS.Native
             }
         }
 
-        public static unsafe JSValue ThrowException(JSContext ctx, Exception exception)
-        {
-            return JS_ThrowInternalError(ctx, exception.ToString());
-        }
-
         // lib version >= 0xa
         [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern unsafe JSValue JSB_ThrowError(JSContext ctx, byte* buf, size_t buf_len);

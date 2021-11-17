@@ -84,7 +84,7 @@ namespace QuickJS.Binding
             }
             catch (Exception exception)
             {
-                return JSApi.ThrowException(ctx, exception);
+                return ctx.ThrowException(exception);
             }
         }
     }
@@ -235,7 +235,7 @@ namespace QuickJS.Binding
             }
             catch (Exception exception)
             {
-                return JSApi.ThrowException(ctx, exception);
+                return ctx.ThrowException(exception);
             }
         }
     }
@@ -329,7 +329,7 @@ namespace QuickJS.Binding
             }
             catch (Exception exception)
             {
-                return JSApi.ThrowException(ctx, exception);
+                return ctx.ThrowException(exception);
             }
         }
     }
