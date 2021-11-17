@@ -380,6 +380,7 @@ namespace QuickJS
             }
             TimerManager.Bind(register);
             extraBinding?.Invoke(this, register);
+            extraBinding = null;
             register.Finish();
 
             AddStaticModule("jsb", ScriptContext.Bind);
@@ -437,7 +438,7 @@ namespace QuickJS
             var runtime = ScriptEngine.CreateRuntime();
 
             runtime._isWorker = true;
-            runtime.extraBinding = extraBinding;
+            runtime.extraBinding += extraBinding;
             runtime.Initialize(_fileSystem, _pathResolver, _asyncManager, _logger, new IO.ByteBufferPooledAllocator(), null);
             return runtime;
         }

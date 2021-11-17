@@ -5,10 +5,10 @@ using System.Collections.Generic;
 
 namespace QuickJS.Unity
 {
-    using QuickJS.Utils;
-    using UnityEditor;
-    using QuickJS.IO;
     using UnityEngine;
+    using UnityEditor;
+    using QuickJS.Utils;
+    using QuickJS.IO;
     using QuickJS;
     using QuickJS.Binding;
 
@@ -27,9 +27,10 @@ namespace QuickJS.Unity
         private ScriptRuntime _runtime;
         private RunMode _runMode;
         private int _tick;
-        private bool _ready;
         private Prefs _prefs;
         private FileSystemWatcher _prefsWatcher;
+        private float _changedFileInterval;
+        private HashSet<string> _changedFileQueue;
 
         static EditorRuntime()
         {
@@ -50,19 +51,14 @@ namespace QuickJS.Unity
             return _instance;
         }
 
-        public static ScriptRuntime GetRuntime()
-        {
-            return _instance != null && _instance._ready ? _instance._runtime : null;
-        }
-
         public EditorRuntime(Prefs prefs)
         {
             _prefs = prefs;
             _runMode = RunMode.None;
+            _changedFileQueue = new HashSet<string>();
             ScriptEngine.RuntimeCreated += OnScriptRuntimeCreated;
-            EditorApplication.delayCall += OnInit;
-            EditorApplication.update += OnUpdate;
-            EditorApplication.quitting += OnQuitting;
+            EditorApplication.delayCall += OnEditorInit;
+            EditorApplication.update += OnPrefsSync;
             EditorApplication.playModeStateChanged += OnPlayModeStateChanged;
             if (File.Exists(_prefs.filePath))
             {
@@ -75,21 +71,53 @@ namespace QuickJS.Unity
             }
         }
 
-        private void OnFileChanged(object sender, FileSystemEventArgs e)
+        private void OnPrefsSync()
         {
-            _runtime?.EnqueueAction(OnFileChangedSync, e.FullPath);
+            _changedFileInterval += Time.realtimeSinceStartup;
+            if (_changedFileInterval < 3f)
+            {
+                return;
+            }
+
+            _changedFileInterval = 0f;
+            lock (_changedFileQueue)
+            {
+                var len = _changedFileQueue.Count;
+                if (len > 0)
+                {
+                    var changedFiles = new string[len];
+                    _changedFileQueue.CopyTo(changedFiles);
+                    _changedFileQueue.Clear();
+                    for (var i = 0; i < len; ++i)
+                    {
+                        try
+                        {
+                            var changedFile = changedFiles[i];
+                            var fullPath1 = Path.GetFullPath(changedFile);
+                            var fullPath2 = Path.GetFullPath(_prefs.filePath);
+
+                            if (string.Compare(fullPath1, fullPath2, true) == 0)
+                            {
+                                _prefs = UnityHelper.LoadPrefs();
+                            }
+                        }
+                        catch (Exception exception)
+                        {
+                            Debug.LogErrorFormat("{0}\n{1}\n", exception.ToString(), exception.StackTrace);
+                        }
+                    }
+                }
+            }
         }
 
-        private void OnFileChangedSync(ScriptRuntime runtime, JSAction action)
+        private void OnFileChanged(object sender, FileSystemEventArgs e)
         {
-            if (action.args != null && action.args.GetType() == typeof(string))
+            lock (_changedFileQueue)
             {
-                var fullPath1 = Path.GetFullPath((string)action.args);
-                var fullPath2 = Path.GetFullPath(_prefs.filePath);
-
-                if (string.Compare(fullPath1, fullPath2, true) == 0)
+                var referredPath = e.FullPath;
+                if (!string.IsNullOrEmpty(referredPath))
                 {
-                    _prefs = UnityHelper.LoadPrefs();
+                    _changedFileQueue.Add(referredPath);
                 }
             }
         }
@@ -98,20 +126,20 @@ namespace QuickJS.Unity
         {
         }
 
-        private void OnQuitting()
+        private void OnEditorQuitting()
         {
             if (_runtime == null)
             {
                 return;
             }
+
             var runtime = _runtime;
             _runtime = null;
             _runMode = RunMode.None;
             JSScriptFinder.GetInstance().ModuleSourceChanged -= OnModuleSourceChanged;
-            EditorApplication.delayCall -= OnInit;
-            EditorApplication.update -= OnUpdate;
-            EditorApplication.quitting -= OnQuitting;
-            EditorApplication.playModeStateChanged -= OnPlayModeStateChanged;
+            EditorApplication.delayCall -= OnEditorInit;
+            EditorApplication.update -= OnEditorUpdate;
+            EditorApplication.quitting -= OnEditorQuitting;
             if (_prefsWatcher != null)
             {
                 _prefsWatcher.Dispose();
@@ -127,12 +155,12 @@ namespace QuickJS.Unity
                 return false;
             }
 
-            OnQuitting();
-            OnInit();
+            OnEditorQuitting();
+            OnEditorInit();
             return true;
         }
 
-        private void OnInit()
+        private void OnEditorInit()
         {
             if (_runMode == RunMode.Playing)
             {
@@ -141,6 +169,9 @@ namespace QuickJS.Unity
 
             if (_runtime == null)
             {
+                EditorApplication.update += OnEditorUpdate;
+                EditorApplication.quitting += OnEditorQuitting;
+
                 var logger = new DefaultScriptLogger();
                 var pathResolver = new PathResolver();
                 var fileSystem = new DefaultFileSystem(logger);
@@ -149,10 +180,6 @@ namespace QuickJS.Unity
                 _tick = Environment.TickCount;
                 _runtime = ScriptEngine.CreateRuntime(true);
                 _runtime.AddModuleResolvers();
-                _runtime.extraBinding = (runtime, register) =>
-                {
-                    FSWatcher.Bind(register);
-                };
                 _runtime.Initialize(new ScriptRuntimeArgs
                 {
                     fileSystem = fileSystem,
@@ -162,12 +189,15 @@ namespace QuickJS.Unity
                     byteBufferAllocator = new ByteBufferPooledAllocator(),
                     binder = DefaultBinder.GetBinder(_prefs.preferredBindingMethod),
                 });
-                _ready = true;
             }
         }
 
         private void OnScriptRuntimeCreated(ScriptRuntime runtime)
         {
+            runtime.extraBinding += (_1, register) =>
+            {
+                FSWatcher.Bind(register);
+            };
             runtime.OnInitializing += OnScriptRuntimeInitializing;
             runtime.OnMainModuleLoaded += OnScriptRuntimeMainModuleLoaded;
         }
@@ -236,9 +266,10 @@ namespace QuickJS.Unity
             // but if it's freshly added, resolve it here
             if ((classTypes & JSScriptClassType.CustomEditor) != 0)
             {
-                if (_runtime != null && _runtime.isValid && !EditorApplication.isCompiling)
+                var runtime = ScriptEngine.GetRuntime();
+                if (runtime != null && !EditorApplication.isCompiling)
                 {
-                    _runtime.ResolveModule(modulePath);
+                    runtime.ResolveModule(modulePath);
                 }
             }
         }
@@ -247,19 +278,19 @@ namespace QuickJS.Unity
         {
             switch (mode)
             {
-                case PlayModeStateChange.EnteredEditMode: _runMode = RunMode.Editor; EditorApplication.delayCall += OnInit; break;
-                case PlayModeStateChange.ExitingEditMode: OnQuitting(); break;
+                case PlayModeStateChange.EnteredEditMode: _runMode = RunMode.Editor; EditorApplication.delayCall += OnEditorInit; break;
+                case PlayModeStateChange.ExitingEditMode: OnEditorQuitting(); break;
                 case PlayModeStateChange.EnteredPlayMode: _runMode = RunMode.Playing; break;
             }
         }
 
-        private void OnUpdate()
+        private void OnEditorUpdate()
         {
             if (_runtime != null)
             {
                 if (EditorApplication.isCompiling)
                 {
-                    OnQuitting();
+                    OnEditorQuitting();
                     return;
                 }
 
@@ -278,28 +309,14 @@ namespace QuickJS.Unity
 
         public static void Eval(string code)
         {
-            if (_instance != null)
+            var runtime = ScriptEngine.GetRuntime();
+            if (runtime != null && !EditorApplication.isCompiling)
             {
-                if (_instance._runtime != null)
-                {
-                    _instance._runtime.GetMainContext().EvalSource(code, "eval");
-                    return;
-                }
-                else
-                {
-                    if (_instance._runMode == RunMode.Playing)
-                    {
-                        var runtime = ScriptEngine.GetRuntime(false);
-                        if (runtime != null)
-                        {
-                            runtime.GetMainContext().EvalSource(code, "eval");
-                            return;
-                        }
-                    }
-                }
+                runtime.GetMainContext().EvalSource(code, "eval");
+                return;
             }
 
-            Debug.LogError("no running EditorRuntime");
+            Debug.LogError("no running ScriptRuntime");
         }
 
         public static void ShowWindow(string module, string typename)
