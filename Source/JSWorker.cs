@@ -35,7 +35,7 @@ namespace QuickJS
         {
         }
 
-        private void Release()
+        private void Cleanup()
         {
             lock (_inbox)
             {
@@ -54,7 +54,7 @@ namespace QuickJS
         // 在主线程回调
         public void Dispose()
         {
-            Release();
+            Cleanup();
         }
 
         // 在主线程回调
@@ -70,7 +70,7 @@ namespace QuickJS
 
         private void OnWorkerAfterDestroy(int id)
         {
-            Release();
+            Cleanup();
         }
 
         private void Start(JSContext ctx, JSValue value, string scriptPath)
