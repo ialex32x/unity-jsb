@@ -69,7 +69,7 @@ namespace Example
             // _rt.EnableSourceMap();
             // }
             _rt.AddModuleResolvers();
-            _rt.extraBinding = (runtime, register) =>
+            _rt.extraBinding += (runtime, register) =>
             {
 #if !UNITY_WEBGL
                 FSWatcher.Bind(register);
