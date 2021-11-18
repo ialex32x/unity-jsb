@@ -64,11 +64,11 @@ namespace QuickJS.Binding
             {
                 return true;
             }
-            if (type == typeof(Type)) //TODO: remove
+            if (type == typeof(Type)) 
             {
                 Type otype;
-                return js_get_classvalue(ctx, jsValue, out otype); // 只要求匹配 Type 本身, 不比较具体 Type
-                // return otype == type;
+                // just check if the value is a type without comparing since what expected is a type of Type itself
+                return js_get_classvalue(ctx, jsValue, out otype); 
             }
 
             if (JSApi.JS_IsObject(jsValue))
@@ -79,7 +79,7 @@ namespace QuickJS.Binding
                 }
 
                 var context = ScriptEngine.GetContext(ctx);
-                var type_id = JSApi.JSB_GetBridgeType(ctx, jsValue, context.GetAtom(Values.KeyForCSharpTypeID)); // 通常来自 prototype
+                var type_id = JSApi.JSB_GetBridgeType(ctx, jsValue, context.GetAtom(Values.KeyForCSharpTypeID));
                 if (type_id > 0)
                 {
                     var types = context.GetTypeDB();

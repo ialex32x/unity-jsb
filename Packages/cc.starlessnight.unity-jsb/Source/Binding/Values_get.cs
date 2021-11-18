@@ -365,7 +365,7 @@ namespace QuickJS.Binding
 
         public static bool js_get_primitive(JSContext ctx, JSValue val, out string o)
         {
-            //TODO: make this behaviour configurable?
+            //TODO: make the stringcache behaviour configurable?
             var context = ScriptEngine.GetContext(ctx);
             var cache = context.GetStringCache();
             if (cache.TryGetValue(val, out o))

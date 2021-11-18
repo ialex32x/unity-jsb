@@ -65,11 +65,11 @@ namespace jsb.Editor
 
             bindingManager.TransformType(typeof(UnityEngine.Events.UnityEvent<,,,>))
                 .Rename("UnityEvent4");
-
+                
             bindingManager.TransformType(typeof(UnityEngine.Texture))
                 .SetMemberBlocked("imageContentsHash");
             bindingManager.TransformType(typeof(UnityEngine.Texture2D))
-                .SetMemberBlocked("alphaIsTransparency"); //TODO: 增加成员的 defines 条件编译功能
+                .AddRequiredDefinesForMember("alphaIsTransparency", "UNITY_EDITOR");
             bindingManager.TransformType(typeof(UnityEngine.Input))
                 .SetMemberBlocked("IsJoystickPreconfigured"); // specific platform available only
             bindingManager.TransformType(typeof(UnityEngine.MonoBehaviour))

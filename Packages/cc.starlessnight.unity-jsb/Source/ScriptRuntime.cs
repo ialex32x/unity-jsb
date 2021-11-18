@@ -129,7 +129,7 @@ namespace QuickJS
         public JSValue _LoadType(ScriptContext context, string module_id, string topLevelNamespace)
         {
             var reg = FindModuleResolver<StaticModuleResolver>()?.GetModuleRegister<ProxyModuleRegister>(module_id);
-            //TODO improvement: dirty code
+            //TODO improve these dirty code
             return reg != null ? reg._LoadType(context, topLevelNamespace) : JSApi.JS_UNDEFINED;
         }
 
