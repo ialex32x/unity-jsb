@@ -161,7 +161,7 @@ namespace QuickJS.Module
             var argv = stackalloc JSValue[2]
             {
                 JSApi.JS_DupValue(ctx, _typeCache),
-                JSApi.JS_NewString(ctx, _module_id),
+                ctx.NewString(_module_id),
             };
             var retVal = JSApi.JS_Call(ctx, proxyGen, JSApi.JS_UNDEFINED, 2, argv);
             JSApi.JS_FreeValue(ctx, proxyGen);

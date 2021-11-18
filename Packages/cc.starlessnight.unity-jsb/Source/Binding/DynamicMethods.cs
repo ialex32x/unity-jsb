@@ -46,7 +46,7 @@ namespace QuickJS.Binding
                 }
             }
 
-            return JSApi.JS_ThrowInternalError(ctx, $"no overload method matched for {_type.type.Name}.{_methodName} [{count}]");
+            return ctx.ThrowInternalError($"no overload method matched for {_type.type.Name}.{_methodName} [{count}]");
         }
     }
 }

@@ -30,11 +30,11 @@ namespace QuickJS
             {
                 var runtime = ScriptEngine.GetRuntime(ctx);
                 var resolve_to = runtime.ResolveFilePath(module_base_name, module_name);
-                return JSApi.js_strndup(ctx, resolve_to);
+                return ctx.NewCString(resolve_to);
             }
             catch (Exception exception)
             {
-                JSApi.JS_ThrowInternalError(ctx, exception.Message);
+                ctx.ThrowInternalError(exception.Message);
                 return IntPtr.Zero;
             }
         }
@@ -47,18 +47,18 @@ namespace QuickJS
         {
             if (argc != 3 || !argv[0].IsString() || JSApi.JS_IsArray(ctx, argv[1]) != 1 || JSApi.JS_IsFunction(ctx, argv[2]) != 1)
             {
-                return JSApi.JS_ThrowInternalError(ctx, "unsupported 'define' invocation");
+                return ctx.ThrowInternalError("unsupported 'define' invocation");
             }
 
             string[] deps;
             if (!Binding.Values.js_get_primitive(ctx, argv[1], out deps))
             {
-                return JSApi.JS_ThrowInternalError(ctx, "unsupported 'define' invocation");
+                return ctx.ThrowInternalError("unsupported 'define' invocation");
             }
             var module_id = JSApi.GetString(ctx, argv[0]);
             if (string.IsNullOrEmpty(module_id))
             {
-                return JSApi.JS_ThrowInternalError(ctx, "unsupported 'define' invocation");
+                return ctx.ThrowInternalError("unsupported 'define' invocation");
             }
 
             var runtime = ScriptEngine.GetRuntime(ctx);
@@ -70,7 +70,7 @@ namespace QuickJS
             }
             else
             {
-                return JSApi.JS_ThrowInternalError(ctx, "no static module resolver");
+                return ctx.ThrowInternalError("no static module resolver");
             }
 
             return JSApi.JS_UNDEFINED;
@@ -82,12 +82,12 @@ namespace QuickJS
         {
             if (argc < 1)
             {
-                return JSApi.JS_ThrowInternalError(ctx, "require module id");
+                return ctx.ThrowInternalError("require module id");
             }
 
             if (!argv[0].IsString())
             {
-                return JSApi.JS_ThrowInternalError(ctx, "require module id (string)");
+                return ctx.ThrowInternalError("require module id (string)");
             }
 
             // callee is the function <'require'> of current module
@@ -95,7 +95,7 @@ namespace QuickJS
 
             if (JSApi.JS_IsFunction(ctx, callee) != 1)
             {
-                return JSApi.JS_ThrowInternalError(ctx, "require != function");
+                return ctx.ThrowInternalError("require != function");
             }
 
             var context = ScriptEngine.GetContext(ctx);
@@ -126,7 +126,7 @@ namespace QuickJS
 
             if (tagValue == BYTECODE_ES6_MODULE_TAG)
             {
-                return JSApi.JS_ThrowInternalError(ctx, "eval does not support es6 module bytecode");
+                return ctx.ThrowInternalError("eval does not support es6 module bytecode");
             }
 
             if (tagValue == BYTECODE_COMMONJS_MODULE_TAG)
@@ -141,7 +141,7 @@ namespace QuickJS
                         if (JSApi.JS_IsFunction(ctx, func_val) != 1)
                         {
                             JSApi.JS_FreeValue(ctx, func_val);
-                            return JSApi.JS_ThrowInternalError(ctx, "failed to eval bytecode module");
+                            return ctx.ThrowInternalError("failed to eval bytecode module");
                         }
 
                         var rval = JSApi.JS_Call(ctx, func_val, JSApi.JS_UNDEFINED);
@@ -150,7 +150,7 @@ namespace QuickJS
                     }
 
                     JSApi.JS_FreeValue(ctx, bytecodeFunc);
-                    return JSApi.JS_ThrowInternalError(ctx, "failed to eval bytecode module");
+                    return ctx.ThrowInternalError("failed to eval bytecode module");
                 }
             }
 
@@ -180,7 +180,7 @@ namespace QuickJS
             var fileSystem = runtime._fileSystem;
             if (!fileSystem.Exists(module_name))
             {
-                JSApi.JS_ThrowReferenceError(ctx, "module not found");
+                ctx.ThrowReferenceError("module not found");
                 return JSModuleDef.Null;
             }
 
@@ -189,7 +189,7 @@ namespace QuickJS
 
             if (tagValue == BYTECODE_COMMONJS_MODULE_TAG)
             {
-                JSApi.JS_ThrowReferenceError(ctx, "commonjs module can not be loaded by import");
+                ctx.ThrowReferenceError("commonjs module can not be loaded by import");
                 return JSModuleDef.Null;
             }
 
@@ -202,7 +202,7 @@ namespace QuickJS
                     if (!modObj.IsModule())
                     {
                         JSApi.JS_FreeValue(ctx, modObj);
-                        JSApi.JS_ThrowReferenceError(ctx, "unsupported module object");
+                        ctx.ThrowReferenceError("unsupported module object");
                         return JSModuleDef.Null;
                     }
 
@@ -210,7 +210,7 @@ namespace QuickJS
                     {
                         // fail
                         JSApi.JS_FreeValue(ctx, modObj);
-                        JSApi.JS_ThrowReferenceError(ctx, "module resolve failed");
+                        ctx.ThrowReferenceError("module resolve failed");
                         return JSModuleDef.Null;
                     }
 
@@ -231,13 +231,13 @@ namespace QuickJS
                 if (JSApi.JS_IsException(func_val))
                 {
                     ctx.print_exception();
-                    JSApi.JS_ThrowReferenceError(ctx, "module error");
+                    ctx.ThrowReferenceError("module error");
                     return JSModuleDef.Null;
                 }
 
                 if (func_val.IsNullish())
                 {
-                    JSApi.JS_ThrowReferenceError(ctx, "module is null");
+                    ctx.ThrowReferenceError("module is null");
                     return JSModuleDef.Null;
                 }
 
@@ -249,7 +249,7 @@ namespace QuickJS
         {
             var mod = new JSModuleDef(func_val.u.ptr);
             var meta = JSApi.JS_GetImportMeta(ctx, mod);
-            JSApi.JS_DefinePropertyValueStr(ctx, meta, "url", JSApi.JS_NewString(ctx, $"file://{module_name}"), JSPropFlags.JS_PROP_C_W_E);
+            JSApi.JS_DefinePropertyValueStr(ctx, meta, "url", ctx.NewString($"file://{module_name}"), JSPropFlags.JS_PROP_C_W_E);
             JSApi.JS_DefinePropertyValueStr(ctx, meta, "main", JSApi.JS_NewBool(ctx, false), JSPropFlags.JS_PROP_C_W_E);
             JSApi.JS_FreeValue(ctx, meta);
             return mod;

@@ -71,7 +71,7 @@ namespace QuickJS.Utils
                 var fnArgs = JSApi.EmptyValues;
                 if (JSApi.JS_IsFunction(ctx, fnValue) == 0)
                 {
-                    return JSApi.JS_ThrowTypeError(ctx, nameof(js_set_interval) + ": func");
+                    return ctx.ThrowTypeError(nameof(js_set_interval) + ": func");
                 }
                 if (argc >= 2)
                 {
@@ -99,14 +99,14 @@ namespace QuickJS.Utils
                 var fnArgs = JSApi.EmptyValues;
                 if (JSApi.JS_IsFunction(ctx, fnValue) == 0)
                 {
-                    return JSApi.JS_ThrowTypeError(ctx, nameof(js_set_interval) + ": func");
+                    return ctx.ThrowTypeError(nameof(js_set_interval) + ": func");
                 }
                 int pres = 0;
                 if (argc >= 2)
                 {
                     if (JSApi.JS_ToInt32(ctx, out pres, argv[1]) < 0)
                     {
-                        return JSApi.JS_ThrowTypeError(ctx, nameof(js_set_interval) + ": millisecs");
+                        return ctx.ThrowTypeError(nameof(js_set_interval) + ": millisecs");
                     }
 
                     if (argc >= 3)
@@ -136,14 +136,14 @@ namespace QuickJS.Utils
                 var fnArgs = JSApi.EmptyValues;
                 if (JSApi.JS_IsFunction(ctx, fnValue) == 0)
                 {
-                    return JSApi.JS_ThrowTypeError(ctx, nameof(js_set_timeout) + ": func");
+                    return ctx.ThrowTypeError(nameof(js_set_timeout) + ": func");
                 }
                 int pres = 0;
                 if (argc >= 2)
                 {
                     if (JSApi.JS_ToInt32(ctx, out pres, argv[1]) < 0)
                     {
-                        return JSApi.JS_ThrowTypeError(ctx, nameof(js_set_timeout) + ": millisecs");
+                        return ctx.ThrowTypeError(nameof(js_set_timeout) + ": millisecs");
                     }
 
                     if (argc >= 3)

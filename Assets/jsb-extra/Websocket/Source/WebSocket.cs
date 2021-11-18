@@ -359,7 +359,7 @@ namespace QuickJS.Extra
 
         private void OnError(IntPtr @in, size_t len)
         {
-            JSValue val = JSApi.JS_UNDEFINED;
+            var val = JSApi.JS_UNDEFINED;
             if (len > 0)
             {
                 unsafe
@@ -378,7 +378,7 @@ namespace QuickJS.Extra
             }
             else
             {
-                val = JSApi.JS_NewString(_jsContext, "connection timeout");
+                val = _jsContext.NewString("connection timeout");
                 if (val.IsException())
                 {
                     _jsContext.print_exception();
@@ -391,7 +391,7 @@ namespace QuickJS.Extra
 
         private void OnError(Exception exception)
         {
-            var val = JSApi.JS_NewString(_jsContext, exception.ToString());
+            var val = _jsContext.NewString(exception.ToString());
             if (val.IsException())
             {
                 _jsContext.print_exception();
@@ -533,7 +533,7 @@ namespace QuickJS.Extra
             JSApi.JS_SetProperty(ctx, value, context.GetAtom("onclose"), JSApi.JS_NULL);
             JSApi.JS_SetProperty(ctx, value, context.GetAtom("onerror"), JSApi.JS_NULL);
             JSApi.JS_SetProperty(ctx, value, context.GetAtom("onmessage"), JSApi.JS_NULL);
-            JSApi.JS_SetProperty(ctx, value, context.GetAtom("url"), JSApi.JS_NewString(ctx, _url));
+            JSApi.JS_SetProperty(ctx, value, context.GetAtom("url"), ctx.NewString(_url));
         }
 
         private async void Connect()
@@ -746,7 +746,7 @@ namespace QuickJS.Extra
                 }
                 if (!self._wsi.IsValid() || !self._context.IsValid())
                 {
-                    return JSApi.JS_ThrowInternalError(ctx, "websocket closed");
+                    return ctx.ThrowInternalError("websocket closed");
                 }
 
                 if (argv[0].IsString())
@@ -768,7 +768,7 @@ namespace QuickJS.Extra
                         else
                         {
                             JSApi.JS_FreeCString(ctx, pointer);
-                            return JSApi.JS_ThrowInternalError(ctx, "buf alloc failed");
+                            return ctx.ThrowInternalError("buf alloc failed");
                         }
                     }
                     JSApi.JS_FreeCString(ctx, pointer);
@@ -790,7 +790,7 @@ namespace QuickJS.Extra
                         }
                         else
                         {
-                            return JSApi.JS_ThrowInternalError(ctx, "buf alloc failed");
+                            return ctx.ThrowInternalError("buf alloc failed");
                         }
                     }
                     else
@@ -814,7 +814,7 @@ namespace QuickJS.Extra
                                 }
                                 else
                                 {
-                                    return JSApi.JS_ThrowInternalError(ctx, "buf alloc failed");
+                                    return ctx.ThrowInternalError("buf alloc failed");
                                 }
                             }
                         }
@@ -822,7 +822,7 @@ namespace QuickJS.Extra
                         {
                             JSApi.JS_FreeValue(ctx, asBuffer);
                         }
-                        return JSApi.JS_ThrowInternalError(ctx, "unknown buf type");
+                        return ctx.ThrowInternalError("unknown buf type");
                     }
                 }
 

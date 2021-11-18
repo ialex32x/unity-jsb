@@ -498,7 +498,7 @@ namespace QuickJS.Extra
                     throw new ThisBoundException();
                 }
 
-                return JSApi.JS_NewString(ctx, self._reseponseText);
+                return ctx.NewString(self._reseponseText);
             }
             catch (Exception exception)
             {

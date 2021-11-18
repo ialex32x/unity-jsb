@@ -68,10 +68,11 @@ namespace QuickJS.Utils
         // return promise
         public JSValue Yield(ScriptContext context, object awaitObject)
         {
+            var ctx = (JSContext)context;
             if (awaitObject is System.Threading.Tasks.Task)
             {
                 var resolving_funcs = new[] { JSApi.JS_UNDEFINED, JSApi.JS_UNDEFINED };
-                var promise = JSApi.JS_NewPromiseCapability(context, resolving_funcs);
+                var promise = JSApi.JS_NewPromiseCapability(ctx, resolving_funcs);
                 var safeRelease = new SafeRelease(context).Append(resolving_funcs);
                 var task = awaitObject as System.Threading.Tasks.Task;
                 var runtime = context.GetRuntime();
@@ -94,16 +95,16 @@ namespace QuickJS.Utils
 
                 if (_mb == null)
                 {
-                    return JSApi.JS_ThrowInternalError(context, "no MonoBehaviour for Coroutines");
+                    return ctx.ThrowInternalError("no MonoBehaviour for Coroutines");
                 }
 
                 if (_mainThreadId != Thread.CurrentThread.ManagedThreadId)
                 {
-                    return JSApi.JS_ThrowInternalError(context, "not supported on background thread");
+                    return ctx.ThrowInternalError("not supported on background thread");
                 }
 
                 var resolving_funcs = new[] { JSApi.JS_UNDEFINED, JSApi.JS_UNDEFINED };
-                var promise = JSApi.JS_NewPromiseCapability(context, resolving_funcs);
+                var promise = JSApi.JS_NewPromiseCapability(ctx, resolving_funcs);
 
                 _mb.StartCoroutine(_Pending(awaitObject as IEnumerator, context, resolving_funcs));
                 return promise;
@@ -114,22 +115,22 @@ namespace QuickJS.Utils
 
                 if (_mb == null)
                 {
-                    return JSApi.JS_ThrowInternalError(context, "no MonoBehaviour for Coroutines");
+                    return ctx.ThrowInternalError("no MonoBehaviour for Coroutines");
                 }
 
                 if (_mainThreadId != Thread.CurrentThread.ManagedThreadId)
                 {
-                    return JSApi.JS_ThrowInternalError(context, "not supported on background thread");
+                    return ctx.ThrowInternalError("not supported on background thread");
                 }
 
                 var resolving_funcs = new[] { JSApi.JS_UNDEFINED, JSApi.JS_UNDEFINED };
-                var promise = JSApi.JS_NewPromiseCapability(context, resolving_funcs);
+                var promise = JSApi.JS_NewPromiseCapability(ctx, resolving_funcs);
 
                 _mb.StartCoroutine(_Pending(awaitObject as UnityEngine.YieldInstruction, context, resolving_funcs));
                 return promise;
             }
 #else 
-            return JSApi.JS_ThrowInternalError(context, "not supported await object");
+            return ctx.ThrowInternalError("not supported await object");
 #endif // !JSB_UNITYLESS
         }
 

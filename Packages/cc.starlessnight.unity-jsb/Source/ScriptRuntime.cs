@@ -217,6 +217,7 @@ namespace QuickJS
 
         public JSValue ResolveModule(ScriptContext context, string parent_module_id, string module_id, bool set_as_main)
         {
+            var ctx = (JSContext)context;
             for (int i = 0, count = _moduleResolvers.Count; i < count; i++)
             {
                 var resolver = _moduleResolvers[i];
@@ -234,7 +235,6 @@ namespace QuickJS
                     JSValue module_obj;
                     if (context.LoadModuleCache(resolved_id, out module_obj))
                     {
-                        var ctx = (JSContext)context;
                         exports_obj = JSApi.JS_GetProperty(ctx, module_obj, context.GetAtom("exports"));
                         JSApi.JS_FreeValue(ctx, module_obj);
                         return exports_obj;
@@ -245,7 +245,7 @@ namespace QuickJS
                 }
             }
 
-            return JSApi.JS_ThrowInternalError(context, $"module can not be resolved ({module_id})");
+            return ctx.ThrowInternalError($"module can not be resolved ({module_id})");
         }
 
         public bool ReloadModule(ScriptContext context, string resolved_id)
@@ -311,6 +311,28 @@ namespace QuickJS
             }
         }
 
+        // 通用析构函数
+        [MonoPInvokeCallback(typeof(JSClassFinalizer))]
+        public static void class_finalizer(JSRuntime rt, JSValue val)
+        {
+            var header = JSApi.JSB_FreePayloadRT(rt, val);
+            if (header.type_id == BridgeObjectType.ObjectRef)
+            {
+                var objectCache = ScriptEngine.GetObjectCache(rt);
+                if (objectCache != null)
+                {
+                    try
+                    {
+                        objectCache.RemoveObject(header.value);
+                    }
+                    catch (Exception exception)
+                    {
+                        ScriptEngine.GetLogger(rt)?.WriteException(exception);
+                    }
+                }
+            }
+        }
+
         public void Initialize(ScriptRuntimeArgs args)
         {
             Initialize(args.fileSystem, args.pathResolver, args.asyncManager, args.logger, args.byteBufferAllocator, args.binder);
@@ -332,7 +354,7 @@ namespace QuickJS
             _logger = logger;
             // _rwlock = new ReaderWriterLockSlim();
             _rt = JSApi.JS_NewRuntime();
-            JSApi.JS_SetHostPromiseRejectionTracker(_rt, JSApi.PromiseRejectionTracker, IntPtr.Zero);
+            JSApi.JS_SetHostPromiseRejectionTracker(_rt, JSNative.PromiseRejectionTracker, IntPtr.Zero);
 #if UNITY_EDITOR
             JSApi.JS_SetInterruptHandler(_rt, _InterruptHandler, IntPtr.Zero);
 #else
@@ -344,7 +366,7 @@ namespace QuickJS
             JSApi.JS_SetRuntimeOpaque(_rt, (IntPtr)_runtimeId);
             JSApi.JS_SetModuleLoaderFunc(_rt, module_normalize, module_loader, IntPtr.Zero);
             CreateContext();
-            JSApi.JS_NewClass(_rt, JSApi.class_finalizer);
+            JSApi.JS_NewClass(_rt, class_finalizer);
 
             _pathResolver = resolver;
             _asyncManager = asyncManager;

@@ -290,19 +290,19 @@ namespace QuickJS
                 // ctx is woker runtime
                 if (!_runtime.isRunning)
                 {
-                    return JSApi.JS_ThrowInternalError(ctx, "worker is not running");
+                    return ctx.ThrowInternalError("worker is not running");
                 }
 
                 if (argc < 1)
                 {
-                    return JSApi.JS_ThrowInternalError(ctx, "invalid parameter");
+                    return ctx.ThrowInternalError("invalid parameter");
                 }
 
                 size_t psize;
                 var dataStore = JSApi.JS_WriteObject(ctx, out psize, argv[0], JSApi.JS_WRITE_OBJ_REFERENCE);
                 if (dataStore == IntPtr.Zero)
                 {
-                    return JSApi.JS_ThrowInternalError(ctx, "fail to write object");
+                    return ctx.ThrowInternalError("fail to write object");
                 }
 
                 var buffer = ScriptEngine.AllocSharedByteBuffer(psize);
@@ -336,7 +336,7 @@ namespace QuickJS
         {
             if (argc < 1 || !argv[0].IsString())
             {
-                return JSApi.JS_ThrowInternalError(ctx, "invalid parameter");
+                return ctx.ThrowInternalError("invalid parameter");
             }
 
             var scriptPath = JSApi.GetString(ctx, argv[0]);
@@ -371,19 +371,19 @@ namespace QuickJS
 
                 if (argc < 1)
                 {
-                    return JSApi.JS_ThrowInternalError(ctx, "invalid parameter");
+                    return ctx.ThrowInternalError("invalid parameter");
                 }
 
                 if (!self._runtime.isRunning)
                 {
-                    return JSApi.JS_ThrowInternalError(ctx, "worker is not running");
+                    return ctx.ThrowInternalError("worker is not running");
                 }
 
                 size_t psize;
                 var dataStore = JSApi.JS_WriteObject(ctx, out psize, argv[0], 0);
                 if (dataStore == IntPtr.Zero)
                 {
-                    return JSApi.JS_ThrowInternalError(ctx, "fail to write object");
+                    return ctx.ThrowInternalError("fail to write object");
                 }
 
                 var buffer = ScriptEngine.AllocSharedByteBuffer(psize);

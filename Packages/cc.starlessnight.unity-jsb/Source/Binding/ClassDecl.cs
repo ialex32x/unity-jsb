@@ -310,7 +310,7 @@ namespace QuickJS.Binding
 
         public void AddConstValue(string name, string v)
         {
-            var val = JSApi.JS_NewString(_context, v);
+            var val = JSNative.NewString(_context, v);
             var nameAtom = _register.GetAtom(name);
             JSApi.JS_DefinePropertyValue(_context, _ctor, nameAtom, val, JSPropFlags.CONST_VALUE);
         }
