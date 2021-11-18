@@ -197,7 +197,7 @@ namespace QuickJS.Binding
 
         public static JSValue js_push_primitive(JSContext ctx, string o)
         {
-            //TODO: make this behaviour configurable?
+            //TODO: make the stringcache behaviour configurable?
             var context = ScriptEngine.GetContext(ctx);
             var cache = context.GetStringCache();
             JSValue jsValue;
