@@ -401,7 +401,14 @@ namespace QuickJS
                 JSWorker.Bind(register);
             }
             TimerManager.Bind(register);
-            extraBinding?.Invoke(this, register);
+            try
+            {
+                extraBinding?.Invoke(this, register);
+            }
+            catch (Exception exception)
+            {
+                _logger?.WriteException(exception);
+            }
             extraBinding = null;
             register.Finish();
 
