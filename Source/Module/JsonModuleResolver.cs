@@ -55,7 +55,7 @@ namespace QuickJS.Module
 
             if (source == null)
             {
-                return JSApi.JS_ThrowInternalError(ctx, "require module load failed");
+                return ctx.ThrowInternalError("require module load failed");
             }
 
             var input_bytes = TextUtils.GetNullTerminatedBytes(source);

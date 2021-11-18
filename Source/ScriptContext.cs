@@ -616,7 +616,7 @@ namespace QuickJS
                         {
                             JSApi.JS_FreeValue(ctx, func_val);
                             JSApi.JS_FreeValue(ctx, require_argv);
-                            return JSApi.JS_ThrowInternalError(ctx, "failed to require bytecode module");
+                            return ctx.ThrowInternalError("failed to require bytecode module");
                         }
 
                         var rval = JSApi.JS_Call(ctx, func_val, JSApi.JS_UNDEFINED, require_argv.Length, require_argv);
@@ -642,7 +642,7 @@ namespace QuickJS
                     {
                         JSApi.JS_FreeValue(ctx, bytecodeFunc);
                         JSApi.JS_FreeValue(ctx, require_argv);
-                        return JSApi.JS_ThrowInternalError(ctx, "failed to require bytecode module");
+                        return ctx.ThrowInternalError("failed to require bytecode module");
                     }
                 }
             }
@@ -798,7 +798,7 @@ namespace QuickJS
             var global_object = this.GetGlobalObject();
             {
                 _require = JSApi.JSB_NewCFunction(ctx, ScriptRuntime.module_require, GetAtom("require"), 1, JSCFunctionEnum.JS_CFUNC_generic, 0);
-                JSApi.JS_SetProperty(ctx, _require, GetAtom("moduleId"), JSApi.JS_NewString(ctx, ""));
+                JSApi.JS_SetProperty(ctx, _require, GetAtom("moduleId"), ctx.NewString(""));
                 JSApi.JS_SetProperty(ctx, _require, GetAtom("cache"), JSApi.JS_DupValue(ctx, _moduleCache));
                 JSApi.JS_SetProperty(ctx, global_object, GetAtom("require"), JSApi.JS_DupValue(ctx, _require));
                 JSApi.JS_SetProperty(ctx, global_object, GetAtom("define"), JSApi.JSB_NewCFunction(ctx, ScriptRuntime.module_define, GetAtom("define"), 3, JSCFunctionEnum.JS_CFUNC_generic, 0));

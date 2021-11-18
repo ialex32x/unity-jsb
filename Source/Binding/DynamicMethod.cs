@@ -119,7 +119,7 @@ namespace QuickJS.Binding
         {
             if (!_methodInfo.IsPublic && !_type.privateAccess)
             {
-                return JSApi.JS_ThrowInternalError(ctx, "method is inaccessible due to its protection level");
+                return ctx.ThrowInternalError("method is inaccessible due to its protection level");
             }
             object self = null;
             if (_isExtension || !_methodInfo.IsStatic)
@@ -161,7 +161,7 @@ namespace QuickJS.Binding
                             object varArgElement = null;
                             if (!Values.js_get_var(ctx, argv[argvIndex++], varArgType, out varArgElement))
                             {
-                                return JSApi.JS_ThrowInternalError(ctx, $"failed to cast val vararg #{varArgIndex}");
+                                return ctx.ThrowInternalError($"failed to cast val vararg #{varArgIndex}");
                             }
                             varArgArray.SetValue(varArgElement, varArgIndex);
                         }
@@ -176,7 +176,7 @@ namespace QuickJS.Binding
                             {
                                 if (!Values.js_get_var(ctx, argv[argvIndex], pType.GetElementType(), out args[paramIndex]))
                                 {
-                                    return JSApi.JS_ThrowInternalError(ctx, $"failed to cast val byref #{argvIndex}");
+                                    return ctx.ThrowInternalError($"failed to cast val byref #{argvIndex}");
                                 }
                             }
                         }
@@ -184,7 +184,7 @@ namespace QuickJS.Binding
                         {
                             if (!Values.js_get_var(ctx, argv[argvIndex], pType, out args[paramIndex]))
                             {
-                                return JSApi.JS_ThrowInternalError(ctx, $"failed to cast val #{argvIndex}");
+                                return ctx.ThrowInternalError($"failed to cast val #{argvIndex}");
                             }
                         }
                         argvIndex++;
@@ -255,7 +255,7 @@ namespace QuickJS.Binding
             {
                 if (!Values.js_get_var(ctx, argv[i], parameters[i].ParameterType, out args[i]))
                 {
-                    return JSApi.JS_ThrowInternalError(ctx, "failed to cast val");
+                    return ctx.ThrowInternalError("failed to cast val");
                 }
             }
             var ret = methodInfo.Invoke(self, args);
@@ -357,7 +357,7 @@ namespace QuickJS.Binding
         {
             if (!_ctor.IsPublic && !_type.privateAccess)
             {
-                return JSApi.JS_ThrowInternalError(ctx, "constructor is inaccessible due to its protection level");
+                return ctx.ThrowInternalError("constructor is inaccessible due to its protection level");
             }
 
             var nArgs = argc;
@@ -366,7 +366,7 @@ namespace QuickJS.Binding
             {
                 if (!Values.js_get_var(ctx, argv[i], _parameters[i].ParameterType, out args[i]))
                 {
-                    return JSApi.JS_ThrowInternalError(ctx, "failed to cast val");
+                    return ctx.ThrowInternalError("failed to cast val");
                 }
             }
 

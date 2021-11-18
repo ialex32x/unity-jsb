@@ -389,7 +389,6 @@ namespace QuickJS.Binding
                 }
             }
 
-            // error = return $"JSApi.JS_ThrowInternalError(ctx, \"{err}\")";
             cg.cs.AppendLine($"throw new NoSuitableMethodException(\"{methodBindingInfo.jsName}\", {argc});");
         }
 

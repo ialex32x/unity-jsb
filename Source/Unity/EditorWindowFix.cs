@@ -285,7 +285,7 @@ namespace QuickJS.Unity
             {
                 editorWindow.ReleaseScriptInstance();
                 Object.DestroyImmediate(editorWindow);
-                return JSApi.JS_ThrowInternalError(ctx, "failed to bind script");
+                return ctx.ThrowInternalError("failed to bind script");
             }
 
             if (title != null)

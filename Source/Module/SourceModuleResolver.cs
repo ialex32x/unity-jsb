@@ -107,14 +107,14 @@ namespace QuickJS.Module
 
             if (source == null)
             {
-                return JSApi.JS_ThrowInternalError(ctx, LoadModuleEmptySourceError);
+                return ctx.ThrowInternalError(LoadModuleEmptySourceError);
             }
 
             var tagValue = ScriptRuntime.TryReadByteCodeTagValue(source);
 
             if (tagValue == ScriptRuntime.BYTECODE_ES6_MODULE_TAG)
             {
-                return JSApi.JS_ThrowInternalError(ctx, LoadModuleTypeError);
+                return ctx.ThrowInternalError(LoadModuleTypeError);
             }
 
             JSApi.JS_SetProperty(ctx, module_obj, context.GetAtom("loaded"), JSApi.JS_NewBool(ctx, false));
@@ -129,14 +129,14 @@ namespace QuickJS.Module
 
             if (source == null)
             {
-                return JSApi.JS_ThrowInternalError(ctx, LoadModuleEmptySourceError);
+                return ctx.ThrowInternalError(LoadModuleEmptySourceError);
             }
 
             var tagValue = ScriptRuntime.TryReadByteCodeTagValue(source);
 
             if (tagValue == ScriptRuntime.BYTECODE_ES6_MODULE_TAG)
             {
-                return JSApi.JS_ThrowInternalError(ctx, LoadModuleTypeError);
+                return ctx.ThrowInternalError(LoadModuleTypeError);
             }
 
             var exports_obj = JSApi.JS_UNDEFINED;

@@ -19,7 +19,7 @@ namespace QuickJS
             {
                 if (JSApi.JS_ToInt32(ctx, out pres, argv[0]) != 0)
                 {
-                    return JSApi.JS_ThrowInternalError(ctx, "invalid parameter: milliseconds");
+                    return ctx.ThrowInternalError("invalid parameter: milliseconds");
                 }
             }
             if (pres > 0)
@@ -196,12 +196,12 @@ namespace QuickJS
         {
             if (argc < 1 || !argv[0].IsString())
             {
-                return JSApi.JS_ThrowInternalError(ctx, "path expected");
+                return ctx.ThrowInternalError("path expected");
             }
             var path = JSApi.GetString(ctx, argv[0]);
             if (string.IsNullOrEmpty(path))
             {
-                return JSApi.JS_ThrowInternalError(ctx, "invalid path");
+                return ctx.ThrowInternalError("invalid path");
             }
 
             //TODO: use runtime.EvalFile instead
@@ -212,7 +212,7 @@ namespace QuickJS
             var resolvedPath = runtime.ResolveFilePath("", path);
             if (resolvedPath == null)
             {
-                return JSApi.JS_ThrowInternalError(ctx, "file not found:" + path);
+                return ctx.ThrowInternalError("file not found:" + path);
             }
             var source = fileSystem.ReadAllBytes(resolvedPath);
             return ScriptRuntime.EvalSource(ctx, source, resolvedPath, true);
@@ -223,12 +223,12 @@ namespace QuickJS
         {
             if (argc < 1 || !argv[0].IsString())
             {
-                return JSApi.JS_ThrowInternalError(ctx, "path expected");
+                return ctx.ThrowInternalError("path expected");
             }
             var path = JSApi.GetString(ctx, argv[0]);
             if (string.IsNullOrEmpty(path))
             {
-                return JSApi.JS_ThrowInternalError(ctx, "invalid path");
+                return ctx.ThrowInternalError("invalid path");
             }
 
             var runtime = ScriptEngine.GetRuntime(ctx);
@@ -301,7 +301,7 @@ namespace QuickJS
                 }
             }
 
-            return JSApi.JS_ThrowInternalError(ctx, "invalid parameters");
+            return ctx.ThrowInternalError("invalid parameters");
         }
 
         // arraybuffer => c# array<byte>
@@ -310,13 +310,13 @@ namespace QuickJS
         {
             if (argc < 1)
             {
-                return JSApi.JS_ThrowInternalError(ctx, "byte[] expected");
+                return ctx.ThrowInternalError("byte[] expected");
             }
 
             byte[] o;
             if (!Values.js_get_primitive(ctx, argv[0], out o))
             {
-                return JSApi.JS_ThrowInternalError(ctx, "byte[] expected");
+                return ctx.ThrowInternalError("byte[] expected");
             }
 
             return Values.js_push_classvalue(ctx, o);
@@ -328,13 +328,13 @@ namespace QuickJS
         {
             if (argc < 1)
             {
-                return JSApi.JS_ThrowInternalError(ctx, "byte[] expected");
+                return ctx.ThrowInternalError("byte[] expected");
             }
 
             byte[] o;
             if (!Values.js_get_classvalue(ctx, argv[0], out o))
             {
-                return JSApi.JS_ThrowInternalError(ctx, "byte[] expected");
+                return ctx.ThrowInternalError("byte[] expected");
             }
             if (o == null)
             {
@@ -352,7 +352,7 @@ namespace QuickJS
         {
             if (argc < 1)
             {
-                return JSApi.JS_ThrowInternalError(ctx, "array expected");
+                return ctx.ThrowInternalError("array expected");
             }
             if (JSApi.JS_IsArray(ctx, argv[0]) == 1)
             {
@@ -362,7 +362,7 @@ namespace QuickJS
             Array o;
             if (!Values.js_get_classvalue<Array>(ctx, argv[0], out o))
             {
-                return JSApi.JS_ThrowInternalError(ctx, "array expected");
+                return ctx.ThrowInternalError("array expected");
             }
             if (o == null)
             {
@@ -397,7 +397,7 @@ namespace QuickJS
         {
             if (argc < 1)
             {
-                return JSApi.JS_ThrowInternalError(ctx, "type YieldInstruction or Task expected");
+                return ctx.ThrowInternalError("type YieldInstruction or Task expected");
             }
             object awaitObject;
             if (Values.js_get_cached_object(ctx, argv[0], out awaitObject))
@@ -409,11 +409,11 @@ namespace QuickJS
                     return co.Yield(context, awaitObject);
                 }
 
-                return JSApi.JS_ThrowInternalError(ctx, "no async manager");
+                return ctx.ThrowInternalError("no async manager");
                 // return context.Yield(awaitObject);
             }
 
-            return JSApi.JS_ThrowInternalError(ctx, "type YieldInstruction or Task expected");
+            return ctx.ThrowInternalError("type YieldInstruction or Task expected");
         }
 
         [MonoPInvokeCallback(typeof(JSCFunction))]
@@ -421,7 +421,7 @@ namespace QuickJS
         {
             if (argc != 2 || !argv[0].IsObject() || !argv[1].IsBoolean())
             {
-                return JSApi.JS_ThrowInternalError(ctx, "invalid args");
+                return ctx.ThrowInternalError("invalid args");
             }
 
             bool disposable;
@@ -438,7 +438,7 @@ namespace QuickJS
         {
             if (argc < 1 || !argv[0].IsString())
             {
-                return JSApi.JS_ThrowInternalError(ctx, "type_name expected");
+                return ctx.ThrowInternalError("type_name expected");
             }
 
             var type_name = JSApi.GetString(ctx, argv[0]);
@@ -477,7 +477,7 @@ namespace QuickJS
         {
             if (argc != 2 || !argv[0].IsString() || !argv[1].IsString())
             {
-                return JSApi.JS_ThrowInternalError(ctx, "string expected");
+                return ctx.ThrowInternalError("string expected");
             }
 
             var module_id = JSApi.GetString(ctx, argv[0]);
@@ -503,7 +503,7 @@ namespace QuickJS
         {
             if (argc < 1 || !argv[0].IsString())
             {
-                return JSApi.JS_ThrowInternalError(ctx, "resolved module_id expected");
+                return ctx.ThrowInternalError("resolved module_id expected");
             }
 
             var context = ScriptEngine.GetContext(ctx);
@@ -536,11 +536,11 @@ namespace QuickJS
         {
             if (argc < 3)
             {
-                return JSApi.JS_ThrowInternalError(ctx, "type_name, func_name, func expected");
+                return ctx.ThrowInternalError("type_name, func_name, func expected");
             }
             if (!argv[0].IsString() || !argv[1].IsString() || JSApi.JS_IsFunction(ctx, argv[2]) != 1)
             {
-                return JSApi.JS_ThrowInternalError(ctx, "type_name, func_name expected");
+                return ctx.ThrowInternalError("type_name, func_name expected");
             }
 
             var type_name = JSApi.GetString(ctx, argv[0]);
@@ -548,7 +548,7 @@ namespace QuickJS
             var type = Assembly.GetExecutingAssembly().GetType(type_name);
             if (type == null)
             {
-                return JSApi.JS_ThrowInternalError(ctx, "no such type");
+                return ctx.ThrowInternalError("no such type");
             }
 
             var runtime = ScriptEngine.GetRuntime(ctx);
@@ -564,7 +564,7 @@ namespace QuickJS
                 {
                     if (hotfixSlot == 0)
                     {
-                        return JSApi.JS_ThrowInternalError(ctx, "invalid hotfix point");
+                        return ctx.ThrowInternalError("invalid hotfix point");
                     }
                     break;
                 }
@@ -586,11 +586,11 @@ namespace QuickJS
         {
             if (argc < 3)
             {
-                return JSApi.JS_ThrowInternalError(ctx, "type_name, func_name, func expected");
+                return ctx.ThrowInternalError("type_name, func_name, func expected");
             }
             if (!argv[0].IsString() || !argv[1].IsString() || JSApi.JS_IsFunction(ctx, argv[2]) != 1)
             {
-                return JSApi.JS_ThrowInternalError(ctx, "type_name, func_name expected");
+                return ctx.ThrowInternalError("type_name, func_name expected");
             }
 
             var type_name = JSApi.GetString(ctx, argv[0]);
@@ -598,7 +598,7 @@ namespace QuickJS
             var type = Assembly.GetExecutingAssembly().GetType(type_name);
             if (type == null)
             {
-                return JSApi.JS_ThrowInternalError(ctx, "no such type");
+                return ctx.ThrowInternalError("no such type");
             }
 
             var runtime = ScriptEngine.GetRuntime(ctx);
@@ -614,7 +614,7 @@ namespace QuickJS
                 {
                     if (hotfixSlot == 0)
                     {
-                        return JSApi.JS_ThrowInternalError(ctx, "invalid hotfix point");
+                        return ctx.ThrowInternalError("invalid hotfix point");
                     }
                     break;
                 }

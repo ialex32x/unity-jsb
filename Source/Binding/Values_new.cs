@@ -77,7 +77,7 @@ namespace QuickJS.Binding
                 proto = db.GetPrototypeOf(type);
                 if (proto.IsNullish())
                 {
-                    return JSApi.JS_ThrowInternalError(ctx, string.Format("no prototype found for {0}", type));
+                    return ctx.ThrowInternalError(string.Format("no prototype found for {0}", type));
                 }
             }
 

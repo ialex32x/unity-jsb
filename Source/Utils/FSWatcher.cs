@@ -91,8 +91,8 @@ namespace QuickJS.Utils
 
             var argv = stackalloc JSValue[2]
             {
-                JSApi.JS_NewString(_jsContext, name),
-                JSApi.JS_NewString(_jsContext, fullPath),
+                _jsContext.NewString(name),
+                _jsContext.NewString(fullPath),
             };
             var ret = JSApi.JS_Call(_jsContext, func, JSApi.JS_UNDEFINED, 2, argv);
             JSApi.JS_FreeValue(_jsContext, argv[0]);
@@ -331,7 +331,7 @@ namespace QuickJS.Utils
                     throw new ThisBoundException();
                 }
 
-                return JSApi.JS_NewString(ctx, self._fsw.Path);
+                return ctx.NewString(self._fsw.Path);
             }
             catch (Exception exception)
             {
@@ -374,7 +374,7 @@ namespace QuickJS.Utils
                     throw new ThisBoundException();
                 }
 
-                return JSApi.JS_NewString(ctx, self._fsw.Filter);
+                return ctx.NewString(self._fsw.Filter);
             }
             catch (Exception exception)
             {

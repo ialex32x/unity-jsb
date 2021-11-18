@@ -313,7 +313,7 @@ namespace QuickJS.Utils
 
             var method = new DynamicDelegateMethod(d);
             var magic = _dynamicMethods.Count;
-            var funValue = JSApi.JSB_NewCFunctionMagic(_context, JSApi._DynamicMethodInvoke, name, 0, JSCFunctionEnum.JS_CFUNC_generic_magic, magic);
+            var funValue = JSApi.JSB_NewCFunctionMagic(_context, _DynamicMethodInvoke, name, 0, JSCFunctionEnum.JS_CFUNC_generic_magic, magic);
             _dynamicMethods.Add(method);
             return funValue;
         }
@@ -328,7 +328,7 @@ namespace QuickJS.Utils
             else
             {
                 var magic = _dynamicMethods.Count;
-                var funValue = JSApi.JSB_NewCFunctionMagic(_context, JSApi._DynamicMethodInvoke, name, 0, JSCFunctionEnum.JS_CFUNC_generic_magic, magic);
+                var funValue = JSApi.JSB_NewCFunctionMagic(_context, _DynamicMethodInvoke, name, 0, JSCFunctionEnum.JS_CFUNC_generic_magic, magic);
                 _dynamicMethods.Add(method);
                 return funValue;
             }
@@ -344,7 +344,7 @@ namespace QuickJS.Utils
             else
             {
                 var magic = _dynamicMethods.Count;
-                var funValue = JSApi.JSB_NewCFunctionMagic(_context, JSApi._DynamicMethodInvoke, name, 0, JSCFunctionEnum.JS_CFUNC_constructor_magic, magic);
+                var funValue = JSApi.JSB_NewCFunctionMagic(_context, _DynamicMethodInvoke, name, 0, JSCFunctionEnum.JS_CFUNC_constructor_magic, magic);
                 _dynamicMethods.Add(method);
                 return funValue;
             }
@@ -353,8 +353,8 @@ namespace QuickJS.Utils
         public void NewDynamicFieldAccess(JSAtom name, IDynamicField field, out JSValue getter, out JSValue setter)
         {
             var magic = _dynamicFields.Count;
-            getter = JSApi.JSB_NewCFunction(_context, JSApi._DynamicFieldGetter, name, magic);
-            setter = JSApi.JSB_NewCFunction(_context, JSApi._DynamicFieldSetter, name, magic);
+            getter = JSApi.JSB_NewCFunction(_context, _DynamicFieldGetter, name, magic);
+            setter = JSApi.JSB_NewCFunction(_context, _DynamicFieldSetter, name, magic);
             _dynamicFields.Add(field);
         }
 
@@ -366,6 +366,94 @@ namespace QuickJS.Utils
         public IDynamicField GetDynamicField(int index)
         {
             return index >= 0 && index < _dynamicFields.Count ? _dynamicFields[index] : null;
+        }
+        
+        // 用于中转动态注册的反射调用
+        [MonoPInvokeCallback(typeof(JSCFunctionMagic))]
+        public static JSValue _DynamicOperatorInvoke(JSContext ctx, JSValue this_obj, int argc, JSValue[] argv, int magic)
+        {
+            throw new NotImplementedException();
+        }
+
+        // 用于中转动态注册的反射调用
+        [MonoPInvokeCallback(typeof(JSCFunctionMagic))]
+        public static JSValue _DynamicMethodInvoke(JSContext ctx, JSValue this_obj, int argc, JSValue[] argv, int magic)
+        {
+            var typeDB = ScriptEngine.GetTypeDB(ctx);
+
+            if (typeDB == null)
+            {
+                return ctx.ThrowInternalError("type db is null");
+            }
+
+            var method = typeDB.GetDynamicMethod(magic);
+            if (method != null)
+            {
+                try
+                {
+                    return method.Invoke(ctx, this_obj, argc, argv);
+                }
+                catch (Exception exception)
+                {
+                    return ctx.ThrowException(exception);
+                }
+            }
+
+            return ctx.ThrowInternalError("dynamic method not found");
+        }
+
+        // 用于中转动态注册的反射调用
+        [MonoPInvokeCallback(typeof(JSGetterCFunctionMagic))]
+        public static JSValue _DynamicFieldGetter(JSContext ctx, JSValue this_obj, int magic)
+        {
+            var typeDB = ScriptEngine.GetTypeDB(ctx);
+
+            if (typeDB == null)
+            {
+                return ctx.ThrowInternalError("type db is null");
+            }
+
+            var field = typeDB.GetDynamicField(magic);
+            if (field != null)
+            {
+                try
+                {
+                    return field.GetValue(ctx, this_obj);
+                }
+                catch (Exception exception)
+                {
+                    return ctx.ThrowException(exception);
+                }
+            }
+
+            return ctx.ThrowInternalError("dynamic field not found");
+        }
+
+        // 用于中转动态注册的反射调用
+        [MonoPInvokeCallback(typeof(JSSetterCFunctionMagic))]
+        public static JSValue _DynamicFieldSetter(JSContext ctx, JSValue this_obj, JSValue val, int magic)
+        {
+            var typeDB = ScriptEngine.GetTypeDB(ctx);
+
+            if (typeDB == null)
+            {
+                return ctx.ThrowInternalError("type db is null");
+            }
+
+            var field = typeDB.GetDynamicField(magic);
+            if (field != null)
+            {
+                try
+                {
+                    return field.SetValue(ctx, this_obj, val);
+                }
+                catch (Exception exception)
+                {
+                    return ctx.ThrowException(exception);
+                }
+            }
+
+            return ctx.ThrowInternalError("dynamic field not found");
         }
     }
 }

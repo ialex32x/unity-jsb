@@ -206,7 +206,7 @@ namespace QuickJS.Binding
                 return JSApi.JS_DupValue(ctx, jsValue);
             }
 
-            return JSApi.JS_NewString(ctx, o);
+            return ctx.NewString(o);
         }
 
         public static JSValue js_push_enumvalue<T>(JSContext ctx, T o)

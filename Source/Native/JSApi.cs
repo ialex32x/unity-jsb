@@ -285,31 +285,8 @@ namespace QuickJS.Native
         [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern unsafe JSValue JSB_ThrowTypeError(JSContext ctx, byte* msg);
 
-        public static unsafe JSValue JS_ThrowTypeError(JSContext ctx, string message)
-        {
-            var bytes = Utils.TextUtils.GetNullTerminatedBytes(message);
-            fixed (byte* msg = bytes)
-            {
-                return JSB_ThrowTypeError(ctx, msg);
-            }
-        }
-
         [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern unsafe JSValue JSB_ThrowInternalError(JSContext ctx, byte* msg);
-
-        public static unsafe JSValue JS_ThrowInternalError(JSContext ctx, string message)
-        {
-            if (string.IsNullOrEmpty(message))
-            {
-                return JSB_ThrowInternalError(ctx, (byte*)0);
-            }
-
-            var bytes = Utils.TextUtils.GetBytes(message);
-            fixed (byte* buf = bytes)
-            {
-                return JSB_ThrowError(ctx, buf, bytes.Length);
-            }
-        }
 
         // lib version >= 0xa
         [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
@@ -318,29 +295,8 @@ namespace QuickJS.Native
         [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern unsafe JSValue JSB_ThrowRangeError(JSContext ctx, byte* msg);
 
-        public static unsafe JSValue JS_ThrowRangeError(JSContext ctx, string message)
-        {
-            var bytes = Utils.TextUtils.GetNullTerminatedBytes(message);
-            fixed (byte* msg = bytes)
-            {
-                return JSB_ThrowRangeError(ctx, msg);
-            }
-        }
-
         [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern unsafe JSValue JSB_ThrowReferenceError(JSContext ctx, byte* msg);
-
-        public static unsafe JSValue JS_ThrowReferenceError(JSContext ctx, string message)
-        {
-            var bytes = Utils.TextUtils.GetNullTerminatedBytes(message);
-            fixed (byte* msg = bytes)
-            {
-                return JSB_ThrowReferenceError(ctx, msg);
-            }
-        }
-
-        // JSValue __js_printf_like(2, 3) JS_ThrowRangeError(JSContext *ctx, const char *fmt, ...);
-        // JSValue __js_printf_like(2, 3) JS_ThrowInternalError(JSContext *ctx, const char *fmt, ...);
 
         [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern JSValue JS_ThrowOutOfMemory(JSContext ctx);
@@ -357,30 +313,6 @@ namespace QuickJS.Native
 
         [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern unsafe JSValue JS_NewStringLen(JSContext ctx, byte* buf, size_t buf_len);
-
-        public static unsafe JSValue JS_NewString(JSContext ctx, string str)
-        {
-            if (str == null)
-            {
-                return JS_NULL;
-            }
-
-            if (str.Length == 0)
-            {
-                return JSB_NewEmptyString(ctx);
-            }
-
-            // var bytes = Utils.TextUtils.GetNullTerminatedBytes(str);
-            // fixed (byte* ptr = bytes)
-            // {
-            //     return JS_NewString(ctx, ptr);
-            // }
-            var bytes = Utils.TextUtils.GetBytes(str);
-            fixed (byte* buf = bytes)
-            {
-                return JS_NewStringLen(ctx, buf, bytes.Length);
-            }
-        }
 
         [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern JSValue JSB_NewInt64(JSContext ctx, int64_t val);
@@ -1039,15 +971,6 @@ namespace QuickJS.Native
 
         [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern unsafe IntPtr js_strndup(JSContext ctx, byte* s, size_t n);
-
-        public static unsafe IntPtr js_strndup(JSContext ctx, string str)
-        {
-            var bytes = Utils.TextUtils.GetNullTerminatedBytes(str);
-            fixed (byte* ptr = bytes)
-            {
-                return JSApi.js_strndup(ctx, ptr, bytes.Length - 1);
-            }
-        }
 
         #endregion
 

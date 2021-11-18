@@ -89,7 +89,7 @@ namespace QuickJS.Utils
                 jsValue = JSApi.JS_UNDEFINED;
                 return false;
             }
-            jsValue = JSApi.JS_NewString(_ctx, stringValue);
+            jsValue = _ctx.NewString(stringValue);
             if (jsValue.IsString())
             {
                 return _AddPair(jsValue, stringValue) >= 0;

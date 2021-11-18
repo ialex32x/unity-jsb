@@ -84,9 +84,9 @@ namespace QuickJS.Module
         public JSValue LoadModule(ScriptContext context, string parent_module_id, string resolved_id, bool set_as_main)
         {
             IModuleRegister moduleRegister;
+            var ctx = (JSContext)context;
             if (_modRegisters.TryGetValue(resolved_id, out moduleRegister))
             {
-                var ctx = (JSContext)context;
                 var exports_obj = JSApi.JS_NewObject(ctx);
                 var module_obj = context._new_commonjs_resolver_module(resolved_id, "static", exports_obj, false, set_as_main);
 
@@ -98,7 +98,7 @@ namespace QuickJS.Module
                 return rval;
             }
 
-            return JSApi.JS_ThrowInternalError(context, "invalid static module loader");
+            return ctx.ThrowInternalError("invalid static module loader");
         }
 
         public T GetModuleRegister<T>(string module_id) where T : class, IModuleRegister
