@@ -33,13 +33,14 @@ namespace QuickJS.Binding
         public static BindAction StaticBind = (runtime) =>
         {
             var assemblies = AppDomain.CurrentDomain.GetAssemblies();
+            var typeName = $"{Values.NamespaceOfStaticBinder}.{Values.ClassNameOfStaticBinder}";
             Type type = null;
             for (var i = assemblies.Length - 1; i >= 0; --i)
             {
                 var assembly = assemblies[i];
                 if (!assembly.IsDynamic)
                 {
-                    type = assembly.GetType($"{Values.NamespaceOfStaticBinder}.{Values.ClassNameOfStaticBinder}");
+                    type = assembly.GetType(typeName);
                     if (type != null)
                     {
                         break;
