@@ -105,13 +105,16 @@ namespace QuickJS.Binding
             {
                 var argitem = "";
                 var parameter = parameters[i];
-                if (parameter.IsOut && parameter.ParameterType.IsByRef)
+                if (parameter.ParameterType.IsByRef)
                 {
-                    argitem += "out ";
-                }
-                else if (parameter.ParameterType.IsByRef)
-                {
-                    argitem += "ref ";
+                    if (parameter.IsOut)
+                    {
+                        argitem += "out ";
+                    }
+                    else
+                    {
+                        argitem += "ref ";
+                    }
                 }
                 argitem += "arg" + i;
                 arglist.Add(argitem);
