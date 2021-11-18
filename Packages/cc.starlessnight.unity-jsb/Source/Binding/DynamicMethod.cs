@@ -174,10 +174,17 @@ namespace QuickJS.Binding
                             bBackValues = true;
                             if (!parameterInfo.IsOut)
                             {
-                                if (!Values.js_get_var(ctx, argv[argvIndex], pType.GetElementType(), out args[paramIndex]))
+                                JSValue realArgValue;
+                                if (!Values.js_read_wrap(ctx, argv[argvIndex], out realArgValue))
                                 {
+                                    return realArgValue;
+                                }
+                                if (!Values.js_get_var(ctx, realArgValue, pType.GetElementType(), out args[paramIndex]))
+                                {
+                                    JSApi.JS_FreeValue(ctx, realArgValue);
                                     return ctx.ThrowInternalError($"failed to cast val byref #{argvIndex}");
                                 }
+                                JSApi.JS_FreeValue(ctx, realArgValue);
                             }
                         }
                         else
