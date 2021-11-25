@@ -152,7 +152,7 @@ namespace QuickJS
                                 JSValue data;
                                 fixed (byte* buf = byteBuffer.data)
                                 {
-                                    data = JSApi.JS_ReadObject(ctx, buf, byteBuffer.readableBytes, JSApi.JS_READ_OBJ_REFERENCE);
+                                    data = JSApi.JSB_Deserialize(ctx, buf, byteBuffer.readableBytes);
                                 }
 
                                 do
@@ -238,7 +238,7 @@ namespace QuickJS
                             JSValue data;
                             fixed (byte* buf = buffer.data)
                             {
-                                data = JSApi.JS_ReadObject(ctx, buf, buffer.readableBytes, JSApi.JS_READ_OBJ_REFERENCE);
+                                data = JSApi.JSB_Deserialize(ctx, buf, buffer.readableBytes);
                             }
 
                             do
@@ -299,7 +299,7 @@ namespace QuickJS
                 }
 
                 size_t psize;
-                var dataStore = JSApi.JS_WriteObject(ctx, out psize, argv[0], JSApi.JS_WRITE_OBJ_REFERENCE);
+                var dataStore = JSApi.JSB_Serialize(ctx, out psize, argv[0]);
                 if (dataStore == IntPtr.Zero)
                 {
                     return ctx.ThrowInternalError("fail to write object");
@@ -380,7 +380,7 @@ namespace QuickJS
                 }
 
                 size_t psize;
-                var dataStore = JSApi.JS_WriteObject(ctx, out psize, argv[0], 0);
+                var dataStore = JSApi.JSB_Serialize(ctx, out psize, argv[0]);
                 if (dataStore == IntPtr.Zero)
                 {
                     return ctx.ThrowInternalError("fail to write object");
