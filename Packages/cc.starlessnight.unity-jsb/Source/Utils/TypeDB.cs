@@ -322,7 +322,7 @@ namespace QuickJS.Utils
         {
             if (method == null)
             {
-                var funValue = JSApi.JSB_NewCFunctionMagic(_context, JSApi.class_private_ctor, name, 0, JSCFunctionEnum.JS_CFUNC_generic_magic, 0);
+                var funValue = JSApi.JSB_NewCFunctionMagic(_context, JSNative.class_private_ctor, name, 0, JSCFunctionEnum.JS_CFUNC_generic_magic, 0);
                 return funValue;
             }
             else
@@ -338,7 +338,7 @@ namespace QuickJS.Utils
         {
             if (method == null)
             {
-                var funValue = JSApi.JSB_NewCFunctionMagic(_context, JSApi.class_private_ctor, name, 0, JSCFunctionEnum.JS_CFUNC_constructor_magic, 0);
+                var funValue = JSApi.JSB_NewCFunctionMagic(_context, JSNative.class_private_ctor, name, 0, JSCFunctionEnum.JS_CFUNC_constructor_magic, 0);
                 return funValue;
             }
             else

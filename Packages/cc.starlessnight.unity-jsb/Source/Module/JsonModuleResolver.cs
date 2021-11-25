@@ -37,7 +37,7 @@ namespace QuickJS.Module
             exports_obj = LoadModule(context, null, resolved_id, false);
             if (exports_obj.IsException())
             {
-                JSContext.print_exception(context);
+                JSNative.print_exception(context);
                 exports_obj = JSApi.JS_UNDEFINED;
                 return false;
             }

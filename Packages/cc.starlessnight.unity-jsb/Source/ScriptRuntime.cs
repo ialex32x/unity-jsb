@@ -206,7 +206,7 @@ namespace QuickJS
                 var rval = ResolveModule(_mainContext, "", module_id, set_as_main);
                 if (rval.IsException())
                 {
-                    JSContext.print_exception(_mainContext, _logger, LogLevel.Error, "failed to load module: " + module_id);
+                    JSNative.print_exception(_mainContext, _logger, LogLevel.Error, "failed to load module: " + module_id);
                 }
                 else
                 {

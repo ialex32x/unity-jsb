@@ -1,10 +1,7 @@
 {
-    "name": "jsb.core",
+    "name": "jsb.shared",
     "rootNamespace": "",
-    "references": [
-        "GUID:595d45be140461240b6b4358dc45f2c0",
-        "GUID:ac4126d60783f3d4a98aee6be9a997aa"
-    ],
+    "references": [],
     "includePlatforms": [],
     "excludePlatforms": [],
     "allowUnsafeCode": true,
@@ -13,5 +10,5 @@
     "autoReferenced": true,
     "defineConstraints": [],
     "versionDefines": [],
-    "noEngineReferences": false
+    "noEngineReferences": true
 }
