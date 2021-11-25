@@ -51,8 +51,8 @@ namespace QuickJS.Utils
         {
             if (argc >= 1)
             {
-                uint pres = JSApi.JSB_ToUint32z(ctx, argv[0]);
-                if (pres > 0)
+                uint pres;
+                if (JSApi.JSB_ToUint32(ctx, out pres, argv[0]) >= 0)
                 {
                     var rt = ScriptEngine.GetRuntime(ctx);
                     var tm = rt.GetTimerManager();
