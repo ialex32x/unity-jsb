@@ -8,7 +8,7 @@ namespace QuickJS.Unity
     public class JSScriptFinder
     {
         private static JSScriptFinder _finder;
-        
+
         private FileSystemWatcher _fsw;
         private string _baseDir;
         private string _fileExt;
@@ -163,20 +163,28 @@ namespace QuickJS.Unity
                 return;
             }
 
-            _fsw = new FileSystemWatcher(_baseDir, $"*{_fileExt}");
-            _fsw.IncludeSubdirectories = true;
-            _fsw.Changed += OnChanged;
-            _fsw.Created += OnCreated;
-            _fsw.Deleted += OnDeleted;
-            _fsw.EnableRaisingEvents = true;
             UnityEditor.EditorApplication.update += OnUpdate;
-            RefreshAll();
         }
 
         private void OnUpdate()
         {
             if (_isRefreshing)
             {
+                return;
+            }
+
+            if (_fsw == null)
+            {
+                if (Directory.Exists(_baseDir))
+                {
+                    _fsw = new FileSystemWatcher(_baseDir, $"*{_fileExt}");
+                    _fsw.IncludeSubdirectories = true;
+                    _fsw.Changed += OnChanged;
+                    _fsw.Created += OnCreated;
+                    _fsw.Deleted += OnDeleted;
+                    _fsw.EnableRaisingEvents = true;
+                    RefreshAll();
+                }
                 return;
             }
 
@@ -216,14 +224,13 @@ namespace QuickJS.Unity
 
         public void Stop()
         {
-            if (_fsw == null)
-            {
-                return;
-            }
-
             UnityEditor.EditorApplication.update -= OnUpdate;
-            _fsw.Dispose();
-            _fsw = null;
+
+            if (_fsw != null)
+            {
+                _fsw.Dispose();
+                _fsw = null;
+            }
         }
     }
 }
