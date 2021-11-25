@@ -583,6 +583,27 @@ namespace QuickJS.Native
         [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern unsafe JSValue JS_ReadObject(JSContext ctx, byte* buf, size_t buf_len, int flags);
 
+        public static unsafe JSValue JS_ReadByteCode(JSContext ctx, byte* buf, size_t buf_len)
+        {
+            return JS_ReadObject(ctx, buf, buf_len, JS_READ_OBJ_BYTECODE);
+        }
+
+        public static unsafe IntPtr JS_WriteByteCode(JSContext ctx, out size_t psize, JSValueConst obj)
+        {
+            return JS_WriteObject(ctx, out psize, obj, JS_WRITE_OBJ_BYTECODE);
+        }
+
+        //TODO [v8_integrating] get rid of using WriteObject for better compatibility between backends
+        public static unsafe JSValue JSB_Deserialize(JSContext ctx, byte* buf, size_t buf_len)
+        {
+            return JS_ReadObject(ctx, buf, buf_len, JS_READ_OBJ_REFERENCE);
+        }
+
+        public static unsafe IntPtr JSB_Serialize(JSContext ctx, out size_t psize, JSValueConst obj)
+        {
+            return JS_WriteObject(ctx, out psize, obj, JS_WRITE_OBJ_REFERENCE);
+        }
+
         [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern unsafe JSValue JS_Eval(JSContext ctx, byte* input, size_t input_len, byte* filename, JSEvalFlags eval_flags);
 

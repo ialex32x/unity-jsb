@@ -20,6 +20,11 @@ namespace QuickJS.Native
         public JSValueUnion u; // IntPtr
         public long tag;
 
+        public bool IsFunctionByteCode()
+        {
+            return tag == JSApi.JS_TAG_FUNCTION_BYTECODE;
+        }
+
         public bool IsException()
         {
             // return JSApi.JS_IsException(this);

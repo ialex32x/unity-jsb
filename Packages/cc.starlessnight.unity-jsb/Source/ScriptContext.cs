@@ -607,9 +607,9 @@ namespace QuickJS
                 // bytecode
                 fixed (byte* intput_ptr = source)
                 {
-                    var bytecodeFunc = JSApi.JS_ReadObject(ctx, intput_ptr + sizeof(uint), source.Length - sizeof(uint), JSApi.JS_READ_OBJ_BYTECODE);
+                    var bytecodeFunc = JSApi.JS_ReadByteCode(ctx, intput_ptr + sizeof(uint), source.Length - sizeof(uint));
 
-                    if (bytecodeFunc.tag == JSApi.JS_TAG_FUNCTION_BYTECODE)
+                    if (bytecodeFunc.IsFunctionByteCode())
                     {
                         var func_val = JSApi.JS_EvalFunction(ctx, bytecodeFunc); // it's CallFree (bytecodeFunc)
                         if (JSApi.JS_IsFunction(ctx, func_val) != 1)

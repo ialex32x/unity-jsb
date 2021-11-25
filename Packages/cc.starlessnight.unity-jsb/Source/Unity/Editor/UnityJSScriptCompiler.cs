@@ -58,7 +58,7 @@ namespace QuickJS.Unity
                     else
                     {
                         size_t psize;
-                        var byteCode = JSApi.JS_WriteObject(_ctx, out psize, rval, JSApi.JS_WRITE_OBJ_BYTECODE);
+                        var byteCode = JSApi.JS_WriteByteCode(_ctx, out psize, rval);
                         JSApi.JS_FreeValue(_ctx, rval);
                         if (byteCode != IntPtr.Zero)
                         {
