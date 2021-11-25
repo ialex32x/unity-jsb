@@ -12,6 +12,94 @@ namespace QuickJS
     /// </summary>
     public static class JSNative
     {
+        [MonoPInvokeCallback(typeof(JSCFunctionMagic))]
+        public static JSValue class_private_ctor(JSContext ctx, JSValue new_target, int argc, JSValue[] argv, int magic)
+        {
+            return ctx.ThrowInternalError("cant call constructor on this type");
+        }
+
+        public static bool CheckFuncProperty(this JSValue self, ScriptContext context, string name)
+        {
+            if (context == null)
+            {
+                return false;
+            }
+
+            var ctx = (JSContext)context;
+            var prop = JSApi.JS_GetProperty(ctx, self, context.GetAtom(name));
+            var res = JSApi.JS_IsFunction(context, prop) == 1;
+            
+            JSApi.JS_FreeValue(ctx, prop);
+            return res;
+        }
+
+        public static void print_exception(this JSContext ctx, Utils.LogLevel logLevel = Utils.LogLevel.Error, string title = "")
+        {
+            print_exception(ctx, ScriptEngine.GetLogger(ctx), logLevel, title);
+        }
+
+        public static void print_exception(JSContext ctx, Utils.IScriptLogger logger, Utils.LogLevel logLevel, string title)
+        {
+            var ex = JSApi.JS_GetException(ctx);
+
+            try
+            {
+                if (logger != null)
+                {
+                    var err_fileName = JSApi.JS_GetProperty(ctx, ex, JSApi.JS_ATOM_fileName);
+                    var err_lineNumber = JSApi.JS_GetProperty(ctx, ex, JSApi.JS_ATOM_lineNumber);
+                    var err_message = JSApi.JS_GetProperty(ctx, ex, JSApi.JS_ATOM_message);
+                    var err_stack = JSApi.JS_GetProperty(ctx, ex, JSApi.JS_ATOM_stack);
+
+                    try
+                    {
+                        var fileName = err_fileName.IsNullish() ? "native" : JSApi.GetString(ctx, err_fileName);
+                        var lineNumber = err_lineNumber.IsNullish() ? null : JSApi.GetString(ctx, err_lineNumber);
+                        var message = JSApi.GetString(ctx, err_message);
+                        var stack = JSApi.GetString(ctx, err_stack);
+
+                        if (string.IsNullOrEmpty(lineNumber))
+                        {
+                            if (string.IsNullOrEmpty(stack))
+                            {
+                                logger.Write(logLevel, "[{0}] {1} {2}",
+                                    fileName, title, message);
+                            }
+                            else
+                            {
+                                logger.Write(logLevel, "[{0}] {1} {2}\nJavascript stack:\n{3}",
+                                    fileName, title, message, stack);
+                            }
+                        }
+                        else
+                        {
+                            if (string.IsNullOrEmpty(stack))
+                            {
+                                logger.Write(logLevel, "[{0}:{1}] {2} {3}",
+                                fileName, lineNumber, title, message);
+                            }
+                            else
+                            {
+                                logger.Write(logLevel, "[{0}:{1}] {2} {3}\nJavascript stack:\n{4}",
+                                    fileName, lineNumber, title, message, stack);
+                            }
+                        }
+                    }
+                    finally
+                    {
+                        JSApi.JS_FreeValue(ctx, err_fileName);
+                        JSApi.JS_FreeValue(ctx, err_lineNumber);
+                        JSApi.JS_FreeValue(ctx, err_message);
+                        JSApi.JS_FreeValue(ctx, err_stack);
+                    }
+                }
+            }
+            finally
+            {
+                JSApi.JS_FreeValue(ctx, ex);
+            }
+        }
+
         public static unsafe JSValue NewString(this JSContext ctx, string str)
         {
             if (str == null)

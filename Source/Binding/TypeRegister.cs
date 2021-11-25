@@ -76,7 +76,7 @@ namespace QuickJS.Binding
 
         public ClassDecl CreateEnum(string typename, Type type)
         {
-            return CreateClass(JSApi.JS_UNDEFINED, typename, type, JSApi.class_private_ctor);
+            return CreateClass(JSApi.JS_UNDEFINED, typename, type, JSNative.class_private_ctor);
         }
 
         public ClassDecl CreateClass(string typename, Type type, JSCFunctionMagic ctorFunc)
@@ -141,7 +141,7 @@ namespace QuickJS.Binding
             var nameAtom = GetAtom(typename);
             JSContext ctx = _context;
             var protoVal = JSApi.JS_NewObject(ctx);
-            var ctorVal = JSApi.JSB_NewCFunctionMagic(ctx, JSApi.class_private_ctor, nameAtom, 0, JSCFunctionEnum.JS_CFUNC_constructor_magic, 0);
+            var ctorVal = JSApi.JSB_NewCFunctionMagic(ctx, JSNative.class_private_ctor, nameAtom, 0, JSCFunctionEnum.JS_CFUNC_constructor_magic, 0);
             var decl = new ClassDecl(this, ctorVal, protoVal, null);
             JSApi.JS_SetConstructor(ctx, ctorVal, protoVal);
             if (!nsValue.IsNullish())

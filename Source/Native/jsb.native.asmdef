@@ -1,15 +1,10 @@
 {
-    "name": "jsb.editor.unity",
+    "name": "jsb.native",
     "rootNamespace": "",
     "references": [
-        "GUID:118b4ca3a1852354bac065cf952c1e85",
-        "GUID:eda0539582471264796e5affb41fe082",
-        "GUID:ac4126d60783f3d4a98aee6be9a997aa",
         "GUID:595d45be140461240b6b4358dc45f2c0"
     ],
-    "includePlatforms": [
-        "Editor"
-    ],
+    "includePlatforms": [],
     "excludePlatforms": [],
     "allowUnsafeCode": true,
     "overrideReferences": false,
@@ -17,5 +12,5 @@
     "autoReferenced": true,
     "defineConstraints": [],
     "versionDefines": [],
-    "noEngineReferences": false
+    "noEngineReferences": true
 }

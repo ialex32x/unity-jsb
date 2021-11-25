@@ -6,12 +6,6 @@ namespace QuickJS.Native
 {
     public partial class JSApi
     {
-        [MonoPInvokeCallback(typeof(JSCFunctionMagic))]
-        public static JSValue class_private_ctor(JSContext ctx, JSValue new_target, int argc, JSValue[] argv, int magic)
-        {
-            return ctx.ThrowInternalError("cant call constructor on this type");
-        }
-
         public static string GetString(JSContext ctx, JSAtom atom)
         {
             var strValue = JSApi.JS_AtomToString(ctx, atom);

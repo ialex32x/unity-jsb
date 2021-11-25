@@ -53,7 +53,7 @@ namespace QuickJS.Unity
                     var rval = JSApi.JS_Eval(_ctx, input_ptr, input_len, fn_ptr, evalFlags);
                     if (JSApi.JS_IsException(rval))
                     {
-                        JSContext.print_exception(_ctx, _logger, Utils.LogLevel.Error, "[ScriptCompiler]");
+                        JSNative.print_exception(_ctx, _logger, Utils.LogLevel.Error, "[ScriptCompiler]");
                     }
                     else
                     {
