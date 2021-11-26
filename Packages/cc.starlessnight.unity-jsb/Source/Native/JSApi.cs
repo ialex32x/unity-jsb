@@ -75,10 +75,14 @@ namespace QuickJS.Native
 
     public partial class JSApi
     {
-        const int CS_JSB_VERSION = 0xa; // expected dll version
-        public static readonly int SO_JSB_VERSION; // actual dll version
+        private const int CS_JSB_VERSION = 0xa; // expected dll version
+        private static readonly int SO_JSB_VERSION; // actual dll version
 
+#if JSB_NO_BIGNUM || (UNITY_WSA && !UNITY_EDITOR)
+        public const bool IsOperatorOverloadingSupported = false;
+#else
         public const bool IsOperatorOverloadingSupported = true;
+#endif
 
 #if (UNITY_IPHONE || UNITY_WEBGL) && !UNITY_EDITOR
 	    const string JSBDLL = "__Internal";
@@ -106,20 +110,20 @@ namespace QuickJS.Native
         public const int JS_TAG_FLOAT64 = 7;
 
         // #define JS_WRITE_OBJ_BYTECODE (1 << 0) /* allow function/module */
-        public const int JS_WRITE_OBJ_BYTECODE = 1 << 0;
+        public const int JS_WRITE_OBJ_BYTECODE = 1 << 0; /* allow function/module */
         public const int JS_WRITE_OBJ_BSWAP = 1 << 1; /* byte swapped output */
         public const int JS_WRITE_OBJ_SAB = 1 << 2; /* allow SharedArrayBuffer */
         public const int JS_WRITE_OBJ_REFERENCE = 1 << 3; /* allow object references to
-
-        // #define JS_READ_OBJ_BYTECODE  (1 << 0) /* allow function/module */
-        public const int JS_READ_OBJ_BYTECODE = 1 << 0;
+                                                             encode arbitrary object
+                                                             graph */
+        public const int JS_READ_OBJ_BYTECODE = 1 << 0; /* allow function/module */
         public const int JS_READ_OBJ_ROM_DATA = 1 << 1; /* avoid duplicating 'buf' data */
         public const int JS_READ_OBJ_SAB = 1 << 2; /* allow SharedArrayBuffer */
         public const int JS_READ_OBJ_REFERENCE = 1 << 3; /* allow object references */
 
         public static readonly JSValue[] EmptyValues = new JSValue[0];
 
-        public static JSValue JS_MKVAL(long tag, int val)
+        private static JSValue JS_MKVAL(long tag, int val)
         {
             return new JSValue() { u = new JSValueUnion() { int32 = val }, tag = tag };
         }
@@ -131,12 +135,6 @@ namespace QuickJS.Native
         public static readonly JSValue JS_EXCEPTION = JS_MKVAL(JS_TAG_EXCEPTION, 0);
         public static readonly JSValue JS_UNINITIALIZED = JS_MKVAL(JS_TAG_UNINITIALIZED, 0);
 
-        [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern JSRuntime JS_NewRuntime();
-
-        [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern JSRuntime JS_GetRuntime(JSContext ctx);
-
         static JSApi()
         {
             SO_JSB_VERSION = __JSB_Init();
@@ -146,6 +144,12 @@ namespace QuickJS.Native
         {
             return CS_JSB_VERSION == SO_JSB_VERSION;
         }
+
+        [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern JSRuntime JS_NewRuntime();
+
+        [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern JSRuntime JS_GetRuntime(JSContext ctx);
 
         [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern int JS_FreeRuntime(JSRuntime rt);
@@ -175,7 +179,7 @@ namespace QuickJS.Native
         public static extern unsafe JSValue JS_NewPromiseCapability(JSContext ctx, JSValue* resolving_funcs);
 
         [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern void JS_SetHostPromiseRejectionTracker(JSRuntime rt, IntPtr cb, IntPtr opaque);
+        private static extern void JS_SetHostPromiseRejectionTracker(JSRuntime rt, IntPtr cb, IntPtr opaque);
 
         public static void JS_SetHostPromiseRejectionTracker(JSRuntime rt, JSHostPromiseRejectionTracker cb, IntPtr opaque)
         {
@@ -772,15 +776,14 @@ namespace QuickJS.Native
 
         public static readonly JSAtom JS_ATOM_prototype = JSB_ATOM_prototype();
 
+        /// <summary>
+        /// init the native library, return the version tag of it
+        /// </summary>
         [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl, EntryPoint = "JSB_Init")]
         public static extern int __JSB_Init();
 
-        [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl, EntryPoint = "JSB_GetClassID")]
-        public static extern JSClassID __JSB_GetClassID();
-
-        [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl, EntryPoint = "JSB_NewClass")]
-        private static extern JSClassID __JSB_NewClass(JSRuntime rt, JSClassID class_id,
-            [MarshalAs(UnmanagedType.LPStr)] string class_name, IntPtr finalizer);
+        [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
+        private static extern JSClassID JSB_NewClass(JSRuntime rt, JSClassID class_id, [MarshalAs(UnmanagedType.LPStr)] string class_name, IntPtr finalizer);
 
         public static JSClassID JS_NewClass(JSRuntime rt, JSClassFinalizer class_finalizer)
         {
@@ -788,7 +791,7 @@ namespace QuickJS.Native
             GCHandle.Alloc(class_finalizer);
 #endif
             var fn_ptr = Marshal.GetFunctionPointerForDelegate(class_finalizer);
-            return JSApi.__JSB_NewClass(rt, JSApi.JSB_GetBridgeClassID(), "CSharpClass", fn_ptr);
+            return JSApi.JSB_NewClass(rt, JSApi.JSB_GetBridgeClassID(), "CSharpClass", fn_ptr);
         }
 
         #endregion
@@ -796,8 +799,7 @@ namespace QuickJS.Native
         #region string
 
         [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern IntPtr JS_ToCStringLen2(JSContext ctx, out size_t len, [In] JSValue val,
-            [MarshalAs(UnmanagedType.Bool)] bool cesu8);
+        public static extern IntPtr JS_ToCStringLen2(JSContext ctx, out size_t len, [In] JSValue val, [MarshalAs(UnmanagedType.Bool)] bool cesu8);
 
         public static IntPtr JS_ToCStringLen(JSContext ctx, out size_t len, JSValue val)
         {
@@ -813,12 +815,9 @@ namespace QuickJS.Native
 
         /* module_normalize = NULL is allowed and invokes the default module filename normalizer */
         [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern void JS_SetModuleLoaderFunc(JSRuntime rt, IntPtr module_normalize,
-            IntPtr module_loader, IntPtr opaque);
+        public static extern void JS_SetModuleLoaderFunc(JSRuntime rt, IntPtr module_normalize, IntPtr module_loader, IntPtr opaque);
 
-        public static void JS_SetModuleLoaderFunc(JSRuntime rt,
-            JSModuleNormalizeFunc module_normalize,
-            JSModuleLoaderFunc module_loader, IntPtr opaque)
+        public static void JS_SetModuleLoaderFunc(JSRuntime rt, JSModuleNormalizeFunc module_normalize, JSModuleLoaderFunc module_loader, IntPtr opaque)
         {
 #if JSB_UNITYLESS || (UNITY_WSA && !UNITY_EDITOR)
             GCHandle.Alloc(module_normalize);
@@ -832,9 +831,6 @@ namespace QuickJS.Native
         /* return the import.meta object of a module */
         [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern JSValue JS_GetImportMeta(JSContext ctx, JSModuleDef m);
-
-        [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern JSAtom JS_GetModuleName(JSContext ctx, JSModuleDef m);
 
         #endregion
 

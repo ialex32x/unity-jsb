@@ -66,14 +66,14 @@ namespace QuickJS.Utils
         }
 
         // return promise
-        public JSValue Yield(ScriptContext context, object awaitObject)
+        public unsafe JSValue Yield(ScriptContext context, object awaitObject)
         {
             var ctx = (JSContext)context;
             if (awaitObject is System.Threading.Tasks.Task)
             {
-                var resolving_funcs = new[] { JSApi.JS_UNDEFINED, JSApi.JS_UNDEFINED };
+                var resolving_funcs = stackalloc[] { JSApi.JS_UNDEFINED, JSApi.JS_UNDEFINED };
                 var promise = JSApi.JS_NewPromiseCapability(ctx, resolving_funcs);
-                var safeRelease = new SafeRelease(context).Append(resolving_funcs);
+                var safeRelease = new SafeRelease(context).Append(2, resolving_funcs);
                 var task = awaitObject as System.Threading.Tasks.Task;
                 var runtime = context.GetRuntime();
 
@@ -103,10 +103,11 @@ namespace QuickJS.Utils
                     return ctx.ThrowInternalError("not supported on background thread");
                 }
 
-                var resolving_funcs = new[] { JSApi.JS_UNDEFINED, JSApi.JS_UNDEFINED };
+                var resolving_funcs = stackalloc[] { JSApi.JS_UNDEFINED, JSApi.JS_UNDEFINED };
                 var promise = JSApi.JS_NewPromiseCapability(ctx, resolving_funcs);
+                var safeRelease = new SafeRelease(context).Append(2, resolving_funcs);
 
-                _mb.StartCoroutine(_Pending(awaitObject as IEnumerator, context, resolving_funcs));
+                _mb.StartCoroutine(_Pending(awaitObject as IEnumerator, context, safeRelease));
                 return promise;
             }
             else
@@ -123,10 +124,11 @@ namespace QuickJS.Utils
                     return ctx.ThrowInternalError("not supported on background thread");
                 }
 
-                var resolving_funcs = new[] { JSApi.JS_UNDEFINED, JSApi.JS_UNDEFINED };
+                var resolving_funcs = stackalloc[] { JSApi.JS_UNDEFINED, JSApi.JS_UNDEFINED };
                 var promise = JSApi.JS_NewPromiseCapability(ctx, resolving_funcs);
+                var safeRelease = new SafeRelease(context).Append(2, resolving_funcs);
 
-                _mb.StartCoroutine(_Pending(awaitObject as UnityEngine.YieldInstruction, context, resolving_funcs));
+                _mb.StartCoroutine(_Pending(awaitObject as UnityEngine.YieldInstruction, context, safeRelease));
                 return promise;
             }
 #else 
@@ -193,10 +195,8 @@ namespace QuickJS.Utils
         }
 
 #if !JSB_UNITYLESS
-        private IEnumerator _Pending(UnityEngine.YieldInstruction instruction, ScriptContext context, JSValue[] resolving_funcs)
+        private IEnumerator _Pending(UnityEngine.YieldInstruction instruction, ScriptContext context, SafeRelease safeRelease)
         {
-            var safeRelease = new SafeRelease(context).Append(resolving_funcs);
-
             yield return instruction;
 
             if (!context.IsValid())
@@ -214,7 +214,7 @@ namespace QuickJS.Utils
             }
 
             var argv = new[] { backVal };
-            var rval = JSApi.JS_Call(ctx, resolving_funcs[0], JSApi.JS_UNDEFINED, 1, argv);
+            var rval = JSApi.JS_Call(ctx, safeRelease[0], JSApi.JS_UNDEFINED, 1, argv);
             JSApi.JS_FreeValue(ctx, backVal);
             if (rval.IsException())
             {
@@ -229,10 +229,8 @@ namespace QuickJS.Utils
             context.GetRuntime().ExecutePendingJob();
         }
 
-        private IEnumerator _Pending(IEnumerator enumerator, ScriptContext context, JSValue[] resolving_funcs)
+        private IEnumerator _Pending(IEnumerator enumerator, ScriptContext context, SafeRelease safeRelease)
         {
-            var safeRelease = new SafeRelease(context).Append(resolving_funcs);
-
             while (enumerator.MoveNext())
             {
                 var current = enumerator.Current;
@@ -260,7 +258,7 @@ namespace QuickJS.Utils
             }
 
             var argv = new[] { backVal };
-            var rval = JSApi.JS_Call(ctx, resolving_funcs[0], JSApi.JS_UNDEFINED, 1, argv);
+            var rval = JSApi.JS_Call(ctx, safeRelease[0], JSApi.JS_UNDEFINED, 1, argv);
             JSApi.JS_FreeValue(ctx, backVal);
             if (rval.IsException())
             {
