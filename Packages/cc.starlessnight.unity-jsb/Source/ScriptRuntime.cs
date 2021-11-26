@@ -45,7 +45,6 @@ namespace QuickJS
         private Queue<JSAction> _pendingActions = new Queue<JSAction>();
 
         private int _mainThreadId;
-        private uint _class_id_alloc = JSApi.__JSB_GetClassID();
 
         private IFileSystem _fileSystem;
         private IPathResolver _pathResolver;
@@ -505,11 +504,6 @@ namespace QuickJS
         public Utils.ObjectCache GetObjectCache()
         {
             return _objectCache;
-        }
-
-        public JSClassID NewClassID()
-        {
-            return _class_id_alloc++;
         }
 
         public ScriptContext CreateContext()

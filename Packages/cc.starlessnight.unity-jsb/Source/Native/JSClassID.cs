@@ -2,6 +2,9 @@
 
 namespace QuickJS.Native
 {
+    /// <summary>
+    /// JSClassID is identical to uint32
+    /// </summary>
     [StructLayout(LayoutKind.Sequential)]
     public struct JSClassID
     {
@@ -37,6 +40,4 @@ namespace QuickJS.Native
             return false;
         }
     }
-
-
 }
