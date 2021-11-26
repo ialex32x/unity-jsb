@@ -42,6 +42,16 @@ namespace QuickJS.Utils
             return _values.ToArray();
         }
 
+        public unsafe SafeRelease Append(int len, JSValue* values)
+        {
+            for (int i = 0; i < len; i++)
+            {
+                _values.Add(values[i]);
+            }
+
+            return this;
+        }
+
         public SafeRelease Append(params JSValue[] values)
         {
             for (int i = 0, size = values.Length; i < size; i++)
