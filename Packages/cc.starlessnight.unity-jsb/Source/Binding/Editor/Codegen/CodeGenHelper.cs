@@ -236,12 +236,6 @@ namespace QuickJS.Binding
     {
         protected CodeGenerator cg;
 
-        public PInvokeGuardCodeGen(CodeGenerator cg)
-        {
-            this.cg = cg;
-            this.cg.cs.AppendLine("[MonoPInvokeCallbackAttribute(typeof({0}))]", typeof(QuickJS.Native.JSCFunction).Name);
-        }
-
         public PInvokeGuardCodeGen(CodeGenerator cg, Type target)
         {
             this.cg = cg;
@@ -250,26 +244,6 @@ namespace QuickJS.Binding
 
         public void Dispose()
         {
-        }
-    }
-
-    // 方法绑定
-    public class BindingFuncDeclareCodeGen : IDisposable
-    {
-        protected CodeGenerator cg;
-
-        public BindingFuncDeclareCodeGen(CodeGenerator cg, string name)
-        {
-            this.cg = cg;
-            this.cg.cs.AppendLine("public static JSValue {0}(JSContext ctx, JSValue this_obj, int argc, JSValue[] argv)", name);
-            this.cg.cs.AppendLine("{");
-            this.cg.cs.AddTabLevel();
-        }
-
-        public virtual void Dispose()
-        {
-            this.cg.cs.DecTabLevel();
-            this.cg.cs.AppendLine("}");
         }
     }
 
@@ -300,6 +274,42 @@ namespace QuickJS.Binding
         {
             this.cg = cg;
             this.cg.cs.AppendLine("public static JSValue {0}(JSContext ctx, JSValue this_obj, JSValue arg_val)", name);
+            this.cg.cs.AppendLine("{");
+            this.cg.cs.AddTabLevel();
+        }
+
+        public virtual void Dispose()
+        {
+            this.cg.cs.DecTabLevel();
+            this.cg.cs.AppendLine("}");
+        }
+    }
+
+    // 方法绑定
+    public class BindingFuncDeclareCodeGen : IDisposable
+    {
+        protected CodeGenerator cg;
+
+        public BindingFuncDeclareCodeGen(CodeGenerator cg, Type func_decl, string name)
+        {
+            this.cg = cg;
+            var invoke = func_decl.GetMethod("Invoke");
+            this.cg.cs.Append("public static JSValue {0}(", name);
+            var parameters = invoke.GetParameters();
+            for (int i = 0, len = parameters.Length; i < len; ++i)
+            {
+                var p = parameters[i];
+                if (i != len - 1)
+                {
+                    this.cg.cs.AppendL("{0} {1}, ", cg.bindingManager.GetCSTypeFullName(p.ParameterType), p.Name);
+                }
+                else
+                {
+                    this.cg.cs.AppendL("{0} {1}", cg.bindingManager.GetCSTypeFullName(p.ParameterType), p.Name);
+                }
+            }
+            this.cg.cs.AppendLineL(")");
+            // this.cg.cs.AppendLine("public static JSValue {0}(JSContext ctx, JSValue this_obj, int argc, JSValue[] argv)", name);
             this.cg.cs.AppendLine("{");
             this.cg.cs.AddTabLevel();
         }

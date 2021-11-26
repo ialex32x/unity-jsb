@@ -19,6 +19,8 @@ namespace QuickJS.Binding
             public bool useLogWriter;
         }
 
+        public static Native.JSCFunctionMagic DefaultPrivateConstructor = JSNative.class_private_ctor;
+
         public DateTime dateTime;
         public Prefs prefs;
 
@@ -222,6 +224,8 @@ namespace QuickJS.Binding
             AddCSTypeNameMap(typeof(char), "char");
             AddCSTypeNameMap(typeof(System.Object), "object");
             AddCSTypeNameMap(typeof(void), "void");
+            AddCSTypeNameMap(typeof(QuickJS.Native.JSValue), "JSValue");
+            AddCSTypeNameMap(typeof(QuickJS.Native.JSContext), "JSContext");
 
             Initialize();
         }
@@ -1112,6 +1116,11 @@ namespace QuickJS.Binding
                 }
             }
             return arglist;
+        }
+
+        public string GetCSTypeFullName(Delegate @delegate)
+        {
+            return GetCSTypeFullName(@delegate.GetMethodInfo());
         }
 
         public string GetCSTypeFullName(MethodInfo methodInfo)

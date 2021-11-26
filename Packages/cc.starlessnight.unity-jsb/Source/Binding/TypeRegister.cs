@@ -112,7 +112,7 @@ namespace QuickJS.Binding
             JSContext ctx = _context;
             var protoVal = JSApi.JS_NewObject(ctx);
             var type_id = RegisterType(type, protoVal);
-            var ctorVal = JSApi.JSB_NewCFunctionMagic(ctx, ctorFunc, nameAtom, 0, JSCFunctionEnum.JS_CFUNC_constructor_magic, type_id);
+            var ctorVal = JSApi.JSB_NewConstructor(ctx, ctorFunc, nameAtom, type_id);
             var decl = new ClassDecl(this, ctorVal, protoVal, type);
             JSApi.JS_SetConstructor(ctx, ctorVal, protoVal);
             JSApi.JSB_SetBridgeType(ctx, ctorVal, GetAtom(Values.KeyForCSharpTypeID), type_id);
@@ -141,7 +141,7 @@ namespace QuickJS.Binding
             var nameAtom = GetAtom(typename);
             JSContext ctx = _context;
             var protoVal = JSApi.JS_NewObject(ctx);
-            var ctorVal = JSApi.JSB_NewCFunctionMagic(ctx, JSNative.class_private_ctor, nameAtom, 0, JSCFunctionEnum.JS_CFUNC_constructor_magic, 0);
+            var ctorVal = JSApi.JSB_NewConstructor(ctx, JSNative.class_private_ctor, nameAtom, 0);
             var decl = new ClassDecl(this, ctorVal, protoVal, null);
             JSApi.JS_SetConstructor(ctx, ctorVal, protoVal);
             if (!nsValue.IsNullish())
@@ -230,7 +230,7 @@ namespace QuickJS.Binding
         
         public void RegisterOperator(Type type, string op, JSCFunction func, int length)
         {
-            RegisterOperator(type, op, JSApi.JS_NewCFunction(_context, func, op, length));
+            RegisterOperator(type, op, JSApi.JSB_NewCFunction(_context, func, GetAtom(op), length));
         }
 
         public void RegisterOperator(Type type, string op, IDynamicMethod func)
@@ -240,7 +240,7 @@ namespace QuickJS.Binding
 
         public void RegisterOperator(Type type, string op, JSCFunction func, int length, bool left, Type sideType)
         {
-            RegisterOperator(type, op, JSApi.JS_NewCFunction(_context, func, op, length), left, sideType);
+            RegisterOperator(type, op, JSApi.JSB_NewCFunction(_context, func, GetAtom(op), length), left, sideType);
         }
 
         public void RegisterOperator(Type type, string op, IDynamicMethod func, bool left, Type sideType)

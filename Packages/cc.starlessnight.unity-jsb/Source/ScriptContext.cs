@@ -565,7 +565,7 @@ namespace QuickJS
 
         public JSValue _CreateRequireFunction(JSValue module_obj)
         {
-            var require_obj = JSApi.JSB_NewCFunction(_ctx, ScriptRuntime.module_require, GetAtom("require"), 1, JSCFunctionEnum.JS_CFUNC_generic, 0);
+            var require_obj = JSApi.JSB_NewCFunction(_ctx, ScriptRuntime.module_require, GetAtom("require"), 1);
 
             JSApi.JS_SetProperty(_ctx, require_obj, GetAtom("moduleId"), JSApi.JS_GetProperty(_ctx, module_obj, GetAtom("id")));
             JSApi.JS_SetProperty(_ctx, require_obj, GetAtom("main"), JSApi.JS_DupValue(_ctx, _mainModule));
@@ -589,7 +589,7 @@ namespace QuickJS
             var filename_obj = JSApi.JS_GetProperty(ctx, module_obj, context.GetAtom("filename"));
             var module_id_atom = context.GetAtom(resolved_id);
             var dirname_atom = context.GetAtom(dirname);
-            var require_obj = JSApi.JSB_NewCFunction(ctx, ScriptRuntime.module_require, context.GetAtom("require"), 1, JSCFunctionEnum.JS_CFUNC_generic, 0);
+            var require_obj = JSApi.JSB_NewCFunction(ctx, ScriptRuntime.module_require, context.GetAtom("require"), 1);
             var main_mod_obj = JSApi.JS_DupValue(ctx, _mainModule);
             var dirname_obj = JSApi.JS_AtomToString(ctx, dirname_atom);
             var exports_obj = JSApi.JS_GetProperty(ctx, module_obj, context.GetAtom("exports"));
@@ -704,7 +704,7 @@ namespace QuickJS
         public void AddFunction(JSValue thisObject, string name, JSCFunction func, int length)
         {
             var nameAtom = GetAtom(name);
-            var cfun = JSApi.JSB_NewCFunction(_ctx, func, nameAtom, length, JSCFunctionEnum.JS_CFUNC_generic, 0);
+            var cfun = JSApi.JSB_NewCFunction(_ctx, func, nameAtom, length);
             JSApi.JS_DefinePropertyValue(_ctx, thisObject, nameAtom, cfun, JSPropFlags.JS_PROP_C_W_E);
         }
 
@@ -797,24 +797,24 @@ namespace QuickJS
             var ctx = (JSContext)this;
             var global_object = this.GetGlobalObject();
             {
-                _require = JSApi.JSB_NewCFunction(ctx, ScriptRuntime.module_require, GetAtom("require"), 1, JSCFunctionEnum.JS_CFUNC_generic, 0);
+                _require = JSApi.JSB_NewCFunction(ctx, ScriptRuntime.module_require, GetAtom("require"), 1);
                 JSApi.JS_SetProperty(ctx, _require, GetAtom("moduleId"), ctx.NewString(""));
                 JSApi.JS_SetProperty(ctx, _require, GetAtom("cache"), JSApi.JS_DupValue(ctx, _moduleCache));
                 JSApi.JS_SetProperty(ctx, global_object, GetAtom("require"), JSApi.JS_DupValue(ctx, _require));
-                JSApi.JS_SetProperty(ctx, global_object, GetAtom("define"), JSApi.JSB_NewCFunction(ctx, ScriptRuntime.module_define, GetAtom("define"), 3, JSCFunctionEnum.JS_CFUNC_generic, 0));
+                JSApi.JS_SetProperty(ctx, global_object, GetAtom("define"), JSApi.JSB_NewCFunction(ctx, ScriptRuntime.module_define, GetAtom("define"), 3));
 
-                JSApi.JS_SetPropertyStr(ctx, global_object, "print", JSApi.JS_NewCFunctionMagic(ctx, _print, "print", 1, JSCFunctionEnum.JS_CFUNC_generic_magic, 0));
+                JSApi.JS_SetProperty(ctx, global_object, GetAtom("print"), JSApi.JSB_NewCFunctionMagic(ctx, _print, GetAtom("print"), 1, 0));
                 var console = JSApi.JS_NewObject(ctx);
                 {
-                    JSApi.JS_SetPropertyStr(ctx, console, "log", JSApi.JS_NewCFunctionMagic(ctx, _print, "log", 1, JSCFunctionEnum.JS_CFUNC_generic_magic, 0));
-                    JSApi.JS_SetPropertyStr(ctx, console, "info", JSApi.JS_NewCFunctionMagic(ctx, _print, "info", 1, JSCFunctionEnum.JS_CFUNC_generic_magic, 0));
-                    JSApi.JS_SetPropertyStr(ctx, console, "debug", JSApi.JS_NewCFunctionMagic(ctx, _print, "debug", 1, JSCFunctionEnum.JS_CFUNC_generic_magic, 0));
-                    JSApi.JS_SetPropertyStr(ctx, console, "warn", JSApi.JS_NewCFunctionMagic(ctx, _print, "warn", 1, JSCFunctionEnum.JS_CFUNC_generic_magic, 1));
-                    JSApi.JS_SetPropertyStr(ctx, console, "error", JSApi.JS_NewCFunctionMagic(ctx, _print, "error", 1, JSCFunctionEnum.JS_CFUNC_generic_magic, 2));
-                    JSApi.JS_SetPropertyStr(ctx, console, "assert", JSApi.JS_NewCFunctionMagic(ctx, _print, "assert", 1, JSCFunctionEnum.JS_CFUNC_generic_magic, 3));
-                    JSApi.JS_SetPropertyStr(ctx, console, "trace", JSApi.JS_NewCFunctionMagic(ctx, _print, "trace", 0, JSCFunctionEnum.JS_CFUNC_generic_magic, -1));
+                    JSApi.JS_SetProperty(ctx, console, GetAtom("log"), JSApi.JSB_NewCFunctionMagic(ctx, _print, GetAtom("log"), 1, 0));
+                    JSApi.JS_SetProperty(ctx, console, GetAtom("info"), JSApi.JSB_NewCFunctionMagic(ctx, _print, GetAtom("info"), 1, 0));
+                    JSApi.JS_SetProperty(ctx, console, GetAtom("debug"), JSApi.JSB_NewCFunctionMagic(ctx, _print, GetAtom("debug"), 1, 0));
+                    JSApi.JS_SetProperty(ctx, console, GetAtom("warn"), JSApi.JSB_NewCFunctionMagic(ctx, _print, GetAtom("warn"), 1, 1));
+                    JSApi.JS_SetProperty(ctx, console, GetAtom("error"), JSApi.JSB_NewCFunctionMagic(ctx, _print, GetAtom("error"), 1, 2));
+                    JSApi.JS_SetProperty(ctx, console, GetAtom("assert"), JSApi.JSB_NewCFunctionMagic(ctx, _print, GetAtom("assert"), 1, 3));
+                    JSApi.JS_SetProperty(ctx, console, GetAtom("trace"), JSApi.JSB_NewCFunctionMagic(ctx, _print, GetAtom("trace"), 0, -1));
                 }
-                JSApi.JS_SetPropertyStr(ctx, global_object, "console", console);
+                JSApi.JS_SetProperty(ctx, global_object, GetAtom("console"), console);
             }
             JSApi.JS_FreeValue(ctx, global_object);
         }
