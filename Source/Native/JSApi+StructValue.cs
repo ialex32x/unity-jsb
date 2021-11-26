@@ -67,9 +67,6 @@ namespace QuickJS.Native
         public static extern JSPayloadHeader jsb_get_payload_header(JSValue val);
 
         [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern JSPayload jsb_get_payload(JSValue val);
-
-        [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern unsafe JS_BOOL jsb_get_floats(JSValue val, int n, float* v0);
 
         [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]

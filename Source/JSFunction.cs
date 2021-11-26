@@ -1,6 +1,6 @@
 using System;
 
-namespace QuickJS.Native
+namespace QuickJS
 {
     // Dummy Type for Function (js)
     public class JSFunction {}
