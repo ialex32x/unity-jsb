@@ -161,14 +161,13 @@ namespace QuickJS
             fixed (byte* fn_ptr = fn_bytes)
             {
                 var input_len = (size_t)(input_bytes.Length - 1);
-                var evalFlags = JSEvalFlags.JS_EVAL_FLAG_STRICT;
 
                 if (bModule)
                 {
-                    evalFlags |= JSEvalFlags.JS_EVAL_TYPE_MODULE;
+                    return JSApi.JS_EvalModule(ctx, input_ptr, input_len, fn_ptr);
                 }
+                return JSApi.JS_EvalSource(ctx, input_ptr, input_len, fn_ptr);
 
-                return JSApi.JS_Eval(ctx, input_ptr, input_len, fn_ptr, evalFlags);
             }
         }
 
@@ -226,7 +225,7 @@ namespace QuickJS
             fixed (byte* fn_ptr = fn_bytes)
             {
                 var input_len = (size_t)(input_bytes.Length - 1);
-                var func_val = JSApi.JS_Eval(ctx, input_ptr, input_len, fn_ptr, JSEvalFlags.JS_EVAL_TYPE_MODULE | JSEvalFlags.JS_EVAL_FLAG_COMPILE_ONLY);
+                var func_val = JSApi.JS_CompileModule(ctx, input_ptr, input_len, fn_ptr);
 
                 if (JSApi.JS_IsException(func_val))
                 {

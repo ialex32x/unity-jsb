@@ -134,7 +134,7 @@ namespace QuickJS.Utils
 #endif // !JSB_UNITYLESS
         }
 
-        private static void _OnTaskCompleted(ScriptRuntime runtime, JSAction action)
+        private static unsafe void _OnTaskCompleted(ScriptRuntime runtime, JSAction action)
         {
             if (!runtime.isValid || !runtime.isRunning)
             {
@@ -176,7 +176,7 @@ namespace QuickJS.Utils
                 return;
             }
 
-            var argv = new[] { backVal };
+            var argv = stackalloc[] { backVal };
             var rval = JSApi.JS_Call(ctx, safeRelease[0], JSApi.JS_UNDEFINED, 1, argv);
             JSApi.JS_FreeValue(ctx, backVal);
             if (rval.IsException())
