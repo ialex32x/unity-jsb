@@ -654,7 +654,7 @@ namespace QuickJS
                 fixed (byte* resolved_id_ptr = resolved_id_bytes)
                 {
                     var input_len = (size_t)(input_bytes.Length - 1);
-                    var func_val = JSApi.JS_Eval(ctx, input_ptr, input_len, resolved_id_ptr, JSEvalFlags.JS_EVAL_TYPE_GLOBAL | JSEvalFlags.JS_EVAL_FLAG_STRICT);
+                    var func_val = JSApi.JS_EvalSource(ctx, input_ptr, input_len, resolved_id_ptr);
                     if (func_val.IsException())
                     {
                         JSApi.JS_FreeValue(ctx, require_argv);

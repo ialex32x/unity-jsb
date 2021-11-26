@@ -466,9 +466,10 @@ namespace QuickJS.Native
         }
 
         [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern JSValue JS_Call(JSContext ctx, JSValueConst func_obj, JSValueConst this_obj,
-            int argc, [MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 3)]
-            JSValueConst[] argv);
+        public static extern unsafe JSValue JS_Call(JSContext ctx, JSValueConst func_obj, JSValueConst this_obj, int argc, JSValueConst* argv);
+
+        [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern JSValue JS_Call(JSContext ctx, JSValueConst func_obj, JSValueConst this_obj, int argc, [MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 3)] JSValueConst[] argv);
 
         public static unsafe JSValue JS_Call(JSContext ctx, JSValueConst func_obj, JSValueConst this_obj)
         {
@@ -481,18 +482,13 @@ namespace QuickJS.Native
         }
 
         [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern unsafe JSValue JS_Call(JSContext ctx, JSValueConst func_obj, JSValueConst this_obj,
-            int argc, JSValueConst* argv);
-
-        [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern unsafe JSValue JS_Invoke(JSContext ctx, JSValueConst this_val, JSAtom atom,
-            int argc, JSValueConst* argv);
+        public static extern unsafe JSValue JS_Invoke(JSContext ctx, JSValueConst this_val, JSAtom atom, int argc, JSValueConst* argv);
 
         public static unsafe JSValue JS_Invoke(JSContext ctx, JSValueConst this_val, JSAtom atom)
         {
             return JS_Invoke(ctx, this_val, atom, 0, (JSValueConst*)0);
         }
-        
+
         [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern int JS_SetPrototype(JSContext ctx, JSValueConst obj, JSValueConst proto_val);
 
@@ -535,11 +531,13 @@ namespace QuickJS.Native
         [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern void js_free(JSContext ctx, IntPtr ptr);
 
+        //TODO [v8_integrating] get rid of using ReadObject/WriteObject for better compatibility between different backends
         [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern IntPtr JS_WriteObject(JSContext ctx, out size_t psize, JSValueConst obj, int flags);
+        private static extern IntPtr JS_WriteObject(JSContext ctx, out size_t psize, JSValueConst obj, int flags);
 
+        //TODO [v8_integrating] get rid of using ReadObject/WriteObject for better compatibility between different backends
         [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern unsafe JSValue JS_ReadObject(JSContext ctx, byte* buf, size_t buf_len, int flags);
+        private static extern unsafe JSValue JS_ReadObject(JSContext ctx, byte* buf, size_t buf_len, int flags);
 
         public static unsafe JSValue JS_ReadByteCode(JSContext ctx, byte* buf, size_t buf_len)
         {
@@ -551,7 +549,6 @@ namespace QuickJS.Native
             return JS_WriteObject(ctx, out psize, obj, JS_WRITE_OBJ_BYTECODE);
         }
 
-        //TODO [v8_integrating] get rid of using WriteObject for better compatibility between backends
         public static unsafe JSValue JSB_Deserialize(JSContext ctx, byte* buf, size_t buf_len)
         {
             return JS_ReadObject(ctx, buf, buf_len, JS_READ_OBJ_REFERENCE);
@@ -563,7 +560,29 @@ namespace QuickJS.Native
         }
 
         [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern unsafe JSValue JS_Eval(JSContext ctx, byte* input, size_t input_len, byte* filename, JSEvalFlags eval_flags);
+        private static extern unsafe JSValue JS_Eval(JSContext ctx, byte* input, size_t input_len, byte* filename, JSEvalFlags eval_flags);
+
+        //TODO [v8_integrating] this api is only for the es module which will be removed later
+        public static unsafe JSValue JS_EvalModule(JSContext ctx, byte* input, size_t input_len, byte* filename)
+        {
+            return JS_Eval(ctx, input, input_len, filename, JSEvalFlags.JS_EVAL_TYPE_MODULE | JSEvalFlags.JS_EVAL_FLAG_STRICT);
+        }
+
+        //TODO [v8_integrating] this api is only for the es module which will be removed later 
+        public static unsafe JSValue JS_CompileModule(JSContext ctx, byte* input, size_t input_len, byte* filename)
+        {
+            return JS_Eval(ctx, input, input_len, filename, JSEvalFlags.JS_EVAL_TYPE_MODULE | JSEvalFlags.JS_EVAL_FLAG_STRICT | JSEvalFlags.JS_EVAL_FLAG_COMPILE_ONLY);
+        }
+
+        public static unsafe JSValue JS_EvalSource(JSContext ctx, byte* input, size_t input_len, byte* filename)
+        {
+            return JS_Eval(ctx, input, input_len, filename, JSEvalFlags.JS_EVAL_TYPE_GLOBAL | JSEvalFlags.JS_EVAL_FLAG_STRICT);
+        }
+
+        public static unsafe JSValue JS_CompileSource(JSContext ctx, byte* input, size_t input_len, byte* filename)
+        {
+            return JS_Eval(ctx, input, input_len, filename, JSEvalFlags.JS_EVAL_TYPE_GLOBAL | JSEvalFlags.JS_EVAL_FLAG_STRICT | JSEvalFlags.JS_EVAL_FLAG_COMPILE_ONLY);
+        }
 
         [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern JSValue JS_EvalFunction(JSContext ctx, JSValue fun_obj);

@@ -43,14 +43,19 @@ namespace QuickJS.Unity
                 fixed (byte* input_ptr = input_bytes)
                 fixed (byte* fn_ptr = fn_bytes)
                 {
-                    var evalFlags = JSEvalFlags.JS_EVAL_FLAG_COMPILE_ONLY | JSEvalFlags.JS_EVAL_FLAG_STRICT;
                     var input_len = (size_t)(input_bytes.Length - 1);
-                    if (!commonJSModule)
+                    var evalFlags = JSEvalFlags.JS_EVAL_FLAG_STRICT;
+                    JSValue rval;
+                    if (commonJSModule)
                     {
+                        rval = JSApi.JS_CompileSource(_ctx, input_ptr, input_len, fn_ptr);
                         evalFlags |= JSEvalFlags.JS_EVAL_TYPE_MODULE;
                     }
+                    else
+                    {
+                        rval = JSApi.JS_CompileModule(_ctx, input_ptr, input_len, fn_ptr);
+                    }
 
-                    var rval = JSApi.JS_Eval(_ctx, input_ptr, input_len, fn_ptr, evalFlags);
                     if (JSApi.JS_IsException(rval))
                     {
                         JSNative.print_exception(_ctx, _logger, Utils.LogLevel.Error, "[ScriptCompiler]");
