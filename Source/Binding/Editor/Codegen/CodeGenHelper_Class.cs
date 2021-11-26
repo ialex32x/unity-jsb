@@ -109,9 +109,9 @@ namespace QuickJS.Binding
                 if (jscOverride == null)
                 {
                     //TODO add requiredDefines support
-                    using (new PInvokeGuardCodeGen(cg))
+                    using (new PInvokeGuardCodeGen(cg, typeof(QuickJS.Native.JSCFunction)))
                     {
-                        using (new BindingFuncDeclareCodeGen(cg, methodBindingInfo.csBindName))
+                        using (new BindingFuncDeclareCodeGen(cg, typeof(QuickJS.Native.JSCFunction), methodBindingInfo.csBindName))
                         {
                             using (new TryCatchGuradCodeGen(cg))
                             {
@@ -150,9 +150,9 @@ namespace QuickJS.Binding
                     if (jscOverride == null)
                     {
                         //TODO add requiredDefines support
-                        using (new PInvokeGuardCodeGen(cg))
+                        using (new PInvokeGuardCodeGen(cg, typeof(QuickJS.Native.JSCFunction)))
                         {
-                            using (new BindingFuncDeclareCodeGen(cg, methodBindingInfo.csBindName))
+                            using (new BindingFuncDeclareCodeGen(cg, typeof(QuickJS.Native.JSCFunction), methodBindingInfo.csBindName))
                             {
                                 using (new TryCatchGuradCodeGen(cg))
                                 {
@@ -177,9 +177,9 @@ namespace QuickJS.Binding
             {
                 foreach (var operatorBindingInfo in this.typeBindingInfo.operators)
                 {
-                    using (new PInvokeGuardCodeGen(cg))
+                    using (new PInvokeGuardCodeGen(cg, typeof(QuickJS.Native.JSCFunction)))
                     {
-                        using (new BindingFuncDeclareCodeGen(cg, operatorBindingInfo.csBindName))
+                        using (new BindingFuncDeclareCodeGen(cg, typeof(QuickJS.Native.JSCFunction), operatorBindingInfo.csBindName))
                         {
                             using (new TryCatchGuradCodeGen(cg))
                             {
@@ -341,9 +341,9 @@ namespace QuickJS.Binding
             foreach (var kv in this.typeBindingInfo.events)
             {
                 var eventBindingInfo = kv.Value;
-                using (new PInvokeGuardCodeGen(cg))
+                using (new PInvokeGuardCodeGen(cg, typeof(QuickJS.Native.JSCFunction)))
                 {
-                    using (new BindingFuncDeclareCodeGen(cg, eventBindingInfo.name))
+                    using (new BindingFuncDeclareCodeGen(cg, typeof(QuickJS.Native.JSCFunction), eventBindingInfo.name))
                     {
                         using (new TryCatchGuradCodeGen(cg))
                         {
@@ -359,9 +359,9 @@ namespace QuickJS.Binding
             foreach (var kv in this.typeBindingInfo.delegates)
             {
                 var delegateBindingInfo = kv.Value;
-                using (new PInvokeGuardCodeGen(cg))
+                using (new PInvokeGuardCodeGen(cg, typeof(QuickJS.Native.JSCFunction)))
                 {
-                    using (new BindingFuncDeclareCodeGen(cg, delegateBindingInfo.name))
+                    using (new BindingFuncDeclareCodeGen(cg, typeof(QuickJS.Native.JSCFunction), delegateBindingInfo.name))
                     {
                         using (new TryCatchGuradCodeGen(cg))
                         {
@@ -379,7 +379,7 @@ namespace QuickJS.Binding
             using (new RegFuncCodeGen(cg))
             {
                 var transform = typeBindingInfo.transform;
-                var constructor = typeBindingInfo.constructors.available ? typeBindingInfo.constructors.csBindName : "JSApi.class_private_ctor";
+                var constructor = typeBindingInfo.constructors.available ? typeBindingInfo.constructors.csBindName : cg.bindingManager.GetCSTypeFullName(BindingManager.DefaultPrivateConstructor);
 
                 if (!typeBindingInfo.constructors.available && !typeBindingInfo.type.IsAbstract)
                 {

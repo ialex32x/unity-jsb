@@ -106,7 +106,7 @@ namespace QuickJS.Binding
         public void AddMethod(bool bStatic, string name, JSCFunctionMagic func, int length, int magic)
         {
             var nameAtom = _register.GetAtom(name);
-            var funcVal = JSApi.JSB_NewCFunctionMagic(_context, func, nameAtom, length, JSCFunctionEnum.JS_CFUNC_generic_magic, magic);
+            var funcVal = JSApi.JSB_NewCFunctionMagic(_context, func, nameAtom, length, magic);
             JSApi.JS_DefinePropertyValue(_context, bStatic ? _ctor : _proto, nameAtom, funcVal, JSPropFlags.DEFAULT);
         }
 
@@ -118,7 +118,7 @@ namespace QuickJS.Binding
         public void AddMethod(bool bStatic, string name, JSCFunction func)
         {
             var nameAtom = _register.GetAtom(name);
-            var funcVal = JSApi.JSB_NewCFunction(_context, func, nameAtom, 0, JSCFunctionEnum.JS_CFUNC_generic, 0);
+            var funcVal = JSApi.JSB_NewCFunction(_context, func, nameAtom, 0);
             JSApi.JS_DefinePropertyValue(_context, bStatic ? _ctor : _proto, nameAtom, funcVal, JSPropFlags.DEFAULT);
         }
 
@@ -130,7 +130,7 @@ namespace QuickJS.Binding
         public void AddMethod(bool bStatic, string name, JSCFunction func, int length)
         {
             var nameAtom = _register.GetAtom(name);
-            var funcVal = JSApi.JSB_NewCFunction(_context, func, nameAtom, length, JSCFunctionEnum.JS_CFUNC_generic, 0);
+            var funcVal = JSApi.JSB_NewCFunction(_context, func, nameAtom, length);
             JSApi.JS_DefinePropertyValue(_context, bStatic ? _ctor : _proto, nameAtom, funcVal, JSPropFlags.DEFAULT);
         }
 
@@ -138,9 +138,9 @@ namespace QuickJS.Binding
         {
             var nameAtom = _register.GetAtom(name);
             var op = JSApi.JS_NewObject(_context);
-            var adderFunc = JSApi.JSB_NewCFunction(_context, adder, _register.GetAtom("on"), 1, JSCFunctionEnum.JS_CFUNC_generic, 0);
+            var adderFunc = JSApi.JSB_NewCFunction(_context, adder, _register.GetAtom("on"), 1);
             JSApi.JS_SetProperty(_context, op, _register.GetAtom("on"), adderFunc);
-            var removerFunc = JSApi.JSB_NewCFunction(_context, remover, _register.GetAtom("off"), 1, JSCFunctionEnum.JS_CFUNC_generic, 0);
+            var removerFunc = JSApi.JSB_NewCFunction(_context, remover, _register.GetAtom("off"), 1);
             JSApi.JS_SetProperty(_context, op, _register.GetAtom("off"), removerFunc);
             JSApi.JS_SetProperty(_context, _ctor, nameAtom, op);
         }
@@ -181,14 +181,14 @@ namespace QuickJS.Binding
             if (getter != null)
             {
                 flags |= JSPropFlags.JS_PROP_HAS_GET;
-                getterVal = JSApi.JSB_NewCFunction(ctx, getter, nameAtom);
+                getterVal = JSApi.JSB_NewGetter(ctx, getter, nameAtom);
             }
 
             if (setter != null)
             {
                 flags |= JSPropFlags.JS_PROP_HAS_SET;
                 flags |= JSPropFlags.JS_PROP_WRITABLE;
-                setterVal = JSApi.JSB_NewCFunction(ctx, setter, nameAtom);
+                setterVal = JSApi.JSB_NewSetter(ctx, setter, nameAtom);
             }
 
             var rs = JSApi.JS_DefineProperty(ctx, bStatic ? _ctor : _proto, nameAtom, JSApi.JS_UNDEFINED, getterVal, setterVal, flags);

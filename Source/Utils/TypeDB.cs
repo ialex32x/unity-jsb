@@ -313,7 +313,7 @@ namespace QuickJS.Utils
 
             var method = new DynamicDelegateMethod(d);
             var magic = _dynamicMethods.Count;
-            var funValue = JSApi.JSB_NewCFunctionMagic(_context, _DynamicMethodInvoke, name, 0, JSCFunctionEnum.JS_CFUNC_generic_magic, magic);
+            var funValue = JSApi.JSB_NewCFunctionMagic(_context, _DynamicMethodInvoke, name, 0, magic);
             _dynamicMethods.Add(method);
             return funValue;
         }
@@ -322,13 +322,13 @@ namespace QuickJS.Utils
         {
             if (method == null)
             {
-                var funValue = JSApi.JSB_NewCFunctionMagic(_context, JSNative.class_private_ctor, name, 0, JSCFunctionEnum.JS_CFUNC_generic_magic, 0);
+                var funValue = JSApi.JSB_NewCFunctionMagic(_context, JSNative.class_private_ctor, name, 0, 0);
                 return funValue;
             }
             else
             {
                 var magic = _dynamicMethods.Count;
-                var funValue = JSApi.JSB_NewCFunctionMagic(_context, _DynamicMethodInvoke, name, 0, JSCFunctionEnum.JS_CFUNC_generic_magic, magic);
+                var funValue = JSApi.JSB_NewCFunctionMagic(_context, _DynamicMethodInvoke, name, 0, magic);
                 _dynamicMethods.Add(method);
                 return funValue;
             }
@@ -338,13 +338,13 @@ namespace QuickJS.Utils
         {
             if (method == null)
             {
-                var funValue = JSApi.JSB_NewCFunctionMagic(_context, JSNative.class_private_ctor, name, 0, JSCFunctionEnum.JS_CFUNC_constructor_magic, 0);
+                var funValue = JSApi.JSB_NewConstructor(_context, JSNative.class_private_ctor, name, 0);
                 return funValue;
             }
             else
             {
                 var magic = _dynamicMethods.Count;
-                var funValue = JSApi.JSB_NewCFunctionMagic(_context, _DynamicMethodInvoke, name, 0, JSCFunctionEnum.JS_CFUNC_constructor_magic, magic);
+                var funValue = JSApi.JSB_NewConstructor(_context, _DynamicMethodInvoke, name, magic);
                 _dynamicMethods.Add(method);
                 return funValue;
             }
@@ -353,8 +353,8 @@ namespace QuickJS.Utils
         public void NewDynamicFieldAccess(JSAtom name, IDynamicField field, out JSValue getter, out JSValue setter)
         {
             var magic = _dynamicFields.Count;
-            getter = JSApi.JSB_NewCFunction(_context, _DynamicFieldGetter, name, magic);
-            setter = JSApi.JSB_NewCFunction(_context, _DynamicFieldSetter, name, magic);
+            getter = JSApi.JSB_NewGetter(_context, _DynamicFieldGetter, name, magic);
+            setter = JSApi.JSB_NewSetter(_context, _DynamicFieldSetter, name, magic);
             _dynamicFields.Add(field);
         }
 
