@@ -13,16 +13,6 @@ namespace QuickJS
 {
     public partial class ScriptContext
     {
-        /// <summary>
-        /// FOR INTERNAL USE ONLY
-        /// </summary>
-        public event Action<ScriptContext> OnDestroy;
-        
-        /// <summary>
-        /// DEPRECATED, DO NOT USE IT
-        /// </summary>
-        public event Action<int> OnAfterDestroy;
-
         public event Action<ScriptContext, string> OnScriptReloading;
         public event Action<ScriptContext, string> OnScriptReloaded;
 
@@ -216,14 +206,7 @@ namespace QuickJS
                 _isValid = false;
             }
 
-            try
-            {
-                OnDestroy?.Invoke(this);
-            }
-            catch (Exception e)
-            {
-                _runtime.GetLogger()?.WriteException(e);
-            }
+            _runtime.RemoveContext(this);
             _stringCache.Destroy();
             _atoms.Clear();
 
@@ -243,14 +226,6 @@ namespace QuickJS
             var id = _contextId;
             _contextId = -1;
             _ctx = JSContext.Null;
-            try
-            {
-                OnAfterDestroy?.Invoke(id);
-            }
-            catch (Exception e)
-            {
-                _runtime.GetLogger()?.WriteException(e);
-            }
         }
 
         public void FreeValue(JSValue value)

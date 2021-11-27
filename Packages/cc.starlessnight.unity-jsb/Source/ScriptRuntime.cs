@@ -527,9 +527,8 @@ namespace QuickJS
             }
 
             var context = new ScriptContext(this, slotIndex + 1);
-            freeEntry.target = context;
-            context.OnDestroy += OnContextDestroy;
 
+            freeEntry.target = context;
             if (_mainContext == null)
             {
                 _mainContext = context;
@@ -540,7 +539,10 @@ namespace QuickJS
             return context;
         }
 
-        private void OnContextDestroy(ScriptContext context)
+        /// <summary>
+        /// (internal use only)
+        /// </summary>
+        public void RemoveContext(ScriptContext context)
         {
             // _rwlock.EnterWriteLock();
             var id = context.id;
@@ -603,6 +605,15 @@ namespace QuickJS
             JSApi.JS_FreeValueRT(rt, action.value);
         }
 
+        private void EnqueuePendingAction(JSAction action)
+        {
+            if (_runtimeId < 0)
+            {
+                _logger?.Write(LogLevel.Error, "fatal error: enqueue pending action after the runtime shutdown");
+            }
+            _pendingActions.Enqueue(action);
+        }
+
         // 可在 GC 线程直接调用此方法
         public void FreeDelegationValue(JSValue value)
         {
@@ -624,7 +635,7 @@ namespace QuickJS
 
                 lock (_pendingActions)
                 {
-                    _pendingActions.Enqueue(act);
+                    EnqueuePendingAction(act);
                 }
             }
         }
@@ -650,7 +661,7 @@ namespace QuickJS
 
                 lock (_pendingActions)
                 {
-                    _pendingActions.Enqueue(act);
+                    EnqueuePendingAction(act);
                 }
             }
         }
@@ -675,7 +686,7 @@ namespace QuickJS
                 };
                 lock (_pendingActions)
                 {
-                    _pendingActions.Enqueue(act);
+                    EnqueuePendingAction(act);
                 }
             }
         }
@@ -699,7 +710,7 @@ namespace QuickJS
                 };
                 lock (_pendingActions)
                 {
-                    _pendingActions.Enqueue(act);
+                    EnqueuePendingAction(act);
                 }
             }
         }
@@ -729,7 +740,7 @@ namespace QuickJS
                             value = values[i],
                             callback = _FreeValueAction,
                         };
-                        _pendingActions.Enqueue(act);
+                        EnqueuePendingAction(act);
                     }
                 }
             }
@@ -760,7 +771,7 @@ namespace QuickJS
                             value = values[i],
                             callback = _FreeValueAction,
                         };
-                        _pendingActions.Enqueue(act);
+                        EnqueuePendingAction(act);
                     }
                 }
             }
@@ -770,11 +781,7 @@ namespace QuickJS
         {
             lock (_pendingActions)
             {
-                if (!_isValid)
-                {
-                    return false;
-                }
-                _pendingActions.Enqueue(new JSAction() { callback = callback, args = args });
+                EnqueuePendingAction(new JSAction() { callback = callback, args = args });
             }
             return true;
         }
@@ -783,11 +790,7 @@ namespace QuickJS
         {
             lock (_pendingActions)
             {
-                if (!_isValid)
-                {
-                    return false;
-                }
-                _pendingActions.Enqueue(action);
+                EnqueuePendingAction(action);
             }
             return true;
         }
@@ -972,6 +975,14 @@ namespace QuickJS
             {
                 _asyncManager.Destroy();
                 _asyncManager = null;
+            }
+
+            lock (_pendingActions)
+            {
+                if (_pendingActions.Count > 0)
+                {
+                    _logger?.Write(LogLevel.Assert, "unexpected pending actions");
+                }
             }
 
             if (JSApi.JS_FreeRuntime(_rt) == 0)

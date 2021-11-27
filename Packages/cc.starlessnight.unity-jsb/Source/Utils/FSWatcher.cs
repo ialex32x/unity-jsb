@@ -43,7 +43,7 @@ namespace QuickJS.Utils
             _runtime.EnqueueAction(_JSActionCallback, e);
         }
 
-        private void _Dispose()
+        private void _DisposeWatcher()
         {
             if (_fsw != null)
             {
@@ -127,17 +127,12 @@ namespace QuickJS.Utils
 
         private void Destroy(ScriptRuntime runtime)
         {
-            Destroy();
-        }
-
-        private void Destroy()
-        {
             if (_jsThis.IsUndefined())
             {
                 return;
             }
 
-            _Dispose();
+            _DisposeWatcher();
             _jsThis = JSApi.JS_UNDEFINED;
 
             if (_runtime != null)
@@ -164,7 +159,7 @@ namespace QuickJS.Utils
         // = OnJSFinalize
         public void Dispose()
         {
-            Destroy();
+            Destroy(_runtime);
         }
 
         [MonoPInvokeCallback(typeof(JSCFunctionMagic))]
@@ -197,7 +192,7 @@ namespace QuickJS.Utils
                     throw new ThisBoundException();
                 }
 
-                self._Dispose();
+                self._DisposeWatcher();
                 return JSApi.JS_UNDEFINED;
             }
             catch (Exception exception)
