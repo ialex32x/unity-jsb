@@ -2,6 +2,7 @@
 
 namespace QuickJS.Native
 {
+    //TODO [v8-integrating] not to expose this enum out of JSApi module
     [Flags]
     public enum JSPropFlags
     {
