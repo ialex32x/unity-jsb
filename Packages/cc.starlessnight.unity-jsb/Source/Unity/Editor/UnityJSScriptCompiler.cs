@@ -44,12 +44,10 @@ namespace QuickJS.Unity
                 fixed (byte* fn_ptr = fn_bytes)
                 {
                     var input_len = (size_t)(input_bytes.Length - 1);
-                    var evalFlags = JSEvalFlags.JS_EVAL_FLAG_STRICT;
                     JSValue rval;
                     if (commonJSModule)
                     {
                         rval = JSApi.JS_CompileSource(_ctx, input_ptr, input_len, fn_ptr);
-                        evalFlags |= JSEvalFlags.JS_EVAL_TYPE_MODULE;
                     }
                     else
                     {
