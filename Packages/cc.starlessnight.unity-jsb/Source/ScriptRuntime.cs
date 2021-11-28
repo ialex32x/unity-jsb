@@ -605,17 +605,19 @@ namespace QuickJS
             JSApi.JS_FreeValueRT(rt, action.value);
         }
 
-        private void EnqueuePendingAction(JSAction action)
+        private bool EnqueuePendingAction(JSAction action)
         {
+            _pendingActions.Enqueue(action);
             if (_runtimeId < 0)
             {
                 _logger?.Write(LogLevel.Error, "fatal error: enqueue pending action after the runtime shutdown");
+                return false;
             }
-            _pendingActions.Enqueue(action);
+            return true;
         }
 
         // 可在 GC 线程直接调用此方法
-        public void FreeDelegationValue(JSValue value)
+        public bool FreeDelegationValue(JSValue value, string debugInfo = null)
         {
             if (_mainThreadId == Thread.CurrentThread.ManagedThreadId)
             {
@@ -635,9 +637,13 @@ namespace QuickJS
 
                 lock (_pendingActions)
                 {
-                    EnqueuePendingAction(act);
+                    if (!EnqueuePendingAction(act))
+                    {
+                        _logger?.Write(LogLevel.Error, "[DebugInfo] {0}", debugInfo);
+                    }
                 }
             }
+            return true;
         }
 
         // 可在 GC 线程直接调用此方法

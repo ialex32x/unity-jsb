@@ -60,7 +60,7 @@ namespace QuickJS.Binding
             {
                 var def = self[i];
                 // var funcVal = JSApi.JS_NewCFunction(ctx, def.func, def.op, def.length);
-                JSApi.JS_DefinePropertyValue(ctx, argv[0], register.GetAtom(def.op), def.value, JSPropFlags.DEFAULT);
+                JSApi.JS_DefinePropertyValue(ctx, argv[0], register.GetAtom(def.op), def.value);
                 // UnityEngine.Debug.LogFormat("{0} operator {1}", type, def.op);
             }
 
@@ -75,7 +75,7 @@ namespace QuickJS.Binding
                 {
                     var def = cross.operators[opIndex];
                     // var funcVal = JSApi.JS_NewCFunction(ctx, def.func, def.op, def.length);
-                    JSApi.JS_DefinePropertyValue(ctx, operator_, register.GetAtom(def.op), def.value, JSPropFlags.DEFAULT);
+                    JSApi.JS_DefinePropertyValue(ctx, operator_, register.GetAtom(def.op), def.value);
                     argv[i + 1] = operator_;
                     // UnityEngine.Debug.LogFormat("{0} {1} operator {2} {3} ({4})", type, side, def.op, cross.type, sideCtor);
                 }
@@ -92,7 +92,7 @@ namespace QuickJS.Binding
                 {
                     var def = cross.operators[opIndex];
                     // var funcVal = JSApi.JS_NewCFunction(ctx, def.func, def.op, def.length);
-                    JSApi.JS_DefinePropertyValue(ctx, operator_, register.GetAtom(def.op), def.value, JSPropFlags.DEFAULT);
+                    JSApi.JS_DefinePropertyValue(ctx, operator_, register.GetAtom(def.op), def.value);
                     argv[i + 1 + left.Count] = operator_;
                     // UnityEngine.Debug.LogFormat("{0} {1} operator {2} {3} ({4})", type, side, def.op, cross.type, sideCtor);
                 }
@@ -107,7 +107,7 @@ namespace QuickJS.Binding
                 }
                 else
                 {
-                    JSApi.JS_DefinePropertyValue(ctx, proto, JSApi.JS_ATOM_Symbol_operatorSet, rval, JSPropFlags.DEFAULT);
+                    JSApi.JS_DefinePropertyValue(ctx, proto, JSApi.JS_ATOM_Symbol_operatorSet, rval);
                 }
             }
 

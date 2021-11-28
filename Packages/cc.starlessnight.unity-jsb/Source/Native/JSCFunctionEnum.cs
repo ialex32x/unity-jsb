@@ -1,6 +1,6 @@
 ﻿namespace QuickJS.Native
 {
-    public enum JSCFunctionEnum
+    internal enum JSCFunctionEnum
     {
         /* XXX: should rename for namespace isolation */
         JS_CFUNC_generic,

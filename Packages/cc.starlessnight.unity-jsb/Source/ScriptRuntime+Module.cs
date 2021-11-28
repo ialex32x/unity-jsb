@@ -246,10 +246,11 @@ namespace QuickJS
 
         private static JSModuleDef _NewModuleDef(JSContext ctx, JSValue func_val, string module_name)
         {
+            var context = ScriptEngine.GetContext(ctx);
             var mod = new JSModuleDef(func_val.u.ptr);
             var meta = JSApi.JS_GetImportMeta(ctx, mod);
-            JSApi.JS_DefinePropertyValueStr(ctx, meta, "url", ctx.NewString($"file://{module_name}"), JSPropFlags.JS_PROP_C_W_E);
-            JSApi.JS_DefinePropertyValueStr(ctx, meta, "main", JSApi.JS_NewBool(ctx, false), JSPropFlags.JS_PROP_C_W_E);
+            JSApi.JS_DefinePropertyValue(ctx, meta, context.GetAtom("url"), ctx.NewString($"file://{module_name}"));
+            JSApi.JS_DefinePropertyValue(ctx, meta, context.GetAtom("main"), JSApi.JS_NewBool(ctx, false));
             JSApi.JS_FreeValue(ctx, meta);
             return mod;
         }

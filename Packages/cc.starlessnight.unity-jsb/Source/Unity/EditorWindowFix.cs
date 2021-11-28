@@ -214,7 +214,7 @@ namespace QuickJS.Unity
                             var dockArea = view; //  as DockArea
 
                             // DockArea.m_Panes: internal List<EditorWindow> 
-                            if (!((UnityEngine.Object)dockArea == null))
+                            if (!((UnityEngine.Object)dockArea == null) && DockArea.IsInstanceOfType(dockArea))
                             {
                                 if ((DockArea_Panes.GetValue(dockArea) as List<EditorWindow>).Any((EditorWindow pane) => __type_equals(pane, ctx, desired)))
                                 {
