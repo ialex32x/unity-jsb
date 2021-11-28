@@ -464,6 +464,15 @@ namespace QuickJS.Native
             return JS_SetPropertyInternal(ctx, this_obj, prop, val, (int)JSPropFlags.JS_PROP_THROW);
         }
 
+        public static bool IsDebugMode()
+        {
+#if JSB_DEBUG
+            return true;
+#else
+            return false;
+#endif
+        }
+
         [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern int JS_SetPropertyUint32(JSContext ctx, JSValueConst this_obj, uint32_t idx, JSValue val);
 
