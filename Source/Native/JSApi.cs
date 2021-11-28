@@ -220,18 +220,31 @@ namespace QuickJS.Native
         /// 不会减引用, getter/setter 需要自己 FreeValue
         ///</summary>
         [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern int JS_DefineProperty(JSContext ctx, JSValueConst this_obj,
-            JSAtom prop, JSValueConst val,
-            JSValueConst getter, JSValueConst setter, JSPropFlags flags);
+        private static extern int JS_DefineProperty(JSContext ctx, JSValueConst this_obj, JSAtom prop, JSValueConst val, JSValueConst getter, JSValueConst setter, JSPropFlags flags);
 
-        [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern int JS_DefinePropertyValueStr(JSContext ctx, JSValueConst this_obj,
-            [MarshalAs(UnmanagedType.LPStr)] string prop,
-            JSValue val, JSPropFlags flags);
+        public static int JS_DefineProperty(JSContext ctx, JSValueConst this_obj, JSAtom prop, JSValueConst getter, JSValueConst setter)
+        {
+            var flags = JSPropFlags.JS_PROP_CONFIGURABLE | JSPropFlags.JS_PROP_ENUMERABLE;
+            if (!getter.IsUndefined())
+            {
+                flags |= JSPropFlags.JS_PROP_HAS_GET;
+            }
+            if (!setter.IsUndefined())
+            {
+                flags |= JSPropFlags.JS_PROP_HAS_SET;
+                flags |= JSPropFlags.JS_PROP_WRITABLE;
+            }
+            return JS_DefineProperty(ctx, this_obj, prop, JS_UNDEFINED, getter, setter, flags);
+        }
 
+        // flags |=  JS_PROP_HAS_VALUE | JS_PROP_HAS_CONFIGURABLE | JS_PROP_HAS_WRITABLE | JS_PROP_HAS_ENUMERABLE;
         [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern int JS_DefinePropertyValue(JSContext ctx, JSValueConst this_obj,
-            JSAtom prop, JSValue val, JSPropFlags flags);
+        private static extern int JS_DefinePropertyValue(JSContext ctx, JSValueConst this_obj, JSAtom prop, JSValue val, JSPropFlags flags);
+
+        public static int JS_DefinePropertyValue(JSContext ctx, JSValueConst this_obj, JSAtom prop, JSValue val)
+        {
+            return JS_DefinePropertyValue(ctx, this_obj, prop, val, JSPropFlags.NONE);
+        }
 
         #endregion
 
@@ -403,6 +416,10 @@ namespace QuickJS.Native
 
         public static JSValue JSB_NewGetter(JSContext ctx, JSGetterCFunction func, JSAtom atom)
         {
+            if (func == null)
+            {
+                return JS_UNDEFINED;
+            }
 #if JSB_UNITYLESS || (UNITY_WSA && !UNITY_EDITOR)
             GCHandle.Alloc(func);
 #endif
@@ -412,6 +429,10 @@ namespace QuickJS.Native
 
         public static JSValue JSB_NewSetter(JSContext ctx, JSSetterCFunction func, JSAtom atom)
         {
+            if (func == null)
+            {
+                return JS_UNDEFINED;
+            }
 #if JSB_UNITYLESS || (UNITY_WSA && !UNITY_EDITOR)
             GCHandle.Alloc(func);
 #endif
@@ -431,6 +452,10 @@ namespace QuickJS.Native
         [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern void JS_SetConstructor(JSContext ctx, JSValueConst func_obj, JSValueConst proto);
 
+        /* return -1 in case of exception or TRUE or FALSE. Warning: 'val' is
+           freed by the function. 'flags' is a bitmask of JS_PROP_NO_ADD,
+           JS_PROP_THROW or JS_PROP_THROW_STRICT. If JS_PROP_NO_ADD is set,
+           the new property is not added and an error is raised. */
         [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern int JS_SetPropertyInternal(JSContext ctx, JSValueConst this_obj, JSAtom prop, JSValue val, int flags);
 
@@ -449,7 +474,7 @@ namespace QuickJS.Native
         public static extern int JS_HasProperty(JSContext ctx, JSValueConst this_obj, JSAtom prop);
 
         [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern unsafe int JS_GetOwnPropertyNames(JSContext ctx, out JSPropertyEnum* ptab, out uint32_t plen, JSValueConst obj, JSGPNFlags flags);
+        internal static extern unsafe int JS_GetOwnPropertyNames(JSContext ctx, out JSPropertyEnum* ptab, out uint32_t plen, JSValueConst obj, JSGPNFlags flags);
 
         // 不修改计数 /* private */
         [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]

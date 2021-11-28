@@ -136,7 +136,7 @@ namespace QuickJS
                 }
                 else
                 {
-                    JSApi.JS_DefinePropertyValue(_ctx, constructor, JSApi.JS_ATOM_Symbol_operatorSet, rval, JSPropFlags.DEFAULT);
+                    JSApi.JS_DefinePropertyValue(_ctx, constructor, JSApi.JS_ATOM_Symbol_operatorSet, rval);
                 }
             }
         }
@@ -680,7 +680,7 @@ namespace QuickJS
         {
             var nameAtom = GetAtom(name);
             var cfun = JSApi.JSB_NewCFunction(_ctx, func, nameAtom, length);
-            JSApi.JS_DefinePropertyValue(_ctx, thisObject, nameAtom, cfun, JSPropFlags.JS_PROP_C_W_E);
+            JSApi.JS_DefinePropertyValue(_ctx, thisObject, nameAtom, cfun);
         }
 
         public static ClassDecl Bind(TypeRegister register)

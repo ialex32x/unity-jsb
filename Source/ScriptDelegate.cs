@@ -9,6 +9,9 @@ namespace QuickJS
     {
         protected ScriptContext _context;
         protected /*readonly*/ JSValue _jsValue;
+#if JSB_DEBUG
+        protected string _stackTrack;
+#endif
 
         // 一个 JSValue (function) 可能会被用于映射多个委托对象
         // it's safe without weakreference for cycle references between managed objects
@@ -32,6 +35,10 @@ namespace QuickJS
             // ScriptDelegate 拥有 js 对象的强引用, 此 js 对象无法释放 cache 中的 object, 所以这里用弱引用注册
             // 会出现的问题是, 如果 c# 没有对 ScriptDelegate 的强引用, 那么反复 get_delegate 会重复创建 ScriptDelegate
             _context.GetObjectCache().AddDelegate(_jsValue, this);
+#if JSB_DEBUG
+            try { throw new Exception(); }
+            catch (Exception exception) { _stackTrack = exception.StackTrace; }
+#endif
         }
 
         public static implicit operator JSValue(ScriptDelegate value)
@@ -57,7 +64,11 @@ namespace QuickJS
                 var context = _context;
 
                 _context = null;
+#if JSB_DEBUG
+                context.GetRuntime().FreeDelegationValue(_jsValue, _stackTrack);
+#else
                 context.GetRuntime().FreeDelegationValue(_jsValue);
+#endif
                 _jsValue = JSApi.JS_UNDEFINED;
             }
         }
@@ -74,7 +85,7 @@ namespace QuickJS
                 var other = (ScriptDelegate)obj;
                 return other._jsValue == _jsValue;
             }
-            
+
             if (obj is JSValue)
             {
                 var other = (JSValue)obj;
@@ -83,7 +94,7 @@ namespace QuickJS
 
             return false;
         }
-        
+
         public Delegate Any()
         {
             return _matches.Count != 0 ? _matches[0] : null;

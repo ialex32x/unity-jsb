@@ -119,7 +119,7 @@ namespace QuickJS.Binding
             JSApi.JSB_SetBridgeType(ctx, protoVal, GetAtom(Values.KeyForCSharpTypeID), type_id);
             if (!nsValue.IsNullish())
             {
-                JSApi.JS_DefinePropertyValue(ctx, nsValue, nameAtom, ctorVal, JSPropFlags.JS_PROP_ENUMERABLE | JSPropFlags.JS_PROP_CONFIGURABLE);
+                JSApi.JS_DefinePropertyValue(ctx, nsValue, nameAtom, ctorVal);
             }
             else
             {
@@ -146,7 +146,7 @@ namespace QuickJS.Binding
             JSApi.JS_SetConstructor(ctx, ctorVal, protoVal);
             if (!nsValue.IsNullish())
             {
-                JSApi.JS_DefinePropertyValue(ctx, nsValue, nameAtom, ctorVal, JSPropFlags.JS_PROP_ENUMERABLE | JSPropFlags.JS_PROP_CONFIGURABLE);
+                JSApi.JS_DefinePropertyValue(ctx, nsValue, nameAtom, ctorVal);
             }
             else
             {
@@ -176,7 +176,7 @@ namespace QuickJS.Binding
             JSApi.JSB_SetBridgeType(ctx, protoVal, GetAtom(Values.KeyForCSharpTypeID), type_id);
             if (!nsValue.IsNullish())
             {
-                JSApi.JS_DefinePropertyValue(ctx, nsValue, nameAtom, ctorVal, JSPropFlags.JS_PROP_ENUMERABLE | JSPropFlags.JS_PROP_CONFIGURABLE);
+                JSApi.JS_DefinePropertyValue(ctx, nsValue, nameAtom, ctorVal);
             }
             else
             {

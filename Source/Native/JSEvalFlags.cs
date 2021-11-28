@@ -3,7 +3,7 @@
 namespace QuickJS.Native
 {
     [Flags]
-    public enum JSEvalFlags
+    internal enum JSEvalFlags
     {
         /* JS_Eval() flags */
         JS_EVAL_TYPE_GLOBAL = (0 << 0) /* global code (default) */,

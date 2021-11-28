@@ -106,11 +106,11 @@ namespace QuickJS
             {
                 var propName = context.GetAtom("postMessage");
                 var postMessage = db.NewDynamicMethod(propName, _js_self_postMessage);
-                JSApi.JS_DefinePropertyValue(context, globalObject, propName, postMessage, JSPropFlags.DEFAULT);
+                JSApi.JS_DefinePropertyValue(context, globalObject, propName, postMessage);
             }
             {
                 var propName = context.GetAtom("onmessage");
-                JSApi.JS_DefinePropertyValue(context, globalObject, propName, JSApi.JS_NULL, JSPropFlags.JS_PROP_C_W_E);
+                JSApi.JS_DefinePropertyValue(context, globalObject, propName, JSApi.JS_NULL);
             }
             JSApi.JS_FreeValue(context, globalObject);
         }

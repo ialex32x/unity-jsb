@@ -11,7 +11,7 @@ namespace QuickJS.Native
     // #define JS_GPN_SET_ENUM     (1 << 5)
 
     [Flags]
-    public enum JSGPNFlags : int
+    internal enum JSGPNFlags : int
     {
         JS_GPN_STRING_MASK = (1 << 0),
         JS_GPN_SYMBOL_MASK = (1 << 1),

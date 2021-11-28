@@ -4,7 +4,7 @@ namespace QuickJS.Native
 {
     //TODO [v8-integrating] not to expose this enum out of JSApi module
     [Flags]
-    public enum JSPropFlags
+    internal enum JSPropFlags
     {
         /* flags for object properties */
         JS_PROP_CONFIGURABLE = (1 << 0),
@@ -41,5 +41,6 @@ namespace QuickJS.Native
         // custom values
         CONST_VALUE = JS_PROP_HAS_VALUE | JS_PROP_ENUMERABLE, 
         DEFAULT = JS_PROP_CONFIGURABLE | JS_PROP_ENUMERABLE, 
+        NONE = 0, 
     }
 }

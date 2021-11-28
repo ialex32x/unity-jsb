@@ -32,7 +32,7 @@ namespace QuickJS.Native
         {
             if (obj.tag == JS_TAG_OBJECT)
             {
-                JS_DefinePropertyValue(ctx, obj, key, JS_NewInt32(ctx, type), JSPropFlags.JS_PROP_HAS_VALUE);
+                JS_DefinePropertyValue(ctx, obj, key, JS_NewInt32(ctx, type));
                 return true;
             }
 
