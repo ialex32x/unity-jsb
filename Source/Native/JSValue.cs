@@ -105,7 +105,7 @@ namespace QuickJS.Native
                     case JSApi.JS_TAG_NULL: return "null";
                     case JSApi.JS_TAG_UNDEFINED: return "undefined";
                     case JSApi.JS_TAG_EXCEPTION: return "exception";
-                    default: return u.int32.ToString();
+                    default: return string.Format("Value:{0:X}", (ulong)u.ptr);
                 }
             }
 
@@ -113,7 +113,7 @@ namespace QuickJS.Native
             {
                 case JSApi.JS_TAG_SYMBOL: return string.Format("Symbol:{0:X}", (ulong)u.ptr);
                 case JSApi.JS_TAG_STRING: return string.Format("String:{0:X}", (ulong)u.ptr);
-                default: return string.Format("Ref:{0:X}", (ulong)u.ptr);
+                default: return string.Format("Reference:{0:X}", (ulong)u.ptr);
             }
         }
 
