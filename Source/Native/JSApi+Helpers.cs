@@ -99,7 +99,7 @@ namespace QuickJS.Native
         {
             uint plen;
             JSPropertyEnum* ptab;
-            if (JSApi.JS_GetOwnPropertyNames(ctx, out ptab, out plen, this_obj, JSGPNFlags.JS_GPN_STRING_MASK) < 0)
+            if (JSApi.JS_GetOwnPropertyNames(ctx, out ptab, out plen, this_obj, JSGPNFlags.JS_GPN_STRING_MASK | JSGPNFlags.JS_GPN_ENUM_ONLY) < 0)
             {
                 // failed
                 return null;
@@ -133,7 +133,7 @@ namespace QuickJS.Native
         {
             JSPropertyEnum* ptab;
             uint plen;
-            if (JSApi.JS_GetOwnPropertyNames(ctx, out ptab, out plen, this_obj, JSGPNFlags.JS_GPN_STRING_MASK) < 0)
+            if (JSApi.JS_GetOwnPropertyNames(ctx, out ptab, out plen, this_obj, JSGPNFlags.JS_GPN_STRING_MASK | JSGPNFlags.JS_GPN_ENUM_ONLY) < 0)
             {
                 // failed
                 return false;
