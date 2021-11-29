@@ -124,6 +124,7 @@ namespace QuickJS.Native
                 {
                     JSApi.JS_FreeAtom(ctx, ptab[i].atom);
                 }
+                JSApi.js_free(ctx, (IntPtr)ptab);
             }
             return null;
         }
@@ -163,6 +164,7 @@ namespace QuickJS.Native
             {
                 JSApi.JS_FreeAtom(ctx, ptab[i].atom);
             }
+            JSApi.js_free(ctx, (IntPtr)ptab);
             return stop;
         }
     }
