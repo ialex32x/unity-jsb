@@ -104,8 +104,6 @@ namespace QuickJS.Native
         public const int JS_TAG_BOOL = 1;
         public const int JS_TAG_NULL = 2;
         public const int JS_TAG_UNDEFINED = 3;
-        public const int JS_TAG_UNINITIALIZED = 4;
-        public const int JS_TAG_CATCH_OFFSET = 5;
         public const int JS_TAG_EXCEPTION = 6;
         public const int JS_TAG_FLOAT64 = 7;
 
@@ -132,8 +130,6 @@ namespace QuickJS.Native
         public static readonly JSValue JS_UNDEFINED = JS_MKVAL(JS_TAG_UNDEFINED, 0);
         public static readonly JSValue JS_FALSE = JS_MKVAL(JS_TAG_BOOL, 0);
         public static readonly JSValue JS_TRUE = JS_MKVAL(JS_TAG_BOOL, 1);
-        public static readonly JSValue JS_EXCEPTION = JS_MKVAL(JS_TAG_EXCEPTION, 0);
-        public static readonly JSValue JS_UNINITIALIZED = JS_MKVAL(JS_TAG_UNINITIALIZED, 0);
 
         static JSApi()
         {
@@ -636,24 +632,6 @@ namespace QuickJS.Native
             return tag == JS_TAG_INT || tag == JS_TAG_FLOAT64;
         }
 
-        public static bool JS_IsBigInt(JSContext ctx, JSValueConst v)
-        {
-            var tag = v.tag;
-            return tag == JS_TAG_BIG_INT;
-        }
-
-        public static bool JS_IsBigFloat(JSValueConst v)
-        {
-            var tag = v.tag;
-            return tag == JS_TAG_BIG_FLOAT;
-        }
-
-        public static bool JS_IsBigDecimal(JSValueConst v)
-        {
-            var tag = v.tag;
-            return tag == JS_TAG_BIG_DECIMAL;
-        }
-
         public static bool JS_IsBool(JSValueConst v)
         {
             return v.tag == JS_TAG_BOOL;
@@ -674,19 +652,9 @@ namespace QuickJS.Native
             return (v.tag == JS_TAG_EXCEPTION);
         }
 
-        public static bool JS_IsUninitialized(JSValueConst v)
-        {
-            return (v.tag == JS_TAG_UNINITIALIZED);
-        }
-
         public static bool JS_IsString(JSValueConst v)
         {
             return v.tag == JS_TAG_STRING;
-        }
-
-        public static bool JS_IsSymbol(JSValueConst v)
-        {
-            return v.tag == JS_TAG_SYMBOL;
         }
 
         public static bool JS_IsObject(JSValueConst v)
@@ -698,9 +666,6 @@ namespace QuickJS.Native
 
         [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl, EntryPoint = "JSB_DupValue")]
         public static extern JSValue JS_DupValue(JSContext ctx, JSValueConst v);
-
-        [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl, EntryPoint = "JSB_DupValueRT")]
-        public static extern JSValue JS_DupValueRT(JSRuntime rt, JSValueConst v);
 
         [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl, EntryPoint = "JSB_FreeValue")]
         public static extern void JS_FreeValue(JSContext ctx, JSValue v);

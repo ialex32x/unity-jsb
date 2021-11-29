@@ -154,7 +154,7 @@ namespace QuickJS
                 var pstr = JSApi.JS_ToCStringLen(ctx, out str_len, argv[i]);
                 if (pstr == IntPtr.Zero)
                 {
-                    return JSApi.JS_EXCEPTION;
+                    return JSNative.ThrowInternalError(ctx, "JS_ToCStringLen failed");
                 }
 
                 var str = JSApi.GetString(ctx, pstr, str_len);
