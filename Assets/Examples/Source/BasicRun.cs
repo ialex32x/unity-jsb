@@ -21,7 +21,7 @@ namespace Example
             {
                 case RunCase.QuickJSCodebase:
                     {
-                        var rt = JSApi.JS_NewRuntime();
+                        var rt = JSApi.JSB_NewRuntime(null);
                         JSMemoryUsage s;
                         JSApi.JS_ComputeMemoryUsage(rt, &s);
                         Debug.Log($"test {rt}: {s.malloc_count} {s.malloc_size} {s.malloc_limit}");
@@ -33,7 +33,7 @@ namespace Example
                         // // JSApi.JS_FreeValue(ctx, obj);
 
                         JSApi.JS_FreeContext(ctx);
-                        JSApi.JS_FreeRuntime(rt);
+                        JSApi.JSB_FreeRuntime(rt);
                         Debug.Log("it's a good day");
                         GameObject.CreatePrimitive(PrimitiveType.Cube);
                         break;

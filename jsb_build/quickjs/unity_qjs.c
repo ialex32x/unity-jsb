@@ -53,6 +53,39 @@ enum
 
 #endif // !UNITY_WEBGL
 
+static JSClassID js_class_id_begin = 0;
+static JSClassID js_bridge_class_id = 0;
+
+// quickjs 内置 class id 之后的第一个可用 id
+JS_EXPORT JSClassID JSB_GetClassID()
+{
+    return js_class_id_begin;
+}
+
+JS_EXPORT JSClassID JSB_GetBridgeClassID()
+{
+    return js_bridge_class_id;
+}
+
+#define JS_BO_TYPE 1
+#define JS_BO_OBJECT 2
+#define JS_BO_VALUE 3
+// #define JS_BO_STRICT_OBJECT 4
+
+typedef struct JSPayloadHeader
+{
+    int32_t type_id; // JS_BO_*
+    int32_t value;
+} JSPayloadHeader;
+
+static JSPayloadHeader _null_payload = {.type_id = 0, .value = 0};
+
+typedef struct JSPayload
+{
+    JSPayloadHeader header;
+    char data[1];
+} JSPayload;
+
 JS_EXPORT JSValue JSB_NewEmptyString(JSContext *ctx)
 {
     return JS_NewStringLen(ctx, "", 0);
@@ -178,57 +211,96 @@ JS_EXPORT JSValue JSB_NewPropertyObjectStr(JSContext *ctx, JSValueConst this_obj
     return p;
 }
 
-JS_EXPORT JSClassID JSB_NewClass(JSRuntime *rt, JSClassID class_id, const char *class_name, JSClassFinalizer *finalizer)
+typedef void JSGCObjectFinalizer(JSRuntime* rt, JSPayloadHeader header);
+
+typedef struct JSBRuntimePayload {
+    void* opaque;
+    JSGCObjectFinalizer* finalizer;
+} JSBRuntimePayload;
+
+// 释放数据, 返回头信息副本
+JS_EXPORT JSPayloadHeader JSB_FreePayload(JSContext *ctx, JSValue val)
 {
-    if (JS_IsRegisteredClass(rt, class_id))
+    void *sv = JS_GetOpaque(val, js_bridge_class_id);
+    if (sv)
     {
-        return 0;
+        JSPayloadHeader header = *(JSPayloadHeader *)sv;
+        JS_SetOpaque(val, NULL);
+        js_free(ctx, sv);
+        return header;
     }
+    return _null_payload;
+}
+
+JS_EXPORT JSPayloadHeader JSB_FreePayloadRT(JSRuntime *rt, JSValue val)
+{
+    void *sv = JS_GetOpaque(val, js_bridge_class_id);
+    if (sv)
+    {
+        JSPayloadHeader header = *(JSPayloadHeader *)sv;
+        JS_SetOpaque(val, NULL);
+        js_free_rt(rt, sv);
+        return header;
+    }
+    return _null_payload;
+}
+
+static void _JSBClass_Finalizer(JSRuntime* rt, JSValue obj) 
+{
+    JSPayloadHeader header = JSB_FreePayloadRT(rt, obj);
+    JSBRuntimePayload* payload = (JSBRuntimePayload*)JS_GetRuntimeOpaque(rt);
+    if (payload && payload->finalizer)
+    {
+        payload->finalizer(rt, header);
+    }
+}
+
+JS_EXPORT JSRuntime* JSB_NewRuntime(JSGCObjectFinalizer* finalizer)
+{
+    JSRuntime* rt = JS_NewRuntime();
+    JSBRuntimePayload* payload = js_malloc_rt(rt, sizeof(JSBRuntimePayload));
+    payload->opaque = 0;
+    payload->finalizer = finalizer;
+    JS_SetRuntimeOpaque(rt, payload);
+    
     JSClassDef cls_def;
 
-    cls_def.class_name = class_name;
-    cls_def.finalizer = finalizer;
+    cls_def.class_name = "CSharpClass";
+    cls_def.finalizer = _JSBClass_Finalizer;
     cls_def.exotic = NULL;
     cls_def.gc_mark = NULL;
     cls_def.call = NULL;
 
-    JS_NewClassID(&class_id);
-    JS_NewClass(rt, class_id, &cls_def);
-    return class_id;
+    JS_NewClassID(&js_bridge_class_id);
+    JS_NewClass(rt, js_bridge_class_id, &cls_def);
+
+    return rt;
 }
 
-static JSClassID js_class_id_begin = 0;
-static JSClassID js_bridge_class_id = 0;
-
-// quickjs 内置 class id 之后的第一个可用 id
-JS_EXPORT JSClassID JSB_GetClassID()
+JS_EXPORT int JSB_FreeRuntime(JSRuntime* rt)
 {
-    return js_class_id_begin;
+    void* payload = JS_GetRuntimeOpaque(rt);
+    if (payload)
+    {
+        js_free_rt(rt, payload);
+    }
+    return JS_FreeRuntime(rt);
 }
 
-JS_EXPORT JSClassID JSB_GetBridgeClassID()
+JS_EXPORT void* JSB_GetRuntimeOpaque(JSRuntime* rt)
 {
-    return js_bridge_class_id;
+    JSBRuntimePayload* payload = (JSBRuntimePayload*)JS_GetRuntimeOpaque(rt);
+    return payload ? payload->opaque : 0;
 }
 
-#define JS_BO_TYPE 1
-#define JS_BO_OBJECT 2
-#define JS_BO_VALUE 3
-// #define JS_BO_STRICT_OBJECT 4
-
-typedef struct JSPayloadHeader
+JS_EXPORT void JSB_SetRuntimeOpaque(JSRuntime* rt, void* opaque)
 {
-    int32_t type_id; // JS_BO_*
-    int32_t value;
-} JSPayloadHeader;
-
-static JSPayloadHeader _null_payload = {.type_id = 0, .value = 0};
-
-typedef struct JSPayload
-{
-    JSPayloadHeader header;
-    char data[1];
-} JSPayload;
+    JSBRuntimePayload* payload = (JSBRuntimePayload*)JS_GetRuntimeOpaque(rt);
+    if (payload) 
+    {
+        payload->opaque = opaque;
+    }
+}
 
 // added: v1
 JS_EXPORT JS_BOOL jsb_set_payload(JSContext *ctx, JSValue obj, int32_t type_id, int32_t value, int32_t size)
@@ -307,33 +379,6 @@ JS_EXPORT JSValue JSB_NewBridgeClassValue(JSContext *ctx, JSValue new_target, in
     }
 
     return proto;
-}
-
-// 释放数据, 返回头信息副本
-JS_EXPORT JSPayloadHeader JSB_FreePayload(JSContext *ctx, JSValue val)
-{
-    void *sv = JS_GetOpaque(val, js_bridge_class_id);
-    if (sv)
-    {
-        JSPayloadHeader header = *(JSPayloadHeader *)sv;
-        JS_SetOpaque(val, NULL);
-        js_free(ctx, sv);
-        return header;
-    }
-    return _null_payload;
-}
-
-JS_EXPORT JSPayloadHeader JSB_FreePayloadRT(JSRuntime *rt, JSValue val)
-{
-    void *sv = JS_GetOpaque(val, js_bridge_class_id);
-    if (sv)
-    {
-        JSPayloadHeader header = *(JSPayloadHeader *)sv;
-        JS_SetOpaque(val, NULL);
-        js_free_rt(rt, sv);
-        return header;
-    }
-    return _null_payload;
 }
 
 JS_EXPORT JSPayloadHeader jsb_get_payload_header(JSValue val)

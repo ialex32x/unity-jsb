@@ -41,7 +41,7 @@ namespace QuickJS.Native
 #if UNITY_EDITOR_WIN || UNITY_STANDALONE_WIN || JSB_UNITYLESS || (UNITY_WSA && !UNITY_EDITOR)
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
 #endif
-    public delegate void JSClassFinalizer(JSRuntime rt, JSValue val);
+    public delegate void JSGCObjectFinalizer(JSRuntime rt, JSPayloadHeader header);
 
 #if UNITY_EDITOR_WIN || UNITY_STANDALONE_WIN || JSB_UNITYLESS || (UNITY_WSA && !UNITY_EDITOR)
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
@@ -146,19 +146,28 @@ namespace QuickJS.Native
         }
 
         [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern JSRuntime JS_NewRuntime();
+        private static extern JSRuntime JSB_NewRuntime(IntPtr class_finalizer);
+
+        public static JSRuntime JSB_NewRuntime(JSGCObjectFinalizer class_finalizer)
+        {
+#if JSB_UNITYLESS || (UNITY_WSA && !UNITY_EDITOR)
+            GCHandle.Alloc(cb);
+#endif
+            var fn = Marshal.GetFunctionPointerForDelegate(class_finalizer);
+            return JSB_NewRuntime(fn);
+        }
+
+        [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern IntPtr JSB_GetRuntimeOpaque(JSRuntime rt);
+
+        [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern void JSB_SetRuntimeOpaque(JSRuntime rt, IntPtr opaque);
+
+        [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern int JSB_FreeRuntime(JSRuntime rt);
 
         [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern JSRuntime JS_GetRuntime(JSContext ctx);
-
-        [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern int JS_FreeRuntime(JSRuntime rt);
-
-        [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern IntPtr JS_GetRuntimeOpaque(JSRuntime rt);
-
-        [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern void JS_SetRuntimeOpaque(JSRuntime rt, IntPtr opaque);
 
         [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern JSContext JS_NewContext(JSRuntime rt);
@@ -785,17 +794,17 @@ namespace QuickJS.Native
         [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl, EntryPoint = "JSB_Init")]
         public static extern int __JSB_Init();
 
-        [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
-        private static extern JSClassID JSB_NewClass(JSRuntime rt, JSClassID class_id, [MarshalAs(UnmanagedType.LPStr)] string class_name, IntPtr finalizer);
+        // [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
+        // private static extern JSClassID JSB_NewClass(JSRuntime rt, JSClassID class_id, [MarshalAs(UnmanagedType.LPStr)] string class_name, IntPtr finalizer);
 
-        public static JSClassID JS_NewClass(JSRuntime rt, JSClassFinalizer class_finalizer)
-        {
-#if JSB_UNITYLESS || (UNITY_WSA && !UNITY_EDITOR)
-            GCHandle.Alloc(class_finalizer);
-#endif
-            var fn_ptr = Marshal.GetFunctionPointerForDelegate(class_finalizer);
-            return JSApi.JSB_NewClass(rt, JSApi.JSB_GetBridgeClassID(), "CSharpClass", fn_ptr);
-        }
+//         public static JSClassID JS_NewClass(JSRuntime rt, JSClassFinalizer class_finalizer)
+//         {
+// #if JSB_UNITYLESS || (UNITY_WSA && !UNITY_EDITOR)
+//             GCHandle.Alloc(class_finalizer);
+// #endif
+//             var fn_ptr = Marshal.GetFunctionPointerForDelegate(class_finalizer);
+//             return JSApi.JSB_NewClass(rt, JSApi.JSB_GetBridgeClassID(), "CSharpClass", fn_ptr);
+//         }
 
         #endregion
 
