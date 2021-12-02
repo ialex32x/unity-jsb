@@ -311,10 +311,9 @@ namespace QuickJS
         }
 
         // 通用析构函数
-        [MonoPInvokeCallback(typeof(JSClassFinalizer))]
-        public static void class_finalizer(JSRuntime rt, JSValue val)
+        [MonoPInvokeCallback(typeof(JSGCObjectFinalizer))]
+        public static void class_finalizer(JSRuntime rt, JSPayloadHeader header)
         {
-            var header = JSApi.JSB_FreePayloadRT(rt, val);
             if (header.type_id == BridgeObjectType.ObjectRef)
             {
                 var objectCache = ScriptEngine.GetObjectCache(rt);
@@ -352,7 +351,7 @@ namespace QuickJS
             _isStaticBinding = DefaultBinder.IsStaticBinding(binder);
             _logger = logger;
             // _rwlock = new ReaderWriterLockSlim();
-            _rt = JSApi.JS_NewRuntime();
+            _rt = JSApi.JSB_NewRuntime(class_finalizer);
             JSApi.JS_SetHostPromiseRejectionTracker(_rt, JSNative.PromiseRejectionTracker, IntPtr.Zero);
 #if UNITY_EDITOR
             JSApi.JS_SetInterruptHandler(_rt, _InterruptHandler, IntPtr.Zero);
@@ -362,10 +361,9 @@ namespace QuickJS
                 JSApi.JS_SetInterruptHandler(_rt, _InterruptHandler, IntPtr.Zero);
             }
 #endif
-            JSApi.JS_SetRuntimeOpaque(_rt, (IntPtr)_runtimeId);
+            JSApi.JSB_SetRuntimeOpaque(_rt, (IntPtr)_runtimeId);
             JSApi.JS_SetModuleLoaderFunc(_rt, module_normalize, module_loader, IntPtr.Zero);
             CreateContext();
-            JSApi.JS_NewClass(_rt, class_finalizer);
 
             _pathResolver = resolver;
             _asyncManager = asyncManager;
@@ -991,7 +989,7 @@ namespace QuickJS
                 }
             }
 
-            if (JSApi.JS_FreeRuntime(_rt) == 0)
+            if (JSApi.JSB_FreeRuntime(_rt) == 0)
             {
                 _logger?.Write(LogLevel.Assert, "gc object leaks");
             }

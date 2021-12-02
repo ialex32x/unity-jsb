@@ -18,7 +18,7 @@ namespace QuickJS.Unity
 
         public UnityJSScriptCompiler()
         {
-            _rt = JSApi.JS_NewRuntime();
+            _rt = JSApi.JSB_NewRuntime(ScriptRuntime.class_finalizer);
             _ctx = JSApi.JS_NewContext(_rt);
             JSApi.JS_AddIntrinsicOperators(_ctx);
         }
@@ -94,7 +94,7 @@ namespace QuickJS.Unity
 
             if (_rt.IsValid())
             {
-                JSApi.JS_FreeRuntime(_rt);
+                JSApi.JSB_FreeRuntime(_rt);
                 _rt = JSRuntime.Null;
             }
         }

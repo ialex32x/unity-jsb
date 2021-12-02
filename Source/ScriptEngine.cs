@@ -174,7 +174,7 @@ namespace QuickJS
 
             if (rt.IsValid())
             {
-                var id = (int)JSApi.JS_GetRuntimeOpaque(rt);
+                var id = (int)JSApi.JSB_GetRuntimeOpaque(rt);
                 if (id > 0)
                 {
                     var index = id - 1;
