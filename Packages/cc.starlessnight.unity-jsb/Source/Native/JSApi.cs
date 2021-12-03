@@ -351,7 +351,7 @@ namespace QuickJS.Native
         #endregion
 
         [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern JSValue JS_NewObjectProtoClass(JSContext ctx, JSValueConst proto, JSClassID class_id);
+        public static extern JSValue jsb_crossbind_constructor(JSContext ctx, JSValue new_target);
 
         [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern JSValue JS_NewObject(JSContext ctx);

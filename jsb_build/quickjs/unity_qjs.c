@@ -312,6 +312,19 @@ JS_EXPORT JS_BOOL jsb_set_payload(JSContext *ctx, JSValue obj, int32_t type_id, 
     return TRUE;
 }
 
+JS_EXPORT JSValue jsb_crossbind_constructor(JSContext *ctx, JSValue new_target)
+{
+    JSValue proto = JS_GetProperty(ctx, new_target, JS_ATOM_prototype);
+    if (!JS_IsException(proto))
+    {
+        JSValue val = JS_NewObjectProtoClass(ctx, proto, js_bridge_class_id);
+        JS_FreeValue(ctx, proto);
+        return val;
+    }
+
+    return proto;
+}
+
 JS_EXPORT JSValue jsb_construct_bridge_object(JSContext *ctx, JSValue proto, int32_t object_id)
 {
     JSValue obj = JS_CallConstructor(ctx, proto, 0, NULL);

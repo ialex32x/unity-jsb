@@ -14,7 +14,7 @@ namespace QuickJS.Binding
             {
                 if (argc == 0)
                 {
-                    return Values._js_crossbind_constructor(ctx, new_target);
+                    return JSApi.jsb_crossbind_constructor(ctx, new_target);
                 }
                 throw new NoSuitableMethodException("constructor", argc);
             }
