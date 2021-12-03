@@ -294,7 +294,7 @@ namespace QuickJS.Binding
 
         public override JSValue Invoke(JSContext ctx, JSValue this_obj, int argc, JSValue[] argv)
         {
-            return Values._js_crossbind_constructor(ctx, this_obj);
+            return JSApi.jsb_crossbind_constructor(ctx, this_obj);
         }
     }
 
