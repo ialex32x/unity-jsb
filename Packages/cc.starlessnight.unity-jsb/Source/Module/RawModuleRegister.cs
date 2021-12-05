@@ -31,7 +31,8 @@ namespace QuickJS.Module
         {
             var v = _bind(context);
             var ctx = (JSContext)context;
-            JSApi.JS_SetPropertyStr(ctx, module_obj, "exports", JSApi.JS_DupValue(ctx, v));
+            var key_atom = context.GetAtom("exports");
+            JSApi.JS_SetProperty(ctx, module_obj, key_atom, JSApi.JS_DupValue(ctx, v));
             return v;
         }
     }
