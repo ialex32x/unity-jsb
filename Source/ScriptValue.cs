@@ -94,8 +94,9 @@ namespace QuickJS
         public void SetProperty(string key, object value)
         {
             var ctx = (JSContext)_context;
+            var key_atom = _context.GetAtom(key);
             var jsValue = Binding.Values.js_push_var(ctx, value);
-            JSApi.JS_SetPropertyStr(ctx, _jsValue, key, jsValue);
+            JSApi.JS_SetProperty(ctx, _jsValue, key_atom, jsValue);
         }
 
         public override string ToString()
