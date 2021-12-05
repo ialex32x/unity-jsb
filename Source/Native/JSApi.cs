@@ -485,8 +485,8 @@ namespace QuickJS.Native
         [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern int JS_SetPropertyUint32(JSContext ctx, JSValueConst this_obj, uint32_t idx, JSValue val);
 
-        [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
-        public static extern int JS_SetPropertyStr(JSContext ctx, [In] JSValueConst this_obj, [MarshalAs(UnmanagedType.LPStr)] string prop, JSValue val);
+        // [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
+        // public static extern int JS_SetPropertyStr(JSContext ctx, [In] JSValueConst this_obj, [MarshalAs(UnmanagedType.LPStr)] string prop, JSValue val);
 
         [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern int JS_HasProperty(JSContext ctx, JSValueConst this_obj, JSAtom prop);
