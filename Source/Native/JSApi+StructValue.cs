@@ -60,8 +60,6 @@ namespace QuickJS.Native
 
         [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern JSPayloadHeader JSB_FreePayload(JSContext ctx, JSValue val);
-        [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern JSPayloadHeader JSB_FreePayloadRT(JSRuntime rt, JSValue val);
 
         [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern JSPayloadHeader jsb_get_payload_header(JSContext ctx, JSValue val);
