@@ -6,6 +6,7 @@ on:
       - jsb_build/quickjs/quickjs-latest/quickjs.c
       - jsb_build/quickjs/quickjs-latest/quickjs.h
       - jsb_build/quickjs/unity_qjs.c
+      - jsb_build/quickjs/unity_ext.c
       - jsb_build/quickjs/CMakeLists.txt
       - jsb_build/quickjs/make_jsb_android.sh
       - jsb_build/quickjs/make_jsb_ios.sh
