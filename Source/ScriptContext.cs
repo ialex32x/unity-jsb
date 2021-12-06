@@ -412,22 +412,6 @@ namespace QuickJS
             return false;
         }
 
-        public void ForEachModuleExport(Func<JSAtom, JSAtom, JSValue, bool> callback)
-        {
-            JSApi.ForEachProperty(_ctx, _moduleCache, (mod_id, mod_obj) =>
-            {
-                var exports = JSApi.JS_GetProperty(_ctx, mod_obj, GetAtom("exports"));
-                if (exports.IsObject())
-                {
-                    var ret = JSApi.ForEachProperty(_ctx, exports, (export_id, export_obj) => callback(mod_id, export_id, export_obj));
-                    JSApi.JS_FreeValue(_ctx, exports);
-                    return ret;
-                }
-                JSApi.JS_FreeValue(_ctx, exports);
-                return false;
-            });
-        }
-
         public bool LoadModuleCacheExports(string module_id, string key, out JSValue value)
         {
             JSValue mod_obj;
