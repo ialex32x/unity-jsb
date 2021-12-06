@@ -1057,7 +1057,7 @@ namespace QuickJS.Binding
                 }
                 else
                 {
-                    var header = JSApi.jsb_get_payload_header(jsValue);
+                    var header = JSApi.jsb_get_payload_header(ctx, jsValue);
                     switch (header.type_id)
                     {
                         case BridgeObjectType.TypeRef:
@@ -1223,7 +1223,7 @@ namespace QuickJS.Binding
                 return true;
             }
 
-            var header = JSApi.jsb_get_payload_header(val);
+            var header = JSApi.jsb_get_payload_header(ctx, val);
             switch (header.type_id)
             {
                 case BridgeObjectType.ObjectRef:
@@ -1244,7 +1244,7 @@ namespace QuickJS.Binding
                 return true;
             }
 
-            var header = JSApi.jsb_get_payload_header(val);
+            var header = JSApi.jsb_get_payload_header(ctx, val);
             switch (header.type_id)
             {
                 case BridgeObjectType.ObjectRef:

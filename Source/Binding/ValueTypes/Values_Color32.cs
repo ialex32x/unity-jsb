@@ -15,28 +15,28 @@ namespace QuickJS.Binding
             var val = JSApi.JSB_NewBridgeClassValue(ctx, new_target, sizeof(byte) * 4);
             if (!JSApi.JS_IsException(val))
             {
-                JSApi.jsb_set_byte_4(val, o.r, o.g, o.b, o.a);
+                JSApi.jsb_set_byte_4(ctx, val, o.r, o.g, o.b, o.a);
             }
             return val;
         }
 
         public static bool js_rebind_this(JSContext ctx, JSValue this_obj, ref Color32 o)
         {
-            return JSApi.jsb_set_byte_4(this_obj, o.r, o.g, o.b, o.a) == 1;
+            return JSApi.jsb_set_byte_4(ctx, this_obj, o.r, o.g, o.b, o.a) == 1;
         }
 
         public static JSValue js_push_structvalue(JSContext ctx, Color32 o)
         {
             var proto = FindPrototypeOf<Color32>(ctx);
             JSValue val = JSApi.jsb_new_bridge_value(ctx, proto, sizeof(byte) * 4);
-            JSApi.jsb_set_byte_4(val, o.r, o.g, o.b, o.a);
+            JSApi.jsb_set_byte_4(ctx, val, o.r, o.g, o.b, o.a);
             return val;
         }
 
         public static bool js_get_structvalue(JSContext ctx, JSValue val, out Color32 o)
         {
             byte r, g, b, a;
-            var ret = JSApi.jsb_get_byte_4(val, out r, out g, out b, out a);
+            var ret = JSApi.jsb_get_byte_4(ctx, val, out r, out g, out b, out a);
             o = new Color32((byte)r, (byte)g, (byte)b, (byte)a);
             return ret != 0;
         }
@@ -49,7 +49,7 @@ namespace QuickJS.Binding
                 return true;
             }
             byte r, g, b, a;
-            var ret = JSApi.jsb_get_byte_4(val, out r, out g, out b, out a);
+            var ret = JSApi.jsb_get_byte_4(ctx, val, out r, out g, out b, out a);
             o = new Color32((byte)r, (byte)g, (byte)b, (byte)a);
             return ret != 0;
         }

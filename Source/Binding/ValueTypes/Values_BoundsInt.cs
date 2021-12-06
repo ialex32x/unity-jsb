@@ -31,7 +31,7 @@ namespace QuickJS.Binding
             data[3] = size.x;
             data[4] = size.y;
             data[5] = size.z;
-            return JSApi.jsb_set_bytes(this_obj, sizeof(int) * 6, (byte*)data) == 1;
+            return JSApi.jsb_set_bytes(ctx, this_obj, sizeof(int) * 6, (byte*)data) == 1;
         }
 
         public static JSValue js_push_structvalue(JSContext ctx, BoundsInt o)
@@ -58,7 +58,7 @@ namespace QuickJS.Binding
         public static unsafe bool js_get_structvalue(JSContext ctx, JSValue val, out BoundsInt o)
         {
             var data = stackalloc int[6];
-            var ret = JSApi.jsb_get_bytes(val, sizeof(int) * 6, (byte*)data);
+            var ret = JSApi.jsb_get_bytes(ctx, val, sizeof(int) * 6, (byte*)data);
             o = new BoundsInt(new Vector3Int(data[0], data[1], data[2]), new Vector3Int(data[3], data[4], data[5]));
             return ret != 0;
         }
@@ -71,7 +71,7 @@ namespace QuickJS.Binding
                 return true;
             }
             var data = stackalloc int[6];
-            var ret = JSApi.jsb_get_bytes(val, sizeof(int) * 6, (byte*)data);
+            var ret = JSApi.jsb_get_bytes(ctx, val, sizeof(int) * 6, (byte*)data);
             o = new BoundsInt(new Vector3Int(data[0], data[1], data[2]), new Vector3Int(data[3], data[4], data[5]));
             return ret != 0;
         }

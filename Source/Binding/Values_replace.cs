@@ -14,7 +14,7 @@ namespace QuickJS.Binding
         public static bool js_rebind_this<T>(JSContext ctx, JSValue this_obj, ref T o)
         where T : struct
         {
-            var header = JSApi.jsb_get_payload_header(this_obj);
+            var header = JSApi.jsb_get_payload_header(ctx, this_obj);
             switch (header.type_id)
             {
                 case BridgeObjectType.ObjectRef:
@@ -26,7 +26,7 @@ namespace QuickJS.Binding
         // fallback
         public static bool js_rebind_this(JSContext ctx, JSValue this_obj, ref object o)
         {
-            var header = JSApi.jsb_get_payload_header(this_obj);
+            var header = JSApi.jsb_get_payload_header(ctx, this_obj);
             switch (header.type_id)
             {
                 case BridgeObjectType.ObjectRef:

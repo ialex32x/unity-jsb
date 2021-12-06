@@ -123,7 +123,7 @@ namespace QuickJS.Unity
         {
             if (JSApi.JS_IsConstructor(ctx, ctor) == 1)
             {
-                var header = JSApi.jsb_get_payload_header(ctor);
+                var header = JSApi.jsb_get_payload_header(ctx, ctor);
                 if (header.type_id == BridgeObjectType.None) // it's a plain js value
                 {
                     var fullCap = false;
@@ -164,7 +164,7 @@ namespace QuickJS.Unity
         {
             if (JSApi.JS_IsConstructor(ctx, ctor) == 1)
             {
-                var header = JSApi.jsb_get_payload_header(ctor);
+                var header = JSApi.jsb_get_payload_header(ctx, ctor);
                 if (header.type_id == BridgeObjectType.None) // it's a plain js value
                 {
                     var objectCache = ScriptEngine.GetObjectCache(ctx);
