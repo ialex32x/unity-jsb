@@ -542,11 +542,36 @@ namespace QuickJS
                 return ctx.ThrowInternalError("require module id (string)");
             }
 
+#if JSB_WITH_ACTIVEFUNCTION
+            // callee is the function <'require'> of current module
+            var callee = JSApi.JS_GetActiveFunction(ctx);
+
+            if (JSApi.JS_IsFunction(ctx, callee) != 1)
+            {
+                return ctx.ThrowInternalError("require != function");
+            }
+
+            var context = ScriptEngine.GetContext(ctx);
+            var runtime = context.GetRuntime();
+            var parent_module_id_val = JSApi.JS_GetProperty(ctx, callee, context.GetAtom("moduleId"));
+            var parent_module_id = JSApi.GetString(ctx, parent_module_id_val);
+            JSApi.JS_FreeValue(ctx, parent_module_id_val);
+
+            try
+            {
+                var module_id = JSApi.GetString(ctx, argv[0]);
+                return runtime.ResolveModule(context, parent_module_id, module_id, false);
+            }
+            catch (Exception exception)
+            {
+                return ctx.ThrowException(exception);
+            }
+#else 
             try
             {
                 var context = ScriptEngine.GetContext(ctx);
                 var list = context._moduleIdList;
-                var parent_module_id = string.Empty;
+                string parent_module_id = null;
                 if (magic >= 0 && magic < list.Count)
                 {
                     parent_module_id = list[magic];
@@ -559,6 +584,7 @@ namespace QuickJS
             {
                 return ctx.ThrowException(exception);
             }
+#endif
         }
 
         public JSValue _CreateRequireFunction(string resolved_id, JSValue module_obj)
