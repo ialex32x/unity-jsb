@@ -33,8 +33,8 @@ namespace QuickJS.Module
         public JSValue Load(ScriptContext context, JSValue module_obj, JSValue exports_obj)
         {
             var ctx = (JSContext)context;
-            
-            JSApi.JS_SetPropertyStr(ctx, module_obj, "exports", JSApi.JS_DupValue(ctx, _rawValue));
+            var key_atom = context.GetAtom("exports");
+            JSApi.JS_SetProperty(ctx, module_obj, key_atom, JSApi.JS_DupValue(ctx, _rawValue));
             return JSApi.JS_DupValue(ctx, _rawValue);
         }
     }
