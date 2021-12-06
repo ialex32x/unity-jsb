@@ -209,7 +209,7 @@ namespace QuickJS
                 }
                 else
                 {
-                    JSApi.JS_FreeValueRT(_rt, rval);
+                    JSApi.JSB_FreeValueRT(_rt, rval);
                 }
             }
         }
@@ -579,28 +579,28 @@ namespace QuickJS
 
         private static void _FreeValueAction(ScriptRuntime rt, JSAction action)
         {
-            JSApi.JS_FreeValueRT(rt, action.value);
+            JSApi.JSB_FreeValueRT(rt, action.value);
         }
 
         private static void _FreeValueAndDelegationAction(ScriptRuntime rt, JSAction action)
         {
             var cache = rt.GetObjectCache();
             cache.RemoveDelegate(action.value);
-            JSApi.JS_FreeValueRT(rt, action.value);
+            JSApi.JSB_FreeValueRT(rt, action.value);
         }
 
         private static void _FreeValueAndScriptValueAction(ScriptRuntime rt, JSAction action)
         {
             var cache = rt.GetObjectCache();
             cache.RemoveScriptValue(action.value);
-            JSApi.JS_FreeValueRT(rt, action.value);
+            JSApi.JSB_FreeValueRT(rt, action.value);
         }
 
         private static void _FreeValueAndScriptPromiseAction(ScriptRuntime rt, JSAction action)
         {
             var cache = rt.GetObjectCache();
             cache.RemoveScriptPromise(action.value);
-            JSApi.JS_FreeValueRT(rt, action.value);
+            JSApi.JSB_FreeValueRT(rt, action.value);
         }
 
         private bool EnqueuePendingAction(JSAction action)
@@ -622,7 +622,7 @@ namespace QuickJS
                 _objectCache.RemoveDelegate(value);
                 if (_rt != JSRuntime.Null)
                 {
-                    JSApi.JS_FreeValueRT(_rt, value);
+                    JSApi.JSB_FreeValueRT(_rt, value);
                 }
             }
             else
@@ -652,7 +652,7 @@ namespace QuickJS
                 _objectCache.RemoveScriptValue(value);
                 if (_rt != JSRuntime.Null)
                 {
-                    JSApi.JS_FreeValueRT(_rt, value);
+                    JSApi.JSB_FreeValueRT(_rt, value);
                 }
             }
             else
@@ -678,7 +678,7 @@ namespace QuickJS
                 _objectCache.RemoveScriptPromise(value);
                 if (_rt != JSRuntime.Null)
                 {
-                    JSApi.JS_FreeValueRT(_rt, value);
+                    JSApi.JSB_FreeValueRT(_rt, value);
                 }
             }
             else
@@ -702,7 +702,7 @@ namespace QuickJS
             {
                 if (_rt != JSRuntime.Null)
                 {
-                    JSApi.JS_FreeValueRT(_rt, value);
+                    JSApi.JSB_FreeValueRT(_rt, value);
                 }
             }
             else
@@ -730,7 +730,7 @@ namespace QuickJS
             {
                 for (int i = 0, len = values.Length; i < len; i++)
                 {
-                    JSApi.JS_FreeValueRT(_rt, values[i]);
+                    JSApi.JSB_FreeValueRT(_rt, values[i]);
                 }
             }
             else
@@ -761,7 +761,7 @@ namespace QuickJS
             {
                 for (int i = 0; i < argc; i++)
                 {
-                    JSApi.JS_FreeValueRT(_rt, values[i]);
+                    JSApi.JSB_FreeValueRT(_rt, values[i]);
                 }
             }
             else

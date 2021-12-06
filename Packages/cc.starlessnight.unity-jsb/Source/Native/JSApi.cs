@@ -691,8 +691,8 @@ namespace QuickJS.Native
             }
         }
 
-        [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl, EntryPoint = "JSB_FreeValueRT")]
-        public static extern void JS_FreeValueRT(JSRuntime rt, JSValue v);
+        [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern void JSB_FreeValueRT(JSRuntime rt, JSValue v);
 
         #endregion
 
