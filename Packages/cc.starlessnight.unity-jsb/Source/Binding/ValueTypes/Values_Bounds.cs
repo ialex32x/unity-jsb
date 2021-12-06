@@ -28,7 +28,7 @@ namespace QuickJS.Binding
             
             JSApi.MemoryCopy(&center.x, data, sizeof(float) * 3, sizeof(float) * 3);
             JSApi.MemoryCopy(&size.x, data + 3, sizeof(float) * 3, sizeof(float) * 3);
-            return JSApi.jsb_set_floats(this_obj, 6, data) == 1;
+            return JSApi.jsb_set_floats(ctx, this_obj, 6, data) == 1;
         }
 
         public static JSValue js_push_structvalue(JSContext ctx, Bounds o)
@@ -55,7 +55,7 @@ namespace QuickJS.Binding
         public static unsafe bool js_get_structvalue(JSContext ctx, JSValue val, out Bounds o)
         {
             var data = stackalloc float[6];
-            var ret = JSApi.jsb_get_floats(val, 6, data);
+            var ret = JSApi.jsb_get_floats(ctx, val, 6, data);
             o = new Bounds(new Vector3(data[0], data[1], data[2]), new Vector3(data[3], data[4], data[5]));
             return ret != 0;
         }
@@ -68,7 +68,7 @@ namespace QuickJS.Binding
                 return true;
             }
             var data = stackalloc float[6];
-            var ret = JSApi.jsb_get_floats(val, 6, data);
+            var ret = JSApi.jsb_get_floats(ctx, val, 6, data);
             o = new Bounds(new Vector3(data[0], data[1], data[2]), new Vector3(data[3], data[4], data[5]));
             return ret != 0;
         }

@@ -88,7 +88,7 @@ namespace QuickJS.Binding
                     return o != null && (o == type || o.IsSubclassOf(type));
                 }
 
-                var header = JSApi.jsb_get_payload_header(jsValue);
+                var header = JSApi.jsb_get_payload_header(ctx, jsValue);
                 switch (header.type_id)
                 {
                     case BridgeObjectType.ObjectRef:

@@ -31,13 +31,13 @@ namespace QuickJS.Binding
             buffer[3] = direction.x;
             buffer[4] = direction.y;
             buffer[5] = direction.z;
-            return JSApi.jsb_set_floats(this_obj, 6, buffer) == 1;
+            return JSApi.jsb_set_floats(ctx, this_obj, 6, buffer) == 1;
         }
 
         public static unsafe bool js_get_structvalue(JSContext ctx, JSValue val, out Ray o)
         {
             var buffer = stackalloc float[6];
-            var ret = JSApi.jsb_get_floats(val, 6, buffer);
+            var ret = JSApi.jsb_get_floats(ctx, val, 6, buffer);
             o = new Ray(new Vector3(buffer[0], buffer[1], buffer[2]), 
                 new Vector3(buffer[3], buffer[4], buffer[5]));
             return ret != 0;
@@ -56,7 +56,7 @@ namespace QuickJS.Binding
             buffer[3] = direction.x;
             buffer[4] = direction.y;
             buffer[5] = direction.z;
-            JSApi.jsb_set_floats(val, 6, buffer);
+            JSApi.jsb_set_floats(ctx, val, 6, buffer);
             return val;
         }
 

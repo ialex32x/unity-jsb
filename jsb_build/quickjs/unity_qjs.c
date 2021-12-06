@@ -394,7 +394,7 @@ JS_EXPORT JSValue JSB_NewBridgeClassValue(JSContext *ctx, JSValue new_target, in
     return proto;
 }
 
-JS_EXPORT JSPayloadHeader jsb_get_payload_header(JSValue val)
+JS_EXPORT JSPayloadHeader jsb_get_payload_header(JSContext *ctx, JSValue val)
 {
     JSPayloadHeader *sv = JS_GetOpaque(val, js_bridge_class_id);
     if (sv)
@@ -404,7 +404,7 @@ JS_EXPORT JSPayloadHeader jsb_get_payload_header(JSValue val)
     return _null_payload;
 }
 
-JS_EXPORT JSPayload *jsb_get_payload(JSValue val)
+JS_EXPORT JSPayload *jsb_get_payload(JSContext *ctx, JSValue val)
 {
     JSPayload *sv = JS_GetOpaque(val, js_bridge_class_id);
     if (sv)
@@ -414,7 +414,7 @@ JS_EXPORT JSPayload *jsb_get_payload(JSValue val)
     return 0;
 }
 
-JS_EXPORT JS_BOOL jsb_get_floats(JSValue val, int n, float *v0)
+JS_EXPORT JS_BOOL jsb_get_floats(JSContext *ctx, JSValue val, int n, float *v0)
 {
     JSPayload *sv = JS_GetOpaque(val, js_bridge_class_id);
     if (sv && sv->header.type_id == JS_BO_VALUE && sv->header.value == sizeof(float) * n)
@@ -429,7 +429,7 @@ JS_EXPORT JS_BOOL jsb_get_floats(JSValue val, int n, float *v0)
     return FALSE;
 }
 
-JS_EXPORT JS_BOOL jsb_set_floats(JSValue val, int n, float *v0)
+JS_EXPORT JS_BOOL jsb_set_floats(JSContext *ctx, JSValue val, int n, float *v0)
 {
     JSPayload *sv = JS_GetOpaque(val, js_bridge_class_id);
     if (sv && sv->header.type_id == JS_BO_VALUE && sv->header.value == sizeof(float) * n)
@@ -444,7 +444,7 @@ JS_EXPORT JS_BOOL jsb_set_floats(JSValue val, int n, float *v0)
     return FALSE;
 }
 
-JS_EXPORT JS_BOOL jsb_get_float_2(JSValue val, float *v0, float *v1)
+JS_EXPORT JS_BOOL jsb_get_float_2(JSContext *ctx, JSValue val, float *v0, float *v1)
 {
     JSPayload *sv = JS_GetOpaque(val, js_bridge_class_id);
     if (sv && sv->header.type_id == JS_BO_VALUE && sv->header.value == sizeof(float) * 2)
@@ -457,7 +457,7 @@ JS_EXPORT JS_BOOL jsb_get_float_2(JSValue val, float *v0, float *v1)
     return FALSE;
 }
 
-JS_EXPORT JS_BOOL jsb_set_float_2(JSValue val, float v0, float v1)
+JS_EXPORT JS_BOOL jsb_set_float_2(JSContext *ctx, JSValue val, float v0, float v1)
 {
     JSPayload *sv = JS_GetOpaque(val, js_bridge_class_id);
     if (sv && sv->header.type_id == JS_BO_VALUE && sv->header.value == sizeof(float) * 2)
@@ -470,7 +470,7 @@ JS_EXPORT JS_BOOL jsb_set_float_2(JSValue val, float v0, float v1)
     return FALSE;
 }
 
-JS_EXPORT JS_BOOL jsb_get_float_3(JSValue val, float *v0, float *v1, float *v2)
+JS_EXPORT JS_BOOL jsb_get_float_3(JSContext *ctx, JSValue val, float *v0, float *v1, float *v2)
 {
     JSPayload *sv = JS_GetOpaque(val, js_bridge_class_id);
     if (sv && sv->header.type_id == JS_BO_VALUE && sv->header.value == sizeof(float) * 3)
@@ -484,7 +484,7 @@ JS_EXPORT JS_BOOL jsb_get_float_3(JSValue val, float *v0, float *v1, float *v2)
     return FALSE;
 }
 
-JS_EXPORT JS_BOOL jsb_set_float_3(JSValue val, float v0, float v1, float v2)
+JS_EXPORT JS_BOOL jsb_set_float_3(JSContext *ctx, JSValue val, float v0, float v1, float v2)
 {
     JSPayload *sv = JS_GetOpaque(val, js_bridge_class_id);
     if (sv && sv->header.type_id == JS_BO_VALUE && sv->header.value == sizeof(float) * 3)
@@ -498,7 +498,7 @@ JS_EXPORT JS_BOOL jsb_set_float_3(JSValue val, float v0, float v1, float v2)
     return FALSE;
 }
 
-JS_EXPORT JS_BOOL jsb_get_float_4(JSValue val, float *v0, float *v1, float *v2, float *v3)
+JS_EXPORT JS_BOOL jsb_get_float_4(JSContext *ctx, JSValue val, float *v0, float *v1, float *v2, float *v3)
 {
     JSPayload *sv = JS_GetOpaque(val, js_bridge_class_id);
     if (sv && sv->header.type_id == JS_BO_VALUE && sv->header.value == sizeof(float) * 4)
@@ -513,7 +513,7 @@ JS_EXPORT JS_BOOL jsb_get_float_4(JSValue val, float *v0, float *v1, float *v2, 
     return FALSE;
 }
 
-JS_EXPORT JS_BOOL jsb_set_float_4(JSValue val, float v0, float v1, float v2, float v3)
+JS_EXPORT JS_BOOL jsb_set_float_4(JSContext *ctx, JSValue val, float v0, float v1, float v2, float v3)
 {
     JSPayload *sv = JS_GetOpaque(val, js_bridge_class_id);
     if (sv && sv->header.type_id == JS_BO_VALUE && sv->header.value == sizeof(float) * 4)
@@ -528,7 +528,7 @@ JS_EXPORT JS_BOOL jsb_set_float_4(JSValue val, float v0, float v1, float v2, flo
     return FALSE;
 }
 
-JS_EXPORT JS_BOOL jsb_get_ints(JSValue val, int n, int *v0)
+JS_EXPORT JS_BOOL jsb_get_ints(JSContext *ctx, JSValue val, int n, int *v0)
 {
     JSPayload *sv = JS_GetOpaque(val, js_bridge_class_id);
     if (sv && sv->header.type_id == JS_BO_VALUE && sv->header.value == sizeof(int) * n)
@@ -543,7 +543,7 @@ JS_EXPORT JS_BOOL jsb_get_ints(JSValue val, int n, int *v0)
     return FALSE;
 }
 
-JS_EXPORT JS_BOOL jsb_set_ints(JSValue val, int n, int *v0)
+JS_EXPORT JS_BOOL jsb_set_ints(JSContext *ctx, JSValue val, int n, int *v0)
 {
     JSPayload *sv = JS_GetOpaque(val, js_bridge_class_id);
     if (sv && sv->header.type_id == JS_BO_VALUE && sv->header.value == sizeof(int) * n)
@@ -558,7 +558,7 @@ JS_EXPORT JS_BOOL jsb_set_ints(JSValue val, int n, int *v0)
     return FALSE;
 }
 
-JS_EXPORT JS_BOOL jsb_get_int_1(JSValue val, int *v0)
+JS_EXPORT JS_BOOL jsb_get_int_1(JSContext *ctx, JSValue val, int *v0)
 {
     JSPayload *sv = JS_GetOpaque(val, js_bridge_class_id);
     if (sv && sv->header.type_id == JS_BO_VALUE && sv->header.value == sizeof(int))
@@ -570,7 +570,7 @@ JS_EXPORT JS_BOOL jsb_get_int_1(JSValue val, int *v0)
     return FALSE;
 }
 
-JS_EXPORT JS_BOOL jsb_set_int_1(JSValue val, int v0)
+JS_EXPORT JS_BOOL jsb_set_int_1(JSContext *ctx, JSValue val, int v0)
 {
     JSPayload *sv = JS_GetOpaque(val, js_bridge_class_id);
     if (sv && sv->header.type_id == JS_BO_VALUE && sv->header.value == sizeof(int))
@@ -582,7 +582,7 @@ JS_EXPORT JS_BOOL jsb_set_int_1(JSValue val, int v0)
     return FALSE;
 }
 
-JS_EXPORT JS_BOOL jsb_get_int_2(JSValue val, int *v0, int *v1)
+JS_EXPORT JS_BOOL jsb_get_int_2(JSContext *ctx, JSValue val, int *v0, int *v1)
 {
     JSPayload *sv = JS_GetOpaque(val, js_bridge_class_id);
     if (sv && sv->header.type_id == JS_BO_VALUE && sv->header.value == sizeof(int) * 2)
@@ -595,7 +595,7 @@ JS_EXPORT JS_BOOL jsb_get_int_2(JSValue val, int *v0, int *v1)
     return FALSE;
 }
 
-JS_EXPORT JS_BOOL jsb_set_int_2(JSValue val, int v0, int v1)
+JS_EXPORT JS_BOOL jsb_set_int_2(JSContext *ctx, JSValue val, int v0, int v1)
 {
     JSPayload *sv = JS_GetOpaque(val, js_bridge_class_id);
     if (sv && sv->header.type_id == JS_BO_VALUE && sv->header.value == sizeof(int) * 2)
@@ -608,7 +608,7 @@ JS_EXPORT JS_BOOL jsb_set_int_2(JSValue val, int v0, int v1)
     return FALSE;
 }
 
-JS_EXPORT JS_BOOL jsb_get_int_3(JSValue val, int *v0, int *v1, int *v2)
+JS_EXPORT JS_BOOL jsb_get_int_3(JSContext *ctx, JSValue val, int *v0, int *v1, int *v2)
 {
     JSPayload *sv = JS_GetOpaque(val, js_bridge_class_id);
     if (sv && sv->header.type_id == JS_BO_VALUE && sv->header.value == sizeof(int) * 3)
@@ -622,7 +622,7 @@ JS_EXPORT JS_BOOL jsb_get_int_3(JSValue val, int *v0, int *v1, int *v2)
     return FALSE;
 }
 
-JS_EXPORT JS_BOOL jsb_set_int_3(JSValue val, int v0, int v1, int v2)
+JS_EXPORT JS_BOOL jsb_set_int_3(JSContext *ctx, JSValue val, int v0, int v1, int v2)
 {
     JSPayload *sv = JS_GetOpaque(val, js_bridge_class_id);
     if (sv && sv->header.type_id == JS_BO_VALUE && sv->header.value == sizeof(int) * 3)
@@ -636,7 +636,7 @@ JS_EXPORT JS_BOOL jsb_set_int_3(JSValue val, int v0, int v1, int v2)
     return FALSE;
 }
 
-JS_EXPORT JS_BOOL jsb_get_int_4(JSValue val, int *v0, int *v1, int *v2, int *v3)
+JS_EXPORT JS_BOOL jsb_get_int_4(JSContext *ctx, JSValue val, int *v0, int *v1, int *v2, int *v3)
 {
     JSPayload *sv = JS_GetOpaque(val, js_bridge_class_id);
     if (sv && sv->header.type_id == JS_BO_VALUE && sv->header.value == sizeof(int) * 4)
@@ -651,7 +651,7 @@ JS_EXPORT JS_BOOL jsb_get_int_4(JSValue val, int *v0, int *v1, int *v2, int *v3)
     return FALSE;
 }
 
-JS_EXPORT JS_BOOL jsb_set_int_4(JSValue val, int v0, int v1, int v2, int v3)
+JS_EXPORT JS_BOOL jsb_set_int_4(JSContext *ctx, JSValue val, int v0, int v1, int v2, int v3)
 {
     JSPayload *sv = JS_GetOpaque(val, js_bridge_class_id);
     if (sv && sv->header.type_id == JS_BO_VALUE && sv->header.value == sizeof(int) * 4)
@@ -666,7 +666,7 @@ JS_EXPORT JS_BOOL jsb_set_int_4(JSValue val, int v0, int v1, int v2, int v3)
     return FALSE;
 }
 
-JS_EXPORT JS_BOOL jsb_get_bytes(JSValue val, int n, byte *v0)
+JS_EXPORT JS_BOOL jsb_get_bytes(JSContext *ctx, JSValue val, int n, byte *v0)
 {
     JSPayload *sv = JS_GetOpaque(val, js_bridge_class_id);
     if (sv && sv->header.type_id == JS_BO_VALUE && sv->header.value == sizeof(byte) * n)
@@ -681,7 +681,7 @@ JS_EXPORT JS_BOOL jsb_get_bytes(JSValue val, int n, byte *v0)
     return FALSE;
 }
 
-JS_EXPORT JS_BOOL jsb_set_bytes(JSValue val, int n, byte *v0)
+JS_EXPORT JS_BOOL jsb_set_bytes(JSContext *ctx, JSValue val, int n, byte *v0)
 {
     JSPayload *sv = JS_GetOpaque(val, js_bridge_class_id);
     if (sv && sv->header.type_id == JS_BO_VALUE && sv->header.value == sizeof(byte) * n)
@@ -696,7 +696,7 @@ JS_EXPORT JS_BOOL jsb_set_bytes(JSValue val, int n, byte *v0)
     return FALSE;
 }
 
-JS_EXPORT JS_BOOL jsb_get_byte_4(JSValue val, byte *v0, byte *v1, byte *v2, byte *v3)
+JS_EXPORT JS_BOOL jsb_get_byte_4(JSContext *ctx, JSValue val, byte *v0, byte *v1, byte *v2, byte *v3)
 {
     JSPayload *sv = JS_GetOpaque(val, js_bridge_class_id);
     if (sv && sv->header.type_id == JS_BO_VALUE && sv->header.value == sizeof(byte) * 4)
@@ -711,7 +711,7 @@ JS_EXPORT JS_BOOL jsb_get_byte_4(JSValue val, byte *v0, byte *v1, byte *v2, byte
     return FALSE;
 }
 
-JS_EXPORT JS_BOOL jsb_set_byte_4(JSValue val, byte v0, byte v1, byte v2, byte v3)
+JS_EXPORT JS_BOOL jsb_set_byte_4(JSContext *ctx, JSValue val, byte v0, byte v1, byte v2, byte v3)
 {
     JSPayload *sv = JS_GetOpaque(val, js_bridge_class_id);
     if (sv && sv->header.type_id == JS_BO_VALUE && sv->header.value == sizeof(byte) * 4)
@@ -737,3 +737,5 @@ JS_EXPORT int JSB_Init()
     // 2020-12-02
     return 0xa; // version tag for unity_qjs.c
 }
+
+#include "unity_ext.c"
