@@ -222,7 +222,7 @@ namespace QuickJS.Binding
 
         public bool IsOperatorOverloadingEnabled(MethodInfo methodInfo)
         {
-            return bindingManager.prefs.enableOperatorOverloading && transform.enableOperatorOverloading && IsSupportedOperators(methodInfo);
+            return Native.JSApi.IsOperatorOverloadingSupported && bindingManager.prefs.enableOperatorOverloading && transform.enableOperatorOverloading && IsSupportedOperators(methodInfo);
         }
 
         public void AddMethod(MethodInfo methodInfo, bool asExtensionAnyway)
