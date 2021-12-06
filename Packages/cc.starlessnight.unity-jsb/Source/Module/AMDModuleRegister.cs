@@ -39,7 +39,7 @@ namespace QuickJS.Module
             }
         }
 
-        public unsafe JSValue Load(ScriptContext context, JSValue module_obj, JSValue exports_obj)
+        public unsafe JSValue Load(ScriptContext context, string resolved_id, JSValue module_obj, JSValue exports_obj)
         {
             var ctx = (JSContext)context;
 
@@ -47,7 +47,7 @@ namespace QuickJS.Module
             {
                 var len = _deps.Length;
                 var values = stackalloc JSValue[len];
-                var require_obj = context._CreateRequireFunction(module_obj);
+                var require_obj = context._CreateRequireFunction(resolved_id, module_obj);
                 var filename_obj = JSApi.JS_GetProperty(ctx, module_obj, context.GetAtom("filename"));
                 var dirname_obj = JSApi.JS_NULL;
                 var require_argv = stackalloc JSValue[5] { JSApi.JS_DupValue(ctx, exports_obj), JSApi.JS_DupValue(ctx, require_obj), JSApi.JS_DupValue(ctx, module_obj), filename_obj, dirname_obj, };

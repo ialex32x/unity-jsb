@@ -41,6 +41,7 @@ namespace QuickJS
 
         private bool _isReloading;
         private List<string> _waitForReloadModules;
+        private List<string> _moduleIdList;
 
         private TypeRegister _currentTypeRegister;
 
@@ -56,6 +57,7 @@ namespace QuickJS
             JSApi.JS_SetContextOpaque(_ctx, (IntPtr)_contextId);
             JSApi.JS_AddIntrinsicOperators(_ctx);
             _atoms = new AtomCache(_ctx);
+            _moduleIdList = new List<string>();
             _stringCache = new JSStringCache(_ctx);
             _mainModule = JSApi.JS_NewObject(_ctx);
             _mainModuleLoaded = false;
@@ -337,6 +339,10 @@ namespace QuickJS
             var filename_atom = GetAtom(filename);
             var resolvername_atom = GetAtom(resolvername);
 
+            if (!_moduleIdList.Contains(module_id))
+            {
+                _moduleIdList.Add(module_id);
+            }
             JSApi.JS_SetProperty(_ctx, _moduleCache, module_id_atom, JSApi.JS_DupValue(_ctx, module_obj));
             JSApi.JS_SetProperty(_ctx, module_obj, GetAtom("id"), JSApi.JS_DupValue(_ctx, module_id_obj));
             JSApi.JS_SetProperty(_ctx, module_obj, GetAtom("filename"), JSApi.JS_AtomToString(_ctx, filename_atom));
@@ -522,9 +528,42 @@ namespace QuickJS
             return false;
         }
 
-        public JSValue _CreateRequireFunction(JSValue module_obj)
+        // require(id);
+        [MonoPInvokeCallback(typeof(JSCFunctionMagic))]
+        public static unsafe JSValue module_require(JSContext ctx, JSValue this_obj, int argc, JSValue[] argv, int magic)
         {
-            var require_obj = JSApi.JSB_NewCFunction(_ctx, ScriptRuntime.module_require, GetAtom("require"), 1);
+            if (argc < 1)
+            {
+                return ctx.ThrowInternalError("require module id");
+            }
+
+            if (!argv[0].IsString())
+            {
+                return ctx.ThrowInternalError("require module id (string)");
+            }
+
+            try
+            {
+                var context = ScriptEngine.GetContext(ctx);
+                var list = context._moduleIdList;
+                var parent_module_id = string.Empty;
+                if (magic >= 0 && magic < list.Count)
+                {
+                    parent_module_id = list[magic];
+                }
+                var runtime = context.GetRuntime();
+                var module_id = JSApi.GetString(ctx, argv[0]);
+                return runtime.ResolveModule(context, parent_module_id, module_id, false);
+            }
+            catch (Exception exception)
+            {
+                return ctx.ThrowException(exception);
+            }
+        }
+
+        public JSValue _CreateRequireFunction(string resolved_id, JSValue module_obj)
+        {
+            var require_obj = JSApi.JSB_NewCFunctionMagic(_ctx, module_require, GetAtom("require"), 1, _moduleIdList.IndexOf(resolved_id));
 
             JSApi.JS_SetProperty(_ctx, require_obj, GetAtom("moduleId"), JSApi.JS_GetProperty(_ctx, module_obj, GetAtom("id")));
             JSApi.JS_SetProperty(_ctx, require_obj, GetAtom("main"), JSApi.JS_DupValue(_ctx, _mainModule));
@@ -548,7 +587,7 @@ namespace QuickJS
             var filename_obj = JSApi.JS_GetProperty(ctx, module_obj, context.GetAtom("filename"));
             var module_id_atom = context.GetAtom(resolved_id);
             var dirname_atom = context.GetAtom(dirname);
-            var require_obj = JSApi.JSB_NewCFunction(ctx, ScriptRuntime.module_require, context.GetAtom("require"), 1);
+            var require_obj = JSApi.JSB_NewCFunctionMagic(ctx, module_require, context.GetAtom("require"), 1, _moduleIdList.IndexOf(resolved_id));
             var main_mod_obj = JSApi.JS_DupValue(ctx, _mainModule);
             var dirname_obj = JSApi.JS_AtomToString(ctx, dirname_atom);
             var exports_obj = JSApi.JS_GetProperty(ctx, module_obj, context.GetAtom("exports"));
@@ -756,7 +795,7 @@ namespace QuickJS
             var ctx = (JSContext)this;
             var global_object = this.GetGlobalObject();
             {
-                _require = JSApi.JSB_NewCFunction(ctx, ScriptRuntime.module_require, GetAtom("require"), 1);
+                _require = JSApi.JSB_NewCFunctionMagic(ctx, module_require, GetAtom("require"), 1, -1);
                 JSApi.JS_SetProperty(ctx, _require, GetAtom("moduleId"), ctx.NewString(""));
                 JSApi.JS_SetProperty(ctx, _require, GetAtom("cache"), JSApi.JS_DupValue(ctx, _moduleCache));
                 JSApi.JS_SetProperty(ctx, global_object, GetAtom("require"), JSApi.JS_DupValue(ctx, _require));

@@ -131,7 +131,7 @@ namespace QuickJS.Module
         }
 
         // the given exports object is ignored, type loader uses a Proxy object as new exports
-        public unsafe JSValue Load(ScriptContext context, JSValue module_obj, JSValue exports_obj)
+        public unsafe JSValue Load(ScriptContext context, string resolved_id, JSValue module_obj, JSValue exports_obj)
         {
             var ctx = (JSContext)context;
             var sourceBytes = Utils.TextUtils.GetNullTerminatedBytes(@"(function (cache, resolved_id) {
