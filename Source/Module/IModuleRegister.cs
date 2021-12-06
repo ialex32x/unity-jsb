@@ -16,7 +16,7 @@ namespace QuickJS.Module
         /// <summary>
         /// setup module members and return the final exports object (usually equals to exports_obj, but with an additional reference counting)
         /// </summary>
-        JSValue Load(ScriptContext context, JSValue module_obj, JSValue exports_obj);
+        JSValue Load(ScriptContext context, string resolved_id, JSValue module_obj, JSValue exports_obj);
         void Unload();
     }
 }
