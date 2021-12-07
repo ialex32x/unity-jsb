@@ -89,7 +89,7 @@ namespace QuickJS.Binding
             this.csName = csName;
             this.jsName = jsName;
             this.cs_op = cs_op;
-            this.csBindName = bindingManager.GetBindName(bStatic, csName);
+            this.csBindName = bindingManager.GetBindName(bStatic, csName + "_qjs");
             if (methodInfo.DeclaringType.GetMethods().Count(m => m.IsSpecialName && m.Name.StartsWith("op_") && m.Name == methodInfo.Name) > 1)
             {
                 this.csBindName += "_m";

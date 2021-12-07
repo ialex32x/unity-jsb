@@ -628,6 +628,17 @@ declare module "Example" {
         static CreateDisposableObject(): DisposableObject
     }
 }
+declare module "Example" {
+    import * as jsb from "jsb";
+    import { Object } from "System";
+    @jsb.RequiredDefines("CUSTOM_DEF_FOO", "UNITY_EDITOR")
+    class FOO extends Object {
+        constructor()
+        static Exclusive(i32: number): void
+        propValue: string
+        static value: string
+    }
+}
 declare module "UnityEngine" {
     import * as jsb from "jsb";
     import { ValueType, Array } from "System";
@@ -680,6 +691,13 @@ declare module "UnityEngine" {
         Compare(b: Color): boolean
         CompareRGB(b: Color): boolean
         MinAlpha(c2: Color): Color
+        static op_Addition(a: Color, b: Color): Color
+        static op_Subtraction(a: Color, b: Color): Color
+        static op_Multiply(a: Color, b: Color): Color
+        static op_Multiply(a: Color, b: number): Color
+        static op_Multiply(b: number, a: Color): Color
+        static op_Division(a: Color, b: number): Color
+        static op_Equality(lhs: Color, rhs: Color): boolean
         static op_Inequality(lhs: Color, rhs: Color): boolean
         /** Linearly interpolates between colors a and b by t.
          * @param a Color a.
@@ -934,6 +952,15 @@ declare module "UnityEngine" {
          * @param deltaTime The time since the last call to this function. By default Time.deltaTime.
          */
         static SmoothDamp(current: Vector2, target: Vector2, currentVelocity: jsb.Ref<Vector2>, smoothTime: number): Vector2
+        static op_Addition(a: Vector2, b: Vector2): Vector2
+        static op_Subtraction(a: Vector2, b: Vector2): Vector2
+        static op_Multiply(a: Vector2, b: Vector2): Vector2
+        static op_Multiply(a: Vector2, d: number): Vector2
+        static op_Multiply(d: number, a: Vector2): Vector2
+        static op_Division(a: Vector2, b: Vector2): Vector2
+        static op_Division(a: Vector2, d: number): Vector2
+        static op_UnaryNegation(a: Vector2): Vector2
+        static op_Equality(lhs: Vector2, rhs: Vector2): boolean
         static op_Inequality(lhs: Vector2, rhs: Vector2): boolean
         static op_Implicit(v: Vector3): Vector2
         static op_Implicit(v: Vector2): Vector3
@@ -1045,6 +1072,14 @@ declare module "UnityEngine" {
         /** Converts a  Vector2 to a Vector2Int by doing a Round to each value.
          */
         static RoundToInt(v: Vector2): Vector2Int
+        static op_UnaryNegation(v: Vector2Int): Vector2Int
+        static op_Addition(a: Vector2Int, b: Vector2Int): Vector2Int
+        static op_Subtraction(a: Vector2Int, b: Vector2Int): Vector2Int
+        static op_Multiply(a: Vector2Int, b: Vector2Int): Vector2Int
+        static op_Multiply(a: number, b: Vector2Int): Vector2Int
+        static op_Multiply(a: Vector2Int, b: number): Vector2Int
+        static op_Division(a: Vector2Int, b: number): Vector2Int
+        static op_Equality(lhs: Vector2Int, rhs: Vector2Int): boolean
         static op_Inequality(lhs: Vector2Int, rhs: Vector2Int): boolean
         // js_op_overloading: static neg(v: Vector2Int): Vector2Int
         // js_op_overloading: static +(a: Vector2Int, b: Vector2Int): Vector2Int
@@ -1234,6 +1269,13 @@ declare module "UnityEngine" {
         /** Returns a vector that is made from the largest components of two vectors.
          */
         static Max(lhs: Vector3, rhs: Vector3): Vector3
+        static op_Addition(a: Vector3, b: Vector3): Vector3
+        static op_Subtraction(a: Vector3, b: Vector3): Vector3
+        static op_UnaryNegation(a: Vector3): Vector3
+        static op_Multiply(a: Vector3, d: number): Vector3
+        static op_Multiply(d: number, a: Vector3): Vector3
+        static op_Division(a: Vector3, d: number): Vector3
+        static op_Equality(lhs: Vector3, rhs: Vector3): boolean
         static op_Inequality(lhs: Vector3, rhs: Vector3): boolean
         // js_op_overloading: static +(a: Vector3, b: Vector3): Vector3
         // js_op_overloading: static -(a: Vector3, b: Vector3): Vector3
@@ -1350,6 +1392,14 @@ declare module "UnityEngine" {
         /** Converts a  Vector3 to a Vector3Int by doing a Round to each value.
          */
         static RoundToInt(v: Vector3): Vector3Int
+        static op_Addition(a: Vector3Int, b: Vector3Int): Vector3Int
+        static op_Subtraction(a: Vector3Int, b: Vector3Int): Vector3Int
+        static op_Multiply(a: Vector3Int, b: Vector3Int): Vector3Int
+        static op_Multiply(a: Vector3Int, b: number): Vector3Int
+        static op_Multiply(a: number, b: Vector3Int): Vector3Int
+        static op_UnaryNegation(a: Vector3Int): Vector3Int
+        static op_Division(a: Vector3Int, b: number): Vector3Int
+        static op_Equality(lhs: Vector3Int, rhs: Vector3Int): boolean
         static op_Inequality(lhs: Vector3Int, rhs: Vector3Int): boolean
         // js_op_overloading: static +(a: Vector3Int, b: Vector3Int): Vector3Int
         // js_op_overloading: static -(a: Vector3Int, b: Vector3Int): Vector3Int
@@ -1463,6 +1513,13 @@ declare module "UnityEngine" {
         /** Returns a vector that is made from the largest components of two vectors.
          */
         static Max(lhs: Vector4, rhs: Vector4): Vector4
+        static op_Addition(a: Vector4, b: Vector4): Vector4
+        static op_Subtraction(a: Vector4, b: Vector4): Vector4
+        static op_UnaryNegation(a: Vector4): Vector4
+        static op_Multiply(a: Vector4, d: number): Vector4
+        static op_Multiply(d: number, a: Vector4): Vector4
+        static op_Division(a: Vector4, d: number): Vector4
+        static op_Equality(lhs: Vector4, rhs: Vector4): boolean
         static op_Inequality(lhs: Vector4, rhs: Vector4): boolean
         static op_Implicit(v: Vector3): Vector4
         static op_Implicit(v: Vector4): Vector3
@@ -1583,6 +1640,7 @@ declare module "UnityEngine" {
          */
         static PointToNormalized(rectangle: Rect, point: Vector2): Vector2
         static op_Inequality(lhs: Rect, rhs: Rect): boolean
+        static op_Equality(lhs: Rect, rhs: Rect): boolean
         // js_op_overloading: static ==(lhs: Rect, rhs: Rect): boolean
         /** Shorthand for writing new Rect(0,0,0,0).
          */
@@ -1707,6 +1765,9 @@ declare module "UnityEngine" {
          * @param upwards The vector that defines in which direction up is.
          */
         static LookRotation(forward: Vector3): Quaternion
+        static op_Multiply(lhs: Quaternion, rhs: Quaternion): Quaternion
+        static op_Multiply(rotation: Quaternion, point: Vector3): Vector3
+        static op_Equality(lhs: Quaternion, rhs: Quaternion): boolean
         static op_Inequality(lhs: Quaternion, rhs: Quaternion): boolean
         /** The dot product between two rotations.
          */
@@ -1865,6 +1926,9 @@ declare module "UnityEngine" {
          * @returns A projection matrix with a viewing frustum defined by the plane coordinates passed in. 
          */
         static Frustum(fp: any): Matrix4x4
+        static op_Multiply(lhs: Matrix4x4, rhs: Matrix4x4): Matrix4x4
+        static op_Multiply(lhs: Matrix4x4, vector: Vector4): Vector4
+        static op_Equality(lhs: Matrix4x4, rhs: Matrix4x4): boolean
         static op_Inequality(lhs: Matrix4x4, rhs: Matrix4x4): boolean
         /** Creates a scaling matrix.
          */
@@ -3367,6 +3431,9 @@ declare module "UnityEngine" {
         /** The mipmap level that is currently loaded by the streaming system.
          */
         readonly loadedMipmapLevel: number
+        /** Indicates whether this texture was imported with TextureImporter.alphaIsTransparency enabled. This setting is available only in the Editor scripts. Note that changing this setting will have no effect; it must be enabled in TextureImporter instead.
+         */
+        alphaIsTransparency: boolean
     }
 }
 declare module "UnityEngine" {
@@ -3387,13 +3454,17 @@ declare module "UnityEngine" {
          * @param name The name of the property.
          */
         HasProperty(name: string): boolean
-        /** Sets a shader keyword that is enabled by this material.
+        /** Enables a local shader keyword for this material.
+         * @param keyword The name of the local shader keyword to enable.
          */
         EnableKeyword(keyword: string): void
-        /** Unset a shader keyword.
+        /** Disables a local shader keyword for this material.
+         * @param keyword The name of the local shader keyword to disable.
          */
         DisableKeyword(keyword: string): void
-        /** Is the shader keyword enabled on this material?
+        /** Checks whether a local shader keyword is enabled for this material.
+         * @param keyword The name of the local shader keyword to check.
+         * @returns Returns true if the given local shader keyword is enabled for this material. Otherwise, returns false. 
          */
         IsKeywordEnabled(keyword: string): boolean
         /** Enables or disables a Shader pass on a per-Material level.
@@ -3821,7 +3892,7 @@ declare module "UnityEngine" {
         /** How many passes are in this material (Read Only).
          */
         readonly passCount: number
-        /** Additional shader keywords set by this material.
+        /** An array containing the names of the local shader keywords that are currently enabled for this material.
          */
         shaderKeywords: Array<string>
     }
@@ -5154,6 +5225,7 @@ Returns NULL if there is no associated alpha texture for the source sprite. This
         /** Location of the Sprite's center point in the Rect on the original Texture, specified in pixels.
          */
         readonly pivot: Vector2
+        readonly isUsingPlaceholder: boolean
         /** Returns true if this Sprite is packed in an atlas.
          */
         readonly packed: boolean
@@ -6242,6 +6314,7 @@ declare module "UnityEngine" {
     class TrackedReference extends Object1 {
         Equals(o: Object1): boolean
         GetHashCode(): number
+        static op_Equality(x: TrackedReference, y: TrackedReference): boolean
         static op_Inequality(x: TrackedReference, y: TrackedReference): boolean
         static op_Implicit(exists: TrackedReference): boolean
         // js_op_overloading: static ==(x: TrackedReference, y: TrackedReference): boolean
@@ -10445,6 +10518,7 @@ declare module "UnityEngine" {
          * @returns The point on the bounding box or inside the bounding box. 
          */
         ClosestPoint(point: Vector3): Vector3
+        static op_Equality(lhs: Bounds, rhs: Bounds): boolean
         static op_Inequality(lhs: Bounds, rhs: Bounds): boolean
         // js_op_overloading: static ==(lhs: Bounds, rhs: Bounds): boolean
         /** The center of the bounding box.
@@ -10498,6 +10572,7 @@ declare module "UnityEngine" {
         Equals(other: Object1): boolean
         Equals(other: BoundsInt): boolean
         GetHashCode(): number
+        static op_Equality(lhs: BoundsInt, rhs: BoundsInt): boolean
         static op_Inequality(lhs: BoundsInt, rhs: BoundsInt): boolean
         // js_op_overloading: static ==(lhs: BoundsInt, rhs: BoundsInt): boolean
         /** X value of the minimal point of the box.
@@ -11230,7 +11305,9 @@ declare module "UnityEngine" {
          * @returns The 128-bit hash. 
          */
         static Compute(val: number): Hash128
+        static op_Equality(hash1: Hash128, hash2: Hash128): boolean
         static op_Inequality(hash1: Hash128, hash2: Hash128): boolean
+        static op_LessThan(x: Hash128, y: Hash128): boolean
         static op_GreaterThan(x: Hash128, y: Hash128): boolean
         // js_op_overloading: static ==(hash1: Hash128, hash2: Hash128): boolean
         // js_op_overloading: static <(x: Hash128, y: Hash128): boolean
@@ -12538,6 +12615,9 @@ declare module "UnityEditor" {
         /** Removes the Unity Version number in the Archive File & Serialized File headers during the build.
          */
         AssetBundleStripUnityVersion = 32768,
+        /** Enable asset bundle protection.
+         */
+        EnableProtection = 65536,
     }
 }
 declare module "UnityEditor" {
@@ -12693,6 +12773,7 @@ declare module "UnityEditor" {
         /** Sets the Player to connect to the Editor.
          */
         ConnectToHost = 4096,
+        EnableInstantGame = 8192,
         /** Options for building the standalone player in headless mode.
          */
         EnableHeadlessMode = 16384,
@@ -14445,6 +14526,9 @@ declare module "UnityEditor" {
          * @returns Target platform name represented by the passed in BuildTarget. 
          */
         static GetBuildTargetName(targetPlatform: BuildTarget): string
+        /** SetAssetBundleEncryptKey.
+         */
+        static SetAssetBundleEncryptKey(password: string): void
         /** Checks if Unity can append the build.
          * @param target The BuildTarget to build.
          * @param location The path where Unity builds the application.
@@ -14929,6 +15013,16 @@ The "main" Asset is the Asset at the root of a hierarchy (such as a Maya file wh
          */
         static GetAssetDependencyHash(path: string): Hash128
         static SaveAssets(): void
+        /** Writes all unsaved changes to the specified asset to disk.
+         * @param obj The asset object to be saved, if dirty.
+         * @param guid The guid of the asset to be saved, if dirty.
+         */
+        static SaveAssetIfDirty(guid: GUID): void
+        /** Writes all unsaved changes to the specified asset to disk.
+         * @param obj The asset object to be saved, if dirty.
+         * @param guid The guid of the asset to be saved, if dirty.
+         */
+        static SaveAssetIfDirty(obj: Object1): void
         /** Retrieves an icon for the asset at the given asset path.
          */
         static GetCachedIcon(path: string): Texture
@@ -15290,6 +15384,20 @@ declare module "UnityEditor" {
          * @param forceSync Forces the script execution to wait until the compilation has finished. Optional.
          */
         static CompilePass(material: Material, pass: number, forceSync: boolean): void
+        /** Gets the platform keywords for a shader, given a shader compiler platform, build target, and optional graphics tier. These platform keywords are necessary to properly compile a shader for a given target.
+         * @param shaderCompilerPlatform The shader compiler platform.
+         * @param buildTarget The build target.
+         * @param tier An optional graphics tier.
+         * @returns Returns an array of built-in shader defines needed to compile a shader for the given target. 
+         */
+        static GetShaderPlatformKeywordsForBuildTarget(shaderCompilerPlatform: any, buildTarget: BuildTarget, tier: any): Array<any>
+        /** Gets the platform keywords for a shader, given a shader compiler platform, build target, and optional graphics tier. These platform keywords are necessary to properly compile a shader for a given target.
+         * @param shaderCompilerPlatform The shader compiler platform.
+         * @param buildTarget The build target.
+         * @param tier An optional graphics tier.
+         * @returns Returns an array of built-in shader defines needed to compile a shader for the given target. 
+         */
+        static GetShaderPlatformKeywordsForBuildTarget(shaderCompilerPlatform: any, buildTarget: BuildTarget): Array<any>
         /** Get the number of properties in Shader s.
          * @param s The shader to check against.
          */
@@ -20603,7 +20711,9 @@ declare module "System" {
         static IsPositiveInfinity(f: number): boolean
         static IsNegativeInfinity(f: number): boolean
         static IsNaN(f: number): boolean
+        static op_Equality(left: number, right: number): boolean
         static op_Inequality(left: number, right: number): boolean
+        static op_LessThan(left: number, right: number): boolean
         static op_GreaterThan(left: number, right: number): boolean
         static op_LessThanOrEqual(left: number, right: number): boolean
         static op_GreaterThanOrEqual(left: number, right: number): boolean
@@ -20641,7 +20751,9 @@ declare module "System" {
         static IsPositiveInfinity(d: number): boolean
         static IsNegativeInfinity(d: number): boolean
         static IsNaN(d: number): boolean
+        static op_Equality(left: number, right: number): boolean
         static op_Inequality(left: number, right: number): boolean
+        static op_LessThan(left: number, right: number): boolean
         static op_GreaterThan(left: number, right: number): boolean
         static op_LessThanOrEqual(left: number, right: number): boolean
         static op_GreaterThanOrEqual(left: number, right: number): boolean
@@ -20754,6 +20866,7 @@ declare module "System" {
         static Join(separator: string, ...values: Object[]): string
         static Equals(a: string | Object, b: string | Object, comparisonType: any): boolean
         static Equals(a: string | Object, b: string | Object): boolean
+        static op_Equality(a: string, b: string): boolean
         static op_Inequality(a: string, b: string): boolean
         static IsNullOrEmpty(value: string): boolean
         static IsNullOrWhiteSpace(value: string): boolean
@@ -20963,6 +21076,7 @@ declare module "System" {
         static Combine(...delegates: Delegate[]): Delegate
         static Remove(source: Delegate, value: Delegate): Delegate
         static RemoveAll(source: Delegate, value: Delegate): Delegate
+        static op_Equality(d1: Delegate, d2: Delegate): boolean
         static op_Inequality(d1: Delegate, d2: Delegate): boolean
         // js_op_overloading: static ==(d1: Delegate, d2: Delegate): boolean
         readonly Method: any
@@ -21825,7 +21939,7 @@ declare module "UnityEditor" {
         /** Enable asynchronous Shader compilation in Game and Scene view.
          */
         static asyncShaderCompilation: boolean
-        /** Enables the Caching Shader Preprocessor (experimental).
+        /** Enables the Caching Shader Preprocessor.
          */
         static cachingShaderPreprocessor: boolean
         /** Controls list of extensions of files that will be included in the c# .csproj projects that Unity generates.
@@ -21840,6 +21954,7 @@ declare module "UnityEditor" {
         /** Enable the legacy fixed sample counts for baking Light Probes with Progressive Lightmapper.
          */
         static useLegacyProbeSampleCount: boolean
+        static useCloudEnlightenBake: boolean
         /** Determines whether cookies should be evaluated by the Progressive Lightmapper during Global Illumination calculations.
          */
         static enableCookiesInLightmapper: boolean
@@ -22297,27 +22412,6 @@ declare module "UnityEditor" {
 }
 declare module "UnityEditor" {
     import * as jsb from "jsb";
-    import { ValueType, Array, Object } from "System";
-    @jsb.RequiredDefines("UNITY_EDITOR")
-    class GUID extends ValueType {
-        constructor(hexRepresentation: string)
-        Equals(obj: Object): boolean
-        Equals(obj: GUID): boolean
-        GetHashCode(): number
-        CompareTo(obj: Object): number
-        CompareTo(rhs: GUID): number
-        Empty(): boolean
-        toString(): string
-        static op_Inequality(x: GUID, y: GUID): boolean
-        static op_GreaterThan(x: GUID, y: GUID): boolean
-        static TryParse(hex: string, result: jsb.Out<GUID>): boolean
-        static Generate(): GUID
-        // js_op_overloading: static ==(x: GUID, y: GUID): boolean
-        // js_op_overloading: static <(x: GUID, y: GUID): boolean
-    }
-}
-declare module "UnityEditor" {
-    import * as jsb from "jsb";
     import { ValueType, Array } from "System";
     import { Object } from "UnityEngine";
     /** Struct providing an API for stable, project-global object identifiers.
@@ -22392,6 +22486,29 @@ Example: "GlobalObjectId_V1-2-74c253e3f16be4776bb2d88e01f77c8a-902906726-0".
         /** The identifier type represented as an integer.
          */
         readonly identifierType: number
+    }
+}
+declare module "UnityEditor" {
+    import * as jsb from "jsb";
+    import { ValueType, Array, Object } from "System";
+    @jsb.RequiredDefines("UNITY_EDITOR")
+    class GUID extends ValueType {
+        constructor(hexRepresentation: string)
+        Equals(obj: Object): boolean
+        Equals(obj: GUID): boolean
+        GetHashCode(): number
+        CompareTo(obj: Object): number
+        CompareTo(rhs: GUID): number
+        Empty(): boolean
+        toString(): string
+        static op_Equality(x: GUID, y: GUID): boolean
+        static op_Inequality(x: GUID, y: GUID): boolean
+        static op_LessThan(x: GUID, y: GUID): boolean
+        static op_GreaterThan(x: GUID, y: GUID): boolean
+        static TryParse(hex: string, result: jsb.Out<GUID>): boolean
+        static Generate(): GUID
+        // js_op_overloading: static ==(x: GUID, y: GUID): boolean
+        // js_op_overloading: static <(x: GUID, y: GUID): boolean
     }
 }
 declare module "UnityEditor" {
@@ -23173,6 +23290,16 @@ Note: calling this function will implicitly call Application.SetStackTraceLogTyp
          * @param normalMapEncoding The desired normal map encoding.
          */
         static SetNormalMapEncoding(platform: BuildTargetGroup, encoding: NormalMapEncoding): void
+        /**
+         * @param platform Platform to get the flag for.
+         * @returns Should the security build be used. 
+         */
+        static GetSecurityBuildForPlatform(platform: BuildTarget): boolean
+        /** Set the bool value to enable or disable the security build for target platform.
+         * @param platform The platform to use.
+         * @param securityBuild Should the security build be used?
+         */
+        static SetSecurityBuildForPlatform(platform: BuildTarget, securityBuild: boolean): void
         /** Returns the list of available icon slots for the specified platform and  PlatformIconKind|kind.
          * @param platform The full list of platforms that support this API and the supported icon kinds can be found in PlatformIconKind|icon kinds.
          * @param kind Each platform supports a different set of PlatformIconKind|icon kinds. These can be found in the specific platform namespace (for example iOSPlatformIconKind.
@@ -23430,6 +23557,12 @@ declare module "UnityEditor" {
         class Android extends Object {
             constructor()
             static disableDepthAndStencilBuffers: boolean
+            static defaultWindowWidth: number
+            static defaultWindowHeight: number
+            static minimumWindowWidth: number
+            static minimumWindowHeight: number
+            static resizableWindow: boolean
+            static fullscreenMode: any
             static bundleVersionCode: number
             static minSdkVersion: any
             static targetSdkVersion: any
@@ -23439,8 +23572,10 @@ declare module "UnityEditor" {
             static androidTVCompatibility: boolean
             static androidIsGame: boolean
             static ARCoreEnabled: boolean
+            static chromeosInputEmulation: boolean
             static targetArchitectures: any
             static buildApkPerCpuArchitecture: boolean
+            static androidTargetDevices: AndroidTargetDevices
             static splashScreenScale: any
             static useCustomKeystore: boolean
             static keystoreName: string
@@ -23457,6 +23592,7 @@ declare module "UnityEditor" {
             static minifyWithR8: boolean
             static minifyRelease: boolean
             static minifyDebug: boolean
+            static optimizedFramePacing: boolean
         }
     }
 }
@@ -23528,6 +23664,10 @@ declare module "UnityEditor" {
         class macOS extends Object {
             constructor()
             static buildNumber: string
+            static applicationCategoryType: string
+            static cameraUsageDescription: string
+            static microphoneUsageDescription: string
+            static bluetoothUsageDescription: string
         }
     }
 }
@@ -23775,7 +23915,7 @@ declare module "UnityEditor" {
             static NVNMaxPublicTextureIDCount: number
             static NVNMaxPublicSamplerIDCount: number
             static screenResolutionBehavior: PlayerSettings.Switch.ScreenResolutionBehavior
-            static readonly NMETAOverride: string
+            static NMETAOverride: string
             static readonly NMETAOverrideFullPath: string
             static applicationID: string
             static nsoDependencies: string
@@ -23965,6 +24105,31 @@ declare module "UnityEditor" {
             static buildNumber: string
             static targetOSVersionString: string
             static requireExtendedGameController: boolean
+        }
+    }
+}
+declare module "UnityEditor" {
+    import * as jsb from "jsb";
+    import { Object } from "System";
+    namespace PlayerSettings {
+        @jsb.RequiredDefines("UNITY_EDITOR")
+        class WebGL extends Object {
+            constructor()
+            static memorySize: number
+            static exceptionSupport: WebGLExceptionSupport
+            static dataCaching: boolean
+            static emscriptenArgs: string
+            static modulesDirectory: string
+            static template: string
+            static analyzeBuildSize: boolean
+            static useEmbeddedResources: boolean
+            static threadsSupport: boolean
+            static linkerTarget: WebGLLinkerTarget
+            static compressionFormat: WebGLCompressionFormat
+            static nameFilesAsHashes: boolean
+            static debugSymbols: boolean
+            static decompressionFallback: boolean
+            static wasmArithmeticExceptions: WebGLWasmArithmeticExceptions
         }
     }
 }
@@ -24187,31 +24352,6 @@ declare module "UnityEditor" {
 }
 declare module "UnityEditor" {
     import * as jsb from "jsb";
-    import { Object } from "System";
-    namespace PlayerSettings {
-        @jsb.RequiredDefines("UNITY_EDITOR")
-        class WebGL extends Object {
-            constructor()
-            static memorySize: number
-            static exceptionSupport: WebGLExceptionSupport
-            static dataCaching: boolean
-            static emscriptenArgs: string
-            static modulesDirectory: string
-            static template: string
-            static analyzeBuildSize: boolean
-            static useEmbeddedResources: boolean
-            static threadsSupport: boolean
-            static linkerTarget: WebGLLinkerTarget
-            static compressionFormat: WebGLCompressionFormat
-            static nameFilesAsHashes: boolean
-            static debugSymbols: boolean
-            static decompressionFallback: boolean
-            static wasmArithmeticExceptions: WebGLWasmArithmeticExceptions
-        }
-    }
-}
-declare module "UnityEditor" {
-    import * as jsb from "jsb";
     import { Object, Array } from "System";
     namespace PlayerSettings {
         @jsb.RequiredDefines("UNITY_EDITOR")
@@ -24256,6 +24396,23 @@ declare module "UnityEditor" {
             static EnableTypeOptimization: boolean
             static monoLoggingLevel: number
         }
+    }
+}
+declare module "UnityEditor" {
+    import * as jsb from "jsb";
+    import { Enum } from "System";
+    /** This property allows you to specify the devices on which your Android application is allowed to run.
+     */
+    enum AndroidTargetDevices {
+        /** The Android build is allowed to run on all target devices.
+         */
+        AllDevices = 0,
+        /** The Android build is only allowed to run on Android phones, tablets, and TV devices, not on any type of Chrome OS device.
+         */
+        PhonesTabletsAndTVDevicesOnly = 1,
+        /** The Android build is only allowed to run on Chrome OS devices.
+         */
+        ChromeOSDevicesOnly = 2,
     }
 }
 declare module "UnityEditor" {
@@ -24920,6 +25077,7 @@ declare module "UnityEditor" {
          */
         Equals(obj: Object): boolean
         GetHashCode(): number
+        static op_Equality(left: ShaderMessage, right: ShaderMessage): boolean
         static op_Inequality(left: ShaderMessage, right: ShaderMessage): boolean
         // js_op_overloading: static ==(left: ShaderMessage, right: ShaderMessage): boolean
         /** The message returned by the Unity Shader Compiler.
@@ -24997,13 +25155,99 @@ declare module "UnityEditor" {
 }
 declare module "UnityEditor" {
     import * as jsb from "jsb";
-    import { Object } from "System";
+    import { Object, Enum, Array } from "System";
     namespace ShaderData {
         @jsb.RequiredDefines("UNITY_EDITOR")
         class Pass extends Object {
+            HasShaderStage(shaderType: any): boolean
+            CompileVariant(shaderType: any, keywords: Array<string>, shaderCompilerPlatform: any, buildTarget: BuildTarget, platformKeywords: Array<any>, tier: any): ShaderData.VariantCompileInfo
+            CompileVariant(shaderType: any, keywords: Array<string>, shaderCompilerPlatform: any, buildTarget: BuildTarget, tier: any): ShaderData.VariantCompileInfo
+            CompileVariant(shaderType: any, keywords: Array<string>, shaderCompilerPlatform: any, buildTarget: BuildTarget, platformKeywords: Array<any>): ShaderData.VariantCompileInfo
+            CompileVariant(shaderType: any, keywords: Array<string>, shaderCompilerPlatform: any, buildTarget: BuildTarget): ShaderData.VariantCompileInfo
+            PreprocessVariant(shaderType: any, keywords: Array<string>, shaderCompilerPlatform: any, buildTarget: BuildTarget, platformKeywords: Array<any>, tier: any, stripLineDirectives: boolean): ShaderData.PreprocessedVariant
+            PreprocessVariant(shaderType: any, keywords: Array<string>, shaderCompilerPlatform: any, buildTarget: BuildTarget, tier: any, stripLineDirectives: boolean): ShaderData.PreprocessedVariant
+            PreprocessVariant(shaderType: any, keywords: Array<string>, shaderCompilerPlatform: any, buildTarget: BuildTarget, platformKeywords: Array<any>, stripLineDirectives: boolean): ShaderData.PreprocessedVariant
+            PreprocessVariant(shaderType: any, keywords: Array<string>, shaderCompilerPlatform: any, buildTarget: BuildTarget, stripLineDirectives: boolean): ShaderData.PreprocessedVariant
             protected constructor()
             readonly SourceCode: string
             readonly Name: string
+        }
+    }
+}
+declare module "UnityEditor" {
+    import * as jsb from "jsb";
+    import { ValueType, Array } from "System";
+    namespace ShaderData {
+        @jsb.RequiredDefines("UNITY_EDITOR")
+        class PreprocessedVariant extends ValueType {
+            constructor()
+            readonly Success: boolean
+            readonly Messages: Array<ShaderMessage>
+            readonly PreprocessedCode: string
+        }
+    }
+}
+declare module "UnityEditor" {
+    import * as jsb from "jsb";
+    import { ValueType, Array, Enum } from "System";
+    namespace ShaderData {
+        @jsb.RequiredDefines("UNITY_EDITOR")
+        class VariantCompileInfo extends ValueType {
+            constructor()
+            Success: boolean
+            Messages: Array<ShaderMessage>
+            ShaderData: Array<jsb.byte>
+            Attributes: Array<any>
+            ConstantBuffers: Array<ShaderData.ConstantBufferInfo>
+            TextureBindings: Array<ShaderData.TextureBindingInfo>
+        }
+    }
+}
+declare module "UnityEditor" {
+    import * as jsb from "jsb";
+    import { ValueType, Array } from "System";
+    namespace ShaderData {
+        @jsb.RequiredDefines("UNITY_EDITOR")
+        class ConstantBufferInfo extends ValueType {
+            constructor()
+            Name: string
+            Size: number
+            Fields: Array<ShaderData.ConstantInfo>
+        }
+    }
+}
+declare module "UnityEditor" {
+    import * as jsb from "jsb";
+    import { ValueType, Enum, Array } from "System";
+    namespace ShaderData {
+        @jsb.RequiredDefines("UNITY_EDITOR")
+        class ConstantInfo extends ValueType {
+            constructor()
+            Name: string
+            Index: number
+            ConstantType: any
+            DataType: any
+            Rows: number
+            Columns: number
+            ArraySize: number
+            StructSize: number
+            StructFields: Array<ShaderData.ConstantInfo>
+        }
+    }
+}
+declare module "UnityEditor" {
+    import * as jsb from "jsb";
+    import { ValueType, Enum } from "System";
+    namespace ShaderData {
+        @jsb.RequiredDefines("UNITY_EDITOR")
+        class TextureBindingInfo extends ValueType {
+            constructor()
+            Name: string
+            Index: number
+            SamplerIndex: number
+            Multisampled: boolean
+            ArraySize: number
+            Dim: any
         }
     }
 }
@@ -25695,6 +25939,7 @@ declare module "UnityEditor" {
         GetHashCode(): number
         Equals(other: Object): boolean
         Equals(other: EditorCurveBinding): boolean
+        static op_Equality(lhs: EditorCurveBinding, rhs: EditorCurveBinding): boolean
         static op_Inequality(lhs: EditorCurveBinding, rhs: EditorCurveBinding): boolean
         /** Creates a preconfigured binding for a float curve.
          * @param inPath The transform path to the object to animate.
@@ -25793,16 +26038,16 @@ declare module "UnityEditor" {
         /** The camera is set to display the texture resolution, with a red tint indicating resolution that is too high, and a blue tint indicating texture sizes that could be higher.
          */
         Mipmaps = 7,
-        /** Draw diffuse color of Deferred Shading g-buffer.
+        /** Draw diffuse color of Deferred Shading G-buffer.
          */
         DeferredDiffuse = 8,
-        /** Draw specular color of Deferred Shading g-buffer.
+        /** Draw specular color of Deferred Shading G-buffer.
          */
         DeferredSpecular = 9,
-        /** Draw smoothness value of Deferred Shading g-buffer.
+        /** Draw smoothness value of Deferred Shading G-buffer.
          */
         DeferredSmoothness = 10,
-        /** Draw world space normal of Deferred Shading g-buffer.
+        /** Draw world space normal of Deferred Shading G-buffer.
          */
         DeferredNormal = 11,
         /** Draw objects with different colors for each real-time chart (UV island).
@@ -27045,6 +27290,22 @@ declare module "UnityEditor" {
 }
 declare module "UnityEditor" {
     import * as jsb from "jsb";
+    import { Enum } from "System";
+    enum GameViewSizeGroupType {
+        Standalone = 0,
+        WebPlayer = 1,
+        iOS = 2,
+        Android = 3,
+        PS3 = 4,
+        WiiU = 5,
+        Tizen = 6,
+        WP8 = 7,
+        N3DS = 8,
+        HMD = 9,
+    }
+}
+declare module "UnityEditor" {
+    import * as jsb from "jsb";
     import { Object } from "UnityEngine";
     /** The lighting data asset used by the active Scene.
      */
@@ -27239,6 +27500,42 @@ declare module "UnityEditor" {
 }
 declare module "UnityEditor" {
     import * as jsb from "jsb";
+    import { Object, Array } from "System";
+    import { Material, Object as Object1, Texture } from "UnityEngine";
+    @jsb.RequiredDefines("UNITY_EDITOR")
+    class EditorMaterialUtility extends Object {
+        constructor()
+        static ResetDefaultTextures(material: Material, overrideSetTextures: boolean): void
+        static IsBackgroundMaterial(material: Material): boolean
+        static SetShaderDefaults(shader: any, name: Array<string>, textures: Array<Texture>): void
+        static SetShaderNonModifiableDefaults(shader: any, name: Array<string>, textures: Array<Texture>): void
+    }
+}
+declare module "UnityEditor" {
+    import * as jsb from "jsb";
+    import { Object } from "System";
+    import { Vector3 } from "UnityEngine";
+    /** Control the behavior of handle snapping in the editor.
+     */
+    @jsb.RequiredDefines("UNITY_EDITOR")
+    abstract class EditorSnapSettings extends Object {
+        static ResetSnapSettings(): void
+        /** Gets or sets whether grid snapping is enabled.
+         */
+        static gridSnapEnabled: boolean
+        /** Gets or sets the increment that translation handles snap to.
+         */
+        static move: Vector3
+        /** Gets or sets the increment that rotation handles snap to.
+         */
+        static rotate: number
+        /** Gets or sets the increment that scale handles snap to.
+         */
+        static scale: number
+    }
+}
+declare module "UnityEditor" {
+    import * as jsb from "jsb";
     import { Rect } from "UnityEngine";
     /** Class used to display popup windows that inherit from PopupWindowContent.
      */
@@ -27380,58 +27677,6 @@ declare module "UnityEditor" {
          */
         static visibleLayers: number
         static lockedLayers: number
-    }
-}
-declare module "UnityEditor" {
-    import * as jsb from "jsb";
-    import { Enum } from "System";
-    enum GameViewSizeGroupType {
-        Standalone = 0,
-        WebPlayer = 1,
-        iOS = 2,
-        Android = 3,
-        PS3 = 4,
-        WiiU = 5,
-        Tizen = 6,
-        WP8 = 7,
-        N3DS = 8,
-        HMD = 9,
-    }
-}
-declare module "UnityEditor" {
-    import * as jsb from "jsb";
-    import { Object, Array } from "System";
-    import { Material, Object as Object1, Texture } from "UnityEngine";
-    @jsb.RequiredDefines("UNITY_EDITOR")
-    class EditorMaterialUtility extends Object {
-        constructor()
-        static ResetDefaultTextures(material: Material, overrideSetTextures: boolean): void
-        static IsBackgroundMaterial(material: Material): boolean
-        static SetShaderDefaults(shader: any, name: Array<string>, textures: Array<Texture>): void
-        static SetShaderNonModifiableDefaults(shader: any, name: Array<string>, textures: Array<Texture>): void
-    }
-}
-declare module "UnityEditor" {
-    import * as jsb from "jsb";
-    import { Object } from "System";
-    import { Vector3 } from "UnityEngine";
-    /** Control the behavior of handle snapping in the editor.
-     */
-    @jsb.RequiredDefines("UNITY_EDITOR")
-    abstract class EditorSnapSettings extends Object {
-        static ResetSnapSettings(): void
-        /** Gets or sets whether grid snapping is enabled.
-         */
-        static gridSnapEnabled: boolean
-        /** Gets or sets the increment that translation handles snap to.
-         */
-        static move: Vector3
-        /** Gets or sets the increment that rotation handles snap to.
-         */
-        static rotate: number
-        /** Gets or sets the increment that scale handles snap to.
-         */
-        static scale: number
     }
 }
 declare module "UnityEditor" {
@@ -28725,6 +28970,7 @@ declare module "UnityEditor" {
             Equals(otherObject: Object): boolean
             GetHashCode(): number
             toString(): string
+            static op_Equality(a: SceneView.CameraMode, z: SceneView.CameraMode): boolean
             static op_Inequality(a: SceneView.CameraMode, z: SceneView.CameraMode): boolean
             // js_op_overloading: static ==(a: SceneView.CameraMode, z: SceneView.CameraMode): boolean
             drawMode: DrawCameraMode
@@ -30373,8 +30619,13 @@ declare module "UnityEditor" {
         /** Should the kinematic Rigidbodies be considered by the display filter.
          */
         static SetShowKinematicBodies(show: boolean): void
+        static GetShowArticulationBodies(): boolean
+        /** Should Articulation Bodies be shown by the Physics Visualizer.
+         * @param show Value to set.
+         */
+        static SetShowArticulationBodies(show: boolean): void
         static GetShowSleepingBodies(): boolean
-        /** Should the sleeping Rigidbodies be considered by the display filter.
+        /** Should sleeping Rigidbodies and Articulation Bodies be considered by the display filter.
          */
         static SetShowSleepingBodies(show: boolean): void
         /** Should the given layer be considered by the display filter.
@@ -30453,6 +30704,9 @@ declare module "UnityEditor" {
         /** Color for kinematic Rigidbodies.
          */
         static kinematicColor: Color
+        /** Color for Articulation Bodies.
+         */
+        static articulationBodyColor: Color
         /** Color for Colliders that are Triggers.
          */
         static triggerColor: Color
@@ -31179,6 +31433,7 @@ declare module "UnityEditor.MPE" {
         Equals(obj: ChannelInfo): boolean
         Equals(obj: Object): boolean
         GetHashCode(): number
+        static op_Equality(x: ChannelInfo, y: ChannelInfo): boolean
         static op_Inequality(x: ChannelInfo, y: ChannelInfo): boolean
         // js_op_overloading: static ==(x: ChannelInfo, y: ChannelInfo): boolean
         /** The name of the channel. This matches the route of the URL that connects to the ChannelService. For example, "127.0.0.1:9292/<channelName>".
@@ -31201,6 +31456,7 @@ declare module "UnityEditor.MPE" {
         Equals(obj: ChannelClientInfo): boolean
         Equals(obj: Object): boolean
         GetHashCode(): number
+        static op_Equality(x: ChannelClientInfo, y: ChannelClientInfo): boolean
         static op_Inequality(x: ChannelClientInfo, y: ChannelClientInfo): boolean
         // js_op_overloading: static ==(x: ChannelClientInfo, y: ChannelClientInfo): boolean
         /** The ChannelClient's name (see ChannelClient.channelName. This matches the route of the URL connecting to the ChannelService. For example, "127.0.0.1:9292/<channelName>".
@@ -31524,7 +31780,7 @@ declare module "UnityEditor.SearchService" {
 declare module "UnityEditor.SearchService" {
     import * as jsb from "jsb";
     // @jsb.RequiredDefines("UNITY_EDITOR")
-    interface IObjectSelectorEngine extends ISelectorEngine, ISearchEngineBase {
+    interface IObjectSelectorEngine extends ISearchEngineBase, ISelectorEngine {
     }
 }
 declare module "UnityEditor.SearchService" {
@@ -33731,6 +33987,7 @@ declare module "UnityEditor.SceneManagement" {
         Equals(other: Object): boolean
         Equals(other: StageHandle): boolean
         GetHashCode(): number
+        static op_Equality(s1: StageHandle, s2: StageHandle): boolean
         static op_Inequality(s1: StageHandle, s2: StageHandle): boolean
         // js_op_overloading: static ==(s1: StageHandle, s2: StageHandle): boolean
     }
@@ -33940,6 +34197,7 @@ declare module "UnityEngine.UI" {
         Equals(obj: Object): boolean
         Equals(other: ColorBlock): boolean
         GetHashCode(): number
+        static op_Equality(point1: ColorBlock, point2: ColorBlock): boolean
         static op_Inequality(point1: ColorBlock, point2: ColorBlock): boolean
         // js_op_overloading: static ==(point1: ColorBlock, point2: ColorBlock): boolean
         normalColor: Color

@@ -340,7 +340,10 @@ namespace QuickJS.Binding
                     operators.Add(operatorBindingInfo);
                     CollectDelegate(methodInfo);
                     bindingManager.Info("[AddOperator] {0}.{1}", type, methodInfo);
-                    return;
+                    if (!bindingManager.prefs.alwaysEmitOperatorMethod)
+                    {
+                        return;
+                    }
                 }
 
                 // fallback to normal method binding
