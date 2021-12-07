@@ -81,6 +81,11 @@ namespace QuickJS.Binding
         public bool enableOperatorOverloading = true;
 
         /// <summary>
+        /// emit binding code for operator methods even if operator overlaoding enabled
+        /// </summary>
+        public bool alwaysEmitOperatorMethod = true;
+
+        /// <summary>
         /// optional entry point for editor scripting
         /// </summary>
         public string editorEntryPoint = "";
