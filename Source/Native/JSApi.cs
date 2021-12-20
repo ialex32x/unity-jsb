@@ -137,7 +137,7 @@ namespace QuickJS.Native
 
         static JSApi()
         {
-            SO_JSB_VERSION = __JSB_Init();
+            SO_JSB_VERSION = JSB_Init();
         }
 
         public static bool IsValid()
@@ -153,7 +153,7 @@ namespace QuickJS.Native
 #if JSB_UNITYLESS || (UNITY_WSA && !UNITY_EDITOR)
             GCHandle.Alloc(cb);
 #endif
-            var fn = Marshal.GetFunctionPointerForDelegate(class_finalizer);
+            var fn = class_finalizer != null ? Marshal.GetFunctionPointerForDelegate(class_finalizer) : IntPtr.Zero;
             return JSB_NewRuntime(fn);
         }
 
@@ -791,8 +791,8 @@ namespace QuickJS.Native
         /// <summary>
         /// init the native library, return the version tag of it
         /// </summary>
-        [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl, EntryPoint = "JSB_Init")]
-        public static extern int __JSB_Init();
+        [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
+        private static extern int JSB_Init();
 
         // [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
         // private static extern JSClassID JSB_NewClass(JSRuntime rt, JSClassID class_id, [MarshalAs(UnmanagedType.LPStr)] string class_name, IntPtr finalizer);
