@@ -60,45 +60,6 @@ namespace QuickJS
             return JSApi.JS_UNDEFINED;
         }
 
-        // require(id);
-        [MonoPInvokeCallback(typeof(JSCFunction))]
-        public static unsafe JSValue module_require(JSContext ctx, JSValue this_obj, int argc, JSValue[] argv)
-        {
-            if (argc < 1)
-            {
-                return ctx.ThrowInternalError("require module id");
-            }
-
-            if (!argv[0].IsString())
-            {
-                return ctx.ThrowInternalError("require module id (string)");
-            }
-
-            // callee is the function <'require'> of current module
-            var callee = JSApi.JS_GetActiveFunction(ctx);
-
-            if (JSApi.JS_IsFunction(ctx, callee) != 1)
-            {
-                return ctx.ThrowInternalError("require != function");
-            }
-
-            var context = ScriptEngine.GetContext(ctx);
-            var runtime = context.GetRuntime();
-            var parent_module_id_val = JSApi.JS_GetProperty(ctx, callee, context.GetAtom("moduleId"));
-            var parent_module_id = JSApi.GetString(ctx, parent_module_id_val);
-            JSApi.JS_FreeValue(ctx, parent_module_id_val);
-
-            try
-            {
-                var module_id = JSApi.GetString(ctx, argv[0]);
-                return runtime.ResolveModule(context, parent_module_id, module_id, false);
-            }
-            catch (Exception exception)
-            {
-                return ctx.ThrowException(exception);
-            }
-        }
-
         public static unsafe JSValue EvalSource(JSContext ctx, byte[] source, string fileName, bool bModule)
         {
             if (source == null || source.Length == 0)

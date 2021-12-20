@@ -30,7 +30,7 @@ namespace QuickJS.Module
             }
         }
 
-        public JSValue Load(ScriptContext context, JSValue module_obj, JSValue exports_obj)
+        public JSValue Load(ScriptContext context, string resolved_id, JSValue module_obj, JSValue exports_obj)
         {
             var ctx = (JSContext)context;
             var key_atom = context.GetAtom("exports");

@@ -23,7 +23,7 @@ namespace QuickJS.Module
         {
         }
 
-        public JSValue Load(ScriptContext context, JSValue module_obj, JSValue exports_obj)
+        public JSValue Load(ScriptContext context, string resolved_id, JSValue module_obj, JSValue exports_obj)
         {
             var register = context.CreateTypeRegister();
             var clazz = _bind(register);

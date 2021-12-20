@@ -151,6 +151,8 @@ declare module "jsb" {
      */
     function IsStaticBinding(): boolean;
 
+    let IsOperatorOverloadingSupported: boolean;
+
     /**
      * 即 Thread.Sleep()
      */

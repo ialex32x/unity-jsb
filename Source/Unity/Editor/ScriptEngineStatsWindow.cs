@@ -308,14 +308,9 @@ namespace QuickJS.Unity
         {
             _alive = ScriptEngine.ForEachRuntime(runtime => { });
 
-            if (_alive == 0)
-            {
-                EditorGUILayout.HelpBox("No Running Runtime", MessageType.Info);
-                return;
-            }
-
             Block("Control", () =>
             {
+                EditorGUI.BeginDisabledGroup(EditorApplication.isCompiling);
                 if (GUILayout.Button("Reload EditorScripting"))
                 {
                     EditorRuntime.GetInstance()?.Reload();
@@ -325,6 +320,7 @@ namespace QuickJS.Unity
                 {
                     UnityEditor.Compilation.CompilationPipeline.RequestScriptCompilation();
                 }
+                EditorGUI.EndDisabledGroup();
 
                 EditorGUI.BeginDisabledGroup(true);
                 EditorGUILayout.Toggle("IsDebugMode", Native.JSApi.IsDebugMode());
@@ -340,11 +336,19 @@ namespace QuickJS.Unity
                     GC.WaitForPendingFinalizers();
                 }
 
+                EditorGUI.BeginDisabledGroup(_alive == 0);
                 if (GUILayout.Button("Capture"))
                 {
                     CaptureAll();
                 }
+                EditorGUI.EndDisabledGroup();
             });
+
+            if (_alive == 0)
+            {
+                EditorGUILayout.HelpBox("No Running Runtime", MessageType.Info);
+                return;
+            }
 
             _sv = EditorGUILayout.BeginScrollView(_sv);
             EditorGUILayout.BeginHorizontal();
