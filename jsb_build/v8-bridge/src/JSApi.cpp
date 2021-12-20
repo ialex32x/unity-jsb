@@ -60,7 +60,7 @@ void JS_RunGC(JSRuntime* rt)
 	rt->RunGC();
 }
 
-int __JSB_Init()
+int JSB_Init()
 {
 	if (js_bridge_class_id == 0)
 	{

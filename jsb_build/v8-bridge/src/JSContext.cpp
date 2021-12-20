@@ -692,20 +692,19 @@ JSValue JSContext::CallConstructor(JSValueConst func_obj, int argc, JSValueConst
 	{
 		v8::TryCatch try_catch(_runtime->_isolate);
 		v8::Local<v8::Function> func_value = v8::Local<v8::Function>::Cast(value);
-		//TODO is it feasible?
-		v8::Local<v8::Value>* argv_values = (v8::Local<v8::Value>*)alloca(sizeof(v8::Local<v8::Value>) * argc);
 		for (int i = 0; i < argc; ++i)
 		{
-			argv_values[i] = _runtime->GetValue(argv[i]).ToLocalChecked();
+			_args_.push_back(_runtime->GetValue(argv[i]).ToLocalChecked());
 		}
-		v8::MaybeLocal<v8::Value> func_retValues = func_value->CallAsConstructor(context, argc, argv_values);
-		if (!func_retValues.IsEmpty())
-		{
-			return _runtime->AddValue(context, func_retValues.ToLocalChecked());
-		}
+		v8::MaybeLocal<v8::Value> func_retValues = func_value->CallAsConstructor(context, argc, _args_.data());
+		_args_.clear();
 		if (try_catch.HasCaught())
 		{
 			return _runtime->ThrowException(context, try_catch.Exception());
+		}
+		if (!func_retValues.IsEmpty())
+		{
+			return _runtime->AddValue(context, func_retValues.ToLocalChecked());
 		}
 		return _runtime->ThrowError(context, "failed to call");
 	}
@@ -722,22 +721,20 @@ JSValue JSContext::Call(JSValueConst func_obj, JSValueConst this_obj, int argc, 
 	{
 		v8::TryCatch try_catch(_runtime->_isolate);
 		v8::Local<v8::Function> func_value = v8::Local<v8::Function>::Cast(value);
-		//TODO is it feasible?
-		v8::Local<v8::Value>* argv_values = (v8::Local<v8::Value>*)alloca(sizeof(v8::Local<v8::Value>) * argc);
 		for (int i = 0; i < argc; ++i)
 		{
-			argv_values[i] = _runtime->GetValue(argv[i]).ToLocalChecked();
+			_args_.push_back(_runtime->GetValue(argv[i]).ToLocalChecked());
 		}
 		v8::Local<v8::Value> this_val = _runtime->GetValue(this_obj).ToLocalChecked();
-		v8::MaybeLocal<v8::Value> func_retValues = func_value->Call(context, this_val, argc, argv_values);
-		if (!func_retValues.IsEmpty())
-		{
-			return _runtime->AddValue(context, func_retValues.ToLocalChecked());
-		}
-
+		v8::MaybeLocal<v8::Value> func_retValues = func_value->Call(context, this_val, argc, _args_.data());
+		_args_.clear();
 		if (try_catch.HasCaught())
 		{
 			return _runtime->ThrowException(context, try_catch.Exception());
+		}
+		if (!func_retValues.IsEmpty())
+		{
+			return _runtime->AddValue(context, func_retValues.ToLocalChecked());
 		}
 		return _runtime->ThrowError(context, "failed to call");
 	}

@@ -30,7 +30,7 @@ JS_EXPORT IntPtr js_strndup(JSContext* ctx, const char* s, size_t n);
 JS_EXPORT void JS_AddIntrinsicOperators(JSContext* ctx);
 JS_EXPORT void JS_RunGC(JSRuntime* rt);
 
-JS_EXPORT int __JSB_Init();
+JS_EXPORT int JSB_Init();
 JS_EXPORT JSClassID JSB_GetBridgeClassID();
 
 JS_EXPORT JSRuntime* JSB_NewRuntime(JSGCObjectFinalizer* finalizer);

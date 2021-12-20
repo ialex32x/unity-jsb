@@ -28,6 +28,8 @@ struct JSContext
 	JSRuntime* _runtime = nullptr;
 	v8::UniquePersistent<v8::Context> _context;
 
+	std::vector<v8::Local<v8::Value>> _args_;
+
 	JSValue _global;
 	JSValue _emptyString;
 
