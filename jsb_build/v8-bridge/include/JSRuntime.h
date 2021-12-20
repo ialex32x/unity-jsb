@@ -55,61 +55,95 @@ struct GCObject
 
 struct JSRuntime
 {
+	enum EInternalFieldName
+	{
+		EIFN_Payload,
+		EIFN_FieldCount,
+	};
+
 	void* _opaque = nullptr;
 	v8::Isolate* _isolate = nullptr;
 	v8::ArrayBuffer::Allocator* _arrayBufferAllocator = nullptr;
 	JSMallocFunctions malloc_functions;
+private:
+	v8::UniquePersistent<v8::Private> _PrivateCacheIndexKey;
 
-	size_t _freeObjectSlot = 0;
-	size_t _usedObjectSlot = 0;
-	std::vector<JSValueRef> _objectRefs;
-
-	uint32_t _freeAtomSlot = 0;
-	std::vector<JSAtomRef> _atomRefs;
-	std::map<std::string, JSAtom> _atoms;
-
-	JSRuntime();
+public:
+	JSRuntime(JSGCObjectFinalizer* finalizer);
 	~JSRuntime();
 
 	JS_BOOL Release();
 
-	JSValue ThrowException(v8::Local<v8::Context> context, v8::Local<v8::Value> exception);
-	JSValue ThrowException(v8::Local<v8::Context> context, const char* exception);
+#pragma region JSValue
+public:
+	size_t _freeObjectSlot = 0;
+	size_t _usedObjectSlot = 0;
+	std::vector<JSValueRef> _objectRefs;
 
 	JSValue DupValue(JSValue value);
 	void FreeValue(JSValue value);
+
+	v8::MaybeLocal<v8::Value> GetValue(size_t id);
+	v8::MaybeLocal<v8::Value> GetValue(JSValue val);
 
 	JSValue AddValue(v8::Local<v8::Context> context, v8::Local<v8::Value> val);
 	JSValue AddString(v8::Local<v8::Context> context, v8::Local<v8::String> val);
 	JSValue AddSymbol(v8::Local<v8::Context> context, v8::Local<v8::Symbol> val);
 	JSValue AddObject(v8::Local<v8::Context> context, v8::Local<v8::Object> val);
-	JSValue AddGCValue(v8::Local<v8::Object> obj, JSClassDef* def);
-	JSValue AddExceptionValue(v8::Local<v8::Context> context, v8::Local<v8::Value> val);
-	v8::MaybeLocal<v8::Value> GetValue(size_t id);
-	v8::MaybeLocal<v8::Value> GetValue(JSValue val);
 
+	// register a finalization callback and AddObject at the same time
+	JSValue AddGCObject(v8::Local<v8::Context> context, v8::Local<v8::Object> obj, JSClassDef* def);
+private:
+	size_t _AddValueInternal(v8::Local<v8::Context> context, v8::Local<v8::Value> val);
+#pragma endregion
+
+#pragma region JSAtom Management
+	uint32_t _freeAtomSlot = 0;
+	std::vector<JSAtomRef> _atomRefs;
+	std::map<std::string, JSAtom> _atoms;
+
+public:
 	JSAtom GetAtom(std::string& val);
 	JSAtom GetAtom(const char* val, size_t len);
 
 	v8::MaybeLocal<v8::String> GetAtomValue(JSAtom atom);
-	v8::MaybeLocal<v8::String> GetAtomValue(uint32_t atom_id);
 	JSAtom DupAtom(JSAtom atom);
 	void FreeAtom(JSAtom atom);
+#pragma endregion
 
+#pragma region Class Management
+	std::map<JSClassID, JSClassDef*> _classes;
 	JSClassID NewClass(JSClassID class_id, const char* class_name, JSGCObjectFinalizer* finalizer);
 	JSClassDef* GetClassDef(JSClassID class_id);
+#pragma endregion
 
+#pragma region Promise
+	JSHostPromiseRejectionTracker* _promiseRejectionTracker;
+	void* _promiseRejectionOpaque;
+
+	void SetHostPromiseRejectionTracker(JSHostPromiseRejectionTracker* cb, void* opaque);
 	int ExecutePendingJob(JSContext** pctx);
+#pragma endregion
 
+#pragma region GC 
 	void RunGC();
+#pragma endregion
 
+#pragma region GCObject Management
 private:
 	size_t _freeGCObjectSlot = 0;
 	std::vector<GCObject*> _gcObjects;
 	static void OnGarbadgeCollectCallback(const v8::WeakCallbackInfo<GCObject>& info);
+public:
+#pragma endregion
 
-	std::map<JSClassID, JSClassDef*> _classes;
-	size_t _AddValueInternal(v8::Local<v8::Context> context, v8::Local<v8::Value> val);
+#pragma region JSException
+	JSValue ThrowException(v8::Local<v8::Context> context, v8::Local<v8::Value> exception);
+	JSValue ThrowError(v8::Local<v8::Context> context, const char* exception, int len = -1);
+	JSValue ThrowTypeError(v8::Local<v8::Context> context, const char* exception, int len = -1);
 
-	v8::UniquePersistent<v8::Private> _PrivateCacheIndexKey;
+	v8::Global<v8::Value> _exception;
+#pragma endregion
+
+	friend struct JSContext;
 };

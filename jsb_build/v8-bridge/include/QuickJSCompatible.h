@@ -1,8 +1,12 @@
 #pragma once
 
+#include <stdint.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+#define JS_EXPORT __declspec(dllexport)
 
 /* flags for object properties */
 #define JS_PROP_CONFIGURABLE  (1 << 0)
@@ -90,6 +94,22 @@ enum JSCFunctionEnum {  /* XXX: should rename for namespace isolation */
 	JS_CFUNC_iterator_next,
 };
 
+typedef struct JSMemoryUsage {
+	int64_t malloc_size, malloc_limit, memory_used_size;
+	int64_t malloc_count;
+	int64_t memory_used_count;
+	int64_t atom_count, atom_size;
+	int64_t str_count, str_size;
+	int64_t obj_count, obj_size;
+	int64_t prop_count, prop_size;
+	int64_t shape_count, shape_size;
+	int64_t js_func_count, js_func_size, js_func_code_size;
+	int64_t js_func_pc2line_count, js_func_pc2line_size;
+	int64_t c_func_count, array_count;
+	int64_t fast_array_count, fast_array_elements;
+	int64_t binary_object_count, binary_object_size;
+} JSMemoryUsage;
+
 typedef union JSValueUnion
 {
 	int32_t int32;
@@ -103,10 +123,7 @@ typedef struct JSValue
 	int64_t tag = 0;
 } JSValue;
 
-typedef struct JSAtom
-{
-	uint32_t _value = 0;
-} JSAtom;
+typedef uint32_t JSAtom;
 
 typedef struct JSMallocState {
 	size_t malloc_count;
@@ -125,11 +142,13 @@ typedef struct JSMallocFunctions {
 struct JSContext;
 struct JSRuntime;
 
+typedef void* IntPtr;
 typedef int JS_BOOL;
 
 typedef uint32_t JSClassID;
 
 typedef JSValue JSValueConst;
+
 typedef JSValue JSCFunction(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv);
 typedef JSValue JSCFunctionMagic(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv, int magic);
 
@@ -140,6 +159,11 @@ typedef JSValue JSCFunctionGetter(JSContext* ctx, JSValueConst this_val);
 typedef JSValue JSCFunctionGetterMagic(JSContext* ctx, JSValueConst this_val, int magic);
 
 typedef void JSClassFinalizer(JSRuntime* rt, JSValue val);
+typedef int JSInterruptHandler(JSRuntime* rt, IntPtr opaque);
+
+#define JS_BO_TYPE 1
+#define JS_BO_OBJECT 2
+#define JS_BO_VALUE 3
 
 typedef struct JSPayloadHeader
 {
@@ -156,6 +180,7 @@ typedef struct JSPayload
 } JSPayload;
 
 typedef void JSGCObjectFinalizer(JSRuntime* rt, JSPayloadHeader val);
+typedef void JSHostPromiseRejectionTracker(JSContext* ctx, JSValueConst promise, JSValueConst reason, JS_BOOL is_handled, void* opaque);
 
 #ifndef TRUE
 #define TRUE 1
@@ -164,13 +189,14 @@ typedef void JSGCObjectFinalizer(JSRuntime* rt, JSPayloadHeader val);
 
 #define JS_TAG_IS_BYREF(tag) (tag) < 0
 
-#define JS_MKVAL() JSValue{}
+//#define JS_MKVAL() JSValue{}
 #define JS_MKINT32(tag, v) JSValue{{.int32=(v)},(tag)}
 #define JS_MKFLOAT64(tag, v) JSValue{{.float64=(v)},(tag)}
 #define JS_MKPTR(tag, v) JSValue{{.ptr=(v)},(tag)}
 
 #define JS_UNDEFINED JSValue{ {0}, JS_TAG_UNDEFINED }
 #define JS_NULL JSValue{ {0}, JS_TAG_NULL }
+#define JS_EXCEPTION JSValue { {0}, JS_TAG_EXCEPTION }
 
 #if !defined(FORCEINLINE)
 #define FORCEINLINE __forceinline
@@ -181,6 +207,10 @@ typedef void JSGCObjectFinalizer(JSRuntime* rt, JSPayloadHeader val);
 #endif
 
 #define JS_ATOM_NULL 0
+
+#define JS_CONTEXT_DATA_SELF 1
+
+#define JS_ISOLATE_DATA_SELF 0
 
 enum
 {
