@@ -78,7 +78,7 @@ namespace QuickJS.Native
         private const int CS_JSB_VERSION = 0xa; // expected dll version
         private static readonly int SO_JSB_VERSION; // actual dll version
 
-#if JSB_NO_BIGNUM || (UNITY_WSA && !UNITY_EDITOR)
+#if JSB_NO_BIGNUM || (UNITY_WSA && !UNITY_EDITOR) || JSB_WITH_V8_BACKEND
         public const bool IsOperatorOverloadingSupported = false;
 #else
         public const bool IsOperatorOverloadingSupported = true;
