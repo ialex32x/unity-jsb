@@ -23,22 +23,6 @@ namespace QuickJS
             return 0;
         }
 
-        [MonoPInvokeCallback(typeof(JSModuleNormalizeFunc))]
-        public static IntPtr module_normalize(JSContext ctx, string module_base_name, string module_name, IntPtr opaque)
-        {
-            try
-            {
-                var runtime = ScriptEngine.GetRuntime(ctx);
-                var resolve_to = runtime.ResolveFilePath(module_base_name, module_name);
-                return ctx.NewCString(resolve_to);
-            }
-            catch (Exception exception)
-            {
-                ctx.ThrowInternalError(exception.Message);
-                return IntPtr.Zero;
-            }
-        }
-
         /// <summary>
         /// the 'define' function for minimalistic AMD module support
         /// </summary>
@@ -171,6 +155,23 @@ namespace QuickJS
             }
         }
 
+#if !JSB_WITH_V8_BACKEND
+        [MonoPInvokeCallback(typeof(JSModuleNormalizeFunc))]
+        public static IntPtr module_normalize(JSContext ctx, string module_base_name, string module_name, IntPtr opaque)
+        {
+            try
+            {
+                var runtime = ScriptEngine.GetRuntime(ctx);
+                var resolve_to = runtime.ResolveFilePath(module_base_name, module_name);
+                return ctx.NewCString(resolve_to);
+            }
+            catch (Exception exception)
+            {
+                ctx.ThrowInternalError(exception.Message);
+                return IntPtr.Zero;
+            }
+        }
+
         [MonoPInvokeCallback(typeof(JSModuleLoaderFunc))]
         public static unsafe JSModuleDef module_loader(JSContext ctx, string module_name, IntPtr opaque)
         {
@@ -254,5 +255,6 @@ namespace QuickJS
             JSApi.JS_FreeValue(ctx, meta);
             return mod;
         }
+#endif
     }
 }
