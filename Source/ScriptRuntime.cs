@@ -362,7 +362,9 @@ namespace QuickJS
             }
 #endif
             JSApi.JSB_SetRuntimeOpaque(_rt, (IntPtr)_runtimeId);
+#if !JSB_WITH_V8_BACKEND
             JSApi.JS_SetModuleLoaderFunc(_rt, module_normalize, module_loader, IntPtr.Zero);
+#endif
             CreateContext();
 
             _pathResolver = resolver;
