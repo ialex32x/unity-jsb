@@ -121,6 +121,8 @@ JSContext* JS_NewContext(JSRuntime* rt)
 	v8::HandleScope handleScope(rt->_isolate);
 
 	JSContext* ctx = new JSContext(rt);
+	JSValue globalObject = JS_GetGlobalObject(ctx);
+	JS_SetPropertyInternal(ctx, globalObject, JSB_ATOM_global(), globalObject, 0);
 	return ctx;
 }
 
@@ -542,6 +544,7 @@ IntPtr JS_GetArrayBuffer(JSContext* ctx, size_t* psize, JSValueConst obj)
 JSValue JS_NewArrayBufferCopy(JSContext* ctx, const char* buf, size_t len)
 {
 	v8::Isolate::Scope isolateScope(ctx->GetIsolate());
+	v8::Context::Scope contextScope(ctx->Get());
 	v8::HandleScope handleScope(ctx->GetIsolate());
 
 	v8::Local<v8::ArrayBuffer> array_buffer = v8::ArrayBuffer::New(ctx->GetIsolate(), len);
@@ -591,6 +594,9 @@ int JS_IsArray(JSContext* ctx, JSValueConst val)
 {
 	if (val.tag == JS_TAG_OBJECT)
 	{
+		v8::Isolate::Scope isolateScope(ctx->GetIsolate());
+		v8::HandleScope handleScope(ctx->GetIsolate());
+
 		v8::MaybeLocal<v8::Value> maybe_value = ctx->_runtime->GetValue(val.u.ptr);
 		v8::Local<v8::Value> value;
 		if (maybe_value.ToLocal(&value) && value->IsArray())
@@ -605,6 +611,9 @@ JS_BOOL JS_IsFunction(JSContext* ctx, JSValueConst val)
 {
 	if (val.tag == JS_TAG_OBJECT)
 	{
+		v8::Isolate::Scope isolateScope(ctx->GetIsolate());
+		v8::HandleScope handleScope(ctx->GetIsolate());
+
 		v8::MaybeLocal<v8::Value> maybe_value = ctx->_runtime->GetValue(val.u.ptr);
 		v8::Local<v8::Value> value;
 		if (maybe_value.ToLocal(&value) && value->IsFunction())
@@ -619,6 +628,9 @@ JS_BOOL JS_IsConstructor(JSContext* ctx, JSValueConst val)
 {
 	if (val.tag == JS_TAG_OBJECT)
 	{
+		v8::Isolate::Scope isolateScope(ctx->GetIsolate());
+		v8::HandleScope handleScope(ctx->GetIsolate());
+
 		v8::MaybeLocal<v8::Value> maybe_value = ctx->_runtime->GetValue(val.u.ptr);
 		v8::Local<v8::Value> value;
 		if (maybe_value.ToLocal(&value) && value->IsFunction())
@@ -781,14 +793,16 @@ JSValue JS_ParseJSON(JSContext* ctx, const char* buf, size_t buf_len, const char
 	v8::MaybeLocal<v8::String> json_string = v8::String::NewFromUtf8(ctx->_runtime->_isolate, buf, v8::NewStringType::kNormal, (int)buf_len);
 	if (!json_string.IsEmpty())
 	{
-		v8::MaybeLocal<v8::Value> maybe_json_object = v8::JSON::Parse(ctx->Get(), json_string.ToLocalChecked());
+		v8::Local<v8::Context> context = ctx->Get();
+		v8::Context::Scope contextScope(context);
+		v8::MaybeLocal<v8::Value> maybe_json_object = v8::JSON::Parse(context, json_string.ToLocalChecked());
 		v8::Local<v8::Value> json_object;
 		if (maybe_json_object.ToLocal(&json_object))
 		{
 			return ctx->_runtime->AddValue(ctx->Get(), json_object);
 		}
 	}
-	return JS_UNDEFINED;
+	return JS_ThrowError(ctx, "can not parse");
 }
 
 JSValue JS_JSONStringify(JSContext* ctx, JSValueConst obj, JSValueConst replacer, JSValueConst space0)

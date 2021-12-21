@@ -3,7 +3,7 @@
 /*
  * 位置 ./Packages/cc.starlessnight.unity-jsb/Source/Native
  * 搜索 extern
- * 正在编辑 JS_GetOwnPropertyNames
+ * 正在编辑 JS_HasProperty
  */
 
 #include "QuickJSCompatible.h"

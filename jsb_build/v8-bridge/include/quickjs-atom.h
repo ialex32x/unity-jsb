@@ -17,5 +17,6 @@ DEF(lineNumber, "lineNumber")
 DEF(length, "length")
 DEF(stack, "stack")
 DEF(prototype, "prototype")
+DEF(global, "global")
 
 #endif

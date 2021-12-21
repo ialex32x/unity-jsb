@@ -200,6 +200,7 @@ JSContext::JSContext(JSRuntime* runtime)
 	_runtime = runtime;
 
 	v8::Local<v8::Context> context = v8::Context::New(_runtime->_isolate);
+	v8::Context::Scope contextScope(context);
 	context->SetAlignedPointerInEmbedderData(JS_CONTEXT_DATA_SELF, this);
 	_context.Reset(_runtime->_isolate, context); // = v8::UniquePersistent<v8::Context>(_runtime->_isolate, context);
 
@@ -266,12 +267,14 @@ JSValue JSContext::GetEmptyString()
 
 JSValue JSContext::NewArray()
 {
+	v8::Context::Scope contextScope(Get());
 	v8::Local<v8::Array> array_value = v8::Array::New(GetIsolate());
 	return _runtime->AddObject(Get(), array_value);
 }
 
 JSValue JSContext::NewObject()
 {
+	v8::Context::Scope contextScope(Get());
 	v8::Local<v8::Object> object_value = v8::Object::New(GetIsolate());
 	return _runtime->AddObject(Get(), object_value);
 }
@@ -279,6 +282,8 @@ JSValue JSContext::NewObject()
 JSValue JSContext::NewObjectProtoClass(v8::Local<v8::Object> new_target, JSClassDef* classDef)
 {
 	v8::Local<v8::Context> context = Get();
+	v8::Context::Scope contextScope(context);
+
 	v8::Local<v8::FunctionTemplate> _class = classDef->_class.Get(GetIsolate());
 	v8::Local<v8::String> prototype_str = _runtime->GetAtomValue(JS_ATOM_prototype).ToLocalChecked();
 	v8::MaybeLocal<v8::Value> prototype_maybe = new_target->Get(context, prototype_str);
@@ -296,6 +301,7 @@ JSValue JSContext::NewObjectProtoClass(v8::Local<v8::Object> new_target, JSClass
 
 JSValue JSContext::NewCFunctionMagic(JSCFunctionMagic* func, JSAtom atom, int length, JSCFunctionEnum cproto, int magic)
 {
+	v8::Context::Scope contextScope(Get());
 	JSCFunctionMagicWrapper* wrapper = (JSCFunctionMagicWrapper*)_runtime->malloc_functions.js_malloc(nullptr, sizeof(JSCFunctionMagicWrapper));
 	wrapper->_context = this;
 	wrapper->_magic = magic;
@@ -358,6 +364,7 @@ JSValue JSContext::NewCFunctionMagic(JSCFunctionMagic* func, JSAtom atom, int le
 
 JSValue JSContext::NewCFunction(JSCFunction* func, JSAtom atom, int length, JSCFunctionEnum cproto)
 {
+	v8::Context::Scope contextScope(Get());
 	JSCFunctionMagicWrapper* wrapper = (JSCFunctionMagicWrapper*)_runtime->malloc_functions.js_malloc(nullptr, sizeof(JSCFunctionMagicWrapper));
 	wrapper->_context = this;
 	wrapper->_func = func;
@@ -776,6 +783,7 @@ static void _JSPromiseRejectCallback(const v8::FunctionCallbackInfo<v8::Value>& 
 JSValue JSContext::NewPromiseCapability(JSValue* resolving_funcs)
 {
 	v8::Local<v8::Context> context = Get();
+	v8::Context::Scope contextScope(context);
 	v8::MaybeLocal<v8::Promise::Resolver> maybe_resolver = v8::Promise::Resolver::New(context);
 	if (maybe_resolver.IsEmpty())
 	{
