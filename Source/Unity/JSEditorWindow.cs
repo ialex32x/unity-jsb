@@ -229,11 +229,8 @@ namespace QuickJS.Unity
             var runtime = context.GetRuntime();
             runtime.OnDestroy += OnScriptRuntimeDestroy;
 #if UNITY_EDITOR
-            if (!_scriptRef.IsEmpty())
-            {
-                context.OnScriptReloading += OnScriptReloading;
-                context.OnScriptReloaded += OnScriptReloaded;
-            }
+            context.OnScriptReloading += OnScriptReloading;
+            context.OnScriptReloaded += OnScriptReloaded;
 #endif
             _ctx = ctx;
             _isScriptInstanced = true;

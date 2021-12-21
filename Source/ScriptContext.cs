@@ -381,40 +381,55 @@ namespace QuickJS
             return module_obj;
         }
 
-        public bool TrySetScriptRef(ref Unity.JSScriptRef scriptRef, JSValue ctor)
+        public unsafe bool TrySetScriptRef(ref Unity.JSScriptRef scriptRef, JSValue ctor)
         {
-            string modulePath = null;
-            string className = null;
-            JSApi.ForEachProperty(_ctx, _moduleCache, (mod_id, mod_obj) =>
-            {
-                var exports = JSApi.JS_GetProperty(_ctx, mod_obj, GetAtom("exports"));
-                try
-                {
-                    if (exports.IsObject())
-                    {
-                        className = JSApi.FindKeyOfProperty(_ctx, exports, ctor);
-                        if (className != null)
-                        {
-                            modulePath = JSApi.GetString(_ctx, mod_id);
-                            return true;
+            string[] scriptRefValue = null;
+            var sourceString = @"(function (cache, ctor) {
+                for (let mod_id in cache) {
+                    let mod_obj = cache[mod_id];
+                    let exports = mod_obj['exports'];
+                    if (typeof exports === 'object') {
+                        for (let member_id in exports) {
+                            let member_obj = exports[member_id];
+                            if (typeof member_obj === 'function' && member_obj == ctor) {
+                                return [mod_id, member_id];
+                            }
                         }
-                        return false;
                     }
                 }
-                finally
-                {
-                    JSApi.JS_FreeValue(_ctx, exports);
-                }
-                return false;
-            });
-
-            if (className != null)
+                return null;
+            })";
+            var scriptRefFinder = ScriptRuntime.EvalSource(_ctx, sourceString, "eval", false);
+            if (scriptRefFinder.IsException())
             {
-                scriptRef.modulePath = modulePath;
-                scriptRef.className = className;
-                return true;
+                _ctx.print_exception();
+                return false;
             }
-
+            var argv = stackalloc JSValue[2]
+            {
+                JSApi.JS_DupValue(_ctx, _moduleCache),
+                JSApi.JS_DupValue(_ctx, ctor),
+            };
+            var retVal = JSApi.JS_Call(_ctx, scriptRefFinder, JSApi.JS_UNDEFINED, 2, argv);
+            JSApi.JS_FreeValue(_ctx, scriptRefFinder);
+            JSApi.JS_FreeValue(_ctx, argv[0]);
+            JSApi.JS_FreeValue(_ctx, argv[1]);
+            if (retVal.IsException())
+            {
+                _ctx.print_exception();
+                return false;
+            }
+            if (Values.js_get_primitive(_ctx, retVal, out scriptRefValue) && scriptRefValue != null && scriptRefValue.Length >= 2)
+            {
+                if (!string.IsNullOrEmpty(scriptRefValue[1]))
+                {
+                    JSApi.JS_FreeValue(_ctx, retVal);
+                    scriptRef.modulePath = scriptRefValue[0];
+                    scriptRef.className = scriptRefValue[1];
+                    return true;
+                }
+            }
+            JSApi.JS_FreeValue(_ctx, retVal);
             return false;
         }
 

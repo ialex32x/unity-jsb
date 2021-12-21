@@ -801,6 +801,9 @@ namespace QuickJS
             return true;
         }
 
+        /// <summary>
+        /// try to eval the main module if there is no main module loaded, otherwise load as non-main module
+        /// </summary>
         public void EvalMain(string fileName)
         {
             if (_mainContext.IsMainModuleLoaded())

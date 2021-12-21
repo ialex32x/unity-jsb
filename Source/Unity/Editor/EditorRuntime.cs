@@ -218,12 +218,6 @@ namespace QuickJS.Unity
 
         private void OnScriptRuntimeMainModuleLoaded(ScriptRuntime runtime)
         {
-            runtime.ResolveModule(_prefs.editorEntryPoint);
-
-            foreach (var module in _prefs.editorRequires)
-            {
-                runtime.ResolveModule(module);
-            }
         }
 
         private void OnScriptRuntimeInitializing(ScriptRuntime runtime)
@@ -246,9 +240,14 @@ namespace QuickJS.Unity
                 runtime.GetLogger()?.Write(LogLevel.Error, "failed to load plover.js from Resources");
             }
 
-            if (!string.IsNullOrEmpty(_prefs.editorEntryPoint) && !Application.isPlaying)
+            if (!string.IsNullOrEmpty(_prefs.editorEntryPoint))
             {
                 runtime.EvalMain(_prefs.editorEntryPoint);
+            }
+
+            foreach (var module in _prefs.editorRequires)
+            {
+                runtime.ResolveModule(module);
             }
 
             // in order to evaluate the decorator (the registration of CustomEditor), we need to load these modules before actually using

@@ -60,6 +60,11 @@ namespace QuickJS
             return JSApi.JS_UNDEFINED;
         }
 
+        public static unsafe JSValue EvalSource(JSContext ctx, string source, string fileName, bool bModule)
+        {
+            return EvalSource(ctx, Utils.TextUtils.GetNullTerminatedBytes(source), fileName, bModule);
+        }
+
         public static unsafe JSValue EvalSource(JSContext ctx, byte[] source, string fileName, bool bModule)
         {
             if (source == null || source.Length == 0)
