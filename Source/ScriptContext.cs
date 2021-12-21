@@ -71,7 +71,7 @@ namespace QuickJS
             _functionConstructor = JSApi.JS_GetProperty(_ctx, _globalObject, JSApi.JS_ATOM_Function);
             _operatorCreate = JSApi.JS_UNDEFINED;
 
-            if (JSApi.JS_ATOM_Operators.IsValid)
+            if (JSApi.IsOperatorOverloadingSupported && JSApi.JS_ATOM_Operators.IsValid)
             {
                 var operators = JSApi.JS_GetProperty(_ctx, _globalObject, JSApi.JS_ATOM_Operators);
                 if (!operators.IsNullish())
