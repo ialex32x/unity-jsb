@@ -152,21 +152,19 @@ namespace QuickJS
             for (; i < argc; i++)
             {
                 var pstr = JSApi.JS_ToCStringLen(ctx, out str_len, argv[i]);
-                if (pstr == IntPtr.Zero)
+                if (pstr != IntPtr.Zero)
                 {
-                    return JSNative.ThrowInternalError(ctx, "JS_ToCStringLen failed");
-                }
+                    var str = JSApi.GetString(ctx, pstr, str_len);
+                    if (str != null)
+                    {
+                        sb.Append(str);
+                    }
 
-                var str = JSApi.GetString(ctx, pstr, str_len);
-                if (str != null)
-                {
-                    sb.Append(str);
-                }
-
-                JSApi.JS_FreeCString(ctx, pstr);
-                if (i != argc - 1)
-                {
-                    sb.Append(' ');
+                    JSApi.JS_FreeCString(ctx, pstr);
+                    if (i != argc - 1)
+                    {
+                        sb.Append(' ');
+                    }
                 }
             }
 
