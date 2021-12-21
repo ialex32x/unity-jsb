@@ -134,7 +134,7 @@ namespace QuickJS.Module
         public unsafe JSValue Load(ScriptContext context, string resolved_id, JSValue module_obj, JSValue exports_obj)
         {
             var ctx = (JSContext)context;
-            var sourceBytes = Utils.TextUtils.GetNullTerminatedBytes(@"(function (cache, resolved_id) {
+            var sourceString = @"(function (cache, resolved_id) {
                 return new Proxy(cache, {
                     get: function (target, p) {
                         let o = target[p];
@@ -144,7 +144,7 @@ namespace QuickJS.Module
                         return o;
                     }
                 }); 
-            })");
+            })";
             if (_typeCache.IsUndefined())
             {
                 _typeCache = JSApi.JS_NewObject(context);
@@ -157,7 +157,7 @@ namespace QuickJS.Module
             }
             _preload.Clear();
             typeRegister.Finish();
-            var proxyGen = ScriptRuntime.EvalSource(ctx, sourceBytes, "eval", false);
+            var proxyGen = ScriptRuntime.EvalSource(ctx, sourceString, "eval", false);
             var argv = stackalloc JSValue[2]
             {
                 JSApi.JS_DupValue(ctx, _typeCache),

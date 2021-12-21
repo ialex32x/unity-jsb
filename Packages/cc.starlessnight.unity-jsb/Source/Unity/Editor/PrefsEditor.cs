@@ -540,8 +540,51 @@ namespace QuickJS.Unity
                 }
             });
 
+            Block("Preloaded Modules", () =>
+            {
+                if (_prefs.editorRequires == null)
+                {
+                    _prefs.editorRequires = new List<string>();
+                }
+
+                var count = _prefs.editorRequires.Count;
+                for (var i = 0; i < count;)
+                {
+                    EditorGUILayout.BeginHorizontal();
+                    var do_delete = GUILayout.Button("X", GUILayout.Width(22f));
+                    var mod_old = _prefs.editorRequires[i] ?? string.Empty;
+                    var mod_new = EditorGUILayout.TextField(mod_old);
+                    EditorGUILayout.EndHorizontal();
+
+                    if (do_delete)
+                    {
+                        --count;
+                        continue;
+                    }
+
+                    if (mod_new != mod_old)
+                    {
+                        _prefs.editorRequires[i] = mod_new;
+                        MarkAsDirty();
+                    }
+                    ++i;
+                }
+            }, () =>
+            {
+                if (GUILayout.Button("+", GUILayout.Width(22f)))
+                {
+                    _prefs.editorRequires.Add("");
+                    MarkAsDirty();
+                }
+            });
+
             Block("AssetPost Processors", () =>
             {
+                if (_prefs.assetPostProcessors == null)
+                {
+                    _prefs.assetPostProcessors = new List<string>();
+                }
+
                 foreach (var assetPostProcessor in _prefs.assetPostProcessors)
                 {
                     EditorGUILayout.TextField(assetPostProcessor);
