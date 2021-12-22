@@ -3,6 +3,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 print("isMain?", module == require.main);
 const Example_1 = require("Example");
 const jsb = require("jsb");
+print(jsb);
+print(Example_1);
 const UnityEngine_1 = require("UnityEngine");
 // import { fib } from "./fib_module.js";
 const fib_1 = require("./fib");
@@ -64,6 +66,6 @@ try {
 catch (e) {
     console.warn(e);
 }
-global["testGlobalVar"] = "test";
 Object.keys(require.cache).forEach(k => console.log("require.cache entry:", k));
+globalThis["testGlobalVar"] = "test";
 //# sourceMappingURL=example_main.js.map

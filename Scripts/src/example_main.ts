@@ -78,6 +78,6 @@ try {
     console.warn(e);
 }
 
-global["testGlobalVar"] = "test";
+globalThis["testGlobalVar"] = "test";
 
 Object.keys(require.cache).forEach(k => console.log("require.cache entry:", k));
