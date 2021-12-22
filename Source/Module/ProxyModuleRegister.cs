@@ -139,7 +139,7 @@ namespace QuickJS.Module
                     get: function (target, p) {
                         let o = target[p];
                         if (typeof o === 'undefined') {
-                            o = require('jsb').$LoadType(resolved_id, typeof p === 'symbol' ? Symbol.keyFor(p) : p);
+                            o = require('jsb').$LoadType(resolved_id, p);
                         }
                         return o;
                     }

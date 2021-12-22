@@ -62,6 +62,11 @@ namespace QuickJS.Native
             return tag == JSApi.JS_TAG_STRING;
         }
 
+        public bool IsSymbol()
+        {
+            return tag == JSApi.JS_TAG_SYMBOL;
+        }
+
         public bool IsNumber()
         {
             // return JSApi.JS_IsNumber(this);
