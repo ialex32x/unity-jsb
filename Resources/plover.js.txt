@@ -271,7 +271,7 @@ define("plover/editor/auto_completion_field", ["require", "exports", "UnityEdito
             if (mouseIsInResultsRect) {
                 this.repaintFocusedWindow();
             }
-            var movedMouseInRect = this.previousMousePosition != current.mousePosition;
+            var movedMouseInRect = UnityEngine_1.Vector2.op_Inequality(this.previousMousePosition, current.mousePosition);
             elementRect.x += Styles.resultsBorderWidth;
             elementRect.width -= Styles.resultsBorderWidth * 2;
             elementRect.height = Styles.resultHeight;
