@@ -6,6 +6,7 @@
 extern "C" {
 #endif
 
+#define CONFIG_BIGNUM
 #define JS_EXPORT __declspec(dllexport)
 
 /* flags for object properties */
@@ -187,6 +188,13 @@ typedef void JSHostPromiseRejectionTracker(JSContext* ctx, JSValueConst promise,
 #define FALSE 0
 #endif
 
+typedef enum JSToNumberHintEnum {
+	TON_FLAG_NUMBER,
+	TON_FLAG_NUMERIC,
+} JSToNumberHintEnum;
+
+#define JS_FLOAT64_NAN NAN
+
 #define JS_TAG_IS_BYREF(tag) (tag) < 0
 
 //#define JS_MKVAL() JSValue{}
@@ -194,9 +202,22 @@ typedef void JSHostPromiseRejectionTracker(JSContext* ctx, JSValueConst promise,
 #define JS_MKFLOAT64(tag, v) JSValue{{.float64=(v)},(tag)}
 #define JS_MKPTR(tag, v) JSValue{{.ptr=(v)},(tag)}
 
+#define JS_VALUE_GET_TAG(v) ((int32_t)(v).tag)
+/* same as JS_VALUE_GET_TAG, but return JS_TAG_FLOAT64 with NaN boxing */
+#define JS_VALUE_GET_NORM_TAG(v) JS_VALUE_GET_TAG(v)
+#define JS_VALUE_GET_INT(v) ((v).u.int32)
+#define JS_VALUE_GET_BOOL(v) ((v).u.int32)
+#define JS_VALUE_GET_FLOAT64(v) ((v).u.float64)
+#define JS_VALUE_GET_PTR(v) ((v).u.ptr)
+
+#define JS_TAG_IS_FLOAT64(tag) ((unsigned)(tag) == JS_TAG_FLOAT64)
+
 #define JS_UNDEFINED JSValue{ {0}, JS_TAG_UNDEFINED }
 #define JS_NULL JSValue{ {0}, JS_TAG_NULL }
 #define JS_EXCEPTION JSValue { {0}, JS_TAG_EXCEPTION }
+#define JS_NAN JSValue{{.float64=JS_FLOAT64_NAN},JS_TAG_FLOAT64}
+
+#define ATOD_ACCEPT_BIN_OCT  (1 << 2)
 
 #if !defined(FORCEINLINE)
 #define FORCEINLINE __forceinline

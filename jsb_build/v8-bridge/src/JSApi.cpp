@@ -24,29 +24,31 @@ static JSClassID js_bridge_class_id = 0;
 
 #define UNITY_EXT_COMPILING
 #include "unity_ext.c"
+#include "cutils.c"
+#include "libregexp.c"
 #undef UNITY_EXT_COMPILING
 
 void* js_malloc(JSContext* ctx, size_t size)
 {
-	return ctx->_runtime->malloc_functions.js_malloc(nullptr, size);
+	return ctx->_runtime->mem_alloc(nullptr, size);
 }
 
 void* js_mallocz(JSContext* ctx, size_t size)
 {
-	void* ptr = ctx->_runtime->malloc_functions.js_malloc(nullptr, size);
+	void* ptr = ctx->_runtime->mem_alloc(nullptr, size);
 	return memset(ptr, 0, size);
 }
 
 void js_free(JSContext* ctx, void* ptr)
 {
-	ctx->_runtime->malloc_functions.js_free(nullptr, ptr);
+	ctx->_runtime->mem_free(nullptr, ptr);
 }
 
 IntPtr js_strndup(JSContext* ctx, const char* s, size_t n)
 {
 	if (s && n > 0)
 	{
-		return memcpy(ctx->_runtime->malloc_functions.js_malloc(0, n), s, n);
+		return memcpy(ctx->_runtime->mem_alloc(0, n), s, n);
 	}
 	return 0;
 }
@@ -174,7 +176,7 @@ JSValue JS_AtomToString(JSContext* ctx, JSAtom atom)
 	v8::Isolate::Scope isolateScope(ctx->GetIsolate());
 	v8::HandleScope handleScope(ctx->GetIsolate());
 
-	return ctx->GetAtomValue(atom);
+	return ctx->AtomToValue(atom);
 }
 
 int JS_ToBool(JSContext* ctx, JSValueConst val)
@@ -215,6 +217,192 @@ int JS_ToInt32(JSContext* ctx, int* pres, JSValue val)
 int JS_ToInt64(JSContext* ctx, int64_t* pres, JSValue val)
 {
 	return JS_ToBigInt64(ctx, pres, val);
+}
+
+static int skip_spaces(const char* pc)
+{
+	const uint8_t* p, * p_next, * p_start;
+	uint32_t c;
+
+	p = p_start = (const uint8_t*)pc;
+	for (;;) {
+		c = *p;
+		if (c < 128) {
+			if (!((c >= 0x09 && c <= 0x0d) || (c == 0x20)))
+				break;
+			p++;
+		}
+		else {
+			c = unicode_from_utf8(p, UTF8_CHAR_LEN_MAX, &p_next);
+			if (!lre_is_space(c))
+				break;
+			p = p_next;
+		}
+	}
+	return p - p_start;
+}
+
+static JSValue JS_ToNumberHintFree(JSContext* ctx, JSValue val,
+	JSToNumberHintEnum flag)
+{
+	uint32_t tag;
+	JSValue ret;
+
+redo:
+	tag = JS_VALUE_GET_NORM_TAG(val);
+	switch (tag) {
+#ifdef CONFIG_BIGNUM
+	case JS_TAG_BIG_DECIMAL:
+		if (flag != TON_FLAG_NUMERIC) {
+			JS_FreeValue(ctx, val);
+			return JSB_ThrowTypeError(ctx, "cannot convert bigdecimal to number");
+		}
+		ret = val;
+		break;
+	case JS_TAG_BIG_INT:
+		if (flag != TON_FLAG_NUMERIC) {
+			JS_FreeValue(ctx, val);
+			return JSB_ThrowTypeError(ctx, "cannot convert bigint to number");
+		}
+		ret = val;
+		break;
+	case JS_TAG_BIG_FLOAT:
+		if (flag != TON_FLAG_NUMERIC) {
+			JS_FreeValue(ctx, val);
+			return JSB_ThrowTypeError(ctx, "cannot convert bigfloat to number");
+		}
+		ret = val;
+		break;
+#endif
+	case JS_TAG_FLOAT64:
+	case JS_TAG_INT:
+	case JS_TAG_EXCEPTION:
+		ret = val;
+		break;
+	case JS_TAG_BOOL:
+	case JS_TAG_NULL:
+		ret = JS_MKINT32(JS_TAG_INT, JS_VALUE_GET_INT(val));
+		break;
+	case JS_TAG_UNDEFINED:
+		ret = JS_NAN;
+		break;
+	case JS_TAG_OBJECT:
+		JS_FreeValue(ctx, val);
+		return JSB_ThrowTypeError(ctx, "cannot convert object to number");
+		//val = JS_ToPrimitiveFree(ctx, val, HINT_NUMBER);
+		//if (JS_IsException(val))
+		//	return JS_EXCEPTION;
+		//goto redo;
+	case JS_TAG_STRING:
+	{
+		const char* str;
+		const char* p;
+		size_t len;
+
+		str = JS_ToCStringLen(ctx, &len, val);
+		JS_FreeValue(ctx, val);
+		if (!str)
+			return JS_EXCEPTION;
+		p = str;
+		p += skip_spaces(p);
+		if ((p - str) == len) {
+			ret = JS_MKINT32(JS_TAG_INT, 0);
+		}
+		else {
+			//TODO: js_atof
+			ret = JS_MKFLOAT64(JS_TAG_FLOAT64, atof(p));
+			//int flags = ATOD_ACCEPT_BIN_OCT;
+			//ret = js_atof(ctx, p, &p, 0, flags);
+			//if (!JS_IsException(ret)) {
+			//	p += skip_spaces(p);
+			//	if ((p - str) != len) {
+			//		JS_FreeValue(ctx, ret);
+			//		ret = JS_NAN;
+			//	}
+			//}
+		}
+		JS_FreeCString(ctx, str);
+	}
+	break;
+	case JS_TAG_SYMBOL:
+		JS_FreeValue(ctx, val);
+		return JSB_ThrowTypeError(ctx, "cannot convert symbol to number");
+	default:
+		JS_FreeValue(ctx, val);
+		ret = JS_NAN;
+		break;
+	}
+	return ret;
+}
+
+static JSValue JS_ToNumberFree(JSContext* ctx, JSValue val)
+{
+	return JS_ToNumberHintFree(ctx, val, TON_FLAG_NUMBER);
+}
+
+static int __JS_ToFloat64Free(JSContext* ctx, double* pres,
+	JSValue val)
+{
+	double d;
+	uint32_t tag;
+
+	val = JS_ToNumberFree(ctx, val);
+	if (JS_IsException(val)) {
+		*pres = JS_FLOAT64_NAN;
+		return -1;
+	}
+	tag = JS_VALUE_GET_NORM_TAG(val);
+	switch (tag) {
+	case JS_TAG_INT:
+		d = JS_VALUE_GET_INT(val);
+		break;
+	case JS_TAG_FLOAT64:
+		d = JS_VALUE_GET_FLOAT64(val);
+		break;
+#ifdef CONFIG_BIGNUM
+	case JS_TAG_BIG_INT:
+	case JS_TAG_BIG_FLOAT:
+	{
+		//TODO bigint & bigfloat
+		//ctx->_runtime->GetReferencedValue(JS_VALUE_GET_PTR(val));
+		d = 0;
+		//JSBigFloat* p = JS_VALUE_GET_PTR(val);
+		///* XXX: there can be a double rounding issue with some
+		//   primitives (such as JS_ToUint8ClampFree()), but it is
+		//   not critical to fix it. */
+		//bf_get_float64(&p->num, &d, BF_RNDN);
+		JS_FreeValue(ctx, val);
+	}
+	break;
+#endif
+	default:
+		abort();
+	}
+	*pres = d;
+	return 0;
+}
+
+static inline int JS_ToFloat64Free(JSContext* ctx, double* pres, JSValue val)
+{
+	uint32_t tag;
+
+	tag = JS_VALUE_GET_TAG(val);
+	if (tag <= JS_TAG_NULL) {
+		*pres = JS_VALUE_GET_INT(val);
+		return 0;
+	}
+	else if (JS_TAG_IS_FLOAT64(tag)) {
+		*pres = JS_VALUE_GET_FLOAT64(val);
+		return 0;
+	}
+	else {
+		return __JS_ToFloat64Free(ctx, pres, val);
+	}
+}
+
+int JS_ToFloat64(JSContext* ctx, double* pres, JSValueConst val)
+{
+	return JS_ToFloat64Free(ctx, pres, JSB_DupValue(ctx, val));
 }
 
 int JS_ToBigInt64(JSContext* ctx, int64_t* pres, JSValue val)
@@ -259,6 +447,11 @@ int JS_ToIndex(JSContext* ctx, uint64_t* plen, JSValueConst val)
 	return -1;
 }
 
+const char* JS_ToCStringLen(JSContext* ctx, size_t* plen, JSValueConst val1)
+{
+	return JS_ToCStringLen2(ctx, plen, val1, 0);
+}
+
 const char* JS_ToCStringLen2(JSContext* ctx, size_t* plen, JSValueConst val1, JS_BOOL cesu8)
 {
 	v8::Isolate::Scope isolateScope(ctx->GetIsolate());
@@ -268,13 +461,13 @@ const char* JS_ToCStringLen2(JSContext* ctx, size_t* plen, JSValueConst val1, JS
 	v8::Local<v8::Value> value;
 	if (maybe_value.ToLocal(&value))
 	{
-		v8::MaybeLocal<v8::String> maybe_string = value->ToString(ctx->Get());
-		v8::Local<v8::String> _string;
-		if (maybe_string.ToLocal(&_string) && _string->Length() > 0)
+		if (value->IsSymbol())
 		{
-			v8::String::Utf8Value str(ctx->GetIsolate(), _string);
+			v8::Local<v8::Symbol> symbol = v8::Local<v8::Symbol>::Cast(value);
+			v8::Local<v8::Value> description = symbol->Description(ctx->GetIsolate());
+			v8::String::Utf8Value str(ctx->GetIsolate(), description);
 			size_t len = str.length();
-			char* pmem = (char*)ctx->_runtime->malloc_functions.js_malloc(nullptr, len + 1);
+			char* pmem = (char*)ctx->_runtime->mem_alloc(nullptr, len + 1);
 			if (pmem)
 			{
 				memcpy(pmem, *str, len);
@@ -284,6 +477,27 @@ const char* JS_ToCStringLen2(JSContext* ctx, size_t* plen, JSValueConst val1, JS
 					*plen = len;
 				}
 				return pmem;
+			}
+		}
+		else 
+		{
+			v8::MaybeLocal<v8::String> maybe_string = value->ToString(ctx->Get());
+			v8::Local<v8::String> _string;
+			if (maybe_string.ToLocal(&_string) && _string->Length() > 0)
+			{
+				v8::String::Utf8Value str(ctx->GetIsolate(), _string);
+				size_t len = str.length();
+				char* pmem = (char*)ctx->_runtime->mem_alloc(nullptr, len + 1);
+				if (pmem)
+				{
+					memcpy(pmem, *str, len);
+					pmem[len] = 0;
+					if (plen)
+					{
+						*plen = len;
+					}
+					return pmem;
+				}
 			}
 		}
 	}
@@ -297,7 +511,7 @@ const char* JS_ToCStringLen2(JSContext* ctx, size_t* plen, JSValueConst val1, JS
 
 void JS_FreeCString(JSContext* ctx, const char* ptr)
 {
-	ctx->_runtime->malloc_functions.js_free(nullptr, (void*)ptr);
+	ctx->_runtime->mem_free(nullptr, (void*)ptr);
 }
 
 int JS_IsInstanceOf(JSContext* ctx, JSValueConst val, JSValueConst obj)
@@ -343,7 +557,7 @@ JS_BOOL JS_IsError(JSContext* ctx, JSValueConst val)
 	if (val.tag == JS_TAG_OBJECT)
 	{
 		//TODO check Error object
-		//v8::MaybeLocal<v8::Value> maybe = ctx->_runtime->GetValue(val.u.ptr);
+		//v8::MaybeLocal<v8::Value> maybe = ctx->_runtime->GetReferencedValue(val.u.ptr);
 		//v8::Local<v8::Value> value;
 		//if (maybe.ToLocal(&value))
 		//{
@@ -410,7 +624,7 @@ JSValue JS_NewObjectProtoClass(JSContext* ctx, JSValueConst proto, JSClassID cla
 		JSClassDef* def = ctx->_runtime->GetClassDef(class_id);
 		if (def)
 		{
-			v8::MaybeLocal<v8::Value> maybe_value = ctx->_runtime->GetValue(proto.u.ptr);
+			v8::MaybeLocal<v8::Value> maybe_value = ctx->_runtime->GetReferencedValue(proto.u.ptr);
 			v8::Local<v8::Value> value;
 			if (maybe_value.ToLocal(&value) && value->IsObject())
 			{
@@ -563,7 +777,11 @@ void* JSB_GetOpaque(JSContext* ctx, JSValue val, JSClassID class_id)
 	if (maybe_value.ToLocal(&value) && value->IsObject())
 	{
 		v8::Local<v8::Object> obj = v8::Local<v8::Object>::Cast(value);
-		return v8::Local<v8::External>::Cast(obj->GetInternalField(JSRuntime::EIFN_Payload))->Value();
+		if (obj->InternalFieldCount() == JSRuntime::EIFN_FieldCount)
+		{
+			//return v8::Local<v8::External>::Cast(obj->GetInternalField(JSRuntime::EIFN_Payload))->Value();
+			return obj->GetAlignedPointerFromInternalField(JSRuntime::EIFN_Payload);
+		}
 	}
 	return nullptr;
 }
@@ -578,7 +796,11 @@ void JSB_SetOpaque(JSContext* ctx, JSValue val, void* data)
 	if (maybe_value.ToLocal(&value) && value->IsObject())
 	{
 		v8::Local<v8::Object> obj = v8::Local<v8::Object>::Cast(value);
-		obj->SetInternalField(JSRuntime::EIFN_Payload, v8::External::New(ctx->GetIsolate(), data));
+		if (obj->InternalFieldCount() == JSRuntime::EIFN_FieldCount) 
+		{
+			//obj->SetInternalField(JSRuntime::EIFN_Payload, v8::External::New(ctx->GetIsolate(), data));
+			obj->SetAlignedPointerInInternalField(JSRuntime::EIFN_Payload, data);
+		}
 	}
 }
 
@@ -597,7 +819,7 @@ int JS_IsArray(JSContext* ctx, JSValueConst val)
 		v8::Isolate::Scope isolateScope(ctx->GetIsolate());
 		v8::HandleScope handleScope(ctx->GetIsolate());
 
-		v8::MaybeLocal<v8::Value> maybe_value = ctx->_runtime->GetValue(val.u.ptr);
+		v8::MaybeLocal<v8::Value> maybe_value = ctx->_runtime->GetReferencedValue(val.u.ptr);
 		v8::Local<v8::Value> value;
 		if (maybe_value.ToLocal(&value) && value->IsArray())
 		{
@@ -614,7 +836,7 @@ JS_BOOL JS_IsFunction(JSContext* ctx, JSValueConst val)
 		v8::Isolate::Scope isolateScope(ctx->GetIsolate());
 		v8::HandleScope handleScope(ctx->GetIsolate());
 
-		v8::MaybeLocal<v8::Value> maybe_value = ctx->_runtime->GetValue(val.u.ptr);
+		v8::MaybeLocal<v8::Value> maybe_value = ctx->_runtime->GetReferencedValue(val.u.ptr);
 		v8::Local<v8::Value> value;
 		if (maybe_value.ToLocal(&value) && value->IsFunction())
 		{
@@ -631,7 +853,7 @@ JS_BOOL JS_IsConstructor(JSContext* ctx, JSValueConst val)
 		v8::Isolate::Scope isolateScope(ctx->GetIsolate());
 		v8::HandleScope handleScope(ctx->GetIsolate());
 
-		v8::MaybeLocal<v8::Value> maybe_value = ctx->_runtime->GetValue(val.u.ptr);
+		v8::MaybeLocal<v8::Value> maybe_value = ctx->_runtime->GetReferencedValue(val.u.ptr);
 		v8::Local<v8::Value> value;
 		if (maybe_value.ToLocal(&value) && value->IsFunction())
 		{
@@ -848,6 +1070,56 @@ void JS_SetInterruptHandler(JSRuntime* rt, JSInterruptHandler* cb, IntPtr opaque
 
 void JS_ComputeMemoryUsage(JSRuntime* rt, JSMemoryUsage* s)
 {
+}
+
+JSValue jsb_construct_bridge_object(JSContext* ctx, JSValue ctor, int32_t object_id)
+{
+	JSValue proto = JS_GetProperty(ctx, ctor, JSB_ATOM_prototype());
+	JSValue obj = JS_NewObjectProtoClass(ctx, proto, JSB_GetBridgeClassID());
+	JSB_FreeValue(ctx, proto);
+	if (!JS_IsException(obj))
+	{
+		JSPayload* sv = (JSPayload*)js_malloc(ctx, sizeof(JSPayloadHeader));
+		sv->header.type_id = JS_BO_OBJECT;
+		sv->header.value = object_id;
+		JSB_SetOpaque(ctx, obj, sv);
+	}
+	return obj;
+}
+
+void JS_SymbolTest(JSContext* ctx)
+{
+	v8::Isolate::Scope isolateScope(ctx->GetIsolate());
+	v8::HandleScope handleScope(ctx->GetIsolate());
+	v8::Context::Scope contextScope(ctx->Get());
+
+	v8::Local<v8::Symbol> s = v8::Symbol::New(ctx->GetIsolate(), v8::String::NewFromUtf8Literal(ctx->GetIsolate(), "test"));
+	v8::String::Utf8Value utf8(ctx->GetIsolate(), s->Description());
+	printf("symbol: %s\n", *utf8);
+
+	v8::Local<v8::Object> o1 = v8::Object::New(ctx->GetIsolate());
+	v8::Local<v8::Object> o2 = v8::Object::New(ctx->GetIsolate());
+	JSValue v1a = ctx->_runtime->AddValue(ctx->Get(), o1);
+	JSValue v1b = ctx->_runtime->AddValue(ctx->Get(), o1);
+	JSValue v2a = ctx->_runtime->AddValue(ctx->Get(), o2);
+	printf("v1a %d\n", v1a.u.ptr);
+	printf("v1b %d\n", v1b.u.ptr);
+	printf("v2a %d\n", v2a.u.ptr);
+	printf("assert %d\n", v1a.tag == v1b.tag && v1a.u.ptr == v1b.u.ptr);
+	JS_FreeValue(ctx, v1a);
+	printf("v1a.free check %s\n", ctx->_runtime->GetReferencedValue(v1a.u.ptr).IsEmpty() ? "yes" : "no");
+	printf("v1b.free check %s\n", ctx->_runtime->GetReferencedValue(v1b.u.ptr).IsEmpty() ? "yes" : "no");
+	printf("v2a.free check %s\n", ctx->_runtime->GetReferencedValue(v2a.u.ptr).IsEmpty() ? "yes" : "no");
+	JS_FreeValue(ctx, v1b);
+	JS_FreeValue(ctx, v2a);
+	printf("v1a.free check %s\n", ctx->_runtime->GetReferencedValue(v1a.u.ptr).IsEmpty() ? "yes" : "no");
+	printf("v1b.free check %s\n", ctx->_runtime->GetReferencedValue(v1b.u.ptr).IsEmpty() ? "yes" : "no");
+	printf("v2a.free check %s\n", ctx->_runtime->GetReferencedValue(v2a.u.ptr).IsEmpty() ? "yes" : "no");
+
+	JSValue v1a2 = ctx->_runtime->AddValue(ctx->Get(), o1);
+	printf("v1a2 %d\n", v1a2.u.ptr);
+	JS_FreeValue(ctx, v1a2);
+	printf("v1a2.free check %s\n", ctx->_runtime->GetReferencedValue(v1a2.u.ptr).IsEmpty() ? "yes" : "no");
 }
 
 #ifdef __cplusplus

@@ -19,22 +19,22 @@
 
 struct JSValueRef
 {
-	size_t _next = 0;
-	uint32_t _references = 1;
+	size_t _next;
+	uint32_t _references;
 	v8impl::CopyPersistent<v8::Value> _value;
 
 	JSValueRef() = default;
-	JSValueRef(v8::Isolate* isolate, v8::Local<v8::Value> value) : _value(isolate, value) {}
+	JSValueRef(v8::Isolate* isolate, v8::Local<v8::Value> value) : _value(isolate, value), _references(1), _next(0) {}
 };
 
 struct JSAtomRef
 {
-	uint32_t _next = 0;
-	uint32_t _references = 1;
+	uint32_t _next;
+	uint32_t _references;
 	v8impl::CopyPersistent<v8::String> _value;
 
 	JSAtomRef() = default;
-	JSAtomRef(v8::Isolate * isolate, v8::Local<v8::String> value) : _value(isolate, value) {}
+	JSAtomRef(v8::Isolate * isolate, v8::Local<v8::String> value) : _value(isolate, value), _references(1), _next(0) {}
 };
 
 struct JSClassDef
@@ -64,8 +64,8 @@ struct JSRuntime
 	void* _opaque = nullptr;
 	v8::Isolate* _isolate = nullptr;
 	v8::ArrayBuffer::Allocator* _arrayBufferAllocator = nullptr;
-	JSMallocFunctions malloc_functions;
 private:
+	JSMallocFunctions malloc_functions;
 	v8::UniquePersistent<v8::Private> _PrivateCacheIndexKey;
 
 public:
@@ -83,7 +83,7 @@ public:
 	JSValue DupValue(JSValue value);
 	void FreeValue(JSValue value);
 
-	v8::MaybeLocal<v8::Value> GetValue(size_t id);
+	v8::MaybeLocal<v8::Value> GetReferencedValue(size_t id);
 	v8::MaybeLocal<v8::Value> GetValue(JSValue val);
 
 	JSValue AddValue(v8::Local<v8::Context> context, v8::Local<v8::Value> val);
@@ -96,9 +96,19 @@ public:
 private:
 	size_t _AddValueInternal(v8::Local<v8::Context> context, v8::Local<v8::Value> val);
 #pragma endregion
+	
+#pragma region Low Level Memory Management
+public:
+	void* mem_alloc(JSMallocState* s, size_t size);
+	void mem_free(JSMallocState* s, void* ptr);
+	void* mem_realloc(JSMallocState* s, void* ptr, size_t size);
+	size_t mem_malloc_usable_size(const void* ptr);
+#pragma endregion 
 
 #pragma region JSAtom Management
+private:
 	uint32_t _freeAtomSlot = 0;
+	uint32_t _usedAtomSlot = 0;
 	std::vector<JSAtomRef> _atomRefs;
 	std::map<std::string, JSAtom> _atoms;
 
@@ -138,7 +148,7 @@ public:
 #pragma endregion
 
 #pragma region JSException
-	JSValue ThrowException(v8::Local<v8::Context> context, v8::Local<v8::Value> exception);
+	JSValue ThrowException(v8::Local<v8::Context> context, v8::Local<v8::Value> exception, v8::MaybeLocal<v8::Value> stack);
 	JSValue ThrowError(v8::Local<v8::Context> context, const char* exception, int len = -1);
 	JSValue ThrowTypeError(v8::Local<v8::Context> context, const char* exception, int len = -1);
 

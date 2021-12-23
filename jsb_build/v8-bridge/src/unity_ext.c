@@ -3,29 +3,7 @@
 
 JS_EXPORT JSValue jsb_crossbind_constructor(JSContext* ctx, JSValue new_target)
 {
-    JSValue proto = JS_GetProperty(ctx, new_target, JS_ATOM_prototype);
-    if (!JS_IsException(proto))
-    {
-        JSValue val = JS_NewObjectProtoClass(ctx, proto, js_bridge_class_id);
-        JS_FreeValue(ctx, proto);
-        return val;
-    }
-
-    return proto;
-}
-
-JS_EXPORT JSValue jsb_construct_bridge_object(JSContext* ctx, JSValue proto, int32_t object_id)
-{
-    JSValue obj = JS_CallConstructor(ctx, proto, 0, NULL);
-    if (!JS_IsException(obj))
-    {
-        JSPayload* sv = (JSPayload*)js_malloc(ctx, sizeof(JSPayloadHeader));
-        sv->header.type_id = JS_BO_OBJECT;
-        sv->header.value = object_id;
-        JSB_SetOpaque(ctx, obj, sv);
-    }
-
-    return obj;
+    return JS_NewObjectProtoClass(ctx, new_target, js_bridge_class_id);
 }
 
 JS_EXPORT JSValue jsb_new_bridge_object(JSContext* ctx, JSValue proto, int32_t object_id/*, int32_t type_id = JS_BO_OBJECT */)
@@ -45,15 +23,7 @@ JS_EXPORT JSValue jsb_new_bridge_object(JSContext* ctx, JSValue proto, int32_t o
 // for constructor new_target
 JS_EXPORT JSValue JSB_NewBridgeClassObject(JSContext* ctx, JSValue new_target, int32_t object_id/*, int32_t type_id = JS_BO_OBJECT */)
 {
-    JSValue proto = JS_GetProperty(ctx, new_target, JS_ATOM_prototype);
-    if (!JS_IsException(proto))
-    {
-        JSValue obj = jsb_new_bridge_object(ctx, proto, object_id/*, type_id*/);
-        JS_FreeValue(ctx, proto);
-        return obj;
-    }
-
-    return proto;
+    return jsb_new_bridge_object(ctx, new_target, object_id/*, type_id*/);
 }
 
 JS_EXPORT JSValue jsb_new_bridge_value(JSContext* ctx, JSValue proto, int32_t size)
@@ -72,15 +42,7 @@ JS_EXPORT JSValue jsb_new_bridge_value(JSContext* ctx, JSValue proto, int32_t si
 
 JS_EXPORT JSValue JSB_NewBridgeClassValue(JSContext* ctx, JSValue new_target, int32_t size)
 {
-    JSValue proto = JS_GetProperty(ctx, new_target, JS_ATOM_prototype);
-    if (!JS_IsException(proto))
-    {
-        JSValue obj = jsb_new_bridge_value(ctx, proto, size);
-        JS_FreeValue(ctx, proto);
-        return obj;
-    }
-
-    return proto;
+    return jsb_new_bridge_value(ctx, new_target, size);
 }
 
 JS_EXPORT JSPayloadHeader jsb_get_payload_header(JSContext* ctx, JSValue val)

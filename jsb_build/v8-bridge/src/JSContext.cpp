@@ -1,15 +1,20 @@
 #include "JSContext.h"
-#include "JSApi.h"
+#include <cassert>
 
 static void _SetReturnValue(JSRuntime* runtime, const v8::FunctionCallbackInfo<v8::Value>& info, JSValue rval)
 {
-	if (rval.tag == JS_TAG_EXCEPTION)
+	switch (rval.tag)
+	{
+	case JS_TAG_UNDEFINED:
+		break;
+	case JS_TAG_EXCEPTION:
 	{
 		v8::Local<v8::Value> e = runtime->_exception.Get(runtime->_isolate);
 		runtime->_exception.Reset();
 		runtime->_isolate->ThrowException(e);
+		break;
 	}
-	else
+	default:
 	{
 		v8::MaybeLocal<v8::Value> maybe_returnValue = runtime->GetValue(rval);
 		v8::Local<v8::Value> returnValue;
@@ -22,6 +27,8 @@ static void _SetReturnValue(JSRuntime* runtime, const v8::FunctionCallbackInfo<v
 		{
 			runtime->_isolate->ThrowError("failed to translate return value from JSValue");
 		}
+		break;
+	}
 	}
 }
 
@@ -37,15 +44,11 @@ static void JSCFunctionConstructorMagicCallback(const v8::FunctionCallbackInfo<v
 	JSRuntime* runtime = wrapper->_context->_runtime;
 	JSValue this_obj = runtime->AddObject(context, info.This());
 	int argc = info.Length();
-	JSValue* argv = nullptr;
+	JSValue* argv = argc > 0 ? (JSValue*)alloca(sizeof(JSValue) * argc) : nullptr;
 
-	if (argc > 0)
+	for (int i = 0; i < argc; i++)
 	{
-		argv = (JSValue*)alloca(sizeof(JSValue) * argc);
-		for (int i = 0; i < argc; i++)
-		{
-			argv[i] = runtime->AddValue(context, info[i]);
-		}
+		argv[i] = runtime->AddValue(context, info[i]);
 	}
 
 	JSValue rval = wrapper->_funcMagic(wrapper->_context, this_obj, argc, argv, wrapper->_magic);
@@ -69,15 +72,11 @@ static void JSCFunctionMagicCallback(const v8::FunctionCallbackInfo<v8::Value>& 
 	JSRuntime* runtime = wrapper->_context->_runtime;
 	JSValue this_obj = runtime->AddObject(context, info.This());
 	int argc = info.Length();
-	JSValue* argv = nullptr;
+	JSValue* argv = argc > 0 ? (JSValue*)alloca(sizeof(JSValue) * argc) : nullptr;
 
-	if (argc > 0)
+	for (int i = 0; i < argc; i++)
 	{
-		argv = (JSValue*)alloca(sizeof(JSValue) * argc);
-		for (int i = 0; i < argc; i++)
-		{
-			argv[i] = runtime->AddValue(context, info[i]);
-		}
+		argv[i] = runtime->AddValue(context, info[i]);
 	}
 
 	JSValue rval = wrapper->_funcMagic(wrapper->_context, this_obj, argc, argv, wrapper->_magic);
@@ -101,15 +100,11 @@ static void JSCFunctionCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 	JSRuntime* runtime = wrapper->_context->_runtime;
 	JSValue this_obj = runtime->AddObject(context, info.This());
 	int argc = info.Length();
-	JSValue* argv = nullptr;
+	JSValue* argv = argc > 0 ? (JSValue*)alloca(sizeof(JSValue) * argc) : nullptr;
 
-	if (argc > 0)
+	for (int i = 0; i < argc; i++)
 	{
-		argv = (JSValue*)alloca(sizeof(JSValue) * argc);
-		for (int i = 0; i < argc; i++)
-		{
-			argv[i] = runtime->AddValue(context, info[i]);
-		}
+		argv[i] = runtime->AddValue(context, info[i]);
 	}
 
 	JSValue rval = wrapper->_func(wrapper->_context, this_obj, argc, argv);
@@ -214,7 +209,7 @@ JSContext::~JSContext()
 	size_t size = _functionMagicWrappers.size();
 	for (size_t i = 0; i < size; ++i)
 	{
-		_runtime->malloc_functions.js_free(nullptr, _functionMagicWrappers[i]);
+		_runtime->mem_free(nullptr, _functionMagicWrappers[i]);
 	}
 	_runtime->FreeValue(_emptyString);
 	_runtime->FreeValue(_global);
@@ -223,24 +218,24 @@ JSContext::~JSContext()
 
 std::string JSContext::GetAtomString(JSAtom atom)
 {
-	v8::MaybeLocal<v8::Value> maybe_value = _runtime->GetValue(atom);
-	v8::Local<v8::Value> value;
-	if (maybe_value.ToLocal(&value) && value->IsString())
+	v8::MaybeLocal<v8::String> maybe_value = _runtime->GetAtomValue(atom);
+	v8::Local<v8::String> value;
+	if (maybe_value.ToLocal(&value))
 	{
-		v8::Local<v8::String> str = value->ToString(_context.Get(_runtime->_isolate)).ToLocalChecked();
-		v8::String::Utf8Value utf8_value(_runtime->_isolate, str);
-		return std::string(*utf8_value);
+		v8::String::Utf8Value utf8_value(_runtime->_isolate, value);
+		return *utf8_value;
 	}
-	return std::string();
+	return {};
 }
 
-JSValue JSContext::GetAtomValue(JSAtom atom)
+JSValue JSContext::AtomToValue(JSAtom atom)
 {
-	v8::MaybeLocal<v8::Value> maybe_value = _runtime->GetValue(atom);
-	v8::Local<v8::Value> value;
-	if (maybe_value.ToLocal(&value) && value->IsString())
+	v8::MaybeLocal<v8::String> maybe_value = _runtime->GetAtomValue(atom);
+	v8::Local<v8::String> value;
+	if (maybe_value.ToLocal(&value))
 	{
-		return JS_MKPTR(JS_TAG_STRING, (size_t)atom);
+		return _runtime->AddString(Get(), value);
+		//return JS_MKPTR(JS_TAG_STRING, (size_t)atom);
 	}
 	return JS_UNDEFINED;
 }
@@ -283,38 +278,32 @@ JSValue JSContext::NewObjectProtoClass(v8::Local<v8::Object> new_target, JSClass
 {
 	v8::Local<v8::Context> context = Get();
 	v8::Context::Scope contextScope(context);
-
 	v8::Local<v8::FunctionTemplate> _class = classDef->_class.Get(GetIsolate());
-	v8::Local<v8::String> prototype_str = _runtime->GetAtomValue(JS_ATOM_prototype).ToLocalChecked();
-	v8::MaybeLocal<v8::Value> prototype_maybe = new_target->Get(context, prototype_str);
-	v8::Local<v8::Value> prototype_value;
-	if (prototype_maybe.ToLocal(&prototype_value) && prototype_value->IsObject())
-	{
-		v8::Local<v8::Object> prototype = v8::Local<v8::Object>::Cast(prototype_value);
-		v8::Local<v8::Object> instance = _class->GetFunction(context).ToLocalChecked()->NewInstance(context).ToLocalChecked();
-		instance->SetPrototype(context, prototype).Check();
-		return _runtime->AddGCObject(context, instance, classDef);
-	}
 	
-	return _runtime->ThrowError(context, "failed to get prototype");
+	v8::Local<v8::Object> prototype = new_target;
+	v8::Local<v8::Object> instance = _class->GetFunction(context).ToLocalChecked()->NewInstance(context).ToLocalChecked();
+	instance->SetPrototype(context, prototype).Check();
+	return _runtime->AddGCObject(context, instance, classDef);
 }
 
 JSValue JSContext::NewCFunctionMagic(JSCFunctionMagic* func, JSAtom atom, int length, JSCFunctionEnum cproto, int magic)
 {
-	v8::Context::Scope contextScope(Get());
-	JSCFunctionMagicWrapper* wrapper = (JSCFunctionMagicWrapper*)_runtime->malloc_functions.js_malloc(nullptr, sizeof(JSCFunctionMagicWrapper));
+	JSCFunctionMagicWrapper* wrapper = (JSCFunctionMagicWrapper*)_runtime->mem_alloc(nullptr, sizeof(JSCFunctionMagicWrapper));
 	wrapper->_context = this;
 	wrapper->_magic = magic;
 	wrapper->_funcMagic = func;
 	_functionMagicWrappers.push_back(wrapper);
-	v8::Local<v8::External> data = v8::External::New(_runtime->_isolate, wrapper);
 	v8::Local<v8::Context> context = Get();
+	v8::Context::Scope contextScope(context);
+	v8::Local<v8::External> data = v8::External::New(_runtime->_isolate, wrapper);
 	
 	switch (cproto)
 	{
 		case JS_CFUNC_constructor_magic:
 		{
-			v8::MaybeLocal<v8::Function> func_o = v8::Function::New(context, JSCFunctionConstructorMagicCallback, data, length);
+			v8::Local<v8::FunctionTemplate> function_template = v8::FunctionTemplate::New(GetIsolate(), JSCFunctionConstructorMagicCallback, data, {}, length);
+			v8::MaybeLocal<v8::Function> func_o = function_template->GetFunction(context);
+			// v8::MaybeLocal<v8::Function> func_o = v8::Function::New(context, JSCFunctionConstructorMagicCallback, data, length);
 			v8::Local<v8::Function> func_v;
 			if (func_o.ToLocal(&func_v))
 			{
@@ -365,7 +354,7 @@ JSValue JSContext::NewCFunctionMagic(JSCFunctionMagic* func, JSAtom atom, int le
 JSValue JSContext::NewCFunction(JSCFunction* func, JSAtom atom, int length, JSCFunctionEnum cproto)
 {
 	v8::Context::Scope contextScope(Get());
-	JSCFunctionMagicWrapper* wrapper = (JSCFunctionMagicWrapper*)_runtime->malloc_functions.js_malloc(nullptr, sizeof(JSCFunctionMagicWrapper));
+	JSCFunctionMagicWrapper* wrapper = (JSCFunctionMagicWrapper*)_runtime->mem_alloc(nullptr, sizeof(JSCFunctionMagicWrapper));
 	wrapper->_context = this;
 	wrapper->_func = func;
 	wrapper->_magic = 0;
@@ -434,7 +423,7 @@ JSValue JSContext::GetPropertyStr(JSValueConst this_obj, const char* prop)
 			}
 			return _runtime->ThrowError(context, "failed to call Object::Has()");
 		}
-		return _runtime->ThrowError(context, "no such JSAtom");
+		return _runtime->ThrowError(context, "GetPropertyStr: no such JSAtom");
 	}
 	return _runtime->ThrowError(context, "not an object");
 }
@@ -484,7 +473,7 @@ JSValue JSContext::GetPropertyInternal(JSValueConst this_obj, JSAtom prop, JSVal
 			}
 			return _runtime->ThrowError(context, "failed to call Object::Has()");
 		}
-		return _runtime->ThrowError(context, "no such JSAtom");
+		return _runtime->ThrowError(context, "GetPropertyInternal: no such JSAtom");
 	}
 	return _runtime->ThrowError(context, "not an object");
 }
@@ -511,7 +500,7 @@ int JSContext::HasProperty(JSValueConst this_obj, JSAtom prop)
 		}
 		else
 		{
-			_runtime->ThrowError(context, "no such JSAtom");
+			_runtime->ThrowError(context, "HasProperty: no such JSAtom");
 		}
 	}
 	else
@@ -546,7 +535,7 @@ int JSContext::SetPropertyUint32(JSValueConst this_obj, uint32_t idx, JSValue va
 		}
 		else
 		{
-			_runtime->ThrowError(context, "no such JSAtom");
+			_runtime->ThrowError(context, "SetPropertyUint32: no such JSAtom");
 		}
 	}
 	else
@@ -559,23 +548,24 @@ int JSContext::SetPropertyUint32(JSValueConst this_obj, uint32_t idx, JSValue va
 
 int JSContext::SetPropertyInternal(JSValueConst this_obj, JSAtom prop, JSValue val, int flags)
 {
-	v8::MaybeLocal<v8::Value> maybe_value = _runtime->GetValue(this_obj);
-	v8::Local<v8::Value> value;
+	v8::MaybeLocal<v8::Value> maybe_this = _runtime->GetValue(this_obj);
 	v8::Local<v8::Context> context = Get();
+	v8::Context::Scope contextScope(context);
 
-	if (maybe_value.ToLocal(&value) && value->IsObject())
+	v8::Local<v8::Value> thiz;
+	if (maybe_this.ToLocal(&thiz) && thiz->IsObject())
 	{
-		v8::MaybeLocal<v8::String> pkey = _runtime->GetAtomValue(prop);
-		if (!pkey.IsEmpty())
+		v8::MaybeLocal<v8::String> maybe_key = _runtime->GetAtomValue(prop);
+		v8::Local<v8::String> key;
+		if (maybe_key.ToLocal(&key))
 		{
-			v8::Local<v8::Object> obj = v8::Local<v8::Object>::Cast(value);
+			v8::Local<v8::Object> obj = v8::Local<v8::Object>::Cast(thiz);
 			v8::MaybeLocal<v8::Value> maybe_pvalue = _runtime->GetValue(val);
 			v8::Local<v8::Value> pvalue;
 			if (maybe_pvalue.ToLocal(&pvalue))
 			{
-				v8::Maybe<bool> maybe_res = obj->Set(context, pkey.ToLocalChecked(), pvalue);
+				v8::Maybe<bool> maybe_res = obj->Set(context, key, pvalue);
 				bool res;
-
 				if (maybe_res.FromMaybe(&res))
 				{
 					_runtime->FreeValue(val);
@@ -590,7 +580,7 @@ int JSContext::SetPropertyInternal(JSValueConst this_obj, JSAtom prop, JSValue v
 		}
 		else
 		{
-			_runtime->ThrowError(context, "no such JSAtom");
+			_runtime->ThrowError(context, "SetPropertyInternal: no such JSAtom");
 		}
 	}
 	else
@@ -608,7 +598,7 @@ static v8::Local<v8::Function> GetFunction(v8::MaybeLocal<v8::Value> value)
 	{
 		return v8::Local<v8::Function>::Cast(t);
 	}
-	return v8::Local<v8::Function>();
+	return {};
 }
 
 int JSContext::DefineProperty(JSValueConst this_obj, JSAtom prop, JSValueConst getter, JSValueConst setter, int flags)
@@ -640,7 +630,7 @@ int JSContext::DefineProperty(JSValueConst this_obj, JSAtom prop, JSValueConst g
 		}
 		else
 		{
-			_runtime->ThrowError(context, "no such JSAtom");
+			_runtime->ThrowError(context, "DefineProperty: no such JSAtom");
 		}
 	}
 	else
@@ -659,6 +649,7 @@ JSValue JSContext::Eval(const char* input, size_t input_len, const char* filenam
 {
 	v8::Isolate* isolate = _runtime->_isolate;
 	v8::Local<v8::Context> context = _context.Get(isolate);
+	v8::Context::Scope contextScope(context);
 
 	v8::TryCatch try_catch(isolate);
 	v8::ScriptOrigin origin(isolate, v8::String::NewFromUtf8(isolate, filename).ToLocalChecked());
@@ -669,22 +660,19 @@ JSValue JSContext::Eval(const char* input, size_t input_len, const char* filenam
 		v8::MaybeLocal<v8::Value> maybe_value = script.ToLocalChecked()->Run(context);
 		if (try_catch.HasCaught())
 		{
-			return _runtime->ThrowException(context, try_catch.Exception());
+			return _runtime->ThrowException(context, try_catch.Exception(), try_catch.StackTrace(context));
 		}
-		else
+		v8::Local<v8::Value> value;
+		if (maybe_value.ToLocal(&value))
 		{
-			v8::Local<v8::Value> value;
-			if (maybe_value.ToLocal(&value))
-			{
-				return _runtime->AddValue(context, value);
-			}
-			return JS_UNDEFINED;
+			return _runtime->AddValue(context, value);
 		}
+		return JS_UNDEFINED;
 	}
 
 	if (try_catch.HasCaught())
 	{
-		return _runtime->ThrowException(context, try_catch.Exception());
+		return _runtime->ThrowException(context, try_catch.Exception(), try_catch.StackTrace(context));
 	}
 
 	return _runtime->ThrowError(context, "failed to compile");
@@ -699,53 +687,71 @@ JSValue JSContext::CallConstructor(JSValueConst func_obj, int argc, JSValueConst
 	{
 		v8::TryCatch try_catch(_runtime->_isolate);
 		v8::Local<v8::Function> func_value = v8::Local<v8::Function>::Cast(value);
+
+		std::vector<v8::Local<v8::Value>> _args_;
 		for (int i = 0; i < argc; ++i)
 		{
-			_args_.push_back(_runtime->GetValue(argv[i]).ToLocalChecked());
+			v8::MaybeLocal<v8::Value> maybe_arg_value = _runtime->GetValue(argv[i]);
+			v8::Local<v8::Value> arg_value;
+			if (!maybe_arg_value.ToLocal(&arg_value))
+			{
+				static char errmsg[256];
+				int errmsg_len = sprintf_s(errmsg, "CallConstructor: translate failed %d:%d:%d", i, argv[i].tag, argv[i].u.ptr);
+				return _runtime->ThrowError(context, errmsg, errmsg_len);
+			}
+			_args_.push_back(arg_value);
 		}
 		v8::MaybeLocal<v8::Value> func_retValues = func_value->CallAsConstructor(context, argc, _args_.data());
-		_args_.clear();
 		if (try_catch.HasCaught())
 		{
-			return _runtime->ThrowException(context, try_catch.Exception());
+			return _runtime->ThrowException(context, try_catch.Exception(), try_catch.StackTrace(context));
 		}
 		if (!func_retValues.IsEmpty())
 		{
 			return _runtime->AddValue(context, func_retValues.ToLocalChecked());
 		}
-		return _runtime->ThrowError(context, "failed to call");
+		return _runtime->ThrowError(context, "CallConstructor: failed to call");
 	}
 
-	return _runtime->ThrowError(context, "not a constructor function");
+	return _runtime->ThrowError(context, "CallConstructor: not a constructor function");
 }
 
 JSValue JSContext::Call(JSValueConst func_obj, JSValueConst this_obj, int argc, JSValueConst* argv)
 {
 	v8::Local<v8::Context> context = Get();
+	v8::Context::Scope contextScope(context);
 	v8::MaybeLocal<v8::Value> maybe_value = _runtime->GetValue(func_obj);
 	v8::Local<v8::Value> value;
 	if (maybe_value.ToLocal(&value) && value->IsFunction())
 	{
 		v8::TryCatch try_catch(_runtime->_isolate);
 		v8::Local<v8::Function> func_value = v8::Local<v8::Function>::Cast(value);
+		std::vector<v8::Local<v8::Value>> _args_;
 		for (int i = 0; i < argc; ++i)
 		{
-			_args_.push_back(_runtime->GetValue(argv[i]).ToLocalChecked());
+			v8::MaybeLocal<v8::Value> maybe_arg_value = _runtime->GetValue(argv[i]);
+			v8::Local<v8::Value> arg_value;
+			if (!maybe_arg_value.ToLocal(&arg_value))
+			{
+				static char errmsg[256];
+				int errmsg_len = sprintf_s(errmsg, "Call: translate failed %d:%d:%d", i, argv[i].tag, argv[i].u.ptr);
+				return _runtime->ThrowError(context, errmsg, errmsg_len);
+			}
+			_args_.push_back(arg_value);
 		}
 		v8::Local<v8::Value> this_val = _runtime->GetValue(this_obj).ToLocalChecked();
 		v8::MaybeLocal<v8::Value> func_retValues = func_value->Call(context, this_val, argc, _args_.data());
-		_args_.clear();
 		if (try_catch.HasCaught())
 		{
-			return _runtime->ThrowException(context, try_catch.Exception());
+			return _runtime->ThrowException(context, try_catch.Exception(), try_catch.StackTrace(context));
 		}
 		if (!func_retValues.IsEmpty())
 		{
 			return _runtime->AddValue(context, func_retValues.ToLocalChecked());
 		}
-		return _runtime->ThrowError(context, "failed to call");
+		return JS_UNDEFINED;
 	}
-	return _runtime->ThrowError(context, "not a function");
+	return _runtime->ThrowError(context, "Call: not a function");
 }
 
 static void _JSPromiseResolveCallback(const v8::FunctionCallbackInfo<v8::Value>& info)

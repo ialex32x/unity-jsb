@@ -55,9 +55,11 @@ JS_EXPORT JSValue JS_AtomToString(JSContext* ctx, JSAtom atom);
 JS_EXPORT int JS_ToBool(JSContext* ctx, JSValueConst val);
 JS_EXPORT int JS_ToInt32(JSContext* ctx, int* pres, JSValue val);
 JS_EXPORT int JS_ToInt64(JSContext* ctx, int64_t* pres, JSValue val);
+JS_EXPORT int JS_ToFloat64(JSContext* ctx, double* pres, JSValueConst val);
 JS_EXPORT int JS_ToBigInt64(JSContext* ctx, int64_t* pres, JSValue val);
 JS_EXPORT int JS_ToIndex(JSContext* ctx, uint64_t* plen, JSValueConst val);
 //WIP: JS_ToFloat64
+JS_EXPORT const char* JS_ToCStringLen(JSContext* ctx, size_t* plen, JSValueConst val1);
 JS_EXPORT const char* JS_ToCStringLen2(JSContext* ctx, size_t* plen, JSValueConst val1, JS_BOOL cesu8);
 JS_EXPORT void JS_FreeCString(JSContext* ctx, const char* ptr);
 
@@ -126,6 +128,10 @@ JS_EXPORT void JS_SetHostPromiseRejectionTracker(JSRuntime* rt, JSHostPromiseRej
 JS_EXPORT int JS_ExecutePendingJob(JSRuntime* rt, JSContext** pctx);
 JS_EXPORT void JS_SetInterruptHandler(JSRuntime* rt, JSInterruptHandler* cb, IntPtr opaque);
 JS_EXPORT void JS_ComputeMemoryUsage(JSRuntime* rt, JSMemoryUsage* s);
+
+JS_EXPORT JSValue jsb_construct_bridge_object(JSContext* ctx, JSValue ctor, int32_t object_id);
+
+JS_EXPORT void JS_SymbolTest(JSContext* ctx);
 
 #ifdef __cplusplus
 }

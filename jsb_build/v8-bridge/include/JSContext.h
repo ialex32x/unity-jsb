@@ -27,9 +27,7 @@ struct JSContext
 	void* _opaque = nullptr;
 	JSRuntime* _runtime = nullptr;
 	v8::UniquePersistent<v8::Context> _context;
-
-	std::vector<v8::Local<v8::Value>> _args_;
-
+	
 	JSValue _global;
 	JSValue _emptyString;
 
@@ -37,7 +35,7 @@ struct JSContext
 	~JSContext();
 
 	std::string GetAtomString(JSAtom atom);
-	JSValue GetAtomValue(JSAtom atom);
+	JSValue AtomToValue(JSAtom atom);
 
 	v8::Local<v8::Context> Get();
 	v8::Isolate* GetIsolate();

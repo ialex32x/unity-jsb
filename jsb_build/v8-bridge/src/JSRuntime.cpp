@@ -36,6 +36,11 @@ static void default_free(JSMallocState* state, void* buf)
 	free(buf);
 }
 
+static size_t default_malloc_usable_size(const void* buf)
+{
+	return 0;
+}
+
 static void _PromiseRejectCallback(v8::PromiseRejectMessage message)
 {
 	v8::Local<v8::Promise> promise = message.GetPromise();
@@ -66,6 +71,7 @@ JSRuntime::JSRuntime(JSGCObjectFinalizer* finalizer)
 	malloc_functions.js_malloc = default_malloc;
 	malloc_functions.js_free = default_free;
 	malloc_functions.js_realloc = default_realloc;
+	malloc_functions.js_malloc_usable_size = default_malloc_usable_size;
 	_arrayBufferAllocator = v8::ArrayBuffer::Allocator::NewDefaultAllocator();
 	v8::Isolate::CreateParams create_params;
 	create_params.array_buffer_allocator = _arrayBufferAllocator;
@@ -91,10 +97,7 @@ JSRuntime::JSRuntime(JSGCObjectFinalizer* finalizer)
 	}
 }
 
-JSRuntime::~JSRuntime()
-{
-
-}
+JSRuntime::~JSRuntime() = default;
 
 JS_BOOL JSRuntime::Release()
 {
@@ -104,15 +107,16 @@ JS_BOOL JSRuntime::Release()
 #include "quickjs-atom.h"
 #undef DEF
 
-	JS_BOOL res = _atomRefs.size() == 0 && _objectRefs.size() == 0 ? 1 : 0;
+	JS_BOOL res = _usedAtomSlot == 0 && _usedObjectSlot == 0 ? TRUE : FALSE;
 	_atomRefs.clear();
 	_objectRefs.clear();
+	_atoms.clear();
 	for (auto gcObject : _gcObjects)
 	{
 		if (gcObject)
 		{
 			gcObject->_obj.Reset();
-			malloc_functions.js_free(nullptr, gcObject);
+			mem_free(nullptr, gcObject);
 		}
 	}
 	_gcObjects.clear();
@@ -120,7 +124,7 @@ JS_BOOL JSRuntime::Release()
 	{
 		JSClassDef* def = pair.second;
 		def->_class.Reset();
-		malloc_functions.js_free(nullptr, def);
+		mem_free(nullptr, def);
 	}
 	_classes.clear();
 	_exception.Reset();
@@ -143,8 +147,9 @@ size_t JSRuntime::_AddValueInternal(v8::Local<v8::Context> context, v8::Local<v8
 		{
 			size_t last_id = (size_t)cacheIndex->ToInt32(context).ToLocalChecked()->Value();
 			JSValueRef& valueRef = _objectRefs[last_id];
-			if (valueRef._next != 0 || valueRef._value.IsEmpty())
+			if (valueRef._next == 0 && valueRef._references > 0 && valueRef._value == val)
 			{
+				++valueRef._references;
 				return last_id;
 			}
 		}
@@ -175,6 +180,26 @@ size_t JSRuntime::_AddValueInternal(v8::Local<v8::Context> context, v8::Local<v8
 	return id;
 }
 
+void* JSRuntime::mem_alloc(JSMallocState* s, size_t size)
+{
+	return malloc_functions.js_malloc(s, size);
+}
+
+void JSRuntime::mem_free(JSMallocState* s, void* ptr)
+{
+	malloc_functions.js_free(s, ptr);
+}
+
+void* JSRuntime::mem_realloc(JSMallocState* s, void* ptr, size_t size)
+{
+	return malloc_functions.js_realloc(s, ptr, size);
+}
+
+size_t JSRuntime::mem_malloc_usable_size(const void* ptr)
+{
+	return malloc_functions.js_malloc_usable_size(ptr);
+}
+
 void JSRuntime::OnGarbadgeCollectCallback(const v8::WeakCallbackInfo<GCObject>& info)
 {
 	GCObject* gcObject = info.GetParameter();
@@ -193,7 +218,7 @@ void JSRuntime::OnGarbadgeCollectCallback(const v8::WeakCallbackInfo<GCObject>& 
 			JSPayloadHeader header = *(JSPayloadHeader*)sv;
 			finalizer(rt, header);
 		}
-		rt->malloc_functions.js_free(nullptr, sv);
+		rt->mem_free(nullptr, sv);
 	}
 }
 
@@ -203,7 +228,7 @@ JSValue JSRuntime::AddGCObject(v8::Local<v8::Context> context, v8::Local<v8::Obj
 	if (_freeGCObjectSlot == 0)
 	{
 		size_t index = _gcObjects.size();
-		gcObject = (GCObject*)malloc_functions.js_malloc(nullptr, sizeof(GCObject));
+		gcObject = (GCObject*)mem_alloc(nullptr, sizeof(GCObject));
 		memset(gcObject, 0, sizeof(GCObject));
 		gcObject->_index = index;
 		gcObject->_runtime = this;
@@ -220,7 +245,7 @@ JSValue JSRuntime::AddGCObject(v8::Local<v8::Context> context, v8::Local<v8::Obj
 	gcObject->_classDef = def;
 	gcObject->_next = 0;
 	gcObject->_obj.Reset(_isolate, obj);
-	gcObject->_obj.SetWeak<GCObject>(gcObject, OnGarbadgeCollectCallback, v8::WeakCallbackType::kFinalizer);
+	gcObject->_obj.SetWeak<GCObject>(gcObject, OnGarbadgeCollectCallback, v8::WeakCallbackType::kInternalFields);
 	return AddObject(context, obj);
 }
 
@@ -250,12 +275,11 @@ JSValue JSRuntime::AddValue(v8::Local<v8::Context> context, v8::Local<v8::Value>
 	{
 		return AddSymbol(context, v8::Local<v8::Symbol>::Cast(val));
 	}
-	if (val->IsObject())
+	if (val->IsBigInt())
 	{
-		return AddObject(context, v8::Local<v8::Object>::Cast(val));
+		return JS_MKPTR(JS_TAG_BIG_INT, _AddValueInternal(context, val));
 	}
-
-	return ThrowError(context, "unsupported value");
+	return JS_MKPTR(JS_TAG_OBJECT, _AddValueInternal(context, val));
 }
 
 JSValue JSRuntime::AddString(v8::Local<v8::Context> context, v8::Local<v8::String> val)
@@ -263,34 +287,25 @@ JSValue JSRuntime::AddString(v8::Local<v8::Context> context, v8::Local<v8::Strin
 	return JS_MKPTR(JS_TAG_STRING, _AddValueInternal(context, val));
 }
 
+JSValue JSRuntime::AddObject(v8::Local<v8::Context> context, v8::Local<v8::Object> val)
+{
+	return JS_MKPTR(JS_TAG_OBJECT, _AddValueInternal(context, val));
+}
+
 JSValue JSRuntime::AddSymbol(v8::Local<v8::Context> context, v8::Local<v8::Symbol> val)
 {
 	return JS_MKPTR(JS_TAG_SYMBOL, _AddValueInternal(context, val));
 }
 
-JSValue JSRuntime::AddObject(v8::Local<v8::Context> context, v8::Local<v8::Object> val)
+JSValue JSRuntime::ThrowException(v8::Local<v8::Context> context, v8::Local<v8::Value> exception, v8::MaybeLocal<v8::Value> stack)
 {
-	JSValue value;
-	if (val->IsObject())
+	v8::String::Utf8Value str(_isolate, exception);
+	printf("error: %s\n", *str);
+	if (stack.IsEmpty())
 	{
-		value.tag = JS_TAG_OBJECT;
+		v8::String::Utf8Value stack_str(_isolate, stack.ToLocalChecked());
+		printf("stack: %s\n", *stack_str);
 	}
-	else if (val->IsBigInt())
-	{
-		value.tag = JS_TAG_BIG_INT;
-	}
-	else
-	{
-		value.tag = JS_TAG_UNINITIALIZED;
-		return value;
-	}
-
-	value.u.ptr = _AddValueInternal(context, val);
-	return value;
-}
-
-JSValue JSRuntime::ThrowException(v8::Local<v8::Context> context, v8::Local<v8::Value> exception)
-{
 	_exception.Reset(_isolate, exception);
 	return JS_EXCEPTION;
 }
@@ -347,10 +362,17 @@ void JSRuntime::FreeValue(JSValue value)
 		if (id > 0 && id < _objectRefs.size())
 		{
 			JSValueRef& valueRef = _objectRefs[id];
+			assert(valueRef._references > 0);
 			if (--valueRef._references == 0)
 			{
 				valueRef._next = _freeObjectSlot;
 				_freeObjectSlot = id;
+				//v8::Local<v8::Value> value = valueRef._value.Get(_isolate);
+				//if (value->IsObject())
+				//{
+				//	v8::Local<v8::Object> obj = v8::Local<v8::Object>::Cast(value);
+				//	obj->SetPrivate(context, _PrivateCacheIndexKey.Get(_isolate), v8::Undefined::New(_isolate));
+				//}
 				valueRef._value.Reset();
 				--_usedObjectSlot;
 			}
@@ -364,9 +386,9 @@ v8::MaybeLocal<v8::Value> JSRuntime::GetValue(JSValue val)
 	{
 	case JS_TAG_OBJECT:
 	case JS_TAG_STRING:
-	case JS_TAG_SYMBOL:	return GetValue(val.u.ptr);
-	case JS_TAG_BOOL: return v8::Boolean::New(_isolate, val.u.int32 == 1);
+	case JS_TAG_SYMBOL:	return GetReferencedValue(val.u.ptr);
 	case JS_TAG_INT: return v8::Int32::New(_isolate, val.u.int32);
+	case JS_TAG_BOOL: return v8::Boolean::New(_isolate, val.u.int32 == 1);
 	case JS_TAG_NULL: return v8::Null(_isolate);
 	case JS_TAG_UNDEFINED: return v8::Undefined(_isolate);
 	case JS_TAG_EXCEPTION: return _exception.Get(_isolate);
@@ -375,7 +397,7 @@ v8::MaybeLocal<v8::Value> JSRuntime::GetValue(JSValue val)
 	}
 }
 
-v8::MaybeLocal<v8::Value> JSRuntime::GetValue(size_t id)
+v8::MaybeLocal<v8::Value> JSRuntime::GetReferencedValue(size_t id)
 {
 	if (id > 0 && id < _objectRefs.size())
 	{
@@ -396,31 +418,35 @@ JSAtom JSRuntime::GetAtom(std::string& val)
 	std::map<std::string, JSAtom>::iterator it = _atoms.find(val);
 	if (it != _atoms.end())
 	{
-		return it->second;
+		uint32_t id = it->second;
+		JSAtomRef& valueRef =_atomRefs[id];
+		++valueRef._references;
+		return id;
 	}
 	int len = (int)val.length();
 	v8::MaybeLocal<v8::String> str = v8::String::NewFromUtf8(_isolate, val.c_str(), v8::NewStringType::kInternalized, len);
 	if (str.IsEmpty())
 	{
-		return { 0 };
+		return {};
 	}
 
 	JSAtom atom;
+	_usedAtomSlot++;
 	if (_freeAtomSlot == 0)
 	{
 		JSAtomRef atomRef(_isolate, str.ToLocalChecked());
+		atomRef._references = 1;
 		atom = (uint32_t)_atomRefs.size();
 		_atomRefs.emplace_back(atomRef);
 	}
 	else
 	{
-		uint32_t id = _freeAtomSlot;
-		JSAtomRef& valueRef = _atomRefs[id];
+		atom = _freeAtomSlot;
+		JSAtomRef& valueRef = _atomRefs[atom];
 		_freeAtomSlot = valueRef._next;
 		valueRef._next = 0;
 		valueRef._value.Reset(_isolate, str.ToLocalChecked());
 		valueRef._references = 1;
-		atom = id;
 	}
 	_atoms[val] = atom;
 	return atom;
@@ -453,6 +479,7 @@ void JSRuntime::FreeAtom(JSAtom atom)
 	if (id > 0 && id < _atomRefs.size())
 	{
 		JSAtomRef& valueRef = _atomRefs[id];
+		assert(valueRef._references > 0);
 		if (--valueRef._references == 0)
 		{
 			v8::Isolate::Scope isolateScope(_isolate);
@@ -462,7 +489,7 @@ void JSRuntime::FreeAtom(JSAtom atom)
 			_freeAtomSlot = id;
 			v8::Local<v8::String> str = valueRef._value.Get(_isolate);
 			valueRef._value.Reset();
-			--_usedObjectSlot;
+			--_usedAtomSlot;
 			v8::String::Utf8Value str_str(_isolate, str);
 			std::string cstr(*str_str, str_str.length());
 			_atoms.erase(cstr);
@@ -482,7 +509,7 @@ JSClassID JSRuntime::NewClass(JSClassID class_id, const char* class_name, JSGCOb
 	{
 		return 0;
 	}
-	JSClassDef* def = (JSClassDef*)malloc_functions.js_malloc(nullptr, sizeof(JSClassDef));
+	JSClassDef* def = (JSClassDef*)mem_alloc(nullptr, sizeof(JSClassDef));
 
 	def->_classID = class_id;
 	def->_finalizer = finalizer;
