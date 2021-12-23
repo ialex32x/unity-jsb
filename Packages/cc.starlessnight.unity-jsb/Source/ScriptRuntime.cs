@@ -414,6 +414,19 @@ namespace QuickJS
             AddStaticModule("jsb", ScriptContext.Bind);
             // FindModuleResolver<StaticModuleResolver>().Warmup(_mainContext);
 
+#if !JSB_UNITYLESS
+            //TODO may be changed in the future
+            var plover = UnityEngine.Resources.Load<UnityEngine.TextAsset>("plover.js");
+            if (plover != null)
+            {
+                _mainContext.EvalSource(plover.text, "plover.js");
+            }
+            else
+            {
+                _logger?.Write(LogLevel.Error, "failed to load plover.js from Resources");
+            }
+#endif
+
             _isInitialized = true;
             OnInitializing?.Invoke(this);
             OnInitialized?.Invoke(this);

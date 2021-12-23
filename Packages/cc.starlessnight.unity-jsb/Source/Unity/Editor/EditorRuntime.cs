@@ -230,16 +230,6 @@ namespace QuickJS.Unity
             }
             JSScriptFinder.GetInstance().ModuleSourceChanged += OnModuleSourceChanged;
 
-            var plover = Resources.Load<TextAsset>("plover.js");
-            if (plover != null)
-            {
-                runtime.GetMainContext().EvalSource(plover.text, "plover.js");
-            }
-            else
-            {
-                runtime.GetLogger()?.Write(LogLevel.Error, "failed to load plover.js from Resources");
-            }
-
             if (!string.IsNullOrEmpty(_prefs.editorEntryPoint))
             {
                 runtime.EvalMain(_prefs.editorEntryPoint);
