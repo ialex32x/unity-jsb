@@ -9,9 +9,16 @@ static void _SetReturnValue(JSRuntime* runtime, const v8::FunctionCallbackInfo<v
 		break;
 	case JS_TAG_EXCEPTION:
 	{
-		v8::Local<v8::Value> e = runtime->_exception.Get(runtime->_isolate);
-		runtime->_exception.Reset();
-		runtime->_isolate->ThrowException(e);
+		//v8::Local<v8::Value> e = runtime->_exception.Get(runtime->_isolate);
+		//if (!e.IsEmpty())
+		//{
+		//	runtime->_exception.Reset();
+		//	runtime->_isolate->ThrowException(e);
+		//}
+		//else
+		//{
+		//	runtime->_isolate->ThrowError("unexpected exception");
+		//}
 		break;
 	}
 	default:
@@ -660,7 +667,7 @@ JSValue JSContext::Eval(const char* input, size_t input_len, const char* filenam
 		v8::MaybeLocal<v8::Value> maybe_value = script.ToLocalChecked()->Run(context);
 		if (try_catch.HasCaught())
 		{
-			return _runtime->ThrowException(context, try_catch.Exception(), try_catch.StackTrace(context));
+			return _runtime->ThrowException(context, try_catch.Exception());
 		}
 		v8::Local<v8::Value> value;
 		if (maybe_value.ToLocal(&value))
@@ -672,7 +679,7 @@ JSValue JSContext::Eval(const char* input, size_t input_len, const char* filenam
 
 	if (try_catch.HasCaught())
 	{
-		return _runtime->ThrowException(context, try_catch.Exception(), try_catch.StackTrace(context));
+		return _runtime->ThrowException(context, try_catch.Exception());
 	}
 
 	return _runtime->ThrowError(context, "failed to compile");
@@ -696,7 +703,7 @@ JSValue JSContext::CallConstructor(JSValueConst func_obj, int argc, JSValueConst
 			if (!maybe_arg_value.ToLocal(&arg_value))
 			{
 				static char errmsg[256];
-				int errmsg_len = sprintf_s(errmsg, "CallConstructor: translate failed %d:%d:%d", i, argv[i].tag, argv[i].u.ptr);
+				int errmsg_len = sprintf_s(errmsg, "CallConstructor: translate failed %d:%lld:%zd", i, argv[i].tag, argv[i].u.ptr);
 				return _runtime->ThrowError(context, errmsg, errmsg_len);
 			}
 			_args_.push_back(arg_value);
@@ -704,7 +711,7 @@ JSValue JSContext::CallConstructor(JSValueConst func_obj, int argc, JSValueConst
 		v8::MaybeLocal<v8::Value> func_retValues = func_value->CallAsConstructor(context, argc, _args_.data());
 		if (try_catch.HasCaught())
 		{
-			return _runtime->ThrowException(context, try_catch.Exception(), try_catch.StackTrace(context));
+			return _runtime->ThrowException(context, try_catch.Exception());
 		}
 		if (!func_retValues.IsEmpty())
 		{
@@ -734,7 +741,7 @@ JSValue JSContext::Call(JSValueConst func_obj, JSValueConst this_obj, int argc, 
 			if (!maybe_arg_value.ToLocal(&arg_value))
 			{
 				static char errmsg[256];
-				int errmsg_len = sprintf_s(errmsg, "Call: translate failed %d:%d:%d", i, argv[i].tag, argv[i].u.ptr);
+				int errmsg_len = sprintf_s(errmsg, "Call: translate failed %d:%lld:%zd", i, argv[i].tag, argv[i].u.ptr);
 				return _runtime->ThrowError(context, errmsg, errmsg_len);
 			}
 			_args_.push_back(arg_value);
@@ -743,7 +750,7 @@ JSValue JSContext::Call(JSValueConst func_obj, JSValueConst this_obj, int argc, 
 		v8::MaybeLocal<v8::Value> func_retValues = func_value->Call(context, this_val, argc, _args_.data());
 		if (try_catch.HasCaught())
 		{
-			return _runtime->ThrowException(context, try_catch.Exception(), try_catch.StackTrace(context));
+			return _runtime->ThrowException(context, try_catch.Exception());
 		}
 		if (!func_retValues.IsEmpty())
 		{
@@ -763,10 +770,19 @@ static void _JSPromiseResolveCallback(const v8::FunctionCallbackInfo<v8::Value>&
 	v8::Local<v8::Context> context = info.GetIsolate()->GetCurrentContext();
 	v8::Local<v8::Value> value = info.Data();
 	v8::Local<v8::Promise::Resolver> resolver = v8::Local<v8::Promise::Resolver>::Cast(value);
-	v8::Maybe<bool> res = resolver->Resolve(context, info[0]);
-	if (res.IsJust())
+	if (info.Length() > 0)
 	{
-		//res.ToChecked();
+		v8::Maybe<bool> res = resolver->Resolve(context, info[0]);
+		if (res.IsJust())
+		{
+		}
+	}
+	else
+	{
+		v8::Maybe<bool> res = resolver->Resolve(context, v8::Undefined(_isolate));
+		if (res.IsJust())
+		{
+		}
 	}
 }
 
@@ -779,10 +795,20 @@ static void _JSPromiseRejectCallback(const v8::FunctionCallbackInfo<v8::Value>& 
 	v8::Local<v8::Context> context = info.GetIsolate()->GetCurrentContext();
 	v8::Local<v8::Value> value = info.Data();
 	v8::Local<v8::Promise::Resolver> resolver = v8::Local<v8::Promise::Resolver>::Cast(value);
-	v8::Maybe<bool> res = resolver->Reject(context, info[0]);
-	if (res.IsJust())
+	
+	if (info.Length() > 0)
 	{
-		//res.ToChecked();
+		v8::Maybe<bool> res = resolver->Reject(context, info[0]);
+		if (res.IsJust())
+		{
+		}
+	}
+	else
+	{
+		v8::Maybe<bool> res = resolver->Reject(context, v8::Undefined(_isolate));
+		if (res.IsJust())
+		{
+		}
 	}
 }
 

@@ -42,6 +42,7 @@ JS_EXPORT void JS_SetContextOpaque(JSContext* ctx, void* opaque);
 JS_EXPORT JSContext* JS_NewContext(JSRuntime* rt);
 JS_EXPORT void JS_FreeContext(JSContext* ctx);
 JS_EXPORT JSRuntime* JS_GetRuntime(JSContext* ctx);
+JS_EXPORT JSPayloadHeader JSB_FreePayload(JSContext* ctx, JSValue val);
 
 JS_EXPORT JSValue JSB_DupValue(JSContext* ctx, JSValue val);
 JS_EXPORT void JSB_FreeValue(JSContext* ctx, JSValue val);
@@ -131,7 +132,7 @@ JS_EXPORT void JS_ComputeMemoryUsage(JSRuntime* rt, JSMemoryUsage* s);
 
 JS_EXPORT JSValue jsb_construct_bridge_object(JSContext* ctx, JSValue ctor, int32_t object_id);
 
-JS_EXPORT void JS_SymbolTest(JSContext* ctx);
+//JS_EXPORT void JS_SymbolTest(JSContext* ctx);
 
 #ifdef __cplusplus
 }

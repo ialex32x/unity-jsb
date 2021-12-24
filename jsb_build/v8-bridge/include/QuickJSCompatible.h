@@ -172,7 +172,7 @@ typedef struct JSPayloadHeader
 	int32_t value;
 } JSPayloadHeader;
 
-static JSPayloadHeader _null_payload = { .type_id = 0, .value = 0 };
+static JSPayloadHeader EmptyPayload = { .type_id = 0, .value = 0 };
 
 typedef struct JSPayload
 {

@@ -67,12 +67,13 @@ static void _PromiseRejectCallback(v8::PromiseRejectMessage message)
 }
 
 JSRuntime::JSRuntime(JSGCObjectFinalizer* finalizer)
+: _arrayBufferAllocator(v8::ArrayBuffer::Allocator::NewDefaultAllocator())
 {
 	malloc_functions.js_malloc = default_malloc;
 	malloc_functions.js_free = default_free;
 	malloc_functions.js_realloc = default_realloc;
 	malloc_functions.js_malloc_usable_size = default_malloc_usable_size;
-	_arrayBufferAllocator = v8::ArrayBuffer::Allocator::NewDefaultAllocator();
+
 	v8::Isolate::CreateParams create_params;
 	create_params.array_buffer_allocator = _arrayBufferAllocator;
 	_isolate = v8::Isolate::New(create_params);
@@ -107,19 +108,51 @@ JS_BOOL JSRuntime::Release()
 #include "quickjs-atom.h"
 #undef DEF
 
-	JS_BOOL res = _usedAtomSlot == 0 && _usedObjectSlot == 0 ? TRUE : FALSE;
+	// cleanup gc objects
+	{
+		v8::Isolate::Scope isolateScope(_isolate);
+		v8::HandleScope handleScope(_isolate);
+		for (GCObject* gcObject : _gcObjects)
+		{
+			if (gcObject && !gcObject->_obj.IsEmpty())
+			{
+				v8::Local<v8::Object> obj = gcObject->_obj.Get(_isolate);
+				if (obj->InternalFieldCount() == EIFN_FieldCount)
+				{
+					if (void* sv = obj->GetAlignedPointerFromInternalField(EIFN_Payload))
+					{
+						obj->SetAlignedPointerInInternalField(EIFN_Payload, nullptr);
+						if (JSGCObjectFinalizer* finalizer = gcObject->_classDef->_finalizer)
+						{
+							JSPayloadHeader header = *static_cast<JSPayloadHeader*>(sv);
+							finalizer(this, header);
+						}
+						mem_free(nullptr, sv);
+					}
+				}
+				if (gcObject->_value_handle != 0)
+				{
+					JSValueRef& valueRef = _objectRefs[gcObject->_value_handle];
+					valueRef._gc_handle = 0;
+					if (valueRef._references == 0)
+					{
+						--_aliveObjectNum;
+						valueRef._next = _freeObjectSlot;
+						_freeObjectSlot = gcObject->_value_handle;
+					}
+				}
+				gcObject->_obj.Reset();
+				mem_free(nullptr, gcObject);
+			}
+		}
+	}
+
+	JS_BOOL res = _aliveAtomNum == 0 && _aliveObjectNum == 0 ? TRUE : FALSE;
 	_atomRefs.clear();
 	_objectRefs.clear();
 	_atoms.clear();
-	for (auto gcObject : _gcObjects)
-	{
-		if (gcObject)
-		{
-			gcObject->_obj.Reset();
-			mem_free(nullptr, gcObject);
-		}
-	}
 	_gcObjects.clear();
+
 	for (auto pair : _classes)
 	{
 		JSClassDef* def = pair.second;
@@ -134,7 +167,13 @@ JS_BOOL JSRuntime::Release()
 	return res;
 }
 
-size_t JSRuntime::_AddValueInternal(v8::Local<v8::Context> context, v8::Local<v8::Value> val)
+void JSRuntime::ComputeMemoryUsage(JSMemoryUsage* memoryUsage)
+{
+	memoryUsage->obj_count = _aliveObjectNum;
+	memoryUsage->atom_count = _aliveAtomNum;
+}
+
+size_t JSRuntime::_AddValueInternal(v8::Local<v8::Context> context, v8::Local<v8::Value> val, size_t gc_handle)
 {
 	v8::Local<v8::Object> obj;
 
@@ -145,22 +184,31 @@ size_t JSRuntime::_AddValueInternal(v8::Local<v8::Context> context, v8::Local<v8
 		v8::Local<v8::Value> cacheIndex;
 		if (maybe_cacheIndex.ToLocal(&cacheIndex) && cacheIndex->IsInt32())
 		{
-			size_t last_id = (size_t)cacheIndex->ToInt32(context).ToLocalChecked()->Value();
+			size_t last_id = static_cast<size_t>(cacheIndex->ToInt32(context).ToLocalChecked()->Value());
 			JSValueRef& valueRef = _objectRefs[last_id];
 			if (valueRef._next == 0 && valueRef._references > 0 && valueRef._value == val)
 			{
 				++valueRef._references;
 				return last_id;
 			}
+
+			// resurrect
+			if (gc_handle != 0 && valueRef._gc_handle == gc_handle && _gcObjects[valueRef._gc_handle]->_obj == val)
+			{
+				++valueRef._references;
+				//printf("resurrect: JSValue is alive again %zd: %d (should be 1)", last_id, valueRef._references);
+				return last_id;
+			}
 		}
 	}
 
 	size_t id;
-	++_usedObjectSlot;
+	++_aliveObjectNum;
 	if (_freeObjectSlot == 0)
 	{
 		JSValueRef valueRef(_isolate, val);
 		id = _objectRefs.size();
+		valueRef._gc_handle = gc_handle;
 		_objectRefs.emplace_back(valueRef);
 	}
 	else
@@ -171,11 +219,12 @@ size_t JSRuntime::_AddValueInternal(v8::Local<v8::Context> context, v8::Local<v8
 		valueRef._next = 0;
 		valueRef._value.Reset(_isolate, val);
 		valueRef._references = 1;
+		valueRef._gc_handle = gc_handle;
 	}
 
 	if (val->IsObject())
 	{
-		obj->SetPrivate(context, _PrivateCacheIndexKey.Get(_isolate), v8::Int32::New(_isolate, (int32_t)id));
+		obj->SetPrivate(context, _PrivateCacheIndexKey.Get(_isolate), v8::Int32::New(_isolate, static_cast<int32_t>(id)));
 	}
 	return id;
 }
@@ -208,17 +257,29 @@ void JSRuntime::OnGarbadgeCollectCallback(const v8::WeakCallbackInfo<GCObject>& 
 	gcObject->_classDef = nullptr;
 	gcObject->_next = rt->_freeGCObjectSlot;
 	gcObject->_obj.Reset();
-	rt->_freeGCObjectSlot = gcObject->_index;
 
-	void* sv = info.GetInternalField(EIFN_Payload);
-	if (sv)
+	size_t value_handle = gcObject->_value_handle;
+	if (value_handle != 0)
+	{
+		JSValueRef& valueRef = rt->_objectRefs[value_handle];
+		valueRef._gc_handle = 0;
+		--rt->_aliveObjectNum;
+		valueRef._next = rt->_freeObjectSlot;
+		rt->_freeObjectSlot = value_handle;
+		gcObject->_value_handle = 0;
+		//printf("resurrect: gc value removed %zd\n", value_handle);
+	}
+	rt->_freeGCObjectSlot = gcObject->_index;
+	--rt->_aliveGCObjectNum;
+
+	if (void* payload = info.GetInternalField(EIFN_Payload))
 	{
 		if (finalizer)
 		{
-			JSPayloadHeader header = *(JSPayloadHeader*)sv;
+			JSPayloadHeader header = *static_cast<JSPayloadHeader*>(payload);
 			finalizer(rt, header);
 		}
-		rt->mem_free(nullptr, sv);
+		rt->mem_free(nullptr, payload);
 	}
 }
 
@@ -228,7 +289,7 @@ JSValue JSRuntime::AddGCObject(v8::Local<v8::Context> context, v8::Local<v8::Obj
 	if (_freeGCObjectSlot == 0)
 	{
 		size_t index = _gcObjects.size();
-		gcObject = (GCObject*)mem_alloc(nullptr, sizeof(GCObject));
+		gcObject = static_cast<GCObject*>(mem_alloc(nullptr, sizeof(GCObject)));
 		memset(gcObject, 0, sizeof(GCObject));
 		gcObject->_index = index;
 		gcObject->_runtime = this;
@@ -242,11 +303,14 @@ JSValue JSRuntime::AddGCObject(v8::Local<v8::Context> context, v8::Local<v8::Obj
 		gcObject->_next = 0;
 	}
 
+	++_aliveGCObjectNum;
 	gcObject->_classDef = def;
 	gcObject->_next = 0;
 	gcObject->_obj.Reset(_isolate, obj);
 	gcObject->_obj.SetWeak<GCObject>(gcObject, OnGarbadgeCollectCallback, v8::WeakCallbackType::kInternalFields);
-	return AddObject(context, obj);
+	JSValue js_value = JS_MKPTR(JS_TAG_OBJECT, _AddValueInternal(context, obj, gcObject->_index));
+	gcObject->_value_handle = js_value.u.ptr;
+	return js_value;
 }
 
 JSValue JSRuntime::AddValue(v8::Local<v8::Context> context, v8::Local<v8::Value> val)
@@ -297,15 +361,15 @@ JSValue JSRuntime::AddSymbol(v8::Local<v8::Context> context, v8::Local<v8::Symbo
 	return JS_MKPTR(JS_TAG_SYMBOL, _AddValueInternal(context, val));
 }
 
-JSValue JSRuntime::ThrowException(v8::Local<v8::Context> context, v8::Local<v8::Value> exception, v8::MaybeLocal<v8::Value> stack)
+JSValue JSRuntime::ThrowException(v8::Local<v8::Context> context, v8::Local<v8::Value> exception)
 {
-	v8::String::Utf8Value str(_isolate, exception);
-	printf("error: %s\n", *str);
-	if (stack.IsEmpty())
-	{
-		v8::String::Utf8Value stack_str(_isolate, stack.ToLocalChecked());
-		printf("stack: %s\n", *stack_str);
-	}
+	//v8::String::Utf8Value str(_isolate, exception);
+	//printf("error: %s\n", *str);
+	//if (stack.IsEmpty())
+	//{
+	//	v8::String::Utf8Value stack_str(_isolate, stack.ToLocalChecked());
+	//	printf("stack: %s\n", *stack_str);
+	//}
 	_exception.Reset(_isolate, exception);
 	return JS_EXCEPTION;
 }
@@ -316,11 +380,11 @@ JSValue JSRuntime::ThrowError(v8::Local<v8::Context> context, const char* except
 	v8::Local<v8::String> string_;
 	if (maybe_string.ToLocal(&string_))
 	{
-		_exception.Reset(_isolate, v8::Exception::Error(string_));
+		_exception.Reset(_isolate, _isolate->ThrowError(string_));
 	}
 	else
 	{
-		_exception.Reset(_isolate, v8::Exception::Error(v8::String::NewFromUtf8Literal(_isolate, "failed to new error string")));
+		_exception.Reset(_isolate, _isolate->ThrowError("failed to new error string"));
 	}
 	return JS_EXCEPTION;
 }
@@ -331,11 +395,11 @@ JSValue JSRuntime::ThrowTypeError(v8::Local<v8::Context> context, const char* ex
 	v8::Local<v8::String> string_;
 	if (maybe_string.ToLocal(&string_))
 	{
-		_exception.Reset(_isolate, v8::Exception::TypeError(string_));
+		_exception.Reset(_isolate, _isolate->ThrowException(v8::Exception::TypeError(string_)));
 	}
 	else
 	{
-		_exception.Reset(_isolate, v8::Exception::Error(v8::String::NewFromUtf8Literal(_isolate, "failed to new error string")));
+		_exception.Reset(_isolate, _isolate->ThrowError("failed to new error string"));
 	}
 	return JS_EXCEPTION;
 }
@@ -348,6 +412,15 @@ JSValue JSRuntime::DupValue(JSValue value)
 		if (id > 0 && id < _objectRefs.size())
 		{
 			JSValueRef& valueRef = _objectRefs[id];
+			if (valueRef._gc_handle != 0 && valueRef._references == 0)
+			{
+				v8::Isolate::Scope isolateScope(_isolate);
+				v8::HandleScope handleScope(_isolate);
+
+				GCObject* gcObject = _gcObjects[valueRef._gc_handle];
+				valueRef._value.Reset(_isolate, gcObject->_obj.Get(_isolate));
+				//printf("resurrect: JSValue is alive again %zd\n", id);
+			}
 			++valueRef._references;
 		}
 	}
@@ -365,20 +438,42 @@ void JSRuntime::FreeValue(JSValue value)
 			assert(valueRef._references > 0);
 			if (--valueRef._references == 0)
 			{
-				valueRef._next = _freeObjectSlot;
-				_freeObjectSlot = id;
-				//v8::Local<v8::Value> value = valueRef._value.Get(_isolate);
-				//if (value->IsObject())
-				//{
-				//	v8::Local<v8::Object> obj = v8::Local<v8::Object>::Cast(value);
-				//	obj->SetPrivate(context, _PrivateCacheIndexKey.Get(_isolate), v8::Undefined::New(_isolate));
-				//}
 				valueRef._value.Reset();
-				--_usedObjectSlot;
+				if (valueRef._gc_handle == 0)
+				{
+					--_aliveObjectNum;
+					valueRef._next = _freeObjectSlot;
+					_freeObjectSlot = id;
+				}
 			}
 		}
 	}
 }
+
+JSPayloadHeader JSRuntime::FreePayload(JSValue value)
+{
+	if (value.tag == JS_TAG_OBJECT)
+	{
+		v8::MaybeLocal<v8::Value> maybe_local = GetReferencedValue(value.u.ptr);
+		v8::Local<v8::Value> local;
+		if (maybe_local.ToLocal(&local) && local->IsObject())
+		{
+			v8::Local<v8::Object> obj = v8::Local<v8::Object>::Cast(local);
+			if (obj->InternalFieldCount() == EIFN_FieldCount)
+			{
+				if (void* sv = obj->GetAlignedPointerFromInternalField(EIFN_Payload))
+				{
+					obj->SetAlignedPointerInInternalField(EIFN_Payload, nullptr);
+					JSPayloadHeader header = *static_cast<JSPayloadHeader*>(sv);
+					mem_free(nullptr, sv);
+					return header;
+				}
+			}
+		}
+	}
+	return EmptyPayload;
+}
+
 
 v8::MaybeLocal<v8::Value> JSRuntime::GetValue(JSValue val)
 {
@@ -402,7 +497,15 @@ v8::MaybeLocal<v8::Value> JSRuntime::GetReferencedValue(size_t id)
 	if (id > 0 && id < _objectRefs.size())
 	{
 		JSValueRef& valueRef = _objectRefs[id];
-		return valueRef._value.Get(_isolate);
+		if (valueRef._references != 0)
+		{
+			return valueRef._value.Get(_isolate);
+		}
+		if (valueRef._gc_handle != 0)
+		{
+			GCObject* gcObject = _gcObjects[valueRef._gc_handle];
+			return gcObject->_obj.Get(_isolate);
+		}
 	}
 	return {};
 }
@@ -431,12 +534,12 @@ JSAtom JSRuntime::GetAtom(std::string& val)
 	}
 
 	JSAtom atom;
-	_usedAtomSlot++;
+	_aliveAtomNum++;
 	if (_freeAtomSlot == 0)
 	{
 		JSAtomRef atomRef(_isolate, str.ToLocalChecked());
 		atomRef._references = 1;
-		atom = (uint32_t)_atomRefs.size();
+		atom = static_cast<uint32_t>(_atomRefs.size());
 		_atomRefs.emplace_back(atomRef);
 	}
 	else
@@ -478,28 +581,28 @@ void JSRuntime::FreeAtom(JSAtom atom)
 	uint32_t id = atom;
 	if (id > 0 && id < _atomRefs.size())
 	{
-		JSAtomRef& valueRef = _atomRefs[id];
+		JSAtomRef& atomRef = _atomRefs[id];
 		assert(valueRef._references > 0);
-		if (--valueRef._references == 0)
+		if (--atomRef._references == 0)
 		{
 			v8::Isolate::Scope isolateScope(_isolate);
 			v8::HandleScope handleScope(_isolate);
 
-			valueRef._next = _freeAtomSlot;
+			atomRef._next = _freeAtomSlot;
 			_freeAtomSlot = id;
-			v8::Local<v8::String> str = valueRef._value.Get(_isolate);
-			valueRef._value.Reset();
-			--_usedAtomSlot;
+			v8::Local<v8::String> str = atomRef._value.Get(_isolate);
+			atomRef._value.Reset();
+			--_aliveAtomNum;
 			v8::String::Utf8Value str_str(_isolate, str);
-			std::string cstr(*str_str, str_str.length());
-			_atoms.erase(cstr);
+			std::string c_str(*str_str, str_str.length());
+			_atoms.erase(c_str);
 		}
 	}
 }
 
 JSClassID JSRuntime::NewClass(JSClassID class_id, const char* class_name, JSGCObjectFinalizer* finalizer)
 {
-	if (_classes.find(class_id) != _classes.end())
+	if (_classes.contains(class_id))
 	{
 		return 0;
 	}
@@ -509,7 +612,7 @@ JSClassID JSRuntime::NewClass(JSClassID class_id, const char* class_name, JSGCOb
 	{
 		return 0;
 	}
-	JSClassDef* def = (JSClassDef*)mem_alloc(nullptr, sizeof(JSClassDef));
+	JSClassDef* def = static_cast<JSClassDef*>(mem_alloc(nullptr, sizeof(JSClassDef)));
 
 	def->_classID = class_id;
 	def->_finalizer = finalizer;

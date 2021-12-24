@@ -52,7 +52,7 @@ JS_EXPORT JSPayloadHeader jsb_get_payload_header(JSContext* ctx, JSValue val)
     {
         return *sv;
     }
-    return _null_payload;
+    return EmptyPayload;
 }
 
 JS_EXPORT JSPayload* jsb_get_payload(JSContext* ctx, JSValue val)

@@ -20,11 +20,16 @@
 struct JSValueRef
 {
 	size_t _next;
+
+	// when references == 0 and gc_handle == 0, this slot will be recycled
+	// if references == 0 and gc_handle != 0, it's still alive until the object is actually garbage collected by v8.
+	//     * before gc, it's possible to resurrect this JSValue without changing it slot index
 	uint32_t _references;
+	size_t _gc_handle;
 	v8impl::CopyPersistent<v8::Value> _value;
 
 	JSValueRef() = default;
-	JSValueRef(v8::Isolate* isolate, v8::Local<v8::Value> value) : _value(isolate, value), _references(1), _next(0) {}
+	JSValueRef(v8::Isolate* isolate, v8::Local<v8::Value> value) : _value(isolate, value), _references(1), _next(0), _gc_handle(0) {}
 };
 
 struct JSAtomRef
@@ -51,6 +56,10 @@ struct GCObject
 	JSClassDef* _classDef = nullptr;
 	JSRuntime* _runtime = nullptr;
 	v8::Global<v8::Object> _obj; // weak 
+
+	// reference to JSValue
+	// (keep it alive without strong reference before GC)
+	size_t _value_handle;
 };
 
 struct JSRuntime
@@ -73,15 +82,17 @@ public:
 	~JSRuntime();
 
 	JS_BOOL Release();
-
+	void ComputeMemoryUsage(JSMemoryUsage* memoryUsage);
 #pragma region JSValue
-public:
+private:
 	size_t _freeObjectSlot = 0;
-	size_t _usedObjectSlot = 0;
+	size_t _aliveObjectNum = 0;
 	std::vector<JSValueRef> _objectRefs;
 
+public:
 	JSValue DupValue(JSValue value);
 	void FreeValue(JSValue value);
+	JSPayloadHeader FreePayload(JSValue value);
 
 	v8::MaybeLocal<v8::Value> GetReferencedValue(size_t id);
 	v8::MaybeLocal<v8::Value> GetValue(JSValue val);
@@ -94,7 +105,7 @@ public:
 	// register a finalization callback and AddObject at the same time
 	JSValue AddGCObject(v8::Local<v8::Context> context, v8::Local<v8::Object> obj, JSClassDef* def);
 private:
-	size_t _AddValueInternal(v8::Local<v8::Context> context, v8::Local<v8::Value> val);
+	size_t _AddValueInternal(v8::Local<v8::Context> context, v8::Local<v8::Value> val, size_t gc_handle = 0);
 #pragma endregion
 	
 #pragma region Low Level Memory Management
@@ -108,7 +119,7 @@ public:
 #pragma region JSAtom Management
 private:
 	uint32_t _freeAtomSlot = 0;
-	uint32_t _usedAtomSlot = 0;
+	uint32_t _aliveAtomNum = 0;
 	std::vector<JSAtomRef> _atomRefs;
 	std::map<std::string, JSAtom> _atoms;
 
@@ -142,13 +153,14 @@ public:
 #pragma region GCObject Management
 private:
 	size_t _freeGCObjectSlot = 0;
+	size_t _aliveGCObjectNum = 0;
 	std::vector<GCObject*> _gcObjects;
 	static void OnGarbadgeCollectCallback(const v8::WeakCallbackInfo<GCObject>& info);
 public:
 #pragma endregion
 
 #pragma region JSException
-	JSValue ThrowException(v8::Local<v8::Context> context, v8::Local<v8::Value> exception, v8::MaybeLocal<v8::Value> stack);
+	JSValue ThrowException(v8::Local<v8::Context> context, v8::Local<v8::Value> exception);
 	JSValue ThrowError(v8::Local<v8::Context> context, const char* exception, int len = -1);
 	JSValue ThrowTypeError(v8::Local<v8::Context> context, const char* exception, int len = -1);
 
