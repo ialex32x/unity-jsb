@@ -4,11 +4,13 @@
 
 It brings Javascript runtime capability to Unity3D by integrating [QuickJS](https://bellard.org/quickjs/).<br/> 
 
+> **v8 is experimentally supported as an alternative backend (only on Windows x64 for now)**.
+
 > QuickJS is a small and embeddable Javascript engine. It supports the ES2020 specification including modules, asynchronous generators, proxies and BigInt. 
 
 # Features
 * Unity3D coroutines and C# tasks support in JS async function
-* Operator overloading for Vector2/Vector3 etc.
+* Operator overloading for Vector2/Vector3 etc. (only supported by QuickJS)
 * [Javascript hotload](#Hotload) in development
 * Highly integrated with Unity3D
     * JS implemented MonoBehaviour (include Prefab)
@@ -370,7 +372,8 @@ export class MyWidgetTest extends JSXWidgetBridge {
 > It's not supported in a single runtime. You need to use worker.
 
 # Debugger
-> Not supported yet.
+> Not supported yet. 
+> *It'll be supported after v8-integration finished.*
 
 # Referenced libraries
 
