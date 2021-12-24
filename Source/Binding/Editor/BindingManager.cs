@@ -764,6 +764,7 @@ namespace QuickJS.Binding
                     assemblies.Add(parameterAssembly);
                 }
                 assemblies.Add(typeof(Values).Assembly);
+                assemblies.Add(typeof(Native.JSApi).Assembly);
                 assemblies.Add(typeof(Exception).Assembly);
                 using (new CSNamespaceCodeGen(cg, ns))
                 {
@@ -792,6 +793,7 @@ namespace QuickJS.Binding
                     if (result.Errors.HasErrors)
                     {
                         Error(string.Format("failed to compile source [{0} errors]", result.Errors.Count));
+                        Error(source);
                         foreach (var err in result.Errors)
                         {
                             Error(err.ToString());
