@@ -746,12 +746,13 @@ namespace QuickJS.Binding
             return null;
         }
 
+        private ulong _emitSeq = 0;
         public MethodInfo _EmitDelegateMethod(Type returnType, ParameterInfo[] parameters)
         {
             try
             {
                 var cg = new CodeGenerator(this, TypeBindingFlags.Default);
-                var ns = "_Generated" + Guid.NewGuid().ToString().Replace("-", "");
+                var ns = "_Generated" + (_emitSeq++);
                 var className = CodeGenerator.NameOfDelegates;
                 var assemblies = new HashSet<Assembly>();
 
@@ -786,7 +787,8 @@ namespace QuickJS.Binding
                     compilerParameters.GenerateInMemory = true;
                     compilerParameters.TreatWarningsAsErrors = false;
                     compilerParameters.CompilerOptions = "-unsafe";
-                    compilerParameters.OutputAssembly = "_GeneratedJSDelegates";
+                    // compilerParameters.TempFiles = new System.CodeDom.Compiler.TempFileCollection("Temp", false);
+                    compilerParameters.OutputAssembly = "Temp/_Generated_" + Guid.NewGuid().ToString() + ".dll";
                     compilerParameters.ReferencedAssemblies.AddRange((from a in assemblies select a.Location).ToArray());
                     var result = codeDomProvider.CompileAssemblyFromSource(compilerParameters, source);
 
@@ -801,8 +803,19 @@ namespace QuickJS.Binding
                     }
                     else
                     {
-                        var Class = result.CompiledAssembly.GetType(ns + "." + className);
-                        return Class?.GetMethod("_Generated");
+                        if (result.CompiledAssembly.ExportedTypes.Count() == 1)
+                        {
+                            var resultType = result.CompiledAssembly.ExportedTypes.First();
+                            if (resultType.Namespace == ns)
+                            {
+                                return resultType.GetMethod("_Generated");
+                            }
+                            Error("not expected type");
+                        }
+                        else
+                        {
+                            Error("no exported type in compiled assembly");
+                        }
                     }
                 }
                 // UnityEngine.Debug.Log("gen: \n" + cg.cs.Submit());
