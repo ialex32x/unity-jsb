@@ -1,7 +1,7 @@
 #include "JSContext.h"
 #include <cassert>
 
-static void _SetReturnValue(JSRuntime* runtime, const v8::FunctionCallbackInfo<v8::Value>& info, JSValue rval)
+static void _SetReturnValue(v8::Local<v8::Context> context, JSRuntime* runtime, const v8::FunctionCallbackInfo<v8::Value>& info, JSValue rval)
 {
 	switch (rval.tag)
 	{
@@ -32,7 +32,9 @@ static void _SetReturnValue(JSRuntime* runtime, const v8::FunctionCallbackInfo<v
 		}
 		else
 		{
-			runtime->_isolate->ThrowError("failed to translate return value from JSValue");
+			static char errmsg[256];
+			int errmsg_len = sprintf_s(errmsg, "failed to translate return value from JSValue %lld:%zd", rval.tag, rval.u.ptr);
+			runtime->ThrowError(context, errmsg, errmsg_len);
 		}
 		break;
 	}
@@ -59,12 +61,12 @@ static void JSCFunctionConstructorMagicCallback(const v8::FunctionCallbackInfo<v
 	}
 
 	JSValue rval = wrapper->_funcMagic(wrapper->_context, this_obj, argc, argv, wrapper->_magic);
-	runtime->FreeValue(this_obj);
+	_SetReturnValue(context, runtime, info, rval);
 	for (int i = 0; i < argc; i++)
 	{
 		runtime->FreeValue(argv[i]);
 	}
-	_SetReturnValue(runtime, info, rval);
+	runtime->FreeValue(this_obj);
 }
 
 static void JSCFunctionMagicCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -87,12 +89,12 @@ static void JSCFunctionMagicCallback(const v8::FunctionCallbackInfo<v8::Value>& 
 	}
 
 	JSValue rval = wrapper->_funcMagic(wrapper->_context, this_obj, argc, argv, wrapper->_magic);
-	runtime->FreeValue(this_obj);
+	_SetReturnValue(context, runtime, info, rval);
 	for (int i = 0; i < argc; i++)
 	{
 		runtime->FreeValue(argv[i]);
 	}
-	_SetReturnValue(runtime, info, rval);
+	runtime->FreeValue(this_obj);
 }
 
 static void JSCFunctionCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -115,12 +117,12 @@ static void JSCFunctionCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 	}
 
 	JSValue rval = wrapper->_func(wrapper->_context, this_obj, argc, argv);
-	runtime->FreeValue(this_obj);
+	_SetReturnValue(context, runtime, info, rval);
 	for (int i = 0; i < argc; i++)
 	{
 		runtime->FreeValue(argv[i]);
 	}
-	_SetReturnValue(runtime, info, rval);
+	runtime->FreeValue(this_obj);
 }
 
 static void JSCFunctionGetterMagicCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -136,8 +138,8 @@ static void JSCFunctionGetterMagicCallback(const v8::FunctionCallbackInfo<v8::Va
 	JSValue this_obj = runtime->AddObject(context, info.This());
 
 	JSValue rval = wrapper->_getterMagic(wrapper->_context, this_obj, wrapper->_magic);
+	_SetReturnValue(context, runtime, info, rval);
 	runtime->FreeValue(this_obj);
-	_SetReturnValue(runtime, info, rval);
 }
 
 static void JSCFunctionGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -153,8 +155,8 @@ static void JSCFunctionGetterCallback(const v8::FunctionCallbackInfo<v8::Value>&
 	JSValue this_obj = runtime->AddObject(context, info.This());
 
 	JSValue rval = wrapper->_getter(wrapper->_context, this_obj);
+	_SetReturnValue(context, runtime, info, rval);
 	runtime->FreeValue(this_obj);
-	_SetReturnValue(runtime, info, rval);
 }
 
 static void JSCFunctionSetterMagicCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -171,10 +173,9 @@ static void JSCFunctionSetterMagicCallback(const v8::FunctionCallbackInfo<v8::Va
 	JSValue val = info.Length() == 1 ? runtime->AddValue(context, info[0]) : JS_UNDEFINED;
 
 	JSValue rval = wrapper->_setterMagic(wrapper->_context, this_obj, val, wrapper->_magic);
+	_SetReturnValue(context, runtime, info, rval);
 	runtime->FreeValue(this_obj);
 	runtime->FreeValue(val);
-
-	_SetReturnValue(runtime, info, rval);
 }
 
 static void JSCFunctionSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -191,10 +192,9 @@ static void JSCFunctionSetterCallback(const v8::FunctionCallbackInfo<v8::Value>&
 	JSValue val = info.Length() == 1 ? runtime->AddValue(context, info[0]) : JS_UNDEFINED;
 
 	JSValue rval = wrapper->_setter(wrapper->_context, this_obj, val);
+	_SetReturnValue(context, runtime, info, rval);
 	runtime->FreeValue(this_obj);
 	runtime->FreeValue(val);
-
-	_SetReturnValue(runtime, info, rval);
 }
 
 JSContext::JSContext(JSRuntime* runtime)

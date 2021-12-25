@@ -17,6 +17,7 @@ export class ASimpleGuiDialog extends MonoBehaviour {
     }
 }
 
+//TODO constructor is not called when using v8-bridge as backend
 @ScriptType()
 export class MyClass extends MonoBehaviour {
 
@@ -27,6 +28,8 @@ export class MyClass extends MonoBehaviour {
     protected _tick = 0;
 
     Awake() {
+        this.vv = 0;
+        this._tick = 0;
         console.log("MyClass.Awake", this._tick++);
     }
 
@@ -100,6 +103,8 @@ export class RotateBehaviour extends MonoBehaviour {
     }
 
     Awake() {
+        this._rotation = 0;
+        this.rotationSpeed = 50;
         let ps = this.GetComponent(ParticleSystem);
         if (ps) {
             ps.main.simulationSpace = ParticleSystemSimulationSpace.World;
@@ -109,16 +114,24 @@ export class RotateBehaviour extends MonoBehaviour {
 
     Update() {
         this._rotation += this.rotationSpeed * Time.deltaTime;
-        //@ts-ignore
-        let p: Vector3 = Quaternion.Euler(0, this._rotation, 0) * Vector3.right * 5;
-        p.z *= 0.5;
-        this.transform.localPosition = p;
+        if (jsb.isOperatorOverloadingSupported) {
+            //@ts-ignore
+            let p: Vector3 = Quaternion.Euler(0, this._rotation, 0) * Vector3.right * 5;
+
+            p.z *= 0.5;
+            this.transform.localPosition = p;
+        } else {
+
+            let p: Vector3 = Vector3.op_Multiply(Quaternion.op_Multiply(Quaternion.Euler(0, this._rotation, 0), Vector3.right), 5);
+            p.z *= 0.5;
+            this.transform.localPosition = p;
+        }
     }
 }
 
 @ScriptType()
 export class Something5Behaviour extends MonoBehaviour {
-    
+
     @ScriptProperty({ type: "Vector3" })
     pos: Vector3;
 

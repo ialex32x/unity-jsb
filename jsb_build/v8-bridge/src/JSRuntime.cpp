@@ -319,6 +319,10 @@ JSValue JSRuntime::AddValue(v8::Local<v8::Context> context, v8::Local<v8::Value>
 	{
 		return JS_MKINT32(JS_TAG_INT, v8::Local<v8::Int32>::Cast(val)->Value());
 	}
+	if (val->IsNumber())
+	{
+		return JS_MKFLOAT64(JS_TAG_FLOAT64, v8::Local<v8::Number>::Cast(val)->Value());
+	}
 	if (val->IsBoolean())
 	{
 		return JS_MKINT32(JS_TAG_BOOL, v8::Local<v8::Boolean>::Cast(val)->Value());

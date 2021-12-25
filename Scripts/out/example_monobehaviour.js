@@ -34,6 +34,8 @@ let MyClass = class MyClass extends UnityEngine_1.MonoBehaviour {
         this._tick = 0;
     }
     Awake() {
+        this.vv = 0;
+        this._tick = 0;
         console.log("MyClass.Awake", this._tick++);
     }
     async OnEnable() {
@@ -99,13 +101,13 @@ exports.MySubClass = MySubClass;
 let RotateBehaviour = class RotateBehaviour extends UnityEngine_1.MonoBehaviour {
     constructor() {
         super(...arguments);
-        this._rotation = 0;
-        this.rotationSpeed = 50;
     }
     Reset() {
         this._rotation = 0;
     }
     Awake() {
+        this._rotation = 0;
+        this.rotationSpeed = 50;
         let ps = this.GetComponent(UnityEngine_1.ParticleSystem);
         if (ps) {
             ps.main.simulationSpace = UnityEngine_1.ParticleSystemSimulationSpace.World;
@@ -114,10 +116,18 @@ let RotateBehaviour = class RotateBehaviour extends UnityEngine_1.MonoBehaviour 
     }
     Update() {
         this._rotation += this.rotationSpeed * UnityEngine_1.Time.deltaTime;
-        //@ts-ignore
-        let p = UnityEngine_1.Quaternion.Euler(0, this._rotation, 0) * UnityEngine_1.Vector3.right * 5;
-        p.z *= 0.5;
-        this.transform.localPosition = p;
+        if (jsb.isOperatorOverloadingSupported) {
+            //@ts-ignore
+            let p = UnityEngine_1.Quaternion.Euler(0, this._rotation, 0) * UnityEngine_1.Vector3.right * 5;
+
+            p.z *= 0.5;
+            this.transform.localPosition = p;
+        } else {
+
+            let p = UnityEngine_1.Vector3.op_Multiply(UnityEngine_1.Quaternion.op_Multiply(UnityEngine_1.Quaternion.Euler(0, this._rotation, 0), UnityEngine_1.Vector3.right), 5);
+            p.z *= 0.5;
+            this.transform.localPosition = p;
+        }
     }
 };
 __decorate([
