@@ -8,6 +8,7 @@ const UnityEngine_1 = require("UnityEngine");
 const fib_1 = require("./fib");
 console.assert(true, "will not print");
 console.assert(false, "assert!!!");
+print(jsb.engine, jsb.version);
 print(Example_1.DelegateTest);
 print(Example_1.DelegateTest.InnerTest.hello);
 try {

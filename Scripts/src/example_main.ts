@@ -9,6 +9,7 @@ import { fib } from "./fib";
 console.assert(true, "will not print");
 console.assert(false, "assert!!!");
 
+print(jsb.engine, jsb.version);
 print(DelegateTest);
 print(DelegateTest.InnerTest.hello);
 

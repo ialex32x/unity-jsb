@@ -770,6 +770,8 @@ namespace QuickJS
             ns_jsb.AddFunction("Now", _now, 0);
             ns_jsb.AddFunction("IsStaticBinding", _IsStaticBinding, 0);
             ns_jsb.AddConstValue("isOperatorOverloadingSupported", JSApi.IsOperatorOverloadingSupported);
+            ns_jsb.AddConstValue("engine", JSApi.JSBDLL);
+            ns_jsb.AddConstValue("version", JSApi.SO_JSB_VERSION);
             {
                 var ns_hotfix = register.CreateClass("JSBHotfix");
                 ns_hotfix.AddFunction("replace_single", hotfix_replace_single, 2);
