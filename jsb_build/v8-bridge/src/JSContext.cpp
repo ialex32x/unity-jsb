@@ -498,12 +498,7 @@ int JSContext::HasProperty(JSValueConst this_obj, JSAtom prop)
 		if (!pkey.IsEmpty())
 		{
 			v8::Maybe<bool> maybe_res = obj->Has(context, pkey.ToLocalChecked());
-			bool res;
-			if (maybe_res.FromMaybe(&res))
-			{
-				return res ? 1 : 0;
-			}
-			_runtime->ThrowError(context, "failed to call Object::Has()");
+			return maybe_res.FromMaybe(false) ? 1 : 0;
 		}
 		else
 		{
@@ -531,14 +526,9 @@ int JSContext::SetPropertyUint32(JSValueConst this_obj, uint32_t idx, JSValue va
 		if (maybe_pvalue.ToLocal(&pvalue))
 		{
 			v8::Maybe<bool> maybe_res = obj->Set(context, idx, pvalue);
-			bool res;
 
-			if (maybe_res.FromMaybe(&res))
-			{
-				_runtime->FreeValue(val);
-				return res ? 1 : 0;
-			}
-			_runtime->ThrowError(context, "failed to call Object::Has()");
+			_runtime->FreeValue(val);
+			return maybe_res.FromMaybe(false) ? 1 : 0;
 		}
 		else
 		{
@@ -572,14 +562,9 @@ int JSContext::SetPropertyInternal(JSValueConst this_obj, JSAtom prop, JSValue v
 			if (maybe_pvalue.ToLocal(&pvalue))
 			{
 				v8::Maybe<bool> maybe_res = obj->Set(context, key, pvalue);
-				bool res;
-				if (maybe_res.FromMaybe(&res))
-				{
-					_runtime->FreeValue(val);
-					return res ? 1 : 0;
-				}
-				_runtime->ThrowError(context, "failed to call Object::Set()");
-			}
+				_runtime->FreeValue(val);
+				return maybe_res.FromMaybe(false) ? 1 : 0;
+		}
 			else 
 			{
 				_runtime->ThrowError(context, "failed to get value");
