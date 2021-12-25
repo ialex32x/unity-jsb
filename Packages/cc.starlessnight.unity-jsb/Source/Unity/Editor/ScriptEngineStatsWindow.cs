@@ -1,7 +1,6 @@
 #if !JSB_UNITYLESS
 using System;
-using System.IO;
-using System.Text;
+using System.Linq;
 using System.Collections.Generic;
 
 namespace QuickJS.Unity
@@ -11,6 +10,8 @@ namespace QuickJS.Unity
 
     public class ScriptEngineStatsWindow : BaseEditorWindow
     {
+        private static readonly string[] _backends = { "quickjs", "v8-bridge" };
+        private static GUIContent GUIContent_Stats_Operator = new GUIContent("Operator", "Is operator overloading supported?");
         private class Snapshot
         {
             public struct TimerInfo
@@ -320,21 +321,58 @@ namespace QuickJS.Unity
                 {
                     UnityEditor.Compilation.CompilationPipeline.RequestScriptCompilation();
                 }
-                EditorGUI.EndDisabledGroup();
-
-                EditorGUI.BeginDisabledGroup(true);
-                EditorGUILayout.Toggle("IsDebugMode", Native.JSApi.IsDebugMode());
-                EditorGUI.EndDisabledGroup();
-                _autoCap = EditorGUILayout.Toggle("Auto Refresh", _autoCap);
-                EditorGUI.BeginDisabledGroup(!_autoCap);
-                _timeCap = EditorGUILayout.Slider("Interval", _timeCap, 1f, 30f);
-                EditorGUI.EndDisabledGroup();
 
                 if (GUILayout.Button("GC (mono)"))
                 {
                     GC.Collect();
                     GC.WaitForPendingFinalizers();
                 }
+                EditorGUI.EndDisabledGroup();
+            });
+
+            Block("Engine", () =>
+            {
+                EditorGUI.BeginDisabledGroup(EditorApplication.isCompiling);
+                EditorGUILayout.BeginHorizontal();
+                EditorGUILayout.LabelField("Engine");
+                var selectedBackend = Array.IndexOf(_backends, Native.JSApi.JSBDLL);
+                var selectedBackendNew = GUILayout.Toolbar(selectedBackend, _backends);
+                if (selectedBackendNew != selectedBackend)
+                {
+                    if (EditorUtility.DisplayDialog("Switching backend", "You are switching to " + _backends[selectedBackendNew], "Confirm", "Cancel"))
+                    {
+                        var buildTargetGroup = EditorUserBuildSettings.selectedBuildTargetGroup;
+                        var defines = PlayerSettings.GetScriptingDefineSymbolsForGroup(buildTargetGroup).Split(';').ToList();
+                        if (_backends[selectedBackendNew] == "quickjs")
+                        {
+                            if (defines.Remove("JSB_WITH_V8_BACKEND"))
+                            {
+                                PlayerSettings.SetScriptingDefineSymbolsForGroup(buildTargetGroup, string.Join(";", defines));
+                            }
+                        }
+                        else
+                        {
+                            if (!defines.Contains("JSB_WITH_V8_BACKEND"))
+                            {
+                                defines.Add("JSB_WITH_V8_BACKEND");
+                                PlayerSettings.SetScriptingDefineSymbolsForGroup(buildTargetGroup, string.Join(";", defines));
+                            }
+                        }
+                    }
+                }
+                EditorGUILayout.EndHorizontal();
+                EditorGUI.EndDisabledGroup();
+
+                EditorGUI.BeginDisabledGroup(true);
+                EditorGUILayout.IntField("Version", Native.JSApi.SO_JSB_VERSION);
+                EditorGUILayout.Toggle("IsDebugMode", Native.JSApi.IsDebugMode());
+                EditorGUILayout.Toggle(GUIContent_Stats_Operator, Native.JSApi.IsOperatorOverloadingSupported);
+                EditorGUI.EndDisabledGroup();
+
+                _autoCap = EditorGUILayout.Toggle("Auto Refresh", _autoCap);
+                EditorGUI.BeginDisabledGroup(!_autoCap);
+                _timeCap = EditorGUILayout.Slider("Interval", _timeCap, 1f, 30f);
+                EditorGUI.EndDisabledGroup();
 
                 EditorGUI.BeginDisabledGroup(_alive == 0);
                 if (GUILayout.Button("Capture"))
