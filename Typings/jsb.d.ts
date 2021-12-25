@@ -154,6 +154,16 @@ declare module "jsb" {
     let isOperatorOverloadingSupported: boolean;
 
     /**
+     * indicates what backend engine is used
+     */
+    let engine: string;
+
+    /**
+     * version of jsb dll
+     */
+    let version: number;
+
+    /**
      * 即 Thread.Sleep()
      */
     function Sleep(millisecondsTimeout?: number): void

@@ -76,7 +76,7 @@ namespace QuickJS.Native
     public partial class JSApi
     {
         private const int CS_JSB_VERSION = 0xa; // expected dll version
-        private static readonly int SO_JSB_VERSION; // actual dll version
+        public static readonly int SO_JSB_VERSION; // actual dll version
 
 #if JSB_NO_BIGNUM || (UNITY_WSA && !UNITY_EDITOR) || JSB_WITH_V8_BACKEND
         public const bool IsOperatorOverloadingSupported = false;
@@ -88,9 +88,9 @@ namespace QuickJS.Native
 	    const string JSBDLL = "__Internal";
 #else
 #if JSB_WITH_V8_BACKEND
-        const string JSBDLL = "v8-bridge";
+        public const string JSBDLL = "v8-bridge";
 #else
-        const string JSBDLL = "quickjs";
+        public const string JSBDLL = "quickjs";
 #endif
 #endif
 
