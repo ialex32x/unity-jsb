@@ -339,7 +339,7 @@ namespace QuickJS.Unity
                 var selectedBackendNew = GUILayout.Toolbar(selectedBackend, _backends);
                 if (selectedBackendNew != selectedBackend)
                 {
-                    if (EditorUtility.DisplayDialog("Switching backend", "You are switching to " + _backends[selectedBackendNew], "Confirm", "Cancel"))
+                    if (EditorUtility.DisplayDialog("Switching backend", "Are you sure to switch to " + _backends[selectedBackendNew] + "?", "Confirm", "Cancel"))
                     {
                         var buildTargetGroup = EditorUserBuildSettings.selectedBuildTargetGroup;
                         var defines = PlayerSettings.GetScriptingDefineSymbolsForGroup(buildTargetGroup).Split(';').ToList();
@@ -361,6 +361,10 @@ namespace QuickJS.Unity
                     }
                 }
                 EditorGUILayout.EndHorizontal();
+                if (_backends[selectedBackendNew] != "quickjs")
+                {
+                    EditorGUILayout.HelpBox("v8-bridge is still in experimental stage, the stability and the performance are unsure.", MessageType.Warning);
+                }
                 EditorGUI.EndDisabledGroup();
 
                 EditorGUI.BeginDisabledGroup(true);
