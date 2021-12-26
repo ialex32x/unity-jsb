@@ -8,7 +8,8 @@ namespace Example
     /// <summary>
     /// If the lifetime of C# object could be fully controlled by JS, it could be mark as disposable at runtime.
     /// Or marking this type by SetDisposable in CustomBinding.
-    /// objects/types marked by disposable will be automatically disposed when it's corresponding JSValue being finalized
+    /// objects/types marked by disposable will be automatically disposed when it's corresponding JSValue being finalized <br/>
+    /// ** It's possible called after the script runtime being released when using v8-bridge as backend ** <br/>
     /// <example>
     ///     : in typescript/javascript
     ///     <code>

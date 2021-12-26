@@ -102,7 +102,7 @@ namespace QuickJS.Binding
                     return false;
                 }
 
-                return Values.js_match_parameters_vararg(ctx, argv, _inputParameters);
+                return Values.js_match_parameters_vararg(ctx, argc, argv, _inputParameters);
             }
             else
             {

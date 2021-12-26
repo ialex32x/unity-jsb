@@ -975,7 +975,6 @@ namespace QuickJS
             _isRunning = false;
 
             _timerManager.Destroy();
-            _objectCache.Destroy();
             _typeDB.Destroy();
             GC.Collect();
             GC.WaitForPendingFinalizers();
@@ -1011,6 +1010,7 @@ namespace QuickJS
             {
                 _logger?.Write(LogLevel.Assert, "gc object leaks");
             }
+            _objectCache.Destroy();
             var id = _runtimeId;
             _runtimeId = -1;
             _rt = JSRuntime.Null;
