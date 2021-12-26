@@ -269,9 +269,13 @@ namespace QuickJS.Binding
             return true;
         }
 
-        public static bool js_match_parameters_vararg(JSContext ctx, JSValue[] argv, ParameterInfo[] parameterInfos)
+        public static bool js_match_parameters_vararg(JSContext ctx, int argc, JSValue[] argv, ParameterInfo[] parameterInfos)
         {
             var size = parameterInfos.Length - 1;
+            if (argc < size)
+            {
+                return false;
+            }
             for (var i = 0; i < size; i++)
             {
                 var parameterInfo = parameterInfos[i];
@@ -293,7 +297,7 @@ namespace QuickJS.Binding
             }
 
             var varArgType = parameterInfos[size].ParameterType.GetElementType();
-            for (var i = size; i < argv.Length; i++)
+            for (var i = size; i < argc; i++)
             {
                 if (!js_match_type(ctx, argv[i], varArgType))
                 {
