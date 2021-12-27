@@ -976,6 +976,9 @@ namespace QuickJS
 
             _timerManager.Destroy();
             _typeDB.Destroy();
+#if !JSB_WITH_V8_BACKEND
+            _objectCache.Destroy();
+#endif
             GC.Collect();
             GC.WaitForPendingFinalizers();
             ExecutePendingActions();
