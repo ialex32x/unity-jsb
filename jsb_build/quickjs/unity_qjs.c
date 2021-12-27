@@ -206,7 +206,6 @@ static void _JSBClass_Finalizer(JSRuntime* rt, JSValue obj)
         {
             rt_payload->finalizer(rt, header);
         }
-        return header;
     }
 }
 
