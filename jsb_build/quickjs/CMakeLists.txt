@@ -93,6 +93,7 @@ else ()
     endif ()
 endif ()
 
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -s")
 if (CONFIG_LTO)
     add_definitions(-DCONFIG_LTO)
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -O2 -flto")
