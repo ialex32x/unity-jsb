@@ -85,7 +85,11 @@ else ()
         ${QJS_DIR}/../unity_qjs.c
     )
     
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fPIC -shared -Wall -Wno-array-bounds -Wno-format-truncation")
+    if (APPLE)
+        set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fPIC -Wall -Wno-array-bounds -Wno-format-truncation")
+    else ()
+        set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fPIC -shared -Wall -Wno-array-bounds -Wno-format-truncation")
+    endif ()
 endif ()
 
 if (CONFIG_LTO)
@@ -99,7 +103,7 @@ if (CONFIG_WIN32)
         -D__USE_MINGW_ANSI_STDIO
     )
 else ()
-    set(LDFLAGS "${LDFLAGS} -rdynamic")
+    # set(LDFLAGS "${LDFLAGS} -rdynamic")
 endif ()
 
 add_definitions(
@@ -122,16 +126,16 @@ if (APPLE)
         set(IOS_PLATFORM OS64)
         set(ENABLE_BITCODE 1)
         add_library(quickjs STATIC ${QJS_SRCS})
-        set_xcode_property (quickjs IPHONEOS_DEPLOYMENT_TARGET "8.0" "all")
+        set_xcode_property(quickjs IPHONEOS_DEPLOYMENT_TARGET "9.0" "all")
     else ()
+        set(CMAKE_OSX_ARCHITECTURES "$(ARCHS_STANDARD)")
         set(CMAKE_MODULE_LINKER_FLAGS "${CMAKE_MODULE_LINKER_FLAGS} ${LDFLAGS}")
         add_library(quickjs MODULE ${QJS_SRCS})
-        set(CMAKE_OSX_ARCHITECTURES "arm64;x86_64")
         set_target_properties(quickjs PROPERTIES MACOSX_BUNDLE TRUE)
         set_target_properties(quickjs PROPERTIES BUNDLE TRUE)
     endif ()
 else () # WINDOWS ANDROID LINUX
-    set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} ${LDFLAGS}")
+    set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} ${LDFLAGS} -rdynamic")
     add_library(quickjs SHARED ${QJS_SRCS})
 endif ()
 

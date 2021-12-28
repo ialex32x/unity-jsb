@@ -236,6 +236,7 @@ JS_EXPORT int JSB_FreeRuntime(JSRuntime* rt)
     void* payload = JS_GetRuntimeOpaque(rt);
     if (payload)
     {
+        JS_SetRuntimeOpaque(rt, 0);
         js_free_rt(rt, payload);
     }
     return JS_FreeRuntime(rt);
