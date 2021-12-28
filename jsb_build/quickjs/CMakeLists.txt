@@ -97,6 +97,8 @@ if (CONFIG_LTO)
     add_definitions(-DCONFIG_LTO)
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -O3 -flto")
     set(LDFLAGS "${LDFLAGS} ${CMAKE_C_FLAGS} -g")
+else ()
+    set(LDFLAGS "${LDFLAGS} ${CMAKE_C_FLAGS}")
 endif ()
 
 if (CONFIG_WIN32)
