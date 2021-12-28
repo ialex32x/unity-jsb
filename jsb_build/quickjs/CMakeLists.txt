@@ -63,6 +63,7 @@ else ()
         set(QJS_LIBS -lm -static-libgcc -static-libstdc++ -Wl,-Bstatic -lstdc++ -lpthread -Wl,-Bdynamic)
     else ()
         set(QJS_LIBS -lm -ldl)
+        set(LDFLAGS "${LDFLAGS} -rdynamic")
     endif ()
 
     if (JSB_DEBUG)
@@ -102,8 +103,6 @@ if (CONFIG_WIN32)
     add_definitions(
         -D__USE_MINGW_ANSI_STDIO
     )
-else ()
-    # set(LDFLAGS "${LDFLAGS} -rdynamic")
 endif ()
 
 add_definitions(
@@ -135,7 +134,7 @@ if (APPLE)
         set_target_properties(quickjs PROPERTIES BUNDLE TRUE)
     endif ()
 else () # WINDOWS ANDROID LINUX
-    set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} ${LDFLAGS} -rdynamic")
+    set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} ${LDFLAGS}")
     add_library(quickjs SHARED ${QJS_SRCS})
 endif ()
 
