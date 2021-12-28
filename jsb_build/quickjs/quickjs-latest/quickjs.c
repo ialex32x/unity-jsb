@@ -78,8 +78,8 @@
 #define CONFIG_STACK_CHECK
 #endif
 
-#if defined(JSB_DEF_LOG2)
-static double log2(double v) { return log(v) / log(2.0); }
+#if defined(__ANDROID__)
+static double __log2(double v) { return log(v) / log(2.0); }
 #endif
 
 /* dump object free */
@@ -41972,7 +41972,11 @@ static const JSCFunctionListEntry js_math_funcs[] = {
     JS_CFUNC_SPECIAL_DEF("atanh", 1, f_f, atanh ),
     JS_CFUNC_SPECIAL_DEF("expm1", 1, f_f, expm1 ),
     JS_CFUNC_SPECIAL_DEF("log1p", 1, f_f, log1p ),
+#if defined(__ANDROID__)
+    JS_CFUNC_SPECIAL_DEF("log2", 1, f_f, __log2 ),
+#else 
     JS_CFUNC_SPECIAL_DEF("log2", 1, f_f, log2 ),
+#endif
     JS_CFUNC_SPECIAL_DEF("log10", 1, f_f, log10 ),
     JS_CFUNC_SPECIAL_DEF("cbrt", 1, f_f, cbrt ),
     JS_CFUNC_DEF("hypot", 2, js_math_hypot ),
