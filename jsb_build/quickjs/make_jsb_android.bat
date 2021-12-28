@@ -1,7 +1,7 @@
 @echo off
 
 if not defined ANDROID_NDK (
-    set ANDROID_NDK=E:/android-ndk-r15c
+    set ANDROID_NDK=C:/android-ndk-r15c
 )
 set BASE_PATH=%~dp0
 set BUILD_PATH=%~dp0..\out\quickjs
