@@ -1081,56 +1081,6 @@ void JS_ComputeMemoryUsage(JSRuntime* rt, JSMemoryUsage* s)
 	rt->ComputeMemoryUsage(s);
 }
 
-JSValue jsb_construct_bridge_object(JSContext* ctx, JSValue ctor, int32_t object_id)
-{
-	JSValue proto = JS_GetProperty(ctx, ctor, JSB_ATOM_prototype());
-	JSValue obj = JS_NewObjectProtoClass(ctx, proto, JSB_GetBridgeClassID());
-	JSB_FreeValue(ctx, proto);
-	if (!JS_IsException(obj))
-	{
-		JSPayload* sv = static_cast<JSPayload*>(js_malloc(ctx, sizeof(JSPayloadHeader)));
-		sv->header.type_id = JS_BO_OBJECT;
-		sv->header.value = object_id;
-		JSB_SetOpaque(ctx, obj, sv);
-	}
-	return obj;
-}
-
-//void JS_SymbolTest(JSContext* ctx)
-//{
-//	v8::Isolate::Scope isolateScope(ctx->GetIsolate());
-//	v8::HandleScope handleScope(ctx->GetIsolate());
-//	v8::Context::Scope contextScope(ctx->Get());
-//
-//	v8::Local<v8::Symbol> s = v8::Symbol::New(ctx->GetIsolate(), v8::String::NewFromUtf8Literal(ctx->GetIsolate(), "test"));
-//	v8::String::Utf8Value utf8(ctx->GetIsolate(), s->Description());
-//	printf("symbol: %s\n", *utf8);
-//
-//	v8::Local<v8::Object> o1 = v8::Object::New(ctx->GetIsolate());
-//	v8::Local<v8::Object> o2 = v8::Object::New(ctx->GetIsolate());
-//	JSValue v1a = ctx->_runtime->AddValue(ctx->Get(), o1);
-//	JSValue v1b = ctx->_runtime->AddValue(ctx->Get(), o1);
-//	JSValue v2a = ctx->_runtime->AddValue(ctx->Get(), o2);
-//	printf("v1a %lld\n", v1a.u.ptr);
-//	printf("v1b %lld\n", v1b.u.ptr);
-//	printf("v2a %lld\n", v2a.u.ptr);
-//	printf("assert %d\n", v1a.tag == v1b.tag && v1a.u.ptr == v1b.u.ptr);
-//	JS_FreeValue(ctx, v1a);
-//	printf("v1a.free check %s\n", ctx->_runtime->GetReferencedValue(v1a.u.ptr).IsEmpty() ? "yes" : "no");
-//	printf("v1b.free check %s\n", ctx->_runtime->GetReferencedValue(v1b.u.ptr).IsEmpty() ? "yes" : "no");
-//	printf("v2a.free check %s\n", ctx->_runtime->GetReferencedValue(v2a.u.ptr).IsEmpty() ? "yes" : "no");
-//	JS_FreeValue(ctx, v1b);
-//	JS_FreeValue(ctx, v2a);
-//	printf("v1a.free check %s\n", ctx->_runtime->GetReferencedValue(v1a.u.ptr).IsEmpty() ? "yes" : "no");
-//	printf("v1b.free check %s\n", ctx->_runtime->GetReferencedValue(v1b.u.ptr).IsEmpty() ? "yes" : "no");
-//	printf("v2a.free check %s\n", ctx->_runtime->GetReferencedValue(v2a.u.ptr).IsEmpty() ? "yes" : "no");
-//
-//	JSValue v1a2 = ctx->_runtime->AddValue(ctx->Get(), o1);
-//	printf("v1a2 %lld\n", v1a2.u.ptr);
-//	JS_FreeValue(ctx, v1a2);
-//	printf("v1a2.free check %s\n", ctx->_runtime->GetReferencedValue(v1a2.u.ptr).IsEmpty() ? "yes" : "no");
-//}
-
 #ifdef __cplusplus
 }
 #endif

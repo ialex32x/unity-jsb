@@ -604,6 +604,11 @@ void JSRuntime::FreeAtom(JSAtom atom)
 	}
 }
 
+//static void _FunctionCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+//{
+//	printf("!!!!!!!!! _FunctionCallback\n");
+//}
+
 JSClassID JSRuntime::NewClass(JSClassID class_id, const char* class_name, JSGCObjectFinalizer* finalizer)
 {
 	if (_classes.contains(class_id))
@@ -621,7 +626,7 @@ JSClassID JSRuntime::NewClass(JSClassID class_id, const char* class_name, JSGCOb
 	def->_classID = class_id;
 	def->_finalizer = finalizer;
 	memset(&(def->_class), 0, sizeof(v8::Global<v8::FunctionTemplate>));
-	v8::Local<v8::FunctionTemplate> func_template = v8::FunctionTemplate::New(_isolate);
+	v8::Local<v8::FunctionTemplate> func_template = v8::FunctionTemplate::New(_isolate/*, _FunctionCallback*/);
 	func_template->InstanceTemplate()->SetInternalFieldCount(EIFN_FieldCount);
 	func_template->SetClassName(className.ToLocalChecked());
 	def->_class.Reset(_isolate, func_template);

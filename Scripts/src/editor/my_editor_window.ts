@@ -3,6 +3,7 @@ import { EditorWindow, EditorGUILayout, MessageType, SceneView, Handles, Generic
 import { FocusType, GUIContent, GUILayout, GUIUtility, Rect, Event, GUIStyle, GUI, Vector2, GUILayoutUtility, EventType, Vector3, Quaternion, Resources, ScriptableObject, Object, Color } from "UnityEngine";
 import { ScriptEditorWindow } from "plover/editor/editor_decorators";
 import { ScriptInteger, ScriptProperty, ScriptString } from "plover/runtime/class_decorators";
+import * as jsb from "jsb";
 
 class TempWindow extends EditorWindow {
     private _greeting = false;
@@ -192,12 +193,18 @@ export class MyEditorWindow extends EditorWindow {
         let rotMinute = Quaternion.Euler(0, 0, 360 * this._lastMinute / 60 + 180);
         let lastHandlesColor = Handles.color;
         Handles.color = Color.white;
-        //@ts-ignore
-        Handles.DrawLine(center, center + rotSecond * new Vector3(0, 90, 0));
-        //@ts-ignore
-        Handles.DrawLine(center, center + rotMinute * new Vector3(0, 75, 0));
-        //@ts-ignore
-        Handles.DrawLine(center, center + rotHour * new Vector3(0, 60, 0));
+        if (jsb.isOperatorOverloadingSupported) {
+            //@ts-ignore
+            Handles.DrawLine(center, center + rotSecond * new Vector3(0, 90, 0));
+            //@ts-ignore
+            Handles.DrawLine(center, center + rotMinute * new Vector3(0, 75, 0));
+            //@ts-ignore
+            Handles.DrawLine(center, center + rotHour * new Vector3(0, 60, 0));
+        } else {
+            Handles.DrawLine(center, Vector3.op_Addition(center, Quaternion.op_Multiply(rotSecond, new Vector3(0, 90, 0))));
+            Handles.DrawLine(center, Vector3.op_Addition(center, Quaternion.op_Multiply(rotMinute, new Vector3(0, 75, 0))));
+            Handles.DrawLine(center, Vector3.op_Addition(center, Quaternion.op_Multiply(rotHour, new Vector3(0, 60, 0))));
+        }
         Handles.DrawWireDisc(center, Vector3.back, 100);
         Handles.color = lastHandlesColor;
 

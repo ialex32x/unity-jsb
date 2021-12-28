@@ -130,9 +130,11 @@ JS_EXPORT int JS_ExecutePendingJob(JSRuntime* rt, JSContext** pctx);
 JS_EXPORT void JS_SetInterruptHandler(JSRuntime* rt, JSInterruptHandler* cb, IntPtr opaque);
 JS_EXPORT void JS_ComputeMemoryUsage(JSRuntime* rt, JSMemoryUsage* s);
 
-JS_EXPORT JSValue jsb_construct_bridge_object(JSContext* ctx, JSValue ctor, int32_t object_id);
-
-//JS_EXPORT void JS_SymbolTest(JSContext* ctx);
+// declaration only for local test
+#if defined(JSB_EXEC_TEST)
+JS_EXPORT JSValue JSB_NewBridgeClassObject(JSContext* ctx, JSValue new_target, int32_t object_id/*, int32_t type_id = JS_BO_OBJECT */);
+JS_EXPORT JSValue jsb_construct_bridge_object(JSContext* ctx, JSValue proto, int32_t object_id);
+#endif
 
 #ifdef __cplusplus
 }

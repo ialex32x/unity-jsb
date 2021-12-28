@@ -1,6 +1,32 @@
 #include "JSContext.h"
 #include <cassert>
 
+#if defined(JSB_EXEC_TEST)
+static void _print(const v8::FunctionCallbackInfo<v8::Value>& args)
+{
+	bool first = true;
+	for (int i = 0; i < args.Length(); i++)
+	{
+		v8::HandleScope handle_scope(args.GetIsolate());
+		v8::String::Utf8Value str(args.GetIsolate(), args[i]);
+		if (str.length() > 0)
+		{
+			if (first)
+			{
+				first = false;
+			}
+			else
+			{
+				printf(" ");
+			}
+			printf("%s", *str);
+		}
+	}
+	printf("\n");
+	fflush(stdout);
+}
+#endif
+
 static void _SetReturnValue(v8::Local<v8::Context> context, JSRuntime* runtime, const v8::FunctionCallbackInfo<v8::Value>& info, JSValue rval)
 {
 	switch (rval.tag)
@@ -207,6 +233,10 @@ JSContext::JSContext(JSRuntime* runtime)
 	_context.Reset(_runtime->_isolate, context); // = v8::UniquePersistent<v8::Context>(_runtime->_isolate, context);
 
 	v8::Local<v8::Object> global = context->Global();
+
+#if defined(JSB_EXEC_TEST)
+	global->Set(context, v8::String::NewFromUtf8Literal(_runtime->_isolate, "print"), v8::Function::New(context, _print).ToLocalChecked()).Check();
+#endif
 	_global = _runtime->AddObject(context, global);
 	_emptyString = _runtime->AddString(context, v8::String::NewFromUtf8Literal(_runtime->_isolate, ""));
 }
@@ -283,10 +313,11 @@ JSValue JSContext::NewObject()
 
 JSValue JSContext::NewObjectProtoClass(v8::Local<v8::Object> new_target, JSClassDef* classDef)
 {
+	v8::Isolate* isolate = GetIsolate();
 	v8::Local<v8::Context> context = Get();
 	v8::Context::Scope contextScope(context);
-	v8::Local<v8::FunctionTemplate> _class = classDef->_class.Get(GetIsolate());
-	
+	v8::Local<v8::FunctionTemplate> _class = classDef->_class.Get(isolate);
+
 	v8::Local<v8::Object> prototype = new_target;
 	v8::Local<v8::Object> instance = _class->GetFunction(context).ToLocalChecked()->NewInstance(context).ToLocalChecked();
 	instance->SetPrototype(context, prototype).Check();
@@ -437,7 +468,7 @@ JSValue JSContext::GetPropertyStr(JSValueConst this_obj, const char* prop)
 
 JSValue JSContext::GetProperty(JSValueConst this_obj, JSAtom prop)
 {
-	return GetPropertyInternal(this_obj, prop, this_obj, 0);
+	return GetPropertyInternal(this_obj, prop, this_obj, FALSE);
 }
 
 JSValue JSContext::GetPropertyUint32(JSValueConst this_obj, uint32_t idx)
@@ -478,7 +509,11 @@ JSValue JSContext::GetPropertyInternal(JSValueConst this_obj, JSAtom prop, JSVal
 			{
 				return _runtime->AddValue(context, res);
 			}
-			return _runtime->ThrowError(context, "failed to call Object::Has()");
+			if (throw_ref_error)
+			{
+				return _runtime->ThrowError(context, "failed to call Object::Has()");
+			}
+			return JS_UNDEFINED;
 		}
 		return _runtime->ThrowError(context, "GetPropertyInternal: no such JSAtom");
 	}
