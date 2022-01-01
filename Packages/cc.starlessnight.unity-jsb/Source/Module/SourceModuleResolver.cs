@@ -117,8 +117,9 @@ namespace QuickJS.Module
                 return ctx.ThrowInternalError(LoadModuleTypeError);
             }
 
+            var filename = fileSystem.GetFullPath(resolved_id) ?? resolved_id;
             JSApi.JS_SetProperty(ctx, module_obj, context.GetAtom("loaded"), JSApi.JS_NewBool(ctx, false));
-            return context.LoadModuleFromSource(source, resolved_id, module_obj);
+            return context.LoadModuleFromSource(source, resolved_id, filename, module_obj);
         }
 
         public override JSValue LoadModule(ScriptContext context, string parent_module_id, string resolved_id, bool set_as_main)
@@ -155,7 +156,7 @@ namespace QuickJS.Module
             exports_obj = JSApi.JS_NewObject(ctx); 
             module_obj = context._new_commonjs_script_module(parent_module_id, resolved_id, filename, exports_obj, false, set_as_main);
             JSApi.JS_FreeValue(ctx, exports_obj);
-            return context.LoadModuleFromSource(source, resolved_id, module_obj);
+            return context.LoadModuleFromSource(source, resolved_id, filename, module_obj);
         }
     }
 }
