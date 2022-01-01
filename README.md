@@ -4,14 +4,15 @@
 
 It brings Javascript runtime capability to Unity3D by integrating [QuickJS](https://bellard.org/quickjs/).<br/> 
 
-> **v8 is experimentally supported as an alternative backend (only on Windows x64 for now)**.
+> **v8 is experimentally supported as an alternative backend (only on Windows x64 for now)**
+> [Debugger is supported when using v8 backend.](#debugger)
 
 > QuickJS is a small and embeddable Javascript engine. It supports the ES2020 specification including modules, asynchronous generators, proxies and BigInt. 
 
 # Features
 * Unity3D coroutines and C# tasks support in JS async function
 * Operator overloading for Vector2/Vector3 etc. (only supported by QuickJS)
-* [Javascript hotload](#Hotload) in development
+* [Javascript hotload](#hotload) in development
 * Highly integrated with Unity3D
     * JS implemented MonoBehaviour (include Prefab)
     * JS implemented EditorWindow
@@ -372,8 +373,11 @@ export class MyWidgetTest extends JSXWidgetBridge {
 > It's not supported in a single runtime. You need to use worker.
 
 # Debugger
-> Not supported yet. 
-> *It'll be supported after v8-integration finished.*
+Remote debugging is now available with Chrome DevTools.
+
+> NOTE: *It's still in experimental stage.*
+
+![v8_debugger](jsb_build/res/debug_with_devtools.png)
 
 # Referenced libraries
 
