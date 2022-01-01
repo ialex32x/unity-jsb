@@ -790,14 +790,14 @@ namespace QuickJS.Native
         // [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
         // private static extern JSClassID JSB_NewClass(JSRuntime rt, JSClassID class_id, [MarshalAs(UnmanagedType.LPStr)] string class_name, IntPtr finalizer);
 
-//         public static JSClassID JS_NewClass(JSRuntime rt, JSClassFinalizer class_finalizer)
-//         {
-// #if JSB_UNITYLESS || (UNITY_WSA && !UNITY_EDITOR)
-//             GCHandle.Alloc(class_finalizer);
-// #endif
-//             var fn_ptr = Marshal.GetFunctionPointerForDelegate(class_finalizer);
-//             return JSApi.JSB_NewClass(rt, JSApi.JSB_GetBridgeClassID(), "CSharpClass", fn_ptr);
-//         }
+        //         public static JSClassID JS_NewClass(JSRuntime rt, JSClassFinalizer class_finalizer)
+        //         {
+        // #if JSB_UNITYLESS || (UNITY_WSA && !UNITY_EDITOR)
+        //             GCHandle.Alloc(class_finalizer);
+        // #endif
+        //             var fn_ptr = Marshal.GetFunctionPointerForDelegate(class_finalizer);
+        //             return JSApi.JSB_NewClass(rt, JSApi.JSB_GetBridgeClassID(), "CSharpClass", fn_ptr);
+        //         }
 
         #endregion
 
@@ -839,6 +839,29 @@ namespace QuickJS.Native
 
         #region diagnostics
 
+#if JSB_WITH_V8_BACKEND
+#if UNITY_EDITOR_WIN || UNITY_STANDALONE_WIN || JSB_UNITYLESS || (UNITY_WSA && !UNITY_EDITOR)
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+#endif
+        public delegate void JSLogCFunction(int level, [MarshalAs(UnmanagedType.LPStr)] string line);
+
+        [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern unsafe void JS_OpenDebugger(JSContext ctx, int port);
+        [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern unsafe JS_BOOL JS_IsDebuggerOpen(JSContext ctx);
+        [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern unsafe void JS_CloseDebugger(JSContext ctx);
+        [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
+        private static extern unsafe void JS_SetLogFunc(JSContext ctx, IntPtr func);
+        public static void JS_SetLogFunc(JSContext ctx, JSLogCFunction func)
+        {
+#if JSB_UNITYLESS || (UNITY_WSA && !UNITY_EDITOR)
+            GCHandle.Alloc(cb);
+#endif
+            var fn = Marshal.GetFunctionPointerForDelegate(func);
+            JS_SetLogFunc(ctx, fn);
+        }
+#endif
         [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern unsafe void JS_ComputeMemoryUsage(JSRuntime rt, JSMemoryUsage* s);
 
@@ -853,7 +876,7 @@ namespace QuickJS.Native
             var fn = Marshal.GetFunctionPointerForDelegate(cb);
             JS_SetInterruptHandler(rt, fn, opaque);
         }
-        #endregion 
-        
+        #endregion
+
     }
 }
