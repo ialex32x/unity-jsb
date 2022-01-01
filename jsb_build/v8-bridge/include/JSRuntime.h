@@ -83,6 +83,9 @@ public:
 
 	JS_BOOL Release();
 	void ComputeMemoryUsage(JSMemoryUsage* memoryUsage);
+
+	JSContext* _context;
+	void SetContext(JSContext* context);
 #pragma region JSValue
 private:
 	size_t _freeObjectSlot = 0;

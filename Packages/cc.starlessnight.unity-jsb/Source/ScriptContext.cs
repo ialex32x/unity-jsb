@@ -65,12 +65,12 @@ namespace QuickJS
             _contextId = contextId;
             _ctx = JSApi.JS_NewContext(_runtime);
 #if JSB_WITH_V8_BACKEND
+            JSApi.JS_SetLogFunc(_ctx, _JSLog);
             //TODO just testing
             JSApi.JS_OpenDebugger(_ctx, 9229);
 #if !JSB_UNITYLESS
             UnityEngine.Debug.LogWarningFormat("[EXPERIMENTAL] debugger is now available with this URL (Windows x64 only): devtools://devtools/bundled/inspector.html?v8only=true&ws=127.0.0.1:9229/1");
 #endif
-            JSApi.JS_SetLogFunc(_ctx, _JSLog);
 #endif
             JSApi.JS_SetContextOpaque(_ctx, (IntPtr)_contextId);
             JSApi.JS_AddIntrinsicOperators(_ctx);

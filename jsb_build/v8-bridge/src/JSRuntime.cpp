@@ -4,6 +4,9 @@
 #include <string>
 #include <libplatform/libplatform.h>
 
+#include "JSContext.h"
+#include "WSServer.h"
+
 struct GlobalInitializer
 {
 	std::unique_ptr<v8::Platform> platform = v8::platform::NewDefaultPlatform();
@@ -171,6 +174,11 @@ void JSRuntime::ComputeMemoryUsage(JSMemoryUsage* memoryUsage)
 {
 	memoryUsage->obj_count = _aliveObjectNum;
 	memoryUsage->atom_count = _aliveAtomNum;
+}
+
+void JSRuntime::SetContext(JSContext* context)
+{
+	_context = context;
 }
 
 size_t JSRuntime::_AddValueInternal(v8::Local<v8::Context> context, v8::Local<v8::Value> val, size_t gc_handle)
@@ -652,6 +660,10 @@ void JSRuntime::SetHostPromiseRejectionTracker(JSHostPromiseRejectionTracker* cb
 
 int JSRuntime::ExecutePendingJob(JSContext** pctx)
 {
+	if (_context && _context->_debugServer)
+	{
+		_context->_debugServer->Update();
+	}
 	_isolate->PerformMicrotaskCheckpoint();
 	*pctx = nullptr;
 	return 0;

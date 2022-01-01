@@ -1,9 +1,13 @@
 #include "JSContext.h"
 #include <cassert>
+#include "WSServer.h"
+
+#define SKIP_PRINT_CONTENT
 
 #if defined(JSB_EXEC_TEST)
 static void _print(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
+#if defined(SKIP_PRINT_CONTENT)
 	bool first = true;
 	for (int i = 0; i < args.Length(); i++)
 	{
@@ -24,6 +28,7 @@ static void _print(const v8::FunctionCallbackInfo<v8::Value>& args)
 	}
 	printf("\n");
 	fflush(stdout);
+#endif
 }
 #endif
 
@@ -224,9 +229,8 @@ static void JSCFunctionSetterCallback(const v8::FunctionCallbackInfo<v8::Value>&
 }
 
 JSContext::JSContext(JSRuntime* runtime)
+	:_debugServer(), _runtime(runtime), _logFunc(nullptr)
 {
-	_runtime = runtime;
-
 	v8::Local<v8::Context> context = v8::Context::New(_runtime->_isolate);
 	v8::Context::Scope contextScope(context);
 	context->SetAlignedPointerInEmbedderData(JS_CONTEXT_DATA_SELF, this);
@@ -239,10 +243,12 @@ JSContext::JSContext(JSRuntime* runtime)
 #endif
 	_global = _runtime->AddObject(context, global);
 	_emptyString = _runtime->AddString(context, v8::String::NewFromUtf8Literal(_runtime->_isolate, ""));
+	_runtime->SetContext(this);
 }
 
 JSContext::~JSContext()
 {
+	CloseDebugger();
 	size_t size = _functionMagicWrappers.size();
 	for (size_t i = 0; i < size; ++i)
 	{
@@ -250,7 +256,23 @@ JSContext::~JSContext()
 	}
 	_runtime->FreeValue(_emptyString);
 	_runtime->FreeValue(_global);
+	_runtime->SetContext(nullptr);
 	_context.Reset();
+}
+
+void JSContext::OpenDebugger(int port)
+{
+	_debugServer.reset(WSServer::CreateDebugServer(this, port));
+}
+
+bool JSContext::IsDebuggerOpen()
+{
+	return !!_debugServer;
+}
+
+void JSContext::CloseDebugger()
+{
+	_debugServer.reset();
 }
 
 std::string JSContext::GetAtomString(JSAtom atom)

@@ -1081,6 +1081,26 @@ void JS_ComputeMemoryUsage(JSRuntime* rt, JSMemoryUsage* s)
 	rt->ComputeMemoryUsage(s);
 }
 
+void JS_OpenDebugger(JSContext* ctx, int port)
+{
+	ctx->OpenDebugger(port);
+}
+
+JS_BOOL JS_IsDebuggerOpen(JSContext* ctx)
+{
+	return ctx->IsDebuggerOpen() ? TRUE : FALSE;
+}
+
+void JS_CloseDebugger(JSContext* ctx)
+{
+	ctx->CloseDebugger();
+}
+
+void JS_SetLogFunc(JSContext* ctx, JSLogCFunction func)
+{
+	ctx->_logFunc = func;
+}
+
 #ifdef __cplusplus
 }
 #endif

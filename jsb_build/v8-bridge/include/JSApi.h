@@ -130,6 +130,11 @@ JS_EXPORT int JS_ExecutePendingJob(JSRuntime* rt, JSContext** pctx);
 JS_EXPORT void JS_SetInterruptHandler(JSRuntime* rt, JSInterruptHandler* cb, IntPtr opaque);
 JS_EXPORT void JS_ComputeMemoryUsage(JSRuntime* rt, JSMemoryUsage* s);
 
+JS_EXPORT void JS_OpenDebugger(JSContext* ctx, int port);
+JS_EXPORT JS_BOOL JS_IsDebuggerOpen(JSContext* ctx);
+JS_EXPORT void JS_CloseDebugger(JSContext* ctx);
+JS_EXPORT void JS_SetLogFunc(JSContext* ctx, JSLogCFunction func);
+
 // declaration only for local test
 #if defined(JSB_EXEC_TEST)
 JS_EXPORT JSValue JSB_NewBridgeClassObject(JSContext* ctx, JSValue new_target, int32_t object_id/*, int32_t type_id = JS_BO_OBJECT */);

@@ -193,6 +193,17 @@ typedef enum JSToNumberHintEnum {
 	TON_FLAG_NUMERIC,
 } JSToNumberHintEnum;
 
+typedef void (*JSDebuggerCFunction)(JSContext* ctx);
+typedef void (*JSDebuggerSendCFunction)(JSContext* ctx, unsigned char type, const unsigned char* buf, size_t size);
+
+typedef struct JSDebuggerCallbacks
+{
+	JSDebuggerCFunction update;
+	JSDebuggerSendCFunction send;
+} JSDebuggerCallbacks;
+
+typedef void (*JSLogCFunction)(int level, const char* line);
+
 #define JS_FLOAT64_NAN NAN
 
 #define JS_TAG_IS_BYREF(tag) (tag) < 0
