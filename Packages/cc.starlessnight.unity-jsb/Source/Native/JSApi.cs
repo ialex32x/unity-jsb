@@ -73,6 +73,16 @@ namespace QuickJS.Native
 #endif
     public delegate JSValue JSGetterCFunctionMagic(JSContext ctx, JSValueConst this_val, int magic);
 
+#if UNITY_EDITOR_WIN || UNITY_STANDALONE_WIN || JSB_UNITYLESS || (UNITY_WSA && !UNITY_EDITOR)
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+#endif
+        public delegate void JSLogCFunction(int level, [MarshalAs(UnmanagedType.LPStr)] string line);
+
+#if UNITY_EDITOR_WIN || UNITY_STANDALONE_WIN || JSB_UNITYLESS || (UNITY_WSA && !UNITY_EDITOR)
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+#endif
+        public delegate void JSWaitingForDebuggerCFunction(JSContext ctx);
+
     public partial class JSApi
     {
         private const int CS_JSB_VERSION = 0xa; // expected dll version
@@ -150,11 +160,15 @@ namespace QuickJS.Native
 
         public static JSRuntime JSB_NewRuntime(JSGCObjectFinalizer class_finalizer)
         {
+            if (class_finalizer != null)
+            {
 #if JSB_UNITYLESS || (UNITY_WSA && !UNITY_EDITOR)
-            GCHandle.Alloc(cb);
+                GCHandle.Alloc(class_finalizer);
 #endif
-            var fn = class_finalizer != null ? Marshal.GetFunctionPointerForDelegate(class_finalizer) : IntPtr.Zero;
-            return JSB_NewRuntime(fn);
+                var fn = Marshal.GetFunctionPointerForDelegate(class_finalizer);
+                return JSB_NewRuntime(fn);
+            }
+            return JSB_NewRuntime(IntPtr.Zero);
         }
 
         [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
@@ -840,28 +854,52 @@ namespace QuickJS.Native
         #region diagnostics
 
 #if JSB_WITH_V8_BACKEND
-#if UNITY_EDITOR_WIN || UNITY_STANDALONE_WIN || JSB_UNITYLESS || (UNITY_WSA && !UNITY_EDITOR)
-        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-#endif
-        public delegate void JSLogCFunction(int level, [MarshalAs(UnmanagedType.LPStr)] string line);
-
         [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern unsafe void JS_OpenDebugger(JSContext ctx, int port);
+        [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern unsafe JS_BOOL JS_IsDebuggerConnected(JSContext ctx);
         [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern unsafe JS_BOOL JS_IsDebuggerOpen(JSContext ctx);
         [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern unsafe void JS_CloseDebugger(JSContext ctx);
+
         [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
         private static extern unsafe void JS_SetLogFunc(JSContext ctx, IntPtr func);
-        public static void JS_SetLogFunc(JSContext ctx, JSLogCFunction func)
+        public static void JS_SetLogFunc(JSContext ctx, JSLogCFunction cb)
         {
 #if JSB_UNITYLESS || (UNITY_WSA && !UNITY_EDITOR)
             GCHandle.Alloc(cb);
 #endif
-            var fn = Marshal.GetFunctionPointerForDelegate(func);
+            var fn = Marshal.GetFunctionPointerForDelegate(cb);
             JS_SetLogFunc(ctx, fn);
         }
+
+        [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
+        private static extern unsafe void JS_SetWaitingForDebuggerFunc(JSContext ctx, IntPtr func);
+        public static void JS_SetWaitingForDebuggerFunc(JSContext ctx, JSWaitingForDebuggerCFunction cb)
+        {
+            if (cb != null)
+            {
+#if JSB_UNITYLESS || (UNITY_WSA && !UNITY_EDITOR)
+                GCHandle.Alloc(cb);
 #endif
+                var fn = Marshal.GetFunctionPointerForDelegate(cb);
+                JS_SetWaitingForDebuggerFunc(ctx, fn);
+            }
+            else
+            {
+                JS_SetWaitingForDebuggerFunc(ctx, IntPtr.Zero);
+            }
+        }
+#else 
+        public static void JS_OpenDebugger(JSContext ctx, int port) { }
+        public static JS_BOOL JS_IsDebuggerConnected(JSContext ctx) { return 0; }
+        public static JS_BOOL JS_IsDebuggerOpen(JSContext ctx) { return 0; }
+        public static void JS_CloseDebugger(JSContext ctx) { }
+        public static void JS_SetLogFunc(JSContext ctx, JSLogCFunction cb) { }
+        public static void JS_SetWaitingForDebuggerFunc(JSContext ctx, JSWaitingForDebuggerCFunction cb) { }
+#endif // end JSB_WITH_V8_BACKEND
+
         [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern unsafe void JS_ComputeMemoryUsage(JSRuntime rt, JSMemoryUsage* s);
 

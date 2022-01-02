@@ -29,6 +29,19 @@ namespace Example
         public bool useReflectBind;
         // public bool sourceMap; // temporarily removed
         public bool stacktrace;
+
+        /// <summary>
+        /// only supported with v8-bridge
+        /// </summary>
+        public bool withDebugServer = true;
+        public int debugServerPort = 9229;
+        
+        /// <summary>
+        /// script runtime will be completely initialized after debugger connected
+        /// NOTE: this feature is unfinished, the initial breakpoints are still unable to hit
+        /// </summary>
+        public bool waitingForDebugger = false;
+
         private ScriptRuntime _rt;
         private MiniConsole _mConsole;
 
@@ -77,8 +90,13 @@ namespace Example
                 QuickJS.Extra.XMLHttpRequest.Bind(register);
 #endif
             };
+
+            _rt.OnInitialized += OnInitialized;
             _rt.Initialize(new ScriptRuntimeArgs
             {
+                withDebugServer = withDebugServer,
+                waitingForDebugger = waitingForDebugger, 
+                debugServerPort = debugServerPort,
                 fileSystem = fileSystem,
                 pathResolver = pathResolver,
                 asyncManager = asyncManager,
@@ -86,6 +104,11 @@ namespace Example
                 byteBufferAllocator = new ByteBufferPooledAllocator(),
                 binder = DefaultBinder.GetBinder(useReflectBind),
             });
+        }
+
+        private void OnInitialized(ScriptRuntime obj)
+        {
+            Debug.Log("run main script");
             _rt.EvalMain(entryFileName);
         }
 

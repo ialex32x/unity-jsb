@@ -163,11 +163,11 @@ let MyEditorWindow = MyEditorWindow_1 = class MyEditorWindow extends UnityEditor
         UnityEditor_1.Handles.color = UnityEngine_1.Color.white;
         if (jsb.isOperatorOverloadingSupported) {
             //@ts-ignore
-            UnityEditor_1.Handles.DrawLine(center, center + rotSecond * new Vector3(0, 90, 0));
+            UnityEditor_1.Handles.DrawLine(center, center + rotSecond * new UnityEngine_1.Vector3(0, 90, 0));
             //@ts-ignore
-            UnityEditor_1.Handles.DrawLine(center, center + rotMinute * new Vector3(0, 75, 0));
+            UnityEditor_1.Handles.DrawLine(center, center + rotMinute * new UnityEngine_1.Vector3(0, 75, 0));
             //@ts-ignore
-            UnityEditor_1.Handles.DrawLine(center, center + rotHour * new Vector3(0, 60, 0));
+            UnityEditor_1.Handles.DrawLine(center, center + rotHour * new UnityEngine_1.Vector3(0, 60, 0));
         } else {
             UnityEditor_1.Handles.DrawLine(center, UnityEngine_1.Vector3.op_Addition(center, UnityEngine_1.Quaternion.op_Multiply(rotSecond, new UnityEngine_1.Vector3(0, 90, 0))));
             UnityEditor_1.Handles.DrawLine(center, UnityEngine_1.Vector3.op_Addition(center, UnityEngine_1.Quaternion.op_Multiply(rotMinute, new UnityEngine_1.Vector3(0, 75, 0))));

@@ -25,6 +25,11 @@ namespace QuickJS
         public event Action<ScriptRuntime> OnInitializing;
         public event Action<ScriptRuntime> OnInitialized;
         public event Action<ScriptRuntime> OnMainModuleLoaded;
+
+        /// <summary>
+        /// this event will be raised after debugger connected if debug server is used, otherwise it will be raised immediately after OnInitialized
+        /// </summary>
+        public event Action<ScriptRuntime> OnDebuggerConnected;
         public event Action<int> OnAfterDestroy;
         public event Action OnUpdate;
         public event Action<ScriptContext, string> OnScriptReloading;
@@ -310,6 +315,18 @@ namespace QuickJS
             }
         }
 
+        [MonoPInvokeCallback(typeof(JSWaitingForDebuggerCFunction))]
+        private static void _RunIfWaitingForDebugger(JSContext ctx)
+        {
+            var runtime = ScriptEngine.GetRuntime(ctx);
+            if (runtime != null)
+            {
+                // wait only once
+                JSApi.JS_SetWaitingForDebuggerFunc(ctx, null);
+                runtime.RaiseDebuggerConnectedEvent();
+            }
+        }
+
         // 通用析构函数
         [MonoPInvokeCallback(typeof(JSGCObjectFinalizer))]
         public static void class_finalizer(JSRuntime rt, JSPayloadHeader header)
@@ -333,23 +350,21 @@ namespace QuickJS
 
         public void Initialize(ScriptRuntimeArgs args)
         {
-            Initialize(args.fileSystem, args.pathResolver, args.asyncManager, args.logger, args.byteBufferAllocator, args.binder);
-        }
-
-        // this method will be marked as private in the future
-        private void Initialize(IFileSystem fileSystem, IPathResolver resolver, IAsyncManager asyncManager, IScriptLogger logger, IO.IByteBufferAllocator byteBufferAllocator, BindAction binder)
-        {
+            var fileSystem = args.fileSystem;
             if (fileSystem == null)
             {
                 throw new NullReferenceException(nameof(fileSystem));
             }
 
-            asyncManager.Initialize(_mainThreadId);
+#if !JSB_WITH_V8_BACKEND
+            args.withDebugServer = false;
+#endif
+            args.asyncManager.Initialize(_mainThreadId);
 
             _isValid = true;
             _isRunning = true;
-            _isStaticBinding = DefaultBinder.IsStaticBinding(binder);
-            _logger = logger;
+            _isStaticBinding = DefaultBinder.IsStaticBinding(args.binder);
+            _logger = args.logger;
             // _rwlock = new ReaderWriterLockSlim();
             _rt = JSApi.JSB_NewRuntime(class_finalizer);
             JSApi.JS_SetHostPromiseRejectionTracker(_rt, JSNative.PromiseRejectionTracker, IntPtr.Zero);
@@ -365,11 +380,11 @@ namespace QuickJS
 #if !JSB_WITH_V8_BACKEND
             JSApi.JS_SetModuleLoaderFunc(_rt, module_normalize, module_loader, IntPtr.Zero);
 #endif
-            CreateContext();
+            CreateContext(args.withDebugServer, args.debugServerPort);
 
-            _pathResolver = resolver;
-            _asyncManager = asyncManager;
-            _byteBufferAllocator = byteBufferAllocator;
+            _pathResolver = args.pathResolver;
+            _asyncManager = args.asyncManager;
+            _byteBufferAllocator = args.byteBufferAllocator;
             _autorelease = new Utils.AutoReleasePool();
             _fileSystem = fileSystem;
             _objectCache = new ObjectCache(_logger);
@@ -387,7 +402,7 @@ namespace QuickJS
             // await Task.Run(() => runner.OnBind(this, register));
             try
             {
-                binder?.Invoke(this);
+                args.binder?.Invoke(this);
             }
             catch (Exception exception)
             {
@@ -427,9 +442,25 @@ namespace QuickJS
             }
 #endif
 
-            _isInitialized = true;
-            OnInitializing?.Invoke(this);
-            OnInitialized?.Invoke(this);
+            if (!args.withDebugServer || !args.waitingForDebugger || args.debugServerPort <= 0 || JSApi.JS_IsDebuggerConnected(_mainContext) == 1)
+            {
+                RaiseDebuggerConnectedEvent();
+            }
+            else
+            {
+                JSApi.JS_SetWaitingForDebuggerFunc((JSContext)_mainContext, _RunIfWaitingForDebugger);
+            }
+        }
+
+        private void RaiseDebuggerConnectedEvent()
+        {
+            if (!_isInitialized)
+            {
+                _isInitialized = true;
+                OnInitializing?.Invoke(this);
+                OnInitialized?.Invoke(this);
+            }
+            OnDebuggerConnected?.Invoke(this);
         }
 
         [MonoPInvokeCallback(typeof(JSInterruptHandler))]
@@ -480,7 +511,14 @@ namespace QuickJS
 
             runtime._isWorker = true;
             runtime.extraBinding += extraBinding;
-            runtime.Initialize(_fileSystem, _pathResolver, _asyncManager, _logger, new IO.ByteBufferPooledAllocator(), null);
+            runtime.Initialize(new ScriptRuntimeArgs()
+            {
+                fileSystem = _fileSystem,
+                pathResolver = _pathResolver,
+                asyncManager = _asyncManager,
+                logger = _logger,
+                byteBufferAllocator = new IO.ByteBufferPooledAllocator(),
+            });
             return runtime;
         }
 
@@ -519,7 +557,7 @@ namespace QuickJS
             return _objectCache;
         }
 
-        public ScriptContext CreateContext()
+        private ScriptContext CreateContext(bool withDebugServer, int debugServerPort)
         {
             // _rwlock.EnterWriteLock();
             ScriptContextRef freeEntry;
@@ -539,7 +577,7 @@ namespace QuickJS
                 freeEntry.next = -1;
             }
 
-            var context = new ScriptContext(this, slotIndex + 1);
+            var context = new ScriptContext(this, slotIndex + 1, withDebugServer, debugServerPort);
 
             freeEntry.target = context;
             if (_mainContext == null)
