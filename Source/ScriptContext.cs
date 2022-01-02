@@ -48,30 +48,29 @@ namespace QuickJS
         // id = context slot index + 1
         public int id { get { return _contextId; } }
 
-#if JSB_WITH_V8_BACKEND
-        [MonoPInvokeCallback(typeof(JSApi.JSLogCFunction))]
+        [MonoPInvokeCallback(typeof(JSLogCFunction))]
         private static void _JSLog(int level, string line)
         {
 #if !JSB_UNITYLESS
             UnityEngine.Debug.LogFormat("[RAW] {0}", line);
 #endif
         }
-#endif
 
-        public ScriptContext(ScriptRuntime runtime, int contextId)
+        public ScriptContext(ScriptRuntime runtime, int contextId, bool withDebugServer, int debugServerPort)
         {
             _isValid = true;
             _runtime = runtime;
             _contextId = contextId;
             _ctx = JSApi.JS_NewContext(_runtime);
-#if JSB_WITH_V8_BACKEND
+            //TODO will be removed later
             JSApi.JS_SetLogFunc(_ctx, _JSLog);
-            //TODO just testing
-            JSApi.JS_OpenDebugger(_ctx, 9229);
-#if !JSB_UNITYLESS
-            UnityEngine.Debug.LogWarningFormat("[EXPERIMENTAL] debugger is now available with this URL (Windows x64 only): devtools://devtools/bundled/inspector.html?v8only=true&ws=127.0.0.1:9229/1");
+            if (withDebugServer && debugServerPort > 0)
+            {
+                JSApi.JS_OpenDebugger(_ctx, debugServerPort);
+#if !JSB_UNITYLESS && JSB_WITH_V8_BACKEND
+                UnityEngine.Debug.LogWarningFormat("[EXPERIMENTAL] debugger is now available with this URL (Windows x64 only): devtools://devtools/bundled/inspector.html?v8only=true&ws=127.0.0.1:{0}/1", debugServerPort);
 #endif
-#endif
+            }
             JSApi.JS_SetContextOpaque(_ctx, (IntPtr)_contextId);
             JSApi.JS_AddIntrinsicOperators(_ctx);
             _atoms = new AtomCache(_ctx);
@@ -714,7 +713,7 @@ namespace QuickJS
                     var input_len = (size_t)(input_bytes.Length - 1);
 #if JSB_WITH_V8_BACKEND
                     JSValue func_val;
-                    var filename_bytes = TextUtils.GetNullTerminatedBytes(filename.Replace('/', '\\'));
+                    var filename_bytes = TextUtils.GetNullTerminatedBytes(filename.Replace('/', '\\')); // normalize for v8 debug protocol
                     fixed (byte* filename_ptr = filename_bytes)
                     {
                         func_val = JSApi.JS_EvalSource(ctx, input_ptr, input_len, filename_ptr);
