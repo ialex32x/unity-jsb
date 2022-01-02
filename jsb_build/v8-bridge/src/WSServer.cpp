@@ -75,6 +75,7 @@ class WSServerImpl : public WSServer
 public:
 	void Open(int port);
 	virtual void Update() override;
+	virtual bool IsConnected() override;
 
 	WSServerImpl(JSContext* ctx);
 	virtual ~WSServerImpl();
@@ -141,7 +142,7 @@ void WSServerImpl::OnReceiveEnd(bool is_binary)
 	if (_debugger)
 	{
 		_debugger->OnMessageReceived(_recv_buffer, _recv_len);
-		lwsl_notice("receive message: %s %d %s", is_binary ? "binary" : "text", (int)_recv_len, _recv_buffer);
+		//lwsl_notice("receive message: %s %d %s", is_binary ? "binary" : "text", (int)_recv_len, _recv_buffer);
 	}
 }
 
@@ -149,7 +150,7 @@ void WSServerImpl::Send(unsigned char const* buf, size_t len)
 {
 	if (!_wsi)
 	{
-		lwsl_notice("no connection to send");
+		lwsl_err("no connection to send");
 		return;
 	}
 
@@ -346,7 +347,7 @@ int WSServerImpl::_v8_protocol_callback(struct lws* wsi, enum lws_callback_reaso
 			wss->Stop();
 		}
 		wss->Start(wsi);
-		lwsl_notice("%p accept new incoming connection", wsi);
+		lwsl_debug("%p accept new incoming connection", wsi);
 		break;
 	case LWS_CALLBACK_RECEIVE:
 		if (wss->_wsi != wsi)
@@ -362,7 +363,7 @@ int WSServerImpl::_v8_protocol_callback(struct lws* wsi, enum lws_callback_reaso
 		wss->OnReceive((unsigned char*)in, len);
 		if (lws_is_final_fragment(wsi))
 		{
-			lwsl_notice("%p receive message", wsi);
+			//lwsl_debug("%p receive message", wsi);
 			wss->OnReceiveEnd(lws_frame_is_binary(wsi) == 1);
 			if (!wss->_send_queue.empty())
 			{
@@ -387,7 +388,7 @@ int WSServerImpl::_v8_protocol_callback(struct lws* wsi, enum lws_callback_reaso
 			WSBuffer* buffer = wss->_send_queue.front();
 			if (lws_write(wsi, &(buffer->buffer[LWS_PRE]), buffer->size, LWS_WRITE_TEXT) != (int)buffer->size)
 			{
-				lwsl_notice("connection write error");
+				lwsl_err("connection write error");
 				wss->Stop();
 				return -1;
 			}
@@ -395,7 +396,7 @@ int WSServerImpl::_v8_protocol_callback(struct lws* wsi, enum lws_callback_reaso
 			{
 				wss->_send_queue.pop();
 				wss->_free_queue.push_back(buffer);
-				lwsl_notice("%p send message: [queue:%d] %d %s\n", wsi, (int)wss->_send_queue.size(), (int)buffer->size, &buffer->buffer[LWS_PRE]);
+				//lwsl_debug("%p send message: [queue:%d] %d %s\n", wsi, (int)wss->_send_queue.size(), (int)buffer->size, &buffer->buffer[LWS_PRE]);
 				if (!wss->_send_queue.empty())
 				{
 					wss->_is_servicing = true;
@@ -415,7 +416,7 @@ int WSServerImpl::_v8_protocol_callback(struct lws* wsi, enum lws_callback_reaso
 			return -1;
 		}
 		wss->Stop();
-		lwsl_notice("connection closed");
+		lwsl_debug("connection closed");
 		break;
 	case LWS_CALLBACK_CLIENT_CONNECTION_ERROR:
 		if (wss->_wsi != wsi)
@@ -423,7 +424,7 @@ int WSServerImpl::_v8_protocol_callback(struct lws* wsi, enum lws_callback_reaso
 			return -1;
 		}
 		wss->Stop();
-		lwsl_notice("connection error");
+		lwsl_debug("connection error");
 		break;
 	case LWS_CALLBACK_HTTP:
 		if (_is_request(wsi, WSI_TOKEN_GET_URI, "/json") || _is_request(wsi, WSI_TOKEN_GET_URI, "/json/list"))
@@ -453,7 +454,7 @@ int WSServerImpl::_v8_protocol_callback(struct lws* wsi, enum lws_callback_reaso
 		}
 		break;
 	case LWS_CALLBACK_HTTP_BODY_COMPLETION:
-		lwsl_notice("LWS_CALLBACK_HTTP_BODY_COMPLETION");
+		//lwsl_notice("LWS_CALLBACK_HTTP_BODY_COMPLETION");
 		if (lws_return_http_status(wsi, 200, nullptr))
 		{
 			return -1;
@@ -462,7 +463,7 @@ int WSServerImpl::_v8_protocol_callback(struct lws* wsi, enum lws_callback_reaso
 	case LWS_CALLBACK_CLIENT_ESTABLISHED:
 	case LWS_CALLBACK_CLIENT_CLOSED:
 	case LWS_CALLBACK_CLIENT_RECEIVE:
-		lwsl_err("unexpected %d", reason);
+		lwsl_warn("unexpected %d", reason);
 		break;
 	default:
 		break;
@@ -495,7 +496,11 @@ void WSServerImpl::Open(int port)
 	_json_list += "\"";
 	_json_list += "}]";
 
-	lws_set_log_level(LLL_USER | LLL_DEBUG | LLL_NOTICE | LLL_ERR | LLL_WARN | LLL_INFO | LLL_CLIENT | LLL_THREAD, _js_context->_logFunc ? _js_context->_logFunc : custom_log);
+#if defined(JSB_EXEC_TEST)
+	lws_set_log_level(LLL_USER | LLL_DEBUG | LLL_NOTICE | LLL_ERR | LLL_WARN | LLL_INFO | LLL_CLIENT | LLL_THREAD, _js_context->_logCallback ? _js_context->_logCallback : custom_log);
+#else 
+	lws_set_log_level(LLL_USER | LLL_ERR | LLL_WARN, _js_context->_logCallback ? _js_context->_logCallback : custom_log);
+#endif
 
 	memset(_protocols, 0, sizeof(lws_protocols) * 3);
 	_protocols[0].name = "binary";
@@ -524,6 +529,11 @@ void WSServerImpl::Open(int port)
 	_ws_ctx = lws_create_context(&context_creation_info);
 	_debugger.reset(JSDebugger::CreateDefaultDebugger(_js_context, { _JSDebuggerUpdate, _JSDebuggerSend }));
 	_debugger->Open();
+}
+
+bool WSServerImpl::IsConnected()
+{
+	return _debugger && _debugger->IsConnected();
 }
 
 void WSServerImpl::Update()

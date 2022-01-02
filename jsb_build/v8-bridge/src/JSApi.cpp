@@ -1091,17 +1091,26 @@ JS_BOOL JS_IsDebuggerOpen(JSContext* ctx)
 	return ctx->IsDebuggerOpen() ? TRUE : FALSE;
 }
 
+JS_BOOL JS_IsDebuggerConnected(JSContext* ctx)
+{
+	return ctx->IsDebuggerConnected() ? TRUE : FALSE;
+}
+
 void JS_CloseDebugger(JSContext* ctx)
 {
 	ctx->CloseDebugger();
 }
 
+void JS_SetWaitingForDebuggerFunc(JSContext* ctx, JSWaitingForDebuggerCFunction func)
+{
+	ctx->_waingForDebuggerCallback = func;
+}
+
 void JS_SetLogFunc(JSContext* ctx, JSLogCFunction func)
 {
-	ctx->_logFunc = func;
+	ctx->_logCallback = func;
 }
 
 #ifdef __cplusplus
 }
 #endif
-

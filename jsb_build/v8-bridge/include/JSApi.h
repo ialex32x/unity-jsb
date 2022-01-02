@@ -132,14 +132,10 @@ JS_EXPORT void JS_ComputeMemoryUsage(JSRuntime* rt, JSMemoryUsage* s);
 
 JS_EXPORT void JS_OpenDebugger(JSContext* ctx, int port);
 JS_EXPORT JS_BOOL JS_IsDebuggerOpen(JSContext* ctx);
+JS_EXPORT JS_BOOL JS_IsDebuggerConnected(JSContext* ctx);
 JS_EXPORT void JS_CloseDebugger(JSContext* ctx);
+JS_EXPORT void JS_SetWaitingForDebuggerFunc(JSContext* ctx, JSWaitingForDebuggerCFunction func);
 JS_EXPORT void JS_SetLogFunc(JSContext* ctx, JSLogCFunction func);
-
-// declaration only for local test
-#if defined(JSB_EXEC_TEST)
-JS_EXPORT JSValue JSB_NewBridgeClassObject(JSContext* ctx, JSValue new_target, int32_t object_id/*, int32_t type_id = JS_BO_OBJECT */);
-JS_EXPORT JSValue jsb_construct_bridge_object(JSContext* ctx, JSValue proto, int32_t object_id);
-#endif
 
 #ifdef __cplusplus
 }

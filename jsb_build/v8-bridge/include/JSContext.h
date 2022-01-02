@@ -26,11 +26,13 @@ struct JSContext
 		int _magic;
 	};
 
-	JSLogCFunction _logFunc;
+	JSLogCFunction _logCallback;
+	JSWaitingForDebuggerCFunction _waingForDebuggerCallback;
 	std::unique_ptr<WSServer> _debugServer = nullptr;
 	void OpenDebugger(int port);
 	void CloseDebugger();
 	bool IsDebuggerOpen();
+	bool IsDebuggerConnected();
 
 	void* _opaque = nullptr;
 	JSRuntime* _runtime = nullptr;

@@ -49,6 +49,7 @@ public:
 	virtual void Open() override;
 	virtual void Close() override;
 	virtual void Update() override;
+	virtual bool IsConnected() override;
 	virtual void OnConnectionClosed() override;
 	virtual void OnMessageReceived(const unsigned char* buf, size_t len) override;
 private:
@@ -57,6 +58,7 @@ private:
 	JSContext* _ctx;
 	std::unique_ptr<JSInspectorChannel> _channel;
 	EClientState _state;
+	bool _isConnected;
 };
 
 JSDebugger* JSDebugger::CreateDefaultDebugger(JSContext* ctx, JSDebuggerCallbacks callbacks)
@@ -109,20 +111,17 @@ void JSInspectorClient::JSInspectorChannel::SendString(v8_inspector::StringView 
 {
 	if (view.is8Bit())
 	{
-		//printf("inspector send 8: %d\n", (int)view.length());
 		_client->_callbacks.send(_client->_ctx, 0, view.characters8(), view.length());
 	}
 	else
 	{
 		int cap = WideCharToMultiByte(CP_UTF8, 0, (LPCWCH)view.characters16(), view.length(), NULL, 0, NULL, NULL);
-		std::string str(cap, 0);
-		WideCharToMultiByte(CP_UTF8, 0, (LPCWCH)view.characters16(), view.length(), (LPSTR)str.c_str(), cap, NULL, NULL);
-		//std::wstring_convert<std::codecvt_utf8_utf16<uint16_t>, uint16_t> Conv;
-		//const uint16_t* Start = view.characters16();
-		//std::string str = Conv.to_bytes(Start, Start + view.length());
-
-		//printf("inspector send 16: %d\n", (int)str.length());
-		_client->_callbacks.send(_client->_ctx, 0, reinterpret_cast<const unsigned char*>(str.c_str()), str.length());
+		if (cap > 0)
+		{
+			std::string str(cap, 0);
+			WideCharToMultiByte(CP_UTF8, 0, (LPCWCH)view.characters16(), view.length(), (LPSTR)str.c_str(), cap, NULL, NULL);
+			_client->_callbacks.send(_client->_ctx, 0, reinterpret_cast<const unsigned char*>(str.c_str()), str.length());
+		}
 	}
 }
 
@@ -141,7 +140,7 @@ void JSInspectorClient::JSInspectorChannel::flushProtocolNotifications()
 }
 
 JSInspectorClient::JSInspectorClient(JSContext* ctx, JSDebuggerCallbacks callbacks)
-	:_ctx(ctx), _callbacks(callbacks), _state(ECS_NONE), _channel(nullptr)
+	:_ctx(ctx), _callbacks(callbacks), _state(ECS_NONE), _channel(nullptr), _isConnected(false)
 {
 }
 
@@ -173,6 +172,11 @@ void JSInspectorClient::quitMessageLoopOnPause()
 void JSInspectorClient::runIfWaitingForDebugger(int contextGroupId)
 {
 	//printf("runIfWaitingForDebugger %d\n", _state);
+	_isConnected = true;
+	if (_ctx && _ctx->_waingForDebuggerCallback)
+	{
+		_ctx->_waingForDebuggerCallback(_ctx);
+	}
 }
 
 void JSInspectorClient::Open()
@@ -184,6 +188,7 @@ void JSInspectorClient::Open()
 		v8::HandleScope handleScope(isolate);
 
 		int contextGroupId = 1;
+		_isConnected = false;
 		_inspector = v8_inspector::V8Inspector::create(isolate, this);
 		const uint8_t p_name[] = "DefaultInsepctorContext";
 		v8_inspector::StringView name(p_name, sizeof(p_name) - 1);
@@ -199,6 +204,7 @@ void JSInspectorClient::Close()
 	if (_state != ECS_NONE)
 	{
 		_state = ECS_NONE;
+		_isConnected = false;
 		v8::Isolate* isolate = _ctx->GetIsolate();
 		v8::Isolate::Scope isolateScope(isolate);
 		v8::HandleScope handleScope(isolate);
@@ -221,6 +227,11 @@ void JSInspectorClient::OnMessageReceived(const unsigned char* buf, size_t len)
 void JSInspectorClient::OnConnectionClosed()
 {
 	_channel.reset();
+}
+
+bool JSInspectorClient::IsConnected()
+{
+	return _isConnected;
 }
 
 void JSInspectorClient::Update()

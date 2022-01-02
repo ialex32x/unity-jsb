@@ -229,7 +229,7 @@ static void JSCFunctionSetterCallback(const v8::FunctionCallbackInfo<v8::Value>&
 }
 
 JSContext::JSContext(JSRuntime* runtime)
-	:_debugServer(), _runtime(runtime), _logFunc(nullptr)
+	:_debugServer(), _runtime(runtime), _logCallback(nullptr), _waingForDebuggerCallback(nullptr)
 {
 	v8::Local<v8::Context> context = v8::Context::New(_runtime->_isolate);
 	v8::Context::Scope contextScope(context);
@@ -268,6 +268,11 @@ void JSContext::OpenDebugger(int port)
 bool JSContext::IsDebuggerOpen()
 {
 	return !!_debugServer;
+}
+
+bool JSContext::IsDebuggerConnected()
+{
+	return _debugServer && _debugServer->IsConnected();
 }
 
 void JSContext::CloseDebugger()

@@ -203,6 +203,7 @@ typedef struct JSDebuggerCallbacks
 } JSDebuggerCallbacks;
 
 typedef void (*JSLogCFunction)(int level, const char* line);
+typedef void (*JSWaitingForDebuggerCFunction)(JSContext* ctx);
 
 #define JS_FLOAT64_NAN NAN
 
