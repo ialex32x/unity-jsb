@@ -1,7 +1,7 @@
 import { Yield } from "jsb";
 import { Camera, Debug, GameObject, Object, Resources, WaitForSeconds } from "UnityEngine";
 import { Object as Object1 } from "System";
-import { MyClass } from "./example_monobehaviour";
+import { MyClass } from "./components/sample_monobehaviour";
 
 if (module == require.main) {
     let go = new GameObject("test");

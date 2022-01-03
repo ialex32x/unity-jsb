@@ -10,6 +10,14 @@
 
 #include "JSContext.h"
 
+//#define JSB_ENABLE_WSS_LOG
+
+#if defined(JSB_EXEC_TEST) || defined(JSB_ENABLE_WSS_LOG)
+#define wss_debug(...) _lws_log(LLL_NOTICE, __VA_ARGS__)
+#else
+#define wss_debug(...) do {} while(0)
+#endif
+
 static void custom_log(int level, const char* msg)
 {
 #if defined(JSB_EXEC_TEST)
@@ -74,7 +82,7 @@ class WSServerImpl : public WSServer
 {
 public:
 	void Open(int port);
-	virtual void Update() override;
+	virtual void Update(bool bDebugging) override;
 	virtual bool IsConnected() override;
 
 	WSServerImpl(JSContext* ctx);
@@ -142,7 +150,7 @@ void WSServerImpl::OnReceiveEnd(bool is_binary)
 	if (_debugger)
 	{
 		_debugger->OnMessageReceived(_recv_buffer, _recv_len);
-		//lwsl_notice("receive message: %s %d %s", is_binary ? "binary" : "text", (int)_recv_len, _recv_buffer);
+		wss_debug("receive message: %s %d %s", is_binary ? "binary" : "text", (int)_recv_len, _recv_buffer);
 	}
 }
 
@@ -150,7 +158,7 @@ void WSServerImpl::Send(unsigned char const* buf, size_t len)
 {
 	if (!_wsi)
 	{
-		lwsl_err("no connection to send");
+		wss_debug("no connection to send");
 		return;
 	}
 
@@ -202,10 +210,9 @@ void WSServerImpl::Stop()
 	}
 	if (_debugger)
 	{
-		_debugger->Close();
-		_debugger.reset();
+		_debugger->OnConnectionClosed();
+		_is_closing = true;
 	}
-	_is_closing = true;
 	_wsi = nullptr;
 }
 
@@ -240,7 +247,7 @@ void WSServerImpl::_JSDebuggerUpdate(JSContext* ctx)
 	WSServerImpl* impl = (WSServerImpl*)ctx->_debugServer.get();
 	if (impl)
 	{
-		impl->Update();
+		impl->Update(true);
 	}
 }
 
@@ -262,18 +269,18 @@ int WSServerImpl::_echo_callback(struct lws* wsi, enum lws_callback_reasons reas
 	switch (reason)
 	{
 	case LWS_CALLBACK_ESTABLISHED:
-		lwsl_notice("LWS_CALLBACK_CLIENT_ESTABLISHED");
+		wss_debug("LWS_CALLBACK_CLIENT_ESTABLISHED");
 		wss->Stop();
 		wss->Start(wsi, false);
 		break;
 	case LWS_CALLBACK_CLOSED:
 		wss->Stop();
-		lwsl_notice("LWS_CALLBACK_CLIENT_CLOSED");
+		wss_debug("LWS_CALLBACK_CLIENT_CLOSED");
 		return -1;
 	case LWS_CALLBACK_RECEIVE:
 		if (wss->_wsi != wsi)
 		{
-			lwsl_err("wrong connection");
+			wss_debug("wrong connection");
 			wss->Stop();
 			return -1;
 		}
@@ -284,7 +291,7 @@ int WSServerImpl::_echo_callback(struct lws* wsi, enum lws_callback_reasons reas
 		wss->OnReceive((unsigned char*)in, len);
 		if (lws_is_final_fragment(wsi))
 		{
-			lwsl_notice("%p receive message", wsi);
+			wss_debug("%p receive message", wsi);
 			wss->OnReceiveEnd(lws_frame_is_binary(wsi) == 1);
 			wss->Send((unsigned char const*)"hello1", 6);
 			wss->Send((unsigned char const*)"hello2", 6);
@@ -297,20 +304,20 @@ int WSServerImpl::_echo_callback(struct lws* wsi, enum lws_callback_reasons reas
 		}
 		break;
 	case LWS_CALLBACK_CLIENT_WRITEABLE:
-		lwsl_notice("LWS_CALLBACK_CLIENT_WRITEABLE");
+		wss_debug("LWS_CALLBACK_CLIENT_WRITEABLE");
 		break;
 	case LWS_CALLBACK_SERVER_WRITEABLE:
 		if (!wss->_send_queue.empty())
 		{
 			if (wss->_wsi != wsi)
 			{
-				lwsl_err("wrong connection");
+				wss_debug("wrong connection");
 				return -1;
 			}
 			WSBuffer* buffer = wss->_send_queue.front();
 			if (lws_write(wsi, &(buffer->buffer[LWS_PRE]), buffer->size, LWS_WRITE_TEXT) != (int)buffer->size)
 			{
-				lwsl_notice("connection write error");
+				wss_debug("connection write error");
 				wss->Stop();
 				return -1;
 			}
@@ -318,7 +325,7 @@ int WSServerImpl::_echo_callback(struct lws* wsi, enum lws_callback_reasons reas
 			{
 				wss->_send_queue.pop();
 				wss->_free_queue.push_back(buffer);
-				lwsl_notice("LWS_CALLBACK_SERVER_WRITEABLE %p send message: [queue:%d] %d %s\n", wsi, (int)wss->_send_queue.size(), (int)buffer->size, &buffer->buffer[LWS_PRE]);
+				wss_debug("LWS_CALLBACK_SERVER_WRITEABLE %p send message: [queue:%d] %d %s\n", wsi, (int)wss->_send_queue.size(), (int)buffer->size, &buffer->buffer[LWS_PRE]);
 				if (!wss->_send_queue.empty())
 				{
 					lws_callback_on_writable(wsi);
@@ -341,18 +348,18 @@ int WSServerImpl::_v8_protocol_callback(struct lws* wsi, enum lws_callback_reaso
 	switch (reason)
 	{
 	case LWS_CALLBACK_ESTABLISHED:
-		if (wss->_wsi)
+		if (wss->_wsi || wss->_is_closing)
 		{
-			lwsl_warn("supports only one connection");
-			wss->Stop();
+			wss_debug("supports only one connection");
+			return -1;
 		}
 		wss->Start(wsi);
-		lwsl_debug("%p accept new incoming connection", wsi);
+		wss_debug("%p accept new incoming connection", wsi);
 		break;
 	case LWS_CALLBACK_RECEIVE:
 		if (wss->_wsi != wsi)
 		{
-			lwsl_err("wrong connection");
+			wss_debug("wrong connection");
 			wss->Stop();
 			return -1;
 		}
@@ -363,7 +370,7 @@ int WSServerImpl::_v8_protocol_callback(struct lws* wsi, enum lws_callback_reaso
 		wss->OnReceive((unsigned char*)in, len);
 		if (lws_is_final_fragment(wsi))
 		{
-			//lwsl_debug("%p receive message", wsi);
+			//wss_debug("%p receive message", wsi);
 			wss->OnReceiveEnd(lws_frame_is_binary(wsi) == 1);
 			if (!wss->_send_queue.empty())
 			{
@@ -376,19 +383,21 @@ int WSServerImpl::_v8_protocol_callback(struct lws* wsi, enum lws_callback_reaso
 	case LWS_CALLBACK_SERVER_WRITEABLE:
 		if (wss->_is_closing)
 		{
+			wss_debug("_WRITEABLE, but inspector is closing");
 			lws_close_reason(wsi, LWS_CLOSE_STATUS_NORMAL, (unsigned char*)"", 0);
+			break;
 		}
 		if (!wss->_send_queue.empty())
 		{
 			if (wss->_wsi != wsi)
 			{
-				lwsl_err("wrong connection");
+				wss_debug("wrong connection");
 				return -1;
 			}
 			WSBuffer* buffer = wss->_send_queue.front();
 			if (lws_write(wsi, &(buffer->buffer[LWS_PRE]), buffer->size, LWS_WRITE_TEXT) != (int)buffer->size)
 			{
-				lwsl_err("connection write error");
+				wss_debug("connection write error");
 				wss->Stop();
 				return -1;
 			}
@@ -396,7 +405,7 @@ int WSServerImpl::_v8_protocol_callback(struct lws* wsi, enum lws_callback_reaso
 			{
 				wss->_send_queue.pop();
 				wss->_free_queue.push_back(buffer);
-				//lwsl_debug("%p send message: [queue:%d] %d %s\n", wsi, (int)wss->_send_queue.size(), (int)buffer->size, &buffer->buffer[LWS_PRE]);
+				wss_debug("%p send message: [queue:%d] %d %s\n", wsi, (int)wss->_send_queue.size(), (int)buffer->size, &buffer->buffer[LWS_PRE]);
 				if (!wss->_send_queue.empty())
 				{
 					wss->_is_servicing = true;
@@ -413,18 +422,20 @@ int WSServerImpl::_v8_protocol_callback(struct lws* wsi, enum lws_callback_reaso
 	case LWS_CALLBACK_CLOSED:
 		if (wss->_wsi != wsi)
 		{
+			wss_debug("LWS_CALLBACK_CLOSED, and mismatched wsi");
 			return -1;
 		}
 		wss->Stop();
-		lwsl_debug("connection closed");
+		wss_debug("connection closed");
 		break;
 	case LWS_CALLBACK_CLIENT_CONNECTION_ERROR:
 		if (wss->_wsi != wsi)
 		{
+			wss_debug("LWS_CALLBACK_CLIENT_CONNECTION_ERROR, and mismatched wsi");
 			return -1;
 		}
 		wss->Stop();
-		lwsl_debug("connection error");
+		wss_debug("connection error");
 		break;
 	case LWS_CALLBACK_HTTP:
 		if (_is_request(wsi, WSI_TOKEN_GET_URI, "/json") || _is_request(wsi, WSI_TOKEN_GET_URI, "/json/list"))
@@ -454,7 +465,7 @@ int WSServerImpl::_v8_protocol_callback(struct lws* wsi, enum lws_callback_reaso
 		}
 		break;
 	case LWS_CALLBACK_HTTP_BODY_COMPLETION:
-		//lwsl_notice("LWS_CALLBACK_HTTP_BODY_COMPLETION");
+		//wss_debug("LWS_CALLBACK_HTTP_BODY_COMPLETION");
 		if (lws_return_http_status(wsi, 200, nullptr))
 		{
 			return -1;
@@ -463,7 +474,7 @@ int WSServerImpl::_v8_protocol_callback(struct lws* wsi, enum lws_callback_reaso
 	case LWS_CALLBACK_CLIENT_ESTABLISHED:
 	case LWS_CALLBACK_CLIENT_CLOSED:
 	case LWS_CALLBACK_CLIENT_RECEIVE:
-		lwsl_warn("unexpected %d", reason);
+		wss_debug("unexpected %d", reason);
 		break;
 	default:
 		break;
@@ -497,8 +508,10 @@ void WSServerImpl::Open(int port)
 	_json_list += "}]";
 
 #if defined(JSB_EXEC_TEST)
-	lws_set_log_level(LLL_USER | LLL_DEBUG | LLL_NOTICE | LLL_ERR | LLL_WARN | LLL_INFO | LLL_CLIENT | LLL_THREAD, _js_context->_logCallback ? _js_context->_logCallback : custom_log);
-#else 
+	lws_set_log_level(LLL_USER | LLL_DEBUG | LLL_NOTICE | LLL_ERR | LLL_WARN | LLL_INFO | LLL_CLIENT | LLL_THREAD, custom_log);
+	wss_debug("ws server starting");
+#else
+	//lws_set_log_level(LLL_USER | LLL_DEBUG | LLL_NOTICE | LLL_ERR | LLL_WARN | LLL_INFO | LLL_CLIENT | LLL_THREAD, _js_context->_logCallback ? _js_context->_logCallback : custom_log);
 	lws_set_log_level(LLL_USER | LLL_ERR | LLL_WARN, _js_context->_logCallback ? _js_context->_logCallback : custom_log);
 #endif
 
@@ -536,8 +549,17 @@ bool WSServerImpl::IsConnected()
 	return _debugger && _debugger->IsConnected();
 }
 
-void WSServerImpl::Update()
+void WSServerImpl::Update(bool bDebugging)
 {
+	if (!bDebugging && _is_closing)
+	{
+		if (_debugger)
+		{
+			_debugger->Close();
+			_debugger.reset();
+		}
+		_is_closing = false;
+	}
 	_is_polling = true;
 	//printf("loop begin\n");
 	lws_service(_ws_ctx, 0);

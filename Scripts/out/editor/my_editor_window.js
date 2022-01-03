@@ -8,12 +8,12 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var MyEditorWindow_1;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.MyEditorWindow = void 0;
-const jsb = require("jsb");
 const System_1 = require("System");
 const UnityEditor_1 = require("UnityEditor");
 const UnityEngine_1 = require("UnityEngine");
 const editor_decorators_1 = require("plover/editor/editor_decorators");
 const class_decorators_1 = require("plover/runtime/class_decorators");
+const jsb = require("jsb");
 class TempWindow extends UnityEditor_1.EditorWindow {
     constructor() {
         super(...arguments);
@@ -168,7 +168,8 @@ let MyEditorWindow = MyEditorWindow_1 = class MyEditorWindow extends UnityEditor
             UnityEditor_1.Handles.DrawLine(center, center + rotMinute * new UnityEngine_1.Vector3(0, 75, 0));
             //@ts-ignore
             UnityEditor_1.Handles.DrawLine(center, center + rotHour * new UnityEngine_1.Vector3(0, 60, 0));
-        } else {
+        }
+        else {
             UnityEditor_1.Handles.DrawLine(center, UnityEngine_1.Vector3.op_Addition(center, UnityEngine_1.Quaternion.op_Multiply(rotSecond, new UnityEngine_1.Vector3(0, 90, 0))));
             UnityEditor_1.Handles.DrawLine(center, UnityEngine_1.Vector3.op_Addition(center, UnityEngine_1.Quaternion.op_Multiply(rotMinute, new UnityEngine_1.Vector3(0, 75, 0))));
             UnityEditor_1.Handles.DrawLine(center, UnityEngine_1.Vector3.op_Addition(center, UnityEngine_1.Quaternion.op_Multiply(rotHour, new UnityEngine_1.Vector3(0, 60, 0))));

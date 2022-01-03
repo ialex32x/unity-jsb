@@ -448,6 +448,7 @@ namespace QuickJS
             }
             else
             {
+                _logger?.Write(LogLevel.Info, "[EXPERIMENTAL] Waiting for debugger...");
                 JSApi.JS_SetWaitingForDebuggerFunc((JSContext)_mainContext, _RunIfWaitingForDebugger);
             }
         }
@@ -853,16 +854,10 @@ namespace QuickJS
         }
 
         /// <summary>
-        /// try to eval the main module if there is no main module loaded, otherwise load as non-main module
+        /// try to eval the main module
         /// </summary>
         public void EvalMain(string fileName)
         {
-            if (_mainContext.IsMainModuleLoaded())
-            {
-                ResolveModule(fileName, false);
-                return;
-            }
-
             ResolveModule(fileName, true);
             OnMainModuleLoaded?.Invoke(this);
         }

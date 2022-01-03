@@ -1,6 +1,6 @@
 import { Editor, EditorGUI, EditorGUILayout, EditorUtility, MessageType } from "UnityEditor";
 import { GUILayout, Object } from "UnityEngine";
-import { MyClass } from "../../example_monobehaviour";
+import { MyClass } from "../../components/sample_monobehaviour";
 import { ScriptEditor } from "plover/editor/editor_decorators";
 
 @ScriptEditor(MyClass)

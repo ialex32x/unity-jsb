@@ -37,8 +37,8 @@ namespace Example
         public int debugServerPort = 9229;
         
         /// <summary>
-        /// script runtime will be completely initialized after debugger connected
-        /// NOTE: this feature is unfinished, the initial breakpoints are still unable to hit
+        /// script runtime will complete the initialization process until the debugger is actually connected
+        /// @seealso ScriptRuntimeArgs.waitingForDebugger
         /// </summary>
         public bool waitingForDebugger = false;
 
@@ -108,7 +108,7 @@ namespace Example
 
         private void OnInitialized(ScriptRuntime obj)
         {
-            Debug.Log("run main script");
+            Debug.LogFormat("run main script: {0}", entryFileName);
             _rt.EvalMain(entryFileName);
         }
 

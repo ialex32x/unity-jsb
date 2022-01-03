@@ -2,12 +2,12 @@
 #include <cassert>
 #include "WSServer.h"
 
-#define SKIP_PRINT_CONTENT
+#define JSB_PRINT_CONTENT
 
 #if defined(JSB_EXEC_TEST)
 static void _print(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
-#if defined(SKIP_PRINT_CONTENT)
+#if defined(JSB_PRINT_CONTENT)
 	bool first = true;
 	for (int i = 0; i < args.Length(); i++)
 	{
@@ -709,8 +709,13 @@ JSValue JSContext::Eval(const char* input, size_t input_len, const char* filenam
 	v8::ScriptOrigin origin(isolate, v8::String::NewFromUtf8(isolate, filename).ToLocalChecked());
 	v8::MaybeLocal<v8::String> source = v8::String::NewFromUtf8(isolate, input, v8::NewStringType::kNormal, (int)input_len);
 	v8::MaybeLocal<v8::Script> script = v8::Script::Compile(context, source.ToLocalChecked(), &origin);
+	if (try_catch.HasCaught())
+	{
+		return _runtime->ThrowException(context, try_catch.Exception());
+	}
 	if (!script.IsEmpty())
 	{
+		v8::TryCatch try_catch(isolate);
 		v8::MaybeLocal<v8::Value> maybe_value = script.ToLocalChecked()->Run(context);
 		if (try_catch.HasCaught())
 		{
@@ -722,11 +727,6 @@ JSValue JSContext::Eval(const char* input, size_t input_len, const char* filenam
 			return _runtime->AddValue(context, value);
 		}
 		return JS_UNDEFINED;
-	}
-
-	if (try_catch.HasCaught())
-	{
-		return _runtime->ThrowException(context, try_catch.Exception());
 	}
 
 	return _runtime->ThrowError(context, "failed to compile");

@@ -662,7 +662,7 @@ int JSRuntime::ExecutePendingJob(JSContext** pctx)
 {
 	if (_context && _context->_debugServer)
 	{
-		_context->_debugServer->Update();
+		_context->_debugServer->Update(false);
 	}
 	_isolate->PerformMicrotaskCheckpoint();
 	*pctx = nullptr;

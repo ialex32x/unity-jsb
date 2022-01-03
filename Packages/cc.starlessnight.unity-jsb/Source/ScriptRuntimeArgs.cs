@@ -21,8 +21,8 @@ namespace QuickJS
         public bool withDebugServer;
 
         /// <summary>
-        /// [v8-bridge] wait until the debugger connected and be ready to use
-        /// NOTE: this feature is unfinished, the initial breakpoints are still unable to hit
+        /// the ScriptRuntime will complete the initialization process until the debugger is actually connected.
+        /// if very early breakpoints are required to be set, 'debugger' should be added to the script to hit before these breakpoints.
         /// </summary>
         public bool waitingForDebugger;
 
