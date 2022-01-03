@@ -309,105 +309,107 @@ namespace QuickJS.Unity
         {
             _alive = ScriptEngine.ForEachRuntime(runtime => { });
 
-            Block("Control", () =>
+            using (var scrollViewScope = new EditorGUILayout.ScrollViewScope(_sv))
             {
-                EditorGUI.BeginDisabledGroup(EditorApplication.isCompiling);
-                if (GUILayout.Button("Reload EditorScripting"))
+                _sv = scrollViewScope.scrollPosition;
+                Block("Control", () =>
                 {
-                    EditorRuntime.GetInstance()?.Reload();
-                }
-
-                if (GUILayout.Button("Reload CSharp"))
-                {
-                    UnityEditor.Compilation.CompilationPipeline.RequestScriptCompilation();
-                }
-
-                if (GUILayout.Button("GC (mono)"))
-                {
-                    GC.Collect();
-                    GC.WaitForPendingFinalizers();
-                }
-                EditorGUI.EndDisabledGroup();
-            });
-
-            Block("Engine", () =>
-            {
-                EditorGUI.BeginDisabledGroup(EditorApplication.isCompiling);
-                EditorGUILayout.BeginHorizontal();
-                EditorGUILayout.LabelField("Engine");
-                var selectedBackend = Array.IndexOf(_backends, Native.JSApi.JSBDLL);
-                var selectedBackendNew = GUILayout.Toolbar(selectedBackend, _backends);
-                if (selectedBackendNew != selectedBackend)
-                {
-                    if (EditorUtility.DisplayDialog("Switching backend", "Are you sure to switch to " + _backends[selectedBackendNew] + "?", "Confirm", "Cancel"))
+                    EditorGUI.BeginDisabledGroup(EditorApplication.isCompiling);
+                    if (GUILayout.Button("Reload EditorScripting"))
                     {
-                        var buildTargetGroup = EditorUserBuildSettings.selectedBuildTargetGroup;
-                        var defines = PlayerSettings.GetScriptingDefineSymbolsForGroup(buildTargetGroup).Split(';').ToList();
-                        if (_backends[selectedBackendNew] == "quickjs")
+                        EditorRuntime.GetInstance()?.Reload();
+                    }
+
+                    if (GUILayout.Button("Reload CSharp"))
+                    {
+                        UnityEditor.Compilation.CompilationPipeline.RequestScriptCompilation();
+                    }
+
+                    if (GUILayout.Button("GC (mono)"))
+                    {
+                        GC.Collect();
+                        GC.WaitForPendingFinalizers();
+                    }
+                    EditorGUI.EndDisabledGroup();
+                });
+
+                Block("Engine", () =>
+                {
+                    EditorGUI.BeginDisabledGroup(EditorApplication.isCompiling);
+                    EditorGUILayout.BeginHorizontal();
+                    EditorGUILayout.LabelField("Engine");
+                    var selectedBackend = Array.IndexOf(_backends, Native.JSApi.JSBDLL);
+                    var selectedBackendNew = GUILayout.Toolbar(selectedBackend, _backends);
+                    if (selectedBackendNew != selectedBackend)
+                    {
+                        if (EditorUtility.DisplayDialog("Switching backend", "Are you sure to switch to " + _backends[selectedBackendNew] + "?", "Confirm", "Cancel"))
                         {
-                            if (defines.Remove("JSB_WITH_V8_BACKEND"))
+                            var buildTargetGroup = EditorUserBuildSettings.selectedBuildTargetGroup;
+                            var defines = PlayerSettings.GetScriptingDefineSymbolsForGroup(buildTargetGroup).Split(';').ToList();
+                            if (_backends[selectedBackendNew] == "quickjs")
                             {
-                                PlayerSettings.SetScriptingDefineSymbolsForGroup(buildTargetGroup, string.Join(";", defines));
+                                if (defines.Remove("JSB_WITH_V8_BACKEND"))
+                                {
+                                    PlayerSettings.SetScriptingDefineSymbolsForGroup(buildTargetGroup, string.Join(";", defines));
+                                }
+                            }
+                            else
+                            {
+                                if (!defines.Contains("JSB_WITH_V8_BACKEND"))
+                                {
+                                    defines.Add("JSB_WITH_V8_BACKEND");
+                                    PlayerSettings.SetScriptingDefineSymbolsForGroup(buildTargetGroup, string.Join(";", defines));
+                                }
                             }
                         }
-                        else
+                    }
+                    EditorGUILayout.EndHorizontal();
+                    if (_backends[selectedBackendNew] != "quickjs")
+                    {
+                        EditorGUILayout.HelpBox("v8-bridge is still in experimental stage, the stability and the performance are unsure.", MessageType.Warning);
+                    }
+                    EditorGUI.EndDisabledGroup();
+
+                    EditorGUI.BeginDisabledGroup(true);
+                    EditorGUILayout.IntField("Version", Native.JSApi.SO_JSB_VERSION);
+                    EditorGUILayout.Toggle("IsDebugMode", Native.JSApi.IsDebugMode());
+                    EditorGUILayout.Toggle(GUIContent_Stats_Operator, Native.JSApi.IsOperatorOverloadingSupported);
+                    EditorGUI.EndDisabledGroup();
+
+                    _autoCap = EditorGUILayout.Toggle("Auto Refresh", _autoCap);
+                    EditorGUI.BeginDisabledGroup(!_autoCap);
+                    _timeCap = EditorGUILayout.Slider("Interval", _timeCap, 1f, 30f);
+                    EditorGUI.EndDisabledGroup();
+
+                    EditorGUI.BeginDisabledGroup(_alive == 0);
+                    if (GUILayout.Button("Capture"))
+                    {
+                        CaptureAll();
+                    }
+                    EditorGUI.EndDisabledGroup();
+                });
+
+                if (_alive == 0)
+                {
+                    EditorGUILayout.HelpBox("No Running Runtime", MessageType.Info);
+                    return;
+                }
+
+                EditorGUILayout.BeginHorizontal();
+                for (int i = 0, count = _snapshots.Count; i < count; i++)
+                {
+                    var snapshot = _snapshots[i];
+                    if (snapshot.alive)
+                    {
+                        lock (snapshot)
                         {
-                            if (!defines.Contains("JSB_WITH_V8_BACKEND"))
-                            {
-                                defines.Add("JSB_WITH_V8_BACKEND");
-                                PlayerSettings.SetScriptingDefineSymbolsForGroup(buildTargetGroup, string.Join(";", defines));
-                            }
+                            InspectSnapshow(snapshot);
                         }
                     }
                 }
                 EditorGUILayout.EndHorizontal();
-                if (_backends[selectedBackendNew] != "quickjs")
-                {
-                    EditorGUILayout.HelpBox("v8-bridge is still in experimental stage, the stability and the performance are unsure.", MessageType.Warning);
-                }
-                EditorGUI.EndDisabledGroup();
-
-                EditorGUI.BeginDisabledGroup(true);
-                EditorGUILayout.IntField("Version", Native.JSApi.SO_JSB_VERSION);
-                EditorGUILayout.Toggle("IsDebugMode", Native.JSApi.IsDebugMode());
-                EditorGUILayout.Toggle(GUIContent_Stats_Operator, Native.JSApi.IsOperatorOverloadingSupported);
-                EditorGUI.EndDisabledGroup();
-
-                _autoCap = EditorGUILayout.Toggle("Auto Refresh", _autoCap);
-                EditorGUI.BeginDisabledGroup(!_autoCap);
-                _timeCap = EditorGUILayout.Slider("Interval", _timeCap, 1f, 30f);
-                EditorGUI.EndDisabledGroup();
-
-                EditorGUI.BeginDisabledGroup(_alive == 0);
-                if (GUILayout.Button("Capture"))
-                {
-                    CaptureAll();
-                }
-                EditorGUI.EndDisabledGroup();
-            });
-
-            if (_alive == 0)
-            {
-                EditorGUILayout.HelpBox("No Running Runtime", MessageType.Info);
-                return;
             }
-
-            _sv = EditorGUILayout.BeginScrollView(_sv);
-            EditorGUILayout.BeginHorizontal();
-            for (int i = 0, count = _snapshots.Count; i < count; i++)
-            {
-                var snapshot = _snapshots[i];
-                if (snapshot.alive)
-                {
-                    lock (snapshot)
-                    {
-                        InspectSnapshow(snapshot);
-                    }
-                }
-            }
-            EditorGUILayout.EndHorizontal();
-            EditorGUILayout.EndScrollView();
-        }
+        } // end OnPaint()
     }
 }
 

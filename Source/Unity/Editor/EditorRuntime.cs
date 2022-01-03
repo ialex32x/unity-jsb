@@ -232,7 +232,7 @@ namespace QuickJS.Unity
 
             if (!string.IsNullOrEmpty(_prefs.editorEntryPoint))
             {
-                runtime.EvalMain(_prefs.editorEntryPoint);
+                runtime.ResolveModule(_prefs.editorEntryPoint);
             }
 
             foreach (var module in _prefs.editorRequires)

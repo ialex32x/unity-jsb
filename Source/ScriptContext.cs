@@ -27,7 +27,6 @@ namespace QuickJS
         /// globally defined require function object, its only used in source evaluated from scratch (not module) (e.g dofile/eval)
         private JSValue _require;
         private JSValue _mainModule;
-        private bool _mainModuleLoaded;
         private bool _isValid;
         private Regex _stRegex;
 
@@ -67,9 +66,7 @@ namespace QuickJS
             if (withDebugServer && debugServerPort > 0)
             {
                 JSApi.JS_OpenDebugger(_ctx, debugServerPort);
-#if !JSB_UNITYLESS && JSB_WITH_V8_BACKEND
-                UnityEngine.Debug.LogWarningFormat("[EXPERIMENTAL] debugger is now available with this URL (Windows x64 only): devtools://devtools/bundled/inspector.html?v8only=true&ws=127.0.0.1:{0}/1", debugServerPort);
-#endif
+                runtime.GetLogger()?.Write(LogLevel.Info, string.Format("[EXPERIMENTAL] Debugger is now available with this URL (Windows x64 only): devtools://devtools/bundled/inspector.html?v8only=true&ws=127.0.0.1:{0}/1", debugServerPort));
             }
             JSApi.JS_SetContextOpaque(_ctx, (IntPtr)_contextId);
             JSApi.JS_AddIntrinsicOperators(_ctx);
@@ -77,7 +74,6 @@ namespace QuickJS
             _moduleIdList = new List<string>();
             _stringCache = new JSStringCache(_ctx);
             _mainModule = JSApi.JS_NewObject(_ctx);
-            _mainModuleLoaded = false;
             _moduleCache = JSApi.JS_NewObject(_ctx);
             JSApi.JS_SetProperty(_ctx, _mainModule, GetAtom("cache"), JSApi.JS_DupValue(_ctx, _moduleCache));
             _globalObject = JSApi.JS_GetGlobalObject(_ctx);
@@ -239,7 +235,6 @@ namespace QuickJS
 
             JSApi.JS_FreeValue(_ctx, _moduleCache);
             JSApi.JS_FreeValue(_ctx, _mainModule);
-            _mainModuleLoaded = false;
             JSApi.JS_FreeValue(_ctx, _require);
             JSApi.JS_FreeContext(_ctx);
             var id = _contextId;
@@ -350,7 +345,7 @@ namespace QuickJS
         //NOTE: 返回值需要调用者 free
         public JSValue _new_commonjs_module_entry(string parent_module_id, string module_id, string filename, string resolvername, JSValue exports_obj, bool loaded, bool set_as_main)
         {
-            var module_obj = set_as_main && !IsMainModuleLoaded() ? JSApi.JS_DupValue(_ctx, _mainModule) : JSApi.JS_NewObject(_ctx);
+            var module_obj = set_as_main ? JSApi.JS_DupValue(_ctx, _mainModule) : JSApi.JS_NewObject(_ctx);
             var module_id_atom = GetAtom(module_id);
             var module_id_obj = JSApi.JS_AtomToString(_ctx, module_id_atom);
             var filename_atom = GetAtom(filename);
@@ -531,11 +526,6 @@ namespace QuickJS
         public void RaiseScriptReloadedEvent_throw(string resolved_id)
         {
             OnScriptReloaded?.Invoke(this, resolved_id);
-        }
-
-        public bool IsMainModuleLoaded()
-        {
-            return _mainModuleLoaded;
         }
 
 #if !JSB_UNITYLESS
@@ -913,6 +903,10 @@ namespace QuickJS
                 for (var i = 0; i < errlines.Length; i++)
                 {
                     var line = errlines[i];
+                    if (i == 0 && line == "Error")
+                    {
+                        continue;
+                    }
                     var matches = _stRegex.Matches(line);
                     if (matches.Count == 1)
                     {
