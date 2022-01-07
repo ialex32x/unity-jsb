@@ -21,11 +21,18 @@ namespace QuickJS.Utils
 
         private FSWatcher(string path, string filter)
         {
-            _fsw = new FileSystemWatcher(path ?? ".", filter ?? "*.*");
-            _fsw.Changed += OnChanged;
-            _fsw.Created += OnCreated;
-            _fsw.Deleted += OnDeleted;
-            _fsw.EnableRaisingEvents = true;
+            try
+            {
+                _fsw = new FileSystemWatcher(path ?? ".", filter ?? "*.*");
+                _fsw.Changed += OnChanged;
+                _fsw.Created += OnCreated;
+                _fsw.Deleted += OnDeleted;
+                _fsw.EnableRaisingEvents = true;
+            }
+            catch (Exception)
+            {
+                // failed to watch, it usually caused by watching not-exsited folder/file
+            }
         }
 
         private void OnChanged(object sender, FileSystemEventArgs e)
@@ -325,6 +332,10 @@ namespace QuickJS.Utils
                 {
                     throw new ThisBoundException();
                 }
+                if (self._fsw == null)
+                {
+                    throw new InvalidOperationException();
+                }
 
                 return ctx.NewString(self._fsw.Path);
             }
@@ -343,6 +354,10 @@ namespace QuickJS.Utils
                 if (!js_get_classvalue(ctx, this_obj, out self))
                 {
                     throw new ThisBoundException();
+                }
+                if (self._fsw == null)
+                {
+                    throw new InvalidOperationException();
                 }
                 if (!val.IsString())
                 {
@@ -368,6 +383,10 @@ namespace QuickJS.Utils
                 {
                     throw new ThisBoundException();
                 }
+                if (self._fsw == null)
+                {
+                    throw new InvalidOperationException();
+                }
 
                 return ctx.NewString(self._fsw.Filter);
             }
@@ -387,6 +406,10 @@ namespace QuickJS.Utils
                 {
                     throw new ThisBoundException();
                 }
+                if (self._fsw == null)
+                {
+                    throw new InvalidOperationException();
+                }
                 if (!val.IsString())
                 {
                     throw new InvalidDataException();
@@ -394,6 +417,25 @@ namespace QuickJS.Utils
 
                 self._fsw.Filter = JSApi.GetString(ctx, val);
                 return JSApi.JS_UNDEFINED;
+            }
+            catch (Exception exception)
+            {
+                return ctx.ThrowException(exception);
+            }
+        }
+
+        [MonoPInvokeCallback(typeof(JSGetterCFunction))]
+        private static JSValue js_get_isValid(JSContext ctx, JSValue this_obj)
+        {
+            try
+            {
+                FSWatcher self;
+                if (!js_get_classvalue(ctx, this_obj, out self))
+                {
+                    throw new ThisBoundException();
+                }
+
+                return self._fsw != null ? JSApi.JS_TRUE : JSApi.JS_FALSE;
             }
             catch (Exception exception)
             {
@@ -410,6 +452,10 @@ namespace QuickJS.Utils
                 if (!js_get_classvalue(ctx, this_obj, out self))
                 {
                     throw new ThisBoundException();
+                }
+                if (self._fsw == null)
+                {
+                    throw new InvalidOperationException();
                 }
 
                 return JSApi.JS_NewBool(ctx, self._fsw.IncludeSubdirectories);
@@ -429,6 +475,10 @@ namespace QuickJS.Utils
                 if (!js_get_classvalue(ctx, this_obj, out self))
                 {
                     throw new ThisBoundException();
+                }
+                if (self._fsw == null)
+                {
+                    throw new InvalidOperationException();
                 }
                 if (!val.IsBoolean())
                 {
@@ -454,6 +504,10 @@ namespace QuickJS.Utils
                 {
                     throw new ThisBoundException();
                 }
+                if (self._fsw == null)
+                {
+                    throw new InvalidOperationException();
+                }
 
                 return JSApi.JS_NewBool(ctx, self._fsw.EnableRaisingEvents);
             }
@@ -472,6 +526,10 @@ namespace QuickJS.Utils
                 if (!js_get_classvalue(ctx, this_obj, out self))
                 {
                     throw new ThisBoundException();
+                }
+                if (self._fsw == null)
+                {
+                    throw new InvalidOperationException();
                 }
                 if (!val.IsBoolean())
                 {
@@ -496,6 +554,7 @@ namespace QuickJS.Utils
                 var cls = register.CreateGlobalClass(typeof(FSWatcher).Name, typeof(FSWatcher), js_constructor);
                 cls.AddProperty(false, "path", js_get_path, js_set_path);
                 cls.AddProperty(false, "filter", js_get_filter, js_set_filter);
+                cls.AddProperty(false, "isValid", js_get_isValid, null);
                 cls.AddProperty(false, "enableRaisingEvents", js_get_enableRaisingEvents, js_set_enableRaisingEvents);
                 cls.AddProperty(false, "includeSubdirectories", js_get_includeSubdirectories, js_set_includeSubdirectories);
                 cls.AddProperty(false, "oncreate", js_get_oncreate, js_set_oncreate);
