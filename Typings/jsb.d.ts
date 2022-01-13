@@ -16,6 +16,26 @@ declare function postMessage(data: any): void;
 declare function jsx(type: string, attributes: any, content?: any): any;
 
 /**
+ * this module is only available with `editorScripting`
+ */
+declare module "jsb.editor" {
+    import { Prefs } from "QuickJS.Binding";
+    import { TSConfig } from "QuickJS.Utils";
+
+    class EditorRuntime {
+        /**
+         * the prefs loaded by EditorRuntime 
+         */
+        static readonly prefs: Prefs;
+
+        /**
+         * the tsconfig.json parsed by EditorRuntime
+         */
+        static readonly tsconfig: TSConfig;
+    }
+}
+
+/**
  * jsb 模块为内部提供的工具支持
  */
 declare module "jsb" {
