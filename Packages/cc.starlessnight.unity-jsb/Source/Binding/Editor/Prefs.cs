@@ -33,6 +33,12 @@ namespace QuickJS.Binding
         public string sourceDir = "Scripts/src";
 
         /// <summary>
+        /// [optional] read this property as javascript dir for js_reload 
+        /// !! this property is read only when tsconfig.json can not be located at the project root path or compilerOptions.outDir is not configured
+        /// </summary>
+        public string javascriptDir = ""; // Scripts/out
+
+        /// <summary>
         /// the output directory for generating static binding code
         /// </summary>
         public string outDir = "Assets/Generated/${platform}";

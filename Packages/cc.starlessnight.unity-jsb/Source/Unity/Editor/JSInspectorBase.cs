@@ -243,13 +243,13 @@ namespace QuickJS.Unity
                 return;
             }
 
+            var prefs = EditorRuntime.GetPrefs();
             var runtime = ScriptEngine.GetRuntime(ctx);
-            if (runtime == null || !runtime.isRunning)
+            if (prefs == null || runtime == null || !runtime.isRunning)
             {
                 return;
             }
 
-            var prefs = EditorRuntime.GetPrefs();
             var editorClass = JSApi.JS_UNDEFINED;
             var context = runtime.GetMainContext();
             var decorator_module = prefs.editorDecoratorScript;

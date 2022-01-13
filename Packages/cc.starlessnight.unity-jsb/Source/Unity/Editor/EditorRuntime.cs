@@ -11,6 +11,7 @@ namespace QuickJS.Unity
     using QuickJS.IO;
     using QuickJS;
     using QuickJS.Binding;
+    using QuickJS.Native;
 
     [InitializeOnLoad]
     public class EditorRuntime
@@ -28,6 +29,7 @@ namespace QuickJS.Unity
         private RunMode _runMode;
         private int _tick;
         private Prefs _prefs;
+        private TSConfig _tsConfig;
         private FileSystemWatcher _prefsWatcher;
         private float _changedFileInterval;
         private HashSet<string> _changedFileQueue;
@@ -44,6 +46,11 @@ namespace QuickJS.Unity
         public static Prefs GetPrefs()
         {
             return _instance?._prefs;
+        }
+
+        public static TSConfig GetTSConfig()
+        {
+            return _instance?._tsConfig;
         }
 
         public static EditorRuntime GetInstance()
@@ -202,7 +209,7 @@ namespace QuickJS.Unity
             runtime.OnMainModuleLoaded += OnScriptRuntimeMainModuleLoaded;
         }
 
-        public TSConfig GetTSConfig(string workspace = null)
+        public static TSConfig LoadTSConfig(string workspace = null)
         {
             var tsconfigPath = string.IsNullOrEmpty(workspace) ? "tsconfig.json" : Path.Combine(workspace, "tsconfig.json");
             if (File.Exists(tsconfigPath))
@@ -222,12 +229,13 @@ namespace QuickJS.Unity
 
         private void OnScriptRuntimeInitializing(ScriptRuntime runtime)
         {
-            var tsconfig = GetTSConfig();
+            _tsConfig = LoadTSConfig();
 
-            if (tsconfig != null)
+            if (_tsConfig != null)
             {
-                runtime.AddSearchPath(tsconfig.compilerOptions.outDir);
+                runtime.AddSearchPath(_tsConfig.compilerOptions.outDir);
             }
+            runtime.AddStaticModule("jsb.editor", Bind);
             JSScriptFinder.GetInstance().ModuleSourceChanged += OnModuleSourceChanged;
 
             if (!string.IsNullOrEmpty(_prefs.editorEntryPoint))
@@ -247,6 +255,31 @@ namespace QuickJS.Unity
             {
                 runtime.ResolveModule(editorScript.modulePath);
             }
+        }
+
+        public static ClassDecl Bind(TypeRegister register)
+        {
+            var ns_jsb = register.CreateClass("JSBEditorModule");
+
+            {
+                var ns_editorRuntime = register.CreateClass("JSEditorRuntimeClass");
+                ns_editorRuntime.AddProperty(true, "prefs", JS_GetPrefs, null);
+                ns_editorRuntime.AddProperty(true, "tsconfig", JS_GetTSConfig, null);
+                ns_jsb.AddValue("EditorRuntime", ns_editorRuntime.GetConstructor());
+            }
+            return ns_jsb;
+        }
+
+        [MonoPInvokeCallback(typeof(JSGetterCFunction))]
+        private static JSValue JS_GetPrefs(JSContext ctx, JSValue this_val)
+        {
+            return Values.js_push_classvalue(ctx, GetPrefs());
+        }
+
+        [MonoPInvokeCallback(typeof(JSGetterCFunction))]
+        private static JSValue JS_GetTSConfig(JSContext ctx, JSValue this_val)
+        {
+            return Values.js_push_classvalue(ctx, GetTSConfig());
         }
 
         private void OnModuleSourceChanged(string modulePath, JSScriptClassType classTypes)

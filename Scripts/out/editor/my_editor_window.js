@@ -14,6 +14,7 @@ const UnityEngine_1 = require("UnityEngine");
 const editor_decorators_1 = require("plover/editor/editor_decorators");
 const class_decorators_1 = require("plover/runtime/class_decorators");
 const jsb = require("jsb");
+const jsb_editor_1 = require("jsb.editor");
 class TempWindow extends UnityEditor_1.EditorWindow {
     constructor() {
         super(...arguments);
@@ -136,7 +137,10 @@ let MyEditorWindow = MyEditorWindow_1 = class MyEditorWindow extends UnityEditor
         }
     }
     OnGUI() {
+        var _a, _b, _c;
         UnityEditor_1.EditorGUILayout.HelpBox("Hello", UnityEditor_1.MessageType.Info);
+        UnityEditor_1.EditorGUILayout.LabelField("Prefs.sourceDir", ((_a = jsb_editor_1.EditorRuntime === null || jsb_editor_1.EditorRuntime === void 0 ? void 0 : jsb_editor_1.EditorRuntime.prefs) === null || _a === void 0 ? void 0 : _a.sourceDir) || "No sourceDir");
+        UnityEditor_1.EditorGUILayout.LabelField("TSConfig.outDir", ((_c = (_b = jsb_editor_1.EditorRuntime === null || jsb_editor_1.EditorRuntime === void 0 ? void 0 : jsb_editor_1.EditorRuntime.tsconfig) === null || _b === void 0 ? void 0 : _b.compilerOptions) === null || _c === void 0 ? void 0 : _c.outDir) || "No outDir");
         UnityEditor_1.EditorGUILayout.LabelField(typeof this.continuousInteger);
         this.continuousInteger = UnityEditor_1.EditorGUILayout.IntField("ContinuousInteger", this.continuousInteger || 0) + 1;
         if (UnityEngine_1.GUILayout.Button("I am Javascript")) {

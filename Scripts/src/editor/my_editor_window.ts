@@ -4,6 +4,7 @@ import { FocusType, GUIContent, GUILayout, GUIUtility, Rect, Event, GUIStyle, GU
 import { ScriptEditorWindow } from "plover/editor/editor_decorators";
 import { ScriptInteger, ScriptProperty, ScriptString } from "plover/runtime/class_decorators";
 import * as jsb from "jsb";
+import { EditorRuntime } from "jsb.editor";
 
 class TempWindow extends EditorWindow {
     private _greeting = false;
@@ -165,6 +166,8 @@ export class MyEditorWindow extends EditorWindow {
 
     OnGUI() {
         EditorGUILayout.HelpBox("Hello", MessageType.Info);
+        EditorGUILayout.LabelField("Prefs.sourceDir", EditorRuntime?.prefs?.sourceDir || "No sourceDir");
+        EditorGUILayout.LabelField("TSConfig.outDir", EditorRuntime?.tsconfig?.compilerOptions?.outDir || "No outDir");
         EditorGUILayout.LabelField(typeof this.continuousInteger);
         this.continuousInteger = EditorGUILayout.IntField("ContinuousInteger", this.continuousInteger || 0) + 1;
 

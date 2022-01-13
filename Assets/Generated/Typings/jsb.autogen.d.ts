@@ -7940,14 +7940,15 @@ declare module "QuickJS.Unity" {
     import * as jsb from "jsb";
     import { Object, Array, ValueType } from "System";
     import { Texture } from "UnityEngine";
+    import { Prefs } from "QuickJS.Binding";
     import { MonoScript } from "UnityEditor";
     @jsb.RequiredDefines("UNITY_EDITOR")
     abstract class UnityHelper extends Object {
         static GetIcon(name: string): Texture
         static GenerateBindingsAndTypeDefinition(): void
         static GenerateTypeDefinition(): void
-        static LoadPrefs(filePath: jsb.Out<string>): any
-        static LoadPrefs(): any
+        static LoadPrefs(filePath: jsb.Out<string>): Prefs
+        static LoadPrefs(): Prefs
         static GetMonoScript(type: any): MonoScript
         static IsReflectBindingSupported(): boolean
         static InvokeReflectBinding(): void
@@ -7973,6 +7974,91 @@ declare module "QuickJS.Unity" {
         static JSAssetClassNameRegex: any
         static JSCustomEditorClassNameRegex: any
         static JSEditorWindowClassNameRegex: any
+    }
+}
+declare module "QuickJS.Binding" {
+    import * as jsb from "jsb";
+    import { Object } from "System";
+    @jsb.RequiredDefines("UNITY_EDITOR")
+    class Prefs extends Object {
+        protected constructor()
+        readonly newline: string
+        static readonly PATH: string
+        filePath: string
+        logPath: string
+        sourceDir: string
+        javascriptDir: string
+        outDir: string
+        typescriptDir: string
+        typescriptExt: string
+        xmlDocDir: string
+        jsModulePackInfoPath: string
+        genTypescriptDoc: boolean
+        editorScripting: boolean
+        preferredBindingMethod: string
+        enableOperatorOverloading: boolean
+        alwaysEmitOperatorMethod: boolean
+        editorEntryPoint: string
+        assetPostProcessors: any
+        editorRequires: any
+        editorDecoratorScript: string
+        debugCodegen: boolean
+        skipDelegateWithByRefParams: boolean
+        verboseLog: boolean
+        optToString: boolean
+        singleTSD: boolean
+        alwaysCheckArgType: boolean
+        alwaysCheckArgc: boolean
+        randomizedBindingCode: boolean
+        typeBindingPrefix: string
+        ns: string
+        defaultJSModule: string
+        extraExtForTypescript: string
+        newLineStyle: string
+        tab: string
+        skipBinding: any
+        cleanupDir: any
+        explicitAssemblies: any
+        implicitAssemblies: any
+        typeFullNameBlacklist: any
+        namespaceBlacklist: any
+        assemblyBlacklist: any
+    }
+}
+declare module "QuickJS.Utils" {
+    import * as jsb from "jsb";
+    import { Object, Array } from "System";
+    @jsb.RequiredDefines("UNITY_EDITOR")
+    class TSConfig extends Object {
+        protected constructor()
+        compilerOptions: TSConfig.CompilerOptions
+        compileOnSave: boolean
+        include: Array<string>
+        exclude: Array<string>
+    }
+}
+declare module "QuickJS.Utils" {
+    import * as jsb from "jsb";
+    import { Object, Array } from "System";
+    namespace TSConfig {
+        @jsb.RequiredDefines("UNITY_EDITOR")
+        class CompilerOptions extends Object {
+            protected constructor()
+            module_: string
+            target: string
+            sourceRoot: string
+            outDir: string
+            outFile: string
+            typeRoots: Array<string>
+            moduleResolution: string
+            types: Array<string>
+            listEmittedFiles: boolean
+            experimentalDecorators: boolean
+            noImplicitAny: boolean
+            allowJs: boolean
+            inlineSourceMap: boolean
+            sourceMap: boolean
+        }
     }
 }
 declare module "UnityEngine" {

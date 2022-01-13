@@ -2506,8 +2506,9 @@ define("plover/editor/base/editor_window_base", ["require", "exports", "UnityEdi
     }
     exports.EditorWindowBase = EditorWindowBase;
 });
-define("plover/editor/js_reload", ["require", "exports", "plover/editor/file_watcher", "jsb"], function (require, exports, file_watcher_1, jsb_1) {
+define("plover/editor/js_reload", ["require", "exports", "plover/editor/file_watcher", "jsb", "jsb.editor"], function (require, exports, file_watcher_1, jsb_1, jsb_editor_1) {
     "use strict";
+    var _a, _b, _c;
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.reload = void 0;
     let FileWatcherSymbol = Symbol.for("GlobalFileWatcher");
@@ -2515,7 +2516,6 @@ define("plover/editor/js_reload", ["require", "exports", "plover/editor/file_wat
         globalThis[FileWatcherSymbol].dispose();
         delete globalThis[FileWatcherSymbol];
     }
-    let fw = new file_watcher_1.FileWatcher("Scripts", "*.js");
     function reload(mod) {
         if (typeof mod === "object") {
             let dirtylist = [];
@@ -2545,27 +2545,40 @@ define("plover/editor/js_reload", ["require", "exports", "plover/editor/file_wat
             }
         }
     }
-    fw.on(file_watcher_1.FileWatcher.CHANGED, this, function (filestates) {
-        let cache = require.main["cache"];
-        let dirtylist = [];
-        for (let name in filestates) {
-            let filestate = filestates[name];
-            // console.log("file changed:", filestate.name, filestate.fullPath, filestate.state);
-            if (filestate.state != file_watcher_1.EFileState.CHANGE) {
-                continue;
-            }
-            for (let moduleId in cache) {
-                let mod = cache[moduleId];
-                // console.warn(mod.filename, mod.filename == filestate.fullPath)
-                if (mod.filename == filestate.fullPath) {
-                    collect_reload_deps(mod, dirtylist);
-                    break;
+    let outDir = ((_b = (_a = jsb_editor_1.EditorRuntime === null || jsb_editor_1.EditorRuntime === void 0 ? void 0 : jsb_editor_1.EditorRuntime.tsconfig) === null || _a === void 0 ? void 0 : _a.compilerOptions) === null || _b === void 0 ? void 0 : _b.outDir) || ((_c = jsb_editor_1.EditorRuntime === null || jsb_editor_1.EditorRuntime === void 0 ? void 0 : jsb_editor_1.EditorRuntime.prefs) === null || _c === void 0 ? void 0 : _c.javascriptDir);
+    if (typeof outDir === "string" && outDir.length > 0) {
+        try {
+            let fw = new file_watcher_1.FileWatcher(outDir, "*.js");
+            fw.on(file_watcher_1.FileWatcher.CHANGED, this, function (filestates) {
+                let cache = require.main["cache"];
+                let dirtylist = [];
+                for (let name in filestates) {
+                    let filestate = filestates[name];
+                    // console.log("file changed:", filestate.name, filestate.fullPath, filestate.state);
+                    if (filestate.state != file_watcher_1.EFileState.CHANGE) {
+                        continue;
+                    }
+                    for (let moduleId in cache) {
+                        let mod = cache[moduleId];
+                        // console.warn(mod.filename, mod.filename == filestate.fullPath)
+                        if (mod.filename == filestate.fullPath) {
+                            collect_reload_deps(mod, dirtylist);
+                            break;
+                        }
+                    }
                 }
-            }
+                do_reload(dirtylist);
+            });
+            globalThis[FileWatcherSymbol] = fw;
+            console.log("watching", outDir);
         }
-        do_reload(dirtylist);
-    });
-    globalThis[FileWatcherSymbol] = fw;
+        catch (error) {
+            console.error(error);
+        }
+    }
+    else {
+        console.warn("can not read compilerOptions.outDir from EditorRuntime");
+    }
 });
 define("plover/editor/js_module_view", ["require", "exports", "UnityEditor", "UnityEngine", "plover/text/string_utils", "plover/editor/base/editor_window_base", "plover/editor/js_reload"], function (require, exports, UnityEditor_11, UnityEngine_13, string_utils_2, editor_window_base_1, js_reload_1) {
     "use strict";
