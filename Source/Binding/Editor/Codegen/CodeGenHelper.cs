@@ -449,6 +449,9 @@ namespace QuickJS.Binding
                     case UnityEditor.BuildTarget.StandaloneOSX:
                         predef = "UNITY_STANDALONE_OSX";
                         break;
+                    case UnityEditor.BuildTarget.StandaloneLinux64:
+                        predef = "UNITY_STANDALONE_LINUX";
+                        break;
                     default:
                         predef = string.Format("false // {0} is not supported", buildTarget);
                         break;
