@@ -151,6 +151,27 @@ namespace QuickJS.Unity
             return null;
         }
 
+        public static void SetDefineSymbol(string defineItem, bool isAdding)
+        {
+            var buildTargetGroup = EditorUserBuildSettings.selectedBuildTargetGroup;
+            var defines = PlayerSettings.GetScriptingDefineSymbolsForGroup(buildTargetGroup).Split(';').ToList();
+            if (isAdding)
+            {
+                if (!defines.Contains(defineItem))
+                {
+                    defines.Add(defineItem);
+                    PlayerSettings.SetScriptingDefineSymbolsForGroup(buildTargetGroup, string.Join(";", defines));
+                }
+            }
+            else
+            {
+                if (defines.Remove(defineItem))
+                {
+                    PlayerSettings.SetScriptingDefineSymbolsForGroup(buildTargetGroup, string.Join(";", defines));
+                }
+            }
+        }
+
         public static bool IsReflectBindingSupported()
         {
             return LoadPrefs().preferredBindingMethod == "Reflect Bind";

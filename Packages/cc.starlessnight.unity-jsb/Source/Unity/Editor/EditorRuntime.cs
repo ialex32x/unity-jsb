@@ -231,7 +231,7 @@ namespace QuickJS.Unity
         {
             _tsConfig = LoadTSConfig();
 
-            if (_tsConfig != null)
+            if (_tsConfig != null && !string.IsNullOrEmpty(_tsConfig.compilerOptions.outDir))
             {
                 runtime.AddSearchPath(_tsConfig.compilerOptions.outDir);
             }
