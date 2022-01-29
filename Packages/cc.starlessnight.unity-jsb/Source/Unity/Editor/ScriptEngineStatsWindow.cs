@@ -320,11 +320,12 @@ namespace QuickJS.Unity
                         EditorRuntime.GetInstance()?.Reload();
                     }
 
+#if UNITY_2019_4_OR_NEWER
                     if (GUILayout.Button("Reload CSharp"))
                     {
                         UnityEditor.Compilation.CompilationPipeline.RequestScriptCompilation();
                     }
-
+#endif
                     if (GUILayout.Button("GC (mono)"))
                     {
                         GC.Collect();

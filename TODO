@@ -13,13 +13,13 @@ BUGFIX:
     ✔ build quickjs libraries for linux @done(21-09-26 19:11)
     ☐ JS Worker Runtime 的类型绑定
     ✔ 主模块与一般模块共用一致的加载流程 @done(21-09-26 19:11)
-    ☐ ES模块与require模块逻辑一致
+    ✔ [CANCELLED] ES模块与require模块逻辑一致 @done(22-01-29 15:15)
     ✔ 支持 dotnetcore/.net @done(21-05-01 08:06)
     ☐ 额外的运行时通讯机制 (jsb.runtimes, jsb.postMessage)
     ☐ 考虑 Worker 传递消息时 C# 对象的传输 (使用加锁共享池?)
     ☐ JS Worker SAB
     ✔ types lazy load (代替 warmup) @done(21-05-01 08:01)
-    ☐ V8 backend (windows) 
+    ✔ V8 backend (windows) @done(22-01-29 15:15)
 
 编辑器支持:
     ✔ 完善 JSEditorWindow 功能 @done(21-07-25 23:30)
@@ -32,7 +32,7 @@ Codegen:
     ✔ JSB_UNITYLESS 环境下 d.ts 的输出 @done(21-07-25 23:30)
     ☐ 提供选项自动添加关联类型的导出 (如果是泛型具体类, 且对应基类已经导出, 那么自动导出此泛型具体类)
     ☐ 子类中存在不同签名的同名方法时 (非虚)  时, 输出 ts-ignore
-    ☐ 在单一文件中生成 cs 代码
+    ✔ [CANCELLED] 在单一文件中生成 cs 代码 @done(22-01-29 15:16)
     ☐ jsb.autogen.d.ts 调整
         ☐ 按大小或行数自动分割
         ☐ 按模块分隔
@@ -47,7 +47,7 @@ Codegen:
 次要:
     ☐ 代码文档注释
     ☐ quickjs Date 只处理了UTC时间
-    ☐ 以更通用且自动化的方式生成可继承的类型
+    ✔ [CANCELLED] 以更通用且自动化的方式生成可继承的类型 @done(22-01-29 15:17)
     ☐ 在 unity_qjs.c 中提供 fopen/fread/fclose (为了绕过 C# 中对已经在其他程序中打开的独占文件的读取限制)
     ✔ README in English @done(21-05-10 19:14)
     ✔ 提供 reload 接口 (清空指定模块, 并使用原 parent 进行重新载入) @done(21-05-01 08:05)
