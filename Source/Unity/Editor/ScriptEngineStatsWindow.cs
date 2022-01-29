@@ -345,23 +345,7 @@ namespace QuickJS.Unity
                     {
                         if (EditorUtility.DisplayDialog("Switching backend", "Are you sure to switch to " + _backends[selectedBackendNew] + "?", "Confirm", "Cancel"))
                         {
-                            var buildTargetGroup = EditorUserBuildSettings.selectedBuildTargetGroup;
-                            var defines = PlayerSettings.GetScriptingDefineSymbolsForGroup(buildTargetGroup).Split(';').ToList();
-                            if (_backends[selectedBackendNew] == "quickjs")
-                            {
-                                if (defines.Remove("JSB_WITH_V8_BACKEND"))
-                                {
-                                    PlayerSettings.SetScriptingDefineSymbolsForGroup(buildTargetGroup, string.Join(";", defines));
-                                }
-                            }
-                            else
-                            {
-                                if (!defines.Contains("JSB_WITH_V8_BACKEND"))
-                                {
-                                    defines.Add("JSB_WITH_V8_BACKEND");
-                                    PlayerSettings.SetScriptingDefineSymbolsForGroup(buildTargetGroup, string.Join(";", defines));
-                                }
-                            }
+                            UnityHelper.SetDefineSymbol("JSB_WITH_V8_BACKEND", _backends[selectedBackendNew] != "quickjs");
                         }
                     }
                     EditorGUILayout.EndHorizontal();
@@ -371,9 +355,17 @@ namespace QuickJS.Unity
                     }
                     EditorGUI.EndDisabledGroup();
 
+                    var old_isDebugMode = Native.JSApi.IsDebugMode();
+                    var new_isDebugMode = EditorGUILayout.Toggle("IsDebugMode", old_isDebugMode);
+                    if (new_isDebugMode != old_isDebugMode)
+                    {
+                        if (EditorUtility.DisplayDialog("Setting debug symbol", "Are you sure to " + (new_isDebugMode ? "set" : "unset") + " debug mode?", "Confirm", "Cancel"))
+                        {
+                            UnityHelper.SetDefineSymbol("JSB_DEBUG", new_isDebugMode);
+                        }
+                    }
                     EditorGUI.BeginDisabledGroup(true);
                     EditorGUILayout.IntField("Version", Native.JSApi.SO_JSB_VERSION);
-                    EditorGUILayout.Toggle("IsDebugMode", Native.JSApi.IsDebugMode());
                     EditorGUILayout.Toggle(GUIContent_Stats_Operator, Native.JSApi.IsOperatorOverloadingSupported);
                     EditorGUI.EndDisabledGroup();
 
