@@ -8,7 +8,7 @@ namespace QuickJS.Unity
     using UnityEngine;
     using UnityEditor;
 
-    public class ScriptEngineStatsWindow : BaseEditorWindow
+    public class ScriptEngineStatsWindow : BaseEditorWindow, IHasCustomMenu
     {
         private static readonly string[] _backends = { "quickjs", "v8-bridge" };
         private static GUIContent GUIContent_Stats_Operator = new GUIContent("Operator", "Is operator overloading supported?");
@@ -83,6 +83,11 @@ namespace QuickJS.Unity
         string ToCountText(long size)
         {
             return size.ToString();
+        }
+
+        public void AddItemsToMenu(GenericMenu menu)
+        {
+            menu.AddItem(new GUIContent("JS Launcher"), false, () => GetWindow<ScriptEditorWindowLauncher>().Show());
         }
 
         private Snapshot GetSnapshot(int id)
