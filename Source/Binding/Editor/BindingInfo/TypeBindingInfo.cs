@@ -793,16 +793,13 @@ namespace QuickJS.Binding
 
                         foreach (var mb in variant.plainMethods)
                         {
-                            var dynamicMethod = new Binding.DynamicMethod(dynamicType, mb.method, mb.isExtension);
-
+                            var dynamicMethod = Binding.DynamicMethodFactory.CreateMethod(dynamicType, mb.method, mb.isExtension);
                             methodGroup.Add(dynamicMethod);
                         }
 
                         foreach (var mb in variant.varargMethods)
                         {
-                            //TODO: [maybe] use a speficied dynamic method class for vararg method
-                            var dynamicMethod = new Binding.DynamicMethod(dynamicType, mb.method, mb.isExtension);
-
+                            var dynamicMethod = Binding.DynamicMethodFactory.CreateMethod(dynamicType, mb.method, mb.isExtension);
                             methodGroup.Add(dynamicMethod);
                         }
                     }
@@ -832,16 +829,13 @@ namespace QuickJS.Binding
 
                         foreach (var mb in variant.plainMethods)
                         {
-                            var dynamicMethod = new Binding.DynamicMethod(dynamicType, mb.method, mb.isExtension);
-
+                            var dynamicMethod = Binding.DynamicMethodFactory.CreateMethod(dynamicType, mb.method, mb.isExtension);
                             methodGroup.Add(dynamicMethod);
                         }
 
                         foreach (var mb in variant.varargMethods)
                         {
-                            //TODO: [maybe] use a speficied dynamic method class for vararg method
-                            var dynamicMethod = new Binding.DynamicMethod(dynamicType, mb.method, mb.isExtension);
-
+                            var dynamicMethod = Binding.DynamicMethodFactory.CreateMethod(dynamicType, mb.method, mb.isExtension);
                             methodGroup.Add(dynamicMethod);
                         }
                     }
@@ -910,7 +904,7 @@ namespace QuickJS.Binding
 
                 foreach (var operatorBindingInfo in operators)
                 {
-                    var dynamicMethod = new Binding.DynamicMethod(dynamicType, operatorBindingInfo.methodInfo, operatorBindingInfo.isExtension);
+                    var dynamicMethod = Binding.DynamicMethodFactory.CreateMethod(dynamicType, operatorBindingInfo.methodInfo, operatorBindingInfo.isExtension);
                     var regName = operatorBindingInfo.jsName;
                     var parameters = operatorBindingInfo.methodInfo.GetParameters();
                     var declaringType = operatorBindingInfo.methodInfo.DeclaringType;

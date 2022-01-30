@@ -88,6 +88,7 @@ namespace QuickJS.Unity
         public void AddItemsToMenu(GenericMenu menu)
         {
             menu.AddItem(new GUIContent("JS Launcher"), false, () => GetWindow<ScriptEditorWindowLauncher>().Show());
+            menu.AddItem(new GUIContent("Prefs"), false, () => GetWindow<PrefsEditor>().Show());
         }
 
         private Snapshot GetSnapshot(int id)
