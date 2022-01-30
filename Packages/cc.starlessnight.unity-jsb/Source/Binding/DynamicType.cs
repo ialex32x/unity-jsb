@@ -60,7 +60,7 @@ namespace QuickJS.Binding
                 var dynamicMethod = default(IDynamicMethod);
                 if (count == 1)
                 {
-                    dynamicMethod = new DynamicMethod(this, methodInfos[0], false);
+                    dynamicMethod = DynamicMethodFactory.CreateMethod(this, methodInfos[0], false);
                 }
                 else
                 {
@@ -69,7 +69,7 @@ namespace QuickJS.Binding
                     {
                         var methodInfo = methodInfos[i];
                         DynamicMethodBase overload;
-                        overload = new DynamicMethod(this, methodInfos[i], false);
+                        overload = DynamicMethodFactory.CreateMethod(this, methodInfos[i], false);
                         overloads.Add(overload);
                     }
                     dynamicMethod = overloads;
