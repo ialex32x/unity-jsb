@@ -361,6 +361,8 @@ namespace QuickJS.Unity
         private BindingManager _bindingManager;
 
         private int _selectedTabViewIndex;
+
+        [NonSerialized]
         private GUIContent[] _tabViewNames = new GUIContent[] { };
         private Action[] _tabViewDrawers = new Action[] { };
         private string[] _newlineValues = new string[] { "cr", "lf", "crlf", "" };
@@ -385,6 +387,14 @@ namespace QuickJS.Unity
         private List<IView> _allViews = new List<IView>();
         private IView _activeView;
 
+        private List<string> _repeatStringCache = new List<string>(new string[] { "" });
+        [NonSerialized]
+        private Vector2 _scrollPosition_TypeCastRegistry;
+        [NonSerialized]
+        private Vector2 _scrollPosition_Codegen;
+        [NonSerialized]
+        private Rect _typesViewRect;
+        
         public void AddTabView(string name, Action action)
         {
             ArrayUtility.Add(ref _tabViewNames, new GUIContent(name));
@@ -599,7 +609,6 @@ namespace QuickJS.Unity
             });
         }
 
-        private List<string> _repeatStringCache = new List<string>(new string[] { "" });
         private string RepeatString(string v, int repeat)
         {
             while (_repeatStringCache.Count < repeat + 1)
@@ -609,7 +618,6 @@ namespace QuickJS.Unity
             return _repeatStringCache[repeat];
         }
 
-        private Vector2 _scrollPosition_TypeCastRegistry;
         private void DrawView_TypeCastRegistry()
         {
             //TODO jsb.editor/prefs: draw it as a tree
@@ -650,7 +658,6 @@ namespace QuickJS.Unity
             }
         }
 
-        private Vector2 _scrollPosition_Codegen;
         private void DrawView_Codegen()
         {
             using (var scope = new EditorGUILayout.ScrollViewScope(_scrollPosition_Codegen))
@@ -728,7 +735,6 @@ namespace QuickJS.Unity
             }
         }
 
-        private Rect _typesViewRect;
         private void DrawView_Types()
         {
             var y = 90f;
