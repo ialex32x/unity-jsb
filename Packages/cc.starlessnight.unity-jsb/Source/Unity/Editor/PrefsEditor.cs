@@ -394,7 +394,7 @@ namespace QuickJS.Unity
         private Vector2 _scrollPosition_Codegen;
         [NonSerialized]
         private Rect _typesViewRect;
-        
+
         public void AddTabView(string name, Action action)
         {
             ArrayUtility.Add(ref _tabViewNames, new GUIContent(name));
@@ -766,21 +766,21 @@ namespace QuickJS.Unity
         {
             var assemblyList = AppDomain.CurrentDomain.GetAssemblies();
             Array.Sort<Assembly>(assemblyList, (a, b) => string.Compare(a.FullName, b.FullName, true));
-            List<Type[]> aTypes = new List<Type[]>(assemblyList.Length);
+            List<Tuple<Assembly, Type[]>> aTypes = new List<Tuple<Assembly, Type[]>>(assemblyList.Length);
             foreach (var assembly in assemblyList)
             {
                 if (!assembly.IsDynamic)
                 {
                     var types = assembly.GetExportedTypes();
-                    aTypes.Add(types);
+                    aTypes.Add(new Tuple<Assembly, Type[]>(assembly, types));
                     _typeTreeConstructAll += types.Length;
                 }
             }
 
-            for (int i = 0, count = assemblyList.Length; i < count; i++)
+            for (int i = 0, count = aTypes.Count; i < count; i++)
             {
-                var assembly = assemblyList[i];
-                var e = ConstructAssemblyNode(assembly, aTypes[i]);
+                var tuple = aTypes[i];
+                var e = ConstructAssemblyNode(tuple.Item1, tuple.Item2);
                 while (e.MoveNext())
                 {
                     yield return null;
