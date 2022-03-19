@@ -293,6 +293,7 @@ namespace QuickJS.Binding
             "UnityEngine.Experimental.TerrainAPI",
             "UnityEngine.Experimental.XR",
             "UnityEngine.Experimental.Video",
+            "UnityEditor.Experimental.U2D",
             "UnityEngine.Jobs",
             "Unity.Jobs",
             "Unity.Profiling",
