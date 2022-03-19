@@ -57,8 +57,10 @@ namespace QuickJS.Binding
                 this.variants.Add(nargs, variant);
             }
 
-            _count++;
-            variant.Add(method, isVararg, isExtension);
+            if (variant.Add(method, isVararg, isExtension))
+            {
+                _count++;
+            }
             return true;
         }
     }

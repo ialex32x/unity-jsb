@@ -72,7 +72,7 @@ namespace QuickJS.Binding
             this.argc = argc;
         }
 
-        public void Add(T methodInfo, bool isVararg, bool isExtension)
+        public bool Add(T methodInfo, bool isVararg, bool isExtension)
         {
             //TODO: method 按照参数的具体程度排序以提高 match_type 的有效命中率
             if (isVararg)
@@ -81,7 +81,7 @@ namespace QuickJS.Binding
                 {
                     if (entry.CheckMethodEquality(methodInfo, isExtension))
                     {
-                        return;
+                        return false;
                     }
                 }
                 this.varargMethods.Add(new MethodBind(methodInfo, isExtension));
@@ -92,11 +92,12 @@ namespace QuickJS.Binding
                 {
                     if (entry.CheckMethodEquality(methodInfo, isExtension))
                     {
-                        return;
+                        return false;
                     }
                 }
                 this.plainMethods.Add(new MethodBind(methodInfo, isExtension));
             }
+            return true;
         }
     }
 }
