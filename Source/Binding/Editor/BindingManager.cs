@@ -1467,6 +1467,20 @@ namespace QuickJS.Binding
             }
         }
 
+        public TypeBindingInfo GetExportedTypeRecursively(Type type)
+        {
+            TypeBindingInfo typeBindingInfo;
+            if (type != null)
+            {
+                if (_exportedTypes.TryGetValue(type, out typeBindingInfo))
+                {
+                    return typeBindingInfo;
+                }
+                return GetExportedTypeRecursively(type.BaseType);
+            }
+            return null;
+        }
+
         private void OnPostCollectTypes()
         {
             for (int i = 0, size = _enabledBindingProcess.Count; i < size; i++)
@@ -1481,6 +1495,62 @@ namespace QuickJS.Binding
                     this.Error($"process failed [{bp}][OnPostCollect]: {exception}");
                 }
             }
+
+
+            for (int i = 0, size = _collectedTypes.Count; i < size; i++)
+            {
+                var collectedType = _collectedTypes[i];
+                CollectIncompatibleMethods(collectedType);
+            }
+        }
+
+        private void CollectIncompatibleMethods(TypeBindingInfo typeBindingInfo)
+        {
+            foreach (var method in typeBindingInfo.methods)
+            {
+                var interfaces = typeBindingInfo.type.GetInterfaces();
+                foreach (var interfaceType in interfaces)
+                {
+                    var interfaceTypeBindingInfo = GetExportedTypeRecursively(interfaceType);
+                    MergeIncompatibleMethods(method.Value, interfaceTypeBindingInfo);
+                }
+
+                var baseType = typeBindingInfo.super;
+                while (baseType != null)
+                {
+                    var baseTypeBindingInfo = GetExportedTypeRecursively(baseType);
+                    if (!MergeIncompatibleMethods(method.Value, baseTypeBindingInfo))
+                    {
+                        break;
+                    }
+                    baseType = baseTypeBindingInfo.super;
+                }
+            }
+        }
+
+        private bool MergeIncompatibleMethods(MethodBindingInfo target, TypeBindingInfo source)
+        {
+            if (source == null)
+            {
+                return false;
+            }
+            MethodBindingInfo sourceMethod;
+            if (source.methods.TryGetValue(target.jsName, out sourceMethod))
+            {
+                foreach (var kv in sourceMethod.variants)
+                {
+                    foreach (var i in kv.Value.plainMethods)
+                    {
+                        target.Add(i.method, i.isExtension);
+                    }
+
+                    foreach (var i in kv.Value.varargMethods)
+                    {
+                        target.Add(i.method, i.isExtension);
+                    }
+                }
+            }
+            return true;
         }
 
         private void OnPreGenerateType(TypeBindingInfo bindingInfo)
