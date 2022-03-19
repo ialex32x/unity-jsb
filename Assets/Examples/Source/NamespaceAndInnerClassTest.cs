@@ -39,4 +39,20 @@ namespace Example.New.World
             }
         }
     }
+
+    [JSType]
+    public class IncompatibleOverloadTest1
+    {
+        public void Test()
+        {
+        }
+    }
+
+    [JSType]
+    public class IncompatibleOverloadTest2 : IncompatibleOverloadTest1
+    {
+        public void Test(int a)
+        {
+        }
+    }
 }
