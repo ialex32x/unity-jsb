@@ -201,6 +201,10 @@ namespace QuickJS.Binding
         {
         }
 
+        public void BindRawTypes(ICollection<RawTypeBindingInfo> rawTypes)
+        {
+        }
+
         public bool OnTypeGenerating(TypeBindingInfo typeBindingInfo, int current, int total)
         {
             return false;
@@ -232,9 +236,9 @@ namespace QuickJS.Binding
             }
         }
 
-        public void OnGenerateBindingList(CodeGenerator cg, IEnumerable<IGrouping<string, TypeBindingInfo>> modules)
+        public void OnGenerateBindingList(CodeGenerator cg, IEnumerable<IGrouping<string, TypeBindingInfo>> modules, ICollection<RawTypeBindingInfo> rawTypes)
         {
-            cg.GenerateBindingList(_namespace, _className, modules, false);
+            cg.GenerateBindingList(_namespace, _className, modules, false, rawTypes);
         }
 
         private Assembly CompileSource(string source, string assemblyName, IEnumerable<Assembly> referencedAssemblies)

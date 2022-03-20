@@ -20,6 +20,9 @@ namespace jsb.Editor
 
         public override void OnPreExporting(BindingManager bindingManager)
         {
+#if !UNITY_WEBGL
+            bindingManager.AddExportedRawTypes(typeof(QuickJS.Utils.FSWatcher)).EditorRuntime();
+#endif
             // bindingManager.AddTypePrefixBlacklist("Unity.");
             // bindingManager.AddTypePrefixBlacklist("TreeEditor.");
             bindingManager.AddTypeFullNameBlacklist("UnityEditor.UpdatePrefabInstancesEventArgs");

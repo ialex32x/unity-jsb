@@ -25,6 +25,6 @@ namespace QuickJS.Binding
 
         void OnSourceCodeEmitted(CodeGenerator cg, string csOutDir, string csName, SourceCodeType type, string source);
 
-        void OnGenerateBindingList(CodeGenerator cg, IEnumerable<IGrouping<string, TypeBindingInfo>> modules);
+        void OnGenerateBindingList(CodeGenerator cg, IEnumerable<IGrouping<string, TypeBindingInfo>> modules, ICollection<RawTypeBindingInfo> rawTypes);
     }
 }

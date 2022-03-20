@@ -219,12 +219,12 @@ namespace QuickJS.Unity
 
         internal interface IView
         {
-            void Draw(PrefsEditor contenxt);
+            void Draw(PrefsEditor context);
         }
 
         internal class NoneView : IView
         {
-            public void Draw(PrefsEditor contenxt)
+            public void Draw(PrefsEditor context)
             {
                 EditorGUILayout.HelpBox("Nothing", MessageType.Warning);
             }
@@ -239,7 +239,7 @@ namespace QuickJS.Unity
                 _namespace = ns;
             }
 
-            public void Draw(PrefsEditor contenxt)
+            public void Draw(PrefsEditor context)
             {
                 if (_namespace == "-")
                 {
@@ -248,21 +248,21 @@ namespace QuickJS.Unity
                 else
                 {
                     EditorGUILayout.LabelField("Namespace", _namespace);
-                    var blocked = contenxt._bindingManager.IsNamespaceInBlacklist(_namespace);
+                    var blocked = context._bindingManager.IsNamespaceInBlacklist(_namespace);
                     var blocked_t = EditorGUILayout.Toggle("Blacklisted", blocked);
                     if (blocked_t != blocked)
                     {
                         if (blocked_t)
                         {
-                            contenxt._bindingManager.AddNamespaceBlacklist(_namespace);
-                            contenxt._prefs.namespaceBlacklist.Add(_namespace);
+                            context._bindingManager.AddNamespaceBlacklist(_namespace);
+                            context._prefs.namespaceBlacklist.Add(_namespace);
                         }
                         else
                         {
-                            contenxt._bindingManager.RemoveNamespaceBlacklist(_namespace);
-                            contenxt._prefs.namespaceBlacklist.Remove(_namespace);
+                            context._bindingManager.RemoveNamespaceBlacklist(_namespace);
+                            context._prefs.namespaceBlacklist.Remove(_namespace);
                         }
-                        contenxt.MarkAsDirty();
+                        context.MarkAsDirty();
                     }
                 }
             }
@@ -277,7 +277,7 @@ namespace QuickJS.Unity
                 _type = type;
             }
 
-            public void Draw(PrefsEditor contenxt)
+            public void Draw(PrefsEditor context)
             {
                 if (_type == null)
                 {
@@ -285,33 +285,58 @@ namespace QuickJS.Unity
                     return;
                 }
 
-                var typeBindingInfo = contenxt._bindingManager.GetExportedType(_type);
+                if (DrawTypeBindingInfo(context._bindingManager.GetExportedType(_type)))
+                {
+                    return;
+                }
+
+                if (DrawRawTypeBindingInfo(context._bindingManager.GetExportedRawType(_type)))
+                {
+                    return;
+                }
+                
+                EditorGUILayout.HelpBox(_type.Name + " will not be exported to the script runtime", MessageType.Warning);
+            }
+
+            private bool DrawRawTypeBindingInfo(RawTypeBindingInfo rawTypeBindingInfo)
+            {
+                if (rawTypeBindingInfo == null)
+                {
+                    return false;
+                }
+                EditorGUI.BeginDisabledGroup(true);
+                EditorGUILayout.TextField("Raw Binding", rawTypeBindingInfo.type.Name);
+                EditorGUI.EndDisabledGroup();
+                return true;
+            }
+
+            private bool DrawTypeBindingInfo(TypeBindingInfo typeBindingInfo)
+            {
                 if (typeBindingInfo == null)
                 {
-                    EditorGUILayout.HelpBox(_type.Name + " will not be exported to the script runtime", MessageType.Warning);
+                    return false;
                 }
-                else
+
+                EditorGUI.BeginDisabledGroup(true);
+                EditorGUILayout.Toggle("Managed", typeBindingInfo.disposable);
+                EditorGUILayout.TextField("Binding", typeBindingInfo.csBindingName ?? string.Empty);
+
+                var tsTypeNaming = typeBindingInfo.tsTypeNaming;
+                EditorGUILayout.TextField("JS Module", tsTypeNaming.jsModule);
+                EditorGUILayout.TextField("JS Namespace", tsTypeNaming.jsNamespace);
+                EditorGUILayout.TextField("JS Name", tsTypeNaming.jsLocalName);
+
+                var requiredDefines = typeBindingInfo.transform.requiredDefines;
+                if (requiredDefines != null && requiredDefines.Count > 0)
                 {
-                    EditorGUI.BeginDisabledGroup(true);
-                    EditorGUILayout.Toggle("Managed", typeBindingInfo.disposable);
-                    EditorGUILayout.TextField("Binding", typeBindingInfo.csBindingName ?? string.Empty);
-
-                    var tsTypeNaming = typeBindingInfo.tsTypeNaming;
-                    EditorGUILayout.TextField("JS Module", tsTypeNaming.jsModule);
-                    EditorGUILayout.TextField("JS Namespace", tsTypeNaming.jsNamespace);
-                    EditorGUILayout.TextField("JS Name", tsTypeNaming.jsLocalName);
-
-                    var requiredDefines = typeBindingInfo.transform.requiredDefines;
-                    if (requiredDefines != null && requiredDefines.Count > 0)
+                    EditorGUILayout.LabelField("Required Defines");
+                    foreach (var def in requiredDefines)
                     {
-                        EditorGUILayout.LabelField("Required Defines");
-                        foreach (var def in requiredDefines)
-                        {
-                            EditorGUILayout.TextField(def);
-                        }
+                        EditorGUILayout.TextField(def);
                     }
-                    EditorGUI.EndDisabledGroup();
                 }
+                EditorGUI.EndDisabledGroup();
+                return true;
             }
         }
 
@@ -324,7 +349,7 @@ namespace QuickJS.Unity
                 _assembly = assembly;
             }
 
-            public void Draw(PrefsEditor contenxt)
+            public void Draw(PrefsEditor context)
             {
                 if (_assembly == null)
                 {
@@ -332,8 +357,8 @@ namespace QuickJS.Unity
                     return;
                 }
 
-                var name = contenxt._bindingManager.GetSimplifiedAssemblyName(_assembly);
-                var blocked = contenxt._bindingManager.InAssemblyBlacklist(name);
+                var name = context._bindingManager.GetSimplifiedAssemblyName(_assembly);
+                var blocked = context._bindingManager.InAssemblyBlacklist(name);
 
                 EditorGUILayout.LabelField("Assembly", _assembly.FullName);
                 EditorGUILayout.LabelField("Location", _assembly.Location);
@@ -342,15 +367,15 @@ namespace QuickJS.Unity
                 {
                     if (blocked_t)
                     {
-                        contenxt._bindingManager.AddAssemblyBlacklist(name);
-                        contenxt._prefs.assemblyBlacklist.Add(name);
+                        context._bindingManager.AddAssemblyBlacklist(name);
+                        context._prefs.assemblyBlacklist.Add(name);
                     }
                     else
                     {
-                        contenxt._bindingManager.RemoveAssemblyBlacklist(name);
-                        contenxt._prefs.assemblyBlacklist.Remove(name);
+                        context._bindingManager.RemoveAssemblyBlacklist(name);
+                        context._prefs.assemblyBlacklist.Remove(name);
                     }
-                    contenxt.MarkAsDirty();
+                    context.MarkAsDirty();
                 }
             }
         }
