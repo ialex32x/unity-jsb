@@ -57,9 +57,9 @@ namespace QuickJS.Binding
             _bindingManager.AddOutputFile(codeOutDir, csPath);
         }
 
-        public void OnGenerateBindingList(CodeGenerator cg, IEnumerable<IGrouping<string, TypeBindingInfo>> modules)
+        public void OnGenerateBindingList(CodeGenerator cg, IEnumerable<IGrouping<string, TypeBindingInfo>> modules, ICollection<RawTypeBindingInfo> rawTypes)
         {
-            cg.GenerateBindingList(Values.NamespaceOfStaticBinder, Values.ClassNameOfStaticBinder, modules, true);
+            cg.GenerateBindingList(Values.NamespaceOfStaticBinder, Values.ClassNameOfStaticBinder, modules, true, rawTypes);
         }
     }
 }

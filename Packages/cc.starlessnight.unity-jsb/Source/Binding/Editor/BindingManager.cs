@@ -39,6 +39,7 @@ namespace QuickJS.Binding
         private Dictionary<Type, TSTypeNaming> _tsTypeNamings = new Dictionary<Type, TSTypeNaming>();
         private Dictionary<string, TSModuleBindingInfo> _exportedModules = new Dictionary<string, TSModuleBindingInfo>();
         private List<TypeBindingInfo> _collectedTypes = new List<TypeBindingInfo>(); // 已经完成导出的类型 
+        private Dictionary<Type, RawTypeBindingInfo> _collectedRawTypes = new Dictionary<Type, RawTypeBindingInfo>(); // 已经完成导出的类型 
         private Dictionary<Type, DelegateBridgeBindingInfo> _exportedDelegates = new Dictionary<Type, DelegateBridgeBindingInfo>();
         private Dictionary<Type, Type> _redirectDelegates = new Dictionary<Type, Type>();
 
@@ -414,6 +415,45 @@ namespace QuickJS.Binding
             {
                 _hotfixTypes.Add(type);
             }
+        }
+
+        public RawTypeBindingInfo GetExportedRawType(Type type)
+        {
+            RawTypeBindingInfo rawTypeBindingInfo;
+            return _collectedRawTypes.TryGetValue(type, out rawTypeBindingInfo) ? rawTypeBindingInfo : null;
+        }
+
+        public TypeTransform AddExportedRawTypes(Type type)
+        {
+            var typeTransform = TransformType(type);
+            if (!_collectedRawTypes.ContainsKey(type))
+            {
+                var method = type.GetMethod("Bind", BindingFlags.Public | BindingFlags.Static | BindingFlags.DeclaredOnly);
+                do 
+                {
+                    if (method == null)
+                    {
+                        Error("no Bind() on raw type: {0}", type.FullName);
+                        break;
+                    }
+                    
+                    if (method.ReturnType != typeof(void))
+                    {
+                        Error("incorrect return type of Bind() on raw type: {0}", type.FullName);
+                        break;
+                    }
+
+                    var parameters = method.GetParameters();
+                    if (parameters.Length != 1 || parameters[0].ParameterType != typeof(TypeRegister))
+                    {
+                        Error("incorrect parameter type of Bind() on raw type: {0}", type.FullName);
+                        break;
+                    }
+
+                    _collectedRawTypes.Add(type, new RawTypeBindingInfo(type, method));
+                } while (false);
+            }
+            return typeTransform;
         }
 
         /// <summary>
@@ -2114,6 +2154,7 @@ namespace QuickJS.Binding
                     // for reflect binding
                     if (_bindingCallback != null)
                     {
+                        _bindingCallback.BindRawTypes(_collectedRawTypes.Values);
                         foreach (var module in modules)
                         {
                             var count = module.Count();
@@ -2134,7 +2175,7 @@ namespace QuickJS.Binding
                     if (_codegenCallback != null)
                     {
                         cg.Clear();
-                        _codegenCallback.OnGenerateBindingList(cg, modules);
+                        _codegenCallback.OnGenerateBindingList(cg, modules, _collectedRawTypes.Values);
                         _WriteCSharp(cg, csOutDir, CodeGenerator.NameOfBindingList);
                         _WriteTSD(cg, tsOutDir, CodeGenerator.NameOfBindingList, !prefs.singleTSD);
                     }

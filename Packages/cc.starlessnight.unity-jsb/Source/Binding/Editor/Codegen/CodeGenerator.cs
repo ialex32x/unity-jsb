@@ -61,7 +61,7 @@ namespace QuickJS.Binding
             }
         }
 
-        public void GenerateBindingList(string @namespace, string className, IEnumerable<IGrouping<string, TypeBindingInfo>> modules, bool writeModules)
+        public void GenerateBindingList(string @namespace, string className, IEnumerable<IGrouping<string, TypeBindingInfo>> modules, bool writeModules, ICollection<RawTypeBindingInfo> rawTypes)
         {
             this.cs.enabled = (typeBindingFlags & TypeBindingFlags.BindingCode) != 0;
             this.tsDeclare.enabled = (typeBindingFlags & TypeBindingFlags.TypeDefinition) != 0;
@@ -159,6 +159,7 @@ namespace QuickJS.Binding
                                             }
 
                                             method.AddStatement("{0}.{1}.Bind(runtime);", this.bindingManager.prefs.ns, CodeGenerator.NameOfDelegates);
+                                            GenerateRawTypes(rawTypes);
                                         } // func: BindAll
                                     } // 'preserved' attribute for func: BindAll
                                 } // class 
@@ -173,6 +174,25 @@ namespace QuickJS.Binding
             {
                 WriteJSON(this.bindingManager.prefs.jsModulePackInfoPath, this.bindResult);
             }
+        }
+
+        private void GenerateRawTypes(ICollection<RawTypeBindingInfo> rawTypeBindingInfos)
+        {
+            this.cs.AppendLine("{");
+            this.cs.AddTabLevel();
+            this.cs.AppendLine("var register = runtime.GetMainContext().CreateTypeRegister();");
+            foreach (var rawTypeBindingInfo in rawTypeBindingInfos)
+            {
+                var transform = bindingManager.TransformType(rawTypeBindingInfo.type);
+                using (new CSEditorOnlyCodeGen(this, transform.requiredDefines))
+                {
+                    var typename = this.bindingManager.GetCSTypeFullName(rawTypeBindingInfo.type);
+                    this.cs.AppendLine("{0}.Bind(register);", rawTypeBindingInfo.type.FullName);
+                }
+            }
+            this.cs.AppendLine("register.Finish();");
+            this.cs.DecTabLevel();
+            this.cs.AppendLine("}");
         }
 
         // 生成委托绑定

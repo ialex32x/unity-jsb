@@ -82,7 +82,7 @@ namespace QuickJS.Binding
                     var returnType = invoke.ReturnType;
                     var parameters = invoke.GetParameters();
                     var method = _bindingManager.GetReflectedDelegateMethod(returnType, parameters);
-                    
+
                     _backend.AddDelegate(delegateType, method);
                     return method;
                 }
@@ -202,6 +202,29 @@ namespace QuickJS.Binding
 
         public void OnBindingEnd()
         {
+        }
+
+        public void BindRawTypes(ICollection<RawTypeBindingInfo> rawTypes)
+        {
+            if (rawTypes.Count == 0)
+            {
+                return;
+            }
+
+            var register = _runtime.GetMainContext().CreateTypeRegister();
+            var parameters = new object[] { register };
+            foreach (var type in rawTypes)
+            {
+                try
+                {
+                    type.method.Invoke(null, parameters);
+                }
+                catch (Exception exception)
+                {
+                    _bindingManager.Error(exception);
+                }
+            }
+            register.Finish();
         }
 
         public void BeginStaticModule(string moduleName, int capacity)

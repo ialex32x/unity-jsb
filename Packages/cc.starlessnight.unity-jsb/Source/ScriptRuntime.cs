@@ -34,9 +34,7 @@ namespace QuickJS
         public event Action OnUpdate;
         public event Action<ScriptContext, string> OnScriptReloading;
         public event Action<ScriptContext, string> OnScriptReloaded;
-
         public Func<JSContext, string, string, int, string> OnSourceMap;
-        public Action<ScriptRuntime, TypeRegister> extraBinding;
 
         // private Mutext _lock;
         private JSRuntime _rt;
@@ -415,15 +413,6 @@ namespace QuickJS
                 JSWorker.Bind(register);
             }
             TimerManager.Bind(register);
-            try
-            {
-                extraBinding?.Invoke(this, register);
-            }
-            catch (Exception exception)
-            {
-                _logger?.WriteException(exception);
-            }
-            extraBinding = null;
             register.Finish();
 
             AddStaticModule("jsb", ScriptContext.Bind);
@@ -511,7 +500,6 @@ namespace QuickJS
             var runtime = ScriptEngine.CreateRuntime();
 
             runtime._isWorker = true;
-            runtime.extraBinding += extraBinding;
             runtime.Initialize(new ScriptRuntimeArgs()
             {
                 fileSystem = _fileSystem,

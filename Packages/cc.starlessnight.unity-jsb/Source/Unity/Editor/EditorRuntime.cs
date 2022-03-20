@@ -201,10 +201,6 @@ namespace QuickJS.Unity
 
         private void OnScriptRuntimeCreated(ScriptRuntime runtime)
         {
-            runtime.extraBinding += (_1, register) =>
-            {
-                FSWatcher.Bind(register);
-            };
             runtime.OnInitializing += OnScriptRuntimeInitializing;
             runtime.OnMainModuleLoaded += OnScriptRuntimeMainModuleLoaded;
         }

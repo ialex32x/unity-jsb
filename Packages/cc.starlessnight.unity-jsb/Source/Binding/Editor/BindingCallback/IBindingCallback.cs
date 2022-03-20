@@ -13,6 +13,7 @@ namespace QuickJS.Binding
         void OnBindingBegin(BindingManager bindingManager);
         void OnBindingEnd();
 
+        void BindRawTypes(ICollection<RawTypeBindingInfo> rawTypes);
         void BeginStaticModule(string moduleName, int capacity);
         void AddTypeReference(string moduleName, TypeBindingInfo typeBindingInfo);
         void EndStaticModule(string moduleName);

@@ -82,15 +82,6 @@ namespace Example
             // _rt.EnableSourceMap();
             // }
             _rt.AddModuleResolvers();
-            _rt.extraBinding += (runtime, register) =>
-            {
-#if !UNITY_WEBGL
-                FSWatcher.Bind(register);
-                QuickJS.Extra.WebSocket.Bind(register);
-                QuickJS.Extra.XMLHttpRequest.Bind(register);
-#endif
-            };
-
             _rt.OnInitialized += OnInitialized;
             _rt.Initialize(new ScriptRuntimeArgs
             {

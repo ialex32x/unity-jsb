@@ -11,6 +11,10 @@ namespace Example.Editor
     {
         public override void OnPreExporting(BindingManager bindingManager)
         {
+#if !UNITY_WEBGL
+            bindingManager.AddExportedRawTypes(typeof(QuickJS.Extra.WebSocket));
+            bindingManager.AddExportedRawTypes(typeof(QuickJS.Extra.XMLHttpRequest));
+#endif
             // bindingManager.TryExportExtensionMethods(typeof(ExtensionTest));  // expose all extension methods
             bindingManager.AddExtensionMethod<Transform>(ExtensionTest.ResetAll); // expose single extension method
 
