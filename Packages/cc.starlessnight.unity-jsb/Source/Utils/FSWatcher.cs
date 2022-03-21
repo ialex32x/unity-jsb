@@ -547,21 +547,18 @@ namespace QuickJS.Utils
 
         #endregion
 
-        public static void Bind(TypeRegister register)
+        public static void Bind(TypeRegister register, string name)
         {
-            if (!register.IsGlobalRegistered(typeof(FSWatcher).Name))
-            {
-                var cls = register.CreateGlobalClass(typeof(FSWatcher).Name, typeof(FSWatcher), js_constructor);
-                cls.AddProperty(false, "path", js_get_path, js_set_path);
-                cls.AddProperty(false, "filter", js_get_filter, js_set_filter);
-                cls.AddProperty(false, "isValid", js_get_isValid, null);
-                cls.AddProperty(false, "enableRaisingEvents", js_get_enableRaisingEvents, js_set_enableRaisingEvents);
-                cls.AddProperty(false, "includeSubdirectories", js_get_includeSubdirectories, js_set_includeSubdirectories);
-                cls.AddProperty(false, "oncreate", js_get_oncreate, js_set_oncreate);
-                cls.AddProperty(false, "ondelete", js_get_ondelete, js_set_ondelete);
-                cls.AddProperty(false, "onchange", js_get_onchange, js_set_onchange);
-                cls.AddMethod(false, "dispose", js_dispose, 0);
-            }
+            var cls = register.CreateGlobalClass(name, typeof(FSWatcher), js_constructor);
+            cls.AddProperty(false, "path", js_get_path, js_set_path);
+            cls.AddProperty(false, "filter", js_get_filter, js_set_filter);
+            cls.AddProperty(false, "isValid", js_get_isValid, null);
+            cls.AddProperty(false, "enableRaisingEvents", js_get_enableRaisingEvents, js_set_enableRaisingEvents);
+            cls.AddProperty(false, "includeSubdirectories", js_get_includeSubdirectories, js_set_includeSubdirectories);
+            cls.AddProperty(false, "oncreate", js_get_oncreate, js_set_oncreate);
+            cls.AddProperty(false, "ondelete", js_get_ondelete, js_set_ondelete);
+            cls.AddProperty(false, "onchange", js_get_onchange, js_set_onchange);
+            cls.AddMethod(false, "dispose", js_dispose, 0);
         }
     }
 }

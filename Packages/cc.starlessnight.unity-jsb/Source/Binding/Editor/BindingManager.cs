@@ -444,7 +444,9 @@ namespace QuickJS.Binding
                     }
 
                     var parameters = method.GetParameters();
-                    if (parameters.Length != 1 || parameters[0].ParameterType != typeof(TypeRegister))
+                    if (parameters.Length != 2 
+                    || parameters[0].ParameterType != typeof(TypeRegister)
+                    || parameters[1].ParameterType != typeof(string))
                     {
                         Error("incorrect parameter type of Bind() on raw type: {0}", type.FullName);
                         break;

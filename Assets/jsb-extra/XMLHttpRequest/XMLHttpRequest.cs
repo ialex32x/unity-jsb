@@ -506,14 +506,9 @@ namespace QuickJS.Extra
             }
         }
 
-        public static void Bind(TypeRegister register)
+        public static void Bind(TypeRegister register, string name)
         {
-            if (register.IsGlobalRegistered(typeof(XMLHttpRequest).Name))
-            {
-                return;
-            }
-            
-            var cls = register.CreateGlobalClass(typeof(XMLHttpRequest).Name, typeof(XMLHttpRequest), js_constructor);
+            var cls = register.CreateGlobalClass(name, typeof(XMLHttpRequest), js_constructor);
             cls.AddMethod(false, "open", js_open, 2);
             cls.AddMethod(false, "send", js_send, 0);
             cls.AddProperty(false, "readyState", js_get_readyState, null);

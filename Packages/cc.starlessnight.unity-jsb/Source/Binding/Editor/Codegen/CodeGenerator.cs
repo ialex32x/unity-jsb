@@ -187,7 +187,13 @@ namespace QuickJS.Binding
                 using (new CSEditorOnlyCodeGen(this, transform.requiredDefines))
                 {
                     var typename = this.bindingManager.GetCSTypeFullName(rawTypeBindingInfo.type);
-                    this.cs.AppendLine("{0}.Bind(register);", rawTypeBindingInfo.type.FullName);
+                    var jsname = rawTypeBindingInfo.jsName;
+                    this.cs.AppendLine("if (!register.IsGlobalRegistered(\"{0}\"))", jsname);
+                    this.cs.AppendLine("{");
+                    this.cs.AddTabLevel();
+                    this.cs.AppendLine("{0}.Bind(register, \"{1}\");", rawTypeBindingInfo.type.FullName, jsname);
+                    this.cs.DecTabLevel();
+                    this.cs.AppendLine("}");
                 }
             }
             this.cs.AppendLine("register.Finish();");

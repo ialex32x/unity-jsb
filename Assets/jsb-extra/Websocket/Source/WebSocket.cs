@@ -834,14 +834,9 @@ namespace QuickJS.Extra
             }
         }
 
-        public static void Bind(TypeRegister register)
+        public static void Bind(TypeRegister register, string name)
         {
-            if (register.IsGlobalRegistered(typeof(WebSocket).Name))
-            {
-                return;
-            }
-
-            var cls = register.CreateGlobalClass(typeof(WebSocket).Name, typeof(WebSocket), _js_constructor);
+            var cls = register.CreateGlobalClass(name, typeof(WebSocket), _js_constructor);
             cls.AddMethod(false, "close", _js_close);
             cls.AddMethod(false, "send", _js_send);
             cls.AddProperty(false, "readyState", _js_readyState, null);
