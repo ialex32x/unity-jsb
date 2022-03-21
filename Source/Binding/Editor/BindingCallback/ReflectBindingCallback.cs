@@ -212,12 +212,16 @@ namespace QuickJS.Binding
             }
 
             var register = _runtime.GetMainContext().CreateTypeRegister();
-            var parameters = new object[] { register };
+            var parameters = new object[] { register, null };
             foreach (var type in rawTypes)
             {
                 try
                 {
-                    type.method.Invoke(null, parameters);
+                    parameters[1] = type.jsName;
+                    if (!register.IsGlobalRegistered(type.jsName))
+                    {
+                        type.method.Invoke(null, parameters);
+                    }
                 }
                 catch (Exception exception)
                 {

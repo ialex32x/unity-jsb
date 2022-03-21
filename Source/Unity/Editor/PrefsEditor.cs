@@ -305,7 +305,7 @@ namespace QuickJS.Unity
                     return false;
                 }
                 EditorGUI.BeginDisabledGroup(true);
-                EditorGUILayout.TextField("Raw Binding", rawTypeBindingInfo.type.Name);
+                EditorGUILayout.TextField("Raw Binding", rawTypeBindingInfo.jsName);
                 EditorGUI.EndDisabledGroup();
                 return true;
             }
