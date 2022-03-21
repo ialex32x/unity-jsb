@@ -85,10 +85,22 @@ namespace QuickJS.Unity
             return size.ToString();
         }
 
+        private void GarbadgeCollect()
+        {
+            GC.Collect();
+            GC.WaitForPendingFinalizers();
+        }
+
         public void AddItemsToMenu(GenericMenu menu)
         {
             menu.AddItem(new GUIContent("JS Launcher"), false, () => GetWindow<ScriptEditorWindowLauncher>().Show());
             menu.AddItem(new GUIContent("Prefs"), false, () => GetWindow<PrefsEditor>().Show());
+            menu.AddSeparator("");
+            menu.AddItem(new GUIContent("GC (mono)"), false, () => GarbadgeCollect());
+            menu.AddItem(new GUIContent("Reload EditorScripting"), false, () => EditorRuntime.GetInstance()?.Reload());
+#if UNITY_2019_4_OR_NEWER
+            menu.AddItem(new GUIContent("Reload CSharp"), false, () => UnityEditor.Compilation.CompilationPipeline.RequestScriptCompilation());
+#endif
         }
 
         private Snapshot GetSnapshot(int id)
@@ -223,16 +235,7 @@ namespace QuickJS.Unity
             {
                 EditorGUILayout.Toggle("Static Bind", snapshot.isStaticBinding);
                 EditorGUILayout.IntField("Exported Types", snapshot.exportedTypes);
-                EditorGUILayout.BeginHorizontal();
-                EditorGUILayout.TextField("ManagedObject Count", snapshot.managedObjectCount + "/" + snapshot.managedObjectCap, GUILayout.ExpandWidth(false));
-                var pr = EditorGUILayout.GetControlRect();
-                EditorGUI.DrawRect(pr, new Color(42f / 255f, 42f / 255f, 42f / 255f, 1));
-                pr.x += 1f;
-                pr.y += 1f;
-                pr.height -= 2f;
-                pr.width = (pr.width - 2f) * snapshot.managedObjectCount / snapshot.managedObjectCap;
-                EditorGUI.DrawRect(pr, Color.gray);
-                EditorGUILayout.EndHorizontal();
+                EditorGUILayout.TextField("ManagedObject Count", snapshot.managedObjectCount + "/" + snapshot.managedObjectCap);
                 _fetchManagedObjectRefs = EditorGUILayout.Toggle("Details", _fetchManagedObjectRefs);
                 if (snapshot.fetchManagedObjectRefs)
                 {
@@ -318,27 +321,6 @@ namespace QuickJS.Unity
             using (var scrollViewScope = new EditorGUILayout.ScrollViewScope(_sv))
             {
                 _sv = scrollViewScope.scrollPosition;
-                Block("Control", () =>
-                {
-                    EditorGUI.BeginDisabledGroup(EditorApplication.isCompiling);
-                    if (GUILayout.Button("Reload EditorScripting"))
-                    {
-                        EditorRuntime.GetInstance()?.Reload();
-                    }
-
-#if UNITY_2019_4_OR_NEWER
-                    if (GUILayout.Button("Reload CSharp"))
-                    {
-                        UnityEditor.Compilation.CompilationPipeline.RequestScriptCompilation();
-                    }
-#endif
-                    if (GUILayout.Button("GC (mono)"))
-                    {
-                        GC.Collect();
-                        GC.WaitForPendingFinalizers();
-                    }
-                    EditorGUI.EndDisabledGroup();
-                });
 
                 Block("Engine", () =>
                 {
@@ -381,10 +363,6 @@ namespace QuickJS.Unity
                     EditorGUI.EndDisabledGroup();
 
                     EditorGUI.BeginDisabledGroup(_alive == 0);
-                    if (GUILayout.Button("Capture"))
-                    {
-                        CaptureAll();
-                    }
                     EditorGUI.EndDisabledGroup();
                 });
 
