@@ -420,7 +420,14 @@ namespace QuickJS.Unity
 
         public void OnAfterDeserialize()
         {
-            CreateScriptInstance();
+            if (_isScriptInstanced)
+            {
+                _OnScriptingAfterDeserialize();
+            }
+            else
+            {
+                CreateScriptInstance();
+            }
         }
 
         public void _OnScriptingAfterDeserialize()
