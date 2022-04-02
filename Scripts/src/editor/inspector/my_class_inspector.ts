@@ -1,4 +1,4 @@
-import { Editor, EditorGUI, EditorGUILayout, EditorUtility, MessageType } from "UnityEditor";
+import { Editor, EditorGUI, EditorGUILayout, EditorUtility, MessageType, Undo } from "UnityEditor";
 import { GUILayout, Object } from "UnityEngine";
 import { MyClass } from "../../components/sample_monobehaviour";
 import { ScriptEditor } from "plover/editor/editor_decorators";
@@ -18,6 +18,7 @@ export class MyClassInspector extends Editor {
         EditorGUI.EndDisabledGroup();
         let vv = EditorGUILayout.IntField("vv", p.vv);
         if (vv != p.vv) {
+            Undo.RecordObject(p, "Change vv");
             p.vv = vv;
             // console.log("write value", p.vv);
             EditorUtility.SetDirty(p);

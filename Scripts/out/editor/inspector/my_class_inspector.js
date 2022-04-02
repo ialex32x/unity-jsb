@@ -23,6 +23,7 @@ let MyClassInspector = class MyClassInspector extends UnityEditor_1.Editor {
         UnityEditor_1.EditorGUI.EndDisabledGroup();
         let vv = UnityEditor_1.EditorGUILayout.IntField("vv", p.vv);
         if (vv != p.vv) {
+            UnityEditor_1.Undo.RecordObject(p, "Change vv");
             p.vv = vv;
             // console.log("write value", p.vv);
             UnityEditor_1.EditorUtility.SetDirty(p);

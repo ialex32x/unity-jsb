@@ -396,6 +396,7 @@ namespace QuickJS.Unity
                     scriptRef.modulePath = classPath.modulePath;
                     scriptRef.className = classPath.className;
 
+                    Undo.RecordObject(target_t, "Change Script Reference");
                     target_t.scriptRef = scriptRef;
                     this.ReleaseJSValues();
                     target_t.ReleaseScriptInstance();
@@ -406,6 +407,7 @@ namespace QuickJS.Unity
                 }
                 else
                 {
+                    Undo.RecordObject(target_t, "Update Script Source");
                     target_t.scriptRef = scriptRef;
                 }
 

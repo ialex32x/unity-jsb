@@ -625,7 +625,7 @@ namespace QuickJS.Unity
 
         public void OnAfterDeserialize()
         {
-            // intentionally skipped
+            _OnScriptingAfterDeserialize();
         }
 
         public void _OnScriptingAfterDeserialize()
