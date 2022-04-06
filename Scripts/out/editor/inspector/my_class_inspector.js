@@ -11,7 +11,7 @@ const UnityEditor_1 = require("UnityEditor");
 const UnityEngine_1 = require("UnityEngine");
 const sample_monobehaviour_1 = require("../../components/sample_monobehaviour");
 const editor_decorators_1 = require("plover/editor/editor_decorators");
-let MyClassInspector = class MyClassInspector extends UnityEditor_1.Editor {
+let MyClassInspector = class MyClassInspector extends editor_decorators_1.DefaultEditor {
     Awake() {
         console.log("my class inspector class awake");
     }
@@ -21,13 +21,7 @@ let MyClassInspector = class MyClassInspector extends UnityEditor_1.Editor {
         UnityEditor_1.EditorGUI.BeginDisabledGroup(true);
         UnityEditor_1.EditorGUILayout.ObjectField("Object", p.gameObject, UnityEngine_1.Object, true);
         UnityEditor_1.EditorGUI.EndDisabledGroup();
-        let vv = UnityEditor_1.EditorGUILayout.IntField("vv", p.vv);
-        if (vv != p.vv) {
-            UnityEditor_1.Undo.RecordObject(p, "Change vv");
-            p.vv = vv;
-            // console.log("write value", p.vv);
-            UnityEditor_1.EditorUtility.SetDirty(p);
-        }
+        super.OnInspectorGUI();
         if (UnityEngine_1.GUILayout.Button("test")) {
             p.speak("hello");
         }
