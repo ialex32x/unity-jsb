@@ -185,7 +185,14 @@ declare module "plover/editor/editor_decorators" {
     }
     export function ScriptEditor(forType: any): (editorType: any) => any;
     export function ScriptEditorWindow(meta?: EditorWindowMetaInfo): (target: any) => any;
-    export class DefaultEditor extends Editor {
+    export interface IEditorScriptingSupport {
+        OnPropertyChanging(target: any, property: any, propertyKey: string, newValue: any): void;
+        OnArrayPropertyChanging(target: any, property: any, propertyKey: string, index: number, newValue: any): void;
+    }
+    export class DefaultEditor extends Editor implements IEditorScriptingSupport {
+        OnPropertyPreChanging(target: any, name: string): void;
+        OnPropertyChanging(target: any, property: any, propertyKey: string, newValue: any): void;
+        OnArrayPropertyChanging(target: any, property: any, propertyKey: string, index: number, newValue: any): void;
         OnInspectorGUI(): void;
     }
     export class EditorUtil {
@@ -193,7 +200,7 @@ declare module "plover/editor/editor_decorators" {
         /**
          * 默认编辑器绘制行为
          */
-        static draw(target: any): void;
+        static draw(editor: IEditorScriptingSupport, target: any): void;
     }
 }
 declare module "plover/editor/file_watcher" {

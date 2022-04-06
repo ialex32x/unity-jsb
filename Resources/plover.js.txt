@@ -1140,8 +1140,21 @@ define("plover/editor/editor_decorators", ["require", "exports", "UnityEditor", 
     }
     exports.ScriptEditorWindow = ScriptEditorWindow;
     class DefaultEditor extends UnityEditor_3.Editor {
+        OnPropertyPreChanging(target, name) {
+            UnityEditor_3.Undo.RecordObject(target, "Change " + name);
+        }
+        OnPropertyChanging(target, property, propertyKey, newValue) {
+            this.OnPropertyPreChanging(target, propertyKey);
+            property[propertyKey] = newValue;
+            UnityEditor_3.EditorUtility.SetDirty(target);
+        }
+        OnArrayPropertyChanging(target, property, propertyKey, index, newValue) {
+            this.OnPropertyPreChanging(target, propertyKey);
+            property[index] = newValue;
+            UnityEditor_3.EditorUtility.SetDirty(target);
+        }
         OnInspectorGUI() {
-            EditorUtil.draw(this.target);
+            EditorUtil.draw(this, this.target);
         }
     }
     exports.DefaultEditor = DefaultEditor;
@@ -1152,7 +1165,7 @@ define("plover/editor/editor_decorators", ["require", "exports", "UnityEditor", 
         /**
          * 默认编辑器绘制行为
          */
-        static draw(target) {
+        static draw(editor, target) {
             class_decorators_1.SerializationUtil.forEach(target, (slots, propertyKey) => {
                 let slot = slots[propertyKey];
                 if (slot.visible) {
@@ -1168,8 +1181,7 @@ define("plover/editor/editor_decorators", ["require", "exports", "UnityEditor", 
                                 for (let i = 0; i < length; i++) {
                                     let newValue = d.draw(oldValue[i], slot, label, editablePE);
                                     if (editablePE && oldValue[i] != newValue) {
-                                        oldValue[i] = newValue;
-                                        UnityEditor_3.EditorUtility.SetDirty(target);
+                                        editor.OnArrayPropertyChanging(target, oldValue, propertyKey, i, newValue);
                                     }
                                 }
                                 if (editablePE) {
@@ -1182,8 +1194,7 @@ define("plover/editor/editor_decorators", ["require", "exports", "UnityEditor", 
                             else {
                                 let newValue = d.draw(oldValue, slot, label, editablePE);
                                 if (editablePE && oldValue != newValue) {
-                                    target[propertyKey] = newValue;
-                                    UnityEditor_3.EditorUtility.SetDirty(target);
+                                    editor.OnPropertyChanging(target, target, propertyKey, newValue);
                                 }
                             }
                             return true;
