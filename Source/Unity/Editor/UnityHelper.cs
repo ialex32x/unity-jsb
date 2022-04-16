@@ -177,17 +177,38 @@ namespace QuickJS.Unity
             return LoadPrefs().preferredBindingMethod == "Reflect Bind";
         }
 
+        public static void Time(string name, Action action)
+        {
+            var stopWatch = new System.Diagnostics.Stopwatch();
+            stopWatch.Start();
+            try
+            {
+                action();
+                stopWatch.Stop();
+                Debug.LogFormat("Finished executing {0} in {1}ms", name, stopWatch.ElapsedMilliseconds);
+            }
+            catch (Exception exception)
+            {
+                stopWatch.Stop();
+                Debug.LogFormat("Finished executing {0} in {1}ms with error: {2}", name, stopWatch.ElapsedMilliseconds, exception.Message);
+                throw;
+            }
+        }
+
         public static void InvokeReflectBinding(ScriptRuntime runtime)
         {
-            var bm = new BindingManager(LoadPrefs(), new BindingManager.Args
+            Time("InvokeReflectBinding", () =>
             {
-                bindingCallback = new ReflectBindingCallback(runtime),
-                utils = new UnityBindingUtils(),
-                bindingLogger = new DefaultBindingLogger(Utils.LogLevel.Error),
+                var bm = new BindingManager(LoadPrefs(), new BindingManager.Args
+                {
+                    bindingCallback = new ReflectBindingCallback(runtime),
+                    utils = new UnityBindingUtils(),
+                    bindingLogger = new DefaultBindingLogger(Utils.LogLevel.Error),
+                });
+                bm.Collect();
+                bm.Generate(TypeBindingFlags.None);
+                bm.Report();
             });
-            bm.Collect();
-            bm.Generate(TypeBindingFlags.None);
-            bm.Report();
         }
 
         public static bool IsInMemoryBindingSupported()
@@ -197,16 +218,19 @@ namespace QuickJS.Unity
 
         public static void InvokeInMemoryBinding(ScriptRuntime runtime)
         {
-            var callback = new InMemoryCompilationBindingCallback(runtime);
-            var bm = new BindingManager(LoadPrefs(), new BindingManager.Args
+            Time("InvokeInMemoryBinding", () =>
             {
-                bindingCallback = callback,
-                codeGenCallback = callback,
-                utils = new UnityBindingUtils(),
+                var callback = new InMemoryCompilationBindingCallback(runtime);
+                var bm = new BindingManager(LoadPrefs(), new BindingManager.Args
+                {
+                    bindingCallback = callback,
+                    codeGenCallback = callback,
+                    utils = new UnityBindingUtils(),
+                });
+                bm.Collect();
+                bm.Generate(TypeBindingFlags.BindingCode | TypeBindingFlags.BuildTargetPlatformOnly);
+                bm.Report();
             });
-            bm.Collect();
-            bm.Generate(TypeBindingFlags.BindingCode | TypeBindingFlags.BuildTargetPlatformOnly);
-            bm.Report();
         }
 
         // [MenuItem("JS Bridge/Compile TypeScript")]
