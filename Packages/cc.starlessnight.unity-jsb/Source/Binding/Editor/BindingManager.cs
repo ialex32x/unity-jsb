@@ -429,14 +429,14 @@ namespace QuickJS.Binding
             if (!_collectedRawTypes.ContainsKey(type))
             {
                 var method = type.GetMethod("Bind", BindingFlags.Public | BindingFlags.Static | BindingFlags.DeclaredOnly);
-                do 
+                do
                 {
                     if (method == null)
                     {
                         Error("no Bind() on raw type: {0}", type.FullName);
                         break;
                     }
-                    
+
                     if (method.ReturnType != typeof(void))
                     {
                         Error("incorrect return type of Bind() on raw type: {0}", type.FullName);
@@ -444,7 +444,7 @@ namespace QuickJS.Binding
                     }
 
                     var parameters = method.GetParameters();
-                    if (parameters.Length != 2 
+                    if (parameters.Length != 2
                     || parameters[0].ParameterType != typeof(TypeRegister)
                     || parameters[1].ParameterType != typeof(string))
                     {
@@ -1345,19 +1345,19 @@ namespace QuickJS.Binding
                 return true;
             }
 
-            // if (type.IsGenericType && !type.IsConstructedGenericType)
-            // {
-            //     return true;
-            // }
-
-            if (IsConstructedGenericType(type) && IsCompoundedType(type.GetGenericArguments()))
+            if (type.IsGenericType)
             {
-                return true;
-            }
-
-            if (type.Name.Contains("<"))
-            {
-                return true;
+                if (type.IsConstructedGenericType)
+                {
+                    if (IsCompoundedType(type.GetGenericArguments()))
+                    {
+                        return true;
+                    }
+                }
+                else
+                {
+                    return true;
+                }
             }
 
             if (type.IsDefined(typeof(JSBindingAttribute), false))

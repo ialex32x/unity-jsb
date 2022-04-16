@@ -128,6 +128,7 @@ namespace jsb.Editor
                 .WriteCSMethodOverrideBinding("GetWindow", EditorWindowFix.BindStatic_GetWindow)
                 .AddStaticMethod(EditorWindowFix.CreateWindow)
             ;
+            bindingManager.AddTypeFullNameBlacklist("UnityEditor.ProfilerWindow");
         }
         
         public override void OnPostExporting(BindingManager bindingManager)
