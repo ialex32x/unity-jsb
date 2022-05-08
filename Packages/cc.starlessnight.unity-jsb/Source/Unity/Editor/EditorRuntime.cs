@@ -30,16 +30,32 @@ namespace QuickJS.Unity
         private int _tick;
         private Prefs _prefs;
         private TSConfig _tsConfig;
-        private FileSystemWatcher _prefsWatcher;
         private float _changedFileInterval;
         private HashSet<string> _changedFileQueue;
 
         static EditorRuntime()
         {
-            var prefs = UnityHelper.LoadPrefs();
-            if (prefs.editorScripting)
+            PrefsLoader.prefsChanged += OnPrefsChanged;
+            OnPrefsChanged(PrefsLoader.CurrentPrefs);
+        }
+
+        private static void OnPrefsChanged(Prefs prefs)
+        {
+            Debug.LogFormat("on prefs changed {0} {1}", prefs.editorScripting, _instance != null);
+            if (_instance != null)
             {
-                _instance = new EditorRuntime(prefs);
+                if (!prefs.editorScripting)
+                {
+                    _instance.OnEditorQuitting();
+                    _instance = null;
+                }
+            }
+            else
+            {
+                if (prefs.editorScripting)
+                {
+                    _instance = new EditorRuntime(prefs);
+                }
             }
         }
 
@@ -65,68 +81,7 @@ namespace QuickJS.Unity
             _changedFileQueue = new HashSet<string>();
             ScriptEngine.RuntimeCreated += OnScriptRuntimeCreated;
             EditorApplication.delayCall += OnEditorInit;
-            EditorApplication.update += OnPrefsSync;
             EditorApplication.playModeStateChanged += OnPlayModeStateChanged;
-            if (File.Exists(_prefs.filePath))
-            {
-                var path = Path.GetDirectoryName(_prefs.filePath);
-                _prefsWatcher = new FileSystemWatcher(string.IsNullOrWhiteSpace(path) ? "." : path, Path.GetFileName(_prefs.filePath));
-                _prefsWatcher.Changed += OnFileChanged;
-                _prefsWatcher.Created += OnFileChanged;
-                _prefsWatcher.Deleted += OnFileChanged;
-                _prefsWatcher.EnableRaisingEvents = true;
-            }
-        }
-
-        private void OnPrefsSync()
-        {
-            _changedFileInterval += Time.realtimeSinceStartup;
-            if (_changedFileInterval < 3f)
-            {
-                return;
-            }
-
-            _changedFileInterval = 0f;
-            lock (_changedFileQueue)
-            {
-                var len = _changedFileQueue.Count;
-                if (len > 0)
-                {
-                    var changedFiles = new string[len];
-                    _changedFileQueue.CopyTo(changedFiles);
-                    _changedFileQueue.Clear();
-                    for (var i = 0; i < len; ++i)
-                    {
-                        try
-                        {
-                            var changedFile = changedFiles[i];
-                            var fullPath1 = Path.GetFullPath(changedFile);
-                            var fullPath2 = Path.GetFullPath(_prefs.filePath);
-
-                            if (string.Compare(fullPath1, fullPath2, true) == 0)
-                            {
-                                _prefs = UnityHelper.LoadPrefs();
-                            }
-                        }
-                        catch (Exception exception)
-                        {
-                            Debug.LogErrorFormat("{0}\n{1}\n", exception.ToString(), exception.StackTrace);
-                        }
-                    }
-                }
-            }
-        }
-
-        private void OnFileChanged(object sender, FileSystemEventArgs e)
-        {
-            lock (_changedFileQueue)
-            {
-                var referredPath = e.FullPath;
-                if (!string.IsNullOrEmpty(referredPath))
-                {
-                    _changedFileQueue.Add(referredPath);
-                }
-            }
         }
 
         ~EditorRuntime()
@@ -147,11 +102,6 @@ namespace QuickJS.Unity
             EditorApplication.delayCall -= OnEditorInit;
             EditorApplication.update -= OnEditorUpdate;
             EditorApplication.quitting -= OnEditorQuitting;
-            if (_prefsWatcher != null)
-            {
-                _prefsWatcher.Dispose();
-                _prefsWatcher = null;
-            }
             runtime.Shutdown();
         }
 

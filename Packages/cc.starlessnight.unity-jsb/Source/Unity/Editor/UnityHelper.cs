@@ -32,7 +32,7 @@ namespace QuickJS.Unity
         [MenuItem("JS Bridge/Generate Bindings And Type Definition")]
         public static void GenerateBindingsAndTypeDefinition()
         {
-            var bm = new BindingManager(LoadPrefs(), new BindingManager.Args
+            var bm = new BindingManager(PrefsLoader.CurrentPrefs, new BindingManager.Args
             {
                 codeGenCallback = new DefaultCodeGenCallback(),
                 bindingLogger = new DefaultBindingLogger(),
@@ -49,7 +49,7 @@ namespace QuickJS.Unity
         [MenuItem("JS Bridge/Generate Type Definition")]
         public static void GenerateTypeDefinition()
         {
-            var bm = new BindingManager(LoadPrefs(), new BindingManager.Args
+            var bm = new BindingManager(PrefsLoader.CurrentPrefs, new BindingManager.Args
             {
                 codeGenCallback = new DefaultCodeGenCallback(),
                 bindingLogger = new DefaultBindingLogger(),
@@ -61,43 +61,6 @@ namespace QuickJS.Unity
             bm.Cleanup();
             bm.Report();
             AssetDatabase.Refresh();
-        }
-
-        public static Prefs LoadPrefs()
-        {
-            string filePath;
-            return LoadPrefs(out filePath);
-        }
-
-        public static Prefs LoadPrefs(out string filePath)
-        {
-            var pathlist = Prefs.PATH.Split(';');
-            foreach (var path in pathlist)
-            {
-                if (System.IO.File.Exists(path))
-                {
-                    try
-                    {
-                        var json = Utils.TextUtils.NormalizeJson(System.IO.File.ReadAllText(path));
-                        // Debug.Log($"load prefs({path}): {json}");
-                        var prefs = JsonUtility.FromJson<Prefs>(json);
-                        filePath = path;
-                        prefs.filePath = filePath;
-                        if (string.IsNullOrEmpty(prefs.typescriptDir))
-                        {
-                            prefs.typescriptDir = prefs.outDir;
-                        }
-                        return prefs;
-                    }
-                    catch (Exception exception)
-                    {
-                        Debug.LogWarning(exception);
-                    }
-                }
-            }
-            var defaultPrefs = new Prefs();
-            filePath = pathlist[0];
-            return defaultPrefs;
         }
 
         public static T LoadPackageAsset<T>(string assetPath)
@@ -174,7 +137,7 @@ namespace QuickJS.Unity
 
         public static bool IsReflectBindingSupported()
         {
-            return LoadPrefs().preferredBindingMethod == "Reflect Bind";
+            return PrefsLoader.CurrentPrefs.preferredBindingMethod == "Reflect Bind";
         }
 
         public static void Time(string name, Action action)
@@ -199,7 +162,7 @@ namespace QuickJS.Unity
         {
             Time("InvokeReflectBinding", () =>
             {
-                var bm = new BindingManager(LoadPrefs(), new BindingManager.Args
+                var bm = new BindingManager(PrefsLoader.CurrentPrefs, new BindingManager.Args
                 {
                     bindingCallback = new ReflectBindingCallback(runtime),
                     utils = new UnityBindingUtils(),
@@ -213,7 +176,7 @@ namespace QuickJS.Unity
 
         public static bool IsInMemoryBindingSupported()
         {
-            return LoadPrefs().preferredBindingMethod == "In-Memory Bind";
+            return PrefsLoader.CurrentPrefs.preferredBindingMethod == "In-Memory Bind";
         }
 
         public static void InvokeInMemoryBinding(ScriptRuntime runtime)
@@ -221,7 +184,7 @@ namespace QuickJS.Unity
             Time("InvokeInMemoryBinding", () =>
             {
                 var callback = new InMemoryCompilationBindingCallback(runtime);
-                var bm = new BindingManager(LoadPrefs(), new BindingManager.Args
+                var bm = new BindingManager(PrefsLoader.CurrentPrefs, new BindingManager.Args
                 {
                     bindingCallback = callback,
                     codeGenCallback = callback,
@@ -255,7 +218,7 @@ namespace QuickJS.Unity
         [MenuItem("JS Bridge/Clear")]
         public static void ClearBindings()
         {
-            var prefs = LoadPrefs();
+            var prefs = PrefsLoader.CurrentPrefs;
             var kv = new Dictionary<string, List<string>>();
 
             if (prefs.cleanupDir != null)
