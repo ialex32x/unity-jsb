@@ -139,6 +139,18 @@ namespace jsb.Editor
 
 #if JSB_WITH_UIELEMENTS
             //TODO [experimental, not_implemented] ui elements support
+            bindingManager.SetTypeBlocked(typeof(UnityEngine.UIElements.IUxmlFactory));
+            bindingManager.SetTypeBlocked(typeof(UnityEngine.UIElements.IMouseEvent));
+            bindingManager.SetTypeBlocked(typeof(UnityEngine.UIElements.ITransform));
+            bindingManager.SetTypeBlocked(typeof(UnityEngine.UIElements.IVisualElementScheduler));
+            bindingManager.SetTypeBlocked(typeof(UnityEngine.UIElements.IResolvedStyle));
+            bindingManager.SetTypeBlocked(typeof(UnityEngine.UIElements.IExperimentalFeatures));
+            bindingManager.SetTypeBlocked(typeof(UnityEngine.UIElements.Experimental.ITransitionAnimations));
+            bindingManager.SetTypeBlocked(typeof(UnityEngine.UIElements.Experimental.IValueAnimation));
+            bindingManager.TransformType(typeof(UnityEngine.UIElements.VisualElement.UxmlTraits)).Rename("UxmlTraits0");
+            bindingManager.TransformType(typeof(UnityEngine.UIElements.EventBase<>)).Rename("EventBase1");
+            bindingManager.TransformType(typeof(UnityEngine.UIElements.UxmlFactory<>)).Rename("UxmlFactory1");
+            bindingManager.TransformType(typeof(UnityEngine.UIElements.UxmlFactory<,>)).Rename("UxmlFactory2");
             bindingManager.ExportTypesInAssembly(typeof(UnityEngine.UIElements.Label).Assembly, true);
 #endif
         }
