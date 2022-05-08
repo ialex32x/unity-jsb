@@ -58,6 +58,12 @@ namespace QuickJS.Unity
         private bool _onGUIValid;
         private JSValue _onGUIFunc = JSApi.JS_UNDEFINED;
 
+#if JSB_WITH_UIELEMENTS
+        [NonSerialized]
+        private bool _createGUIValid;
+        private JSValue _createGUIFunc = JSApi.JS_UNDEFINED;
+#endif
+
         [NonSerialized]
         private bool _addItemsToMenuValid;
         private JSValue _addItemsToMenuFunc = JSApi.JS_UNDEFINED;
@@ -275,6 +281,11 @@ namespace QuickJS.Unity
             _onGUIFunc = JSApi.JS_GetProperty(ctx, _this_obj, context.GetAtom("OnGUI"));
             _onGUIValid = JSApi.JS_IsFunction(ctx, _onGUIFunc) == 1;
 
+#if JSB_WITH_UIELEMENTS
+            _createGUIFunc = JSApi.JS_GetProperty(ctx, _this_obj, context.GetAtom("CreateGUI"));
+            _createGUIValid = JSApi.JS_IsFunction(ctx, _createGUIFunc) == 1;
+#endif
+
             _addItemsToMenuFunc = JSApi.JS_GetProperty(ctx, _this_obj, context.GetAtom("AddItemsToMenu"));
             _addItemsToMenuValid = JSApi.JS_IsFunction(ctx, _addItemsToMenuFunc) == 1;
 
@@ -312,6 +323,12 @@ namespace QuickJS.Unity
             JSApi.JS_FreeValue(_ctx, _onGUIFunc);
             _onGUIFunc = JSApi.JS_UNDEFINED;
             _onGUIValid = false;
+
+#if JSB_WITH_UIELEMENTS
+            JSApi.JS_FreeValue(_ctx, _createGUIFunc);
+            _createGUIFunc = JSApi.JS_UNDEFINED;
+            _createGUIValid = false;
+#endif
 
             JSApi.JS_FreeValue(_ctx, _addItemsToMenuFunc);
             _addItemsToMenuFunc = JSApi.JS_UNDEFINED;
@@ -467,6 +484,22 @@ namespace QuickJS.Unity
             ReleaseJSValues(true);
         }
 
+#if JSB_WITH_UIELEMENTS
+        void CreateGUI()
+        {
+            if (EditorApplication.isCompiling)
+            {
+                ReleaseJSValues();
+                return;
+            }
+
+            if (_createGUIValid && _isScriptInstanced && _ctx.IsValid())
+            {
+                JSScriptableObject._CallJSFunc(_ctx, _this_obj, _createGUIFunc);
+            }
+        }
+#endif
+
         void OnGUI()
         {
             if (EditorApplication.isCompiling)
@@ -479,7 +512,7 @@ namespace QuickJS.Unity
             {
                 JSScriptableObject._CallJSFunc(_ctx, _this_obj, _onGUIFunc);
             }
-            else 
+            else
             {
                 var promptMessage = @"script callback not ready:
     1. runtime unavailable
