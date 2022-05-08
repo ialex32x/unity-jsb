@@ -10,7 +10,7 @@ namespace QuickJS.Binding
     public class Prefs
     {
         /// <summary>
-        /// location of this configuration (optional)
+        /// location of this configuration
         /// </summary>
         public const string PATH = "js-bridge.json";
 
@@ -191,14 +191,16 @@ namespace QuickJS.Binding
         });
 
         /// <summary>
-        /// 执行代码生成后对指定的目录进行文件清理 (未在本次生成文件列表中的文件将被删除)
+        /// the directories will be cleaned up after code generation (only unused files will be deleted)
         /// </summary>
         public List<string> cleanupDir = new List<string>(new string[]
         {
             "Assets/Generated",
         });
 
-        // 默认不导出任何类型, 需要指定导出类型列表
+        /// <summary>
+        /// all the types in the assemblies in this list will not automatically exported 
+        /// </summary>
         public List<string> explicitAssemblies = new List<string>(new string[]
         {
             // "Assembly-CSharp-firstpass",
@@ -206,7 +208,7 @@ namespace QuickJS.Binding
         });
 
         /// <summary>
-        /// 在此列表中指定的指定 Assembly 将默认导出其所包含的所有类型
+        /// all the types in the assemblies in this list will automatically exported (except the manually blocked types in BindingManager)
         /// </summary>
         public List<string> implicitAssemblies = new List<string>(new string[]
         {

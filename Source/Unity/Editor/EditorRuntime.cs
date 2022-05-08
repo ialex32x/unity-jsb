@@ -41,7 +41,6 @@ namespace QuickJS.Unity
 
         private static void OnPrefsChanged(Prefs prefs)
         {
-            Debug.LogFormat("on prefs changed {0} {1}", prefs.editorScripting, _instance != null);
             if (_instance != null)
             {
                 if (!prefs.editorScripting)
