@@ -13,6 +13,7 @@ namespace QuickJS.Unity
         private string _baseDir;
         private string _fileExt;
         private bool _isRefreshing;
+        private float _delay;
 
         // classPath => JSScriptClassPathHint
         private Dictionary<string, JSScriptClassPathHint> _scriptClassPaths = new Dictionary<string, JSScriptClassPathHint>();
@@ -49,9 +50,10 @@ namespace QuickJS.Unity
         {
             lock (_cachedChanges)
             {
-                _cachedChanges[e.FullPath] = WatcherChangeTypes.Changed;
+                var fullPath = Path.GetFullPath(e.FullPath);
+                _cachedChanges[fullPath] = WatcherChangeTypes.Changed;
                 _cachedChangesDirty = true;
-                // UnityEngine.Debug.Log($"changed {e.FullPath}");
+                // UnityEngine.Debug.Log($"changed {fullPath}");
             }
         }
 
@@ -59,9 +61,10 @@ namespace QuickJS.Unity
         {
             lock (_cachedChanges)
             {
-                _cachedChanges[e.FullPath] = WatcherChangeTypes.Created;
+                var fullPath = Path.GetFullPath(e.FullPath);
+                _cachedChanges[fullPath] = WatcherChangeTypes.Created;
                 _cachedChangesDirty = true;
-                // UnityEngine.Debug.Log($"created {e.FullPath}");
+                // UnityEngine.Debug.Log($"created {fullPath}");
             }
         }
 
@@ -69,9 +72,10 @@ namespace QuickJS.Unity
         {
             lock (_cachedChanges)
             {
-                _cachedChanges[e.FullPath] = WatcherChangeTypes.Deleted;
+                var fullPath = Path.GetFullPath(e.FullPath);
+                _cachedChanges[fullPath] = WatcherChangeTypes.Deleted;
                 _cachedChangesDirty = true;
-                // UnityEngine.Debug.Log($"deleted {e.FullPath}");
+                // UnityEngine.Debug.Log($"deleted {fullPath}");
             }
         }
 
@@ -110,6 +114,7 @@ namespace QuickJS.Unity
             if (UnityHelper.ResolveScriptRef(_baseDir, filePath, out normalizedPath, out modulePath, results))
             {
                 List<string> list;
+                normalizedPath = normalizedPath.ToLower();
                 if (_fullPathToClassPath.TryGetValue(normalizedPath, out list))
                 {
                     foreach (var item in list)
@@ -174,6 +179,13 @@ namespace QuickJS.Unity
                 return;
             }
 
+            _delay += UnityEngine.Time.realtimeSinceStartup;
+            if (_delay < 1.0f)
+            {
+                return;
+            }
+
+            _delay = 0f;
             if (_fsw == null)
             {
                 if (Directory.Exists(_baseDir))
