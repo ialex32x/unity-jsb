@@ -105,28 +105,34 @@ namespace QuickJS.Binding
             foreach (var kv in this.typeBindingInfo.methods)
             {
                 var methodBindingInfo = kv.Value;
-                var jscOverride = transform.GetCSMethodOverrideBinding(methodBindingInfo.jsName);
-                if (jscOverride == null)
+
+                //TODO skip cs/tsd codegen in CSMethodCodeGen/TSMethodCodeGen/ClassMethodBindEntry for extension methods of interfaces
+
+                if (!this.typeBindingInfo.type.IsInterface || (methodBindingInfo.count > 0 && methodBindingInfo.extensionCount != methodBindingInfo.count))
                 {
-                    //TODO add requiredDefines support
-                    using (new PInvokeGuardCodeGen(cg, typeof(QuickJS.Native.JSCFunction)))
+                    var jscOverride = transform.GetCSMethodOverrideBinding(methodBindingInfo.jsName);
+                    if (jscOverride == null)
                     {
-                        using (new BindingFuncDeclareCodeGen(cg, typeof(QuickJS.Native.JSCFunction), methodBindingInfo.csBindName))
+                        //TODO add requiredDefines support
+                        using (new PInvokeGuardCodeGen(cg, typeof(QuickJS.Native.JSCFunction)))
                         {
-                            using (new TryCatchGuradCodeGen(cg))
+                            using (new BindingFuncDeclareCodeGen(cg, typeof(QuickJS.Native.JSCFunction), methodBindingInfo.csBindName))
                             {
-                                using (new CSMethodCodeGen(cg, this.typeBindingInfo, methodBindingInfo))
+                                using (new TryCatchGuradCodeGen(cg))
                                 {
+                                    using (new CSMethodCodeGen(cg, this.typeBindingInfo, methodBindingInfo))
+                                    {
+                                    }
                                 }
                             }
                         }
                     }
-                }
 
-                if (this.cg.tsDeclare.enabled)
-                {
-                    using (new TSMethodCodeGen<MethodInfo>(cg, this.typeBindingInfo, methodBindingInfo))
+                    if (this.cg.tsDeclare.enabled)
                     {
+                        using (new TSMethodCodeGen<MethodInfo>(cg, this.typeBindingInfo, methodBindingInfo))
+                        {
+                        }
                     }
                 }
             }
