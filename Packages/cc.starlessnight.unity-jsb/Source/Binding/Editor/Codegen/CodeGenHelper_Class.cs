@@ -131,6 +131,41 @@ namespace QuickJS.Binding
                 }
             }
 
+            // generates extension methods of directly implemented interfaces for classes
+            foreach (var interfaceType in typeBindingInfo.directInterfaces)
+            {
+                var type = typeBindingInfo.bindingManager.GetExportedType(interfaceType);
+                if (type != null)
+                {
+                    foreach (var interfaceMethod in type.methods)
+                    {
+                        var methodBindingInfo = interfaceMethod.Value;
+                        if (methodBindingInfo.extensionCount > 0)
+                        {
+                            using (new PInvokeGuardCodeGen(cg, typeof(QuickJS.Native.JSCFunction)))
+                            {
+                                using (new BindingFuncDeclareCodeGen(cg, typeof(QuickJS.Native.JSCFunction), methodBindingInfo.csBindName))
+                                {
+                                    using (new TryCatchGuradCodeGen(cg))
+                                    {
+                                        using (new CSMethodCodeGen(cg, this.typeBindingInfo, methodBindingInfo))
+                                        {
+                                        }
+                                    }
+                                }
+                            }
+
+                            if (this.cg.tsDeclare.enabled)
+                            {
+                                using (new TSMethodCodeGen<MethodInfo>(cg, this.typeBindingInfo, methodBindingInfo))
+                                {
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
             //TODO: C# 抽象类可以不提供方法实现, d.ts 需要补充声明
             // if (this.bindingInfo.type.IsAbstract && !this.bindingInfo.type.IsInterface)
             // {

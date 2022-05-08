@@ -14,6 +14,7 @@ namespace QuickJS.Binding
         public string jsName { get; set; } // 导出名
 
         private int _count = 0;
+        private int _extensionCount = 0;
 
         // 按照参数数逆序排序所有变体
         // 有相同参数数量要求的方法记录在同一个 Variant 中 (变参方法按最少参数数计算, 不计变参参数数)
@@ -23,7 +24,15 @@ namespace QuickJS.Binding
         // 必须为静态函数, 且函数签名完全匹配 JSCFunction
         public MethodBase _cfunc;
 
+        /// <summary>
+        /// number of variants
+        /// </summary>
         public int count => _count;
+
+        /// <summary>
+        /// number of extension methods in all variants
+        /// </summary>
+        public int extensionCount => _extensionCount;
 
         public bool Add(T method, bool isExtension)
         {
@@ -43,12 +52,13 @@ namespace QuickJS.Binding
             MethodBaseVariant<T> variant;
             if (isVararg)
             {
-                nargs--;
+                --nargs;
             }
 
             if (isExtension)
             {
-                nargs--;
+                --nargs;
+                ++_extensionCount;
             }
 
             if (!this.variants.TryGetValue(nargs, out variant))

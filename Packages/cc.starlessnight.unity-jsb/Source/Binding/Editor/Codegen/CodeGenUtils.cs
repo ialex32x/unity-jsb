@@ -9,6 +9,14 @@ namespace QuickJS.Binding
 {
     public static class CodeGenUtils
     {
+        /// <summary>
+        /// Check if the type directly implements the given interface
+        /// </summary>
+        public static bool IsDirectlyImplements(Type type, Type interfaceType)
+        {
+            return type.BaseType != null && interfaceType.IsAssignableFrom(type) && !interfaceType.IsAssignableFrom(type.BaseType);
+        }
+
         public static void RemoveAt<T>(ref T[] array, int index)
         {
 #if JSB_UNITYLESS
