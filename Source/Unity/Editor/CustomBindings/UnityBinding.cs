@@ -30,7 +30,7 @@ namespace jsb.Editor
 
             bindingManager.TransformType(typeof(ScriptableObject))
                 .WriteCrossBindingConstructor()
-                .SetMethodBlocked("CreateInstance", typeof(string)) 
+                .SetMethodBlocked("CreateInstance", typeof(string))
                 // .SetMethodBlocked("CreateInstance", typeof(Type)) 
                 .AddTSMethodDeclaration("static CreateInstance<T extends ScriptableObject>(type: { new(): T }): T", "CreateInstance", typeof(Type))
                 .WriteCSMethodOverrideBinding("CreateInstance", ScriptableObjectFix.BindStatic_CreateInstance)
@@ -65,7 +65,7 @@ namespace jsb.Editor
 
             bindingManager.TransformType(typeof(UnityEngine.Events.UnityEvent<,,,>))
                 .Rename("UnityEvent4");
-                
+
             bindingManager.TransformType(typeof(UnityEngine.Texture))
                 .SetMemberBlocked("imageContentsHash");
             bindingManager.TransformType(typeof(UnityEngine.Texture2D))
@@ -136,8 +136,13 @@ namespace jsb.Editor
                 .WriteCSMethodOverrideBinding("FindObjectsOfTypeAll", ResourcesFix.BindStatic_FindObjectsOfTypeAll)
             ;
             bindingManager.AddExportedType(typeof(QuickJS.Unity.JSSerializationContext)).SetAllConstructorsBlocked();
+
+#if JSB_WITH_UIELEMENTS
+            //TODO [experimental, not_implemented] ui elements support
+            bindingManager.ExportTypesInAssembly(typeof(UnityEngine.UIElements.Label).Assembly, true);
+#endif
         }
-        
+
         private static TypeTransform HackGetComponents(TypeTransform typeTransform)
         {
             if (typeTransform.type == typeof(GameObject))
@@ -146,7 +151,7 @@ namespace jsb.Editor
                      "AddComponent", typeof(Type));
 
                 typeTransform.WriteCSMethodOverrideBinding("AddComponent", GameObjectFix.Bind_AddComponent);
-                
+
                 typeTransform.WriteCSMethodOverrideBinding("GetComponent", GameObjectFix.Bind_GetComponent);
                 typeTransform.WriteCSMethodOverrideBinding("GetComponentInChildren", GameObjectFix.Bind_GetComponentInChildren);
                 typeTransform.WriteCSMethodOverrideBinding("GetComponentInParent", GameObjectFix.Bind_GetComponentInParent);
