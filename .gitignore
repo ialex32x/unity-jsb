@@ -45,15 +45,10 @@
 # /Assets/Generated.meta
 !/Assets/Generated/Typings
 !/Assets/Generated/Typings.meta
-/Assets/Examples/Resources/*
-!/Assets/Examples/Resources/UI
-!/Assets/Examples/Resources/UI.meta
-!/Assets/Examples/Resources/prefab
-!/Assets/Examples/Resources/prefab.meta
-!/Assets/Examples/Resources/data
-!/Assets/Examples/Resources/data.meta
 /Assets/Examples/Scripts/dist
 /Assets/Examples/Scripts/dist.meta
+/Assets/Resources
+/Assets/Resources.meta
 
 /jsb_build/out
 /jsb_build/quickjs/quickjs*/.obj
