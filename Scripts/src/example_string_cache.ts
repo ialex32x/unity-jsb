@@ -2,8 +2,8 @@ import { ValueTest } from "Example";
 import * as jsb from "jsb";
 
 /*
-JS -> C# 反复大量传递若干特定的字符串时, 可以通过 AddCacheString 将字符串加入映射表缓存, 避免每次都构造新的 C# String
-完成后 RemoveCacheString 可以移除缓存
+    jsb.AddCacheString is available to use to avoid unnecessary string allocations on frequently translating strings between Javascript and C#
+    NOTE: remove string from cache with jsb.RemoveCacheString
 */
 
 {
