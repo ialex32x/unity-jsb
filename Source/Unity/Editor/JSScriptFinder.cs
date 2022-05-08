@@ -29,7 +29,7 @@ namespace QuickJS.Unity
         {
             if (_finder == null)
             {
-                var prefs = UnityHelper.LoadPrefs();
+                var prefs = PrefsLoader.CurrentPrefs;
                 var baseDir = prefs.sourceDir;
 
                 _finder = new JSScriptFinder(baseDir, prefs.typescriptExt);
@@ -168,7 +168,8 @@ namespace QuickJS.Unity
 
         private void OnUpdate()
         {
-            if (_isRefreshing)
+            //TODO check if unity editor is in background
+            if (_isRefreshing || UnityEditor.EditorApplication.isCompiling)
             {
                 return;
             }

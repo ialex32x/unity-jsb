@@ -28,7 +28,7 @@ namespace QuickJS.Binding
         public string logPath = "Logs/js-bridge.log";
 
         /// <summary>
-        /// JSBehaviourScriptRef.sourceFile 将基于 sourceDir 拆出对应的 modulePath
+        /// JSBehaviourScriptRef will parse 'modulePath' from 'JSBehaviourScriptRef.sourceFile' with this 'sourceDir'
         /// </summary>
         public string sourceDir = "Scripts/src";
 

@@ -294,7 +294,7 @@ namespace QuickJS.Unity
                 {
                     return;
                 }
-                
+
                 EditorGUILayout.HelpBox(_type.Name + " will not be exported to the script runtime", MessageType.Warning);
             }
 
@@ -381,7 +381,6 @@ namespace QuickJS.Unity
         }
 
         private Prefs _prefs;
-        private string _filePath;
         private bool _dirty;
         private BindingManager _bindingManager;
 
@@ -489,7 +488,8 @@ namespace QuickJS.Unity
                 utils = new UnityBindingUtils(),
             };
 
-            _prefs = UnityHelper.LoadPrefs(out _filePath);
+            _prefs = PrefsLoader.CurrentPrefs;
+            _dirty = string.IsNullOrEmpty(_prefs.filePath);
             _selectedBindingMethod = Array.IndexOf(_bindingMethodValues, _prefs.preferredBindingMethod);
             _bindingManager = new BindingManager(_prefs, args);
             _bindingManager.Collect();
@@ -521,9 +521,11 @@ namespace QuickJS.Unity
                 OnDirtyStateChanged();
                 try
                 {
+                    var isNewFile = !File.Exists(Prefs.PATH);
                     var json = JsonUtility.ToJson(_prefs, true);
-                    System.IO.File.WriteAllText(_filePath, json);
-                    Debug.LogFormat("save {0}", _filePath);
+                    System.IO.File.WriteAllText(Prefs.PATH, json);
+                    _prefs.filePath = Prefs.PATH;
+                    Debug.LogFormat("saved {0}", Prefs.PATH);
                 }
                 catch (Exception exception)
                 {
@@ -952,7 +954,8 @@ namespace QuickJS.Unity
             }
             EditorGUI.EndDisabledGroup();
             EditorGUILayout.EndHorizontal();
-            EditorGUILayout.HelpBox("(experimental) Editor for " + _filePath, MessageType.Warning);
+            var fileType = string.IsNullOrEmpty(_prefs.filePath) ? "in memory" : "from file";
+            EditorGUILayout.HelpBox($"(experimental) Editor for {Prefs.PATH} ({fileType})", MessageType.Warning);
 
             _selectedTabViewIndex = GUILayout.Toolbar(_selectedTabViewIndex, _tabViewNames);
             _tabViewDrawers[_selectedTabViewIndex]();
