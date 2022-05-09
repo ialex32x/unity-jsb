@@ -132,9 +132,9 @@ namespace QuickJS.Binding
         public bool optToString = true;
 
         /// <summary>
-        /// [DEPREACATED] output type declaration into a single file
+        /// the d.ts will be split into parts with this file length threshold 
         /// </summary>
-        public bool singleTSD = true;
+        public int tsdSizeThreshold = 512 * 1024;
 
         /// <summary>
         /// enable parameter type checking for methods (even if no overloading exists)

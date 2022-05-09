@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
-using System.IO;
+using System.Linq;
 
 namespace QuickJS.Binding
 {
@@ -75,10 +75,17 @@ namespace QuickJS.Binding
         private string tab;
         private int tabLevel;
 
-        private TextGenerator _parent;
-        private StringBuilder sb = new StringBuilder();
+        private StringBuilder sb => parts[partIndex];
 
-        public int size { get { return sb.Length; } }
+        private int partThreshold = 0;
+
+        private int partIndex = 0;
+
+        private List<StringBuilder> parts = new List<StringBuilder>();
+
+        private List<string> partResults = new List<string>();
+
+        public bool isEmpty { get { return partResults.Count == 0 && (from part in parts where part.Length > 0 select part.Length).Sum() == 0; } }
 
         public string tabString
         {
@@ -93,37 +100,62 @@ namespace QuickJS.Binding
             }
         }
 
-        public TextGenerator(string newline, string tab)
+        public TextGenerator(string newline, string tab, int partThreshold = 0)
         {
             this.newline = newline;
             this.tab = tab;
             this.tabLevel = 0;
-        }
-
-        public TextGenerator(TextGenerator parent)
-        {
-            _parent = parent;
-            this.enabled = parent.enabled;
-            this.newline = parent.newline;
-            this.tab = parent.tab;
-            this.tabLevel = parent.tabLevel;
-        }
-
-        public TextGenerator CreateChild()
-        {
-            return new TextGenerator(this);
+            this.partIndex = 0;
+            this.partThreshold = partThreshold;
+            this.parts.Add(new StringBuilder());
         }
 
         public string Submit()
         {
             var text = sb.ToString();
-            if (_parent != null)
-            {
-                _parent.AppendL(text);
-            }
             return text;
         }
 
+        public string[] SubmitAll()
+        {
+            var list = new List<string>();
+            list.AddRange(from part in parts where part.Length > 0 select part.ToString());
+            list.AddRange(partResults);
+            return list.ToArray();
+        }
+
+        public void BeginPart()
+        {
+            if (partThreshold > 0)
+            {
+                partIndex++;
+                while (partIndex >= parts.Count)
+                {
+                    parts.Add(new StringBuilder());
+                }
+            }
+        }
+
+        public void EndPart()
+        {
+            if (partThreshold > 0)
+            {
+                if (partIndex == 0)
+                {
+                    throw new InvalidOperationException();
+                }
+
+                if (sb.Length > partThreshold)
+                {
+                    partResults.Add(sb.ToString());
+                    sb.Clear();
+                }
+
+                --partIndex;
+            }
+        }
+
+        #region Code Text
         public CodeBlock CodeBlockScope()
         {
             return new CodeBlock(this, string.Empty);
@@ -438,5 +470,6 @@ namespace QuickJS.Binding
             tabLevel = 0;
             sb.Clear();
         }
+        #endregion
     }
 }

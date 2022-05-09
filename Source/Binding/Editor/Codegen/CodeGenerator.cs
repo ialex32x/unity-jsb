@@ -38,16 +38,16 @@ namespace QuickJS.Binding
 
             bindResult = new JSBindResult();
             cs = new TextGenerator(newline, tab);
-            tsDeclare = new TextGenerator(newline, tab);
+            tsDeclare = new TextGenerator(newline, tab, bindingManager.prefs.tsdSizeThreshold);
         }
 
         public void Clear()
         {
             cs.Clear();
-            if (!bindingManager.prefs.singleTSD)
-            {
-                tsDeclare.Clear();
-            }
+            // if (!bindingManager.prefs.singleTSD)
+            // {
+            //     tsDeclare.Clear();
+            // }
         }
 
         public void GenRegistrationCodeForTypeCaster(MethodInfo methodInfo, int indexOfRegardingType)

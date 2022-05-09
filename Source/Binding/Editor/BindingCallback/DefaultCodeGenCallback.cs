@@ -39,22 +39,37 @@ namespace QuickJS.Binding
 #endif
         }
 
-        public void OnSourceCodeEmitted(CodeGenerator cg, string codeOutDir, string codeName, SourceCodeType type, string source)
+        public void OnSourceCodeEmitted(CodeGenerator cg, string codeOutDir, string codeName, SourceCodeType type, TextGenerator textGenerator)
         {
             if (!Directory.Exists(codeOutDir))
             {
                 Directory.CreateDirectory(codeOutDir);
             }
 
-            var filename = codeName;
+            var extension = "";
             switch (type)
             {
-                case SourceCodeType.CSharp: filename += ".cs"; break;
-                case SourceCodeType.TSD: filename += ".d.ts" + _bindingManager.prefs.extraExtForTypescript; break;
+                case SourceCodeType.CSharp: extension = ".cs"; break;
+                case SourceCodeType.TSD: extension = ".d.ts" + _bindingManager.prefs.extraExtForTypescript; break;
             }
-            var csPath = Path.Combine(codeOutDir, filename);
-            cg.WriteAllText(csPath, source);
-            _bindingManager.AddOutputFile(codeOutDir, csPath);
+
+            var slices = textGenerator.SubmitAll();
+            var sliceCount = slices.Length;
+            if (sliceCount == 1)
+            {
+                var csPath = Path.Combine(codeOutDir, codeName + extension);
+                cg.WriteAllText(csPath, slices[0]);
+                _bindingManager.AddOutputFile(codeOutDir, csPath);
+            }
+            else
+            {
+                for (int sliceIndex = 0; sliceIndex < sliceCount; ++sliceIndex)
+                {
+                    var csPath = Path.Combine(codeOutDir, $"{codeName}.part{sliceIndex}{extension}");
+                    cg.WriteAllText(csPath, slices[sliceIndex]);
+                    _bindingManager.AddOutputFile(codeOutDir, csPath);
+                }
+            }
         }
 
         public void OnGenerateBindingList(CodeGenerator cg, IEnumerable<IGrouping<string, TypeBindingInfo>> modules, ICollection<RawTypeBindingInfo> rawTypes)
