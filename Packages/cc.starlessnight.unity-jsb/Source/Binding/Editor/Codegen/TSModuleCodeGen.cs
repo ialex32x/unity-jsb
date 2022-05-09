@@ -47,11 +47,19 @@ namespace QuickJS.Binding
             this.tsModule = string.IsNullOrEmpty(typeBindingInfo.tsTypeNaming.jsModule) ? cg.bindingManager.prefs.defaultJSModule : typeBindingInfo.tsTypeNaming.jsModule;
             this.moduleBindingInfo = cg.bindingManager.GetExportedModule(typeBindingInfo.tsTypeNaming.jsModule);
 
+            this.cg.tsDeclare.BeginPart();
             this.cg.tsDeclare.AppendLine($"declare module \"{this.tsModule}\" {{");
             this.cg.tsDeclare.AddTabLevel();
 
             CollectImports();
             WriteImports();
+        }
+
+        public void Dispose()
+        {
+            this.cg.tsDeclare.DecTabLevel();
+            this.cg.tsDeclare.AppendLine("}");
+            this.cg.tsDeclare.EndPart();
         }
 
         private void CollectImports()
@@ -311,12 +319,6 @@ namespace QuickJS.Binding
 
             _uniqueNames.Add(rename);
             return rename;
-        }
-
-        public void Dispose()
-        {
-            this.cg.tsDeclare.DecTabLevel();
-            this.cg.tsDeclare.AppendLine("}");
         }
 
         #region TS 命名辅助

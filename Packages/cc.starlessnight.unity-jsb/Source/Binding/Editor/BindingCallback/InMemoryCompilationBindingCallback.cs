@@ -215,7 +215,7 @@ namespace QuickJS.Binding
         }
 
         //TODO [IMPROVMENT] delay the compilation util using the type at runtime
-        public void OnSourceCodeEmitted(CodeGenerator cg, string codeOutDir, string codeName, SourceCodeType type, string source)
+        public void OnSourceCodeEmitted(CodeGenerator cg, string codeOutDir, string codeName, SourceCodeType type, TextGenerator textGenerator)
         {
             if (type == SourceCodeType.CSharp)
             {
@@ -223,7 +223,7 @@ namespace QuickJS.Binding
                 {
                     var list = new List<Assembly>(_generatedAssemblies);
                     list.AddRange(_referencedAssemblies);
-                    var assembly = CompileSource(source, codeName, list);
+                    var assembly = CompileSource(textGenerator.Submit(), codeName, list);
                     var Class = assembly.GetType(_namespace + "." + _className);
                     var BindAll = Class?.GetMethod(Values.MethodNameOfStaticBinder);
 
@@ -231,7 +231,7 @@ namespace QuickJS.Binding
                 }
                 else
                 {
-                    _generatedAssemblies.Add(CompileSource(source, codeName, _referencedAssemblies));
+                    _generatedAssemblies.Add(CompileSource(textGenerator.Submit(), codeName, _referencedAssemblies));
                 }
             }
         }

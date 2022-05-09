@@ -2102,7 +2102,6 @@ namespace QuickJS.Binding
                         {
                             var fileName = typeBindingInfo.GetFileName();
                             _WriteCSharp(cg, csOutDir, fileName);
-                            _WriteTSD(cg, tsOutDir, fileName, !prefs.singleTSD);
                         }
                     }
                 }
@@ -2135,7 +2134,6 @@ namespace QuickJS.Binding
                         cg.Clear();
                         cg.Generate(exportedDelegatesArray, _exportedHotfixDelegates);
                         _WriteCSharp(cg, csOutDir, CodeGenerator.NameOfDelegates);
-                        _WriteTSD(cg, tsOutDir, CodeGenerator.NameOfDelegates, !prefs.singleTSD);
                     }
                 }
                 catch (Exception exception)
@@ -2179,7 +2177,6 @@ namespace QuickJS.Binding
                         cg.Clear();
                         _codegenCallback.OnGenerateBindingList(cg, modules, _collectedRawTypes.Values);
                         _WriteCSharp(cg, csOutDir, CodeGenerator.NameOfBindingList);
-                        _WriteTSD(cg, tsOutDir, CodeGenerator.NameOfBindingList, !prefs.singleTSD);
                     }
                 }
                 catch (Exception exception)
@@ -2194,7 +2191,7 @@ namespace QuickJS.Binding
                 try
                 {
                     cg.Clear();
-                    _WriteTSD(cg, tsOutDir, "jsb.autogen", prefs.singleTSD);
+                    _WriteTSD(cg, tsOutDir, "jsb.autogen");
                 }
                 catch (Exception exception)
                 {
@@ -2226,16 +2223,13 @@ namespace QuickJS.Binding
             _codegenCallback?.OnGenerateFinish();
         }
 
-        private void _WriteTSD(CodeGenerator cg, string tsOutDir, string tsName, bool isEmitRequested)
+        private void _WriteTSD(CodeGenerator cg, string tsOutDir, string tsName)
         {
             try
             {
-                if (isEmitRequested)
+                if (cg.tsDeclare.enabled && !cg.tsDeclare.isEmpty)
                 {
-                    if (cg.tsDeclare.enabled && cg.tsDeclare.size > 0)
-                    {
-                        _codegenCallback?.OnSourceCodeEmitted(cg, tsOutDir, tsName, SourceCodeType.TSD, cg.tsDeclare.Submit());
-                    }
+                    _codegenCallback?.OnSourceCodeEmitted(cg, tsOutDir, tsName, SourceCodeType.TSD, cg.tsDeclare);
                 }
             }
             catch (Exception exception)
@@ -2248,9 +2242,9 @@ namespace QuickJS.Binding
         {
             try
             {
-                if (cg.cs.enabled && cg.cs.size > 0)
+                if (cg.cs.enabled && !cg.cs.isEmpty)
                 {
-                    _codegenCallback?.OnSourceCodeEmitted(cg, csOutDir, csName, SourceCodeType.CSharp, cg.cs.Submit());
+                    _codegenCallback?.OnSourceCodeEmitted(cg, csOutDir, csName, SourceCodeType.CSharp, cg.cs);
                 }
             }
             catch (Exception exception)

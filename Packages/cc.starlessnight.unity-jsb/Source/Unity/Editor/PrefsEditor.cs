@@ -710,6 +710,7 @@ namespace QuickJS.Unity
 
                 Block("Code Style", () =>
                 {
+                    _prefs.tsdSizeThreshold = EditorGUILayout.IntField("TSD Slice Size", _prefs.tsdSizeThreshold);
                     _prefs.tab = RepeatString(" ", EditorGUILayout.IntSlider("Tab Size", _prefs.tab.Length, 0, 8));
                     var newlineIndex = Array.IndexOf(_newlineValues, _prefs.newLineStyle);
                     var newlineIndex_t = EditorGUILayout.Popup("Newline Style", newlineIndex, _newlineNames);
