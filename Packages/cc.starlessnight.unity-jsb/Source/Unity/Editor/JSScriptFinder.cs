@@ -152,7 +152,7 @@ namespace QuickJS.Unity
             foreach (var pair in _scriptClassPaths)
             {
                 //TODO: need optimization
-                if (pair.Value.classType == classType && (string.IsNullOrEmpty(pattern) || pair.Key.Contains(pattern)))
+                if ((pair.Value.classType & classType) != 0 && (string.IsNullOrEmpty(pattern) || pair.Key.Contains(pattern)))
                 {
                     results.Add(pair.Value);
                 }
