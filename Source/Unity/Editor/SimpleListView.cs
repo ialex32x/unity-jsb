@@ -15,8 +15,6 @@ namespace QuickJS.Unity
         private List<T> _items;
         private HashSet<T> _selection = new HashSet<T>();
         private float _itemHeight;
-        private Color _rowColor = new Color(0.5f, 0.5f, 0.5f, 0.1f);
-        private Color _selectColor = new Color(44f / 255f, 93f / 255f, 135f / 255f);
 
         public Action<Rect, int, T> OnDrawItem;
         public Action<T, HashSet<T>> OnSelectItem;
@@ -62,13 +60,13 @@ namespace QuickJS.Unity
 
                 if (isSelected)
                 {
-                    EditorGUI.DrawRect(_itemRect, _selectColor);
+                    EditorGUI.DrawRect(_itemRect, UnityHelper.SelectRowColor);
                 }
                 else
                 {
                     if (i % 2 == 0)
                     {
-                        EditorGUI.DrawRect(_itemRect, _rowColor);
+                        EditorGUI.DrawRect(_itemRect, UnityHelper.RowColor);
                     }
                 }
                 OnDrawItem?.Invoke(_itemRect, i, currentItem);

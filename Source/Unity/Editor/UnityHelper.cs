@@ -16,6 +16,9 @@ namespace QuickJS.Unity
     [InitializeOnLoad]
     public static class UnityHelper
     {
+        public static Color RowColor = new Color(0.5f, 0.5f, 0.5f, 0.1f);
+        public static Color SelectRowColor = new Color(44f / 255f, 93f / 255f, 135f / 255f);
+
         private static Dictionary<string, Texture> _iconCache = new Dictionary<string, Texture>();
 
         public static Texture GetIcon(string name)

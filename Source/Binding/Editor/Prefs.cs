@@ -65,7 +65,7 @@ namespace QuickJS.Binding
         public string jsModulePackInfoPath = "jsb-modules.json";
 
         /// <summary>
-        /// whether to generate doc comments in d.sts or not
+        /// whether to generate doc comments in d.ts or not
         /// </summary>
         public bool genTypescriptDoc = true;
 
