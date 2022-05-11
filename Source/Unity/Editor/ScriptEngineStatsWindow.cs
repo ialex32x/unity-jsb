@@ -98,6 +98,7 @@ namespace QuickJS.Unity
             menu.AddItem(new GUIContent("JS Launcher"), false, () => GetWindow<ScriptEditorWindowLauncher>().Show());
             menu.AddItem(new GUIContent("Prefs"), false, () => GetWindow<PrefsEditor>().Show());
             menu.AddSeparator("");
+            menu.AddItem(new GUIContent("Capture"), false, () => CaptureAll());
             menu.AddItem(new GUIContent("GC (mono)"), false, () => GarbadgeCollect());
             menu.AddItem(new GUIContent("Reload EditorScripting"), false, () => EditorRuntime.GetInstance()?.Reload());
 #if UNITY_2019_4_OR_NEWER
