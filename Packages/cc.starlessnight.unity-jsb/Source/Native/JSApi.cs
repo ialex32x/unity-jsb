@@ -85,7 +85,7 @@ namespace QuickJS.Native
 
     public partial class JSApi
     {
-        private const int CS_JSB_VERSION = 0xa; // expected dll version
+        public const int CS_JSB_VERSION = 0xa; // expected dll version
         public static readonly int SO_JSB_VERSION; // actual dll version
 
 #if JSB_NO_BIGNUM || (UNITY_WSA && !UNITY_EDITOR) || JSB_WITH_V8_BACKEND
