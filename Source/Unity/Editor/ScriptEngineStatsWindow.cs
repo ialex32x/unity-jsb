@@ -47,6 +47,8 @@ namespace QuickJS.Unity
         private float _time;
         private float _timeCap = 5f;
         private List<Snapshot> _snapshots = new List<Snapshot>();
+        private string[] _snapshotNames = new string[] { };
+        private int _selectedSnapshotIndex;
 
         [MenuItem("JS Bridge/Stats Viewer", false, 5000)]
         static void OpenThis()
@@ -115,6 +117,7 @@ namespace QuickJS.Unity
             }
             var inst = new Snapshot();
             inst.id = id;
+            ArrayUtility.Add(ref _snapshotNames, id.ToString());
             _snapshots.Add(inst);
             return inst;
         }
@@ -140,50 +143,47 @@ namespace QuickJS.Unity
                 return;
             }
             var snapshot = (Snapshot)act.args;
-            lock (snapshot)
+            unsafe
             {
-                unsafe
+                fixed (Native.JSMemoryUsage* ptr = &snapshot.memoryUsage)
                 {
-                    fixed (Native.JSMemoryUsage* ptr = &snapshot.memoryUsage)
-                    {
-                        Native.JSApi.JS_ComputeMemoryUsage(runtime, ptr);
-                    }
+                    Native.JSApi.JS_ComputeMemoryUsage(runtime, ptr);
                 }
-
-                var typeDB = runtime.GetTypeDB();
-                snapshot.exportedTypes = typeDB.Count;
-                snapshot.isStaticBinding = runtime.isStaticBinding;
-
-                var objectCache = runtime.GetObjectCache();
-                var stringCache = runtime.GetMainContext().GetStringCache();
-
-                snapshot.managedObjectCount = objectCache.GetManagedObjectCount();
-                snapshot.managedObjectCap = objectCache.GetManagedObjectCap();
-                snapshot.managedObjectRefs.Clear();
-                if (snapshot.fetchManagedObjectRefs)
-                {
-                    objectCache.ForEachManagedObject(obj =>
-                    {
-                        snapshot.managedObjectRefs.Add(new WeakReference<object>(obj));
-                    });
-                }
-                snapshot.jSObjectCount = objectCache.GetJSObjectCount();
-                snapshot.delegateCount = objectCache.GetDelegateCount();
-                snapshot.scriptValueCount = objectCache.GetScriptValueCount();
-                snapshot.scriptPromiseCount = objectCache.GetScriptPromiseCount();
-                snapshot.stringCount = stringCache.GetStringCount();
-
-                var timeManager = runtime.GetTimerManager();
-                snapshot.activeTimers.Clear();
-                snapshot.timeNow = timeManager.now;
-                timeManager.ForEach((id, delay, deadline, once) => snapshot.activeTimers.Add(new Snapshot.TimerInfo()
-                {
-                    id = id,
-                    delay = delay,
-                    deadline = deadline,
-                    once = once,
-                }));
             }
+
+            var typeDB = runtime.GetTypeDB();
+            snapshot.exportedTypes = typeDB.Count;
+            snapshot.isStaticBinding = runtime.isStaticBinding;
+
+            var objectCache = runtime.GetObjectCache();
+            var stringCache = runtime.GetMainContext().GetStringCache();
+
+            snapshot.managedObjectCount = objectCache.GetManagedObjectCount();
+            snapshot.managedObjectCap = objectCache.GetManagedObjectCap();
+            snapshot.managedObjectRefs.Clear();
+            if (snapshot.fetchManagedObjectRefs)
+            {
+                objectCache.ForEachManagedObject(obj =>
+                {
+                    snapshot.managedObjectRefs.Add(new WeakReference<object>(obj));
+                });
+            }
+            snapshot.jSObjectCount = objectCache.GetJSObjectCount();
+            snapshot.delegateCount = objectCache.GetDelegateCount();
+            snapshot.scriptValueCount = objectCache.GetScriptValueCount();
+            snapshot.scriptPromiseCount = objectCache.GetScriptPromiseCount();
+            snapshot.stringCount = stringCache.GetStringCount();
+
+            var timeManager = runtime.GetTimerManager();
+            snapshot.activeTimers.Clear();
+            snapshot.timeNow = timeManager.now;
+            timeManager.ForEach((id, delay, deadline, once) => snapshot.activeTimers.Add(new Snapshot.TimerInfo()
+            {
+                id = id,
+                delay = delay,
+                deadline = deadline,
+                once = once,
+            }));
         }
 
         private string GetDescription(object obj)
@@ -200,6 +200,13 @@ namespace QuickJS.Unity
 
         private void InspectSnapshow(Snapshot snapshot)
         {
+            if (!snapshot.alive)
+            {
+                EditorGUILayout.HelpBox("This runtime isn't alive.", MessageType.Info);
+                return;
+            }
+
+            EditorGUI.BeginDisabledGroup(true);
             EditorGUILayout.BeginVertical();
             Block("JSMemoryUsage", () =>
             {
@@ -236,8 +243,17 @@ namespace QuickJS.Unity
                 EditorGUILayout.Toggle("Static Bind", snapshot.isStaticBinding);
                 EditorGUILayout.IntField("Exported Types", snapshot.exportedTypes);
                 EditorGUILayout.TextField("ManagedObject Count", snapshot.managedObjectCount + "/" + snapshot.managedObjectCap);
-                _fetchManagedObjectRefs = EditorGUILayout.Toggle("Details", _fetchManagedObjectRefs);
-                if (snapshot.fetchManagedObjectRefs)
+                EditorGUILayout.IntField("JSObject Count", snapshot.jSObjectCount);
+                EditorGUILayout.IntField("Delegate Mapping Count", snapshot.delegateCount);
+                EditorGUILayout.IntField("ScriptValue Mapping Count", snapshot.scriptValueCount);
+                EditorGUILayout.IntField("ScriptPromise Mapping Count", snapshot.scriptPromiseCount);
+                EditorGUILayout.IntField("Cached String Count", snapshot.stringCount);
+            });
+
+
+            if (snapshot.fetchManagedObjectRefs)
+            {
+                Block("Details", () =>
                 {
                     for (int i = 0, count = snapshot.managedObjectRefs.Count; i < count;)
                     {
@@ -254,13 +270,8 @@ namespace QuickJS.Unity
                             --count;
                         }
                     }
-                }
-                EditorGUILayout.IntField("JSObject Count", snapshot.jSObjectCount);
-                EditorGUILayout.IntField("Delegate Mapping Count", snapshot.delegateCount);
-                EditorGUILayout.IntField("ScriptValue Mapping Count", snapshot.scriptValueCount);
-                EditorGUILayout.IntField("ScriptPromise Mapping Count", snapshot.scriptPromiseCount);
-                EditorGUILayout.IntField("Cached String Count", snapshot.stringCount);
-            });
+                });
+            }
 
             Block("Timer", () =>
             {
@@ -287,6 +298,7 @@ namespace QuickJS.Unity
                 }
             });
             EditorGUILayout.EndVertical();
+            EditorGUI.EndDisabledGroup();
         }
 
         protected override void OnUpdate()
@@ -311,6 +323,19 @@ namespace QuickJS.Unity
                 snapshot.alive = false;
             }
             _alive = ScriptEngine.ForEachRuntime(runtime => Capture(runtime));
+
+            for (int i = 0, count = _snapshots.Count; i < count; i++)
+            {
+                var snapshot = _snapshots[i];
+                if (snapshot.alive)
+                {
+                    _snapshotNames[i] = snapshot.id.ToString();
+                }
+                else
+                {
+                    _snapshotNames[i] = snapshot.id.ToString() + " (dead)";
+                }
+            }
             Repaint();
         }
 
@@ -322,7 +347,7 @@ namespace QuickJS.Unity
             {
                 _sv = scrollViewScope.scrollPosition;
 
-                Block("Engine", () =>
+                Block("Control", () =>
                 {
                     EditorGUI.BeginDisabledGroup(EditorApplication.isCompiling);
                     EditorGUILayout.BeginHorizontal();
@@ -353,17 +378,21 @@ namespace QuickJS.Unity
                         }
                     }
                     EditorGUI.BeginDisabledGroup(true);
-                    EditorGUILayout.IntField("Version", Native.JSApi.SO_JSB_VERSION);
+                    EditorGUILayout.IntField("Dll Version", Native.JSApi.SO_JSB_VERSION);
+                    if (Native.JSApi.CS_JSB_VERSION != Native.JSApi.SO_JSB_VERSION)
+                    {
+                        EditorGUILayout.HelpBox("The version of imported dll doesn't equal to " + Native.JSApi.CS_JSB_VERSION, MessageType.Warning);
+                    }
                     EditorGUILayout.Toggle(GUIContent_Stats_Operator, Native.JSApi.IsOperatorOverloadingSupported);
                     EditorGUI.EndDisabledGroup();
 
+                    _fetchManagedObjectRefs = EditorGUILayout.Toggle("Show Refs", _fetchManagedObjectRefs);
                     _autoCap = EditorGUILayout.Toggle("Auto Refresh", _autoCap);
                     EditorGUI.BeginDisabledGroup(!_autoCap);
                     _timeCap = EditorGUILayout.Slider("Interval", _timeCap, 1f, 30f);
                     EditorGUI.EndDisabledGroup();
 
-                    EditorGUI.BeginDisabledGroup(_alive == 0);
-                    EditorGUI.EndDisabledGroup();
+                    _selectedSnapshotIndex = EditorGUILayout.Popup("Snapshot", _selectedSnapshotIndex, _snapshotNames);
                 });
 
                 if (_alive == 0)
@@ -372,19 +401,10 @@ namespace QuickJS.Unity
                     return;
                 }
 
-                EditorGUILayout.BeginHorizontal();
-                for (int i = 0, count = _snapshots.Count; i < count; i++)
+                if (_selectedSnapshotIndex >= 0 && _selectedSnapshotIndex < _snapshots.Count)
                 {
-                    var snapshot = _snapshots[i];
-                    if (snapshot.alive)
-                    {
-                        lock (snapshot)
-                        {
-                            InspectSnapshow(snapshot);
-                        }
-                    }
+                    InspectSnapshow(_snapshots[_selectedSnapshotIndex]);
                 }
-                EditorGUILayout.EndHorizontal();
             }
         } // end OnPaint()
     }
