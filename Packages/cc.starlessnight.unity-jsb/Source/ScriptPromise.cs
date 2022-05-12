@@ -3,11 +3,16 @@ using QuickJS.Native;
 
 namespace QuickJS
 {
-    public abstract class ScriptPromise : IDisposable
+    public abstract class ScriptPromise : Utils.IWeakMapEntry
     {
         private ScriptContext _context;
         private JSValue _promise;
-        private JSValue[] _resolving_funcs;
+        private JSValue _on_resolve;
+        private JSValue _on_reject;
+
+        public JSValue promiseValue => _promise;
+        public JSValue onResolveValue => _on_resolve;
+        public JSValue onRejectValue => _on_reject;
 
         public ScriptPromise(JSContext ctx)
         : this(ScriptEngine.GetContext(ctx))
@@ -17,8 +22,7 @@ namespace QuickJS
         public ScriptPromise(ScriptContext context)
         {
             _context = context;
-            _resolving_funcs = new[] { JSApi.JS_UNDEFINED, JSApi.JS_UNDEFINED };
-            _promise = JSApi.JS_NewPromiseCapability(_context, _resolving_funcs);
+            _promise = JSApi.JS_NewPromiseCapability(_context, out _on_resolve, out _on_reject);
             _context.GetObjectCache().AddScriptPromise(_promise, this);
         }
 
@@ -39,9 +43,9 @@ namespace QuickJS
             {
                 var context = _context;
                 _context = null;
-                context.FreeValues(_resolving_funcs);
-                _resolving_funcs = null;
-                context.GetRuntime().FreeScriptPromise(_promise);
+                context.GetRuntime().FreeScriptPromise(_promise, _on_resolve, _on_reject);
+                _on_resolve = JSApi.JS_UNDEFINED;
+                _on_reject = JSApi.JS_UNDEFINED;
                 _promise = JSApi.JS_UNDEFINED;
             }
         }
@@ -58,7 +62,7 @@ namespace QuickJS
 
         public void Reject(object value = null)
         {
-            Invoke(1, value);
+            Invoke(_on_reject, value);
         }
 
         /// <summary>
@@ -66,7 +70,7 @@ namespace QuickJS
         /// </summary>
         /// <param name="index">0 表示成功, 1 表示失败</param>
         /// <param name="value">传参给回调</param>
-        protected unsafe void Invoke(int index, object value)
+        protected unsafe void Invoke(JSValue callback, object value)
         {
             if (_context == null)
             {
@@ -74,6 +78,12 @@ namespace QuickJS
             }
             var context = _context;
             var ctx = (JSContext)_context;
+            if (JSApi.JS_IsFunction(ctx, callback) != 1)
+            {
+                Dispose();
+                return;
+            }
+
             var backVal = Binding.Values.js_push_var(ctx, value);
             if (backVal.IsException())
             {
@@ -83,7 +93,7 @@ namespace QuickJS
             }
 
             var argv = stackalloc[] { backVal };
-            var rval = JSApi.JS_Call(ctx, _resolving_funcs[index], JSApi.JS_UNDEFINED, 1, argv);
+            var rval = JSApi.JS_Call(ctx, callback, JSApi.JS_UNDEFINED, 1, argv);
             JSApi.JS_FreeValue(ctx, backVal);
             if (rval.IsException())
             {
@@ -112,7 +122,7 @@ namespace QuickJS
 
         public void Resolve(TResult value)
         {
-            Invoke(0, value);
+            Invoke(onResolveValue, value);
         }
     }
 
@@ -130,7 +140,7 @@ namespace QuickJS
 
         public void Resolve(object value = null)
         {
-            Invoke(0, value);
+            Invoke(onResolveValue, value);
         }
     }
 }

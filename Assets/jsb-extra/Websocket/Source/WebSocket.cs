@@ -45,7 +45,7 @@ namespace QuickJS.Extra
         x addEventListener('message', func)
     */
     //TODO: 用 dotnet WebSocket 代替 lws
-    public class WebSocket : Values, IDisposable
+    public class WebSocket : Values, IDisposable, Utils.IObjectCollectionEntry
     {
         private enum ReadyState
         {
@@ -103,6 +103,7 @@ namespace QuickJS.Extra
             }
         }
 
+        private Utils.ObjectCollection.Handle _handle;
         private lws _wsi;
         private lws_context _context;
         private ReadyState _readyState;
@@ -235,10 +236,12 @@ namespace QuickJS.Extra
             }
         }
 
-        private void Destroy(ScriptRuntime runtime)
+        #region IObjectCollectionEntry implementation
+        public void OnCollectionReleased()
         {
             Destroy();
         }
+        #endregion
 
         // _duk_lws_destroy
         private void Destroy()
@@ -278,7 +281,7 @@ namespace QuickJS.Extra
             if (runtime != null)
             {
                 runtime.OnUpdate -= Update;
-                runtime.OnDestroy -= Destroy;
+                runtime.RemoveManagedObject(_handle);
             }
 
             _jsContext = JSContext.Null;
@@ -528,7 +531,7 @@ namespace QuickJS.Extra
             var runtime = context.GetRuntime();
 
             runtime.OnUpdate += Update;
-            runtime.OnDestroy += Destroy;
+            runtime.AddManagedObject(this, out _handle);
             JSApi.JS_SetProperty(ctx, value, context.GetAtom("onopen"), JSApi.JS_NULL);
             JSApi.JS_SetProperty(ctx, value, context.GetAtom("onclose"), JSApi.JS_NULL);
             JSApi.JS_SetProperty(ctx, value, context.GetAtom("onerror"), JSApi.JS_NULL);

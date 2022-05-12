@@ -16,7 +16,7 @@ namespace QuickJS.Extra
     using QuickJS.Native;
     using QuickJS.Binding;
 
-    public class XMLHttpRequest : Values, IDisposable
+    public class XMLHttpRequest : Values, IDisposable, Utils.IObjectCollectionEntry
     {
         private class ResponseArgs
         {
@@ -48,6 +48,7 @@ namespace QuickJS.Extra
             DONE = 4,
         }
 
+        private Utils.ObjectCollection.Handle _handle;
         private JSValue _jsThis; // dangeous reference holder (no ref count)
         private JSContext _jsContext; // dangeous reference holder
 
@@ -70,13 +71,15 @@ namespace QuickJS.Extra
             _onerror = JSApi.JS_UNDEFINED;
 
             var runtime = ScriptEngine.GetRuntime(ctx);
-            runtime.OnDestroy += Destroy;
+            runtime.AddManagedObject(this, out _handle);
         }
 
-        private void Destroy(ScriptRuntime runtime)
+        #region IObjectCollectionEntry implementation
+        public void OnCollectionReleased()
         {
             Destroy();
         }
+        #endregion
 
         private void Destroy()
         {
@@ -91,7 +94,7 @@ namespace QuickJS.Extra
             var runtime = ScriptEngine.GetRuntime(_jsContext);
             if (runtime != null)
             {
-                runtime.OnDestroy -= Destroy;
+                runtime.RemoveManagedObject(_handle);
             }
 
             if (_jsContext.IsValid())

@@ -5,8 +5,13 @@ namespace QuickJS.Utils
 {
     using Native;
 
+    public interface IWeakMapEntry
+    {
+        void Dispose();
+    }
+
     public class JSWeakMap<T>
-    where T : class, IDisposable
+    where T : class, IWeakMapEntry
     {
         // weak reference table for script values (dangerous, no ref count)
         private Dictionary<JSValue, WeakReference> _map = new Dictionary<JSValue, WeakReference>();

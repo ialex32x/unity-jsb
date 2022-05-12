@@ -8,7 +8,7 @@ namespace QuickJS.Unity
     using UnityEngine;
     using UnityEngine.Serialization;
 
-    public class JSBehaviour : MonoBehaviour, ISerializationCallbackReceiver, IScriptEditorSupport, IScriptInstancedObject
+    public class JSBehaviour : MonoBehaviour, ISerializationCallbackReceiver, IScriptEditorSupport, IScriptInstancedObject, Utils.IObjectCollectionEntry
     {
         // 在编辑器运行时下与 js 脚本建立链接关系
         [SerializeField]
@@ -24,7 +24,7 @@ namespace QuickJS.Unity
         public JSScriptProperties properties => _properties;
 
         // unsafe, internal use only
-        public JSContext ctx { get { return _ctx; } }
+        public JSContext ctx => _ctx;
 
         private bool _isScriptInstanced = false;
 
@@ -39,6 +39,7 @@ namespace QuickJS.Unity
 #endif
 
         protected JSContext _ctx = JSContext.Null;
+        private Utils.ObjectCollection.Handle _handle;
 
         protected JSValue _this_obj = JSApi.JS_UNDEFINED;
 
@@ -218,7 +219,7 @@ namespace QuickJS.Unity
 
             ReleaseJSValues();
             _ctx = ctx;
-            runtime.OnDestroy += OnScriptRuntimeDestroy;
+            runtime.AddManagedObject(this, out _handle);
 #if UNITY_EDITOR
             context.OnScriptReloading += OnScriptReloading;
             context.OnScriptReloaded += OnScriptReloaded;
@@ -465,16 +466,17 @@ namespace QuickJS.Unity
             }
         }
 
-        private void OnScriptRuntimeDestroy(ScriptRuntime runtime)
+        #region IObjectCollectionEntry implementation
+        public void OnCollectionReleased()
         {
             // it's dangerous, more protection are required during the process of context-destroying
-
             if (enabled)
             {
                 OnDisable();
             }
             OnDestroy();
         }
+        #endregion
 
 #if UNITY_EDITOR
         private void OnScriptReloading(ScriptContext context, string resolved_id)
@@ -535,7 +537,7 @@ namespace QuickJS.Unity
 
             if (context != null)
             {
-                runtime.OnDestroy -= OnScriptRuntimeDestroy;
+                runtime.RemoveManagedObject(_handle);
 #if UNITY_EDITOR
                 context.OnScriptReloading -= OnScriptReloading;
                 context.OnScriptReloaded -= OnScriptReloaded;

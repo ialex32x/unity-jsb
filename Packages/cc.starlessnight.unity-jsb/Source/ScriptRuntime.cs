@@ -21,7 +21,6 @@ namespace QuickJS
             public ScriptContext target;
         }
 
-        public event Action<ScriptRuntime> OnDestroy;
         public event Action<ScriptRuntime> OnInitializing;
         public event Action<ScriptRuntime> OnInitialized;
         public event Action<ScriptRuntime> OnMainModuleLoaded;
@@ -54,6 +53,7 @@ namespace QuickJS
         private List<IModuleResolver> _moduleResolvers = new List<IModuleResolver>();
         private Dictionary<Type, ProxyModuleRegister> _allProxyModuleRegisters = new Dictionary<Type, ProxyModuleRegister>();
         private ObjectCache _objectCache;
+        private ObjectCollection _objectCollection;
         private ITypeDB _typeDB;
         private TimerManager _timerManager;
         private IO.IByteBufferAllocator _byteBufferAllocator;
@@ -386,6 +386,7 @@ namespace QuickJS
             _autorelease = new Utils.AutoReleasePool();
             _fileSystem = fileSystem;
             _objectCache = new ObjectCache(_logger);
+            _objectCollection = new ObjectCollection();
             _timerManager = new TimerManager(_logger);
             _typeDB = new TypeDB(this, _mainContext);
 #if !JSB_UNITYLESS
@@ -544,6 +545,16 @@ namespace QuickJS
         public Utils.ObjectCache GetObjectCache()
         {
             return _objectCache;
+        }
+
+        public void AddManagedObject(IObjectCollectionEntry entry, out ObjectCollection.Handle handle)
+        {
+            _objectCollection.AddObject(entry, out handle);
+        }
+
+        public bool RemoveManagedObject(ObjectCollection.Handle handle)
+        {
+            return _objectCollection.RemoveObject(handle);
         }
 
         private ScriptContext CreateContext(bool withDebugServer, int debugServerPort)
@@ -713,26 +724,37 @@ namespace QuickJS
         }
 
         // 可在 GC 线程直接调用此方法
-        public void FreeScriptPromise(JSValue value)
+        public void FreeScriptPromise(JSValue promise, JSValue onResolve, JSValue onReject)
         {
             if (_mainThreadId == Thread.CurrentThread.ManagedThreadId)
             {
-                _objectCache.RemoveScriptPromise(value);
+                _objectCache.RemoveScriptPromise(promise);
                 if (_rt != JSRuntime.Null)
                 {
-                    JSApi.JSB_FreeValueRT(_rt, value);
+                    JSApi.JSB_FreeValueRT(_rt, promise);
+                    JSApi.JSB_FreeValueRT(_rt, onResolve);
+                    JSApi.JSB_FreeValueRT(_rt, onReject);
                 }
             }
             else
             {
-                var act = new JSAction()
-                {
-                    value = value,
-                    callback = _FreeValueAndScriptPromiseAction,
-                };
                 lock (_pendingActions)
                 {
-                    EnqueuePendingAction(act);
+                    EnqueuePendingAction(new JSAction()
+                    {
+                        value = promise,
+                        callback = _FreeValueAndScriptPromiseAction,
+                    });
+                    EnqueuePendingAction(new JSAction()
+                    {
+                        value = onResolve,
+                        callback = _FreeValueAction,
+                    });
+                    EnqueuePendingAction(new JSAction()
+                    {
+                        value = onReject,
+                        callback = _FreeValueAction,
+                    });
                 }
             }
         }
@@ -984,7 +1006,6 @@ namespace QuickJS
                         var resolver = _moduleResolvers[i];
                         resolver.Release();
                     }
-                    OnDestroy?.Invoke(this);
                 }
                 catch (Exception e)
                 {
@@ -994,6 +1015,12 @@ namespace QuickJS
 
             _isInitialized = false;
             _isRunning = false;
+            
+            _objectCollection.Clear();
+            if (_objectCollection.count != 0)
+            {
+                _logger?.Write(LogLevel.Error, "invalid object collection operation during the phase of destroying runtime");
+            }
 
             _timerManager.Destroy();
             _typeDB.Destroy();
@@ -1014,7 +1041,6 @@ namespace QuickJS
             _contextRefs.Clear();
             _mainContext = null;
             // _rwlock.ExitWriteLock();
-
 
             if (_asyncManager != null)
             {

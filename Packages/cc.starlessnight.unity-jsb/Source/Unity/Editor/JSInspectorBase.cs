@@ -9,10 +9,11 @@ namespace QuickJS.Unity
     using UnityEngine;
     using Native;
 
-    public abstract class JSInspectorBase<T> : Editor
+    public abstract class JSInspectorBase<T> : Editor, Utils.IObjectCollectionEntry
     where T : Object, IScriptEditorSupport
     {
         private T _target;
+        private Utils.ObjectCollection.Handle _handle;
         private JSScriptRef _scriptRef;
 
         [NonSerialized]
@@ -119,10 +120,12 @@ namespace QuickJS.Unity
             }
         }
 
-        private void OnScriptRuntimeDestroy(ScriptRuntime runtime)
+        #region IObjectCollectionEntry implementation
+        public void OnCollectionReleased()
         {
             Release();
         }
+        #endregion
 
         protected void ReleaseJSValues()
         {
@@ -140,7 +143,7 @@ namespace QuickJS.Unity
 
             if (context != null)
             {
-                runtime.OnDestroy -= OnScriptRuntimeDestroy;
+                runtime.RemoveManagedObject(_handle);
                 context.OnScriptReloading -= OnScriptReloading;
                 context.OnScriptReloaded -= OnScriptReloaded;
             }
@@ -165,7 +168,7 @@ namespace QuickJS.Unity
                 return;
             }
 
-            runtime.OnDestroy += OnScriptRuntimeDestroy;
+            runtime.AddManagedObject(this, out _handle);
             context.OnScriptReloading += OnScriptReloading;
             context.OnScriptReloaded += OnScriptReloaded;
             _ctx = ctx;

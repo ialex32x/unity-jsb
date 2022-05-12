@@ -26,17 +26,17 @@ if (module == require.main) {
     console.log(actions.CallFunc(111));
     actions.onFunc("set", undefined);
 
-    print("testcase: 事件");
-    actions.onEvent("add", v => print("测试事件1:", v));
-    function instanceEventHandler(v: number) { print("测试事件2:", v) }
+    print("testcase: instance event");
+    actions.onEvent("add", v => print("instance event test 1:", v));
+    function instanceEventHandler(v: number) { print("instance event test 2:", v) }
     actions.onEvent("add", instanceEventHandler);
     actions.DipatchEvent(123);
     actions.onEvent("remove", instanceEventHandler);
     actions.DipatchEvent(123);
 
-    print("testcase: 静态事件");
-    DelegateTest.onStaticEvent("add", v => print("测试静态事件1:", v));
-    function staticEventHandler(v: number) { print("测试静态事件2:", v) }
+    print("testcase: static event");
+    DelegateTest.onStaticEvent("add", v => print("static event test 1:", v));
+    function staticEventHandler(v: number) { print("static event test 2:", v) }
     DelegateTest.onStaticEvent("add", staticEventHandler);
     DelegateTest.DipatchStaticEvent(123);
     DelegateTest.onStaticEvent("remove", staticEventHandler);
@@ -54,6 +54,7 @@ if (module == require.main) {
         });
         actions.TestComplexCall();
     } catch (err) {
-        console.error(err);
+        console.warn(err);
+        console.warn("dynamic code emitting doesn't work properly");
     }
 }

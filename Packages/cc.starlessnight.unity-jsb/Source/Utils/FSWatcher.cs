@@ -15,7 +15,7 @@ namespace QuickJS.Utils
     using QuickJS.Native;
     using QuickJS.Binding;
 
-    public class FSWatcher : Values, IDisposable
+    public class FSWatcher : Values, IDisposable, IObjectCollectionEntry
     {
         private FileSystemWatcher _fsw;
 
@@ -123,16 +123,26 @@ namespace QuickJS.Utils
         private JSValue _ondelete;
         private JSValue _onchange;
 
+        private ObjectCollection.Handle _handle;
+
         private void _Transfer(JSContext ctx, JSValue value)
         {
             _jsContext = ctx;
             _jsThis = value;
 
             _runtime = ScriptEngine.GetRuntime(ctx);
-            _runtime.OnDestroy += Destroy;
+            _runtime.AddManagedObject(this, out _handle);
         }
 
-        private void Destroy(ScriptRuntime runtime)
+        #region IObjectCollectionEntry implementation
+        public void OnCollectionReleased()
+        {
+            Dispose();
+        }
+        #endregion
+
+        // = OnJSFinalize
+        public void Dispose()
         {
             if (_jsThis.IsUndefined())
             {
@@ -144,7 +154,7 @@ namespace QuickJS.Utils
 
             if (_runtime != null)
             {
-                _runtime.OnDestroy -= Destroy;
+                _runtime.RemoveManagedObject(_handle);
                 _runtime = null;
             }
 
@@ -161,12 +171,6 @@ namespace QuickJS.Utils
 
                 _jsContext = JSContext.Null;
             }
-        }
-
-        // = OnJSFinalize
-        public void Dispose()
-        {
-            Destroy(_runtime);
         }
 
         [MonoPInvokeCallback(typeof(JSCFunctionMagic))]

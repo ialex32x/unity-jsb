@@ -788,6 +788,28 @@ namespace QuickJS.Binding
             return null;
         }
 
+        private void AddAssemblies(HashSet<Assembly> assemblies, IEnumerable<Type> types)
+        {
+            foreach (var t in types)
+            {
+                AddAssemblies(assemblies, t);
+            }
+        }
+
+        private void AddAssemblies(HashSet<Assembly> assemblies, Type type)
+        {
+            if (type != null && assemblies.Add(type.Assembly))
+            {
+                UnityEngine.Debug.LogFormat("ref assembly {0}", type.Assembly.Location);
+                // var interfaces = type.GetInterfaces();
+                // foreach (var i in interfaces)
+                // {
+                //     AddAssemblies(assemblies, i);
+                // }
+                AddAssemblies(assemblies, type.BaseType);
+            }
+        }
+
         private ulong _emitSeq = 0;
         public MethodInfo _EmitDelegateMethod(Type returnType, ParameterInfo[] parameters)
         {
@@ -798,17 +820,12 @@ namespace QuickJS.Binding
                 var className = CodeGenerator.NameOfDelegates;
                 var assemblies = new HashSet<Assembly>();
 
-                if (returnType != null)
-                {
-                    assemblies.Add(returnType.Assembly);
-                }
-                foreach (var parameterAssembly in from p in parameters select p.ParameterType.Assembly)
-                {
-                    assemblies.Add(parameterAssembly);
-                }
+                AddAssemblies(assemblies, returnType);
+                AddAssemblies(assemblies, from p in parameters select p.ParameterType);
                 assemblies.Add(typeof(Values).Assembly);
                 assemblies.Add(typeof(Native.JSApi).Assembly);
                 assemblies.Add(typeof(Exception).Assembly);
+                assemblies.Add(typeof(System.Object).Assembly);
                 using (new CSNamespaceCodeGen(cg, ns))
                 {
                     cg.cs.AppendLine("public static class " + className);

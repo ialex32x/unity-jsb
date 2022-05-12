@@ -3,7 +3,10 @@ using QuickJS.Native;
 
 namespace QuickJS
 {
-    public class ScriptValue : IDisposable
+    /// <summary>
+    /// ScriptValue holds a strong reference of js value, so it relies on C# object finalizer (or the runtime managed object cache) to release.
+    /// </summary>
+    public class ScriptValue : Utils.IWeakMapEntry
     {
         protected ScriptContext _context;
         protected /*readonly*/ JSValue _jsValue;

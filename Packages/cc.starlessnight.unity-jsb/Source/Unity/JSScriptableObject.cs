@@ -12,7 +12,7 @@ namespace QuickJS.Unity
     // 脚本回调与 C# 版本不完全一致
 
     [CreateAssetMenu(fileName = "js_data", menuName = "JSScriptableObject Asset", order = 100)]
-    public class JSScriptableObject : ScriptableObject, ISerializationCallbackReceiver, IScriptEditorSupport, IScriptInstancedObject
+    public class JSScriptableObject : ScriptableObject, ISerializationCallbackReceiver, IScriptEditorSupport, IScriptInstancedObject, Utils.IObjectCollectionEntry
     {
         // 在编辑器运行时下与 js 脚本建立链接关系
         [SerializeField]
@@ -35,6 +35,7 @@ namespace QuickJS.Unity
         private bool _isWaitingRuntime = false;
 
         private JSContext _ctx = JSContext.Null;
+        private Utils.ObjectCollection.Handle _handle;
         private JSValue _this_obj = JSApi.JS_UNDEFINED;
 
         [NonSerialized]
@@ -171,7 +172,7 @@ namespace QuickJS.Unity
 
             if (context != null)
             {
-                runtime.OnDestroy -= OnScriptRuntimeDestroy;
+                runtime.RemoveManagedObject(_handle);
 #if UNITY_EDITOR
                 context.OnScriptReloading -= OnScriptReloading;
                 context.OnScriptReloaded -= OnScriptReloaded;
@@ -238,10 +239,12 @@ namespace QuickJS.Unity
         }
 #endif
 
-        private void OnScriptRuntimeDestroy(ScriptRuntime runtime)
+        #region IObjectCollectionEntry implementation
+        public void OnCollectionReleased()
         {
             ReleaseJSValues();
         }
+        #endregion
 
         // 通过 scriptRef 还原脚本绑定关系
         public bool CreateScriptInstance()
@@ -360,7 +363,7 @@ namespace QuickJS.Unity
 
             ReleaseJSValues();
 
-            runtime.OnDestroy += OnScriptRuntimeDestroy;
+            runtime.AddManagedObject(this, out _handle);
 #if UNITY_EDITOR
             context.OnScriptReloading += OnScriptReloading;
             context.OnScriptReloaded += OnScriptReloaded;

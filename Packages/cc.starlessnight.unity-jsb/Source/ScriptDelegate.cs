@@ -5,7 +5,7 @@ using QuickJS.Native;
 namespace QuickJS
 {
     // 刻意与 ScriptValue 隔离
-    public class ScriptDelegate : IDisposable
+    public class ScriptDelegate : Utils.IWeakMapEntry
     {
         protected ScriptContext _context;
         protected /*readonly*/ JSValue _jsValue;
@@ -14,7 +14,7 @@ namespace QuickJS
 #endif
 
         // 一个 JSValue (function) 可能会被用于映射多个委托对象
-        // it's safe without weakreference for cycle references between managed objects
+        // it's safe for cycle references between managed objects without weakreference
         private List<Delegate> _matches = new List<Delegate>();
 
         /// <summary>
