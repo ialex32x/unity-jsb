@@ -4,10 +4,11 @@ namespace QuickJS.Utils
 {
     using Native;
 
-    public class SafeRelease
+    public class SafeRelease : IObjectCollectionEntry
     {
         private ScriptContext _context;
         private List<JSValue> _values = new List<JSValue>();
+        private ObjectCollection.Handle _handle;
 
         public JSValue this[int index]
         {
@@ -19,14 +20,14 @@ namespace QuickJS.Utils
         public SafeRelease(ScriptContext context)
         {
             _context = context;
-            _context.GetRuntime().OnDestroy += OnDestroy;
+            _context.GetRuntime().AddManagedObject(this, out _handle);
         }
 
         public SafeRelease(ScriptContext context, JSValue value)
         {
             _context = context;
             _values.Add(value);
-            _context.GetRuntime().OnDestroy += OnDestroy;
+            _context.GetRuntime().AddManagedObject(this, out _handle);
         }
 
         public SafeRelease(ScriptContext context, JSValue value1, JSValue value2)
@@ -34,8 +35,15 @@ namespace QuickJS.Utils
             _context = context;
             _values.Add(value1);
             _values.Add(value2);
-            _context.GetRuntime().OnDestroy += OnDestroy;
+            _context.GetRuntime().AddManagedObject(this, out _handle);
         }
+
+        #region IObjectCollectionEntry implementation
+        public void OnCollectionReleased()
+        {
+            Release();
+        }
+        #endregion
 
         public JSValue[] ToArray()
         {
@@ -62,11 +70,6 @@ namespace QuickJS.Utils
             return this;
         }
 
-        private void OnDestroy(ScriptRuntime runtime)
-        {
-            Release();
-        }
-
         public void Release()
         {
             if (_context != null)
@@ -76,7 +79,7 @@ namespace QuickJS.Utils
                 var runtime = context.GetRuntime();
                 if (runtime != null)
                 {
-                    runtime.OnDestroy -= OnDestroy;
+                    runtime.RemoveManagedObject(_handle);
                 }
                 var len = _values.Count;
                 for (var i = 0; i < len; i++)

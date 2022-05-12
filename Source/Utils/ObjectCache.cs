@@ -15,10 +15,10 @@ namespace QuickJS.Utils
         }
 
         private bool _disposed;
-        private int _freeIndex = -1;
 
-        // id => host object
+        private int _freeIndex = -1;
         private int _activeMapSlotCount = 0;
+        // id => host object
         private List<ObjectRef> _map = new List<ObjectRef>();
 
         // host object => jsvalue heapptr (dangerous, no ref count)
@@ -41,7 +41,7 @@ namespace QuickJS.Utils
             for (int i = 0, count = _map.Count; i < count; ++i)
             {
                 var item = _map[i];
-                if (item.next == -1) 
+                if (item.next == -1)
                 {
                     callback(item.target);
                 }
@@ -139,6 +139,9 @@ namespace QuickJS.Utils
             return o != null && _rmap.Remove(o);
         }
 
+        /// <summary>
+        /// register a strong reference of object in ObjectCache
+        /// </summary>
         public int AddObject(object o, bool disposable)
         {
             if (!_disposed && o != null)
@@ -292,6 +295,9 @@ namespace QuickJS.Utils
 
         #region delegate mapping 
 
+        /// <summary>
+        /// register a weak reference of ScriptDelegate in ObjectCache
+        /// </summary>
         public void AddDelegate(JSValue jso, ScriptDelegate o)
         {
             if (_disposed)
@@ -319,6 +325,9 @@ namespace QuickJS.Utils
 
         #region script value mapping 
 
+        /// <summary>
+        /// register a weak reference of ScriptValue in ObjectCache
+        /// </summary>
         public void AddScriptValue(JSValue jso, ScriptValue o)
         {
             if (_disposed)
@@ -354,6 +363,9 @@ namespace QuickJS.Utils
 
         #region script promise mapping 
 
+        /// <summary>
+        /// register a weak reference of ScriptPromise in ObjectCache
+        /// </summary>
         public void AddScriptPromise(JSValue jso, ScriptPromise o)
         {
             if (_disposed)

@@ -6,6 +6,15 @@ namespace QuickJS.Native
 {
     public partial class JSApi
     {
+        /// <summary>
+        /// it's equivalent to JS_Call with a single element argv
+        /// </summary>
+        public static unsafe JSValue Call(JSContext ctx, JSValue func_obj, JSValue this_obj, JSValue arg0)
+        {
+            var argv = stackalloc[] { arg0 };
+            return JS_Call(ctx, func_obj, this_obj, 1, argv);
+        }
+
         public static string GetString(JSContext ctx, JSAtom atom)
         {
             var strValue = JSApi.JS_AtomToString(ctx, atom);

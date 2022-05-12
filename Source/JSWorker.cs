@@ -1,21 +1,15 @@
 using System;
-using System.IO;
-using System.Text;
-using System.Net;
 using System.Threading;
-using System.Collections;
 using System.Collections.Generic;
-using System.Runtime.InteropServices;
 
 namespace QuickJS
 {
-    using QuickJS;
     using QuickJS.IO;
     using QuickJS.Utils;
     using QuickJS.Native;
     using QuickJS.Binding;
 
-    public class JSWorker : Values, IDisposable
+    public class JSWorker : Values, IDisposable, IObjectCollectionEntry
     {
         private class JSWorkerArgs
         {
@@ -28,12 +22,27 @@ namespace QuickJS
 
         private Thread _thread;
         private ScriptRuntime _parentRuntime;
+        private ObjectCollection.Handle _handle;
         private ScriptRuntime _runtime;
         private Queue<IO.ByteBuffer> _inbox = new Queue<ByteBuffer>();
 
         private JSWorker()
         {
         }
+
+#if JSB_DEBUG
+        ~JSWorker()
+        {
+            if (_inbox.Count != 0)
+            {
+#if JSB_UNITYLESS
+                Console.WriteLine("worker: not cleaned up");
+#else
+                UnityEngine.Debug.LogError("worker: not cleaned up");
+#endif
+            }
+        }
+#endif
 
         private void Cleanup()
         {
@@ -51,15 +60,18 @@ namespace QuickJS
             }
         }
 
-        // 在主线程回调
+        /// <summary>
+        /// should only be called by js object finalizer in main thread
+        /// </summary>
         public void Dispose()
         {
             Cleanup();
         }
 
-        // 在主线程回调
-        private void OnParentDestroy(ScriptRuntime parent)
+        #region IObjectCollectionEntry implementation
+        public void OnCollectionReleased()
         {
+            // callback from main thread
             if (!_self.IsUndefined())
             {
                 _parentRuntime.FreeValue(_self);
@@ -67,11 +79,7 @@ namespace QuickJS
             }
             _runtime.Shutdown();
         }
-
-        private void OnWorkerAfterDestroy(int id)
-        {
-            Cleanup();
-        }
+        #endregion
 
         private void Start(JSContext ctx, JSValue value, string scriptPath)
         {
@@ -85,10 +93,9 @@ namespace QuickJS
 
             _self = JSApi.JS_DupValue(ctx, value);
             _parentRuntime = parent;
-            _parentRuntime.OnDestroy += OnParentDestroy;
+            _parentRuntime.AddManagedObject(this, out _handle);
 
             _runtime = runtime;
-            _runtime.OnAfterDestroy += OnWorkerAfterDestroy;
             RegisterGlobalObjects();
             _runtime.EvalMain(scriptPath);
 

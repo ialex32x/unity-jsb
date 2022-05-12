@@ -221,6 +221,15 @@ namespace QuickJS.Native
             }
         }
 
+        public static unsafe JSValue JS_NewPromiseCapability(JSContext ctx, out JSValue on_resolve, out JSValue on_reject)
+        {
+            var resolving_funcs = stackalloc[]{ JS_UNDEFINED, JS_UNDEFINED };
+            var promise = JS_NewPromiseCapability(ctx, resolving_funcs);
+            on_resolve = resolving_funcs[0];
+            on_reject = resolving_funcs[1];
+            return promise;
+        }
+
         #region property
         [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern JSValue JS_GetPropertyUint32(JSContext ctx, JSValueConst this_obj, uint32_t idx);

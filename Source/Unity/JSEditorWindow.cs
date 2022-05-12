@@ -13,8 +13,10 @@ namespace QuickJS.Unity
     /// 脚本实现编辑器窗口的基础类. 
     /// 此实现刻意放在非 Editor 目录下, 以便在非编辑器脚本中也可以使用, 实际仍然只在编辑器环境下可用.
     /// </summary>
-    public class JSEditorWindow : EditorWindow, IHasCustomMenu, IScriptInstancedObject, ISerializationCallbackReceiver
+    public class JSEditorWindow : EditorWindow, IHasCustomMenu, IScriptInstancedObject, ISerializationCallbackReceiver, Utils.IObjectCollectionEntry
     {
+        private Utils.ObjectCollection.Handle _handle;
+        
         [NonSerialized]
         private bool _isScriptInstanced;
 
@@ -233,7 +235,7 @@ namespace QuickJS.Unity
             ReleaseJSValues();
             context.TrySetScriptRef(ref _scriptRef, ctor);
             var runtime = context.GetRuntime();
-            runtime.OnDestroy += OnScriptRuntimeDestroy;
+            runtime.AddManagedObject(this, out _handle);
 #if UNITY_EDITOR
             context.OnScriptReloading += OnScriptReloading;
             context.OnScriptReloaded += OnScriptReloaded;
@@ -391,11 +393,13 @@ namespace QuickJS.Unity
         }
 #endif
 
-        private void OnScriptRuntimeDestroy(ScriptRuntime runtime)
+        #region IObjectCollectionEntry implementation
+        public void OnCollectionReleased()
         {
             OnBeforeSerialize();
             ReleaseJSValues();
         }
+        #endregion
 
         void ReleaseJSValues(bool noClose = false)
         {
@@ -420,7 +424,7 @@ namespace QuickJS.Unity
                 var runtime = context.GetRuntime();
                 if (runtime != null)
                 {
-                    runtime.OnDestroy -= OnScriptRuntimeDestroy;
+                    runtime.RemoveManagedObject(_handle);
                 }
 #if UNITY_EDITOR
                 context.OnScriptReloading -= OnScriptReloading;
