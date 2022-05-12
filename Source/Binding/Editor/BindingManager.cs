@@ -800,12 +800,7 @@ namespace QuickJS.Binding
         {
             if (type != null && assemblies.Add(type.Assembly))
             {
-                UnityEngine.Debug.LogFormat("ref assembly {0}", type.Assembly.Location);
-                // var interfaces = type.GetInterfaces();
-                // foreach (var i in interfaces)
-                // {
-                //     AddAssemblies(assemblies, i);
-                // }
+                // UnityEngine.Debug.LogFormat("ref assembly {0}", type.Assembly.Location);
                 AddAssemblies(assemblies, type.BaseType);
             }
         }
