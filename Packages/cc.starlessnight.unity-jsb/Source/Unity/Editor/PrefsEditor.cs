@@ -556,6 +556,10 @@ namespace QuickJS.Unity
                     _selectedBindingMethod = selectedBindingMethod_t;
                     _prefs.preferredBindingMethod = _bindingMethodValues[Mathf.Clamp(_selectedBindingMethod, 0, _bindingMethodValues.Length - 1)];
                 }
+                if (!CodeGenUtils.IsCodeEmitSupported() && _prefs.preferredBindingMethod == _bindingMethodValues[0])
+                {
+                    EditorGUILayout.HelpBox(CodeGenUtils.CodeEmitWarning, MessageType.Warning);
+                }
                 _prefs.typescriptExt = EditorGUILayout.TextField("Typescript Ext", _prefs.typescriptExt);
                 _prefs.sourceDir = EditorGUILayout.TextField("Source Dir", _prefs.sourceDir);
 

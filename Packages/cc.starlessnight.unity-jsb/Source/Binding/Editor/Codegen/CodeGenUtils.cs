@@ -9,6 +9,18 @@ namespace QuickJS.Binding
 {
     public static class CodeGenUtils
     {
+        public const string CodeEmitWarning = "Codegen for delegate binding with ref/out parameters will not work properly, because CodeDomProvider is not supported with current dotnet api compatibility settings. Please consider switching to .NET 4.6 in player settings.";
+
+        public static bool IsCodeEmitSupported()
+        {
+#if JSB_UNITYLESS
+            return true;
+#else
+            var apiCompatibilityLevel = UnityEditor.PlayerSettings.GetApiCompatibilityLevel(UnityEditor.BuildTargetGroup.Standalone);
+            return apiCompatibilityLevel == UnityEditor.ApiCompatibilityLevel.NET_4_6;
+#endif
+        }
+
         /// <summary>
         /// Check if the type directly implements the given interface
         /// </summary>
