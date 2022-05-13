@@ -810,6 +810,10 @@ namespace QuickJS.Binding
         {
             try
             {
+                if (!CodeGenUtils.IsCodeEmitSupported())
+                {
+                    return null;
+                }
                 var cg = new CodeGenerator(this, TypeBindingFlags.Default);
                 var ns = "_Generated" + (_emitSeq++);
                 var className = CodeGenerator.NameOfDelegates;

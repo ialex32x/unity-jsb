@@ -192,6 +192,15 @@ namespace QuickJS.Binding
             ReflectBindValueOp.Register<UnityEngine.Color32>(Binding.Values.js_push_structvalue, Binding.Values.js_get_structvalue);
             ReflectBindValueOp.Register<UnityEngine.Matrix4x4>(Binding.Values.js_push_structvalue, Binding.Values.js_get_structvalue);
 #endif
+
+            if (!CodeGenUtils.IsCodeEmitSupported())
+            {
+#if JSB_UNITYLESS
+                Console.WriteLine("[Warning] " + CodeGenUtils.CodeEmitWarning);
+#else
+                UnityEngine.Debug.LogWarning(CodeGenUtils.CodeEmitWarning);
+#endif
+            }
         }
 
         public void OnBindingBegin(BindingManager bindingManager)
