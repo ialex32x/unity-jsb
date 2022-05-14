@@ -234,14 +234,14 @@ namespace QuickJS.Extra
             });
         }
 
-        private static void OnResponseCallback(ScriptRuntime runtime, JSAction action)
+        private static void OnResponseCallback(ScriptRuntime runtime, object cbArgs, JSValue cbValue)
         {
             if (!runtime.isValid || !runtime.isRunning)
             {
                 return;
             }
-            var args = action.args as ResponseArgs;
-            if (args.request._state != ReadyState.UNSENT)
+            var args = cbArgs as ResponseArgs;
+            if (!args.request._jsThis.IsUndefined() && args.request._state != ReadyState.UNSENT)
             {
                 args.request._state = ReadyState.DONE;
                 if (args.error != null)

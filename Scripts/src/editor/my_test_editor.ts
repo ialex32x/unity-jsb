@@ -23,7 +23,7 @@ export class MyTestEditorWindow extends EditorWindow {
 
     OnGUI() {
         this._testString = EditorGUILayout.TextField("Test", this._testString || "");
-        this._sel = EditorGUILayout.Popup(<any>"A", <any>this._sel, <any>["1", "2", "3", "4"]);
+        this._sel = EditorGUILayout.Popup(<any>"Pick", <any>this._sel, <any>["1", "2", "3", "4"]);
 
         if (GUILayout.Button("Test Build")) {
             BuildPipeline.BuildPlayer(this._scenes, "Build/macos.app", BuildTarget.StandaloneOSX, BuildOptions.Development);

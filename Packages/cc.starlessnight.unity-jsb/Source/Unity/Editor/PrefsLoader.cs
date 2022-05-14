@@ -83,7 +83,7 @@ namespace QuickJS.Unity
 
         private void OnPrefsSync()
         {
-            if (EditorApplication.isCompiling)
+            if (!UnityHelper.IsApplicationActive())
             {
                 return;
             }

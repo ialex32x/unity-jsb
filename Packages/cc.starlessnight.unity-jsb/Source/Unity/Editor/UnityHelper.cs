@@ -31,6 +31,11 @@ namespace QuickJS.Unity
             return icon;
         }
 
+        public static bool IsApplicationActive()
+        {
+            return UnityEditorInternal.InternalEditorUtility.isApplicationActive && !EditorApplication.isCompiling;
+        }
+
         #region All Menu Items
         [MenuItem("JS Bridge/Generate Bindings And Type Definition")]
         public static void GenerateBindingsAndTypeDefinition()

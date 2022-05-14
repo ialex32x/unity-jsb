@@ -76,6 +76,20 @@ namespace QuickJS.Utils
             }
         }
 
+        public bool IsHandleValid(Handle handle)
+        {
+            var id = handle.id;
+            if (id >= 0 && id < _map.Count)
+            {
+                var entry = _map[id];
+                if (entry.next == -1 && entry.tag == handle.tag)
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
         public bool TryGetObject(Handle handle, out IObjectCollectionEntry o)
         {
             var id = handle.id;

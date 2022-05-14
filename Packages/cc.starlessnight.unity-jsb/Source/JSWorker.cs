@@ -215,9 +215,9 @@ namespace QuickJS
         /// <summary>
         /// master 处理 worker 发送的消息 (在master线程回调)
         /// </summary>
-        private static unsafe void _MasterOnMessage(ScriptRuntime runtime, JSAction action)
+        private static unsafe void _MasterOnMessage(ScriptRuntime runtime, object cbArgs, JSValue cbValue)
         {
-            var args = (JSWorkerArgs)action.args;
+            var args = (JSWorkerArgs)cbArgs;
             var buffer = args.buffer;
 
             try
@@ -316,16 +316,7 @@ namespace QuickJS
                 buffer.WriteBytes(dataStore, psize);
                 JSApi.js_free(ctx, dataStore);
 
-                var succ = this._parentRuntime.EnqueueAction(new JSAction()
-                {
-                    args = new JSWorkerArgs()
-                    {
-                        worker = this,
-                        buffer = buffer,
-                    },
-                    callback = _MasterOnMessage,
-                });
-
+                var succ = this._parentRuntime.EnqueueAction(_MasterOnMessage, new JSWorkerArgs { worker = this, buffer = buffer });
                 if (!succ)
                 {
                     buffer.Release();

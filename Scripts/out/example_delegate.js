@@ -21,16 +21,16 @@ if (module == require.main) {
     actions.onFunc("set", v => v * 2);
     console.log(actions.CallFunc(111));
     actions.onFunc("set", undefined);
-    print("testcase: 事件");
-    actions.onEvent("add", v => print("测试事件1:", v));
-    function instanceEventHandler(v) { print("测试事件2:", v); }
+    print("testcase: instance event");
+    actions.onEvent("add", v => print("instance event test 1:", v));
+    function instanceEventHandler(v) { print("instance event test 2:", v); }
     actions.onEvent("add", instanceEventHandler);
     actions.DipatchEvent(123);
     actions.onEvent("remove", instanceEventHandler);
     actions.DipatchEvent(123);
-    print("testcase: 静态事件");
-    Example_1.DelegateTest.onStaticEvent("add", v => print("测试静态事件1:", v));
-    function staticEventHandler(v) { print("测试静态事件2:", v); }
+    print("testcase: static event");
+    Example_1.DelegateTest.onStaticEvent("add", v => print("static event test 1:", v));
+    function staticEventHandler(v) { print("static event test 2:", v); }
     Example_1.DelegateTest.onStaticEvent("add", staticEventHandler);
     Example_1.DelegateTest.DipatchStaticEvent(123);
     Example_1.DelegateTest.onStaticEvent("remove", staticEventHandler);
@@ -48,7 +48,8 @@ if (module == require.main) {
         actions.TestComplexCall();
     }
     catch (err) {
-        console.error(err);
+        console.warn(err);
+        console.warn("dynamic code emitting doesn't work properly");
     }
 }
 //# sourceMappingURL=example_delegate.js.map

@@ -103,7 +103,7 @@ namespace QuickJS.Utils
 #endif // !JSB_UNITYLESS
         }
 
-        private static unsafe void _OnTaskCompleted(ScriptRuntime runtime, JSAction action)
+        private static unsafe void _OnTaskCompleted(ScriptRuntime runtime, object cbArgs, JSValue cbValue)
         {
             if (!runtime.isValid || !runtime.isRunning)
             {
@@ -111,7 +111,7 @@ namespace QuickJS.Utils
             }
             var context = runtime.GetMainContext();
             var logger = runtime.GetLogger();
-            var args = (JSTaskCompletionArgs)action.args;
+            var args = (JSTaskCompletionArgs)cbArgs;
             var task = args.task;
             var safeRelease = args.safeRelease;
 

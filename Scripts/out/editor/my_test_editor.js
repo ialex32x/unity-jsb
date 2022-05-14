@@ -29,7 +29,7 @@ let MyTestEditorWindow = class MyTestEditorWindow extends UnityEditor_1.EditorWi
     }
     OnGUI() {
         this._testString = UnityEditor_1.EditorGUILayout.TextField("Test", this._testString || "");
-        this._sel = UnityEditor_1.EditorGUILayout.Popup("A", this._sel, ["1", "2", "3", "4"]);
+        this._sel = UnityEditor_1.EditorGUILayout.Popup("Pick", this._sel, ["1", "2", "3", "4"]);
         if (UnityEngine_1.GUILayout.Button("Test Build")) {
             UnityEditor_1.BuildPipeline.BuildPlayer(this._scenes, "Build/macos.app", UnityEditor_1.BuildTarget.StandaloneOSX, UnityEditor_1.BuildOptions.Development);
         }
