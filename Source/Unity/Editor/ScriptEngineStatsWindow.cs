@@ -136,14 +136,14 @@ namespace QuickJS.Unity
             runtime.EnqueueAction(OnSnapshotRequest, snapshot);
         }
 
-        private static void OnSnapshotRequest(ScriptRuntime runtime, Utils.JSAction act)
+        private static void OnSnapshotRequest(ScriptRuntime runtime, object cbArgs, Native.JSValue cbValue)
         {
             if (!runtime.isValid || !runtime.isRunning)
             {
                 // Debug.LogError("get snapshot on released script runtime");
                 return;
             }
-            var snapshot = (Snapshot)act.args;
+            var snapshot = (Snapshot)cbArgs;
             unsafe
             {
                 fixed (Native.JSMemoryUsage* ptr = &snapshot.memoryUsage)

@@ -1,15 +1,14 @@
 ﻿using QuickJS.Native;
-using System.Runtime.InteropServices;
 
 namespace QuickJS.Utils
 {
-    public delegate void JSActionCallback(ScriptRuntime runtime, JSAction action);
+    public delegate void JSActionCallback(ScriptRuntime runtime, object cbArgs, JSValue cbValue);
 
-    // [StructLayout(LayoutKind.Sequential)]
     public struct JSAction
     {
-        public JSValue value;
         public JSActionCallback callback;
+        public JSValue value;
         public object args; 
+        public bool isDelayedUntilActive;
     }
 }

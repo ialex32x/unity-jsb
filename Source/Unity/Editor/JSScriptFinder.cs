@@ -5,6 +5,9 @@ using System.Collections.Generic;
 
 namespace QuickJS.Unity
 {
+    /// <summary>
+    /// ScriptFinder is a utility editor service to collect the unity scripts (MonoBehaviour/Editor etc.) implemented by typescripts 
+    /// </summary>
     public class JSScriptFinder
     {
         private static JSScriptFinder _finder;
@@ -173,8 +176,7 @@ namespace QuickJS.Unity
 
         private void OnUpdate()
         {
-            //TODO check if unity editor is in background
-            if (_isRefreshing || UnityEditor.EditorApplication.isCompiling)
+            if (_isRefreshing || !UnityHelper.IsApplicationActive())
             {
                 return;
             }

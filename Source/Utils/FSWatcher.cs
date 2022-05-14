@@ -18,6 +18,7 @@ namespace QuickJS.Utils
     public class FSWatcher : Values, IDisposable, IObjectCollectionEntry
     {
         private FileSystemWatcher _fsw;
+        private bool _isDelayedUntilActive = true;
 
         private FSWatcher(string path, string filter)
         {
@@ -37,17 +38,17 @@ namespace QuickJS.Utils
 
         private void OnChanged(object sender, FileSystemEventArgs e)
         {
-            _runtime.EnqueueAction(_JSActionCallback, e);
+            _runtime.EnqueueAction(_JSActionCallback, e, _isDelayedUntilActive);
         }
 
         private void OnCreated(object sender, FileSystemEventArgs e)
         {
-            _runtime.EnqueueAction(_JSActionCallback, e);
+            _runtime.EnqueueAction(_JSActionCallback, e, _isDelayedUntilActive);
         }
 
         private void OnDeleted(object sender, FileSystemEventArgs e)
         {
-            _runtime.EnqueueAction(_JSActionCallback, e);
+            _runtime.EnqueueAction(_JSActionCallback, e, _isDelayedUntilActive);
         }
 
         private void _DisposeWatcher()
@@ -68,13 +69,15 @@ namespace QuickJS.Utils
 #endif
         }
 
-        private void _JSActionCallback(ScriptRuntime runtime, JSAction action)
+        private void _JSActionCallback(ScriptRuntime runtime, object cbArgs, JSValue cbValue)
         {
-            if (!runtime.isValid || !runtime.isRunning)
+            // check if the runtime or this FSWatcher has already been destroyed
+            if (!runtime.isValid || !runtime.isRunning || _jsThis.IsUndefined())
             {
                 return;
             }
-            var e = (FileSystemEventArgs)action.args;
+
+            var e = (FileSystemEventArgs)cbArgs;
             switch (e.ChangeType)
             {
                 case WatcherChangeTypes.Changed:
@@ -549,6 +552,57 @@ namespace QuickJS.Utils
             }
         }
 
+        [MonoPInvokeCallback(typeof(JSGetterCFunction))]
+        private static JSValue js_get_isDelayedUntilActive(JSContext ctx, JSValue this_obj)
+        {
+            try
+            {
+                FSWatcher self;
+                if (!js_get_classvalue(ctx, this_obj, out self))
+                {
+                    throw new ThisBoundException();
+                }
+                if (self._fsw == null)
+                {
+                    throw new InvalidOperationException();
+                }
+
+                return JSApi.JS_NewBool(ctx, self._isDelayedUntilActive);
+            }
+            catch (Exception exception)
+            {
+                return ctx.ThrowException(exception);
+            }
+        }
+
+        [MonoPInvokeCallback(typeof(JSSetterCFunction))]
+        private static JSValue js_set_isDelayedUntilActive(JSContext ctx, JSValue this_obj, JSValue val)
+        {
+            try
+            {
+                FSWatcher self;
+                if (!js_get_classvalue(ctx, this_obj, out self))
+                {
+                    throw new ThisBoundException();
+                }
+                if (self._fsw == null)
+                {
+                    throw new InvalidOperationException();
+                }
+                if (!val.IsBoolean())
+                {
+                    throw new InvalidDataException();
+                }
+
+                self._isDelayedUntilActive = JSApi.JS_ToBool(ctx, val) == 1;
+                return JSApi.JS_UNDEFINED;
+            }
+            catch (Exception exception)
+            {
+                return ctx.ThrowException(exception);
+            }
+        }
+
         #endregion
 
         public static void Bind(TypeRegister register, string name)
@@ -559,6 +613,7 @@ namespace QuickJS.Utils
             cls.AddProperty(false, "isValid", js_get_isValid, null);
             cls.AddProperty(false, "enableRaisingEvents", js_get_enableRaisingEvents, js_set_enableRaisingEvents);
             cls.AddProperty(false, "includeSubdirectories", js_get_includeSubdirectories, js_set_includeSubdirectories);
+            cls.AddProperty(false, "isDelayedUntilActive", js_get_isDelayedUntilActive, js_set_isDelayedUntilActive);
             cls.AddProperty(false, "oncreate", js_get_oncreate, js_set_oncreate);
             cls.AddProperty(false, "ondelete", js_get_ondelete, js_set_ondelete);
             cls.AddProperty(false, "onchange", js_get_onchange, js_set_onchange);

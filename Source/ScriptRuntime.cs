@@ -44,7 +44,9 @@ namespace QuickJS
         // private ReaderWriterLockSlim _rwlock;
         private List<ScriptContextRef> _contextRefs = new List<ScriptContextRef>();
         private ScriptContext _mainContext;
+
         private Queue<JSAction> _pendingActions = new Queue<JSAction>();
+        private List<JSAction> _delayedActions = new List<JSAction>();
 
         private int _mainThreadId;
 
@@ -630,69 +632,39 @@ namespace QuickJS
             return context;
         }
 
-        private static void _FreeValueAction(ScriptRuntime rt, JSAction action)
+        private static void _FreeValueAction(ScriptRuntime rt, object cbArgs, JSValue cbValue)
         {
-            JSApi.JSB_FreeValueRT(rt, action.value);
+            JSApi.JSB_FreeValueRT(rt, cbValue);
         }
 
-        private static void _FreeValueAndDelegationAction(ScriptRuntime rt, JSAction action)
+        private static void _FreeValueAndDelegationAction(ScriptRuntime rt, object cbArgs, JSValue cbValue)
         {
             var cache = rt.GetObjectCache();
-            cache.RemoveDelegate(action.value);
-            JSApi.JSB_FreeValueRT(rt, action.value);
+            cache.RemoveDelegate(cbValue);
+            JSApi.JSB_FreeValueRT(rt, cbValue);
         }
 
-        private static void _FreeValueAndScriptValueAction(ScriptRuntime rt, JSAction action)
+        private static void _FreeValueAndScriptValueAction(ScriptRuntime rt, object cbArgs, JSValue cbValue)
         {
             var cache = rt.GetObjectCache();
-            cache.RemoveScriptValue(action.value);
-            JSApi.JSB_FreeValueRT(rt, action.value);
+            cache.RemoveScriptValue(cbValue);
+            JSApi.JSB_FreeValueRT(rt, cbValue);
         }
 
-        private static void _FreeValueAndScriptPromiseAction(ScriptRuntime rt, JSAction action)
+        private static void _FreeValueAndScriptPromiseAction(ScriptRuntime rt, object cbArgs, JSValue cbValue)
         {
             var cache = rt.GetObjectCache();
-            cache.RemoveScriptPromise(action.value);
-            JSApi.JSB_FreeValueRT(rt, action.value);
-        }
-
-        private bool EnqueuePendingAction(JSAction action)
-        {
-            _pendingActions.Enqueue(action);
-            if (_runtimeId < 0)
-            {
-                _logger?.Write(LogLevel.Error, "fatal error: enqueue pending action after the runtime shutdown");
-                return false;
-            }
-            return true;
+            cache.RemoveScriptPromise(cbValue);
+            JSApi.JSB_FreeValueRT(rt, cbValue);
         }
 
         // 可在 GC 线程直接调用此方法
         public bool FreeDelegationValue(JSValue value, string debugInfo = null)
         {
-            if (_mainThreadId == Thread.CurrentThread.ManagedThreadId)
+            if (!EnqueuePendingAction(new JSAction { value = value, callback = _FreeValueAndDelegationAction }))
             {
-                _objectCache.RemoveDelegate(value);
-                if (_rt != JSRuntime.Null)
-                {
-                    JSApi.JSB_FreeValueRT(_rt, value);
-                }
-            }
-            else
-            {
-                var act = new JSAction()
-                {
-                    value = value,
-                    callback = _FreeValueAndDelegationAction,
-                };
-
-                lock (_pendingActions)
-                {
-                    if (!EnqueuePendingAction(act))
-                    {
-                        _logger?.Write(LogLevel.Error, "[DebugInfo] {0}", debugInfo);
-                    }
-                }
+                _logger?.Write(LogLevel.Error, "[DebugInfo] {0}", debugInfo);
+                return false;
             }
             return true;
         }
@@ -700,61 +672,62 @@ namespace QuickJS
         // 可在 GC 线程直接调用此方法
         public void FreeScriptValue(JSValue value)
         {
-            if (_mainThreadId == Thread.CurrentThread.ManagedThreadId)
-            {
-                _objectCache.RemoveScriptValue(value);
-                if (_rt != JSRuntime.Null)
-                {
-                    JSApi.JSB_FreeValueRT(_rt, value);
-                }
-            }
-            else
-            {
-                var act = new JSAction()
-                {
-                    value = value,
-                    callback = _FreeValueAndScriptValueAction,
-                };
+            EnqueuePendingAction(new JSAction { value = value, callback = _FreeValueAndScriptValueAction });
+        }
 
-                lock (_pendingActions)
-                {
-                    EnqueuePendingAction(act);
-                }
+        // 可在 GC 线程直接调用此方法
+        public unsafe void FreeScriptPromise(JSValue promise, JSValue onResolve, JSValue onReject)
+        {
+            if (_runtimeId < 0)
+            {
+                _logger?.Write(LogLevel.Error, "fatal error: enqueue pending action after the runtime shutdown");
+                return;
+            }
+
+            if (IsMainThread())
+            {
+                _FreeValueAndScriptPromiseAction(this, null, promise);
+                _FreeValueAction(this, null, onResolve);
+                _FreeValueAction(this, null, onReject);
+                return;
+            }
+
+            lock (_pendingActions)
+            {
+                _pendingActions.Enqueue(new JSAction { value = promise, callback = _FreeValueAndScriptPromiseAction });
+                _pendingActions.Enqueue(new JSAction { value = onResolve, callback = _FreeValueAction });
+                _pendingActions.Enqueue(new JSAction { value = onReject, callback = _FreeValueAction });
             }
         }
 
         // 可在 GC 线程直接调用此方法
-        public void FreeScriptPromise(JSValue promise, JSValue onResolve, JSValue onReject)
+        public void FreeValues(JSValue[] values)
         {
-            if (_mainThreadId == Thread.CurrentThread.ManagedThreadId)
+            if (values == null || values.Length == 0)
             {
-                _objectCache.RemoveScriptPromise(promise);
-                if (_rt != JSRuntime.Null)
-                {
-                    JSApi.JSB_FreeValueRT(_rt, promise);
-                    JSApi.JSB_FreeValueRT(_rt, onResolve);
-                    JSApi.JSB_FreeValueRT(_rt, onReject);
-                }
+                return;
             }
-            else
+
+            if (_runtimeId < 0)
             {
-                lock (_pendingActions)
+                _logger?.Write(LogLevel.Error, "fatal error: enqueue pending action after the runtime shutdown");
+                return;
+            }
+
+            if (IsMainThread())
+            {
+                for (int i = 0, len = values.Length; i < len; i++)
                 {
-                    EnqueuePendingAction(new JSAction()
-                    {
-                        value = promise,
-                        callback = _FreeValueAndScriptPromiseAction,
-                    });
-                    EnqueuePendingAction(new JSAction()
-                    {
-                        value = onResolve,
-                        callback = _FreeValueAction,
-                    });
-                    EnqueuePendingAction(new JSAction()
-                    {
-                        value = onReject,
-                        callback = _FreeValueAction,
-                    });
+                    _FreeValueAction(this, null, values[i]);
+                }
+                return;
+            }
+
+            lock (_pendingActions)
+            {
+                for (int i = 0, count = values.Length; i < count; ++i)
+                {
+                    _pendingActions.Enqueue(new JSAction { value = values[i], callback = _FreeValueAction });
                 }
             }
         }
@@ -762,104 +735,61 @@ namespace QuickJS
         // 可在 GC 线程直接调用此方法
         public void FreeValue(JSValue value)
         {
-            if (_mainThreadId == Thread.CurrentThread.ManagedThreadId)
-            {
-                if (_rt != JSRuntime.Null)
-                {
-                    JSApi.JSB_FreeValueRT(_rt, value);
-                }
-            }
-            else
-            {
-                var act = new JSAction()
-                {
-                    value = value,
-                    callback = _FreeValueAction,
-                };
-                lock (_pendingActions)
-                {
-                    EnqueuePendingAction(act);
-                }
-            }
+            EnqueuePendingAction(new JSAction { value = value, callback = _FreeValueAction });
         }
 
         // 可在 GC 线程直接调用此方法
-        public void FreeValues(JSValue[] values)
+        public unsafe void FreeValues(int count, JSValue* values)
         {
-            if (values == null)
+            if (count == 0 || values == null)
             {
                 return;
             }
-            if (_mainThreadId == Thread.CurrentThread.ManagedThreadId)
-            {
-                for (int i = 0, len = values.Length; i < len; i++)
-                {
-                    JSApi.JSB_FreeValueRT(_rt, values[i]);
-                }
-            }
-            else
-            {
-                lock (_pendingActions)
-                {
-                    for (int i = 0, len = values.Length; i < len; i++)
-                    {
-                        var act = new JSAction()
-                        {
-                            value = values[i],
-                            callback = _FreeValueAction,
-                        };
-                        EnqueuePendingAction(act);
-                    }
-                }
-            }
-        }
 
-        // 可在 GC 线程直接调用此方法
-        public unsafe void FreeValues(int argc, JSValue* values)
-        {
-            if (argc == 0)
+            if (_runtimeId < 0)
             {
+                _logger?.Write(LogLevel.Error, "fatal error: enqueue pending action after the runtime shutdown");
                 return;
             }
-            if (_mainThreadId == Thread.CurrentThread.ManagedThreadId)
+
+            if (IsMainThread())
             {
-                for (int i = 0; i < argc; i++)
+                for (int i = 0; i < count; i++)
                 {
-                    JSApi.JSB_FreeValueRT(_rt, values[i]);
+                    _FreeValueAction(this, null, values[i]);
                 }
+                return;
             }
-            else
+
+            lock (_pendingActions)
             {
-                lock (_pendingActions)
+                for (var i = 0; i < count; ++i)
                 {
-                    for (int i = 0; i < argc; i++)
-                    {
-                        var act = new JSAction()
-                        {
-                            value = values[i],
-                            callback = _FreeValueAction,
-                        };
-                        EnqueuePendingAction(act);
-                    }
+                    _pendingActions.Enqueue(new JSAction { value = values[i], callback = _FreeValueAction });
                 }
             }
         }
 
-        public bool EnqueueAction(JSActionCallback callback, object args)
+        public bool EnqueueAction(JSActionCallback callback, object args, bool isDelayedUntilActive = false)
         {
-            lock (_pendingActions)
-            {
-                EnqueuePendingAction(new JSAction() { callback = callback, args = args });
-            }
-            return true;
+            return EnqueuePendingAction(new JSAction { callback = callback, args = args, isDelayedUntilActive = isDelayedUntilActive });
         }
 
-        public bool EnqueueAction(JSAction action)
+        private bool EnqueuePendingAction(JSAction action)
         {
-            lock (_pendingActions)
+            if (_runtimeId < 0)
             {
-                EnqueuePendingAction(action);
+                _logger?.Write(LogLevel.Error, "fatal error: enqueue pending action after the runtime shutdown");
+                return false;
             }
+
+            if (!action.isDelayedUntilActive && IsMainThread())
+            {
+                action.callback(this, action.args, action.value);
+                return true;
+            }
+
+            lock (_pendingActions) { _pendingActions.Enqueue(action); }
             return true;
         }
 
@@ -917,10 +847,13 @@ namespace QuickJS
                 return;
             }
 #endif
-            if (_pendingActions.Count != 0)
-            {
-                ExecutePendingActions();
-            }
+
+#if UNITY_EDITOR
+            var isApplicationActive = UnityEditorInternal.InternalEditorUtility.isApplicationActive;
+#else
+            var isApplicationActive = true;
+#endif
+            ExecutePendingActions(isApplicationActive);
 
             OnUpdate?.Invoke(); //TODO: optimize
             ExecutePendingJob();
@@ -948,26 +881,45 @@ namespace QuickJS
             }
         }
 
-        private void ExecutePendingActions()
+        private void ExecutePendingActions(bool isApplicationActive)
         {
             lock (_pendingActions)
             {
-                while (true)
+                while (_pendingActions.Count != 0)
                 {
-                    if (_pendingActions.Count == 0)
-                    {
-                        break;
-                    }
-
                     var action = _pendingActions.Dequeue();
-                    try
+
+                    if (!isApplicationActive && action.isDelayedUntilActive)
                     {
-                        action.callback(this, action);
+                        _delayedActions.Add(action);
                     }
-                    catch (Exception exception)
+                    else
                     {
-                        _logger?.WriteException(exception);
+                        try { action.callback(this, action.args, action.value); }
+                        catch (Exception exception)
+                        {
+                            _logger?.WriteException(exception);
+                        }
                     }
+                }
+            }
+
+            if (isApplicationActive)
+            {
+                var count = _delayedActions.Count;
+                if (count != 0)
+                {
+                    for (int i = 0; i < count; ++i)
+                    {
+                        var action = _delayedActions[i];
+
+                        try { action.callback(this, action.args, action.value); }
+                        catch (Exception exception)
+                        {
+                            _logger?.WriteException(exception);
+                        }
+                    }
+                    _delayedActions.Clear();
                 }
             }
         }
@@ -1015,7 +967,7 @@ namespace QuickJS
 
             _isInitialized = false;
             _isRunning = false;
-            
+
             _objectCollection.Clear();
             if (_objectCollection.count != 0)
             {
@@ -1029,7 +981,7 @@ namespace QuickJS
 #endif
             GC.Collect();
             GC.WaitForPendingFinalizers();
-            ExecutePendingActions();
+            ExecutePendingActions(true);
 
             // _rwlock.EnterWriteLock();
             for (int i = 0, count = _contextRefs.Count; i < count; i++)
@@ -1050,10 +1002,15 @@ namespace QuickJS
 
             lock (_pendingActions)
             {
-                if (_pendingActions.Count > 0)
+                if (_pendingActions.Count != 0)
                 {
                     _logger?.Write(LogLevel.Assert, "unexpected pending actions");
                 }
+            }
+
+            if (_delayedActions.Count != 0)
+            {
+                _logger?.Write(LogLevel.Assert, "unexpected delayed actions");
             }
 
             if (JSApi.JSB_FreeRuntime(_rt) == 0)
