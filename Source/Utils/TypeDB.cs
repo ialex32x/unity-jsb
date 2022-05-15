@@ -73,7 +73,8 @@ namespace QuickJS.Utils
 
             var register = _context.CreateTypeRegister();
 
-            dynamicType = new DynamicType(type, privateAccess);
+            var parentType = type.BaseType != null ? GetDynamicType(type.BaseType, false) : null;
+            dynamicType = new DynamicType(type, privateAccess, parentType);
             dynamicType.Bind(register);
             _dynamicTypes[type] = dynamicType;
 
@@ -92,7 +93,8 @@ namespace QuickJS.Utils
                 return dynamicType;
             }
 
-            dynamicType = new DynamicType(type, false);
+            var parentType = type.BaseType != null ? GetDynamicType(type.BaseType, false) : null;
+            dynamicType = new DynamicType(type, false, parentType);
             _dynamicTypes[type] = dynamicType;
             return dynamicType;
         }
@@ -367,7 +369,7 @@ namespace QuickJS.Utils
         {
             return index >= 0 && index < _dynamicFields.Count ? _dynamicFields[index] : null;
         }
-        
+
         // 用于中转动态注册的反射调用
         [MonoPInvokeCallback(typeof(JSCFunctionMagic))]
         public static JSValue _DynamicOperatorInvoke(JSContext ctx, JSValue this_obj, int argc, JSValue[] argv, int magic)
