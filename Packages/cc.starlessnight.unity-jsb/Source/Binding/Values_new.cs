@@ -51,8 +51,23 @@ namespace QuickJS.Binding
             }
 
             var type = o.GetType();
-            var runtime = ScriptEngine.GetRuntime(ctx);
-            var db = runtime.GetTypeDB();
+            var context = ScriptEngine.GetContext(ctx);
+            var db = context.GetTypeDB();
+
+            var cache = context.GetObjectCache();
+
+            if (o is Delegate d)
+            {
+                var delegateVal = db.NewDynamicDelegate(context.GetAtom(d.Method.Name ?? "dynamicDelegate"), d);
+
+                if (makeRef)
+                {
+                    cache.AddJSValue(o, delegateVal);
+                }
+
+                return delegateVal;
+            }
+
             var proto = db.GetPrototypeOf(type.BaseType == typeof(MulticastDelegate) ? typeof(Delegate) : type);
 
             if (proto.IsNullish())
@@ -65,7 +80,6 @@ namespace QuickJS.Binding
                 }
             }
 
-            var cache = runtime.GetObjectCache();
             var object_id = cache.AddObject(o, false);
             var val = JSApi.jsb_new_bridge_object(ctx, proto, object_id);
             if (val.IsException())
