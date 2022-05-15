@@ -85,7 +85,7 @@ namespace QuickJS.Binding
                     var types = context.GetTypeDB();
                     var o = types.GetType(type_id);
                     // UnityEngine.Debug.Log($"get type from exported registry {o}:{type_id} expected:{type}");
-                    return o != null && (o == type || o.IsSubclassOf(type));
+                    return o != null && (o == type || type.IsAssignableFrom(o));
                 }
 
                 var header = JSApi.jsb_get_payload_header(ctx, jsValue);

@@ -48,7 +48,7 @@ namespace QuickJS.Binding
         }
     }
 
-    public static class DynamicMethodFactory 
+    public static class DynamicMethodFactory
     {
         public static DynamicMethodBase CreateMethod(DynamicType type, MethodInfo methodInfo, bool asExtensionAnyway)
         {
@@ -169,7 +169,11 @@ namespace QuickJS.Binding
                     }
                     else
                     {
-                        if (!Values.js_get_var(ctx, argv[argvIndex], pType, out args[paramIndex]))
+                        if (argvIndex >= argv.Length)
+                        {
+                            args[paramIndex] = null;
+                        }
+                        else if (!Values.js_get_var(ctx, argv[argvIndex], pType, out args[paramIndex]))
                         {
                             return ctx.ThrowInternalError($"failed to cast val #{argvIndex}");
                         }
@@ -410,7 +414,7 @@ namespace QuickJS.Binding
             var self = _delegate.Target;
             var methodInfo = _delegate.Method;
             var parameters = methodInfo.GetParameters();
-            var nArgs = argc;
+            var nArgs = Math.Min(argc, parameters.Length);
             var args = new object[nArgs];
             for (var i = 0; i < nArgs; i++)
             {
@@ -521,7 +525,7 @@ namespace QuickJS.Binding
                 return ctx.ThrowInternalError("constructor is inaccessible due to its protection level");
             }
 
-            var nArgs = argc;
+            var nArgs = Math.Min(argc, _parameters.Length);
             var args = new object[nArgs];
             for (var i = 0; i < nArgs; i++)
             {
