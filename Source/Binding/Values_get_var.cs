@@ -134,6 +134,16 @@ namespace QuickJS.Binding
                 return JSApi.JS_UNDEFINED;
             }
 
+            if (o is ScriptValue ss)
+            {
+                return JSApi.JS_DupValue(ctx, ss);
+            }
+
+            if (o is JSValue jv)
+            {
+                return JSApi.JS_DupValue(ctx, jv);
+            }
+
             var type = o.GetType();
 
             if (type.BaseType == typeof(MulticastDelegate))
@@ -144,6 +154,11 @@ namespace QuickJS.Binding
             if (type.IsEnum)
             {
                 return js_push_primitive(ctx, Convert.ToInt32(o));
+            }
+
+            if (type.IsArray)
+            {
+                return PushArray(ctx, o);
             }
 
             MethodInfo cast;
@@ -299,7 +314,40 @@ namespace QuickJS.Binding
                 return true;
             }
 
-            return GetObjectFallthrough(ctx, val, out o);
+            if (GetObjectFallthrough(ctx, val, out o)) return true;
+
+
+            if (type == typeof(JSValue))
+            {
+                o = val;
+                return true;
+            }
+
+            if (type == typeof(object) || type == typeof(ScriptValue) || type == typeof(ScriptFunction))
+            {
+                var context = ScriptEngine.GetContext(ctx);
+                var cache = context.GetObjectCache();
+
+                if (cache.TryGetScriptValue<ScriptValue>(val, out var cachedValue))
+                {
+                    o = cachedValue;
+                    return true;
+                }
+
+                var isFunction = JSApi.JS_IsFunction(ctx, val) == 1;
+
+                if (type == typeof(ScriptFunction) && !isFunction)
+                {
+                    o = null;
+                    return false;
+                }
+
+                o = isFunction ? new ScriptFunction(context, val) : new ScriptValue(context, val);
+                return true;
+            }
+
+            o = null;
+            return false;
         }
     }
 }
