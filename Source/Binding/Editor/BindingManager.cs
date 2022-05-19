@@ -231,6 +231,11 @@ namespace QuickJS.Binding
             Initialize();
         }
 
+        public IBindingLogger GetBindingLogger() 
+        { 
+            return _bindingLogger;
+        }
+
         public void AddGlobalNameRule(string name, string mapping)
         {
             if (!string.IsNullOrEmpty(name))
@@ -838,51 +843,26 @@ namespace QuickJS.Binding
                 }
 
                 var source = cg.cs.Submit();
-
-                using (var codeDomProvider = System.CodeDom.Compiler.CodeDomProvider.CreateProvider("cs"))
+                var compiledAssembly = CodeGenUtils.Compile(source, assemblies, "-unsafe", _bindingLogger);
+                if (compiledAssembly.ExportedTypes.Count() == 1)
                 {
-                    var compilerParameters = new System.CodeDom.Compiler.CompilerParameters();
-                    compilerParameters.GenerateInMemory = true;
-                    compilerParameters.TreatWarningsAsErrors = false;
-                    compilerParameters.CompilerOptions = "-unsafe";
-                    // compilerParameters.TempFiles = new System.CodeDom.Compiler.TempFileCollection("Temp", false);
-                    compilerParameters.OutputAssembly = "Temp/_Generated_" + Guid.NewGuid().ToString() + ".dll";
-                    compilerParameters.ReferencedAssemblies.AddRange((from a in assemblies select a.Location).ToArray());
-                    var result = codeDomProvider.CompileAssemblyFromSource(compilerParameters, source);
-
-                    if (result.Errors.HasErrors)
+                    var resultType = compiledAssembly.ExportedTypes.First();
+                    if (resultType.Namespace == ns)
                     {
-                        Error(string.Format("failed to compile source [{0} errors]", result.Errors.Count));
-                        Error(source);
-                        foreach (var err in result.Errors)
-                        {
-                            Error(err.ToString());
-                        }
+                        return resultType.GetMethod("_Generated");
                     }
-                    else
-                    {
-                        if (result.CompiledAssembly.ExportedTypes.Count() == 1)
-                        {
-                            var resultType = result.CompiledAssembly.ExportedTypes.First();
-                            if (resultType.Namespace == ns)
-                            {
-                                return resultType.GetMethod("_Generated");
-                            }
-                            Error("not expected type");
-                        }
-                        else
-                        {
-                            Error("no exported type in compiled assembly");
-                        }
-                    }
+                    Error("not expected type");
                 }
-                // UnityEngine.Debug.Log("gen: \n" + cg.cs.Submit());
+                else
+                {
+                    Error("no exported type in compiled assembly");
+                }
             }
             catch (Exception exception)
             {
                 Error(exception);
             }
-
+            
             return null;
         }
 
