@@ -243,30 +243,12 @@ namespace QuickJS.Binding
 
         private Assembly CompileSource(string source, string assemblyName, IEnumerable<Assembly> referencedAssemblies)
         {
-            using (var codeDomProvider = System.CodeDom.Compiler.CodeDomProvider.CreateProvider("cs"))
+            var compiledAssembly = CodeGenUtils.Compile(source, referencedAssemblies, _compilerOptions, _bindingManager.GetBindingLogger());
+            if (compiledAssembly == null)
             {
-                var compilerParameters = new System.CodeDom.Compiler.CompilerParameters();
-                compilerParameters.GenerateInMemory = true;
-                compilerParameters.TreatWarningsAsErrors = false;
-                compilerParameters.CompilerOptions = _compilerOptions;
-                compilerParameters.OutputAssembly = "_InMemory_" + assemblyName;
-                compilerParameters.ReferencedAssemblies.AddRange((from a in referencedAssemblies select a.Location).ToArray());
-                var result = codeDomProvider.CompileAssemblyFromSource(compilerParameters, source);
-
-                if (result.Errors.HasErrors)
-                {
-                    _bindingManager.Error(string.Format("failed to compile source [{0} errors]", result.Errors.Count));
-                    foreach (var err in result.Errors)
-                    {
-                        _bindingManager.Error(err.ToString());
-                    }
-                    throw new InvalidOperationException("failed to compile");
-                }
-                else
-                {
-                    return result.CompiledAssembly;
-                }
+                throw new InvalidOperationException($"failed to compile {assemblyName} in memory");
             }
+            return compiledAssembly;
         }
     }
 }

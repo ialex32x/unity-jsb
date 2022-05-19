@@ -393,6 +393,7 @@ namespace QuickJS
             return module_obj;
         }
 
+#if !JSB_UNITYLESS
         public unsafe bool TrySetScriptRef(ref Unity.JSScriptRef scriptRef, JSValue ctor)
         {
             string[] scriptRefValue = null;
@@ -444,6 +445,7 @@ namespace QuickJS
             JSApi.JS_FreeValue(_ctx, retVal);
             return false;
         }
+#endif
 
         public bool LoadModuleCacheExports(string module_id, string key, out JSValue value)
         {

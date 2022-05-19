@@ -14,11 +14,53 @@ namespace QuickJS.Binding
         public static bool IsCodeEmitSupported()
         {
 #if JSB_UNITYLESS
+#if NETCOREAPP
+            return false;
+#else
             return true;
+#endif
 #else
             var apiCompatibilityLevel = UnityEditor.PlayerSettings.GetApiCompatibilityLevel(UnityEditor.BuildTargetGroup.Standalone);
             return apiCompatibilityLevel == UnityEditor.ApiCompatibilityLevel.NET_4_6;
 #endif
+        }
+
+        /// <summary>
+        /// Compiles C# source into assembly, usually used for dynamically generating delegate function with ref/out parameters at runtime.
+        /// NOTE: It will directly return null if CodeDom is not supported without throwing any exception.
+        /// </summary>
+        public static Assembly Compile(string source, IEnumerable<Assembly> referencedAssemblies, string compilerOptions, IBindingLogger logger)
+        {
+#if !NETCOREAPP
+            using (var codeDomProvider = System.CodeDom.Compiler.CodeDomProvider.CreateProvider("cs"))
+            {
+                var compilerParameters = new System.CodeDom.Compiler.CompilerParameters();
+                compilerParameters.GenerateInMemory = true;
+                compilerParameters.TreatWarningsAsErrors = false;
+                compilerParameters.CompilerOptions = compilerOptions;
+                // compilerParameters.TempFiles = new System.CodeDom.Compiler.TempFileCollection("Temp", false);
+                compilerParameters.OutputAssembly = "Temp/_Generated_" + Guid.NewGuid().ToString() + ".dll";
+                compilerParameters.ReferencedAssemblies.AddRange((from a in referencedAssemblies select a.Location).ToArray());
+                var result = codeDomProvider.CompileAssemblyFromSource(compilerParameters, source);
+
+                if (result.Errors.HasErrors)
+                {
+                    if (logger != null)
+                    {
+                        logger.LogError($"failed to compile source [{result.Errors.Count} errors]\nSource: {source}");
+                        foreach (var err in result.Errors)
+                        {
+                            logger.LogError(err.ToString());
+                        }
+                    }
+                }
+                else
+                {
+                    return result.CompiledAssembly;
+                }
+            }
+#endif
+            return null;
         }
 
         /// <summary>

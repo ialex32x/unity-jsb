@@ -6,11 +6,6 @@ namespace Example.Editor
 
     public class CustomBinding : AbstractBindingProcess
     {
-        public override string GetBindingProcessName()
-        {
-            return "dotnetcore";
-        }
-
         public override void OnPreExporting(BindingManager bindingManager)
         {
             bindingManager.AddExportedType(typeof(System.Math));
