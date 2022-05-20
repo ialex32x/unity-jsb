@@ -10,6 +10,12 @@ namespace QuickJS.Binding
     // 处理常规值, class, struct
     public partial class Values
     {
+        public static bool js_get_primitive(JSContext ctx, JSValue val, out JSValue o)
+        {
+            o = val;
+            return true;
+        }
+
         public static bool js_get_primitive(JSContext ctx, JSValue val, out IntPtr o)
         {
             object o_t;

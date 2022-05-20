@@ -126,6 +126,11 @@ namespace QuickJS.Binding
 
         /// <summary>
         /// convert csharp object `o` to jsvalue with o.GetType()
+        /// NOTE: auto conversion to JS Array is deliberately ignored to avoid unnecessary gc alloc. 
+        ///       jsb.ToArray() is available to use to convert a C# Array to JS Array. 
+        /// Type conversions will be processed by _CSCastMap. 
+        /// ScriptValue is processed in Values_push_class.cs => public static JSValue js_push_classvalue(JSContext ctx, ScriptValue o)
+        /// JSValue is processed in Values_push_primitive.cs => public static JSValue js_push_primitive(JSContext ctx, JSValue o)
         /// </summary>
         public static JSValue js_push_var(JSContext ctx, object o)
         {
@@ -134,18 +139,9 @@ namespace QuickJS.Binding
                 return JSApi.JS_UNDEFINED;
             }
 
-            if (o is ScriptValue ss)
-            {
-                return JSApi.JS_DupValue(ctx, ss);
-            }
-
-            if (o is JSValue jv)
-            {
-                return JSApi.JS_DupValue(ctx, jv);
-            }
-
             var type = o.GetType();
 
+            //TODO EMERGENCY check type == typeof(Delegate) ??
             if (type.BaseType == typeof(MulticastDelegate))
             {
                 return js_push_delegate(ctx, o as Delegate);
@@ -154,11 +150,6 @@ namespace QuickJS.Binding
             if (type.IsEnum)
             {
                 return js_push_primitive(ctx, Convert.ToInt32(o));
-            }
-
-            if (type.IsArray)
-            {
-                return PushArray(ctx, o);
             }
 
             MethodInfo cast;
@@ -192,6 +183,10 @@ namespace QuickJS.Binding
             return NewBridgeClassObject(ctx, new_target, o, type_id, disposable);
         }
 
+        /// <summary>
+        /// Converts js value to C# object without giving C# type information.
+        /// It will try to convert by the type of the js value.
+        /// </summary>
         public static bool js_get_var(JSContext ctx, JSValue val, out object o)
         {
             return GetObjectFallthrough(ctx, val, out o);
@@ -235,9 +230,22 @@ namespace QuickJS.Binding
             return GetObjectFallthrough(ctx, val, out o);
         }
 
-        // type: expected type of object o
+        /// <summary>
+        /// Converts a js value to C# object with the given type.
+        /// NOTE: js_get_primitive/structvalue/classvalue() are perfered to use when object type is known at compile-time.
+        /// This method is primarily used when compile-time inference isn't possible.
+        /// </summary>
+        /// <param name="val">Source js value to convert</param>
+        /// <param name="type">Expected type of object o</param>
+        /// <param name="o">target object converted from js value</param>
         public static bool js_get_var(JSContext ctx, JSValue val, Type type, out object o)
         {
+            if (val.IsNullish() || type == typeof(void))
+            {
+                o = null;
+                return true;
+            }
+
             if (type.BaseType == typeof(MulticastDelegate))
             {
                 Delegate d;
@@ -262,12 +270,6 @@ namespace QuickJS.Binding
 
             if (type.IsArray)
             {
-                if (val.IsNullish())
-                {
-                    o = null;
-                    return true;
-                }
-
                 if (type.GetArrayRank() == 1 && JSApi.JS_IsArray(ctx, val) == 1)
                 {
                     var lengthVal = JSApi.JS_GetProperty(ctx, val, JSApi.JS_ATOM_length);
@@ -308,43 +310,55 @@ namespace QuickJS.Binding
                 return js_get_enumvalue(ctx, val, type, out o);
             }
 
-            if (type == typeof(void))
+            if (val.IsString())
             {
+                if (type.IsAssignableFrom(typeof(string)))
+                {
+                    string t;
+                    var r = js_get_primitive(ctx, val, out t);
+                    o = t;
+                    return r;
+                }
                 o = null;
-                return true;
+                return false;
             }
 
-            if (GetObjectFallthrough(ctx, val, out o)) return true;
-
-
-            if (type == typeof(JSValue))
+            if (val.IsBoolean())
             {
-                o = val;
-                return true;
+                if (type.IsAssignableFrom(typeof(bool)))
+                {
+                    bool t;
+                    var r = js_get_primitive(ctx, val, out t);
+                    o = t;
+                    return r;
+                }
+                o = null;
+                return false;
             }
 
-            if (type == typeof(object) || type == typeof(ScriptValue) || type == typeof(ScriptFunction))
+            if (val.IsNumber())
             {
-                var context = ScriptEngine.GetContext(ctx);
-                var cache = context.GetObjectCache();
-
-                if (cache.TryGetScriptValue<ScriptValue>(val, out var cachedValue))
+                if (type.IsAssignableFrom(typeof(double)))
                 {
-                    o = cachedValue;
-                    return true;
+                    double t;
+                    var r = js_get_primitive(ctx, val, out t);
+                    o = t;
+                    return r;
                 }
+                o = null;
+                return false;
+            }
 
-                var isFunction = JSApi.JS_IsFunction(ctx, val) == 1;
-
-                if (type == typeof(ScriptFunction) && !isFunction)
-                {
-                    o = null;
-                    return false;
-                }
-
-                o = isFunction ? new ScriptFunction(context, val) : new ScriptValue(context, val);
+            if (js_get_cached_object(ctx, val, out o))
+            {
                 return true;
             }
+
+            // if (type == typeof(object))
+            // {
+            //     ScriptValue fallbackValue;
+            //     return js_get_classvalue(ctx, val, out fallbackValue);
+            // }
 
             o = null;
             return false;
