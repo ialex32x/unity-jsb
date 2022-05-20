@@ -73,8 +73,8 @@ namespace QuickJS.Utils
 
             var register = _context.CreateTypeRegister();
 
-            var parentType = type.BaseType != null ? GetDynamicType(type.BaseType, false) : null;
-            dynamicType = new DynamicType(type, privateAccess, parentType);
+            // var parentType = type.BaseType != null ? GetDynamicType(type.BaseType, false) : null;
+            dynamicType = new DynamicType(type, privateAccess/*, parentType*/);
             dynamicType.Bind(register);
             _dynamicTypes[type] = dynamicType;
 
@@ -93,8 +93,8 @@ namespace QuickJS.Utils
                 return dynamicType;
             }
 
-            var parentType = type.BaseType != null ? GetDynamicType(type.BaseType, false) : null;
-            dynamicType = new DynamicType(type, false, parentType);
+            // var parentType = type.BaseType != null ? GetDynamicType(type.BaseType, false) : null;
+            dynamicType = new DynamicType(type, false/*, parentType*/);
             _dynamicTypes[type] = dynamicType;
             return dynamicType;
         }
@@ -306,6 +306,10 @@ namespace QuickJS.Utils
             return NewDynamicMethod(name, new DynamicMethodInvoke(method));
         }
 
+        /// <summary>
+        /// Create a delegate wrapper object.
+        /// NOTE: the method registry will hold a reference of the given delegate, this usually causes leaks.
+        /// </summary>
         public JSValue NewDynamicDelegate(JSAtom name, Delegate d)
         {
             if (d == null)

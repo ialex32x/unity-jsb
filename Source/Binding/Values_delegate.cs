@@ -28,6 +28,10 @@ namespace QuickJS.Binding
             }
         }
 
+        /// <summary>
+        /// push the corresponding js value if o is a ScriptDelegate, 
+        /// otherwise push it as a C# Object directly.
+        /// </summary>
         public static JSValue js_push_delegate(JSContext ctx, Delegate o)
         {
             if (o == null)
