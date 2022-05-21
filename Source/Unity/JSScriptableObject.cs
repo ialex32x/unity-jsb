@@ -151,10 +151,27 @@ namespace QuickJS.Unity
             _resetValid = false;
         }
 
+        void OnUnbindingObject(JSContext ctx, JSValue this_obj)
+        {
+            var payload = JSApi.JSB_FreePayload(ctx, this_obj);
+            if (payload.type_id == BridgeObjectType.ObjectRef)
+            {
+                try
+                {
+                    ScriptEngine.GetObjectCache(ctx).RemoveObject(payload.value);
+                }
+                catch (Exception exception)
+                {
+                    ScriptEngine.GetLogger(ctx)?.WriteException(exception);
+                }
+            }
+        }
+
         public void ReleaseJSValues()
         {
             if (!_this_obj.IsNullish())
             {
+                OnUnbindingObject(_ctx, _this_obj);
                 OnUnbindingJSFuncs();
                 JSApi.JS_FreeValue(_ctx, _this_obj);
                 _this_obj = JSApi.JS_UNDEFINED;
@@ -315,22 +332,7 @@ namespace QuickJS.Unity
                     var cache = ScriptEngine.GetObjectCache(ctx);
 
                     // 旧的绑定值释放？
-                    if (!_this_obj.IsNullish())
-                    {
-                        var payload = JSApi.JSB_FreePayload(ctx, _this_obj);
-                        if (payload.type_id == BridgeObjectType.ObjectRef)
-                        {
-                            try
-                            {
-                                cache.RemoveObject(payload.value);
-                            }
-                            catch (Exception exception)
-                            {
-                                ScriptEngine.GetLogger(ctx)?.WriteException(exception);
-                            }
-                        }
-                    }
-
+                    OnUnbindingObject(ctx, _this_obj);
                     var object_id = cache.AddObject(this, false);
                     var val = JSApi.jsb_construct_bridge_object(ctx, ctor, object_id);
                     if (val.IsException())
