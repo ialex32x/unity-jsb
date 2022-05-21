@@ -70,7 +70,7 @@ export class MyEditorWindow extends EditorWindow {
     @ScriptProperty({ type: "Rect" })
     private _thisWindowRect = new Rect(50, 50, 400, 300);
 
-    @ScriptProperty({ type: "object", serializable: false })
+    // @ScriptProperty({ type: "object", serializable: false })
     private _resizerContent = new GUIContent("* ", "Resize");
 
     @ScriptProperty({ type: "bool" })
@@ -83,18 +83,28 @@ export class MyEditorWindow extends EditorWindow {
     continuousInteger = 0;
 
     Awake() {
-        this._onSceneGui = this.onSceneGui.bind(this);
-        this._onMenuTest = this.onMenuTest.bind(this);
-        this._onWindowGUI = this.onWindowGUI.bind(this);
     }
 
     OnEnable() {
+        this._onSceneGui = this.onSceneGui.bind(this);
+        this._onMenuTest = this.onMenuTest.bind(this);
+        this._onWindowGUI = this.onWindowGUI.bind(this);
         this.titleContent = new GUIContent("Blablabla0");
         SceneView.duringSceneGui("add", this._onSceneGui);
     }
 
     OnDisable() {
+        console.log("on disable")
         SceneView.duringSceneGui("remove", this._onSceneGui);
+        
+        this._onSceneGui = null;
+        this._onMenuTest = null;
+        this._onWindowGUI = null;
+    }
+
+    OnDestroy() {
+        console.log("on destroy")
+        this._resizerContent = null;
     }
 
     onWindowGUI() {

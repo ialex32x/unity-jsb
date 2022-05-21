@@ -1,7 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.run = void 0;
 const Example_1 = require("Example");
-if (module == require.main) {
+function run() {
     let actions = new Example_1.DelegateTest();
     print("testcase: 无参数的委托");
     console.log("********** add");
@@ -51,5 +52,9 @@ if (module == require.main) {
         console.warn(err);
         console.warn("dynamic code emitting doesn't work properly");
     }
+}
+exports.run = run;
+if (module == require.main) {
+    run();
 }
 //# sourceMappingURL=example_delegate.js.map

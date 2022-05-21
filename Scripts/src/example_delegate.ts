@@ -1,6 +1,6 @@
 import { DelegateTest } from "Example";
 
-if (module == require.main) {
+export function run() {
     let actions = new DelegateTest();
 
     print("testcase: 无参数的委托");
@@ -57,4 +57,8 @@ if (module == require.main) {
         console.warn(err);
         console.warn("dynamic code emitting doesn't work properly");
     }
+}
+
+if (module == require.main) {
+    run();
 }

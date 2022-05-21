@@ -60,6 +60,7 @@ let MyEditorWindow = MyEditorWindow_1 = class MyEditorWindow extends UnityEditor
         this._resizeStart = new UnityEngine_1.Rect(0, 0, 0, 0);
         this._minWindowSize = new UnityEngine_1.Vector2(120, 100);
         this._thisWindowRect = new UnityEngine_1.Rect(50, 50, 400, 300);
+        // @ScriptProperty({ type: "object", serializable: false })
         this._resizerContent = new UnityEngine_1.GUIContent("* ", "Resize");
         this._isResizing = false;
         this._windowIndex = 0;
@@ -69,16 +70,24 @@ let MyEditorWindow = MyEditorWindow_1 = class MyEditorWindow extends UnityEditor
         this._lastSecond = -1;
     }
     Awake() {
+    }
+    OnEnable() {
         this._onSceneGui = this.onSceneGui.bind(this);
         this._onMenuTest = this.onMenuTest.bind(this);
         this._onWindowGUI = this.onWindowGUI.bind(this);
-    }
-    OnEnable() {
         this.titleContent = new UnityEngine_1.GUIContent("Blablabla0");
         UnityEditor_1.SceneView.duringSceneGui("add", this._onSceneGui);
     }
     OnDisable() {
+        console.log("on disable");
         UnityEditor_1.SceneView.duringSceneGui("remove", this._onSceneGui);
+        this._onSceneGui = null;
+        this._onMenuTest = null;
+        this._onWindowGUI = null;
+    }
+    OnDestroy() {
+        console.log("on destroy");
+        this._resizerContent = null;
     }
     onWindowGUI() {
         if (UnityEngine_1.GUILayout.Button("Click")) {
@@ -199,9 +208,6 @@ __decorate([
 __decorate([
     class_decorators_1.ScriptProperty({ type: "Rect" })
 ], MyEditorWindow.prototype, "_thisWindowRect", void 0);
-__decorate([
-    class_decorators_1.ScriptProperty({ type: "object", serializable: false })
-], MyEditorWindow.prototype, "_resizerContent", void 0);
 __decorate([
     class_decorators_1.ScriptProperty({ type: "bool" })
 ], MyEditorWindow.prototype, "_isResizing", void 0);

@@ -16,9 +16,31 @@ namespace QuickJS.Utils
         // weak reference table for script values (dangerous, no ref count)
         private Dictionary<JSValue, WeakReference> _map = new Dictionary<JSValue, WeakReference>();
 
+        /// <summary>
+        /// [FOR_DEBUG_ONLY] 
+        /// </summary>
         public int Count
         {
-            get { return _map.Count; }
+            get
+            {
+#if JSB_DEBUG
+                var active = 0;
+                foreach (var kv in _map)
+                {
+                    if (kv.Value.IsAlive)
+                    {
+                        ++active;
+                    }
+                }
+#if !JSB_UNITYLESS
+                if (active != _map.Count)
+                {
+                    UnityEngine.Debug.LogFormat("unbalanced WeakMap<{0}> {1} != {2}", typeof(T).Name, active, _map.Count);
+                }
+#endif
+#endif
+                return _map.Count;
+            }
         }
 
         public void Clear()

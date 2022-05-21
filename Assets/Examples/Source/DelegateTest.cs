@@ -89,6 +89,10 @@ namespace Example
             onStaticEvent?.Invoke(v);
         }
 
+        public static void UseDelegateInParameter(Action n)
+        {
+        }
+
         public void CallAction()
         {
             onAction?.Invoke();

@@ -12,11 +12,14 @@ const System_1 = require("System");
 const UnityEditor_1 = require("UnityEditor");
 const UnityEngine_1 = require("UnityEngine");
 const editor_decorators_1 = require("plover/editor/editor_decorators");
+const Example_1 = require("Example");
+function _onWindowGUI() { }
 let MyTestEditorWindow = class MyTestEditorWindow extends UnityEditor_1.EditorWindow {
     constructor() {
         super(...arguments);
         this._testString = "";
         this._sel = 0;
+        this._thisWindowRect = new UnityEngine_1.Rect(0, 0, 500, 100);
     }
     Awake() {
         jsb_1.AddCacheString("Test");
@@ -30,9 +33,16 @@ let MyTestEditorWindow = class MyTestEditorWindow extends UnityEditor_1.EditorWi
     OnGUI() {
         this._testString = UnityEditor_1.EditorGUILayout.TextField("Test", this._testString || "");
         this._sel = UnityEditor_1.EditorGUILayout.Popup("Pick", this._sel, ["1", "2", "3", "4"]);
+        if (UnityEngine_1.GUILayout.Button("Test Delegate")) {
+            // DelegateTest.UseDelegateInParameter(_onWindowGUI);
+            Example_1.DelegateTest.UseDelegateInParameter(function () { });
+        }
         if (UnityEngine_1.GUILayout.Button("Test Build")) {
             UnityEditor_1.BuildPipeline.BuildPlayer(this._scenes, "Build/macos.app", UnityEditor_1.BuildTarget.StandaloneOSX, UnityEditor_1.BuildOptions.Development);
         }
+        let id = UnityEngine_1.GUIUtility.GetControlID(UnityEngine_1.FocusType.Passive);
+        this._thisWindowRect = UnityEngine_1.GUILayout.Window(id, this._thisWindowRect, function () { }, "My JS Editor Window");
+        UnityEditor_1.HandleUtility.AddDefaultControl(UnityEngine_1.GUIUtility.GetControlID(UnityEngine_1.FocusType.Passive));
     }
 };
 MyTestEditorWindow = __decorate([

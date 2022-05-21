@@ -1,17 +1,9 @@
 using System;
 using System.IO;
-using System.Text;
-using System.Net;
-using System.Collections;
-using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
-using QuickJS.Utils;
 
 namespace QuickJS.Utils
 {
     using QuickJS;
-    using QuickJS.IO;
     using QuickJS.Native;
     using QuickJS.Binding;
 
