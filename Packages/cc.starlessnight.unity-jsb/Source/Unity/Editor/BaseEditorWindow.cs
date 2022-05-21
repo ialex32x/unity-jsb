@@ -16,6 +16,8 @@ namespace QuickJS.Unity
         protected static GUIStyle _blockStyle = new GUIStyle();
         protected List<Action> _defers = new List<Action>();
 
+        private static Dictionary<string, GUIContent> _textContents = new Dictionary<string, GUIContent>();
+
         protected virtual void OnEnable()
         {
         }
@@ -41,6 +43,16 @@ namespace QuickJS.Unity
         {
             OnPaint();
             ExecuteDefers();
+        }
+
+        public static GUIContent GetCachedTextContent(string text)
+        {
+            if (_textContents.TryGetValue(text, out var content))
+            {
+                return content;
+            }
+            _textContents[text] = new GUIContent(text);
+            return content;
         }
 
         public static Texture2D MakeTex(int width, int height, Color fillColor)

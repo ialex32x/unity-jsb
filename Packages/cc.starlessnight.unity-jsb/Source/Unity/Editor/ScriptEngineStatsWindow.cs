@@ -7,11 +7,17 @@ namespace QuickJS.Unity
 {
     using UnityEngine;
     using UnityEditor;
+    using System.Threading;
 
     public class ScriptEngineStatsWindow : BaseEditorWindow, IHasCustomMenu
     {
         private static readonly string[] _backends = { "quickjs", "v8-bridge" };
         private static GUIContent GUIContent_Stats_Operator = new GUIContent("Operator", "Is operator overloading supported?");
+
+        private int _categoryIndex;
+        private string[] _categoryLabels;
+        private Action<Snapshot>[] _categoryDrawers;
+
         private class Snapshot
         {
             public struct TimerInfo
@@ -30,7 +36,9 @@ namespace QuickJS.Unity
             public int managedObjectCount;
             public int managedObjectCap;
             public bool fetchManagedObjectRefs;
-            public List<WeakReference<object>> managedObjectRefs = new List<WeakReference<object>>();
+            public int selectedManagedObjectIndex;
+            // public List<WeakReference<object>> managedObjectRefs = new List<WeakReference<object>>();
+            public SimpleListView<WeakReference<object>> managedObjectRefs = new SimpleListView<WeakReference<object>>();
             public int jSObjectCount;
             public int delegateCount;
             public int scriptValueCount;
@@ -42,9 +50,16 @@ namespace QuickJS.Unity
 
         private Vector2 _sv;
         private int _alive;
+
+        [SerializeField]
         private bool _fetchManagedObjectRefs = false;
+
+        [SerializeField]
         private bool _autoCap = true;
+        
         private float _time;
+
+        [SerializeField]
         private float _timeCap = 5f;
         private List<Snapshot> _snapshots = new List<Snapshot>();
         private string[] _snapshotNames = new string[] { };
@@ -59,6 +74,10 @@ namespace QuickJS.Unity
         protected override void OnEnable()
         {
             base.OnEnable();
+            _categoryLabels = new string[] { "Statistics", "Managed Objects", "Timers" };
+            _categoryDrawers = new Action<Snapshot>[] { OnStatisticsGUI, OnManagedObjectsGUI, OnTimersGUI };
+            _categoryIndex = Math.Min(_categoryIndex, _categoryLabels.Length - 1);
+
             titleContent = new GUIContent("ScriptEngine Stats");
             _time = Time.realtimeSinceStartup;
             CaptureAll();
@@ -136,55 +155,62 @@ namespace QuickJS.Unity
             runtime.EnqueueAction(OnSnapshotRequest, snapshot);
         }
 
+        /// <summary>
+        /// Callback runs on the script runtime thread
+        /// </summary>
         private static void OnSnapshotRequest(ScriptRuntime runtime, object cbArgs, Native.JSValue cbValue)
         {
             if (!runtime.isValid || !runtime.isRunning)
             {
-                // Debug.LogError("get snapshot on released script runtime");
                 return;
             }
+
             var snapshot = (Snapshot)cbArgs;
-            unsafe
+            lock (snapshot)
             {
-                fixed (Native.JSMemoryUsage* ptr = &snapshot.memoryUsage)
+                unsafe
                 {
-                    Native.JSApi.JS_ComputeMemoryUsage(runtime, ptr);
+                    fixed (Native.JSMemoryUsage* ptr = &snapshot.memoryUsage)
+                    {
+                        Native.JSApi.JS_ComputeMemoryUsage(runtime, ptr);
+                    }
                 }
-            }
 
-            var typeDB = runtime.GetTypeDB();
-            snapshot.exportedTypes = typeDB.Count;
-            snapshot.isStaticBinding = runtime.isStaticBinding;
+                var typeDB = runtime.GetTypeDB();
+                snapshot.exportedTypes = typeDB.Count;
+                snapshot.isStaticBinding = runtime.isStaticBinding;
 
-            var objectCache = runtime.GetObjectCache();
-            var stringCache = runtime.GetMainContext().GetStringCache();
+                var objectCache = runtime.GetObjectCache();
+                var stringCache = runtime.GetMainContext().GetStringCache();
 
-            snapshot.managedObjectCount = objectCache.GetManagedObjectCount();
-            snapshot.managedObjectCap = objectCache.GetManagedObjectCap();
-            snapshot.managedObjectRefs.Clear();
-            if (snapshot.fetchManagedObjectRefs)
-            {
-                objectCache.ForEachManagedObject(obj =>
+                snapshot.managedObjectCount = objectCache.GetManagedObjectCount();
+                snapshot.managedObjectCap = objectCache.GetManagedObjectCap();
+                snapshot.managedObjectRefs.Clear();
+                if (snapshot.fetchManagedObjectRefs)
                 {
-                    snapshot.managedObjectRefs.Add(new WeakReference<object>(obj));
-                });
-            }
-            snapshot.jSObjectCount = objectCache.GetJSObjectCount();
-            snapshot.delegateCount = objectCache.GetDelegateCount();
-            snapshot.scriptValueCount = objectCache.GetScriptValueCount();
-            snapshot.scriptPromiseCount = objectCache.GetScriptPromiseCount();
-            snapshot.stringCount = stringCache.GetStringCount();
+                    objectCache.ForEachManagedObject(obj =>
+                    {
+                        snapshot.managedObjectRefs.Add(new WeakReference<object>(obj));
+                    });
+                }
+                snapshot.selectedManagedObjectIndex = Math.Min(snapshot.selectedManagedObjectIndex, snapshot.managedObjectRefs.Count - 1);
+                snapshot.jSObjectCount = objectCache.GetJSObjectCount();
+                snapshot.delegateCount = objectCache.GetDelegateCount();
+                snapshot.scriptValueCount = objectCache.GetScriptValueCount();
+                snapshot.scriptPromiseCount = objectCache.GetScriptPromiseCount();
+                snapshot.stringCount = stringCache.GetStringCount();
 
-            var timeManager = runtime.GetTimerManager();
-            snapshot.activeTimers.Clear();
-            snapshot.timeNow = timeManager.now;
-            timeManager.ForEach((id, delay, deadline, once) => snapshot.activeTimers.Add(new Snapshot.TimerInfo()
-            {
-                id = id,
-                delay = delay,
-                deadline = deadline,
-                once = once,
-            }));
+                var timeManager = runtime.GetTimerManager();
+                snapshot.activeTimers.Clear();
+                snapshot.timeNow = timeManager.now;
+                timeManager.ForEach((id, delay, deadline, once) => snapshot.activeTimers.Add(new Snapshot.TimerInfo()
+                {
+                    id = id,
+                    delay = delay,
+                    deadline = deadline,
+                    once = once,
+                }));
+            }
         }
 
         private string GetDescription(object obj)
@@ -199,16 +225,25 @@ namespace QuickJS.Unity
             }
         }
 
-        private void InspectSnapshow(Snapshot snapshot)
+        private void OnStatisticsGUI(Snapshot snapshot)
         {
-            if (!snapshot.alive)
-            {
-                EditorGUILayout.HelpBox("This runtime isn't alive.", MessageType.Info);
-                return;
-            }
-
-            EditorGUI.BeginDisabledGroup(true);
             EditorGUILayout.BeginVertical();
+            Block("Misc.", () =>
+            {
+                EditorGUILayout.Toggle("Static Bind", snapshot.isStaticBinding);
+                EditorGUILayout.IntField("Exported Types", snapshot.exportedTypes);
+                EditorGUILayout.TextField("ManagedObject Count", snapshot.managedObjectCount + "/" + snapshot.managedObjectCap);
+                EditorGUILayout.IntField("JSObject Count", snapshot.jSObjectCount);
+                EditorGUILayout.IntField("Delegate Mapping Count", snapshot.delegateCount);
+                EditorGUILayout.IntField("ScriptValue Mapping Count", snapshot.scriptValueCount);
+                EditorGUILayout.IntField("ScriptPromise Mapping Count", snapshot.scriptPromiseCount);
+                EditorGUILayout.IntField("Cached String Count", snapshot.stringCount);
+            });
+            Block("Timers", () =>
+            {
+                EditorGUILayout.IntField("Active Timer", snapshot.activeTimers.Count);
+                EditorGUILayout.IntField("Now", snapshot.timeNow);
+            });
             Block("JSMemoryUsage", () =>
             {
                 EditorGUILayout.TextField("malloc_size", ToSizeText(snapshot.memoryUsage.malloc_size));
@@ -238,68 +273,135 @@ namespace QuickJS.Unity
                 EditorGUILayout.TextField("binary_object_count", ToCountText(snapshot.memoryUsage.binary_object_count));
                 EditorGUILayout.TextField("binary_object_size", ToSizeText(snapshot.memoryUsage.binary_object_size));
             });
+            EditorGUILayout.EndVertical();
+        }
 
-            Block("Misc.", () =>
+        private void OnDrawManagedObjectEntry(Rect rect, int index, WeakReference<object> objRef)
+        {
+            if (objRef.TryGetTarget(out var item))
             {
-                EditorGUILayout.Toggle("Static Bind", snapshot.isStaticBinding);
-                EditorGUILayout.IntField("Exported Types", snapshot.exportedTypes);
-                EditorGUILayout.TextField("ManagedObject Count", snapshot.managedObjectCount + "/" + snapshot.managedObjectCap);
-                EditorGUILayout.IntField("JSObject Count", snapshot.jSObjectCount);
-                EditorGUILayout.IntField("Delegate Mapping Count", snapshot.delegateCount);
-                EditorGUILayout.IntField("ScriptValue Mapping Count", snapshot.scriptValueCount);
-                EditorGUILayout.IntField("ScriptPromise Mapping Count", snapshot.scriptPromiseCount);
-                EditorGUILayout.IntField("Cached String Count", snapshot.stringCount);
-            });
+                EditorGUI.LabelField(rect, GetDescription(item));
+            }
+            else
+            {
+                EditorGUI.LabelField(rect, "Empty Slot");
+            }
+        }
 
-
+        private void OnManagedObjectsGUI(Snapshot snapshot)
+        {
+            EditorGUILayout.BeginHorizontal();
+            EditorGUILayout.BeginVertical(GUILayout.Width(100f));
+            var rect = EditorGUILayout.GetControlRect(GUILayout.ExpandHeight(true));
             if (snapshot.fetchManagedObjectRefs)
             {
-                Block("Details", () =>
-                {
-                    for (int i = 0, count = snapshot.managedObjectRefs.Count; i < count;)
-                    {
-                        var objRef = snapshot.managedObjectRefs[i];
-                        object obj;
-                        if (objRef.TryGetTarget(out obj))
-                        {
-                            EditorGUILayout.LabelField(i.ToString(), GetDescription(obj));
-                            ++i;
-                        }
-                        else
-                        {
-                            snapshot.managedObjectRefs.RemoveAt(i);
-                            --count;
-                        }
-                    }
-                });
+
+                snapshot.managedObjectRefs.OnDrawItem = OnDrawManagedObjectEntry;
+                snapshot.managedObjectRefs.Draw(rect);
+            }
+            EditorGUILayout.EndVertical();
+            EditorGUILayout.BeginVertical();
+
+            var first = snapshot.managedObjectRefs.selection.FirstOrDefault();
+            if (first != null && first.TryGetTarget(out var obj))
+            {
+                InspectObject(obj);
+            }
+            EditorGUILayout.EndVertical();
+            EditorGUILayout.EndHorizontal();
+        }
+
+        //TODO unfinished_feature: inspect internal details of object
+        private void InspectObject(object selected)
+        {
+            if (selected == null)
+            {
+                return;
             }
 
-            Block("Timer", () =>
+            var type = selected.GetType();
+            EditorGUILayout.LabelField("Type", type.Name);
+            EditorGUILayout.Toggle("Primitive", type.IsPrimitive);
+            EditorGUILayout.Toggle("Pointer", type.IsPointer);
+            if (type.IsPointer)
             {
-                var count = snapshot.activeTimers.Count;
-                EditorGUILayout.IntField("Active Timer", count);
-                EditorGUILayout.IntField("Now", snapshot.timeNow);
-
-                if (count > 0)
+                return;
+            }
+            if (type.IsArray)
+            {
+                var array = selected as Array;
+                if (array.Rank == 1)
                 {
-                    EditorGUILayout.BeginHorizontal();
-                    EditorGUILayout.LabelField("ID");
-                    EditorGUILayout.LabelField("Delay");
-                    EditorGUILayout.LabelField("Deadline");
-                    EditorGUILayout.EndHorizontal();
-                    for (var i = 0; i < count; i++)
+                    var len = array.GetLength(0);
+                    EditorGUILayout.IntField("Length", len);
+                    for (var i = 0; i < len; ++i)
                     {
-                        var t = snapshot.activeTimers[i];
-                        EditorGUILayout.BeginHorizontal();
-                        EditorGUILayout.TextField(t.id.ToString());
-                        EditorGUILayout.IntField(t.delay);
-                        EditorGUILayout.IntField(t.deadline);
-                        EditorGUILayout.EndHorizontal();
+                        InspectObject(array.GetValue(i));
                     }
                 }
-            });
+                return;
+            }
+
+            if (type == typeof(string))
+            {
+                EditorGUILayout.LabelField("String", selected as string);
+                return;
+            }
+
+            if (type == typeof(GUIContent))
+            {
+                EditorGUILayout.LabelField(GetCachedTextContent("GUIContent"), selected as GUIContent);
+                return;
+            }
+
+            var fields = type.GetFields(Binding.DynamicType.DefaultFlags);
+            for (var i = 0; i < fields.Length; i++)
+            {
+                var field = fields[i];
+                var fieldValue = field.GetValue(field.IsStatic ? null : selected);
+                EditorGUILayout.LabelField(field.Name, GetDescription(fieldValue));
+            }
+        }
+
+        private void OnTimersGUI(Snapshot snapshot)
+        {
+            EditorGUILayout.BeginVertical();
+            EditorGUILayout.IntField("Now", snapshot.timeNow);
+
+            var count = snapshot.activeTimers.Count;
+            if (count > 0)
+            {
+                EditorGUILayout.BeginHorizontal();
+                EditorGUILayout.LabelField("ID");
+                EditorGUILayout.LabelField("Delay");
+                EditorGUILayout.LabelField("Deadline");
+                EditorGUILayout.EndHorizontal();
+                for (var i = 0; i < count; i++)
+                {
+                    var t = snapshot.activeTimers[i];
+                    EditorGUILayout.BeginHorizontal();
+                    EditorGUILayout.TextField(t.id.ToString());
+                    EditorGUILayout.IntField(t.delay);
+                    EditorGUILayout.IntField(t.deadline);
+                    EditorGUILayout.EndHorizontal();
+                }
+            }
             EditorGUILayout.EndVertical();
-            EditorGUI.EndDisabledGroup();
+        }
+
+        private void InspectSnapshot(Snapshot snapshot)
+        {
+            lock (snapshot)
+            {
+                if (!snapshot.alive)
+                {
+                    EditorGUILayout.HelpBox("This runtime isn't alive.", MessageType.Info);
+                    return;
+                }
+
+                _categoryIndex = GUILayout.Toolbar(_categoryIndex, _categoryLabels);
+                _categoryDrawers[_categoryIndex](snapshot);
+            }
         }
 
         protected override void OnUpdate()
@@ -404,7 +506,7 @@ namespace QuickJS.Unity
 
                 if (_selectedSnapshotIndex >= 0 && _selectedSnapshotIndex < _snapshots.Count)
                 {
-                    InspectSnapshow(_snapshots[_selectedSnapshotIndex]);
+                    InspectSnapshot(_snapshots[_selectedSnapshotIndex]);
                 }
             }
         } // end OnPaint()

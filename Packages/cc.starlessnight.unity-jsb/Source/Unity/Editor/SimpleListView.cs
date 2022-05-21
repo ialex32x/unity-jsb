@@ -19,6 +19,8 @@ namespace QuickJS.Unity
         public Action<Rect, int, T> OnDrawItem;
         public Action<T, HashSet<T>> OnSelectItem;
 
+        public HashSet<T> selection => _selection;
+
         public SimpleListView()
         {
             _itemHeight = EditorGUIUtility.singleLineHeight;
@@ -58,6 +60,17 @@ namespace QuickJS.Unity
                 var currentItem = _items[i];
                 var isSelected = _selection.Contains(currentItem);
 
+                if (!isSelected && Event.current.type == EventType.MouseUp)
+                {
+                    if (_itemRect.Contains(Event.current.mousePosition))
+                    {
+                        _selection.Clear();
+                        _selection.Add(currentItem);
+                        OnSelectItem?.Invoke(currentItem, _selection);
+                        isSelected = true;
+                    }
+                }
+
                 if (isSelected)
                 {
                     EditorGUI.DrawRect(_itemRect, UnityHelper.SelectRowColor);
@@ -70,15 +83,6 @@ namespace QuickJS.Unity
                     }
                 }
                 OnDrawItem?.Invoke(_itemRect, i, currentItem);
-                if (!isSelected && Event.current.type == EventType.MouseUp)
-                {
-                    if (_itemRect.Contains(Event.current.mousePosition))
-                    {
-                        _selection.Clear();
-                        _selection.Add(currentItem);
-                        OnSelectItem?.Invoke(currentItem, _selection);
-                    }
-                }
             }
             GUI.EndScrollView();
         }

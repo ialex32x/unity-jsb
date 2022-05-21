@@ -70,7 +70,7 @@ export class MyEditorWindow extends EditorWindow {
     @ScriptProperty({ type: "Rect" })
     private _thisWindowRect = new Rect(50, 50, 400, 300);
 
-    @ScriptProperty({ type: "object" })
+    @ScriptProperty({ type: "object", serializable: false })
     private _resizerContent = new GUIContent("* ", "Resize");
 
     @ScriptProperty({ type: "bool" })

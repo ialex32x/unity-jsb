@@ -200,7 +200,7 @@ __decorate([
     class_decorators_1.ScriptProperty({ type: "Rect" })
 ], MyEditorWindow.prototype, "_thisWindowRect", void 0);
 __decorate([
-    class_decorators_1.ScriptProperty({ type: "object" })
+    class_decorators_1.ScriptProperty({ type: "object", serializable: false })
 ], MyEditorWindow.prototype, "_resizerContent", void 0);
 __decorate([
     class_decorators_1.ScriptProperty({ type: "bool" })
