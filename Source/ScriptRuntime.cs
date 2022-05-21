@@ -659,11 +659,10 @@ namespace QuickJS
         }
 
         // 可在 GC 线程直接调用此方法
-        public bool FreeDelegationValue(JSValue value, string debugInfo = null)
+        public bool FreeDelegationValue(JSValue value)
         {
             if (!EnqueuePendingAction(new JSAction { value = value, callback = _FreeValueAndDelegationAction }))
             {
-                _logger?.Write(LogLevel.Error, "[DebugInfo] {0}", debugInfo);
                 return false;
             }
             return true;

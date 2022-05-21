@@ -1,17 +1,18 @@
 
 /**
- * 打印日志
+ * alternative to console.log
  */
 declare function print(...args: any[]): void;
 
 /**
+ * [EXPERIMENTAL]
  * 向 master runtime 发送消息 (目前 data 通过 JS_WriteObject/ReadObject 进行传输)
  * !!! 注意: 目前还没有提供跨越 runtime 的托管对象传递, 请不要传递.net托管对象. 
  */
 declare function postMessage(data: any): void;
 
 /**
- * [experimental]
+ * [EXPERIMENTAL]
  */
 declare function jsx(type: string, attributes: any, content?: any): any;
 
@@ -35,9 +36,6 @@ declare module "jsb.editor" {
     }
 }
 
-/**
- * jsb 模块为内部提供的工具支持
- */
 declare module "jsb" {
     import { Delegate as SystemDelegate, Array as SystemArray } from "System";
 
@@ -60,6 +58,9 @@ declare module "jsb" {
         value?: T
     }
 
+    /**
+     * [NOT_IMPLEMENTED]
+     */
     interface RuntimeInfo {
         /**
          * 运行时唯一ID
@@ -88,6 +89,8 @@ declare module "jsb" {
     function RequiredDefines(...targets: string[]);
 
     /**
+     * [EXPERIMENTAL]
+     * [NOT_IMPLEMENTED]
      * 替换C#代码执行 (未完成此功能)
      */
     namespace hotfix {
@@ -112,7 +115,7 @@ declare module "jsb" {
     }
 
     /**
-     * [NotImplemented][未实现]
+     * [NOT_IMPLEMENTED]
      */
     class Runtime {
         /**
@@ -144,12 +147,12 @@ declare module "jsb" {
     }
 
     /**
-     * 执行指定脚本 (慎用, 与 webpack 等工具的结合性可能不太好)
+     * Eval code snippet read from file.
      */
     function DoFile(filename: string): void;
 
     /**
-     * 强行执行一次完整垃圾回收
+     * Requests a garbadge collection call.
      */
     function GC(): void
 
@@ -162,44 +165,45 @@ declare module "jsb" {
     function SetDisposable(o: any, disposable: boolean): boolean;
 
     /**
-     * setInterval/setTimeout 所用定时管理器的当前时间
+     * The current tick (in milliseconds) of the scheduler used by setInterval and setTimeout.
+     * NOTE: It starts from 0.
      */
     function Now(): number
 
     /**
-     * 是否运行在 StaticBinding 模式下
+     * Is running with StaticBind mode
      */
     function IsStaticBinding(): boolean;
 
     let isOperatorOverloadingSupported: boolean;
 
     /**
-     * indicates what backend engine is used
+     * Indicates what backend engine is being used
      */
     let engine: string;
 
     /**
-     * version of jsb dll
+     * Represents the version of jsb dll (the value of JSApi.SO_JSB_VERSION)
      */
     let version: number;
 
     /**
-     * 即 Thread.Sleep()
+     * Calls Thread.Sleep()
      */
     function Sleep(millisecondsTimeout?: number): void
 
     /**
-     * 将字符串添加到缓存中, 可以避免在使用此字符串频繁进行 C#/JS 交互时产生字符串构造.
+     * Cache a string (It's helpful to avoid unnecessary gc alloc when frequently used in interop)
      */
     function AddCacheString(str: string): string;
 
     /**
-     * 移除字符串缓存
+     * Remove a string from string cache.
      */
     function RemoveCacheString(str: string): boolean;
 
     /**
-     * 将指定路径添加到 duktape 加载脚本的搜索目录列表
+     * 
      */
     function AddSearchPath(path: string): void
 
@@ -224,30 +228,34 @@ declare module "jsb" {
     function ToFunction(o: SystemDelegate | Function, makeDynamic?: boolean): Function;
 
     /**
-     * [待定]
+     * [EXPERIMENTAL]
      */
     function ToDelegate(o: SystemDelegate | Function, typeName: string): SystemDelegate;
 
-    // function ToJSArray(o: any): Array;
     /**
-     * 将 C# 数组转换为 JS 数组
+     * [NOT_DETERMINED]
+     */
+    // function ToJSArray(o: any): Array;
+
+    /**
+     * Converts C# Array into JS Array
      */
     function ToArray<T>(o: SystemArray<T>): Array<T>;
 
     /**
-     * 将 C# 数组转换为 JS ArrayBuffer
+     * Converts C# Array<byte> into JS ArrayBuffer
      */
     function ToArrayBuffer(o: SystemArray<byte> | number[]): ArrayBuffer;
 
     /**
-     * 将 JS ArrayBuffer 转换为 C# Array
+     * Converts JS ArrayBuffer or Unit8Array into C# Array<byte>
      */
     function ToBytes(o: ArrayBuffer | Uint8Array): SystemArray<byte>;
 
     /**
-     * 动态载入指定类型
-     * @param type 完整类型名
-     * @param privateAccess 是否允许访问私有成员
+     * Dynamically import a C# type
+     * @param type FullName of a C# type
+     * @param privateAccess Whether the private members are allowed to access in JS
      */
     function Import(type: string, privateAccess?: boolean): FunctionConstructor;
 }

@@ -9,21 +9,15 @@ namespace QuickJS
     {
         protected ScriptContext _context;
         protected /*readonly*/ JSValue _jsValue;
-#if JSB_DEBUG
-        protected string _stackTrack;
-#endif
 
         // 一个 JSValue (function) 可能会被用于映射多个委托对象
         // it's safe for cycle references between managed objects without weakreference
-        private List<Delegate> _matches = new List<Delegate>();
+        private List<WeakReference<Delegate>> _matches = new List<WeakReference<Delegate>>();
 
         /// <summary>
         /// 获取委托包装所在的 JSContext. 在已经释放的 ScriptDelegate 上访问此属性会抛出 NullReferenceException.
         /// </summary>
-        public JSContext ctx
-        {
-            get { return _context; }
-        }
+        public JSContext ctx => _context;
 
         public bool isValid => _context != null;
 
@@ -36,8 +30,7 @@ namespace QuickJS
             // 会出现的问题是, 如果 c# 没有对 ScriptDelegate 的强引用, 那么反复 get_delegate 会重复创建 ScriptDelegate
             _context.GetObjectCache().AddDelegate(_jsValue, this);
 #if JSB_DEBUG
-            try { throw new Exception(); }
-            catch (Exception exception) { _stackTrack = exception.StackTrace; }
+            _context.GetLogger()?.Write(Utils.LogLevel.Info, "Alloc DelegateValue {0}", _jsValue);
 #endif
         }
 
@@ -63,12 +56,11 @@ namespace QuickJS
             {
                 var context = _context;
 
-                _context = null;
 #if JSB_DEBUG
-                context.GetRuntime().FreeDelegationValue(_jsValue, _stackTrack);
-#else
-                context.GetRuntime().FreeDelegationValue(_jsValue);
+                context.GetLogger()?.Write(Utils.LogLevel.Info, "FreeDelegationValue {0}", _jsValue);
 #endif
+                _context = null;
+                context.GetRuntime().FreeDelegationValue(_jsValue);
                 _jsValue = JSApi.JS_UNDEFINED;
             }
         }
@@ -97,15 +89,25 @@ namespace QuickJS
 
         public Delegate Any()
         {
-            return _matches.Count != 0 ? _matches[0] : null;
+            Delegate d;
+            for (int i = 0, count = _matches.Count; i < count; ++i)
+            {
+                var item = _matches[i];
+                if (item.TryGetTarget(out d))
+                {
+                    return d;
+                }
+            }
+            return null;
         }
 
         public Delegate Match(Type delegateType)
         {
+            Delegate d;
             for (int i = 0, count = _matches.Count; i < count; i++)
             {
-                var d = _matches[i];
-                if (d.GetType() == delegateType)
+                var item = _matches[i];
+                if (item.TryGetTarget(out d) && d.GetType() == delegateType)
                 {
                     return d;
                 }
@@ -119,7 +121,7 @@ namespace QuickJS
             {
                 throw new ArgumentNullException();
             }
-            _matches.Add(d);
+            _matches.Add(new WeakReference<Delegate>(d));
         }
 
         public unsafe JSValue Invoke(JSContext ctx)

@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 
 namespace QuickJS.Utils
@@ -19,7 +20,7 @@ namespace QuickJS.Utils
         {
             public int next;
             public int tag;
-            public IObjectCollectionEntry target;
+            public WeakReference<IObjectCollectionEntry> target;
         }
 
         private int _freeIndex = -1;
@@ -35,9 +36,10 @@ namespace QuickJS.Utils
                 for (int i = 0, count = _map.Count; i < count; ++i)
                 {
                     var entry = _map[i];
-                    if (entry.target != null)
+                    IObjectCollectionEntry target;
+                    if (entry.target.TryGetTarget(out target))
                     {
-                        entry.target.OnCollectionReleased();
+                        target.OnCollectionReleased();
                     }
                 }
             }
@@ -54,7 +56,7 @@ namespace QuickJS.Utils
                     _map.Add(freeEntry);
                     ++_activeSlotCount;
                     freeEntry.next = -1;
-                    freeEntry.target = o;
+                    freeEntry.target = new WeakReference<IObjectCollectionEntry>(o);
                     ++freeEntry.tag;
                     handle = new Handle() { id = id, tag = freeEntry.tag };
                 }
@@ -65,7 +67,7 @@ namespace QuickJS.Utils
                     _freeIndex = freeEntry.next;
                     ++_activeSlotCount;
                     freeEntry.next = -1;
-                    freeEntry.target = o;
+                    freeEntry.target.SetTarget(o);
                     ++freeEntry.tag;
                     handle = new Handle() { id = id, tag = freeEntry.tag };
                 }
@@ -98,8 +100,7 @@ namespace QuickJS.Utils
                 var entry = _map[id];
                 if (entry.next == -1 && entry.tag == handle.tag)
                 {
-                    o = entry.target;
-                    return true;
+                    return entry.target.TryGetTarget(out o);
                 }
             }
             o = null;
@@ -118,7 +119,7 @@ namespace QuickJS.Utils
             {
                 var entry = _map[handle.id];
                 entry.next = _freeIndex;
-                entry.target = null;
+                entry.target.SetTarget(null);
                 ++entry.tag;
                 _freeIndex = handle.id;
                 --_activeSlotCount;

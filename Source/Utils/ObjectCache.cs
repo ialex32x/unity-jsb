@@ -84,6 +84,23 @@ namespace QuickJS.Utils
             {
                 return;
             }
+#if JSB_DEBUG
+            if (_logger != null)
+            {
+                _logger.Write(LogLevel.Info, "_activeMapSlotCount {0}", _activeMapSlotCount);
+                foreach (var entry in _map)
+                {
+                    if (entry.target != null)
+                    {
+                        _logger.Write(LogLevel.Info, "Entry {0}", entry.target);
+                    }
+                }
+                foreach (var entry in _rmap)
+                {
+                    _logger.Write(LogLevel.Info, "REntry {0} = {1}", entry.Key, entry.Value);
+                }
+            }
+#endif
             _disposed = true;
             _freeIndex = 0;
             _activeMapSlotCount = 0;
