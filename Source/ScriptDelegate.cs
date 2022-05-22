@@ -6,26 +6,19 @@ using QuickJS.Native;
 namespace QuickJS
 {
     // 刻意与 ScriptValue 隔离
-    public class ScriptDelegate : Utils.IWeakMapEntry
+    public class ScriptDelegate : GCObject, Utils.IWeakMapEntry
     {
-        protected ScriptContext _context;
         protected /*readonly*/ JSValue _jsValue;
 
         // 一个 JSValue (function) 可能会被用于映射多个委托对象
         private List<WeakReference<Delegate>> _matches = new List<WeakReference<Delegate>>();
 
-        /// <summary>
-        /// 获取委托包装所在的 JSContext. 在已经释放的 ScriptDelegate 上访问此属性会抛出 NullReferenceException.
-        /// </summary>
-        public JSContext ctx => _context;
+        public bool isValid => ctx != JSContext.Null;
 
-        public bool isValid => _context != null;
-
-        public ScriptDelegate(ScriptContext context, JSValue jsValue)
+        internal ScriptDelegate(ScriptContext context, JSValue jsValue)
+        : base(context)
         {
-            _context = context;
-            _jsValue = jsValue;
-            JSApi.JS_DupValue(context, jsValue);
+            _jsValue = JSApi.JS_DupValue(context, jsValue);
             // ScriptDelegate 拥有 js 对象的强引用, 此 js 对象无法释放 cache 中的 object, 所以这里用弱引用注册
             // 会出现的问题是, 如果 c# 没有对 ScriptDelegate 的强引用, 那么反复 get_delegate 会重复创建 ScriptDelegate
             context.GetObjectCache().AddDelegate(_jsValue, this);
@@ -39,32 +32,16 @@ namespace QuickJS
             return value._jsValue;
         }
 
-        ~ScriptDelegate()
-        {
-            Dispose(false);
-        }
-
-        // should only be invoked on the script runtime thread
-        public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-
         // should only be invoked on the script runtime thread or C# gc thread (from C# finalizer)
-        protected virtual void Dispose(bool bManaged)
+        protected override void OnDisposing(ScriptContext context)
         {
-            var context = _context;
             var jsValue = _jsValue;
-            if (context != null)
-            {
-                _context = null;
-                _jsValue = JSApi.JS_UNDEFINED;
+            _jsValue = JSApi.JS_UNDEFINED;
+
 #if JSB_DEBUG
-                context.GetLogger()?.Write(Utils.LogLevel.Info, "FreeDelegationValue {0}", jsValue);
+            context.GetLogger()?.Write(Utils.LogLevel.Info, "FreeDelegationValue {0}", jsValue);
 #endif
-                context.GetRuntime().FreeDelegationValue(jsValue);
-            }
+            context.GetRuntime().FreeDelegationValue(jsValue);
         }
 
         public override int GetHashCode()

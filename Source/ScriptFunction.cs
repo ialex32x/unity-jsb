@@ -3,45 +3,93 @@ using QuickJS.Native;
 
 namespace QuickJS
 {
-    public class ScriptFunction : ScriptValue, Utils.Invokable
+    public class ScriptFunction : GCObject, Utils.Invokable
     {
+        private JSValue _fnValue;
         private JSValue _thisValue;
         private JSValue[] _args;
 
         public ScriptFunction(ScriptContext context, JSValue fnValue)
-            : base(context, fnValue)
+            : base(context)
         {
+            _fnValue = JSApi.JS_DupValue(context, fnValue);
             _thisValue = JSApi.JS_UNDEFINED;
         }
 
         public ScriptFunction(ScriptContext context, JSValue fnValue, JSValue thisValue)
-            : base(context, fnValue)
+            : base(context)
         {
-            _thisValue = thisValue;
-            JSApi.JS_DupValue(_context, _thisValue);
+            _fnValue = JSApi.JS_DupValue(context, fnValue);
+            _thisValue = JSApi.JS_DupValue(context, thisValue);
         }
 
         public ScriptFunction(ScriptContext context, JSValue fnValue, JSValue thisValue, JSValue[] args)
-            : base(context, fnValue)
+            : base(context)
         {
-            JSContext ctx = context;
-            _thisValue = thisValue;
+            var ctx = (JSContext)context;
+            _fnValue = JSApi.JS_DupValue(context, fnValue);
+            _thisValue = JSApi.JS_DupValue(context, thisValue);
             _args = args;
-            JSApi.JS_DupValue(_context, _thisValue);
             for (int i = 0, count = _args.Length; i < count; i++)
             {
                 JSApi.JS_DupValue(ctx, _args[i]);
             }
         }
 
-        protected override void OnDispose(ScriptContext context)
+        public void SetBound(JSValue thisValue)
         {
+            var ctx = (JSContext)this;
+            JSApi.JS_FreeValue(ctx, _thisValue);
+            _thisValue = JSApi.JS_DupValue(ctx, thisValue);
+        }
+
+        public unsafe void SetArguments(int offset, int size, JSValue[] values)
+        {
+            fixed (JSValue* ptr = values)
+            {
+                SetArguments(offset, size, ptr);
+            }
+        }
+
+        public unsafe void SetArguments(int offset, int size, JSValue* values)
+        {
+            var ctx = (JSContext)this;
+            
+            if (_args != null)
+            {
+                JSApi.JS_FreeValue(ctx, _args);
+            }
+
+            if (size > 0)
+            {
+                _args = new JSValue[size];
+                for (var i = 0; i < size; ++i)
+                {
+                    _args[i] = JSApi.JS_DupValue(ctx, values[offset + i]);
+                }
+            }
+            else
+            {
+                _args = null;
+            }
+        }
+
+        public static implicit operator JSValue(ScriptFunction value)
+        {
+            return value != null ? value._fnValue : JSApi.JS_UNDEFINED;
+        }
+
+        protected override void OnDisposing(ScriptContext context)
+        {
+            var fnValue = _fnValue;
             var thisValue = _thisValue;
             var args = _args;
+
+            _fnValue = JSApi.JS_UNDEFINED;
             _thisValue = JSApi.JS_UNDEFINED;
             _args = null;
 
-            base.OnDispose(context);
+            context.FreeValue(fnValue);
             context.FreeValue(thisValue);
             context.FreeValues(args);
         }
@@ -58,15 +106,16 @@ namespace QuickJS
 
         private unsafe object Invoke(Type resultType)
         {
-            if (_context == null)
+            var ctx = (JSContext)this;
+            if (ctx == JSContext.Null)
             {
                 return null;
             }
-            JSContext ctx = _context;
+
             var argc = _args == null ? 0 : _args.Length;
             fixed (JSValue* ptr = _args)
             {
-                var rVal = JSApi.JS_Call(ctx, _jsValue, _thisValue, argc, ptr);
+                var rVal = JSApi.JS_Call(ctx, _fnValue, _thisValue, argc, ptr);
                 if (JSApi.JS_IsException(rVal))
                 {
                     var ex = ctx.GetExceptionString();
@@ -92,14 +141,15 @@ namespace QuickJS
 
         public unsafe object Invoke(Type resultType, object arg1)
         {
-            if (_context == null)
+            var ctx = (JSContext)this;
+            if (ctx == JSContext.Null)
             {
                 return null;
             }
-            var ctx = (JSContext)_context;
+
             var val = Binding.Values.js_push_var(ctx, arg1);
             var args = stackalloc[] { val };
-            var rVal = _Invoke(1, args);
+            var rVal = _Invoke(ctx, 1, args);
             if (JSApi.JS_IsException(rVal))
             {
                 var ex = ctx.GetExceptionString();
@@ -125,40 +175,36 @@ namespace QuickJS
 
         public unsafe object Invoke(Type resultType, params object[] parameters)
         {
-            if (_context == null)
+            var ctx = (JSContext)this;
+            if (ctx == JSContext.Null)
             {
                 return null;
             }
-            var ctx = (JSContext)_context;
+
             var count = parameters.Length;
             var args = stackalloc JSValue[count];
             for (var i = 0; i < count; i++)
             {
                 args[i] = Binding.Values.js_push_var(ctx, parameters[i]);
             }
-            var rVal = _Invoke(count, args);
+            var rVal = _Invoke(ctx, count, args);
             if (JSApi.JS_IsException(rVal))
             {
                 var ex = ctx.GetExceptionString();
-                _context.FreeValues(count, args);
+                JSApi.JS_FreeValue(ctx, count, args);
                 throw new JSException(ex);
             }
             object rObj = null;
             Binding.Values.js_get_var(ctx, rVal, resultType, out rObj);
             JSApi.JS_FreeValue(ctx, rVal);
-            _context.FreeValues(count, args);
+            JSApi.JS_FreeValue(ctx, count, args);
             return rObj;
         }
 
         // unsafe primitive call, will not change ref count of jsvalue in argv
-        public unsafe JSValue _Invoke(int argc, JSValue* argv)
+        public unsafe JSValue _Invoke(JSContext ctx, int argc, JSValue* argv)
         {
-            if (_context == null)
-            {
-                return JSApi.JS_UNDEFINED;
-            }
-            JSContext ctx = _context;
-            var rVal = JSApi.JS_Call(ctx, _jsValue, _thisValue, argc, argv);
+            var rVal = JSApi.JS_Call(ctx, _fnValue, _thisValue, argc, argv);
             return rVal;
         }
     }

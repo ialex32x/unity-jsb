@@ -1116,21 +1116,19 @@ namespace QuickJS.Binding
             return false;
         }
 
+        /// <summary>
+        /// It's not allowed to dereference a JSValue back into ScriptPromise.
+        /// </summary>
         public static bool js_get_classvalue(JSContext ctx, JSValue val, out ScriptPromise o)
         {
-            var context = ScriptEngine.GetContext(ctx);
-            var cache = context.GetObjectCache();
-
-            if (cache.TryGetScriptPromise(val, out o))
-            {
-                return true;
-            }
-
-            // 不能构造一个 JS Promise
             o = null;
             return false;
         }
 
+        /// <summary>
+        /// Gets a value wrapper instance for the given JSValue.
+        /// NOTE: It'll return an existing instance if it's in the map of ScriptValue's cache.
+        /// </summary>
         public static bool js_get_classvalue(JSContext ctx, JSValue val, out ScriptValue o)
         {
             var context = ScriptEngine.GetContext(ctx);
@@ -1145,19 +1143,20 @@ namespace QuickJS.Binding
             return true;
         }
 
+        /// <summary>
+        /// Gets a function wrapper instance for the given JSValue.
+        /// NOTE: It'll always return a new instance.
+        /// </summary>
         public static bool js_get_classvalue(JSContext ctx, JSValue val, out ScriptFunction o)
         {
             if (JSApi.JS_IsFunction(ctx, val) != 0)
             {
                 var context = ScriptEngine.GetContext(ctx);
-                var cache = context.GetObjectCache();
-                if (cache.TryGetScriptValue(val, out o))
+                if (context != null)
                 {
+                    o = new ScriptFunction(context, val);
                     return true;
                 }
-
-                o = new ScriptFunction(ScriptEngine.GetContext(ctx), val);
-                return true;
             }
 
             o = null;

@@ -18,16 +18,20 @@ namespace QuickJS.Utils
 
         private int _freeIndex = -1;
         private int _activeMapSlotCount = 0;
+
+        // it holds any two way binding object (with JS finalizer calling)
         // id => host object
         private List<ObjectRef> _map = new List<ObjectRef>();
 
         // host object => jsvalue heapptr (dangerous, no ref count)
         private Dictionary<object, JSValue> _rmap = new Dictionary<object, JSValue>(EqualityComparer.Default);
 
+        private JSWeakMap<ScriptValue> _scriptValueMap = new JSWeakMap<ScriptValue>();
+
         // 刻意与 ScriptValue 隔离
         private JSWeakMap<ScriptDelegate> _delegateMap = new JSWeakMap<ScriptDelegate>();
-        private JSWeakMap<ScriptValue> _scriptValueMap = new JSWeakMap<ScriptValue>();
-        private JSWeakMap<ScriptPromise> _scriptPromiseMap = new JSWeakMap<ScriptPromise>();
+
+        // private JSWeakMap<ScriptPromise> _promiseMap = new JSWeakMap<ScriptPromise>();
 
         private IScriptLogger _logger;
 
@@ -73,10 +77,10 @@ namespace QuickJS.Utils
             return _scriptValueMap.Count;
         }
 
-        public int GetScriptPromiseCount()
-        {
-            return _scriptPromiseMap.Count;
-        }
+        // public int GetScriptPromiseCount()
+        // {
+        //     return _promiseMap.Count;
+        // }
 
         public void Destroy()
         {
@@ -108,7 +112,7 @@ namespace QuickJS.Utils
             _rmap.Clear();
             _delegateMap.Clear();
             _scriptValueMap.Clear();
-            _scriptPromiseMap.Clear();
+            // _promiseMap.Clear();
         }
 
         /// <summary>
@@ -382,13 +386,12 @@ namespace QuickJS.Utils
             _scriptValueMap.Add(jso, o);
         }
 
-        public bool TryGetScriptValue<T>(JSValue jso, out T o)
-        where T : ScriptValue
+        public bool TryGetScriptValue(JSValue jso, out ScriptValue o)
         {
             ScriptValue value;
             if (_scriptValueMap.TryGetValue(jso, out value))
             {
-                o = value as T;
+                o = value;
                 return true;
             }
             o = null;
@@ -406,42 +409,42 @@ namespace QuickJS.Utils
 
         #endregion 
 
-        #region script promise mapping 
+        // #region script promise mapping 
 
-        /// <summary>
-        /// register a weak reference of ScriptPromise in ObjectCache
-        /// </summary>
-        public void AddScriptPromise(JSValue jso, ScriptPromise o)
-        {
-            if (_disposed)
-            {
-                return;
-            }
-            _scriptPromiseMap.Add(jso, o);
-        }
+        // /// <summary>
+        // /// register a weak reference of ScriptPromise in ObjectCache
+        // /// </summary>
+        // public void AddScriptPromise(JSValue jso, ScriptPromise o)
+        // {
+        //     if (_disposed)
+        //     {
+        //         return;
+        //     }
+        //     _promiseMap.Add(jso, o);
+        // }
 
-        public bool TryGetScriptPromise<T>(JSValue jso, out T o)
-        where T : ScriptPromise
-        {
-            ScriptPromise value;
-            if (_scriptPromiseMap.TryGetValue(jso, out value))
-            {
-                o = value as T;
-                return true;
-            }
-            o = null;
-            return false;
-        }
+        // public bool TryGetScriptPromise<T>(JSValue jso, out T o)
+        // where T : ScriptPromise
+        // {
+        //     ScriptPromise value;
+        //     if (_promiseMap.TryGetValue(jso, out value))
+        //     {
+        //         o = value as T;
+        //         return true;
+        //     }
+        //     o = null;
+        //     return false;
+        // }
 
-        public bool RemoveScriptPromise(JSValue jso)
-        {
-            if (_disposed)
-            {
-                return false;
-            }
-            return _scriptPromiseMap.Remove(jso);
-        }
+        // public bool RemoveScriptPromise(JSValue jso)
+        // {
+        //     if (_disposed)
+        //     {
+        //         return false;
+        //     }
+        //     return _promiseMap.Remove(jso);
+        // }
 
-        #endregion 
+        // #endregion 
     }
 }

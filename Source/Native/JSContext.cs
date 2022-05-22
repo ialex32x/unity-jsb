@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Runtime.InteropServices;
-using System.Text;
 
 namespace QuickJS.Native
 {
@@ -39,7 +38,7 @@ namespace QuickJS.Native
                 var message = JSApi.GetString(this, err_message);
                 var stack = JSApi.GetString(this, err_stack);
                 var exceptionString = string.Format("[JS] {0}:{1} {2}\n{3}", fileName, lineNumber, message, stack);
-                
+
                 return exceptionString;
             }
             finally

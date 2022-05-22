@@ -265,7 +265,7 @@ namespace QuickJS.Unity
                     if (safeRelease[0].IsObject())
                     {
                         var args = stackalloc JSValue[] { safeRelease[0] };
-                        editorClass = scriptFunc._Invoke(1, args);
+                        editorClass = scriptFunc._Invoke(context, 1, args);
                     }
                     safeRelease.Release();
                 }

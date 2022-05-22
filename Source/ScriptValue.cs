@@ -1,26 +1,21 @@
-using System;
-using System.Threading;
 using QuickJS.Native;
 
 namespace QuickJS
 {
-    //TODO unity-jsb: make all WeakMapEntry types managed with a universal WeakMap instead of being separated
     /// <summary>
     /// ScriptValue holds a strong reference of js value, so it relies on C# object finalizer (or the runtime managed object cache) to release.
+    /// Directly creating a ScriptValue instance outside is not allowed, use js_get_classvalue(ctx, val, out scriptValue) if you want to get a ScriptValue instance from a JSValue.
     /// </summary>
-    public class ScriptValue : Utils.IWeakMapEntry
+    public sealed class ScriptValue : GCObject, Utils.IWeakMapEntry
     {
-        protected ScriptContext _context;
-        protected /*readonly*/ JSValue _jsValue;
+        private /*readonly*/ JSValue _jsValue;
 
-        public JSContext ctx => _context;
-
-        public ScriptValue(ScriptContext context, JSValue jsValue)
+        internal ScriptValue(ScriptContext context, JSValue jsValue)
+        : base(context)
         {
-            _context = context;
             _jsValue = jsValue;
             JSApi.JS_DupValue(context, jsValue);
-            _context.GetObjectCache().AddScriptValue(_jsValue, this);
+            context.GetObjectCache().AddScriptValue(_jsValue, this);
         }
 
         public static implicit operator JSValue(ScriptValue value)
@@ -28,32 +23,11 @@ namespace QuickJS
             return value._jsValue;
         }
 
-        ~ScriptValue()
+        protected override void OnDisposing(ScriptContext context)
         {
-            Dispose(false);
-        }
-
-        public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-
-        protected virtual void OnDispose(ScriptContext context)
-        {
-        }
-
-        protected virtual void Dispose(bool bManaged)
-        {
-            var context = _context;
             var jsValue = _jsValue;
-            if (context != null)
-            {
-                _context = null;
-                _jsValue = JSApi.JS_UNDEFINED;
-                context.GetRuntime().FreeScriptValue(jsValue);
-                OnDispose(context);
-            }
+            _jsValue = JSApi.JS_UNDEFINED;
+            context.GetRuntime().FreeScriptValue(jsValue);
         }
 
         public override int GetHashCode()
@@ -80,7 +54,7 @@ namespace QuickJS
 
         public T GetProperty<T>(string key)
         {
-            var ctx = (JSContext)_context;
+            var ctx = (JSContext)this;
             var propVal = JSApi.JS_GetPropertyStr(ctx, _jsValue, key);
             if (propVal.IsException())
             {
@@ -100,28 +74,30 @@ namespace QuickJS
 
         public void SetProperty(string key, object value)
         {
-            var ctx = (JSContext)_context;
-            var key_atom = _context.GetAtom(key);
+            var context = GetContext();
+            var key_atom = context.GetAtom(key);
+            var ctx = (JSContext)context;
             var jsValue = Binding.Values.js_push_var(ctx, value);
             JSApi.JS_SetProperty(ctx, _jsValue, key_atom, jsValue);
         }
 
         public override string ToString()
         {
-            if (_context == null)
+            var context = GetContext();
+            if (context == null)
             {
                 return null;
             }
-            return JSApi.GetString(_context, _jsValue);
+            return JSApi.GetString(context, _jsValue);
         }
 
         public string JSONStringify()
         {
-            if (_context == null)
+            var ctx = (JSContext)this;
+            if (ctx == JSContext.Null)
             {
                 return null;
             }
-            var ctx = (JSContext)_context;
             var rval = JSApi.JS_JSONStringify(ctx, _jsValue, JSApi.JS_UNDEFINED, JSApi.JS_UNDEFINED);
             var str = JSApi.GetString(ctx, rval);
             JSApi.JS_FreeValue(ctx, rval);

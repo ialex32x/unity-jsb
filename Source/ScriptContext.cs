@@ -937,7 +937,7 @@ namespace QuickJS
 
         public static implicit operator JSContext(ScriptContext sc)
         {
-            return sc._ctx;
+            return sc != null ? sc._ctx : JSContext.Null;
         }
     }
 }

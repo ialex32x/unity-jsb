@@ -39,10 +39,10 @@ namespace QuickJS.Unity
             public int selectedManagedObjectIndex;
             // public List<WeakReference<object>> managedObjectRefs = new List<WeakReference<object>>();
             public SimpleListView<WeakReference<object>> managedObjectRefs = new SimpleListView<WeakReference<object>>();
-            public int jSObjectCount;
+            public int jsObjectCount;
             public int delegateCount;
             public int scriptValueCount;
-            public int scriptPromiseCount;
+            // public int scriptPromiseCount;
             public int stringCount;
             public int timeNow;
             public List<TimerInfo> activeTimers = new List<TimerInfo>();
@@ -194,10 +194,10 @@ namespace QuickJS.Unity
                     });
                 }
                 snapshot.selectedManagedObjectIndex = Math.Min(snapshot.selectedManagedObjectIndex, snapshot.managedObjectRefs.Count - 1);
-                snapshot.jSObjectCount = objectCache.GetJSObjectCount();
+                snapshot.jsObjectCount = objectCache.GetJSObjectCount();
                 snapshot.delegateCount = objectCache.GetDelegateCount();
                 snapshot.scriptValueCount = objectCache.GetScriptValueCount();
-                snapshot.scriptPromiseCount = objectCache.GetScriptPromiseCount();
+                // snapshot.scriptPromiseCount = objectCache.GetScriptPromiseCount();
                 snapshot.stringCount = stringCache.GetStringCount();
 
                 var timeManager = runtime.GetTimerManager();
@@ -232,12 +232,12 @@ namespace QuickJS.Unity
             {
                 EditorGUILayout.Toggle("Static Bind", snapshot.isStaticBinding);
                 EditorGUILayout.IntField("Exported Types", snapshot.exportedTypes);
-                EditorGUILayout.TextField("ManagedObject Count", snapshot.managedObjectCount + "/" + snapshot.managedObjectCap);
-                EditorGUILayout.IntField("JSObject Count", snapshot.jSObjectCount);
-                EditorGUILayout.IntField("Delegate Mapping Count", snapshot.delegateCount);
-                EditorGUILayout.IntField("ScriptValue Mapping Count", snapshot.scriptValueCount);
-                EditorGUILayout.IntField("ScriptPromise Mapping Count", snapshot.scriptPromiseCount);
-                EditorGUILayout.IntField("Cached String Count", snapshot.stringCount);
+                EditorGUILayout.TextField("ManagedObject", snapshot.managedObjectCount + "/" + snapshot.managedObjectCap);
+                EditorGUILayout.IntField("JSObject", snapshot.jsObjectCount);
+                EditorGUILayout.IntField("Delegate Mapping", snapshot.delegateCount);
+                EditorGUILayout.IntField("Value Mapping", snapshot.scriptValueCount);
+                // EditorGUILayout.IntField("ScriptPromise Mapping", snapshot.scriptPromiseCount);
+                EditorGUILayout.IntField("Cached String", snapshot.stringCount);
             });
             Block("Timers", () =>
             {

@@ -84,6 +84,11 @@ namespace QuickJS
             return GetRuntime(ctx)?.GetTypeDB();
         }
 
+        public static TimerManager GetTimerManager(JSContext ctx)
+        {
+            return GetRuntime(ctx)?.GetTimerManager();
+        }
+
         // 可跨越运行时分配 (但内容非线程安全)
         public static IO.ByteBuffer AllocSharedByteBuffer(int size)
         {
