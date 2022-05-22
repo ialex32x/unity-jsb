@@ -226,77 +226,77 @@ namespace QuickJS.Binding
         {
             var val = JSApi.JS_NewBool(_context, v);
             var nameAtom = _register.GetAtom(name);
-            JSApi.JS_DefinePropertyValue(_context, _ctor, nameAtom, val);
+            JSApi.JS_DefineConstPropertyValue(_context, _ctor, nameAtom, val);
         }
 
         public void AddConstValue(string name, char v)
         {
             var val = JSApi.JS_NewInt32(_context, v);
             var nameAtom = _register.GetAtom(name);
-            JSApi.JS_DefinePropertyValue(_context, _ctor, nameAtom, val);
+            JSApi.JS_DefineConstPropertyValue(_context, _ctor, nameAtom, val);
         }
 
         public void AddConstValue(string name, byte v)
         {
             var val = JSApi.JS_NewInt32(_context, v);
             var nameAtom = _register.GetAtom(name);
-            JSApi.JS_DefinePropertyValue(_context, _ctor, nameAtom, val);
+            JSApi.JS_DefineConstPropertyValue(_context, _ctor, nameAtom, val);
         }
 
         public void AddConstValue(string name, sbyte v)
         {
             var val = JSApi.JS_NewInt32(_context, v);
             var nameAtom = _register.GetAtom(name);
-            JSApi.JS_DefinePropertyValue(_context, _ctor, nameAtom, val);
+            JSApi.JS_DefineConstPropertyValue(_context, _ctor, nameAtom, val);
         }
 
         public void AddConstValue(string name, short v)
         {
             var val = JSApi.JS_NewInt32(_context, v);
             var nameAtom = _register.GetAtom(name);
-            JSApi.JS_DefinePropertyValue(_context, _ctor, nameAtom, val);
+            JSApi.JS_DefineConstPropertyValue(_context, _ctor, nameAtom, val);
         }
 
         public void AddConstValue(string name, ushort v)
         {
             var val = JSApi.JS_NewInt32(_context, v);
             var nameAtom = _register.GetAtom(name);
-            JSApi.JS_DefinePropertyValue(_context, _ctor, nameAtom, val);
+            JSApi.JS_DefineConstPropertyValue(_context, _ctor, nameAtom, val);
         }
 
         public void AddConstValue(string name, int v)
         {
             var val = JSApi.JS_NewInt32(_context, v);
             var nameAtom = _register.GetAtom(name);
-            JSApi.JS_DefinePropertyValue(_context, _ctor, nameAtom, val);
+            JSApi.JS_DefineConstPropertyValue(_context, _ctor, nameAtom, val);
         }
 
         public void AddConstValue(string name, uint v)
         {
             var val = JSApi.JS_NewUint32(_context, v);
             var nameAtom = _register.GetAtom(name);
-            JSApi.JS_DefinePropertyValue(_context, _ctor, nameAtom, val);
+            JSApi.JS_DefineConstPropertyValue(_context, _ctor, nameAtom, val);
         }
 
         public void AddConstValue(string name, double v)
         {
             var val = JSApi.JS_NewFloat64(_context, v);
             var nameAtom = _register.GetAtom(name);
-            JSApi.JS_DefinePropertyValue(_context, _ctor, nameAtom, val);
+            JSApi.JS_DefineConstPropertyValue(_context, _ctor, nameAtom, val);
         }
 
         public void AddConstValue(string name, float v)
         {
             var val = JSApi.JS_NewFloat64(_context, v);
             var nameAtom = _register.GetAtom(name);
-            JSApi.JS_DefinePropertyValue(_context, _ctor, nameAtom, val);
+            JSApi.JS_DefineConstPropertyValue(_context, _ctor, nameAtom, val);
         }
 
         public void AddConstValue(string name, string v)
         {
             var val = JSNative.NewString(_context, v);
             var nameAtom = _register.GetAtom(name);
-            JSApi.JS_DefinePropertyValue(_context, _ctor, nameAtom, val);
+            JSApi.JS_DefineConstPropertyValue(_context, _ctor, nameAtom, val);
         }
         #endregion
     }

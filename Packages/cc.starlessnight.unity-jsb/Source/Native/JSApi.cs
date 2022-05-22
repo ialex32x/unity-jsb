@@ -276,6 +276,11 @@ namespace QuickJS.Native
 
         public static int JS_DefinePropertyValue(JSContext ctx, JSValueConst this_obj, JSAtom prop, JSValue val)
         {
+            return JS_DefinePropertyValue(ctx, this_obj, prop, val, JSPropFlags.JS_PROP_C_W_E);
+        }
+
+        public static int JS_DefineConstPropertyValue(JSContext ctx, JSValueConst this_obj, JSAtom prop, JSValue val)
+        {
             return JS_DefinePropertyValue(ctx, this_obj, prop, val, JSPropFlags.NONE);
         }
 
