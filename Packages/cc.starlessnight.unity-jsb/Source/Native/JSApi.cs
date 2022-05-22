@@ -85,6 +85,7 @@ namespace QuickJS.Native
 
     public partial class JSApi
     {
+        public const int VERSION = 0x010704;
         public const int CS_JSB_VERSION = 0xa; // expected dll version
         public static readonly int SO_JSB_VERSION; // actual dll version
 
