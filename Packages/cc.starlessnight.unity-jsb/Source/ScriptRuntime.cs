@@ -559,6 +559,12 @@ namespace QuickJS
 
         public bool RemoveManagedObject(ObjectCollection.Handle handle)
         {
+#if JSB_DEBUG
+            if (!IsMainThread())
+            {
+                _logger?.Write(LogLevel.Error, "RemoveManagedObject is only allowed to be invoked in script runtime thread");
+            }
+#endif
             return _objectCollection.RemoveObject(handle);
         }
 
@@ -641,6 +647,12 @@ namespace QuickJS
             JSApi.JSB_FreeValueRT(rt, cbValue);
         }
 
+        private static void _FreeManagedObjectAction(ScriptRuntime rt, object cbArgs, JSValue cbValue)
+        {
+            var handle = (ObjectCollection.Handle)cbArgs;
+            rt.RemoveManagedObject(handle);
+        }
+
         private static void _FreeValueAndScriptValueAction(ScriptRuntime rt, object cbArgs, JSValue cbValue)
         {
             var cache = rt.GetObjectCache();
@@ -648,12 +660,12 @@ namespace QuickJS
             JSApi.JSB_FreeValueRT(rt, cbValue);
         }
 
-        private static void _FreeValueAndScriptPromiseAction(ScriptRuntime rt, object cbArgs, JSValue cbValue)
-        {
-            var cache = rt.GetObjectCache();
-            cache.RemoveScriptPromise(cbValue);
-            JSApi.JSB_FreeValueRT(rt, cbValue);
-        }
+        // private static void _FreeValueAndScriptPromiseAction(ScriptRuntime rt, object cbArgs, JSValue cbValue)
+        // {
+        //     var cache = rt.GetObjectCache();
+        //     cache.RemoveScriptPromise(cbValue);
+        //     JSApi.JSB_FreeValueRT(rt, cbValue);
+        // }
 
         // 可在 GC 线程直接调用此方法
         public bool FreeDelegationValue(JSValue value)
@@ -671,30 +683,35 @@ namespace QuickJS
             EnqueuePendingAction(new JSAction { value = value, callback = _FreeValueAndScriptValueAction });
         }
 
-        // 可在 GC 线程直接调用此方法
-        public unsafe void FreeScriptPromise(JSValue promise, JSValue onResolve, JSValue onReject)
+        public void FreeManagedObject(ObjectCollection.Handle handle)
         {
-            if (_runtimeId < 0)
-            {
-                _logger?.Write(LogLevel.Error, "fatal error: enqueue pending action after the runtime shutdown");
-                return;
-            }
-
-            if (IsMainThread())
-            {
-                _FreeValueAndScriptPromiseAction(this, null, promise);
-                _FreeValueAction(this, null, onResolve);
-                _FreeValueAction(this, null, onReject);
-                return;
-            }
-
-            lock (_pendingActions)
-            {
-                _pendingActions.Enqueue(new JSAction { value = promise, callback = _FreeValueAndScriptPromiseAction });
-                _pendingActions.Enqueue(new JSAction { value = onResolve, callback = _FreeValueAction });
-                _pendingActions.Enqueue(new JSAction { value = onReject, callback = _FreeValueAction });
-            }
+            EnqueuePendingAction(new JSAction { args = handle, callback = _FreeManagedObjectAction });
         }
+
+        // // 可在 GC 线程直接调用此方法
+        // public unsafe void FreeScriptPromise(JSValue promise, JSValue onResolve, JSValue onReject)
+        // {
+        //     if (_runtimeId < 0)
+        //     {
+        //         _logger?.Write(LogLevel.Error, "fatal error: enqueue pending action after the runtime shutdown");
+        //         return;
+        //     }
+
+        //     if (IsMainThread())
+        //     {
+        //         _FreeValueAndScriptPromiseAction(this, null, promise);
+        //         _FreeValueAction(this, null, onResolve);
+        //         _FreeValueAction(this, null, onReject);
+        //         return;
+        //     }
+
+        //     lock (_pendingActions)
+        //     {
+        //         _pendingActions.Enqueue(new JSAction { value = promise, callback = _FreeValueAndScriptPromiseAction });
+        //         _pendingActions.Enqueue(new JSAction { value = onResolve, callback = _FreeValueAction });
+        //         _pendingActions.Enqueue(new JSAction { value = onReject, callback = _FreeValueAction });
+        //     }
+        // }
 
         // 可在 GC 线程直接调用此方法
         public void FreeValues(JSValue[] values)

@@ -54,37 +54,36 @@ namespace QuickJS.Utils
                 uint pres;
                 if (JSApi.JSB_ToUint32(ctx, out pres, argv[0]) >= 0)
                 {
-                    var rt = ScriptEngine.GetRuntime(ctx);
-                    var tm = rt.GetTimerManager();
-                    tm.ClearTimer(pres);
+                    var tm = ScriptEngine.GetTimerManager(ctx);
+                    if (tm != null)
+                    {
+                        tm.ClearTimer(pres);
+                    }
                 }
             }
             return JSApi.JS_UNDEFINED;
         }
 
         [MonoPInvokeCallback(typeof(JSCFunction))]
-        public static JSValue js_set_immediate(JSContext ctx, JSValue this_obj, int argc, JSValue[] argv)
+        public static unsafe JSValue js_set_immediate(JSContext ctx, JSValue this_obj, int argc, JSValue[] argv)
         {
             if (argc >= 1)
             {
-                var fnValue = argv[0];
-                var fnArgs = JSApi.EmptyValues;
-                if (JSApi.JS_IsFunction(ctx, fnValue) == 0)
+                var timerManager = ScriptEngine.GetTimerManager(ctx);
+                if (timerManager == null)
                 {
-                    return ctx.ThrowTypeError(nameof(js_set_interval) + ": func");
-                }
-                if (argc >= 2)
-                {
-                    fnArgs = new JSValue[argc - 1];
-                    for (var i = 1; i < argc; i++)
-                    {
-                        fnArgs[i - 1] = argv[i];
-                    }
+                    return ctx.ThrowTypeError("no bound TimerManager");
                 }
 
-                var context = ScriptEngine.GetContext(ctx);
-                var func = new ScriptFunction(context, fnValue, this_obj, fnArgs);
-                var timer = context.GetTimerManager().CreateTimer(func, 0, false);
+                ScriptFunction func;
+                if (!Values.js_get_classvalue(ctx, argv[0], out func) || func == null)
+                {
+                    return ctx.ThrowTypeError("the first arg is not a function");
+                }
+
+                func.SetBound(this_obj);
+                func.SetArguments(1, argc - 1, argv);
+                var timer = timerManager.CreateTimer(func, 0, false);
                 return JSApi.JS_NewUint32(ctx, timer);
             }
             return JSApi.JS_UNDEFINED;
@@ -95,33 +94,30 @@ namespace QuickJS.Utils
         {
             if (argc >= 1)
             {
-                var fnValue = argv[0];
-                var fnArgs = JSApi.EmptyValues;
-                if (JSApi.JS_IsFunction(ctx, fnValue) == 0)
-                {
-                    return ctx.ThrowTypeError(nameof(js_set_interval) + ": func");
-                }
                 int pres = 0;
                 if (argc >= 2)
                 {
                     if (JSApi.JS_ToInt32(ctx, out pres, argv[1]) < 0)
                     {
-                        return ctx.ThrowTypeError(nameof(js_set_interval) + ": millisecs");
-                    }
-
-                    if (argc >= 3)
-                    {
-                        fnArgs = new JSValue[argc - 2];
-                        for (var i = 2; i < argc; i++)
-                        {
-                            fnArgs[i - 2] = argv[i];
-                        }
+                        return ctx.ThrowTypeError("the given interval is not a number");
                     }
                 }
 
-                var context = ScriptEngine.GetContext(ctx);
-                var func = new ScriptFunction(context, fnValue, this_obj, fnArgs);
-                var timer = context.GetTimerManager().CreateTimer(func, pres, false);
+                var timerManager = ScriptEngine.GetTimerManager(ctx);
+                if (timerManager == null)
+                {
+                    return ctx.ThrowTypeError("no bound TimerManager");
+                }
+
+                ScriptFunction func;
+                if (!Values.js_get_classvalue(ctx, argv[0], out func) || func == null)
+                {
+                    return ctx.ThrowTypeError("the first arg is not a function");
+                }
+
+                func.SetBound(this_obj);
+                func.SetArguments(2, argc - 2, argv);
+                var timer = timerManager.CreateTimer(func, pres, false);
                 return JSApi.JS_NewUint32(ctx, timer);
             }
             return JSApi.JS_UNDEFINED;
@@ -132,33 +128,30 @@ namespace QuickJS.Utils
         {
             if (argc >= 1)
             {
-                var fnValue = argv[0];
-                var fnArgs = JSApi.EmptyValues;
-                if (JSApi.JS_IsFunction(ctx, fnValue) == 0)
-                {
-                    return ctx.ThrowTypeError(nameof(js_set_timeout) + ": func");
-                }
                 int pres = 0;
                 if (argc >= 2)
                 {
                     if (JSApi.JS_ToInt32(ctx, out pres, argv[1]) < 0)
                     {
-                        return ctx.ThrowTypeError(nameof(js_set_timeout) + ": millisecs");
-                    }
-
-                    if (argc >= 3)
-                    {
-                        fnArgs = new JSValue[argc - 2];
-                        for (var i = 2; i < argc; i++)
-                        {
-                            fnArgs[i - 2] = argv[i];
-                        }
+                        return ctx.ThrowTypeError("the given interval is not a number");
                     }
                 }
 
-                var context = ScriptEngine.GetContext(ctx);
-                var func = new ScriptFunction(context, fnValue, this_obj, fnArgs);
-                var timer = context.GetTimerManager().CreateTimer(func, pres, true);
+                var timerManager = ScriptEngine.GetTimerManager(ctx);
+                if (timerManager == null)
+                {
+                    return ctx.ThrowTypeError("no bound TimerManager");
+                }
+
+                ScriptFunction func;
+                if (!Values.js_get_classvalue(ctx, argv[0], out func) || func == null)
+                {
+                    return ctx.ThrowTypeError("the first arg is not a function");
+                }
+
+                func.SetBound(this_obj);
+                func.SetArguments(2, argc - 2, argv);
+                var timer = timerManager.CreateTimer(func, pres, true);
                 return JSApi.JS_NewUint32(ctx, timer);
             }
             return JSApi.JS_UNDEFINED;
@@ -167,7 +160,7 @@ namespace QuickJS.Utils
         public static void Bind(TypeRegister register)
         {
             var context = register.GetContext();
-            
+
             context.AddFunction("setImmediate", js_set_immediate, 2);
             context.AddFunction("setInterval", js_set_interval, 3);
             context.AddFunction("setTimeout", js_set_timeout, 3);

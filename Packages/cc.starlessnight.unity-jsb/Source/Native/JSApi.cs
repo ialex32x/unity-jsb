@@ -76,12 +76,12 @@ namespace QuickJS.Native
 #if UNITY_EDITOR_WIN || UNITY_STANDALONE_WIN || JSB_UNITYLESS || (UNITY_WSA && !UNITY_EDITOR)
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
 #endif
-        public delegate void JSLogCFunction(int level, [MarshalAs(UnmanagedType.LPStr)] string line);
+    public delegate void JSLogCFunction(int level, [MarshalAs(UnmanagedType.LPStr)] string line);
 
 #if UNITY_EDITOR_WIN || UNITY_STANDALONE_WIN || JSB_UNITYLESS || (UNITY_WSA && !UNITY_EDITOR)
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
 #endif
-        public delegate void JSWaitingForDebuggerCFunction(JSContext ctx);
+    public delegate void JSWaitingForDebuggerCFunction(JSContext ctx);
 
     public partial class JSApi
     {
@@ -223,7 +223,7 @@ namespace QuickJS.Native
 
         public static unsafe JSValue JS_NewPromiseCapability(JSContext ctx, out JSValue on_resolve, out JSValue on_reject)
         {
-            var resolving_funcs = stackalloc[]{ JS_UNDEFINED, JS_UNDEFINED };
+            var resolving_funcs = stackalloc[] { JS_UNDEFINED, JS_UNDEFINED };
             var promise = JS_NewPromiseCapability(ctx, resolving_funcs);
             on_resolve = resolving_funcs[0];
             on_reject = resolving_funcs[1];
@@ -696,14 +696,31 @@ namespace QuickJS.Native
         [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl, EntryPoint = "JSB_DupValue")]
         public static extern JSValue JS_DupValue(JSContext ctx, JSValueConst v);
 
+        /// <summary>
+        /// dereference a JSValue (must be called in the script thread only)
+        /// </summary>
         [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl, EntryPoint = "JSB_FreeValue")]
         public static extern void JS_FreeValue(JSContext ctx, JSValue v);
 
+        /// <summary>
+        /// dereference the JSValues (must be called in the script thread only)
+        /// </summary>
         public static void JS_FreeValue(JSContext ctx, JSValue[] v)
         {
             for (int i = 0, len = v.Length; i < len; i++)
             {
                 JS_FreeValue(ctx, v[i]);
+            }
+        }
+
+        /// <summary>
+        /// dereference the JSValues (must be called in the script thread only)
+        /// </summary>
+        public static unsafe void JS_FreeValue(JSContext ctx, int count, JSValue* vs)
+        {
+            for (int i = 0, len = count; i < len; i++)
+            {
+                JS_FreeValue(ctx, vs[i]);
             }
         }
 
