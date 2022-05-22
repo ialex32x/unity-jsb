@@ -7,15 +7,15 @@
         "GUID:ac4126d60783f3d4a98aee6be9a997aa",
         "GUID:595d45be140461240b6b4358dc45f2c0"
     ],
-    "includePlatforms": [
-        "Editor"
-    ],
+    "includePlatforms": [],
     "excludePlatforms": [],
     "allowUnsafeCode": true,
     "overrideReferences": false,
     "precompiledReferences": [],
     "autoReferenced": true,
-    "defineConstraints": [],
+    "defineConstraints": [
+        "UNITY_EDITOR || JSB_RUNTIME_REFLECT_BINDING"
+    ],
     "versionDefines": [],
     "noEngineReferences": false
 }
