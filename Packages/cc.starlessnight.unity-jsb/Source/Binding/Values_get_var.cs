@@ -250,7 +250,7 @@ namespace QuickJS.Binding
 
             var lookupType = type;
             MethodInfo cast;
-            do
+            while (lookupType != null && lookupType != typeof(object))
             {
                 if (_JSCastMap.TryGetValue(lookupType, out cast))
                 {
@@ -260,7 +260,7 @@ namespace QuickJS.Binding
                     return rval;
                 }
                 lookupType = lookupType.BaseType;
-            } while (lookupType != null);
+            }
 
             if (type.IsArray)
             {
@@ -350,10 +350,12 @@ namespace QuickJS.Binding
 
             if (type == typeof(object))
             {
-                if (js_get_classvalue(ctx, val, out ScriptValue fallbackValue))
+                if (_JSCastMap.TryGetValue(typeof(object), out cast))
                 {
-                    o = fallbackValue;
-                    return true;
+                    var parameters = new object[3] { ctx, val, null };
+                    var rval = (bool)cast.Invoke(null, parameters);
+                    o = parameters[2];
+                    return rval;
                 }
             }
 
