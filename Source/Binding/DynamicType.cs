@@ -21,6 +21,7 @@ namespace QuickJS.Binding
         public string name => _type.Name;
 
         public Type type => _type; 
+
         // public DynamicType _parentType { get; }
 
         public bool privateAccess
