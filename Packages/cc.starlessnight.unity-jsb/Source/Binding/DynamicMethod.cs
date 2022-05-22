@@ -402,35 +402,52 @@ namespace QuickJS.Binding
 
     public class DynamicDelegateMethod : IDynamicMethod
     {
-        private Delegate _delegate;
+        public const string UnboundDelegateError = "the bound delegate has already been disposed";
+
+#if JSB_DEBUG
+        private string _debugName;
+#endif
+        private WeakReference<Delegate> _delegateWeakRef;
 
         public DynamicDelegateMethod(Delegate d)
         {
-            _delegate = d;
+#if JSB_DEBUG
+            _debugName = d.Method.Name;
+#endif
+            _delegateWeakRef = new WeakReference<Delegate>(d);
         }
 
         public JSValue Invoke(JSContext ctx, JSValue this_obj, int argc, JSValue[] argv)
         {
-            var self = _delegate.Target;
-            var methodInfo = _delegate.Method;
-            var parameters = methodInfo.GetParameters();
-            var nArgs = Math.Min(argc, parameters.Length);
-            var args = new object[nArgs];
-            for (var i = 0; i < nArgs; i++)
+            Delegate theDelegate;
+            if (_delegateWeakRef.TryGetTarget(out theDelegate))
             {
-                if (!Values.js_get_var(ctx, argv[i], parameters[i].ParameterType, out args[i]))
+                var self = theDelegate.Target;
+                var methodInfo = theDelegate.Method;
+                var parameters = methodInfo.GetParameters();
+                var nArgs = Math.Min(argc, parameters.Length);
+                var args = new object[nArgs];
+                for (var i = 0; i < nArgs; i++)
                 {
-                    return ctx.ThrowInternalError("failed to cast val");
+                    if (!Values.js_get_var(ctx, argv[i], parameters[i].ParameterType, out args[i]))
+                    {
+                        return ctx.ThrowInternalError("failed to cast val");
+                    }
                 }
-            }
-            var ret = methodInfo.Invoke(self, args);
+                var ret = methodInfo.Invoke(self, args);
 
-            if (methodInfo.ReturnType != typeof(void))
-            {
-                return Values.js_push_var(ctx, ret);
+                if (methodInfo.ReturnType != typeof(void))
+                {
+                    return Values.js_push_var(ctx, ret);
+                }
+                return JSApi.JS_UNDEFINED;
             }
 
-            return JSApi.JS_UNDEFINED;
+#if JSB_DEBUG
+            return ctx.ThrowInternalError($"{UnboundDelegateError}: {_debugName}");
+#else
+            return ctx.ThrowInternalError(UnboundDelegateError);
+#endif
         }
     }
 

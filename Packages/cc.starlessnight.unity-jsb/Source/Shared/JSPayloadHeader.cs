@@ -1,11 +1,9 @@
 ﻿using System;
-using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 namespace QuickJS
 {
     using int32_t = Int32;
-    using uint32_t = UInt32;
 
     public enum BridgeObjectType : int32_t
     {
