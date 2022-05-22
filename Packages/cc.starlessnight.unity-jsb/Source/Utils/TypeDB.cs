@@ -73,8 +73,8 @@ namespace QuickJS.Utils
 
             var register = _context.CreateTypeRegister();
 
-            // var parentType = type.BaseType != null ? GetDynamicType(type.BaseType, false) : null;
-            dynamicType = new DynamicType(type, privateAccess/*, parentType*/);
+            var parentType = type.BaseType != null ? GetDynamicType(type.BaseType, false) : null;
+            dynamicType = new DynamicType(type, privateAccess, parentType);
             dynamicType.Bind(register);
             _dynamicTypes[type] = dynamicType;
 
@@ -93,8 +93,8 @@ namespace QuickJS.Utils
                 return dynamicType;
             }
 
-            // var parentType = type.BaseType != null ? GetDynamicType(type.BaseType, false) : null;
-            dynamicType = new DynamicType(type, false/*, parentType*/);
+            var parentType = type.BaseType != null ? GetDynamicType(type.BaseType, false) : null;
+            dynamicType = new DynamicType(type, false, parentType);
             _dynamicTypes[type] = dynamicType;
             return dynamicType;
         }
