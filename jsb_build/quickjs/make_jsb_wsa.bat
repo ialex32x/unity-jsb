@@ -1,7 +1,8 @@
 @echo off
 
 @REM set VS_VERSION="Visual Studio 15 2017"
-set VS_VERSION="Visual Studio 16 2019"
+@REM set VS_VERSION="Visual Studio 16 2019"
+set VS_VERSION="Visual Studio 17 2022"
 
 set BASE_PATH=%~dp0
 set BUILD_PATH=%~dp0..\out\quickjs
