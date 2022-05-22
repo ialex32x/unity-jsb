@@ -151,6 +151,9 @@ namespace QuickJS.Utils
         {
             if (_disposed)
             {
+#if JSB_DEBUG
+                _logger?.Write(LogLevel.Error, "calling RemoveJSValue after being disposed: {0}", o);
+#endif
                 return false;
             }
             return o != null && _rmap.Remove(o);
@@ -161,7 +164,15 @@ namespace QuickJS.Utils
         /// </summary>
         public int AddObject(object o, bool disposable)
         {
-            if (!_disposed && o != null)
+            if (_disposed)
+            {
+#if JSB_DEBUG
+                _logger?.Write(LogLevel.Error, "calling AddObject after being disposed: {0}", o);
+#endif
+                return -1;
+            }
+
+            if (o != null)
             {
                 if (_freeIndex < 0)
                 {
@@ -252,6 +263,14 @@ namespace QuickJS.Utils
         // 覆盖已有记录, 无记录返回 false
         public bool ReplaceObject(int id, object o)
         {
+            if (_disposed)
+            {
+#if JSB_DEBUG
+                _logger?.Write(LogLevel.Error, "calling ReplaceObject after being disposed: {0}", o);
+#endif
+                return false;
+            }
+
             object oldValue;
             if (TryGetObject(id, out oldValue))
             {
@@ -315,13 +334,18 @@ namespace QuickJS.Utils
         /// <summary>
         /// register a weak reference of ScriptDelegate in ObjectCache
         /// </summary>
-        public void AddDelegate(JSValue jso, ScriptDelegate o)
+        public bool AddDelegate(JSValue jso, ScriptDelegate o)
         {
             if (_disposed)
             {
-                return;
+#if JSB_DEBUG
+                _logger?.Write(LogLevel.Error, "calling AddDelegate after being disposed: {0}", o);
+#endif
+                return false;
             }
+            
             _delegateMap.Add(jso, o);
+            return true;
         }
 
         public bool TryGetDelegate(JSValue jso, out ScriptDelegate o)
@@ -333,8 +357,12 @@ namespace QuickJS.Utils
         {
             if (_disposed)
             {
+#if JSB_DEBUG
+                _logger?.Write(LogLevel.Info, "calling RemoveDelegate after being disposed: {0}", jso);
+#endif
                 return false;
             }
+            
             return _delegateMap.Remove(jso);
         }
 

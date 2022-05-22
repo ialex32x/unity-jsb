@@ -100,6 +100,7 @@ namespace QuickJS.Unity
             JSScriptFinder.GetInstance().ModuleSourceChanged -= OnModuleSourceChanged;
             EditorApplication.delayCall -= OnEditorInit;
             EditorApplication.update -= OnEditorUpdate;
+            AssemblyReloadEvents.beforeAssemblyReload -= OnBeforeAssemblyReload;
             EditorApplication.quitting -= OnEditorQuitting;
             runtime.Shutdown();
         }
@@ -126,6 +127,7 @@ namespace QuickJS.Unity
             if (_runtime == null)
             {
                 EditorApplication.update += OnEditorUpdate;
+                AssemblyReloadEvents.beforeAssemblyReload += OnBeforeAssemblyReload;
                 EditorApplication.quitting += OnEditorQuitting;
 
                 var logger = new DefaultScriptLogger();
@@ -249,6 +251,11 @@ namespace QuickJS.Unity
                 case PlayModeStateChange.ExitingEditMode: OnEditorQuitting(); break;
                 case PlayModeStateChange.EnteredPlayMode: _runMode = RunMode.Playing; break;
             }
+        }
+
+        private void OnBeforeAssemblyReload()
+        {
+            OnEditorQuitting();
         }
 
         private void OnEditorUpdate()

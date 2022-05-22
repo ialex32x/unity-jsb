@@ -34,21 +34,16 @@ namespace QuickJS
             }
         }
 
-        protected override void Dispose(bool bManaged)
+        protected override void OnDispose(ScriptContext context)
         {
-            if (_context != null)
-            {
-                var context = _context;
+            var thisValue = _thisValue;
+            var args = _args;
+            _thisValue = JSApi.JS_UNDEFINED;
+            _args = null;
 
-                base.Dispose(bManaged);
-                context.FreeValue(_thisValue);
-                _thisValue = JSApi.JS_UNDEFINED;
-                if (_args != null)
-                {
-                    context.FreeValues(_args);
-                    _args = null;
-                }
-            }
+            base.OnDispose(context);
+            context.FreeValue(thisValue);
+            context.FreeValues(args);
         }
 
         public unsafe void Invoke()

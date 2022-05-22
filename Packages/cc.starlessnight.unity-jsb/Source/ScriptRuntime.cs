@@ -35,18 +35,19 @@ namespace QuickJS
         public event Action<ScriptContext, string> OnScriptReloaded;
         public Func<JSContext, string, string, int, string> OnSourceMap;
 
-        // private Mutext _lock;
         private JSRuntime _rt;
         private int _runtimeId;
         private bool _withStacktrace;
         private IScriptLogger _logger;
         private int _freeContextSlot = -1;
-        // private ReaderWriterLockSlim _rwlock;
+
+        // reserved feature, there is only one context for a script runtime so far.
         private List<ScriptContextRef> _contextRefs = new List<ScriptContextRef>();
         private ScriptContext _mainContext;
 
         private Queue<JSAction> _pendingActions = new Queue<JSAction>();
         private List<JSAction> _delayedActions = new List<JSAction>();
+        private List<JSAction> _executingActions = new List<JSAction>();
 
         private int _mainThreadId;
 
@@ -365,7 +366,9 @@ namespace QuickJS
             _isRunning = true;
             _isStaticBinding = DefaultBinder.IsStaticBinding(args.binder);
             _logger = args.logger;
-            // _rwlock = new ReaderWriterLockSlim();
+#if JSB_DEBUG
+            _logger?.Write(LogLevel.Info, "initializing script runtime: {0}", _runtimeId);
+#endif
             _rt = JSApi.JSB_NewRuntime(class_finalizer);
             JSApi.JS_SetHostPromiseRejectionTracker(_rt, JSNative.PromiseRejectionTracker, IntPtr.Zero);
 #if UNITY_EDITOR
@@ -561,7 +564,6 @@ namespace QuickJS
 
         private ScriptContext CreateContext(bool withDebugServer, int debugServerPort)
         {
-            // _rwlock.EnterWriteLock();
             ScriptContextRef freeEntry;
             int slotIndex;
             if (_freeContextSlot < 0)
@@ -586,7 +588,6 @@ namespace QuickJS
             {
                 _mainContext = context;
             }
-            // _rwlock.ExitWriteLock();
 
             context.RegisterBuiltins();
             return context;
@@ -597,7 +598,6 @@ namespace QuickJS
         /// </summary>
         public void RemoveContext(ScriptContext context)
         {
-            // _rwlock.EnterWriteLock();
             var id = context.id;
             if (id > 0)
             {
@@ -607,7 +607,6 @@ namespace QuickJS
                 entry.target = null;
                 _freeContextSlot = index;
             }
-            // _rwlock.ExitWriteLock();
         }
 
         public ScriptContext GetMainContext()
@@ -617,7 +616,6 @@ namespace QuickJS
 
         public ScriptContext GetContext(JSContext ctx)
         {
-            // _rwlock.EnterReadLock();
             ScriptContext context = null;
             var id = (int)JSApi.JS_GetContextOpaque(ctx);
             if (id > 0)
@@ -628,7 +626,6 @@ namespace QuickJS
                     context = _contextRefs[index].target;
                 }
             }
-            // _rwlock.ExitReadLock();
             return context;
         }
 
@@ -894,12 +891,25 @@ namespace QuickJS
                     }
                     else
                     {
+                        _executingActions.Add(action);
+                    }
+                }
+            }
+
+            {
+                var count = _executingActions.Count;
+                if (count > 0)
+                {
+                    for (int i = 0; i < count; ++i)
+                    {
+                        var action = _executingActions[i];
                         try { action.callback(this, action.args, action.value); }
                         catch (Exception exception)
                         {
                             _logger?.WriteException(exception);
                         }
                     }
+                    _executingActions.Clear();
                 }
             }
 
@@ -925,13 +935,18 @@ namespace QuickJS
 
         ~ScriptRuntime()
         {
-            Shutdown();
+#if JSB_DEBUG
+            if (_isValid)
+            {
+                _logger?.Write(LogLevel.Assert, "should never happen, ensure the script runtime is explicitly closed always");
+            }
+#endif
+            Destroy();
         }
 
         public void Shutdown()
         {
-            //TODO: lock?
-            if (!_isWorker)
+            if (IsMainThread())
             {
                 Destroy();
             }
@@ -943,25 +958,25 @@ namespace QuickJS
 
         public void Destroy()
         {
-            lock (this)
+            if (!_isValid)
             {
-                if (!_isValid)
+                return;
+            }
+#if JSB_DEBUG
+            _logger?.Write(LogLevel.Info, "destroying script runtime: {0}", _runtimeId);
+#endif
+            _isValid = false;
+            try
+            {
+                for (int i = 0, count = _moduleResolvers.Count; i < count; i++)
                 {
-                    return;
+                    var resolver = _moduleResolvers[i];
+                    resolver.Release();
                 }
-                _isValid = false;
-                try
-                {
-                    for (int i = 0, count = _moduleResolvers.Count; i < count; i++)
-                    {
-                        var resolver = _moduleResolvers[i];
-                        resolver.Release();
-                    }
-                }
-                catch (Exception e)
-                {
-                    _logger?.WriteException(e);
-                }
+            }
+            catch (Exception e)
+            {
+                _logger?.WriteException(e);
             }
 
             _isInitialized = false;
@@ -970,19 +985,27 @@ namespace QuickJS
             _objectCollection.Clear();
             if (_objectCollection.count != 0)
             {
-                _logger?.Write(LogLevel.Error, "invalid object collection operation during the phase of destroying runtime");
+                _logger?.Write(LogLevel.Error, "invalid object collection state during the phase of destroying runtime: {0}", _objectCollection.count);
             }
 
             _timerManager.Destroy();
             _typeDB.Destroy();
-#if !JSB_WITH_V8_BACKEND
-            _objectCache.Destroy();
-#endif
+
+            // execute all pending actions (enqueued in gc thread) before ObjectCahce disposing
             GC.Collect();
             GC.WaitForPendingFinalizers();
             ExecutePendingActions(true);
 
-            // _rwlock.EnterWriteLock();
+#if !JSB_WITH_V8_BACKEND
+            //TODO unity-jsb: jsvalue's gc finalizer can't be certainly invoked when the jsvalue hasn't any reference, we just do not calling cache.Destroy normally for now.
+            _objectCache.Destroy();
+#endif
+
+            //
+            GC.Collect();
+            GC.WaitForPendingFinalizers();
+            ExecutePendingActions(true);
+
             for (int i = 0, count = _contextRefs.Count; i < count; i++)
             {
                 var contextRef = _contextRefs[i];
@@ -991,7 +1014,6 @@ namespace QuickJS
 
             _contextRefs.Clear();
             _mainContext = null;
-            // _rwlock.ExitWriteLock();
 
             if (_asyncManager != null)
             {
@@ -1016,7 +1038,11 @@ namespace QuickJS
             {
                 _logger?.Write(LogLevel.Assert, "gc object leaks");
             }
+
+#if JSB_WITH_V8_BACKEND
+            //TODO unity-jsb: jsvalue's gc finalizer can't be certainly invoked when the jsvalue hasn't any reference, we just do not calling cache.Destroy normally for now.
             _objectCache.Destroy();
+#endif
             var id = _runtimeId;
             _runtimeId = -1;
             _rt = JSRuntime.Null;

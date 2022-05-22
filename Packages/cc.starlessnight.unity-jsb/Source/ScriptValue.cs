@@ -1,8 +1,10 @@
 using System;
+using System.Threading;
 using QuickJS.Native;
 
 namespace QuickJS
 {
+    //TODO unity-jsb: make all WeakMapEntry types managed with a universal WeakMap instead of being separated
     /// <summary>
     /// ScriptValue holds a strong reference of js value, so it relies on C# object finalizer (or the runtime managed object cache) to release.
     /// </summary>
@@ -11,10 +13,7 @@ namespace QuickJS
         protected ScriptContext _context;
         protected /*readonly*/ JSValue _jsValue;
 
-        public JSContext ctx
-        {
-            get { return _context; }
-        }
+        public JSContext ctx => _context;
 
         public ScriptValue(ScriptContext context, JSValue jsValue)
         {
@@ -40,15 +39,20 @@ namespace QuickJS
             GC.SuppressFinalize(this);
         }
 
+        protected virtual void OnDispose(ScriptContext context)
+        {
+        }
+
         protected virtual void Dispose(bool bManaged)
         {
-            if (_context != null)
+            var context = _context;
+            var jsValue = _jsValue;
+            if (context != null)
             {
-                var context = _context;
-
                 _context = null;
-                context.GetRuntime().FreeScriptValue(_jsValue);
                 _jsValue = JSApi.JS_UNDEFINED;
+                context.GetRuntime().FreeScriptValue(jsValue);
+                OnDispose(context);
             }
         }
 

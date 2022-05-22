@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using QuickJS.Native;
 
 namespace QuickJS
@@ -11,7 +12,6 @@ namespace QuickJS
         protected /*readonly*/ JSValue _jsValue;
 
         // 一个 JSValue (function) 可能会被用于映射多个委托对象
-        // it's safe for cycle references between managed objects without weakreference
         private List<WeakReference<Delegate>> _matches = new List<WeakReference<Delegate>>();
 
         /// <summary>
@@ -28,9 +28,9 @@ namespace QuickJS
             JSApi.JS_DupValue(context, jsValue);
             // ScriptDelegate 拥有 js 对象的强引用, 此 js 对象无法释放 cache 中的 object, 所以这里用弱引用注册
             // 会出现的问题是, 如果 c# 没有对 ScriptDelegate 的强引用, 那么反复 get_delegate 会重复创建 ScriptDelegate
-            _context.GetObjectCache().AddDelegate(_jsValue, this);
+            context.GetObjectCache().AddDelegate(_jsValue, this);
 #if JSB_DEBUG
-            _context.GetLogger()?.Write(Utils.LogLevel.Info, "Alloc DelegateValue {0}", _jsValue);
+            context.GetLogger()?.Write(Utils.LogLevel.Info, "Alloc DelegateValue {0}", _jsValue);
 #endif
         }
 
@@ -44,24 +44,26 @@ namespace QuickJS
             Dispose(false);
         }
 
+        // should only be invoked on the script runtime thread
         public void Dispose()
         {
             Dispose(true);
             GC.SuppressFinalize(this);
         }
 
+        // should only be invoked on the script runtime thread or C# gc thread (from C# finalizer)
         protected virtual void Dispose(bool bManaged)
         {
-            if (_context != null)
+            var context = _context;
+            var jsValue = _jsValue;
+            if (context != null)
             {
-                var context = _context;
-
-#if JSB_DEBUG
-                context.GetLogger()?.Write(Utils.LogLevel.Info, "FreeDelegationValue {0}", _jsValue);
-#endif
                 _context = null;
-                context.GetRuntime().FreeDelegationValue(_jsValue);
                 _jsValue = JSApi.JS_UNDEFINED;
+#if JSB_DEBUG
+                context.GetLogger()?.Write(Utils.LogLevel.Info, "FreeDelegationValue {0}", jsValue);
+#endif
+                context.GetRuntime().FreeDelegationValue(jsValue);
             }
         }
 
