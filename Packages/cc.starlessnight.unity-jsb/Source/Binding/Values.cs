@@ -72,7 +72,7 @@ namespace QuickJS.Binding
                 for (var i = 0; i < length; i++)
                 {
                     var obj = arr.GetValue(i);
-                    var elem = Values.js_push_object(ctx, obj);
+                    var elem = Values.js_push_var(ctx, obj);
                     JSApi.JS_SetPropertyUint32(ctx, rval, (uint)i, elem);
                 }
             }
