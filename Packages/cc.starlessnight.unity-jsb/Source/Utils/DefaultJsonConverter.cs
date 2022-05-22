@@ -9,6 +9,8 @@ namespace QuickJS.Utils
 #if JSB_UNITYLESS
 #if JSB_COMPATIBLE
             throw new NotImplementedException();
+#elif JSB_NEWTONSOFT_JSON
+            return Newtonsoft.Json.JsonConvert.DeserializeObject(json, type);
 #else
             return System.Text.Json.JsonSerializer.Deserialize(json, type);
 #endif
@@ -22,6 +24,8 @@ namespace QuickJS.Utils
 #if JSB_UNITYLESS
 #if JSB_COMPATIBLE
             throw new NotImplementedException();
+#elif JSB_NEWTONSOFT_JSON
+            return Newtonsoft.Json.JsonConvert.SerializeObject(obj);
 #else
             return System.Text.Json.JsonSerializer.Serialize(obj);
 #endif

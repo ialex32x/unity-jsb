@@ -89,14 +89,14 @@ namespace QuickJS.Native
         public const int CS_JSB_VERSION = 0xa; // expected dll version
         public static readonly int SO_JSB_VERSION; // actual dll version
 
-#if JSB_NO_BIGNUM || (UNITY_WSA && !UNITY_EDITOR) || JSB_WITH_V8_BACKEND
+#if JSB_NO_BIGNUM || ((UNITY_WSA || UNITY_WEBGL) && !UNITY_EDITOR) || JSB_WITH_V8_BACKEND
         public const bool IsOperatorOverloadingSupported = false;
 #else
         public const bool IsOperatorOverloadingSupported = true;
 #endif
 
 #if (UNITY_IPHONE || UNITY_WEBGL) && !UNITY_EDITOR
-	    const string JSBDLL = "__Internal";
+	    public const string JSBDLL = "__Internal";
 #else
 #if JSB_WITH_V8_BACKEND
         public const string JSBDLL = "v8-bridge";
@@ -772,7 +772,7 @@ namespace QuickJS.Native
 
         public static readonly JSAtom JS_ATOM_Error = JSB_ATOM_Error();
 
-#if JSB_NO_BIGNUM || (UNITY_WSA && !UNITY_EDITOR)
+#if JSB_NO_BIGNUM || ((UNITY_WSA || UNITY_WEBGL) && !UNITY_EDITOR)
         public static void JS_AddIntrinsicOperators(JSContext ctx) {}
         public static readonly JSAtom JS_ATOM_Operators;
         public static readonly JSAtom JS_ATOM_Symbol_operatorSet;

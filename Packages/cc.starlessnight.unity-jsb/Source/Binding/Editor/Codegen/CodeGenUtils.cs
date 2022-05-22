@@ -31,7 +31,7 @@ namespace QuickJS.Binding
         /// </summary>
         public static Assembly Compile(string source, IEnumerable<Assembly> referencedAssemblies, string compilerOptions, IBindingLogger logger)
         {
-#if !NETCOREAPP
+#if !(NETCOREAPP || NET_STANDARD_2_0 || NET_STANDARD_2_1 || NET_STANDARD)
             using (var codeDomProvider = System.CodeDom.Compiler.CodeDomProvider.CreateProvider("cs"))
             {
                 var compilerParameters = new System.CodeDom.Compiler.CompilerParameters();
