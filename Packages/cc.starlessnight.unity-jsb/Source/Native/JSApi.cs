@@ -573,6 +573,9 @@ namespace QuickJS.Native
         public static extern int JS_ExecutePendingJob(JSRuntime rt, out JSContext pctx);
 
         [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern int JS_IsJobPending(JSRuntime rt, out JSContext pctx);
+
+        [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern int JS_ToBool(JSContext ctx, JSValueConst val);
 
         /// <summary>
