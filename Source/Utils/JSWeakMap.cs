@@ -45,16 +45,28 @@ namespace QuickJS.Utils
 
         public void Clear()
         {
-            var valueMapSize = _map.Values.Count;
+            var valueMapSize = _map.Count;
             var values = new WeakReference[valueMapSize];
             _map.Values.CopyTo(values, 0);
             _map.Clear();
+#if JSB_DEBUG && !JSB_UNITYLESS
+            UnityEngine.Debug.LogFormat("WeakMap<{0}>.Clear: {1}", typeof(T).Name, valueMapSize);
+#endif
             for (var i = 0; i < valueMapSize; i++)
             {
                 var d = values[i].Target as T;
                 if (d != null)
                 {
+#if JSB_DEBUG && !JSB_UNITYLESS
+                    UnityEngine.Debug.LogFormat("    {0}: {1}", i, d);
+#endif
                     d.Dispose();
+                }
+                else
+                {
+#if JSB_DEBUG && !JSB_UNITYLESS
+                    UnityEngine.Debug.LogFormat("    {0}: {1}", i, "null");
+#endif
                 }
             }
         }
@@ -89,7 +101,9 @@ namespace QuickJS.Utils
             {
                 r = true;
                 _map.Remove(jso);
-                // RemoveJSValue(weakRef.Target);
+#if JSB_DEBUG && !JSB_UNITYLESS
+                UnityEngine.Debug.LogFormat("WeakMap<{0}>.Remove: {1} = {2}", typeof(T).Name, jso, weakRef.Target);
+#endif
             }
             return r;
         }

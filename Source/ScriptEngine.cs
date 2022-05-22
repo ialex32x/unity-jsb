@@ -23,6 +23,10 @@ namespace QuickJS
 
         private static IO.ByteBufferThreadedPooledAllocator _sharedAllocator;
 
+        /// <summary>
+        /// a new runtime is created, this event would always be raised on the script runtime thread.
+        /// NOTE: due to it's impossible to create a worker in worker thread for now.
+        /// </summary>
         public static event Action<ScriptRuntime> RuntimeCreated;
         public static event Action<ScriptRuntime> RuntimeInitialized;
 

@@ -39,14 +39,18 @@ namespace QuickJS
 
         protected virtual void Dispose(bool bManaged)
         {
-            if (_context != null)
+            var context = _context;
+            if (context != null)
             {
-                var context = _context;
                 _context = null;
-                context.GetRuntime().FreeScriptPromise(_promise, _on_resolve, _on_reject);
+                var on_resolve = _on_resolve;
+                var on_reject = _on_reject;
+                var promise = _promise;
                 _on_resolve = JSApi.JS_UNDEFINED;
                 _on_reject = JSApi.JS_UNDEFINED;
                 _promise = JSApi.JS_UNDEFINED;
+
+                context.GetRuntime().FreeScriptPromise(promise, on_resolve, on_reject);
             }
         }
 
