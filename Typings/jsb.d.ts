@@ -188,6 +188,11 @@ declare module "jsb" {
     let version: number;
 
     /**
+     * The version of this plugin itself (in hex)
+     */
+    let pluginVersion: number;
+
+    /**
      * Calls Thread.Sleep()
      */
     function Sleep(millisecondsTimeout?: number): void
