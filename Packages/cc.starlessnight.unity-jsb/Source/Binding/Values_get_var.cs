@@ -141,12 +141,6 @@ namespace QuickJS.Binding
 
             var type = o.GetType();
 
-            //TODO EMERGENCY check type == typeof(Delegate) ??
-            if (type.BaseType == typeof(MulticastDelegate))
-            {
-                return js_push_delegate(ctx, o as Delegate);
-            }
-
             if (type.IsEnum)
             {
                 return js_push_primitive(ctx, Convert.ToInt32(o));
@@ -354,11 +348,14 @@ namespace QuickJS.Binding
                 return true;
             }
 
-            // if (type == typeof(object))
-            // {
-            //     ScriptValue fallbackValue;
-            //     return js_get_classvalue(ctx, val, out fallbackValue);
-            // }
+            if (type == typeof(object))
+            {
+                if (js_get_classvalue(ctx, val, out ScriptValue fallbackValue))
+                {
+                    o = fallbackValue;
+                    return true;
+                }
+            }
 
             o = null;
             return false;
