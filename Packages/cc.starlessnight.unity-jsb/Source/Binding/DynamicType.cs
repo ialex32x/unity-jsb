@@ -20,20 +20,15 @@ namespace QuickJS.Binding
 
         public string name => _type.Name;
 
-        public Type type => _type; 
-        public DynamicType _parentType { get; }
+        public Type type => _type;
 
-        public bool privateAccess
-        {
-            get { return _privateAccess; }
-        }
+        public bool privateAccess => _privateAccess;
 
-        public DynamicType(Type type, bool privateAccess, DynamicType parentType)
+        public DynamicType(Type type, bool privateAccess)
         {
             _type = type;
             _type_id = -1;
             _privateAccess = privateAccess;
-            _parentType = parentType;
         }
 
         public void OpenPrivateAccess()
@@ -213,19 +208,6 @@ namespace QuickJS.Binding
                 cls.AddField(anyMethod.IsStatic, propertyInfo.Name, dynamicProperty);
             }
             #endregion
-
-            if (_parentType != null)
-            {
-                var ctor = cls.GetConstructor();
-                var parentCtor = db.GetConstructorOf(_parentType.type);
-                JSApi.JS_SetPrototype(ctx, ctor, parentCtor);
-                JSApi.JS_FreeValue(ctx, ctor);
-                JSApi.JS_FreeValue(ctx, parentCtor);
-
-                var prot = db.GetPrototypeOf(type);
-                var parentProto = db.GetPrototypeOf(_parentType.type);
-                JSApi.JS_SetPrototype(ctx, prot, parentProto);
-            }
 
             return cls;
         }
