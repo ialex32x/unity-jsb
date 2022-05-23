@@ -47,7 +47,8 @@ namespace QuickJS.Binding
         }
 
         /// <summary>
-        /// obtain the raw JS constructor (already duplicated)
+        /// obtain the raw JS constructor.
+        /// NOTE: the return value is already duplicated
         /// </summary>
         public JSValue GetConstructor()
         {

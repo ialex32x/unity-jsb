@@ -21,8 +21,17 @@ namespace QuickJS.Utils
         JSValue FindChainedPrototypeOf(Type cType);
         JSValue FindChainedPrototypeOf(Type cType, out Type pType);
         bool TryGetPrototypeOf(Type type, out JSValue proto);
+
+        /// <summary>
+        /// Get the prototype of type.
+        /// NOTE: the returned value is not duplicated. (this behaviour will be changed in the future for better consistency)
+        /// </summary>
         JSValue GetPrototypeOf(Type type);
         JSValue FindPrototypeOf(Type type, out int type_id);
+
+        /// <summary>
+        /// Get the js contructor value of type (you need to free the returned value by yourself)
+        /// </summary>
         JSValue GetConstructorOf(Type type);
         bool IsConstructorEquals(Type type, JSValue ctor);
         void Destroy();
@@ -261,9 +270,6 @@ namespace QuickJS.Utils
             return JSApi.JS_UNDEFINED;
         }
 
-        /// <summary>
-        /// get js contructor value of type (you need to free this returned value by yourself)
-        /// </summary>
         public JSValue GetConstructorOf(Type type)
         {
             var proto = GetPrototypeOf(type);
