@@ -84,7 +84,7 @@ namespace QuickJS
             return GetRuntime(ctx)?.GetTypeDB();
         }
 
-        public static TimerManager GetTimerManager(JSContext ctx)
+        public static ITimerManager GetTimerManager(JSContext ctx)
         {
             return GetRuntime(ctx)?.GetTimerManager();
         }

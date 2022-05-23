@@ -100,8 +100,12 @@ namespace QuickJS
         [MonoPInvokeCallback(typeof(JSCFunction))]
         private static JSValue _now(JSContext ctx, JSValue this_obj, int argc, JSValue[] argv)
         {
-            var context = ScriptEngine.GetContext(ctx);
-            return JSApi.JS_NewInt32(ctx, context.GetTimerManager().now);
+            var timerManager = ScriptEngine.GetTimerManager(ctx);
+            if (timerManager == null)
+            {
+                return ctx.ThrowInternalError("no timer manager");
+            }
+            return JSApi.JS_NewInt32(ctx, timerManager.now);
         }
 
         // private static void _RunGC(ScriptRuntime rt, JSAction value)

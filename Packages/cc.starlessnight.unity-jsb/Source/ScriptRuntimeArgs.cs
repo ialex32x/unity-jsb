@@ -38,6 +38,12 @@ namespace QuickJS
         public IAsyncManager asyncManager;
 
         /// <summary>
+        /// TimerManager used by the script runtime. 
+        /// DefaultTimerManager will be used if this field is null.
+        /// </summary>
+        public ITimerManager timerManager;
+
+        /// <summary>
         /// Customize how the log messages printing. (e.g DefaultScriptLogger directly print logs to the console)
         /// </summary>
         public IScriptLogger logger;

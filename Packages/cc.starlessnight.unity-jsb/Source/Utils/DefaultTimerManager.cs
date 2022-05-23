@@ -5,30 +5,28 @@ using QuickJS.Native;
 
 namespace QuickJS.Utils
 {
-    public class TimerManager : Scheduler
+    public class DefaultTimerManager : Scheduler, ITimerManager
     {
         private uint _idgen;
         private Dictionary<uint, ulong> _timers = new Dictionary<uint, ulong>();
 
-        public TimerManager(IScriptLogger logger, int jiffies = 10, int slots = 120, int depth = 4, int prealloc = 50, int capacity = 500)
+        public DefaultTimerManager(IScriptLogger logger, int jiffies = 10, int slots = 120, int depth = 4, int prealloc = 50, int capacity = 500)
         : base(logger, jiffies, slots, depth, prealloc, capacity)
         {
         }
 
         public uint SetTimeout(ScriptFunction fn, int ms)
         {
-            return CreateTimer(fn, ms, true);
+            var id = ++_idgen;
+            var timer = this.Add(ms, true, fn);
+            _timers.Add(id, timer);
+            return id;
         }
 
         public uint SetInterval(ScriptFunction fn, int ms)
         {
-            return CreateTimer(fn, ms, false);
-        }
-
-        private uint CreateTimer(ScriptFunction fn, int ms, bool once)
-        {
             var id = ++_idgen;
-            var timer = this.Add(ms, once, fn);
+            var timer = this.Add(ms, false, fn);
             _timers.Add(id, timer);
             return id;
         }
@@ -83,7 +81,7 @@ namespace QuickJS.Utils
 
                 func.SetBound(this_obj);
                 func.SetArguments(1, argc - 1, argv);
-                var timer = timerManager.CreateTimer(func, 0, false);
+                var timer = timerManager.SetInterval(func, 0);
                 return JSApi.JS_NewUint32(ctx, timer);
             }
             return JSApi.JS_UNDEFINED;
@@ -117,7 +115,7 @@ namespace QuickJS.Utils
 
                 func.SetBound(this_obj);
                 func.SetArguments(2, argc - 2, argv);
-                var timer = timerManager.CreateTimer(func, pres, false);
+                var timer = timerManager.SetInterval(func, pres);
                 return JSApi.JS_NewUint32(ctx, timer);
             }
             return JSApi.JS_UNDEFINED;
@@ -151,22 +149,22 @@ namespace QuickJS.Utils
 
                 func.SetBound(this_obj);
                 func.SetArguments(2, argc - 2, argv);
-                var timer = timerManager.CreateTimer(func, pres, true);
+                var timer = timerManager.SetTimeout(func, pres);
                 return JSApi.JS_NewUint32(ctx, timer);
             }
             return JSApi.JS_UNDEFINED;
         }
 
-        public static void Bind(TypeRegister register)
+        public void Bind(TypeRegister register)
         {
             var context = register.GetContext();
 
-            context.AddFunction("setImmediate", js_set_immediate, 2);
-            context.AddFunction("setInterval", js_set_interval, 3);
-            context.AddFunction("setTimeout", js_set_timeout, 3);
-            context.AddFunction("clearImmediate", js_clear_timer, 1);
-            context.AddFunction("clearInterval", js_clear_timer, 1);
-            context.AddFunction("clearTimeout", js_clear_timer, 1);
+            context.AddGlobalFunction("setImmediate", js_set_immediate, 2);
+            context.AddGlobalFunction("setInterval", js_set_interval, 3);
+            context.AddGlobalFunction("setTimeout", js_set_timeout, 3);
+            context.AddGlobalFunction("clearImmediate", js_clear_timer, 1);
+            context.AddGlobalFunction("clearInterval", js_clear_timer, 1);
+            context.AddGlobalFunction("clearTimeout", js_clear_timer, 1);
         }
     }
 }
