@@ -67,7 +67,15 @@ namespace QuickJS.Utils
             _context = context;
         }
 
-        // 获取指定类型的动态绑定 (此方法仅用于用户运行时, 不适用于 RefectBind)
+        /// <summary>
+        /// Create dynamic binding for a type, it's used for accessing types which not exported in CustomBinding.
+        /// Be careful when using this feature, the type and it's members may be stripped by Unity.
+        /// 
+        /// NOTE: it's usually used by *Hotfix* to replace a statically exported type with it's correspondingly dynamic version, 
+        ///       and possible to access it's private members at runtime.
+        /// 
+        /// NOTE: it will break the rules defined in CustomBinding.
+        /// </summary>
         public DynamicType GetDynamicType(Type type, bool privateAccess)
         {
             DynamicType dynamicType;
@@ -82,17 +90,29 @@ namespace QuickJS.Utils
 
             var register = _context.CreateTypeRegister();
 
-            var parentType = type.BaseType != null ? GetDynamicType(type.BaseType, false) : null;
-            dynamicType = new DynamicType(type, privateAccess, parentType);
+            dynamicType = new DynamicType(type, privateAccess);
             dynamicType.Bind(register);
             _dynamicTypes[type] = dynamicType;
+
+            if (type.BaseType != null)
+            {
+                JSValue basePrototype;
+                if (!TryGetPrototypeOf(type.BaseType, out basePrototype))
+                {
+                    // the prototype chain will be setup in register.Finish()
+                    GetDynamicType(type.BaseType, privateAccess);
+                }
+            }
 
             register.Finish();
             return dynamicType;
         }
 
         /// <summary>
-        /// 创建一个动态绑定类型对象 (不自动执行任何绑定)
+        /// Create a dynamic type without binding (it will be done outside).
+        /// 
+        /// NOTE: this method is only used by TypeBindingInfo.DoReflectBind(), 
+        ///       the members of the type and it's inheritance are manipulated by BindingManager.
         /// </summary>
         public DynamicType CreateFreeDynamicType(Type type)
         {
@@ -102,8 +122,7 @@ namespace QuickJS.Utils
                 return dynamicType;
             }
 
-            var parentType = type.BaseType != null ? GetDynamicType(type.BaseType, false) : null;
-            dynamicType = new DynamicType(type, false, parentType);
+            dynamicType = new DynamicType(type, false);
             _dynamicTypes[type] = dynamicType;
             return dynamicType;
         }
