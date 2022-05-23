@@ -169,7 +169,7 @@ namespace QuickJS
             return _isValid ? _runtime.GetAsyncManager() : null;
         }
 
-        public TimerManager GetTimerManager()
+        public ITimerManager GetTimerManager()
         {
             return _runtime.GetTimerManager();
         }
@@ -753,11 +753,13 @@ namespace QuickJS
         }
 
         /// <summary>
-        /// 添加全局函数
+        /// Add a function to globalThis (will overwrite anything with a same name if already existed)
         /// </summary>
-        public void AddFunction(string name, JSCFunction func, int length)
+        public void AddGlobalFunction(string name, JSCFunction func, int length)
         {
-            AddFunction(_globalObject, name, func, length);
+            var nameAtom = GetAtom(name);
+            var cfun = JSApi.JSB_NewCFunction(_ctx, func, nameAtom, length);
+            JSApi.JS_DefinePropertyValue(_ctx, _globalObject, nameAtom, cfun);
         }
 
         public void AddFunction(JSValue thisObject, string name, JSCFunction func, int length)

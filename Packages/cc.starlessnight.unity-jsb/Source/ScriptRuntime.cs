@@ -58,7 +58,7 @@ namespace QuickJS
         private ObjectCache _objectCache;
         private ObjectCollection _objectCollection;
         private ITypeDB _typeDB;
-        private TimerManager _timerManager;
+        private ITimerManager _timerManager;
         private IO.IByteBufferAllocator _byteBufferAllocator;
         private Utils.AutoReleasePool _autorelease;
         private IAsyncManager _asyncManager;
@@ -392,7 +392,7 @@ namespace QuickJS
             _fileSystem = fileSystem;
             _objectCache = new ObjectCache(_logger);
             _objectCollection = new ObjectCollection();
-            _timerManager = new TimerManager(_logger);
+            _timerManager = args.timerManager ?? new DefaultTimerManager(_logger);
             _typeDB = new TypeDB(this, _mainContext);
 #if !JSB_UNITYLESS
             _typeDB.AddType(typeof(Unity.JSBehaviour), JSApi.JS_UNDEFINED);
@@ -418,7 +418,7 @@ namespace QuickJS
             {
                 JSWorker.Bind(register);
             }
-            TimerManager.Bind(register);
+            _timerManager.Bind(register);
             register.Finish();
 
             AddStaticModule("jsb", ScriptContext.Bind);
@@ -527,7 +527,7 @@ namespace QuickJS
             return _byteBufferAllocator;
         }
 
-        public TimerManager GetTimerManager()
+        public ITimerManager GetTimerManager()
         {
             return _timerManager;
         }

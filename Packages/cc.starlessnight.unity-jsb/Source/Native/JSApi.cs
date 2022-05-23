@@ -572,6 +572,14 @@ namespace QuickJS.Native
         [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern int JS_ExecutePendingJob(JSRuntime rt, out JSContext pctx);
 
+#if JSB_WITH_V8_BACKEND
+        //TODO unity-jsb: [IMPORTANT] implement it in v8-bridge later
+        public static int JS_IsJobPending(JSRuntime rt, out JSContext pctx) { return 0; }
+#else
+        [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern int JS_IsJobPending(JSRuntime rt, out JSContext pctx);
+#endif
+
         [DllImport(JSBDLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern int JS_IsJobPending(JSRuntime rt, out JSContext pctx);
 
