@@ -938,7 +938,7 @@ namespace QuickJS.Binding
         private string GetScriptObjectPropertyGetter(Type type)
         {
             MethodInfo methodInfo;
-            if (Values._JSCastMap.TryGetValue(type, out methodInfo))
+            if (type != typeof(object) && Values._JSCastMap.TryGetValue(type, out methodInfo))
             {
                 return GetCSTypeFullName(methodInfo);
             }

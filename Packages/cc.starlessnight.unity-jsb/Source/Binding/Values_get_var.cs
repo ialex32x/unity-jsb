@@ -141,12 +141,6 @@ namespace QuickJS.Binding
 
             var type = o.GetType();
 
-            //TODO EMERGENCY check type == typeof(Delegate) ??
-            if (type.BaseType == typeof(MulticastDelegate))
-            {
-                return js_push_delegate(ctx, o as Delegate);
-            }
-
             if (type.IsEnum)
             {
                 return js_push_primitive(ctx, Convert.ToInt32(o));
@@ -256,7 +250,7 @@ namespace QuickJS.Binding
 
             var lookupType = type;
             MethodInfo cast;
-            do
+            while (lookupType != null && lookupType != typeof(object))
             {
                 if (_JSCastMap.TryGetValue(lookupType, out cast))
                 {
@@ -266,7 +260,7 @@ namespace QuickJS.Binding
                     return rval;
                 }
                 lookupType = lookupType.BaseType;
-            } while (lookupType != null);
+            }
 
             if (type.IsArray)
             {
@@ -354,11 +348,16 @@ namespace QuickJS.Binding
                 return true;
             }
 
-            // if (type == typeof(object))
-            // {
-            //     ScriptValue fallbackValue;
-            //     return js_get_classvalue(ctx, val, out fallbackValue);
-            // }
+            if (type == typeof(object))
+            {
+                if (_JSCastMap.TryGetValue(typeof(object), out cast))
+                {
+                    var parameters = new object[3] { ctx, val, null };
+                    var rval = (bool)cast.Invoke(null, parameters);
+                    o = parameters[2];
+                    return rval;
+                }
+            }
 
             o = null;
             return false;
