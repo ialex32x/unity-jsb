@@ -350,7 +350,28 @@ namespace QuickJS.Binding
 
             if (type == typeof(object))
             {
-                if (_JSCastMap.TryGetValue(typeof(object), out cast))
+                var targetType = typeof(object);
+
+                // Detect value type and convert to it
+                var header = JSApi.jsb_get_payload_header(ctx, val);
+
+                if (header.type_id != BridgeObjectType.None)
+                {
+                    var context = ScriptEngine.GetContext(ctx);
+                    var type_id = JSApi.JSB_GetBridgeType(ctx, val, context.GetAtom(Values.KeyForCSharpTypeID));
+                    if (type_id > 0)
+                    {
+                        var types = context.GetTypeDB();
+                        var t = types.GetType(type_id);
+
+                        if (t != null)
+                        {
+                            targetType = t;
+                        }
+                    }
+                }
+
+                if (_JSCastMap.TryGetValue(targetType, out cast))
                 {
                     var parameters = new object[3] { ctx, val, null };
                     var rval = (bool)cast.Invoke(null, parameters);
