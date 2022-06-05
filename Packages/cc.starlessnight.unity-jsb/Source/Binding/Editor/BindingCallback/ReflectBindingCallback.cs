@@ -195,11 +195,7 @@ namespace QuickJS.Binding
 
             if (!CodeGenUtils.IsCodeEmitSupported())
             {
-#if JSB_UNITYLESS
-                Console.WriteLine("[Warning] " + CodeGenUtils.CodeEmitWarning);
-#else
-                UnityEngine.Debug.LogWarning(CodeGenUtils.CodeEmitWarning);
-#endif
+                runtime.GetLogger().Write(Utils.LogLevel.Warn, CodeGenUtils.CodeEmitWarning);
             }
         }
 
