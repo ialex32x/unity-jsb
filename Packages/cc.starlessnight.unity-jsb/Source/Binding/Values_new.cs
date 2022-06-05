@@ -94,7 +94,7 @@ namespace QuickJS.Binding
             var ctx = (JSContext)_context;
 
             var createDictionaryProxy = _context.EvalSource<ScriptFunction>(@"
-function createDictionaryProxy (targetProxy, contains, getter, setter, keys) {
+function createDictionaryProxy (targetProxy, contains, getter, setter, remover, keys) {
     return new Proxy(targetProxy, {
         get(target, key, receiver) {
             if(key === '" + KeyForCSharpIdentity + @"') return target;
@@ -102,10 +102,17 @@ function createDictionaryProxy (targetProxy, contains, getter, setter, keys) {
             if(typeof key === 'string' && contains(target, key)) return getter(target, key);
             var res = target[key];
             return res;
-        },        
+        },
         set(target, key, value) {
             if(typeof key === 'string') setter(target, key, value);
             else target[key] = value;
+            return true;
+        },
+        has(target, key) {
+            return contains(target, key);
+        },
+        deleteProperty(target, key) {
+            remover(target, key);
             return true;
         },
         ownKeys(target) {
@@ -120,7 +127,7 @@ function createDictionaryProxy (targetProxy, contains, getter, setter, keys) {
                 };
             }
             return undefined;
-        }
+        },
     });
 }
 
@@ -145,6 +152,12 @@ createDictionaryProxy;
                     dc[key] = value;
                 });
 
+            var remover = new Action<IDictionary<string, object>, string>(
+                (IDictionary<string, object> dc, string key) =>
+                {
+                    dc.Remove(key);
+                });
+
             var keys = new Func<IDictionary<string, object>, object>(
                 (IDictionary<string, object> dc) =>
                 {
@@ -162,6 +175,7 @@ createDictionaryProxy;
                 contains,
                 getter,
                 setter,
+                remover,
                 keys,
             };
 
