@@ -68,6 +68,12 @@ namespace QuickJS.Binding
 
             var object_id = cache.AddObject(o, false);
             var val = JSApi.jsb_new_bridge_object(ctx, proto, object_id);
+
+            if (typeof(IDictionary<string, object>).IsAssignableFrom(type))
+            {
+                val = CreateDictionaryProxy(context, val);
+            }
+
             if (val.IsException())
             {
                 cache.RemoveObject(object_id);
@@ -81,6 +87,105 @@ namespace QuickJS.Binding
             }
 
             return val;
+        }
+
+        private static unsafe JSValue CreateDictionaryProxy(ScriptContext _context, JSValue target)
+        {
+            var ctx = (JSContext)_context;
+
+            var createDictionaryProxy = _context.EvalSource<ScriptFunction>(@"
+function createDictionaryProxy (targetProxy, contains, getter, setter, remover, keys) {
+    return new Proxy(targetProxy, {
+        get(target, key, receiver) {
+            if(key === '" + KeyForCSharpIdentity + @"') return target;
+
+            if(typeof key === 'string' && contains(target, key)) return getter(target, key);
+            var res = target[key];
+            return res;
+        },
+        set(target, key, value) {
+            if(typeof key === 'string') setter(target, key, value);
+            else target[key] = value;
+            return true;
+        },
+        has(target, key) {
+            return contains(target, key);
+        },
+        deleteProperty(target, key) {
+            remover(target, key);
+            return true;
+        },
+        ownKeys(target) {
+            return keys(target);
+        },
+        getOwnPropertyDescriptor(target, key) {
+            if(typeof key === 'string' && contains(target, key)) {
+                return {
+                  value: getter(target, key),
+                  enumerable: true,
+                  configurable: true
+                };
+            }
+            return undefined;
+        },
+    });
+}
+
+createDictionaryProxy;
+", "createDictionaryProxy");
+
+            var contains = new Func<IDictionary<string, object>, string, bool>(
+                (IDictionary<string, object> dc, string key) =>
+                {
+                    return key != null && dc.ContainsKey(key);
+                });
+
+            var getter = new Func<IDictionary<string, object>, string, object>(
+                (IDictionary<string, object> dc, string key) =>
+                {
+                    return dc[key];
+                });
+
+            var setter = new Action<IDictionary<string, object>, string, object>(
+                (IDictionary<string, object> dc, string key, object value) =>
+                {
+                    dc[key] = value;
+                });
+
+            var remover = new Action<IDictionary<string, object>, string>(
+                (IDictionary<string, object> dc, string key) =>
+                {
+                    dc.Remove(key);
+                });
+
+            var keys = new Func<IDictionary<string, object>, object>(
+                (IDictionary<string, object> dc) =>
+                {
+                    var items = dc.Keys;
+                    var len = items.Count;
+                    var arr = new string[len];
+                    var i = 0;
+                    foreach (var item in items)
+                        arr[i++] = item;
+                    return arr;
+                });
+
+            var prs = new object[] {
+                target,
+                contains,
+                getter,
+                setter,
+                remover,
+                keys,
+            };
+
+            var _proxy = createDictionaryProxy.Invoke<ScriptValue>(prs);
+
+            var res = JSApi.JS_DupValue(ctx, _proxy);
+            _proxy.Dispose();
+            createDictionaryProxy.Dispose();
+            JSApi.JS_FreeValue(ctx, target);
+            return res;
         }
     }
 }
