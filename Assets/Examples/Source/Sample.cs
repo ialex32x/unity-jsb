@@ -94,6 +94,7 @@ namespace Example
                 logger = _mConsole,
                 byteBufferAllocator = new ByteBufferPooledAllocator(),
                 binder = DefaultBinder.GetBinder(useReflectBind),
+                // apiBridge = new Experimental.CustomApiBridgeImpl(),
             });
         }
 
