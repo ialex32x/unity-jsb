@@ -58,12 +58,14 @@ namespace QuickJS.Binding
         {
             if (o == null)
             {
-                return JSApi.JS_UNDEFINED;
+                return JSApi.JS_NULL;
             }
+
             if (!(o is Array))
             {
                 return ctx.ThrowException(new InvalidCastException($"fail to cast type to Array"));
             }
+            
             var arr = (Array)o;
             var length = arr.Length;
             var rval = JSApi.JS_NewArray(ctx);

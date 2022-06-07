@@ -136,7 +136,7 @@ namespace QuickJS.Binding
         {
             if (o == null)
             {
-                return JSApi.JS_UNDEFINED;
+                return JSApi.JS_NULL;
             }
 
             var type = o.GetType();

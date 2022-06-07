@@ -10,11 +10,12 @@ namespace QuickJS.Binding
     {
 #if !JSB_UNITYLESS
         // variant push
+        // explicitly call UnityEngine.Object.operator == 
         public static JSValue js_push_classvalue(JSContext ctx, UnityEngine.Object o)
         {
             if (o == null)
             {
-                return JSApi.JS_UNDEFINED;
+                return JSApi.JS_NULL;
             }
 
             return js_push_object(ctx, (object)o);
@@ -25,7 +26,7 @@ namespace QuickJS.Binding
         {
             if (o == null)
             {
-                return JSApi.JS_UNDEFINED;
+                return JSApi.JS_NULL;
             }
             return JSApi.JS_DupValue(ctx, o);
         }
@@ -34,7 +35,7 @@ namespace QuickJS.Binding
         {
             if (o == null)
             {
-                return JSApi.JS_UNDEFINED;
+                return JSApi.JS_NULL;
             }
 
             return js_push_object(ctx, (object)o);
