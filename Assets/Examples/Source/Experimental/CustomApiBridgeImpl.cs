@@ -53,10 +53,11 @@ namespace Example.Experimental
                     var proxy = CreateDictionaryProxy(context, val);
                     if (proxy.IsException())
                     {
-                        JSApi.JS_FreeValue(context, val);
+                        JSApi.JS_FreeValue(context, proxy);
                         cache.RemoveObject(object_id);
                         return proxy;
                     }
+                    val = proxy;
                 }
                 cache.AddJSValue(o, val);
             }
