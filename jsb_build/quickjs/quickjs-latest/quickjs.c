@@ -923,7 +923,7 @@ struct JSObject {
             JSCFunctionType c_function;
             uint8_t length;
             uint8_t cproto;
-            int16_t magic;
+            int32_t magic;
         } cfunc;
         /* array part for fast arrays and typed arrays */
         struct { /* JS_CLASS_ARRAY, JS_CLASS_ARGUMENTS, JS_CLASS_UINT8C_ARRAY..JS_CLASS_FLOAT64_ARRAY */
