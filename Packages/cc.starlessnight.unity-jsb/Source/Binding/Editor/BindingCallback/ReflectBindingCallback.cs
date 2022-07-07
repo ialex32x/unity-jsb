@@ -168,6 +168,7 @@ namespace QuickJS.Binding
         private ScriptRuntime _runtime;
         private BindingManager _bindingManager;
         private Module.ProxyModuleRegister _moduleReg;
+        private List<Type> _preloadTypes = new List<Type>();
 
         public ReflectBindingCallback(ScriptRuntime runtime)
         {
@@ -217,6 +218,14 @@ namespace QuickJS.Binding
 
         public void OnBindingEnd()
         {
+            // GeneratePreloadTypes
+            var register = _runtime.GetMainContext().CreateTypeRegister();
+            for (int i = 0, count = _preloadTypes.Count; i < count; ++i)
+            {
+                var type = _preloadTypes[i];
+                register.FindPrototypeOf(type);
+            }
+            register.Finish();
         }
 
         public void BindRawTypes(ICollection<RawTypeBindingInfo> rawTypes)
@@ -253,7 +262,11 @@ namespace QuickJS.Binding
 
         public void AddTypeReference(string moduleName, TypeBindingInfo typeBindingInfo)
         {
-            _runtime.AddTypeReference(_moduleReg, typeBindingInfo.type, register => typeBindingInfo.DoReflectBind(register, _moduleReg), typeBindingInfo.preload, typeBindingInfo.tsTypeNaming.jsFullNameForReflectBind);
+            if (typeBindingInfo.preload)
+            {
+                _preloadTypes.Add(typeBindingInfo.type);
+            }
+            _runtime.AddTypeReference(_moduleReg, typeBindingInfo.type, register => typeBindingInfo.DoReflectBind(register, _moduleReg), typeBindingInfo.tsTypeNaming.jsFullNameForReflectBind);
         }
 
         public void EndStaticModule(string moduleName)

@@ -113,9 +113,9 @@ namespace QuickJS
             _pathResolver.AddSearchPath(path);
         }
 
-        public void AddTypeReference(ProxyModuleRegister proxy, Type type, ClassBind bind, bool preload, params string[] ns)
+        public void AddTypeReference(ProxyModuleRegister proxy, Type type, ClassBind bind, params string[] ns)
         {
-            proxy.Add(type, preload, ns);
+            proxy.Add(type, ns);
             _typeDB.AddTypeBinder(type, bind);
         }
 

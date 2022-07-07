@@ -415,6 +415,28 @@ namespace QuickJS.Binding
         }
     }
 
+    public class CSTypeRegisterScopeCodeGen : IDisposable
+    {
+        protected CodeGenerator cg;
+        protected string name;
+
+        public CSTypeRegisterScopeCodeGen(CodeGenerator cg, string name, string contextName)
+        {
+            this.cg = cg;
+            this.name = name;
+            this.cg.cs.AppendLine("{");
+            this.cg.cs.AddTabLevel();
+            this.cg.cs.AppendLine("var {0} = {1}.CreateTypeRegister();", name, contextName);
+        }
+
+        public void Dispose()
+        {
+            this.cg.cs.AppendLine("{0}.Finish();", name);
+            this.cg.cs.DecTabLevel();
+            this.cg.cs.AppendLine("}");
+        }
+    }
+
     public class CSPlatformCodeGen : IDisposable
     {
         protected CodeGenerator cg;

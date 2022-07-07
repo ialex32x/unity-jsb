@@ -15,9 +15,6 @@ namespace QuickJS.Module
         //TODO rewrite it as TypeTree.
         private Dictionary<Type, TypeReg> _types;
 
-        //TODO reimplement it as static code in ReflectBind/StaticBind flow.
-        private List<Type> _preload;
-
         //TODO eliminate this var with the new implementation of fully lazy-loaded types (TypeTree + Nested Proxy)
         private Dictionary<string, List<Type>> _cluster;
 
@@ -35,7 +32,6 @@ namespace QuickJS.Module
             _typeTree = new Dictionary<string, TypeTree>();
             _types = new Dictionary<Type, TypeReg>();
             _cluster = new Dictionary<string, List<Type>>();
-            _preload = new List<Type>();
             _runtime = runtime;
         }
 
@@ -49,7 +45,7 @@ namespace QuickJS.Module
             }
         }
 
-        public void Add(Type type, bool preload, string[] ns)
+        public void Add(Type type, string[] ns)
         {
             _types[type] = new TypeReg()
             {
@@ -61,10 +57,6 @@ namespace QuickJS.Module
                 _cluster[ns[0]] = list = new List<Type>();
             }
             list.Add(type);
-            if (preload)
-            {
-                _preload.Add(type);
-            }
         }
 
         // type will be loaded only once
@@ -188,13 +180,6 @@ namespace QuickJS.Module
                 _exports = JSApi.JS_NewObject(context);
             }
 
-            var typeRegister = context.CreateTypeRegister();
-            for (int i = 0, count = _preload.Count; i < count; ++i)
-            {
-                LoadType(context, _preload[i]);
-            }
-            _preload.Clear();
-            typeRegister.Finish();
             var proxyGen = ScriptRuntime.EvalSource(ctx, sourceString, "eval", false);
             var argv = stackalloc JSValue[3]
             {

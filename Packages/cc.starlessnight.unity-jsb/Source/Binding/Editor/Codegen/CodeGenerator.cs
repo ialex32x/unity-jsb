@@ -90,7 +90,8 @@ namespace QuickJS.Binding
 
                                     using (new PreservedCodeGen(this))
                                     {
-                                        using (var method = new PlainMethodCodeGen(this, $"private static void {Values.MethodNameOfStaticBinder}(ScriptRuntime runtime)"))
+                                        var runtimeVarName = "runtime";
+                                        using (var method = new PlainMethodCodeGen(this, $"private static void {Values.MethodNameOfStaticBinder}(ScriptRuntime {runtimeVarName})"))
                                         {
                                             foreach (var kv in Values._JSCastMap)
                                             {
@@ -112,14 +113,14 @@ namespace QuickJS.Binding
                                                 GenRegistrationCodeForTypeCaster(kv.Value, 2);
                                             }
 
+                                            var preloadTypes = new List<Type>();
                                             foreach (var module in modules)
                                             {
                                                 if (module.Count() > 0)
                                                 {
                                                     var moduleName = string.IsNullOrEmpty(module.Key) ? this.bindingManager.prefs.defaultJSModule : module.Key;
-                                                    var runtimeVarName = "rt";
                                                     var moduleVarName = "module";
-                                                    this.cs.AppendLine($"runtime.AddStaticModuleProxy(\"{moduleName}\", ({runtimeVarName}, {moduleVarName}) => ");
+                                                    this.cs.AppendLine($"{runtimeVarName}.AddStaticModuleProxy(\"{moduleName}\", ({runtimeVarName}, {moduleVarName}) => ");
                                                     this.bindResult.modules.Add(moduleName);
 
                                                     using (this.cs.TailCallCodeBlockScope())
@@ -127,6 +128,10 @@ namespace QuickJS.Binding
                                                         var editorTypesMap = new Dictionary<string, List<TypeBindingInfo>>();
                                                         foreach (var type in module)
                                                         {
+                                                            if (type.preload)
+                                                            {
+                                                                preloadTypes.Add(type.type);
+                                                            }
                                                             var requiredDefinesOfType = type.transform.requiredDefines;
                                                             if (requiredDefinesOfType != null)
                                                             {
@@ -157,9 +162,33 @@ namespace QuickJS.Binding
                                                     }
                                                 }
                                             }
+                                            method.AddStatement("{0}.{1}.Bind({2});", this.bindingManager.prefs.ns, CodeGenerator.NameOfDelegates, runtimeVarName);
+                                            var registerVarName = "register";
+                                            using (new CSTypeRegisterScopeCodeGen(this, registerVarName, $"{runtimeVarName}.GetMainContext()"))
+                                            {
+                                                // GeneratePreloadTypes
+                                                foreach (var preloadType in preloadTypes)
+                                                {
+                                                    this.cs.AppendLine("{0}.FindPrototypeOf(typeof{1})", registerVarName, this.bindingManager.GetCSTypeFullName(preloadType));
+                                                }
 
-                                            method.AddStatement("{0}.{1}.Bind(runtime);", this.bindingManager.prefs.ns, CodeGenerator.NameOfDelegates);
-                                            GenerateRawTypes(rawTypes);
+                                                // GenerateRawTypes
+                                                foreach (var rawTypeBindingInfo in rawTypes)
+                                                {
+                                                    var transform = bindingManager.TransformType(rawTypeBindingInfo.type);
+                                                    using (new CSEditorOnlyCodeGen(this, transform.requiredDefines))
+                                                    {
+                                                        var typename = this.bindingManager.GetCSTypeFullName(rawTypeBindingInfo.type);
+                                                        var jsname = rawTypeBindingInfo.jsName;
+                                                        this.cs.AppendLine("if (!{0}.IsGlobalRegistered(\"{1}\"))", registerVarName, jsname);
+                                                        this.cs.AppendLine("{");
+                                                        this.cs.AddTabLevel();
+                                                        this.cs.AppendLine("{0}.Bind({1}, \"{2}\");", rawTypeBindingInfo.type.FullName, registerVarName, jsname);
+                                                        this.cs.DecTabLevel();
+                                                        this.cs.AppendLine("}");
+                                                    }
+                                                }
+                                            }
                                         } // func: BindAll
                                     } // 'preserved' attribute for func: BindAll
                                 } // class 
@@ -174,31 +203,6 @@ namespace QuickJS.Binding
             {
                 WriteJSON(this.bindingManager.prefs.jsModulePackInfoPath, this.bindResult);
             }
-        }
-
-        private void GenerateRawTypes(ICollection<RawTypeBindingInfo> rawTypeBindingInfos)
-        {
-            this.cs.AppendLine("{");
-            this.cs.AddTabLevel();
-            this.cs.AppendLine("var register = runtime.GetMainContext().CreateTypeRegister();");
-            foreach (var rawTypeBindingInfo in rawTypeBindingInfos)
-            {
-                var transform = bindingManager.TransformType(rawTypeBindingInfo.type);
-                using (new CSEditorOnlyCodeGen(this, transform.requiredDefines))
-                {
-                    var typename = this.bindingManager.GetCSTypeFullName(rawTypeBindingInfo.type);
-                    var jsname = rawTypeBindingInfo.jsName;
-                    this.cs.AppendLine("if (!register.IsGlobalRegistered(\"{0}\"))", jsname);
-                    this.cs.AppendLine("{");
-                    this.cs.AddTabLevel();
-                    this.cs.AppendLine("{0}.Bind(register, \"{1}\");", rawTypeBindingInfo.type.FullName, jsname);
-                    this.cs.DecTabLevel();
-                    this.cs.AppendLine("}");
-                }
-            }
-            this.cs.AppendLine("register.Finish();");
-            this.cs.DecTabLevel();
-            this.cs.AppendLine("}");
         }
 
         // 生成委托绑定
