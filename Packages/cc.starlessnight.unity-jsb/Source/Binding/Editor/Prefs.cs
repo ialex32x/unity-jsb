@@ -91,6 +91,8 @@ namespace QuickJS.Binding
         /// </summary>
         public bool alwaysEmitOperatorMethod = true;
 
+        public bool excludeObsoleteItems = true;
+
         /// <summary>
         /// optional entry point for editor scripting
         /// </summary>

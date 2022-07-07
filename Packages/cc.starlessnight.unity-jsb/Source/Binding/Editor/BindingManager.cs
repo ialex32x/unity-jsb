@@ -1361,6 +1361,11 @@ namespace QuickJS.Binding
                 return true;
             }
 
+            if (prefs.excludeObsoleteItems && type.IsDefined(typeof(ObsoleteAttribute), false))
+            {
+                return true;
+            }
+
             if (type.BaseType == typeof(Attribute))
             {
                 return true;
@@ -1382,22 +1387,13 @@ namespace QuickJS.Binding
                 return true;
             }
 
-            var encloser = type;
-            while (encloser != null)
-            {
-                if (encloser.IsDefined(typeof(ObsoleteAttribute), false))
-                {
-                    return true;
-                }
-                encloser = encloser.DeclaringType;
-            }
-
-            if (_namespaceBlacklist.Contains(type.Namespace) || _typeFullNameBlacklist.Contains(type.FullName))
+            var encloser = type.DeclaringType;
+            if (encloser != null && IsExportingBlocked(encloser))
             {
                 return true;
             }
 
-            if (type.IsNested && IsExportingBlocked(type.DeclaringType))
+            if (_namespaceBlacklist.Contains(type.Namespace) || _typeFullNameBlacklist.Contains(type.FullName))
             {
                 return true;
             }

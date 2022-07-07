@@ -443,7 +443,7 @@ namespace QuickJS.Binding
                     continue;
                 }
 
-                if (field.IsDefined(typeof(ObsoleteAttribute), false))
+                if (bindingManager.prefs.excludeObsoleteItems && field.IsDefined(typeof(ObsoleteAttribute), false))
                 {
                     bindingManager.Info("skip obsolete field: {0}", field.Name);
                     continue;
@@ -491,7 +491,7 @@ namespace QuickJS.Binding
                     continue;
                 }
 
-                if (evt.IsDefined(typeof(ObsoleteAttribute), false))
+                if (bindingManager.prefs.excludeObsoleteItems && evt.IsDefined(typeof(ObsoleteAttribute), false))
                 {
                     bindingManager.Info("skip obsolete event: {0}", evt.Name);
                     continue;
@@ -548,7 +548,7 @@ namespace QuickJS.Binding
                     continue;
                 }
 
-                if (property.IsDefined(typeof(ObsoleteAttribute), false))
+                if (bindingManager.prefs.excludeObsoleteItems && property.IsDefined(typeof(ObsoleteAttribute), false))
                 {
                     bindingManager.Info("skip obsolete property: {0}", property.Name);
                     continue;
@@ -609,7 +609,7 @@ namespace QuickJS.Binding
                         continue;
                     }
 
-                    if (constructor.IsDefined(typeof(ObsoleteAttribute), false))
+                    if (bindingManager.prefs.excludeObsoleteItems && constructor.IsDefined(typeof(ObsoleteAttribute), false))
                     {
                         bindingManager.Info("skip obsolete constructor: {0}", constructor);
                         continue;
@@ -689,7 +689,7 @@ namespace QuickJS.Binding
                     continue;
                 }
 
-                if (method.IsDefined(typeof(ObsoleteAttribute), false))
+                if (bindingManager.prefs.excludeObsoleteItems && method.IsDefined(typeof(ObsoleteAttribute), false))
                 {
                     bindingManager.Info("skip obsolete method: {0}", method);
                     continue;
