@@ -5,6 +5,7 @@ namespace QuickJS.Module
 {
     using Utils;
     using Native;
+    using Binding;
 
     public class StaticModuleResolver : IModuleResolver
     {
@@ -25,7 +26,7 @@ namespace QuickJS.Module
             }
         }
 
-        public StaticModuleResolver AddStaticModule(string module_id, ModuleExportsBind bind)
+        public StaticModuleResolver AddStaticModule(string module_id, ClassBind bind)
         {
             return AddStaticModule(module_id, new FuncModuleRegister(bind));
         }

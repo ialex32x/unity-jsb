@@ -63,6 +63,11 @@ namespace QuickJS.Binding
                 return _backend.FindChainedPrototypeOf(cType, out pType);
             }
 
+            public JSValue FindPrototypeOf(Type type)
+            {
+                return _backend.FindPrototypeOf(type);
+            }
+            
             public JSValue FindPrototypeOf(Type type, out int type_id)
             {
                 return _backend.FindPrototypeOf(type, out type_id);

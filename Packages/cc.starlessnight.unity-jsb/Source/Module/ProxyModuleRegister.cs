@@ -9,6 +9,11 @@ namespace QuickJS.Module
     public class ProxyModuleRegister : IModuleRegister
     {
         private ScriptRuntime _runtime;
+
+        private Dictionary<string, TypeTree> _typeTree; // root space
+        private Dictionary<Type, ClassBind> _typeBinders = new Dictionary<Type, ClassBind>();
+
+
         //TODO need optimization
         private Dictionary<Type, TypeReg> _types;
         //TODO need optimization
@@ -23,6 +28,7 @@ namespace QuickJS.Module
         public ProxyModuleRegister(ScriptRuntime runtime, string module_id)
         {
             _module_id = module_id;
+            _typeTree = new Dictionary<string, TypeTree>();
             _types = new Dictionary<Type, TypeReg>();
             _cluster = new Dictionary<string, List<Type>>();
             _preload = new List<Type>();
@@ -39,7 +45,7 @@ namespace QuickJS.Module
             }
         }
 
-        public void Add(Type type, ModuleExportsBind bind, bool preload, string[] ns)
+        public void Add(Type type, ClassBind bind, bool preload, string[] ns)
         {
             _types[type] = new TypeReg()
             {
@@ -67,12 +73,18 @@ namespace QuickJS.Module
                 _types.Remove(type);
 
                 var typeRegister = context.CreateTypeRegister();
-                var clazz = reg.bind(typeRegister);
+                JSValue typeConstructor = typeRegister.GetTypeDB().GetConstructorOf(type);
+                if (typeConstructor.IsUndefined())
+                {
+                    var clazz = reg.bind(typeRegister);
+                    typeConstructor = clazz.GetConstructor();
+                }
+
                 if (_typeCache.IsUndefined())
                 {
                     _typeCache = JSApi.JS_NewObject(context);
                 }
-                SetClassNamespace(typeRegister, _typeCache, clazz.GetConstructor(), reg.ns, 0);
+                SetClassNamespace(typeRegister, _typeCache, typeConstructor, reg.ns, 0);
                 LoadTypeCluster(context, reg.ns[0]);
                 typeRegister.Finish();
                 return true;
@@ -80,6 +92,7 @@ namespace QuickJS.Module
             return false;
         }
 
+        [Obsolete]
         public JSValue _LoadType(ScriptContext context, string topLevelNamespace)
         {
             if (_typeCache.IsUndefined())
@@ -130,16 +143,36 @@ namespace QuickJS.Module
             }
         }
 
+        [MonoPInvokeCallback(typeof(JSCFunction))]
+        private static JSValue js_load_type(JSContext ctx, JSValue this_obj, int argc, JSValue[] argv)
+        {
+            if (argc != 2 || !argv[0].IsString() || (!argv[1].IsString() && !argv[1].IsSymbol()))
+            {
+                return ctx.ThrowInternalError("string expected");
+            }
+
+            var module_id = JSApi.GetString(ctx, argv[0]);
+            var cluster_id = JSApi.GetString(ctx, argv[1]);
+
+            if (module_id == null || cluster_id == null)
+            {
+                return ctx.ThrowInternalError("get invalid string");
+            }
+
+            var context = ScriptEngine.GetContext(ctx);
+            return context._LoadType(module_id, cluster_id);
+        }
+
         // the given exports object is ignored, type loader uses a Proxy object as new exports
         public unsafe JSValue Load(ScriptContext context, string resolved_id, JSValue module_obj, JSValue exports_obj)
         {
             var ctx = (JSContext)context;
-            var sourceString = @"(function (cache, resolved_id) {
+            var sourceString = @"(function (cache, resolved_id, load_type) {
                 return new Proxy(cache, {
                     get: function (target, p) {
                         let o = target[p];
                         if (typeof o === 'undefined') {
-                            o = require('jsb').$LoadType(resolved_id, p);
+                            o = load_type(resolved_id, p);
                         }
                         return o;
                     }
@@ -158,15 +191,17 @@ namespace QuickJS.Module
             _preload.Clear();
             typeRegister.Finish();
             var proxyGen = ScriptRuntime.EvalSource(ctx, sourceString, "eval", false);
-            var argv = stackalloc JSValue[2]
+            var argv = stackalloc JSValue[3]
             {
                 JSApi.JS_DupValue(ctx, _typeCache),
                 ctx.NewString(_module_id),
+                JSApi.JSB_NewCFunction(ctx, js_load_type, context.GetAtom("$LoadType"), 2),
             };
-            var retVal = JSApi.JS_Call(ctx, proxyGen, JSApi.JS_UNDEFINED, 2, argv);
+            var retVal = JSApi.JS_Call(ctx, proxyGen, JSApi.JS_UNDEFINED, 3, argv);
             JSApi.JS_FreeValue(ctx, proxyGen);
             JSApi.JS_FreeValue(ctx, argv[0]);
             JSApi.JS_FreeValue(ctx, argv[1]);
+            JSApi.JS_FreeValue(ctx, argv[2]);
             JSApi.JS_SetProperty(ctx, module_obj, context.GetAtom("exports"), JSApi.JS_DupValue(ctx, retVal));
             return retVal;
         }

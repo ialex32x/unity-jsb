@@ -114,12 +114,13 @@ namespace QuickJS
             _pathResolver.AddSearchPath(path);
         }
 
-        public void AddTypeReference(ProxyModuleRegister proxy, Type type, ModuleExportsBind bind, bool preload, params string[] ns)
+        public void AddTypeReference(ProxyModuleRegister proxy, Type type, ClassBind bind, bool preload, params string[] ns)
         {
             _allProxyModuleRegisters[type] = proxy;
             proxy.Add(type, bind, preload, ns);
         }
 
+        [Obsolete("will be removed after singular binding module reimplemented")]
         public bool TryLoadType(ScriptContext context, Type type)
         {
             ProxyModuleRegister proxy;
@@ -131,11 +132,12 @@ namespace QuickJS
             return false;
         }
 
+        [Obsolete]
         public JSValue _LoadType(ScriptContext context, string module_id, string topLevelNamespace)
         {
-            var reg = FindModuleResolver<StaticModuleResolver>()?.GetModuleRegister<ProxyModuleRegister>(module_id);
+            var proxy = FindModuleResolver<StaticModuleResolver>()?.GetModuleRegister<ProxyModuleRegister>(module_id);
             //TODO improve these dirty code
-            return reg != null ? reg._LoadType(context, topLevelNamespace) : JSApi.JS_UNDEFINED;
+            return proxy != null ? proxy._LoadType(context, topLevelNamespace) : JSApi.JS_UNDEFINED;
         }
 
         // 添加默认 resolver
@@ -465,7 +467,7 @@ namespace QuickJS
             return runtime != null && runtime._isRunning ? 0 : 1;
         }
 
-        public void AddStaticModule(string module_id, ModuleExportsBind bind)
+        public void AddStaticModule(string module_id, ClassBind bind)
         {
             FindModuleResolver<StaticModuleResolver>().AddStaticModule(module_id, bind);
         }

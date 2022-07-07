@@ -7,8 +7,6 @@ namespace QuickJS.Module
     using Native;
     using Binding;
 
-    public delegate ClassDecl ModuleExportsBind(TypeRegister register);
-
     public interface IModuleRegister
     {
         bool isReloadSupported { get; }

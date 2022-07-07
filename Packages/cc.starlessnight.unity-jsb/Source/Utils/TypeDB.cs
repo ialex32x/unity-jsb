@@ -27,6 +27,7 @@ namespace QuickJS.Utils
         /// NOTE: the returned value is not duplicated. (this behaviour will be changed in the future for better consistency)
         /// </summary>
         JSValue GetPrototypeOf(Type type);
+        JSValue FindPrototypeOf(Type type);
         JSValue FindPrototypeOf(Type type, out int type_id);
 
         /// <summary>
@@ -276,6 +277,12 @@ namespace QuickJS.Utils
             return JSApi.JS_UNDEFINED;
         }
 
+        public JSValue FindPrototypeOf(Type type)
+        {
+            int type_id;
+            return FindPrototypeOf(type, out type_id);
+        }
+
         public JSValue FindPrototypeOf(Type type, out int type_id)
         {
             JSValue proto;
@@ -292,6 +299,10 @@ namespace QuickJS.Utils
         public JSValue GetConstructorOf(Type type)
         {
             var proto = GetPrototypeOf(type);
+            if (proto.IsUndefined())
+            {
+                return proto;
+            }
             return JSApi.JS_GetProperty(_context, proto, JSApi.JS_ATOM_constructor);
         }
 

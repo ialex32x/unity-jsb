@@ -10,11 +10,11 @@ namespace QuickJS.Module
     // 一个绑定函数代表一个类型注册为一个模块
     public class FuncModuleRegister : IModuleRegister
     {
-        private ModuleExportsBind _bind;
+        private ClassBind _bind;
 
         public bool isReloadSupported => true;
 
-        public FuncModuleRegister(ModuleExportsBind bind)
+        public FuncModuleRegister(ClassBind bind)
         {
             _bind = bind;
         }

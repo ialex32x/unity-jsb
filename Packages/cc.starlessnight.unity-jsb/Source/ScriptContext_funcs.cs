@@ -475,26 +475,6 @@ namespace QuickJS
         }
 
         [MonoPInvokeCallback(typeof(JSCFunction))]
-        public static JSValue js_load_type(JSContext ctx, JSValue this_obj, int argc, JSValue[] argv)
-        {
-            if (argc != 2 || !argv[0].IsString() || (!argv[1].IsString() && !argv[1].IsSymbol()))
-            {
-                return ctx.ThrowInternalError("string expected");
-            }
-
-            var module_id = JSApi.GetString(ctx, argv[0]);
-            var cluster_id = JSApi.GetString(ctx, argv[1]);
-
-            if (module_id == null || cluster_id == null)
-            {
-                return ctx.ThrowInternalError("get invalid string");
-            }
-
-            var context = ScriptEngine.GetContext(ctx);
-            return context._LoadType(module_id, cluster_id);
-        }
-
-        [MonoPInvokeCallback(typeof(JSCFunction))]
         public static JSValue ModuleManager_BeginReload(JSContext ctx, JSValue this_obj, int argc, JSValue[] argv)
         {
             var context = ScriptEngine.GetContext(ctx);

@@ -303,6 +303,11 @@ namespace QuickJS.Binding
             return JSApi.JS_GetProperty(_context, val, JSApi.JS_ATOM_constructor);
         }
 
+        // public JSValue GetTypeConstructor(Type type)
+        // {
+        //     // _db
+        // }
+
         public JSValue FindChainedPrototypeOf(Type type)
         {
             var val = _db.FindChainedPrototypeOf(type);

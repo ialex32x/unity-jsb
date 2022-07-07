@@ -7,9 +7,16 @@ namespace QuickJS.Module
     using Native;
     using Binding;
 
+    [Obsolete]
     public struct TypeReg
     {
         public string[] ns;
-        public ModuleExportsBind bind;
+        public ClassBind bind;
+    }
+
+    public class TypeTree
+    {
+        public Type type; 
+        public Dictionary<string, TypeTree> children;
     }
 }
