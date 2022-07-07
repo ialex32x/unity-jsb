@@ -818,12 +818,6 @@ namespace QuickJS
             return ns_jsb;
         }
 
-        [Obsolete]
-        public JSValue _LoadType(string module_id, string topLevelNamespace)
-        {
-            return _runtime._LoadType(this, module_id, topLevelNamespace);
-        }
-
         public void EvalSource(string source, string fileName)
         {
             var bytes = System.Text.Encoding.UTF8.GetBytes(source);

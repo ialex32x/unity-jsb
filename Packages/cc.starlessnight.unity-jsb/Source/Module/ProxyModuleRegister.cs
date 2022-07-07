@@ -11,17 +11,21 @@ namespace QuickJS.Module
         private ScriptRuntime _runtime;
 
         private Dictionary<string, TypeTree> _typeTree; // root space
-        private Dictionary<Type, ClassBind> _typeBinders = new Dictionary<Type, ClassBind>();
 
-
-        //TODO need optimization
+        //TODO rewrite it as TypeTree.
         private Dictionary<Type, TypeReg> _types;
-        //TODO need optimization
+
+        //TODO reimplement it as static code in ReflectBind/StaticBind flow.
         private List<Type> _preload;
-        //TODO need optimization
+
+        //TODO eliminate this var with the new implementation of fully lazy-loaded types (TypeTree + Nested Proxy)
         private Dictionary<string, List<Type>> _cluster;
+
+        //TODO eliminate this var
         private string _module_id;
-        private JSValue _typeCache = JSApi.JS_UNDEFINED;
+
+        // the root proxy object for 'module.exports'
+        private JSValue _exports = JSApi.JS_UNDEFINED;
 
         public bool isReloadSupported => false;
 
@@ -37,20 +41,19 @@ namespace QuickJS.Module
 
         public void Unload()
         {
-            if (!_typeCache.IsUndefined())
+            if (!_exports.IsUndefined())
             {
-                var exports = _typeCache;
-                _typeCache = JSApi.JS_UNDEFINED;
+                var exports = _exports;
+                _exports = JSApi.JS_UNDEFINED;
                 _runtime.FreeValue(exports);
             }
         }
 
-        public void Add(Type type, ClassBind bind, bool preload, string[] ns)
+        public void Add(Type type, bool preload, string[] ns)
         {
             _types[type] = new TypeReg()
             {
                 ns = ns,
-                bind = bind,
             };
             List<Type> list;
             if (!_cluster.TryGetValue(ns[0], out list))
@@ -76,15 +79,14 @@ namespace QuickJS.Module
                 JSValue typeConstructor = typeRegister.GetTypeDB().GetConstructorOf(type);
                 if (typeConstructor.IsUndefined())
                 {
-                    var clazz = reg.bind(typeRegister);
-                    typeConstructor = clazz.GetConstructor();
+                    context.GetLogger()?.Write(Utils.LogLevel.Error, "failed to get constructor of type '{0}'", type);
                 }
 
-                if (_typeCache.IsUndefined())
+                if (_exports.IsUndefined())
                 {
-                    _typeCache = JSApi.JS_NewObject(context);
+                    _exports = JSApi.JS_NewObject(context);
                 }
-                SetClassNamespace(typeRegister, _typeCache, typeConstructor, reg.ns, 0);
+                SetClassNamespace(typeRegister, _exports, typeConstructor, reg.ns, 0);
                 LoadTypeCluster(context, reg.ns[0]);
                 typeRegister.Finish();
                 return true;
@@ -95,12 +97,12 @@ namespace QuickJS.Module
         [Obsolete]
         public JSValue _LoadType(ScriptContext context, string topLevelNamespace)
         {
-            if (_typeCache.IsUndefined())
+            if (_exports.IsUndefined())
             {
-                _typeCache = JSApi.JS_NewObject(context);
+                _exports = JSApi.JS_NewObject(context);
             }
             LoadTypeCluster(context, topLevelNamespace);
-            return JSApi.JS_GetProperty(context, _typeCache, context.GetAtom(topLevelNamespace));
+            return JSApi.JS_GetProperty(context, _exports, context.GetAtom(topLevelNamespace));
         }
 
         private void LoadTypeCluster(ScriptContext context, string topLevelNamespace)
@@ -160,7 +162,10 @@ namespace QuickJS.Module
             }
 
             var context = ScriptEngine.GetContext(ctx);
-            return context._LoadType(module_id, cluster_id);
+            var runtime = context.GetRuntime();
+            var proxy = runtime.FindModuleResolver<StaticModuleResolver>()?.GetModuleRegister<ProxyModuleRegister>(module_id);
+            //TODO improve these dirty code
+            return proxy != null ? proxy._LoadType(context, cluster_id) : JSApi.JS_UNDEFINED;
         }
 
         // the given exports object is ignored, type loader uses a Proxy object as new exports
@@ -178,9 +183,9 @@ namespace QuickJS.Module
                     }
                 }); 
             })";
-            if (_typeCache.IsUndefined())
+            if (_exports.IsUndefined())
             {
-                _typeCache = JSApi.JS_NewObject(context);
+                _exports = JSApi.JS_NewObject(context);
             }
 
             var typeRegister = context.CreateTypeRegister();
@@ -193,7 +198,7 @@ namespace QuickJS.Module
             var proxyGen = ScriptRuntime.EvalSource(ctx, sourceString, "eval", false);
             var argv = stackalloc JSValue[3]
             {
-                JSApi.JS_DupValue(ctx, _typeCache),
+                JSApi.JS_DupValue(ctx, _exports),
                 ctx.NewString(_module_id),
                 JSApi.JSB_NewCFunction(ctx, js_load_type, context.GetAtom("$LoadType"), 2),
             };

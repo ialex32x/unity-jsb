@@ -15,6 +15,7 @@ namespace QuickJS.Utils
         void AddDelegate(Type type, MethodInfo method);
         MethodInfo GetDelegateFunc(Type delegateType);
         int AddType(Type type, JSValue proto);
+        void AddTypeBinder(Type type, ClassBind binder);
         Type GetType(int index);
         int GetTypeID(Type type);
         JSValue FindChainedPrototypeOf(Type cType, out int type_id);
@@ -57,6 +58,8 @@ namespace QuickJS.Utils
         private List<IDynamicMethod> _dynamicMethods = new List<IDynamicMethod>();
         private List<IDynamicField> _dynamicFields = new List<IDynamicField>();
 
+        private Dictionary<Type, ClassBind> _typeBinders = new Dictionary<Type, ClassBind>();
+
         public int Count
         {
             get { return _types.Count; }
@@ -66,6 +69,11 @@ namespace QuickJS.Utils
         {
             _runtime = runtime;
             _context = context;
+        }
+
+        public void AddTypeBinder(Type type, ClassBind binder)
+        {
+            _typeBinders[type] = binder;
         }
 
         /// <summary>
@@ -254,8 +262,13 @@ namespace QuickJS.Utils
                 return true;
             }
 
-            if (_runtime.TryLoadType(_context, type))
+            ClassBind binder;
+            if (_typeBinders.TryGetValue(type, out binder))
             {
+                var typeRegister = _context.CreateTypeRegister();
+                binder(typeRegister);
+                typeRegister.Finish();
+
                 if (_prototypes.TryGetValue(type, out proto))
                 {
                     return true;

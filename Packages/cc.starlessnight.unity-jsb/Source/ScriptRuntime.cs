@@ -54,7 +54,6 @@ namespace QuickJS
         private IFileSystem _fileSystem;
         private IPathResolver _pathResolver;
         private List<IModuleResolver> _moduleResolvers = new List<IModuleResolver>();
-        private Dictionary<Type, ProxyModuleRegister> _allProxyModuleRegisters = new Dictionary<Type, ProxyModuleRegister>();
         private ObjectCache _objectCache;
         private ObjectCollection _objectCollection;
         private ITypeDB _typeDB;
@@ -116,28 +115,8 @@ namespace QuickJS
 
         public void AddTypeReference(ProxyModuleRegister proxy, Type type, ClassBind bind, bool preload, params string[] ns)
         {
-            _allProxyModuleRegisters[type] = proxy;
-            proxy.Add(type, bind, preload, ns);
-        }
-
-        [Obsolete("will be removed after singular binding module reimplemented")]
-        public bool TryLoadType(ScriptContext context, Type type)
-        {
-            ProxyModuleRegister proxy;
-            if (_allProxyModuleRegisters.TryGetValue(type, out proxy) && proxy.LoadType(context, type))
-            {
-                return true;
-            }
-
-            return false;
-        }
-
-        [Obsolete]
-        public JSValue _LoadType(ScriptContext context, string module_id, string topLevelNamespace)
-        {
-            var proxy = FindModuleResolver<StaticModuleResolver>()?.GetModuleRegister<ProxyModuleRegister>(module_id);
-            //TODO improve these dirty code
-            return proxy != null ? proxy._LoadType(context, topLevelNamespace) : JSApi.JS_UNDEFINED;
+            proxy.Add(type, preload, ns);
+            _typeDB.AddTypeBinder(type, bind);
         }
 
         // 添加默认 resolver

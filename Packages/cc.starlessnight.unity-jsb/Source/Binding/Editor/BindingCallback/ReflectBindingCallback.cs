@@ -38,6 +38,11 @@ namespace QuickJS.Binding
                 return _backend.AddType(type, proto);
             }
 
+            public void AddTypeBinder(Type type, ClassBind binder)
+            {
+                _backend.AddTypeBinder(type, binder);
+            }
+
             public DynamicType CreateFreeDynamicType(Type type)
             {
                 return _backend.CreateFreeDynamicType(type);
@@ -67,7 +72,7 @@ namespace QuickJS.Binding
             {
                 return _backend.FindPrototypeOf(type);
             }
-            
+
             public JSValue FindPrototypeOf(Type type, out int type_id)
             {
                 return _backend.FindPrototypeOf(type, out type_id);
