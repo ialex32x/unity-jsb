@@ -506,8 +506,7 @@ namespace QuickJS.Binding
                     {
                         var attr = (JSCFunctionAttribute)Attribute.GetCustomAttribute(methodBindingInfo._cfunc, typeof(JSCFunctionAttribute));
                         var methodDeclType = this.cg.bindingManager.GetCSTypeFullName(methodBindingInfo._cfunc.DeclaringType);
-                        var isStatic = attr.isStatic ? "true" : "false";
-                        cg.cs.AppendLine("cls.AddRawMethod({0}, \"{1}\", {2}.{3});", isStatic, regName, methodDeclType, methodBindingInfo._cfunc.Name);
+                        cg.cs.AppendLine("cls.AddRawMethod({0}, \"{1}\", {2}.{3});", CodeGenUtils.ToExpression(attr.isStatic), regName, methodDeclType, methodBindingInfo._cfunc.Name);
                         if (attr.difinitions != null)
                         {
                             foreach (var defEntry in attr.difinitions)
@@ -603,7 +602,7 @@ namespace QuickJS.Binding
                         else
                         {
                             cg.cs.AppendLine("cls.AddField({0}, \"{1}\", {2}, {3});",
-                                bStatic ? "true" : "false",
+                                CodeGenUtils.ToExpression(bStatic),
                                 tsFieldVar,
                                 fieldBindingInfo.getterName != null ? fieldBindingInfo.getterName : "null",
                                 fieldBindingInfo.setterName != null ? fieldBindingInfo.setterName : "null");

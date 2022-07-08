@@ -84,38 +84,61 @@ namespace QuickJS.Binding
 #endif
         }
 
-        public static string ToLiteral(bool v)
+        public static string ToExpression(bool v)
         {
             return v ? "true" : "false";
         }
 
-        public static string Normalize(string name)
+        /// <summary>
+        /// remove part of generic definition from TS naming result
+        /// </summary>
+        public static string StripGenericDeclaration(string name)
         {
-            var gArgIndex = name.IndexOf("<");
-            return gArgIndex < 0 ? name : name.Substring(0, gArgIndex);
+            var index = name.IndexOf("<");
+            return index < 0 ? name : name.Substring(0, index);
         }
 
-        public static string[] NormalizeEx(string[] values, string additional)
+        /// <summary>
+        /// remove part of generic definition from CSharp type name
+        /// </summary>
+        public static string StripGenericDefinition(string name)
+        {
+            var index = name.IndexOf("`");
+            return index < 0 ? name : name.Substring(0, index);
+        }
+
+        public static string[] Strip(string[] values, string additional)
         {
             var list = new List<string>(values.Length + 1);
             list.AddRange(values);
             list.Add(additional);
-            return Normalize(list.ToArray());
+            return Strip(list.ToArray());
         }
 
-        public static string[] Normalize(params string[] values)
+        /// <summary>
+        /// return an array copy without empty elements
+        /// </summary>
+        public static string[] Strip(params string[] values)
         {
             return (from value in values where !string.IsNullOrEmpty(value) select value).ToArray();
         }
 
         public static string Concat(string sp, params string[] values)
         {
-            return string.Join(sp, Normalize(values));
+            return string.Join(sp, Strip(values));
         }
 
-        public static string ConcatAsLiteral(string sp, params string[] values)
+        public static string ConcatExpression(string sp, params string[] values)
         {
-            return string.Join(sp, from value in Normalize(values) select $"\"{value}\"");
+            return string.Join(sp, from value in Strip(values) select $"\"{value}\"");
+        }
+
+        /// <summary>
+        /// concat strings as: "value1", "value2", "value3"
+        /// </summary>
+        public static string ConcatExpression(string sp, string value0, params string[] values)
+        {
+            return string.Join(sp, from value in Strip(values, value0) select $"\"{value}\"");
         }
     }
 }

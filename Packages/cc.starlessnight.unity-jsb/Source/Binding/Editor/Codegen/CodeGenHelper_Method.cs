@@ -640,7 +640,7 @@ namespace QuickJS.Binding
             var decalringTypeName = this.cg.bindingManager.GetCSTypeFullName(this.methodBindingInfo.decalringType);
             var castOperation = this.cg.bindingManager.GetNewOperation(this.methodBindingInfo.decalringType);
             this.cg.cs.AppendLine("var o = new {0}();", decalringTypeName);
-            this.cg.cs.AppendLine("var val = {0}(ctx, new_target, o, magic, {1});", castOperation, CodeGenUtils.ToLiteral(this.disposable));
+            this.cg.cs.AppendLine("var val = {0}(ctx, new_target, o, magic, {1});", castOperation, CodeGenUtils.ToExpression(this.disposable));
             this.cg.cs.AppendLine("return val;");
 
             this.cg.tsDeclare.AppendLine($"{this.methodBindingInfo.jsName}()");
@@ -661,7 +661,7 @@ namespace QuickJS.Binding
         protected override void EndInvokeBinding()
         {
             var castOperation = this.cg.bindingManager.GetNewOperation(this.methodBindingInfo.decalringType);
-            this.cg.cs.AppendLine("var val = {0}(ctx, new_target, o, magic, {1});", castOperation, CodeGenUtils.ToLiteral(this.disposable));
+            this.cg.cs.AppendLine("var val = {0}(ctx, new_target, o, magic, {1});", castOperation, CodeGenUtils.ToExpression(this.disposable));
         }
 
         protected override void InvokeVoidReturn()

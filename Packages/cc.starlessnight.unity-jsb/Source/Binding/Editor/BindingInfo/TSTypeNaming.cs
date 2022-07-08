@@ -97,15 +97,7 @@ namespace QuickJS.Binding
                     this.jsName = naming.Substring(indexOfHierarchicalName + 1);
                 }
 
-                var gArgIndex = this.jsName.IndexOf("<");
-                if (gArgIndex < 0)
-                {
-                    this.jsPureName = this.jsName;
-                }
-                else
-                {
-                    this.jsPureName = this.jsName.Substring(0, gArgIndex);
-                }
+                this.jsPureName = CodeGenUtils.StripGenericDeclaration(this.jsName);
             }
             else
             {
@@ -120,9 +112,10 @@ namespace QuickJS.Binding
                     declaringType = declaringType.DeclaringType;
                 }
 
+                //TODO: 整理 jsPureName 的取值流程 (对于泛型中的嵌套的处理等)
                 if (type.IsGenericType)
                 {
-                    this.jsName = naming.Contains("`") ? naming.Substring(0, naming.IndexOf('`')) : naming;
+                    this.jsName = CodeGenUtils.StripGenericDefinition(naming);
                     this.jsPureName = this.jsName;
 
                     if (type.IsGenericTypeDefinition)
@@ -154,17 +147,7 @@ namespace QuickJS.Binding
                 else
                 {
                     this.jsName = naming;
-
-                    //TODO: 整理 jsPureName 的取值流程 (对于泛型中的嵌套的处理等)
-                    var gArgIndex = this.jsName.IndexOf("<");
-                    if (gArgIndex < 0)
-                    {
-                        this.jsPureName = this.jsName;
-                    }
-                    else
-                    {
-                        this.jsPureName = this.jsName.Substring(0, gArgIndex);
-                    }
+                    this.jsPureName = CodeGenUtils.StripGenericDeclaration(this.jsName);
                 }
             }
 
@@ -190,8 +173,8 @@ namespace QuickJS.Binding
             this.jsDepth = this.jsModuleAccess.Split('.').Length;
             this.jsFullName = CodeGenUtils.Concat(".", jsModule, jsNamespace, this.jsName);
             this.jsNamespaceSlice = jsNamespace.Split('.');
-            this.jsNameNormalized = CodeGenUtils.Normalize(this.jsName);
-            this.jsFullNameForReflectBind = CodeGenUtils.NormalizeEx(jsNamespaceSlice, CodeGenUtils.Normalize(jsName));
+            this.jsNameNormalized = CodeGenUtils.StripGenericDeclaration(this.jsName);
+            this.jsFullNameForReflectBind = CodeGenUtils.Strip(jsNamespaceSlice, this.jsNameNormalized);
         }
 
         /// <summary>

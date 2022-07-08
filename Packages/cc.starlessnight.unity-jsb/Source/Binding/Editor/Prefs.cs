@@ -177,6 +177,14 @@ namespace QuickJS.Binding
         public string defaultJSModule = "global";
 
         /// <summary>
+        /// Determines which module will the types be exported. <br/>
+        ///     default: export types into dispersed modules (depends on it's namespace and outer class) <br/>
+        ///     singular: export types into a single module  <br/>
+        /// NOT_IMPLEMENTED
+        /// </summary>
+        public string moduleStruct = "default";
+
+        /// <summary>
         /// the optional suffix for the generated d.ts file
         /// </summary>
         public string extraExtForTypescript = "";
@@ -270,26 +278,26 @@ namespace QuickJS.Binding
             "UnityEditor.WSAUWPBuildType",
             "UnityEditor.WSABuildAndRunDeployTarget",
             "UnityEditor.WSABuildType",
-            "UnityEditor.HumanTemplate", 
-            "UnityEditor.TakeInfo", 
-            "UnityEditor.L10n", 
-            "UnityEditor.Build.Reporting", 
-            "UnityEditor.TypeCache", 
-            "UnityEditor.SceneManagement.ObjectOverride", 
-            "UnityEditor.SceneManagement.PrefabOverride", 
-            "UnityEditor.SceneManagement.AddedGameObject", 
-            "UnityEditor.SceneManagement.AddedComponent", 
-            "UnityEditor.SceneManagement.RemovedComponent", 
+            "UnityEditor.HumanTemplate",
+            "UnityEditor.TakeInfo",
+            "UnityEditor.L10n",
+            "UnityEditor.Build.Reporting",
+            "UnityEditor.TypeCache",
+            "UnityEditor.SceneManagement.ObjectOverride",
+            "UnityEditor.SceneManagement.PrefabOverride",
+            "UnityEditor.SceneManagement.AddedGameObject",
+            "UnityEditor.SceneManagement.AddedComponent",
+            "UnityEditor.SceneManagement.RemovedComponent",
         });
 
         public List<string> namespaceBlacklist = new List<string>(new string[]
         {
             "TreeEditor",
-            "UnityEditor.U2D", 
-            "UnityEditor.Rendering", 
-            "UnityEditor.AssetImporters", 
-            "UnityEditor.Audio", 
-            "UnityEditor.Build.Player", 
+            "UnityEditor.U2D",
+            "UnityEditor.Rendering",
+            "UnityEditor.AssetImporters",
+            "UnityEditor.Audio",
+            "UnityEditor.Build.Player",
             "Unity.CodeEditor",
             "UnityEditor.Sprites",
             "UnityEditor.Experimental",
@@ -354,7 +362,7 @@ namespace QuickJS.Binding
             "UnityEditor.PackageManager",
             "UnityEditor.PackageManager.UI",
             "UnityEditor.PackageManager.Requests",
-            "SyntaxTree.VisualStudio.Unity.Messaging", 
+            "SyntaxTree.VisualStudio.Unity.Messaging",
         });
 
         public List<string> assemblyBlacklist = new List<string>(new string[]
