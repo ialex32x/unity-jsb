@@ -83,114 +83,109 @@ namespace QuickJS.Binding
                             {
                                 using (new PlainClassCodeGen(this, className, false))
                                 {
-                                    using (new PreservedCodeGen(this))
-                                    {
-                                        this.cs.AppendLine("public const uint CodeGenVersion = {0};", ScriptEngine.VERSION);
-                                    }
+                                    this.cs.AppendLine("public const uint CodeGenVersion = {0};", ScriptEngine.VERSION);
+                                    this.cs.AppendLine("public const string Vendor = \"{0}\";", this.bindingManager.prefs.vendor);
 
-                                    using (new PreservedCodeGen(this))
+                                    var runtimeVarName = "runtime";
+                                    using (var method = new PlainMethodCodeGen(this, $"private static void {Values.MethodNameOfStaticBinder}(ScriptRuntime {runtimeVarName})"))
                                     {
-                                        var runtimeVarName = "runtime";
-                                        using (var method = new PlainMethodCodeGen(this, $"private static void {Values.MethodNameOfStaticBinder}(ScriptRuntime {runtimeVarName})"))
+                                        foreach (var kv in Values._JSCastMap)
                                         {
-                                            foreach (var kv in Values._JSCastMap)
-                                            {
-                                                GenRegistrationCodeForTypeCaster(kv.Value, 2);
-                                            }
+                                            GenRegistrationCodeForTypeCaster(kv.Value, 2);
+                                        }
 
-                                            foreach (var kv in Values._JSRebindMap)
-                                            {
-                                                GenRegistrationCodeForTypeCaster(kv.Value, 2);
-                                            }
+                                        foreach (var kv in Values._JSRebindMap)
+                                        {
+                                            GenRegistrationCodeForTypeCaster(kv.Value, 2);
+                                        }
 
-                                            foreach (var kv in Values._CSCastMap)
-                                            {
-                                                GenRegistrationCodeForTypeCaster(kv.Value, 1);
-                                            }
+                                        foreach (var kv in Values._CSCastMap)
+                                        {
+                                            GenRegistrationCodeForTypeCaster(kv.Value, 1);
+                                        }
 
-                                            foreach (var kv in Values._JSNewMap)
-                                            {
-                                                GenRegistrationCodeForTypeCaster(kv.Value, 2);
-                                            }
+                                        foreach (var kv in Values._JSNewMap)
+                                        {
+                                            GenRegistrationCodeForTypeCaster(kv.Value, 2);
+                                        }
 
-                                            var preloadTypes = new List<Type>();
-                                            foreach (var module in modules)
+                                        var preloadTypes = new List<Type>();
+                                        foreach (var module in modules)
+                                        {
+                                            if (module.Count() > 0)
                                             {
-                                                if (module.Count() > 0)
+                                                var moduleName = string.IsNullOrEmpty(module.Key) ? this.bindingManager.prefs.defaultJSModule : module.Key;
+                                                var moduleVarName = "module";
+                                                this.cs.AppendLine($"{runtimeVarName}.AddStaticModuleProxy(\"{moduleName}\", ({runtimeVarName}, {moduleVarName}) => ");
+                                                this.bindResult.modules.Add(moduleName);
+
+                                                using (this.cs.TailCallCodeBlockScope())
                                                 {
-                                                    var moduleName = string.IsNullOrEmpty(module.Key) ? this.bindingManager.prefs.defaultJSModule : module.Key;
-                                                    var moduleVarName = "module";
-                                                    this.cs.AppendLine($"{runtimeVarName}.AddStaticModuleProxy(\"{moduleName}\", ({runtimeVarName}, {moduleVarName}) => ");
-                                                    this.bindResult.modules.Add(moduleName);
-
-                                                    using (this.cs.TailCallCodeBlockScope())
+                                                    var editorTypesMap = new Dictionary<string, List<TypeBindingInfo>>();
+                                                    foreach (var type in module)
                                                     {
-                                                        var editorTypesMap = new Dictionary<string, List<TypeBindingInfo>>();
-                                                        foreach (var type in module)
+                                                        if (type.preload)
                                                         {
-                                                            if (type.preload)
+                                                            preloadTypes.Add(type.type);
+                                                        }
+                                                        var requiredDefinesOfType = type.transform.requiredDefines;
+                                                        if (requiredDefinesOfType != null)
+                                                        {
+                                                            var defs = string.Join(" && ", from def in requiredDefinesOfType select def);
+                                                            List<TypeBindingInfo> list;
+                                                            if (!editorTypesMap.TryGetValue(defs, out list))
                                                             {
-                                                                preloadTypes.Add(type.type);
+                                                                editorTypesMap[defs] = list = new List<TypeBindingInfo>();
                                                             }
-                                                            var requiredDefinesOfType = type.transform.requiredDefines;
-                                                            if (requiredDefinesOfType != null)
-                                                            {
-                                                                var defs = string.Join(" && ", from def in requiredDefinesOfType select def);
-                                                                List<TypeBindingInfo> list;
-                                                                if (!editorTypesMap.TryGetValue(defs, out list))
-                                                                {
-                                                                    editorTypesMap[defs] = list = new List<TypeBindingInfo>();
-                                                                }
-                                                                list.Add(type);
-                                                            }
-                                                            else
+                                                            list.Add(type);
+                                                        }
+                                                        else
+                                                        {
+                                                            method.AddModuleEntry(moduleName, runtimeVarName, moduleVarName, type);
+                                                        }
+                                                    }
+
+                                                    foreach (var editorTypes in editorTypesMap)
+                                                    {
+                                                        using (new CSEditorOnlyCodeGen(this, editorTypes.Key))
+                                                        {
+                                                            foreach (var type in editorTypes.Value)
                                                             {
                                                                 method.AddModuleEntry(moduleName, runtimeVarName, moduleVarName, type);
                                                             }
                                                         }
-
-                                                        foreach (var editorTypes in editorTypesMap)
-                                                        {
-                                                            using (new CSEditorOnlyCodeGen(this, editorTypes.Key))
-                                                            {
-                                                                foreach (var type in editorTypes.Value)
-                                                                {
-                                                                    method.AddModuleEntry(moduleName, runtimeVarName, moduleVarName, type);
-                                                                }
-                                                            }
-                                                        }
                                                     }
                                                 }
                                             }
-                                            method.AddStatement("{0}.{1}.Bind({2});", this.bindingManager.prefs.ns, CodeGenerator.NameOfDelegates, runtimeVarName);
-                                            var registerVarName = "register";
-                                            using (new CSTypeRegisterScopeCodeGen(this, registerVarName, $"{runtimeVarName}.GetMainContext()"))
+                                        }
+                                        method.AddStatement("{0}.{1}.Bind({2});", this.bindingManager.prefs.ns, CodeGenerator.NameOfDelegates, runtimeVarName);
+                                        var registerVarName = "register";
+                                        using (new CSTypeRegisterScopeCodeGen(this, registerVarName, $"{runtimeVarName}.GetMainContext()"))
+                                        {
+                                            // GeneratePreloadTypes
+                                            foreach (var preloadType in preloadTypes)
                                             {
-                                                // GeneratePreloadTypes
-                                                foreach (var preloadType in preloadTypes)
-                                                {
-                                                    this.cs.AppendLine("{0}.FindPrototypeOf(typeof{1})", registerVarName, this.bindingManager.GetCSTypeFullName(preloadType));
-                                                }
+                                                this.cs.AppendLine("{0}.FindPrototypeOf(typeof{1})", registerVarName, this.bindingManager.GetCSTypeFullName(preloadType));
+                                            }
 
-                                                // GenerateRawTypes
-                                                foreach (var rawTypeBindingInfo in rawTypes)
+                                            // GenerateRawTypes
+                                            foreach (var rawTypeBindingInfo in rawTypes)
+                                            {
+                                                var transform = bindingManager.TransformType(rawTypeBindingInfo.type);
+                                                using (new CSEditorOnlyCodeGen(this, transform.requiredDefines))
                                                 {
-                                                    var transform = bindingManager.TransformType(rawTypeBindingInfo.type);
-                                                    using (new CSEditorOnlyCodeGen(this, transform.requiredDefines))
-                                                    {
-                                                        var typename = this.bindingManager.GetCSTypeFullName(rawTypeBindingInfo.type);
-                                                        var jsname = rawTypeBindingInfo.jsName;
-                                                        this.cs.AppendLine("if (!{0}.IsGlobalRegistered(\"{1}\"))", registerVarName, jsname);
-                                                        this.cs.AppendLine("{");
-                                                        this.cs.AddTabLevel();
-                                                        this.cs.AppendLine("{0}.Bind({1}, \"{2}\");", rawTypeBindingInfo.type.FullName, registerVarName, jsname);
-                                                        this.cs.DecTabLevel();
-                                                        this.cs.AppendLine("}");
-                                                    }
+                                                    var typename = this.bindingManager.GetCSTypeFullName(rawTypeBindingInfo.type);
+                                                    var jsname = rawTypeBindingInfo.jsName;
+                                                    this.cs.AppendLine("if (!{0}.IsGlobalRegistered(\"{1}\"))", registerVarName, jsname);
+                                                    this.cs.AppendLine("{");
+                                                    this.cs.AddTabLevel();
+                                                    this.cs.AppendLine("{0}.Bind({1}, \"{2}\");", rawTypeBindingInfo.type.FullName, registerVarName, jsname);
+                                                    this.cs.DecTabLevel();
+                                                    this.cs.AppendLine("}");
                                                 }
                                             }
-                                        } // func: BindAll
-                                    } // 'preserved' attribute for func: BindAll
+                                        }
+                                    } // func: BindAll
                                 } // class 
                             } // preserved
                         } // cs-namespace
@@ -224,36 +219,33 @@ namespace QuickJS.Binding
                     {
                         using (new CSNamespaceCodeGen(this, this.bindingManager.prefs.ns))
                         {
-                            using (new DelegateWrapperCodeGen(this))
+                            using (new PreservedCodeGen(this))
                             {
-                                for (var i = 0; i < exportedHotfixDelegates.Count; i++)
+                                using (new DelegateWrapperCodeGen(this))
                                 {
-                                    var hotfixDelegateBindingInfo = exportedHotfixDelegates[i];
-
-                                    using (new PreservedCodeGen(this))
+                                    for (var i = 0; i < exportedHotfixDelegates.Count; i++)
                                     {
+                                        var hotfixDelegateBindingInfo = exportedHotfixDelegates[i];
+
                                         using (new HotfixDelegateCodeGen(this, hotfixDelegateBindingInfo, i))
                                         {
                                         }
                                     }
-                                }
 
-                                for (var i = 0; i < delegateBindingInfos.Length; i++)
-                                {
-                                    var delegateBindingInfo = delegateBindingInfos[i];
-                                    // var nargs = delegateBindingInfo.parameters.Length;
-
-                                    this.bindingManager.OnPreGenerateDelegate(delegateBindingInfo);
-                                    using (new CSEditorOnlyCodeGen(this, delegateBindingInfo.requiredDefines))
+                                    for (var i = 0; i < delegateBindingInfos.Length; i++)
                                     {
-                                        using (new PreservedCodeGen(this))
+                                        var delegateBindingInfo = delegateBindingInfos[i];
+                                        // var nargs = delegateBindingInfo.parameters.Length;
+
+                                        this.bindingManager.OnPreGenerateDelegate(delegateBindingInfo);
+                                        using (new CSEditorOnlyCodeGen(this, delegateBindingInfo.requiredDefines))
                                         {
                                             using (new DelegateCodeGen(this, delegateBindingInfo, i))
                                             {
                                             }
                                         }
+                                        this.bindingManager.OnPostGenerateDelegate(delegateBindingInfo);
                                     }
-                                    this.bindingManager.OnPostGenerateDelegate(delegateBindingInfo);
                                 }
                             }
                         }

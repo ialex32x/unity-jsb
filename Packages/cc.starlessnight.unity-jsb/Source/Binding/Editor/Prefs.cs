@@ -33,7 +33,7 @@ namespace QuickJS.Binding
         public string sourceDir = "Scripts/src";
 
         /// <summary>
-        /// [optional] read this property as javascript dir for js_reload 
+        /// [optional] read this property as javascript dir for js_reload (https://github.com/ialex32x/plover)
         /// !! this property is read only when tsconfig.json can not be located at the project root path or compilerOptions.outDir is not configured
         /// </summary>
         public string javascriptDir = ""; // Scripts/out
@@ -57,6 +57,11 @@ namespace QuickJS.Binding
         /// location of XmlDoc generated from Assembly-CSharp.dll 
         /// </summary>
         public string xmlDocDir = "Assets/Generated/Docs";
+
+        /// <summary>
+        /// output as a const field in generated code
+        /// </summary>
+        public string vendor = "";
 
         /// <summary>
         /// all related modules information generated in the binding process will be written into this file. 
@@ -91,6 +96,9 @@ namespace QuickJS.Binding
         /// </summary>
         public bool alwaysEmitOperatorMethod = true;
 
+        /// <summary>
+        /// all obsolete types/members will not be exported if set true
+        /// </summary>
         public bool excludeObsoleteItems = true;
 
         /// <summary>
@@ -201,7 +209,7 @@ namespace QuickJS.Binding
         });
 
         /// <summary>
-        /// all the types in the assemblies in this list will not automatically exported 
+        /// all the types in the listed assemblies will not be exported automatically
         /// </summary>
         public List<string> explicitAssemblies = new List<string>(new string[]
         {
@@ -210,7 +218,7 @@ namespace QuickJS.Binding
         });
 
         /// <summary>
-        /// all the types in the assemblies in this list will automatically exported (except the manually blocked types in BindingManager)
+        /// all the types in the listed assemblies will be exported automatically (except the manually blocked types in BindingManager)
         /// </summary>
         public List<string> implicitAssemblies = new List<string>(new string[]
         {
