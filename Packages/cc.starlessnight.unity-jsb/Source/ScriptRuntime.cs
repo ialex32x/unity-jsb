@@ -469,8 +469,7 @@ namespace QuickJS
         // 用于静态绑定代码注册绑定模块
         public ProxyModuleRegister AddStaticModuleProxy(string module_id, Action<ScriptRuntime, ProxyModuleRegister> proxyReg = null)
         {
-            var proxy = new ProxyModuleRegister(this, module_id);
-
+            var proxy = new ProxyModuleRegister();
             FindModuleResolver<StaticModuleResolver>().AddStaticModule(module_id, proxy);
             proxyReg?.Invoke(this, proxy);
             return proxy;
