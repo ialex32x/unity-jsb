@@ -17,7 +17,7 @@ namespace QuickJS.Binding
     {
         private Type _type;
         private JSHotfixAttribute _hotfix;
-        private string _typeNaming;
+        private string _tsNaming;
         private bool _enableOperatorOverloading = true;
         private bool _disposable;
         private Native.JSCFunctionMagic _csConstructorOverride = null;
@@ -336,14 +336,18 @@ namespace QuickJS.Binding
             }
         }
 
-        public string GetTypeNaming()
+        public string GetTSNaming()
         {
-            return _typeNaming;
+            return _tsNaming;
         }
 
+        /// <summary>
+        /// Override the type name in typescript.
+        /// The type hierarchy from CSharp will be used as the type path in typescript by default unless the given '_tsNaming' is hierarchical.
+        /// </summary>
         public TypeTransform Rename(string name)
         {
-            _typeNaming = name;
+            _tsNaming = name;
             return this;
         }
 

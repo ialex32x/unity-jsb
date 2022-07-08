@@ -30,7 +30,7 @@ namespace QuickJS.Binding
         /// js注册名 (带平面化的泛型部分)
         /// </summary>
         public readonly string jsName;
-        
+
         public readonly string jsNameNormalized;
 
         /// <summary>
@@ -58,12 +58,21 @@ namespace QuickJS.Binding
         {
             this.type = type;
 
-            var naming = typeTransform?.GetTypeNaming() ?? type.Name;
-            var indexOfTypeName = naming.LastIndexOf('.');
+            var naming = typeTransform?.GetTSNaming();
+            var indexOfHierarchicalName = -1;
 
-            if (indexOfTypeName >= 0)
+            if (naming == null)
             {
-                // 指定的命名中已经携带了"."
+                naming = type.Name;
+            }
+            else
+            {
+                indexOfHierarchicalName = naming.LastIndexOf('.');
+            }
+
+            // check if this type has a given hierarchical name with 'TypeTransform.Rename'
+            if (indexOfHierarchicalName >= 0)
+            {
                 var indexOfInnerTypeName = naming.IndexOf('+');
                 if (indexOfInnerTypeName >= 0)
                 {
@@ -83,9 +92,9 @@ namespace QuickJS.Binding
                 }
                 else
                 {
-                    this.jsModule = naming.Substring(0, indexOfTypeName);
+                    this.jsModule = naming.Substring(0, indexOfHierarchicalName);
                     this.jsNamespace = "";
-                    this.jsName = naming.Substring(indexOfTypeName + 1);
+                    this.jsName = naming.Substring(indexOfHierarchicalName + 1);
                 }
 
                 var gArgIndex = this.jsName.IndexOf("<");
@@ -107,7 +116,7 @@ namespace QuickJS.Binding
                 var declaringType = type.DeclaringType;
                 while (declaringType != null)
                 {
-                    this.jsNamespace = string.IsNullOrEmpty(this.jsNamespace) ? declaringType.Name : $"{declaringType.Name}.{this.jsNamespace}";
+                    this.jsNamespace = this.jsNamespace.Length == 0 ? declaringType.Name : $"{declaringType.Name}.{this.jsNamespace}";
                     declaringType = declaringType.DeclaringType;
                 }
 
