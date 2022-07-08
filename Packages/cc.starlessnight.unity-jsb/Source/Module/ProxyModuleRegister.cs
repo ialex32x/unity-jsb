@@ -11,12 +11,14 @@ namespace QuickJS.Module
         // Key: FullName in module
         // Value: Type
         private Dictionary<string, Type> _typeTree; // root space
+        private HashSet<string> _intermediatePath;
 
         public bool isReloadSupported => false;
 
         public ProxyModuleRegister()
         {
             _typeTree = new Dictionary<string, Type>();
+            _intermediatePath = new HashSet<string>();
         }
 
         public void Unload()
@@ -28,9 +30,13 @@ namespace QuickJS.Module
             for (int i = 0, length = ns.Length; i < length; ++i)
             {
                 var intermediate = string.Join(".", ns, 0, i + 1);
-                if (!_typeTree.TryGetValue(intermediate, out var slot) || slot == null)
+                if (i != length - 1)
                 {
-                    _typeTree[intermediate] = i != length - 1 ? null : type;
+                    _intermediatePath.Add(intermediate);
+                }
+                else
+                {
+                    _typeTree[intermediate] = type;
                 }
             }
         }
@@ -40,7 +46,11 @@ namespace QuickJS.Module
             Type type;
             if (_typeTree.TryGetValue(typePath, out type))
             {
-                return type != null ? context.GetTypeDB().GetConstructorOf(type) : JSApi.JS_NewObject(context);
+                return context.GetTypeDB().GetConstructorOf(type);
+            }
+            if (_intermediatePath.Contains(typePath))
+            {
+                return JSApi.JS_NewObject(context);
             }
             return JSApi.JS_UNDEFINED;
         }
