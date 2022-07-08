@@ -16,6 +16,7 @@ namespace QuickJS.Binding
         {
             typeof(void),
             typeof(string),
+            typeof(Delegate),
         });
 
         /// <summary>
@@ -31,7 +32,6 @@ namespace QuickJS.Binding
             public Dictionary<string, string> alias = new Dictionary<string, string>();
         }
 
-        protected bool _jsbImport;
 
         // module-name => module-info
         // 引用的模块列表
@@ -64,12 +64,10 @@ namespace QuickJS.Binding
 
         private void CollectImports()
         {
-            if (typeBindingInfo.transform.requiredDefines != null)
+            if (typeBindingInfo.super != typeof(Enum))
             {
-                _jsbImport = true;
+                AddModuleAlias(typeBindingInfo.super);
             }
-
-            AddModuleAlias(typeBindingInfo.super);
 
             foreach (var @interface in typeBindingInfo.interfaces)
             {
@@ -103,7 +101,7 @@ namespace QuickJS.Binding
                 {
                     foreach (var p in method.method.GetParameters())
                     {
-                        AddModuleAlias(p.ParameterType);
+                        AddModuleAlias(p);
                     }
                 }
 
@@ -111,7 +109,7 @@ namespace QuickJS.Binding
                 {
                     foreach (var p in method.method.GetParameters())
                     {
-                        AddModuleAlias(p.ParameterType);
+                        AddModuleAlias(p);
                     }
                 }
             }
@@ -129,7 +127,7 @@ namespace QuickJS.Binding
                         AddModuleAlias(method.method.ReturnType);
                         foreach (var p in method.method.GetParameters())
                         {
-                            AddModuleAlias(p.ParameterType);
+                            AddModuleAlias(p);
                         }
                     }
 
@@ -138,7 +136,7 @@ namespace QuickJS.Binding
                         AddModuleAlias(method.method.ReturnType);
                         foreach (var p in method.method.GetParameters())
                         {
-                            AddModuleAlias(p.ParameterType);
+                            AddModuleAlias(p);
                         }
                     }
                 }
@@ -147,10 +145,7 @@ namespace QuickJS.Binding
 
         private void WriteImports()
         {
-            if (_jsbImport)
-            {
-                this.cg.tsDeclare.AppendLine($"import * as jsb from \"jsb\";");
-            }
+            this.cg.tsDeclare.AppendLine($"import * as jsb from \"jsb\";");
 
             foreach (var me in _modules)
             {
@@ -189,88 +184,49 @@ namespace QuickJS.Binding
             }
         }
 
-        private void AddModuleAlias(Type type)
+        private void AddModuleAlias(ParameterInfo p)
         {
-            if (type == null)
+            AddModuleAlias(p.IsDefined(typeof(ParamArrayAttribute)) ? p.ParameterType.GetElementType() : p.ParameterType);
+        }
+
+        private void AddModuleAlias(Type originalType)
+        {
+            if (originalType == null || originalType.IsPrimitive || _noImportTypes.Contains(originalType))
             {
                 return;
             }
 
-            if (type.IsPrimitive)
-            {
-                if (type == typeof(byte))
-                {
-                    _jsbImport = true;
-                }
-                return;
-            }
-
-            if (_noImportTypes.Contains(type))
-            {
-                return;
-            }
-
-            if (type == typeof(Enum))
+            if (originalType == typeof(Enum))
             {
                 AddModuleAlias("System", "Enum");
                 return;
             }
 
-            if (BindingManager.IsConstructedGenericType(type))
+            if (originalType.IsArray)
             {
-                if (type.GetGenericTypeDefinition() == typeof(Nullable<>))
-                {
-                    _jsbImport = true;
-                }
+                AddModuleAlias("System", "Array");
+                AddModuleAlias(originalType.GetElementType());
+                return;
+            }
 
-                foreach (var g in type.GetGenericArguments())
+            if (originalType.IsByRef)
+            {
+                AddModuleAlias(originalType.GetElementType());
+                return;
+            }
+
+            if (originalType.IsGenericType && !originalType.IsGenericTypeDefinition)
+            {
+                foreach (var g in originalType.GetGenericArguments())
                 {
                     AddModuleAlias(g);
                 }
-                
-                AddModuleAlias(type.GetGenericTypeDefinition());
-            }
 
-            if (type.IsArray || type.IsByRef)
-            {
-                _jsbImport = true;
-                AddModuleAlias("System", "Array");
-                AddModuleAlias(type.GetElementType());
+                AddModuleAlias(originalType.GetGenericTypeDefinition());
                 return;
             }
 
-            if (!_jsbImport)
-            {
-                var defs = new HashSet<string>();
-                this.cg.bindingManager.CollectTypeRequiredDefines(defs, type);
-                this.cg.bindingManager.CollectTypeRequiredDefines(defs, type.DeclaringType);
-                if (defs.Count != 0)
-                {
-                    _jsbImport = true;
-                }
-            }
-
-            if (type.BaseType == typeof(MulticastDelegate))
-            {
-                var delegateBindingInfo = this.cg.bindingManager.GetDelegateBindingInfo(type);
-
-                if (delegateBindingInfo != null)
-                {
-                    if (!_jsbImport && !string.IsNullOrEmpty(delegateBindingInfo.requiredDefines))
-                    {
-                        _jsbImport = true;
-                    }
-                    AddModuleAlias(delegateBindingInfo.returnType);
-                    foreach (var p in delegateBindingInfo.parameters)
-                    {
-                        AddModuleAlias(p.ParameterType);
-                    }
-                }
-                return;
-            }
-
-            var tsTypeNaming = cg.bindingManager.GetTSTypeNaming(type);
-
+            var tsTypeNaming = cg.bindingManager.GetTSTypeNaming(originalType);
             if (tsTypeNaming != null)
             {
                 // 避免引入自身
@@ -281,7 +237,24 @@ namespace QuickJS.Binding
             }
             else
             {
-                AddModuleAlias(type.BaseType);
+                var delegateBindingInfo = this.cg.bindingManager.GetDelegateBindingInfo(originalType);
+
+                if (delegateBindingInfo != null)
+                {
+                    AddModuleAlias(delegateBindingInfo.returnType);
+                    foreach (var p in delegateBindingInfo.parameters)
+                    {
+                        AddModuleAlias(p.ParameterType);
+                    }
+                }
+                else
+                {
+                    var exported = this.cg.bindingManager.GetExportedTypeRecursively(originalType);
+                    if (exported != null && exported.type != originalType)
+                    {
+                        AddModuleAlias(exported.type);
+                    }
+                }
             }
         }
 

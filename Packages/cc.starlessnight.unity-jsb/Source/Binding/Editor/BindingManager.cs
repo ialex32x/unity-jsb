@@ -231,8 +231,8 @@ namespace QuickJS.Binding
             Initialize();
         }
 
-        public IBindingLogger GetBindingLogger() 
-        { 
+        public IBindingLogger GetBindingLogger()
+        {
             return _bindingLogger;
         }
 
@@ -535,15 +535,18 @@ namespace QuickJS.Binding
 
         public DelegateBridgeBindingInfo GetDelegateBindingInfo(Type type)
         {
-            Type target;
-            if (_redirectDelegates.TryGetValue(type, out target))
+            if (type != null)
             {
-                type = target;
-            }
-            DelegateBridgeBindingInfo delegateBindingInfo;
-            if (_exportedDelegates.TryGetValue(type, out delegateBindingInfo))
-            {
-                return delegateBindingInfo;
+                Type target;
+                if (_redirectDelegates.TryGetValue(type, out target))
+                {
+                    type = target;
+                }
+                DelegateBridgeBindingInfo delegateBindingInfo;
+                if (_exportedDelegates.TryGetValue(type, out delegateBindingInfo))
+                {
+                    return delegateBindingInfo;
+                }
             }
             return null;
         }
@@ -862,7 +865,7 @@ namespace QuickJS.Binding
             {
                 Error(exception);
             }
-            
+
             return null;
         }
 
