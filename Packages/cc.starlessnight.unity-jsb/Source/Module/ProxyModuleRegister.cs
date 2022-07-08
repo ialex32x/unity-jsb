@@ -23,11 +23,16 @@ namespace QuickJS.Module
         {
         }
 
-        //TODO make ns directly joined
         public void Add(Type type, string[] ns)
         {
-            var fullName = string.Join(".", ns);
-            _typeTree[fullName] = type;
+            for (int i = 0, length = ns.Length; i < length; ++i)
+            {
+                var intermediate = string.Join(".", ns, 0, i + 1);
+                if (!_typeTree.TryGetValue(intermediate, out var slot) || slot == null)
+                {
+                    _typeTree[intermediate] = i != length - 1 ? null : type;
+                }
+            }
         }
 
         private JSValue LoadType(ScriptContext context, string typePath)
@@ -35,11 +40,9 @@ namespace QuickJS.Module
             Type type;
             if (_typeTree.TryGetValue(typePath, out type))
             {
-                return context.GetTypeDB().GetConstructorOf(type);
+                return type != null ? context.GetTypeDB().GetConstructorOf(type) : JSApi.JS_NewObject(context);
             }
-            
-            //TODO throw error if typePath does not indicate Type/IntermidiatePath
-            return JSApi.JS_NewObject(context);
+            return JSApi.JS_UNDEFINED;
         }
 
         [MonoPInvokeCallback(typeof(JSCFunction))]
