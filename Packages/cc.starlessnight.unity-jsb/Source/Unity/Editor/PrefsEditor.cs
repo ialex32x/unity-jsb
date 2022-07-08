@@ -699,7 +699,7 @@ namespace QuickJS.Unity
                 {
                     _prefs.optToString = EditorGUILayout.Toggle("Auto ToString", _prefs.optToString);
                     _prefs.enableOperatorOverloading = EditorGUILayout.Toggle("Operator Overloading", _prefs.enableOperatorOverloading);
-                    _prefs.alwaysEmitOperatorMethod = EditorGUILayout.Toggle("Always Emit Operator", _prefs.alwaysEmitOperatorMethod);
+                    _prefs.alwaysEmitOperatorMethod = EditorGUILayout.Toggle("Always Emit Operators", _prefs.alwaysEmitOperatorMethod);
                     _prefs.excludeObsoleteItems = EditorGUILayout.Toggle("Exclude Obsoleted", _prefs.excludeObsoleteItems);
                     _prefs.skipDelegateWithByRefParams = EditorGUILayout.Toggle("Omit ref param Delegates", _prefs.skipDelegateWithByRefParams);
                     _prefs.alwaysCheckArgType = EditorGUILayout.Toggle("Always check arg type", _prefs.alwaysCheckArgType);
