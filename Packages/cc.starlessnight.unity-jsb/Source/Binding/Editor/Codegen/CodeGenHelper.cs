@@ -355,7 +355,11 @@ namespace QuickJS.Binding
         private string GetVarName(Type type)
         {
             var name = type.Name;
-            return name[0].ToString().ToLower() + name.Substring(1);
+            if (char.IsLower(name[0]))
+            {
+                return name + "_";
+            }
+            return char.ToLower(name[0]) + name.Substring(1);
         }
 
         private void AddCatchClause(Type exceptionType)
@@ -375,8 +379,6 @@ namespace QuickJS.Binding
         {
             this.cg.cs.DecTabLevel();
             this.cg.cs.AppendLine("}");
-            // this.AddCatchClause(typeof(NullReferenceException), "duk_reference_error");
-            // this.AddCatchClause(typeof(IndexOutOfRangeException), "duk_range_error");
             this.AddCatchClause(typeof(Exception));
         }
     }

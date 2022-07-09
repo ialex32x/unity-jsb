@@ -149,5 +149,26 @@ namespace QuickJS.Binding
         {
             return string.Join(sp, from value in Strip(values, value0) select $"\"{value}\"");
         }
+
+        // 保证生成一个以 prefix 为前缀, 与参数列表中所有参数名不同的名字
+        public static string GetUniqueName(ParameterInfo[] parameters, string prefix)
+        {
+            return GetUniqueName(parameters, prefix, 0);
+        }
+
+        public static string GetUniqueName(ParameterInfo[] parameters, string prefix, int index)
+        {
+            var size = parameters.Length;
+            var name = prefix + index;
+            for (var i = 0; i < size; i++)
+            {
+                var parameter = parameters[i];
+                if (parameter.Name == prefix)
+                {
+                    return GetUniqueName(parameters, prefix, index + 1);
+                }
+            }
+            return name;
+        }
     }
 }

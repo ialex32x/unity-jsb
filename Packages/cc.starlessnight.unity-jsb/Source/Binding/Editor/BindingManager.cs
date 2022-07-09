@@ -1101,27 +1101,6 @@ namespace QuickJS.Binding
             return GetTSVariable(name);
         }
 
-        // 保证生成一个以 prefix 为前缀, 与参数列表中所有参数名不同的名字
-        public string GetUniqueName(ParameterInfo[] parameters, string prefix)
-        {
-            return GetUniqueName(parameters, prefix, 0);
-        }
-
-        public string GetUniqueName(ParameterInfo[] parameters, string prefix, int index)
-        {
-            var size = parameters.Length;
-            var name = prefix + index;
-            for (var i = 0; i < size; i++)
-            {
-                var parameter = parameters[i];
-                if (parameter.Name == prefix)
-                {
-                    return GetUniqueName(parameters, prefix, index + 1);
-                }
-            }
-            return name;
-        }
-
         /// <summary>
         /// 获取父类的 TypeBindingInfo (沿继承链上溯直到存在导出), 不存在时返回 null
         /// </summary>
