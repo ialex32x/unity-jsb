@@ -15,10 +15,9 @@ namespace QuickJS.Binding
         {
             this.cg.AppendJSDoc(this.typeBindingInfo.type);
             var transform = this.typeBindingInfo.transform;
-            var prefix = this.typeBindingInfo.tsTypeNaming.topLevel ? "declare " : "";
             var superBindingInfo = this.cg.bindingManager.GetSuperTypeBindingInfo(this.typeBindingInfo);
             var super = superBindingInfo != null ? this.cg.currentTSModule.GetTSTypeFullName(superBindingInfo.type) : "";
-            var interfaces = this.cg.currentTSModule.GetTSInterfacesName(this.typeBindingInfo.type);
+            var interfaces = this.cg.currentTSModule.GetTSInterfaceNames(this.typeBindingInfo.type);
             var implements = "";
             var jsClassName = this.typeBindingInfo.tsTypeNaming.jsName;
             var jsClassType = "";
@@ -27,33 +26,33 @@ namespace QuickJS.Binding
             {
                 jsClassType = "interface";
 
-                if (string.IsNullOrEmpty(interfaces))
+                if (interfaces.Length == 0)
                 {
-                    if (!string.IsNullOrEmpty(super))
+                    if (super.Length != 0)
                     {
-                        implements += $" extends {super}"; // something wrong 
+                        implements += $" extends {super}";
                     }
                 }
                 else
                 {
                     implements += $" extends {interfaces}";
 
-                    if (!string.IsNullOrEmpty(super))
+                    if (super.Length != 0)
                     {
-                        implements += $", {super}"; // something wrong 
+                        implements += $", {super}";
                     }
                 }
             }
             else
             {
-                jsClassType = typeBindingInfo.type.IsAbstract ? "abstract class" : "class";
+                jsClassType = typeBindingInfo.isAbstract ? "abstract class" : "class";
 
-                if (!string.IsNullOrEmpty(super))
+                if (super.Length != 0)
                 {
                     implements += $" extends {super}";
                 }
 
-                if (!string.IsNullOrEmpty(interfaces))
+                if (interfaces.Length != 0)
                 {
                     implements += $" implements {interfaces}";
                 }
@@ -73,7 +72,7 @@ namespace QuickJS.Binding
                 }
             }
 
-            this.cg.tsDeclare.AppendLine($"{prefix}{jsClassType} {jsClassName}{implements} {{");
+            this.cg.tsDeclare.AppendLine($"{jsClassType} {jsClassName}{implements} {{");
             this.cg.tsDeclare.AddTabLevel();
 
             // 生成函数体

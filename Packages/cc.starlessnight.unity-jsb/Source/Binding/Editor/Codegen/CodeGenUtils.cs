@@ -123,12 +123,21 @@ namespace QuickJS.Binding
             return (from value in values where !string.IsNullOrEmpty(value) select value).ToArray();
         }
 
-        public static string Concat(string sp, params string[] values)
+        public static string Join(string sp, string left, string right)
+        {
+            if (right.Length > 0)
+            {
+                return left.Length > 0 ? left + sp + right : right;
+            }
+            return left;
+        }
+
+        public static string Join(string sp, params string[] values)
         {
             return string.Join(sp, Strip(values));
         }
 
-        public static string ConcatExpression(string sp, params string[] values)
+        public static string JoinExpression(string sp, params string[] values)
         {
             return string.Join(sp, from value in Strip(values) select $"\"{value}\"");
         }
@@ -136,7 +145,7 @@ namespace QuickJS.Binding
         /// <summary>
         /// concat strings as: "value1", "value2", "value3"
         /// </summary>
-        public static string ConcatExpression(string sp, string value0, params string[] values)
+        public static string JoinExpression(string sp, string value0, params string[] values)
         {
             return string.Join(sp, from value in Strip(values, value0) select $"\"{value}\"");
         }

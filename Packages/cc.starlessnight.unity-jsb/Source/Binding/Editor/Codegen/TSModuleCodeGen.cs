@@ -20,24 +20,30 @@ namespace QuickJS.Binding
         });
 
         /// <summary>
-        /// 当前模块名
+        /// Module name of the currently executing codegen (prefs.defaultJSModule will be used for empty name)
         /// </summary>
         protected string tsModule;
         protected TSModuleBindingInfo moduleBindingInfo;
 
         public class ModuleInfo
         {
-            // entry-name => alias-name
-            // 引用此模块中类型的命名映射表 
+            /// <summary>
+            /// a name map for all referenced types from other modules <br/>
+            /// entry-name => alias-name 
+            /// </summary>
             public Dictionary<string, string> alias = new Dictionary<string, string>();
         }
 
 
-        // module-name => module-info
-        // 引用的模块列表
+        /// <summary>
+        /// all referenced modules <br/>
+        /// module-name => module-info
+        /// </summary>
         protected Dictionary<string, ModuleInfo> _modules = new Dictionary<string, ModuleInfo>();
 
-        // unique alias-name
+        /// <summary>
+        /// records of unique local names for all referenced types from other modules
+        /// </summary>
         protected HashSet<string> _uniqueNames = new HashSet<string>();
 
         public TSModuleCodeGen(CodeGenerator cg, TypeBindingInfo typeBindingInfo)
@@ -89,12 +95,13 @@ namespace QuickJS.Binding
                 AddModuleAlias(entry.Value.eventInfo.EventHandlerType);
             }
 
+            // process all type references in delegates
             foreach (var @delegate in typeBindingInfo.delegates)
             {
                 AddModuleAlias(@delegate.Value.delegateType);
             }
 
-            // 处理构造函数中产生的类型引用
+            // process all type references in constructors
             foreach (var entryVariant in typeBindingInfo.constructors.variants)
             {
                 foreach (var method in entryVariant.Value.plainMethods)
@@ -114,7 +121,7 @@ namespace QuickJS.Binding
                 }
             }
 
-            // 处理其他方法中产生的类型引用
+            // process all type references in methods
             var methods = typeBindingInfo.staticMethods.Select(s => s.Value)
                 .Concat(typeBindingInfo.methods.Select(s => s.Value));
 
@@ -145,6 +152,7 @@ namespace QuickJS.Binding
 
         private void WriteImports()
         {
+            // always import jsb for simplicity (ref, out, Nullable<>, byte)
             this.cg.tsDeclare.AppendLine($"import * as jsb from \"jsb\";");
 
             foreach (var me in _modules)
@@ -275,17 +283,20 @@ namespace QuickJS.Binding
 
             if (!reg.alias.ContainsKey(accessName))
             {
-                var uniqueName = GetUniqueAccess(accessName, 0);
+                var uniqueName = GetUniqueAccess(accessName);
                 reg.alias.Add(accessName, uniqueName);
             }
         }
 
-        // 如果是当前模块中的命名, 则拥有绝对优先权
-        private string GetUniqueAccess(string uname, int index)
+        /// <summary>
+        /// Generate a unique name for referencing in the current module. 
+        /// The given name will be renamed with a number suffix if a type with the same name exists or it's already been generated before.
+        /// </summary>
+        private string GetUniqueAccess(string uname, int index = 0)
         {
             var rename = index == 0 ? uname : uname + index;
 
-            if (this.moduleBindingInfo.ContainsKey(rename) || _uniqueNames.Contains(rename))
+            if (this.moduleBindingInfo.Contains(rename) || _uniqueNames.Contains(rename))
             {
                 return GetUniqueAccess(uname, index + 1);
             }
@@ -293,8 +304,6 @@ namespace QuickJS.Binding
             _uniqueNames.Add(rename);
             return rename;
         }
-
-        #region TS 命名辅助
 
         public string GetAlias(Type type)
         {
@@ -316,6 +325,11 @@ namespace QuickJS.Binding
         public string GetTSTypeFullName(Type type)
         {
             return GetTSTypeFullName(type, false);
+        }
+
+        public string GetTSTypeFullName(ParameterInfo p)
+        {
+            return GetTSTypeFullName(p.ParameterType, p.IsOut);
         }
 
         public string GetTSTypeFullName(Type type, bool isOut)
@@ -374,25 +388,38 @@ namespace QuickJS.Binding
                 return "Array<" + tsFullName + ", " + rank + ">";
             }
 
+            //TODO refactor TSName accessing of exported types
             var info = this.cg.bindingManager.GetExportedType(type);
             if (info != null)
             {
-                var gDef = GetTSGenericTypeDefinition(type);
-                if (!string.IsNullOrEmpty(gDef))
+                if (BindingManager.IsConstructedGenericType(type))
                 {
-                    return gDef;
+                    var gType = type.GetGenericTypeDefinition();
+                    var gTypeInfo = this.cg.bindingManager.GetExportedType(gType);
+                    if (gTypeInfo != null)
+                    {
+                        var templateArgs = "";
+                        var tArgs = type.GetGenericArguments();
+                        var typeName = CodeGenUtils.Join(".", gTypeInfo.tsTypeNaming.jsNamespace, gTypeInfo.tsTypeNaming.jsPureName);
+
+                        for (var i = 0; i < tArgs.Length; i++)
+                        {
+                            templateArgs = CodeGenUtils.Join(", ", templateArgs, GetTSTypeFullName(tArgs[i]));
+                        }
+                        return $"{typeName}<{templateArgs}>";
+                    }
                 }
 
                 var tsTypeNaming = info.tsTypeNaming;
                 if (tsTypeNaming.jsModule == this.tsModule)
                 {
-                    return CodeGenUtils.Concat(".", tsTypeNaming.jsModuleAccess, tsTypeNaming.jsLocalName);
+                    return CodeGenUtils.Join(".", tsTypeNaming.jsModuleAccess, tsTypeNaming.jsLocalName);
                 }
 
                 var localAlias = GetAlias(type);
                 if (localAlias != null)
                 {
-                    return CodeGenUtils.Concat(".", localAlias, tsTypeNaming.jsLocalName);
+                    return CodeGenUtils.Join(".", localAlias, tsTypeNaming.jsLocalName);
                 }
                 return tsTypeNaming.jsFullName;
             }
@@ -402,11 +429,8 @@ namespace QuickJS.Binding
                 var delegateBindingInfo = this.cg.bindingManager.GetDelegateBindingInfo(type);
                 if (delegateBindingInfo != null)
                 {
-                    // var nargs = delegateBindingInfo.parameters.Length;
                     var ret = GetTSTypeFullName(delegateBindingInfo.returnType);
-                    // var t_arglist = (nargs > 0 ? ", " : "") + GetTSArglistTypes(delegateBindingInfo.parameters, false);
-                    var v_arglist = GetTSArglistTypes(delegateBindingInfo.parameters, true);
-                    // return $"{CodeGenerator.NamespaceOfInternalScriptTypes}.Delegate{nargs}<{ret}{t_arglist}> | (({v_arglist}) => {ret})";
+                    var v_arglist = GetTSArglistTypes(delegateBindingInfo.parameters);
                     return $"({v_arglist}) => {ret}";
                 }
             }
@@ -432,7 +456,7 @@ namespace QuickJS.Binding
         }
 
         // 生成参数对应的字符串形式参数列表定义 (typescript)
-        public string GetTSArglistTypes(ParameterInfo[] parameters, bool withVarName)
+        public string GetTSArglistTypes(ParameterInfo[] parameters)
         {
             var size = parameters.Length;
             var arglist = "";
@@ -443,11 +467,8 @@ namespace QuickJS.Binding
             for (var i = 0; i < size; i++)
             {
                 var parameter = parameters[i];
-                var typename = GetTSTypeFullName(parameter.ParameterType, parameter.IsOut);
-                if (withVarName)
-                {
-                    arglist += this.cg.bindingManager.GetTSVariable(parameter) + ": ";
-                }
+                var typename = GetTSTypeFullName(parameter);
+                arglist += this.cg.bindingManager.GetTSVariable(parameter) + ": ";
                 arglist += typename;
                 if (i != size - 1)
                 {
@@ -458,7 +479,7 @@ namespace QuickJS.Binding
         }
 
         // 获取实现的接口的ts声明
-        public string GetTSInterfacesName(Type type)
+        public string GetTSInterfaceNames(Type type)
         {
             var interfaces = type.GetInterfaces();
             var str = "";
@@ -469,56 +490,11 @@ namespace QuickJS.Binding
                 if (interfaceBindingInfo != null)
                 {
                     // Debug.Log($"{type.Name} implements {@interface.Name}");
-                    str += GetTSTypeFullName(interfaceBindingInfo.type) + ", ";
+                    str = CodeGenUtils.Join(", ", str, GetTSTypeFullName(interfaceBindingInfo.type));
                 }
             }
 
-            var gDef = GetTSGenericTypeDefinition(type);
-            if (gDef.Length > 0)
-            {
-                str += gDef + ", ";
-            }
-
-            if (str.Length > 0)
-            {
-                str = str.Substring(0, str.Length - 2);
-            }
             return str;
         }
-
-        // 如果 type 是一个具体泛型类, 则返回 Sample<String> 形式的字符串表示
-        public string GetTSGenericTypeDefinition(Type type)
-        {
-            var str = "";
-
-            if (BindingManager.IsConstructedGenericType(type))
-            {
-                var gType = type.GetGenericTypeDefinition();
-                var gTypeInfo = this.cg.bindingManager.GetExportedType(gType);
-                if (gTypeInfo != null)
-                {
-                    var templateArgs = "";
-                    var tArgs = type.GetGenericArguments();
-                    for (var i = 0; i < tArgs.Length; i++)
-                    {
-                        templateArgs += GetTSTypeFullName(tArgs[i]);
-                        if (i != tArgs.Length - 1)
-                        {
-                            templateArgs += ", ";
-                        }
-                    }
-
-                    str += gTypeInfo.tsTypeNaming.MakeGenericJSFullTypeName(templateArgs);
-                }
-            }
-
-            if (str.Length > 0)
-            {
-                str = str.Substring(0, str.Length - 2);
-            }
-            return str;
-        }
-
-        #endregion
     }
 }

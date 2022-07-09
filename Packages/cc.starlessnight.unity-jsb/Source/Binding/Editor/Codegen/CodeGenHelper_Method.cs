@@ -485,7 +485,7 @@ namespace QuickJS.Binding
                     }
                     else
                     {
-                        var parameterTS = this.cg.currentTSModule.GetTSTypeFullName(parameter.ParameterType, parameter.IsOut);
+                        var parameterTS = this.cg.currentTSModule.GetTSTypeFullName(parameter);
                         var parameterVarName = this.cg.bindingManager.GetTSVariable(parameter);
                         this.cg.tsDeclare.AppendL($"{parameter_prefix}{parameterVarName}: {parameterTS}");
                     }

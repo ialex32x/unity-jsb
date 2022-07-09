@@ -36,7 +36,7 @@ namespace QuickJS.Binding
         private HashSet<string> _typeFullNameBlacklist;
         private HashSet<string> _assemblyBlacklist;  // 禁止导出的 assembly
         private Dictionary<Type, TypeBindingInfo> _exportedTypes = new Dictionary<Type, TypeBindingInfo>();
-        private Dictionary<Type, TSTypeNaming> _tsTypeNamings = new Dictionary<Type, TSTypeNaming>();
+        private Dictionary<Type, ITSTypeNaming> _tsTypeNamings = new Dictionary<Type, ITSTypeNaming>();
         private Dictionary<string, TSModuleBindingInfo> _exportedModules = new Dictionary<string, TSModuleBindingInfo>();
         private List<TypeBindingInfo> _collectedTypes = new List<TypeBindingInfo>(); // 已经完成导出的类型 
         private Dictionary<Type, RawTypeBindingInfo> _collectedRawTypes = new Dictionary<Type, RawTypeBindingInfo>(); // 已经完成导出的类型 
@@ -528,7 +528,7 @@ namespace QuickJS.Binding
             TSModuleBindingInfo module;
             if (!_exportedModules.TryGetValue(name, out module))
             {
-                module = _exportedModules[name] = new TSModuleBindingInfo(name);
+                module = _exportedModules[name] = new TSModuleBindingInfo();
             }
             return module;
         }
@@ -1293,14 +1293,14 @@ namespace QuickJS.Binding
         }
 
         // 在 TypeTransform 准备完成后才有效
-        public TSTypeNaming GetTSTypeNaming(Type type, bool noBindingRequired = false)
+        public ITSTypeNaming GetTSTypeNaming(Type type, bool noBindingRequired = false)
         {
-            TSTypeNaming value = null;
+            ITSTypeNaming value = null;
             if (type != null && !_tsTypeNamings.TryGetValue(type, out value))
             {
                 if (noBindingRequired || GetExportedType(type) != null)
                 {
-                    value = _tsTypeNamings[type] = new TSTypeNaming(this, type, GetTypeTransform(type));
+                    value = _tsTypeNamings[type] = new LegacyTSTypeNaming(this, type);
                 }
             }
 
@@ -2143,7 +2143,6 @@ namespace QuickJS.Binding
                 {
                     var modules = from t in _collectedTypes
                                   where t.genBindingCode
-                                  orderby t.tsTypeNaming.jsDepth
                                   group t by t.tsTypeNaming.jsModule;
 
                     // for reflect binding

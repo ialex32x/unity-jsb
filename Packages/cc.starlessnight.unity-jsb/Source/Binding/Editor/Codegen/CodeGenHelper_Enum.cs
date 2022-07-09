@@ -12,8 +12,7 @@ namespace QuickJS.Binding
         : base(cg, type)
         {
             this.cg.AppendJSDoc(type.type);
-            var prefix = this.typeBindingInfo.tsTypeNaming.topLevel ? "declare " : "";
-            this.cg.tsDeclare.AppendLine("{0}enum {1} {{", prefix, typeBindingInfo.tsTypeNaming.jsName);
+            this.cg.tsDeclare.AppendLine("enum {0} {{", typeBindingInfo.tsTypeNaming.jsName);
             this.cg.tsDeclare.AddTabLevel();
         }
 

@@ -21,6 +21,8 @@ namespace QuickJS.Binding
 
         public TypeBindingFlags bindingFlags => transform.bindingFlags;
 
+        public bool isAbstract => type.IsAbstract;
+
         /// <summary>
         /// 是否可以在脚本中继承此类型
         /// </summary>
@@ -81,8 +83,8 @@ namespace QuickJS.Binding
         public Dictionary<string, DelegateBindingInfo> delegates = new Dictionary<string, DelegateBindingInfo>();
         public ConstructorBindingInfo constructors;
 
-        private TSTypeNaming _tsTypeNaming;
-        public TSTypeNaming tsTypeNaming => _tsTypeNaming;
+        private ITSTypeNaming _tsTypeNaming;
+        public ITSTypeNaming tsTypeNaming => _tsTypeNaming;
 
         private bool _omit;
 
@@ -106,10 +108,7 @@ namespace QuickJS.Binding
                     .Replace(' ', '_')
                     .Replace(',', '_')
                     .Replace('=', '_');
-
-            var module = this.bindingManager.GetExportedModule(_tsTypeNaming.jsModule);
-
-            module.Add(this);
+            this.bindingManager.GetExportedModule(_tsTypeNaming.jsModule).Add(this);
         }
 
         public HashSet<string> GetRequiredDefines(MemberInfo memberInfo)

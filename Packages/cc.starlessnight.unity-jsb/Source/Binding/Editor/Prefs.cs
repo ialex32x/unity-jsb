@@ -178,11 +178,11 @@ namespace QuickJS.Binding
 
         /// <summary>
         /// Determines which module will the types be exported. <br/>
-        ///     default: export types into dispersed modules (depends on it's namespace and outer class) <br/>
-        ///     singular: export types into a single module  <br/>
+        ///     legacy(default): export types into dispersed modules (depends on it's namespace and outer class) <br/>
+        ///     singular: [NOT_IMPLEMENTED] export types into a single module  <br/>
         /// NOT_IMPLEMENTED
         /// </summary>
-        public string moduleStruct = "default";
+        public string moduleStruct = "legacy";
 
         /// <summary>
         /// the optional suffix for the generated d.ts file
