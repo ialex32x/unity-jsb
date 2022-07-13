@@ -20,9 +20,10 @@ namespace QuickJS.Binding
         });
 
         /// <summary>
-        /// Module name of the currently executing codegen (prefs.defaultJSModule will be used for empty name)
+        /// current module name
         /// </summary>
-        protected string tsModule;
+        protected readonly string moduleName;
+
         protected TSModuleBindingInfo moduleBindingInfo;
 
         public class ModuleInfo
@@ -50,11 +51,12 @@ namespace QuickJS.Binding
         {
             this.cg = cg;
             this.typeBindingInfo = typeBindingInfo;
-            this.tsModule = string.IsNullOrEmpty(typeBindingInfo.tsTypeNaming.moduleName) ? cg.bindingManager.prefs.defaultJSModule : typeBindingInfo.tsTypeNaming.moduleName;
-            this.moduleBindingInfo = cg.bindingManager.GetExportedModule(typeBindingInfo.tsTypeNaming.moduleName);
+            this.moduleName = typeBindingInfo.tsTypeNaming.moduleName;
+            this.moduleBindingInfo = cg.bindingManager.GetExportedModule(this.moduleName);
 
+            var moduleDecl = string.IsNullOrEmpty(this.moduleName) ? cg.bindingManager.prefs.defaultJSModule : this.moduleName;
             this.cg.tsDeclare.BeginPart();
-            this.cg.tsDeclare.AppendLine($"declare module \"{this.tsModule}\" {{");
+            this.cg.tsDeclare.AppendLine($"declare module \"{moduleDecl}\" {{");
             this.cg.tsDeclare.AddTabLevel();
 
             CollectImports();
@@ -270,7 +272,7 @@ namespace QuickJS.Binding
         {
             // 手工添加的模块访问需要过滤掉本模块自身 
             // 例如: AddModuleAlias("System", "Array")
-            if (moduleName == this.tsModule)
+            if (moduleName == this.moduleName)
             {
                 return;
             }
@@ -411,7 +413,7 @@ namespace QuickJS.Binding
                 }
 
                 var tsTypeNaming = info.tsTypeNaming;
-                if (tsTypeNaming.moduleName == this.tsModule)
+                if (tsTypeNaming.moduleName == this.moduleName)
                 {
                     return CodeGenUtils.Join(".", tsTypeNaming.moduleEntry, tsTypeNaming.jsLocalName);
                 }
@@ -421,6 +423,9 @@ namespace QuickJS.Binding
                 {
                     return CodeGenUtils.Join(".", localAlias, tsTypeNaming.jsLocalName);
                 }
+                
+                //TODO should never happen, is it safe to remove?
+                CodeGenUtils.Assert(false, "should never happen, is it safe to remove?");
                 return tsTypeNaming.jsFullName;
             }
 

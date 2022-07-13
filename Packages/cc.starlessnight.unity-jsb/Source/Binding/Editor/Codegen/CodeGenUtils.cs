@@ -170,5 +170,12 @@ namespace QuickJS.Binding
             }
             return name;
         }
+
+        public static void Assert(bool condition, string msg)
+        {
+#if UNITY_EDITOR
+            UnityEngine.Debug.Assert(condition, msg);
+#endif
+        }
     }
 }
