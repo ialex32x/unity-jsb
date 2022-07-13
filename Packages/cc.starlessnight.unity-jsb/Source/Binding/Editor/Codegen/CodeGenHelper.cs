@@ -174,9 +174,9 @@ namespace QuickJS.Binding
         {
             this.cg = cg;
             this.cg.cs.Append("var ns = register.CreateNamespace(");
-            if (!string.IsNullOrEmpty(typeBindingInfo.tsTypeNaming.jsNamespace))
+            if (!string.IsNullOrEmpty(typeBindingInfo.tsTypeNaming.typePath))
             {
-                var split_ns = from i in typeBindingInfo.tsTypeNaming.jsNamespace.Split('.') select $"\"{i}\"";
+                var split_ns = from i in typeBindingInfo.tsTypeNaming.typePath.Split('.') select $"\"{i}\"";
                 var join_ns = string.Join(", ", split_ns);
                 this.cg.cs.AppendL(join_ns);
             }

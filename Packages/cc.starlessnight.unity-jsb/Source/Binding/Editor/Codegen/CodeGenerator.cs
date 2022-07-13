@@ -163,9 +163,14 @@ namespace QuickJS.Binding
                                         using (new CSTypeRegisterScopeCodeGen(this, registerVarName, $"{runtimeVarName}.GetMainContext()"))
                                         {
                                             // GeneratePreloadTypes
-                                            foreach (var preloadType in preloadTypes)
+                                            if (preloadTypes.Count != 0)
                                             {
-                                                this.cs.AppendLine("{0}.FindPrototypeOf(typeof{1})", registerVarName, this.bindingManager.GetCSTypeFullName(preloadType));
+                                                this.cs.AppendLine("// preload types begin");
+                                                foreach (var preloadType in preloadTypes)
+                                                {
+                                                    this.cs.AppendLine("{0}.FindPrototypeOf(typeof({1}));", registerVarName, this.bindingManager.GetCSTypeFullName(preloadType));
+                                                }
+                                                this.cs.AppendLine("// preload types end");
                                             }
 
                                             // GenerateRawTypes
@@ -296,7 +301,7 @@ namespace QuickJS.Binding
             using (var tsMod = new TSModuleCodeGen(this, typeBindingInfo))
             {
                 _currentTSModule = tsMod;
-                using (new TSNamespaceCodeGen(this, typeBindingInfo.tsTypeNaming.jsNamespace))
+                using (new TSNamespaceCodeGen(this, typeBindingInfo.tsTypeNaming.typePath))
                 {
                     if (typeBindingInfo.IsEnum)
                     {

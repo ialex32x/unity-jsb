@@ -50,8 +50,8 @@ namespace QuickJS.Binding
         {
             this.cg = cg;
             this.typeBindingInfo = typeBindingInfo;
-            this.tsModule = string.IsNullOrEmpty(typeBindingInfo.tsTypeNaming.jsModule) ? cg.bindingManager.prefs.defaultJSModule : typeBindingInfo.tsTypeNaming.jsModule;
-            this.moduleBindingInfo = cg.bindingManager.GetExportedModule(typeBindingInfo.tsTypeNaming.jsModule);
+            this.tsModule = string.IsNullOrEmpty(typeBindingInfo.tsTypeNaming.moduleName) ? cg.bindingManager.prefs.defaultJSModule : typeBindingInfo.tsTypeNaming.moduleName;
+            this.moduleBindingInfo = cg.bindingManager.GetExportedModule(typeBindingInfo.tsTypeNaming.moduleName);
 
             this.cg.tsDeclare.BeginPart();
             this.cg.tsDeclare.AppendLine($"declare module \"{this.tsModule}\" {{");
@@ -238,9 +238,9 @@ namespace QuickJS.Binding
             if (tsTypeNaming != null)
             {
                 // 避免引入自身
-                if (tsTypeNaming.jsModule != this.typeBindingInfo.tsTypeNaming.jsModule)
+                if (tsTypeNaming.moduleName != this.typeBindingInfo.tsTypeNaming.moduleName)
                 {
-                    AddModuleAlias(tsTypeNaming.jsModule, tsTypeNaming.jsModuleImportAccess);
+                    AddModuleAlias(tsTypeNaming.moduleName, tsTypeNaming.jsModuleImportAccess);
                 }
             }
             else
@@ -309,10 +309,10 @@ namespace QuickJS.Binding
         {
             var tsTypeNaming = this.cg.bindingManager.GetTSTypeNaming(type);
             ModuleInfo moduleInfo;
-            if (_modules.TryGetValue(tsTypeNaming.jsModule, out moduleInfo))
+            if (_modules.TryGetValue(tsTypeNaming.moduleName, out moduleInfo))
             {
                 string alias;
-                if (moduleInfo.alias.TryGetValue(tsTypeNaming.jsModuleAccess, out alias))
+                if (moduleInfo.alias.TryGetValue(tsTypeNaming.moduleEntry, out alias))
                 {
                     return alias;
                 }
@@ -400,7 +400,7 @@ namespace QuickJS.Binding
                     {
                         var templateArgs = "";
                         var tArgs = type.GetGenericArguments();
-                        var typeName = CodeGenUtils.Join(".", gTypeInfo.tsTypeNaming.jsNamespace, gTypeInfo.tsTypeNaming.jsPureName);
+                        var typeName = CodeGenUtils.Join(".", gTypeInfo.tsTypeNaming.typePath, gTypeInfo.tsTypeNaming.jsPureName);
 
                         for (var i = 0; i < tArgs.Length; i++)
                         {
@@ -411,9 +411,9 @@ namespace QuickJS.Binding
                 }
 
                 var tsTypeNaming = info.tsTypeNaming;
-                if (tsTypeNaming.jsModule == this.tsModule)
+                if (tsTypeNaming.moduleName == this.tsModule)
                 {
-                    return CodeGenUtils.Join(".", tsTypeNaming.jsModuleAccess, tsTypeNaming.jsLocalName);
+                    return CodeGenUtils.Join(".", tsTypeNaming.moduleEntry, tsTypeNaming.jsLocalName);
                 }
 
                 var localAlias = GetAlias(type);

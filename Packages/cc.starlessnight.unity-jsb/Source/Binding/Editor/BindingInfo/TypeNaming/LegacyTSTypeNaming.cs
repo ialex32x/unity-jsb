@@ -8,17 +8,14 @@ namespace QuickJS.Binding
         /// <summary>
         /// js module name
         /// </summary>
-        public string jsModule { get; private set; }
+        public string moduleName { get; private set; }
 
         /// <summary>
-        /// js 命名空间
+        /// type path in module (without the name of this type, e.g TypeA.TypeB for TypeA.TypeB.ThisType)
         /// </summary>
-        public string jsNamespace { get; private set; }
+        public string typePath { get; private set; }
 
-        /// <summary>
-        /// splitted jsNamespace
-        /// </summary>
-        public string[] jsNamespaceSlice { get; private set; }
+        public string[] typePathSlice { get; private set; }
 
         ///<summary>
         /// the purified name for js (without the suffix for generic type args). 
@@ -33,9 +30,9 @@ namespace QuickJS.Binding
         public string jsNameNormalized { get; private set; }
 
         /// <summary>
-        /// js 模块中的顶层访问名 (内部类的顶层访问名为最外层类的类名, 否则就是类名本身 jsPureName)
+        /// top level name for registering in module
         /// </summary>
-        public string jsModuleAccess { get; private set; }
+        public string moduleEntry { get; private set; }
 
         public string jsModuleImportAccess { get; private set; }
 
@@ -68,24 +65,24 @@ namespace QuickJS.Binding
                 var indexOfInnerTypeName = naming.IndexOf('+');
                 if (indexOfInnerTypeName >= 0)
                 {
-                    this.jsModule = naming.Substring(0, indexOfInnerTypeName);
+                    this.moduleName = naming.Substring(0, indexOfInnerTypeName);
                     var rightName = naming.Substring(indexOfInnerTypeName + 1);
                     var lastIndexOfInnerTypeName = rightName.LastIndexOf('+');
                     if (lastIndexOfInnerTypeName >= 0)
                     {
-                        this.jsNamespace = rightName.Substring(0, lastIndexOfInnerTypeName);
+                        this.typePath = rightName.Substring(0, lastIndexOfInnerTypeName);
                         this.jsName = rightName.Substring(lastIndexOfInnerTypeName + 1);
                     }
                     else
                     {
-                        this.jsNamespace = "";
+                        this.typePath = "";
                         this.jsName = rightName;
                     }
                 }
                 else
                 {
-                    this.jsModule = naming.Substring(0, indexOfHierarchicalName);
-                    this.jsNamespace = "";
+                    this.moduleName = naming.Substring(0, indexOfHierarchicalName);
+                    this.typePath = "";
                     this.jsName = naming.Substring(indexOfHierarchicalName + 1);
                 }
 
@@ -93,14 +90,14 @@ namespace QuickJS.Binding
             }
             else
             {
-                this.jsModule = type.Namespace ?? "";
-                this.jsNamespace = "";
+                this.moduleName = type.Namespace ?? "";
+                this.typePath = "";
 
                 // 处理内部类层级
                 var declaringType = type.DeclaringType;
                 while (declaringType != null)
                 {
-                    this.jsNamespace = this.jsNamespace.Length == 0 ? declaringType.Name : $"{declaringType.Name}.{this.jsNamespace}";
+                    this.typePath = this.typePath.Length == 0 ? declaringType.Name : $"{declaringType.Name}.{this.typePath}";
                     declaringType = declaringType.DeclaringType;
                 }
 
@@ -139,33 +136,34 @@ namespace QuickJS.Binding
                 else
                 {
                     this.jsName = naming;
-                    this.jsPureName = CodeGenUtils.StripGenericDeclaration(this.jsName);
+                    // it's possible to get a name with the generic declaration part because few types (e.g System.Array) are specially processed
+                    this.jsPureName = CodeGenUtils.StripGenericDeclaration(naming);
                 }
             }
 
-            if (string.IsNullOrEmpty(this.jsNamespace))
+            if (this.typePath.Length == 0)
             {
-                this.jsModuleAccess = this.jsName;
+                this.moduleEntry = this.jsName;
                 this.jsModuleImportAccess = this.jsPureName;
                 this.jsLocalName = "";
             }
             else
             {
-                var i = this.jsNamespace.IndexOf('.');
-                this.jsModuleAccess = i < 0 ? this.jsNamespace : this.jsNamespace.Substring(0, i);
-                this.jsModuleImportAccess = this.jsModuleAccess;
-                this.jsLocalName = CodeGenUtils.Join(".", i < 0 ? "" : this.jsNamespace.Substring(i + 1), this.jsName);
+                var i = this.typePath.IndexOf('.');
+                this.moduleEntry = i < 0 ? this.typePath : this.typePath.Substring(0, i);
+                this.jsModuleImportAccess = this.moduleEntry;
+                this.jsLocalName = CodeGenUtils.Join(".", i < 0 ? "" : this.typePath.Substring(i + 1), this.jsName);
             }
 
-            if (this.jsModuleAccess.EndsWith("[]"))
+            if (this.moduleEntry.EndsWith("[]"))
             {
-                this.jsModuleAccess = this.jsModuleAccess.Substring(0, this.jsModuleAccess.Length - 2);
+                this.moduleEntry = this.moduleEntry.Substring(0, this.moduleEntry.Length - 2);
             }
 
-            this.jsFullName = CodeGenUtils.Join(".", jsModule, jsNamespace, this.jsName);
-            this.jsNamespaceSlice = jsNamespace.Split('.');
+            this.jsFullName = CodeGenUtils.Join(".", moduleName, typePath, this.jsName);
+            this.typePathSlice = typePath.Split('.');
             this.jsNameNormalized = CodeGenUtils.StripGenericDeclaration(this.jsName);
-            this.jsFullNameForReflectBind = CodeGenUtils.Strip(jsNamespaceSlice, this.jsNameNormalized);
+            this.jsFullNameForReflectBind = CodeGenUtils.Strip(typePathSlice, this.jsNameNormalized);
         }
     }
 }

@@ -113,6 +113,7 @@ namespace QuickJS.Binding
             TransformType(typeof(string))
                 .AddTSMethodDeclaration("static Equals(a: string | Object, b: string | Object, comparisonType: any): boolean", "Equals", typeof(string), typeof(string), typeof(StringComparison))
                 .AddTSMethodDeclaration("static Equals(a: string | Object, b: string | Object): boolean", "Equals", typeof(string), typeof(string))
+                .SetMemberBlocked("ContainsInvarianCulture")
             ;
 
             // editor 使用的 .net 与 player 所用存在差异, 这里屏蔽不存在的成员
@@ -2122,7 +2123,7 @@ namespace QuickJS.Binding
                 {
                     var modules = from t in _collectedTypes
                                   where t.genBindingCode
-                                  group t by t.tsTypeNaming.jsModule;
+                                  group t by t.tsTypeNaming.moduleName;
 
                     // for reflect binding
                     if (_bindingCallback != null)

@@ -9,15 +9,21 @@ namespace QuickJS.Binding
         /// js module name <br/>
         /// NOTE: in legacy mode, it will be empty if the corresponding csharp type is not in namespace
         /// </summary>
-        string jsModule { get; }
+        string moduleName { get; }
 
         /// <summary>
-        /// js 命名空间
+        /// js 模块中的顶层访问名 (内部类的顶层访问名为最外层类的类名, 否则就是类名本身 jsPureName)
         /// </summary>
-        string jsNamespace { get; }
+        string moduleEntry { get; }
 
-        string[] jsNamespaceSlice { get; }
+        /// <summary>
+        /// name of the module entry for accessing this type
+        /// </summary>
+        string typePath { get; }
 
+        string[] typePathSlice { get; }
+
+#region WIP - refactoring module structure
         ///<summary>
         /// the purified name for js (without the suffix for generic type args). 
         ///</summary>
@@ -30,11 +36,6 @@ namespace QuickJS.Binding
 
         string jsNameNormalized { get; }
 
-        /// <summary>
-        /// js 模块中的顶层访问名 (内部类的顶层访问名为最外层类的类名, 否则就是类名本身 jsPureName)
-        /// </summary>
-        string jsModuleAccess { get; }
-
         string jsModuleImportAccess { get; }
 
         string jsLocalName { get; }
@@ -45,5 +46,7 @@ namespace QuickJS.Binding
         string jsFullName { get; }
 
         string[] jsFullNameForReflectBind { get; }
+#endregion
+
     }
 }

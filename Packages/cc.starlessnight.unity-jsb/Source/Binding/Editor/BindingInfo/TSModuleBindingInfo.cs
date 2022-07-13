@@ -18,7 +18,7 @@ namespace QuickJS.Binding
 
         public void Add(TypeBindingInfo typeBindingInfo)
         {
-            _moduleAccessNames.Add(typeBindingInfo.tsTypeNaming.jsModuleAccess);
+            _moduleAccessNames.Add(typeBindingInfo.tsTypeNaming.moduleEntry);
         }
     }
 }

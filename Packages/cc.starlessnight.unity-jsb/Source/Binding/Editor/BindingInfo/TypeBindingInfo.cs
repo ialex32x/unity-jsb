@@ -84,6 +84,10 @@ namespace QuickJS.Binding
         public ConstructorBindingInfo constructors;
 
         private ITSTypeNaming _tsTypeNaming;
+
+        /// <summary>
+        /// names for the typescript codegen
+        /// </summary>
         public ITSTypeNaming tsTypeNaming => _tsTypeNaming;
 
         private bool _omit;
@@ -108,7 +112,7 @@ namespace QuickJS.Binding
                     .Replace(' ', '_')
                     .Replace(',', '_')
                     .Replace('=', '_');
-            this.bindingManager.GetExportedModule(_tsTypeNaming.jsModule).Add(this);
+            this.bindingManager.GetExportedModule(_tsTypeNaming.moduleName).Add(this);
         }
 
         public HashSet<string> GetRequiredDefines(MemberInfo memberInfo)

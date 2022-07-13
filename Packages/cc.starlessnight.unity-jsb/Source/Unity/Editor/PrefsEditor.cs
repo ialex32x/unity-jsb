@@ -322,8 +322,8 @@ namespace QuickJS.Unity
                 EditorGUILayout.TextField("Binding", typeBindingInfo.csBindingName ?? string.Empty);
 
                 var tsTypeNaming = typeBindingInfo.tsTypeNaming;
-                EditorGUILayout.TextField("JS Module", tsTypeNaming.jsModule);
-                EditorGUILayout.TextField("JS Namespace", tsTypeNaming.jsNamespace);
+                EditorGUILayout.TextField("JS Module", tsTypeNaming.moduleName);
+                EditorGUILayout.TextField("JS Namespace", tsTypeNaming.typePath);
                 EditorGUILayout.TextField("JS Name", tsTypeNaming.jsLocalName);
 
                 var requiredDefines = typeBindingInfo.transform.requiredDefines;
