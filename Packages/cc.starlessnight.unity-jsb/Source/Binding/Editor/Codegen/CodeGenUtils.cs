@@ -1,8 +1,7 @@
 using System;
 using System.Linq;
 using System.Collections.Generic;
-using System.Text;
-using System.IO;
+using System.Diagnostics;
 using System.Reflection;
 
 namespace QuickJS.Binding
@@ -137,6 +136,18 @@ namespace QuickJS.Binding
             return string.Join(sp, Strip(values));
         }
 
+        public static string ToFileName(string typeName)
+        {
+            return typeName
+                .Replace('.', '_')
+                .Replace('+', '_')
+                .Replace('<', '_')
+                .Replace('>', '_')
+                .Replace(' ', '_')
+                .Replace(',', '_')
+                .Replace('=', '_');
+        }
+
         /// <summary>
         /// concat strings as: "value1", "value2", "value3"
         /// </summary>
@@ -166,6 +177,7 @@ namespace QuickJS.Binding
             return name;
         }
 
+        [Conditional("UNITY_ASSERTIONS")]
         public static void Assert(bool condition, string msg)
         {
 #if UNITY_EDITOR

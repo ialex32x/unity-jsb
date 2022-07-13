@@ -104,15 +104,9 @@ namespace QuickJS.Binding
         {
             _tsTypeNaming = bindingManager.GetTSTypeNaming(type, true);
             _csBindingName = bindingManager.prefs.typeBindingPrefix
-                + CodeGenUtils.Join(".", _tsTypeNaming.moduleName, _tsTypeNaming.typePath, _tsTypeNaming.jsName)
-                    .Replace('.', '_')
-                    .Replace('+', '_')
-                    .Replace('<', '_')
-                    .Replace('>', '_')
-                    .Replace(' ', '_')
-                    .Replace(',', '_')
-                    .Replace('=', '_');
-            this.bindingManager.GetExportedModule(_tsTypeNaming.moduleName).Add(this);
+                + CodeGenUtils.ToFileName(
+                    CodeGenUtils.Join(".", _tsTypeNaming.moduleName, _tsTypeNaming.typePath, _tsTypeNaming.className));
+            this.bindingManager.GetExportedTSModule(_tsTypeNaming.moduleName).Add(_tsTypeNaming.moduleEntry);
         }
 
         public HashSet<string> GetRequiredDefines(MemberInfo memberInfo)

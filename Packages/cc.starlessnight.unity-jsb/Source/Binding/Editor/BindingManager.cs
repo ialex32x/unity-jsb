@@ -524,7 +524,7 @@ namespace QuickJS.Binding
             return type.IsGenericType && !type.IsGenericTypeDefinition;
         }
 
-        public TSModuleBindingInfo GetExportedModule(string name)
+        public TSModuleBindingInfo GetExportedTSModule(string name)
         {
             TSModuleBindingInfo module;
             if (!_exportedModules.TryGetValue(name, out module))
@@ -1280,7 +1280,15 @@ namespace QuickJS.Binding
             {
                 if (noBindingRequired || GetExportedType(type) != null)
                 {
-                    value = _tsTypeNamings[type] = new LegacyTSTypeNaming(this, type);
+                    switch (prefs.moduleStruct)
+                    {
+                        case "singular":
+                            throw new NotImplementedException();
+                        default:
+                            value = new LegacyTSTypeNaming(this, type);
+                            break;
+                    }
+                    _tsTypeNamings[type] = value;
                 }
             }
 

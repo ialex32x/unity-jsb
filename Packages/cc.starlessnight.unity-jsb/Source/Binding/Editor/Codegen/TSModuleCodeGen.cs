@@ -52,7 +52,7 @@ namespace QuickJS.Binding
             this.cg = cg;
             this.typeBindingInfo = typeBindingInfo;
             this.moduleName = typeBindingInfo.tsTypeNaming.moduleName;
-            this.moduleBindingInfo = cg.bindingManager.GetExportedModule(this.moduleName);
+            this.moduleBindingInfo = cg.bindingManager.GetExportedTSModule(this.moduleName);
 
             var moduleDecl = string.IsNullOrEmpty(this.moduleName) ? cg.bindingManager.prefs.defaultJSModule : this.moduleName;
             this.cg.tsDeclare.BeginPart();
@@ -242,7 +242,7 @@ namespace QuickJS.Binding
                 // 避免引入自身
                 if (tsTypeNaming.moduleName != this.typeBindingInfo.tsTypeNaming.moduleName)
                 {
-                    AddModuleAlias(tsTypeNaming.moduleName, tsTypeNaming.jsModuleImportAccess);
+                    AddModuleAlias(tsTypeNaming.moduleName, tsTypeNaming.moduleEntry);
                 }
             }
             else
@@ -268,7 +268,7 @@ namespace QuickJS.Binding
             }
         }
 
-        private void AddModuleAlias(string moduleName, string accessName)
+        private void AddModuleAlias(string moduleName, string moduleEntry)
         {
             // 手工添加的模块访问需要过滤掉本模块自身 
             // 例如: AddModuleAlias("System", "Array")
@@ -283,10 +283,10 @@ namespace QuickJS.Binding
                 reg = _modules[moduleName] = new ModuleInfo();
             }
 
-            if (!reg.alias.ContainsKey(accessName))
+            if (!reg.alias.ContainsKey(moduleEntry))
             {
-                var uniqueName = GetUniqueAccess(accessName);
-                reg.alias.Add(accessName, uniqueName);
+                var uniqueName = GetUniqueAccess(moduleEntry);
+                reg.alias.Add(moduleEntry, uniqueName);
             }
         }
 

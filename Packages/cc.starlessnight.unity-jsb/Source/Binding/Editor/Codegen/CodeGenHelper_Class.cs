@@ -19,7 +19,7 @@ namespace QuickJS.Binding
             var super = superBindingInfo != null ? this.cg.currentTSModule.GetTSTypeFullName(superBindingInfo.type) : "";
             var interfaces = this.cg.currentTSModule.GetTSInterfaceNames(this.typeBindingInfo.type);
             var implements = "";
-            var jsClassName = this.typeBindingInfo.tsTypeNaming.jsName;
+            var jsClassName = this.typeBindingInfo.tsTypeNaming.className;
             var jsClassType = "";
 
             if (typeBindingInfo.type.IsInterface)
@@ -447,7 +447,7 @@ namespace QuickJS.Binding
                 }
 
                 cg.cs.AppendLine("var cls = register.CreateClass(\"{0}\", typeof({1}), {2});",
-                    typeBindingInfo.tsTypeNaming.jsName,
+                    typeBindingInfo.tsTypeNaming.className,
                     this.cg.bindingManager.GetCSTypeFullName(typeBindingInfo.type),
                     constructor);
 

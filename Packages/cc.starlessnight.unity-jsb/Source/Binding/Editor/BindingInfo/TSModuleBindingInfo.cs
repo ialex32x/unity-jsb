@@ -7,18 +7,14 @@ namespace QuickJS.Binding
     {
         private HashSet<string> _moduleAccessNames = new HashSet<string>();
 
-        public TSModuleBindingInfo()
-        {
-        }
-
         public bool Contains(string name)
         {
             return _moduleAccessNames.Contains(name);
         }
 
-        public void Add(TypeBindingInfo typeBindingInfo)
+        public void Add(string moduleEntry)
         {
-            _moduleAccessNames.Add(typeBindingInfo.tsTypeNaming.moduleEntry);
+            _moduleAccessNames.Add(moduleEntry);
         }
     }
 }

@@ -12,12 +12,12 @@ namespace QuickJS.Binding
         string moduleName { get; }
 
         /// <summary>
-        /// js 模块中的顶层访问名 (内部类的顶层访问名为最外层类的类名, 否则就是类名本身 jsPureName)
+        /// top level name for registering in module
         /// </summary>
         string moduleEntry { get; }
 
         /// <summary>
-        /// name of the module entry for accessing this type
+        /// type path in module (without the name of this type, e.g TypeA.TypeB for TypeA.TypeB.ThisType)
         /// </summary>
         string typePath { get; }
 
@@ -28,20 +28,18 @@ namespace QuickJS.Binding
         /// </summary>
         string[] fullPathSlice { get; }
 
+        /// <summary>
+        /// class name for registering class in js <br/>
+        /// - for generic type definitions, it's the type name with generic args (only for generating d.ts) <br/>
+        /// - for constructed generic types, it's transformed into 'Type_GenericType' <br/>
+        /// </summary>
+        string className { get; }
+
 #region WIP - refactoring module structure
         ///<summary>
         /// the purified name for js (without the suffix for generic type args). 
         ///</summary>
         string jsPureName { get; }
-
-        /// <summary>
-        /// js注册名 (带平面化的泛型部分)
-        /// </summary>
-        string jsName { get; }
-
-        string jsNameNormalized { get; }
-
-        string jsModuleImportAccess { get; }
 
         string jsLocalName { get; }
 #endregion
