@@ -137,17 +137,12 @@ namespace QuickJS.Binding
             return string.Join(sp, Strip(values));
         }
 
-        public static string JoinExpression(string sp, params string[] values)
-        {
-            return string.Join(sp, from value in Strip(values) select $"\"{value}\"");
-        }
-
         /// <summary>
         /// concat strings as: "value1", "value2", "value3"
         /// </summary>
-        public static string JoinExpression(string sp, string value0, params string[] values)
+        public static string JoinExpression(string sp, params string[] values)
         {
-            return string.Join(sp, from value in Strip(values, value0) select $"\"{value}\"");
+            return string.Join(sp, from value in Strip(values) select $"\"{value}\"");
         }
 
         // 保证生成一个以 prefix 为前缀, 与参数列表中所有参数名不同的名字

@@ -38,7 +38,7 @@ namespace QuickJS.Binding
 
         public string jsLocalName { get; private set; }
 
-        public string[] jsFullNameForReflectBind { get; private set; }
+        public string[] fullPathSlice => CodeGenUtils.Strip(this.typePathSlice, this.jsNameNormalized);
 
         public LegacyTSTypeNaming(BindingManager bindingManager, Type type)
         {
@@ -157,7 +157,6 @@ namespace QuickJS.Binding
 
             this.typePathSlice = typePath.Split('.');
             this.jsNameNormalized = CodeGenUtils.StripGenericDeclaration(this.jsName);
-            this.jsFullNameForReflectBind = CodeGenUtils.Strip(typePathSlice, this.jsNameNormalized);
         }
     }
 }

@@ -266,7 +266,7 @@ namespace QuickJS.Binding
             {
                 _preloadTypes.Add(typeBindingInfo.type);
             }
-            _runtime.AddTypeReference(_moduleReg, typeBindingInfo.type, register => typeBindingInfo.DoReflectBind(register, _moduleReg), typeBindingInfo.tsTypeNaming.jsFullNameForReflectBind);
+            _runtime.AddTypeReference(_moduleReg, typeBindingInfo.type, register => typeBindingInfo.DoReflectBind(register, _moduleReg), typeBindingInfo.tsTypeNaming.fullPathSlice);
         }
 
         public void EndStaticModule(string moduleName)

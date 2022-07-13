@@ -23,6 +23,11 @@ namespace QuickJS.Binding
 
         string[] typePathSlice { get; }
 
+        /// <summary>
+        /// e.g ["TypeA", "TypeB", "ThisType"]
+        /// </summary>
+        string[] fullPathSlice { get; }
+
 #region WIP - refactoring module structure
         ///<summary>
         /// the purified name for js (without the suffix for generic type args). 
@@ -39,9 +44,6 @@ namespace QuickJS.Binding
         string jsModuleImportAccess { get; }
 
         string jsLocalName { get; }
-
-        string[] jsFullNameForReflectBind { get; }
 #endregion
-
     }
 }
