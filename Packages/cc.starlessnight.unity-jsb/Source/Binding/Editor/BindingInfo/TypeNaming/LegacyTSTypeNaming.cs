@@ -38,11 +38,6 @@ namespace QuickJS.Binding
 
         public string jsLocalName { get; private set; }
 
-        /// <summary>
-        /// 当前类型的完整JS类型名 (如果是具化泛型类, 则为扁平化的具化泛型类名称)
-        /// </summary>
-        public string jsFullName { get; private set; }
-
         public string[] jsFullNameForReflectBind { get; private set; }
 
         public LegacyTSTypeNaming(BindingManager bindingManager, Type type)
@@ -160,7 +155,6 @@ namespace QuickJS.Binding
                 this.moduleEntry = this.moduleEntry.Substring(0, this.moduleEntry.Length - 2);
             }
 
-            this.jsFullName = CodeGenUtils.Join(".", moduleName, typePath, this.jsName);
             this.typePathSlice = typePath.Split('.');
             this.jsNameNormalized = CodeGenUtils.StripGenericDeclaration(this.jsName);
             this.jsFullNameForReflectBind = CodeGenUtils.Strip(typePathSlice, this.jsNameNormalized);

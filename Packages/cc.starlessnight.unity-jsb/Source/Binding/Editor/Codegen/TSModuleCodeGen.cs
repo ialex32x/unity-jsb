@@ -307,9 +307,9 @@ namespace QuickJS.Binding
             return rename;
         }
 
-        public string GetAlias(Type type)
+        public string GetAlias(ITSTypeNaming tsTypeNaming)
         {
-            var tsTypeNaming = this.cg.bindingManager.GetTSTypeNaming(type);
+            // var tsTypeNaming = this.cg.bindingManager.GetTSTypeNaming(type);
             ModuleInfo moduleInfo;
             if (_modules.TryGetValue(tsTypeNaming.moduleName, out moduleInfo))
             {
@@ -413,20 +413,15 @@ namespace QuickJS.Binding
                 }
 
                 var tsTypeNaming = info.tsTypeNaming;
-                if (tsTypeNaming.moduleName == this.moduleName)
-                {
-                    return CodeGenUtils.Join(".", tsTypeNaming.moduleEntry, tsTypeNaming.jsLocalName);
-                }
+                var localAlias = GetAlias(tsTypeNaming);
 
-                var localAlias = GetAlias(type);
                 if (localAlias != null)
                 {
                     return CodeGenUtils.Join(".", localAlias, tsTypeNaming.jsLocalName);
                 }
                 
-                //TODO should never happen, is it safe to remove?
-                CodeGenUtils.Assert(false, "should never happen, is it safe to remove?");
-                return tsTypeNaming.jsFullName;
+                CodeGenUtils.Assert(tsTypeNaming.moduleName == this.moduleName, "should be the same module if there is no alias for a type");
+                return CodeGenUtils.Join(".", tsTypeNaming.moduleEntry, tsTypeNaming.jsLocalName);
             }
 
             if (type.BaseType == typeof(MulticastDelegate))

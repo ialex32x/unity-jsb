@@ -104,7 +104,7 @@ namespace QuickJS.Binding
         {
             _tsTypeNaming = bindingManager.GetTSTypeNaming(type, true);
             _csBindingName = bindingManager.prefs.typeBindingPrefix
-                + _tsTypeNaming.jsFullName
+                + CodeGenUtils.Join(".", _tsTypeNaming.moduleName, _tsTypeNaming.typePath, _tsTypeNaming.jsName)
                     .Replace('.', '_')
                     .Replace('+', '_')
                     .Replace('<', '_')

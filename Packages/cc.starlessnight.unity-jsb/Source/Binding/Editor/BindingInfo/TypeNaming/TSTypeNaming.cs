@@ -40,12 +40,6 @@ namespace QuickJS.Binding
 
         string jsLocalName { get; }
 
-        /// <summary>
-        /// 当前类型的完整JS类型名 (如果是具化泛型类, 则为扁平化的具化泛型类名称)
-        /// </summary>
-        [Obsolete]
-        string jsFullName { get; }
-
         string[] jsFullNameForReflectBind { get; }
 #endregion
 
