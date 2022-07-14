@@ -301,7 +301,7 @@ namespace QuickJS.Binding
             using (var tsMod = new TSModuleCodeGen(this, typeBindingInfo))
             {
                 _currentTSModule = tsMod;
-                using (new TSNamespaceCodeGen(this, typeBindingInfo.tsTypeNaming.typePath))
+                using (new TSNamespaceCodeGen(this, typeBindingInfo.tsTypeNaming.ns))
                 {
                     if (typeBindingInfo.IsEnum)
                     {

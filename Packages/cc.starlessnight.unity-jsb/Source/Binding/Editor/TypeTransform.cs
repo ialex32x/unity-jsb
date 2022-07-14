@@ -343,10 +343,11 @@ namespace QuickJS.Binding
 
         /// <summary>
         /// Override the type name in typescript.
-        /// The type hierarchy from CSharp will be used as the type path in typescript by default unless the given '_tsNaming' is hierarchical.
+        /// The type hierarchy from CSharp will be used as the type path in typescript.
         /// </summary>
         public TypeTransform Rename(string name)
         {
+            CodeGenUtils.Assert(!name.Contains('.') && !name.Contains('+'), "hierarchy overwritting is not allowed");
             _tsNaming = name;
             return this;
         }

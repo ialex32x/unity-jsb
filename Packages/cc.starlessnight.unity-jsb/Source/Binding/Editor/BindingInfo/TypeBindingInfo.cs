@@ -103,10 +103,8 @@ namespace QuickJS.Binding
         public void Initialize()
         {
             _tsTypeNaming = bindingManager.GetTSTypeNaming(type, true);
-            _csBindingName = bindingManager.prefs.typeBindingPrefix
-                + CodeGenUtils.ToFileName(
-                    CodeGenUtils.Join(".", _tsTypeNaming.moduleName, _tsTypeNaming.typePath, _tsTypeNaming.className));
-            this.bindingManager.GetExportedTSModule(_tsTypeNaming.moduleName).Add(_tsTypeNaming.moduleEntry);
+            _csBindingName = bindingManager.prefs.typeBindingPrefix + CodeGenUtils.GetFileName(type);
+            CodeGenUtils.Assert(CodeGenUtils.IsValidTypeDeclarationName(_csBindingName), "invalid binding name");
         }
 
         public HashSet<string> GetRequiredDefines(MemberInfo memberInfo)
@@ -125,26 +123,6 @@ namespace QuickJS.Binding
                 return setForMember;
             }
             return null;
-        }
-
-        // 将类型名转换成简单字符串 (比如用于文件名)
-        public string GetFileName()
-        {
-            if (type.IsGenericType)
-            {
-                var selfname = string.IsNullOrEmpty(type.Namespace) ? "" : (type.Namespace + "_");
-                var gpIndex = type.Name.IndexOf('`');
-                selfname += gpIndex >= 0 ? type.Name.Substring(0, gpIndex) : type.Name;
-                foreach (var gp in type.GetGenericArguments())
-                {
-                    selfname += "_" + gp.Name;
-                }
-
-                return selfname.Replace(".", "_").Replace("<", "_").Replace(">", "_").Replace("`", "_");
-            }
-
-            var filename = type.FullName.Replace(".", "_").Replace("<", "_").Replace(">", "_").Replace("`", "_");
-            return filename;
         }
 
         public void AddEvent(EventInfo eventInfo)

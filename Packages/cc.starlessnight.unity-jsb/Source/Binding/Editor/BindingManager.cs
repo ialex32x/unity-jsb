@@ -135,7 +135,7 @@ namespace QuickJS.Binding
             // ;
 
             TransformType(typeof(Array))
-                .Rename("Array<T, RANK = 1>")
+                .Rename("CSharpArray<T, RANK = 1>")
 
                 .SetMethodBlocked("GetValue", typeof(long), typeof(long), typeof(long))
                 .SetMethodBlocked("GetValue", typeof(long), typeof(long))
@@ -1272,23 +1272,27 @@ namespace QuickJS.Binding
             return (bStatic ? "BindStatic_" : "Bind_") + csName;
         }
 
-        // 在 TypeTransform 准备完成后才有效
         public ITSTypeNaming GetTSTypeNaming(Type type, bool noBindingRequired = false)
         {
             ITSTypeNaming value = null;
-            if (type != null && !_tsTypeNamings.TryGetValue(type, out value))
+            if (!_tsTypeNamings.TryGetValue(type, out value))
             {
                 if (noBindingRequired || GetExportedType(type) != null)
                 {
-                    switch (prefs.moduleStruct)
+                    switch (prefs.GetModuleStyle())
                     {
-                        case "singular":
-                            throw new NotImplementedException();
+                        case ETSModuleStyle.Singular:
+                            value = new SingularTSTypeNaming();
+                            break;
                         default:
-                            value = new LegacyTSTypeNaming(this, type);
+                            value = new LegacyTSTypeNaming();
                             break;
                     }
+                    value.Initialize(this, type);
                     _tsTypeNamings[type] = value;
+
+                    var tsModule = GetExportedTSModule(value.moduleName);
+                    tsModule.Add(value.moduleEntry);
                 }
             }
 
@@ -2083,8 +2087,7 @@ namespace QuickJS.Binding
 
                         if (_codegenCallback != null)
                         {
-                            var fileName = typeBindingInfo.GetFileName();
-                            _WriteCSharp(cg, csOutDir, fileName);
+                            _WriteCSharp(cg, csOutDir, typeBindingInfo.csBindingName);
                         }
                     }
                 }

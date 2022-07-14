@@ -163,32 +163,6 @@ namespace QuickJS.Binding
         }
     }
 
-    /// <summary>
-    /// 不再需要此过程, namespace 在 module register 中进行处理
-    /// </summary>
-    public class RegFuncNamespaceCodeGen : IDisposable
-    {
-        protected CodeGenerator cg;
-
-        public RegFuncNamespaceCodeGen(CodeGenerator cg, TypeBindingInfo typeBindingInfo)
-        {
-            this.cg = cg;
-            this.cg.cs.Append("var ns = register.CreateNamespace(");
-            if (!string.IsNullOrEmpty(typeBindingInfo.tsTypeNaming.typePath))
-            {
-                var split_ns = from i in typeBindingInfo.tsTypeNaming.typePath.Split('.') select $"\"{i}\"";
-                var join_ns = string.Join(", ", split_ns);
-                this.cg.cs.AppendL(join_ns);
-            }
-            this.cg.cs.AppendLineL(");");
-        }
-
-        public virtual void Dispose()
-        {
-            this.cg.cs.AppendLine("ns.Close();");
-        }
-    }
-
     public class TypeCodeGen : IDisposable
     {
         protected CodeGenerator cg;

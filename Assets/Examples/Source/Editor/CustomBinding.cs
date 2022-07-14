@@ -39,6 +39,10 @@ namespace Example.Editor
             bindingManager.AddExportedType(typeof(TWrapper<Vector3>));
             bindingManager.AddExportedType(typeof(AnotherNamespace1.TSCodeGenTest.InnerClass<int>));
             bindingManager.AddExportedType(typeof(AnotherNamespace1.TSCodeGenTest2<int>));
+            bindingManager.AddExportedType(typeof(AnotherNamespace1.TSCodeGenTest2<AnotherNamespace1.Dummy>));
+            bindingManager.AddExportedType(typeof(AnotherNamespace1.TSCodeGenTest2<AnotherNamespace1.Dummy.DummyInner>));
+            bindingManager.AddExportedType(typeof(AnotherNamespace1.Dummy));
+            bindingManager.AddExportedType(typeof(AnotherNamespace1.Dummy.DummyInner));
             bindingManager.AddExportedType(typeof(AnotherNamespace2.TSCodeGenTest));
             bindingManager.AddExportedType(typeof(DisposableObject)).SetDisposable();
 

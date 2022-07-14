@@ -323,8 +323,8 @@ namespace QuickJS.Unity
 
                 var tsTypeNaming = typeBindingInfo.tsTypeNaming;
                 EditorGUILayout.TextField("JS Module", tsTypeNaming.moduleName);
-                EditorGUILayout.TextField("JS Namespace", tsTypeNaming.typePath);
-                EditorGUILayout.TextField("JS Name", tsTypeNaming.jsLocalName);
+                EditorGUILayout.TextField("JS Namespace", tsTypeNaming.ns);
+                EditorGUILayout.TextField("JS ClassName", CodeGenUtils.GetTSClassName(typeBindingInfo));
 
                 var requiredDefines = typeBindingInfo.transform.requiredDefines;
                 if (requiredDefines != null && requiredDefines.Count > 0)
@@ -391,6 +391,8 @@ namespace QuickJS.Unity
         private Action[] _tabViewDrawers = new Action[] { };
         private string[] _newlineValues = new string[] { "cr", "lf", "crlf", "" };
         private string[] _newlineNames = new string[] { "UNIX", "MacOS", "Windows", "Auto" };
+        private string[] _moduleStyleValues = new string[] { "legacy", "singular" };
+        private string[] _moduleStyleNames = new string[] { "Legacy (Default)", "Singular (Experimental)" };
         private int _selectedBindingMethod;
         private string[] _bindingMethodValues = new string[] { "Reflect Bind", "Static Bind", "In-Memory Bind" };
         private string[] _bindingMethodDescriptions = new string[] { "Reflect Bind", "Static Bind", "In-Memory Bind (experimental)" };
@@ -649,6 +651,17 @@ namespace QuickJS.Unity
             return _repeatStringCache[repeat];
         }
 
+        private string Popup(string label, string value, string[] names, string[] values)
+        {
+            var newlineIndex = Array.IndexOf(values, value);
+            var newlineIndex_t = EditorGUILayout.Popup(label, newlineIndex, names);
+            if (newlineIndex_t != newlineIndex && newlineIndex_t >= 0)
+            {
+                return values[newlineIndex_t];
+            }
+            return value;
+        }
+
         private void DrawView_TypeCastRegistry()
         {
             //TODO jsb.editor/prefs: draw it as a tree
@@ -718,12 +731,8 @@ namespace QuickJS.Unity
                 {
                     _prefs.tsdSizeThreshold = EditorGUILayout.IntField("TSD Slice Size", _prefs.tsdSizeThreshold);
                     _prefs.tab = RepeatString(" ", EditorGUILayout.IntSlider("Tab Size", _prefs.tab.Length, 0, 8));
-                    var newlineIndex = Array.IndexOf(_newlineValues, _prefs.newLineStyle);
-                    var newlineIndex_t = EditorGUILayout.Popup("Newline Style", newlineIndex, _newlineNames);
-                    if (newlineIndex_t != newlineIndex && newlineIndex_t >= 0)
-                    {
-                        _prefs.newLineStyle = _newlineValues[newlineIndex_t];
-                    }
+                    _prefs.newLineStyle = Popup("Newline Style", _prefs.newLineStyle, _newlineNames, _newlineValues);
+                    _prefs.moduleStyle = Popup("Module Style", _prefs.moduleStyle, _moduleStyleNames, _moduleStyleValues);
                 });
 
                 Block("Advanced (Experimental)", () =>

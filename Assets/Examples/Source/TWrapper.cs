@@ -26,6 +26,14 @@ public class TWrapper<T>
 
 namespace AnotherNamespace1
 {
+    public class Dummy
+    {
+        public class DummyInner
+        {
+
+        }
+    }
+
     public class TSCodeGenTest
     {
         public class InnerClass<T>
@@ -39,6 +47,10 @@ namespace AnotherNamespace1
 
     public class TSCodeGenTest2<T>
     {
+        public T GetValue()
+        {
+            return default(T);
+        }
     }
 }
 
@@ -53,6 +65,16 @@ namespace AnotherNamespace2
         }
 
         public static AnotherNamespace1.TSCodeGenTest2<int> GetTSCodeGenTest2()
+        {
+            return null;
+        }
+
+        public static AnotherNamespace1.TSCodeGenTest2<AnotherNamespace1.Dummy> GetTSCodeGenTest2Dummy()
+        {
+            return null;
+        }
+
+        public static AnotherNamespace1.TSCodeGenTest2<AnotherNamespace1.Dummy.DummyInner> GetTSCodeGenTest2DummyInner()
         {
             return null;
         }

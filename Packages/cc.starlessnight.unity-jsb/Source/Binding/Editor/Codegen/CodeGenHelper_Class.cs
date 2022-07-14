@@ -10,6 +10,8 @@ namespace QuickJS.Binding
 {
     public class ClassCodeGen : TypeCodeGen
     {
+        private string _tsClassName;
+
         public ClassCodeGen(CodeGenerator cg, TypeBindingInfo typeBindingInfo)
         : base(cg, typeBindingInfo)
         {
@@ -19,9 +21,9 @@ namespace QuickJS.Binding
             var super = superBindingInfo != null ? this.cg.currentTSModule.GetTSTypeFullName(superBindingInfo.type) : "";
             var interfaces = this.cg.currentTSModule.GetTSInterfaceNames(this.typeBindingInfo.type);
             var implements = "";
-            var jsClassName = this.typeBindingInfo.tsTypeNaming.className;
             var jsClassType = "";
 
+            _tsClassName = CodeGenUtils.GetTSClassName(typeBindingInfo);
             if (typeBindingInfo.type.IsInterface)
             {
                 jsClassType = "interface";
@@ -72,7 +74,7 @@ namespace QuickJS.Binding
                 }
             }
 
-            this.cg.tsDeclare.AppendLine($"{jsClassType} {jsClassName}{implements} {{");
+            this.cg.tsDeclare.AppendLine($"{jsClassType} {_tsClassName}{implements} {{");
             this.cg.tsDeclare.AddTabLevel();
 
             // 生成函数体
@@ -447,7 +449,7 @@ namespace QuickJS.Binding
                 }
 
                 cg.cs.AppendLine("var cls = register.CreateClass(\"{0}\", typeof({1}), {2});",
-                    typeBindingInfo.tsTypeNaming.className,
+                    _tsClassName,
                     this.cg.bindingManager.GetCSTypeFullName(typeBindingInfo.type),
                     constructor);
 

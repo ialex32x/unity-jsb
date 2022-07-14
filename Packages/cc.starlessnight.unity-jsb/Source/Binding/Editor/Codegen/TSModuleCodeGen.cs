@@ -1,8 +1,6 @@
 using System;
 using System.Linq;
 using System.Collections.Generic;
-using System.Text;
-using System.IO;
 using System.Reflection;
 
 namespace QuickJS.Binding
@@ -203,6 +201,30 @@ namespace QuickJS.Binding
             AddModuleAlias(p.IsDefined(typeof(ParamArrayAttribute)) ? p.ParameterType.GetElementType() : p.ParameterType);
         }
 
+        //TODO hardcoded, refactor it later
+        private string GetCSharpArray()
+        {
+            var prefs = typeBindingInfo.bindingManager.prefs;
+            if (prefs.GetModuleStyle() == ETSModuleStyle.Singular)
+            {
+                return "System.CSharpArray";
+            }
+            return "CSharpArray";
+        }
+
+        private void AddBuiltinModuleAlias(string topLevel, string typeName)
+        {
+            var prefs = typeBindingInfo.bindingManager.prefs;
+            if (prefs.GetModuleStyle() == ETSModuleStyle.Singular)
+            {
+                AddModuleAlias(prefs.singularModuleName, topLevel);
+            }
+            else
+            {
+                AddModuleAlias(topLevel, typeName);
+            }
+        }
+
         private void AddModuleAlias(Type originalType)
         {
             if (originalType == null || originalType.IsPrimitive || _noImportTypes.Contains(originalType))
@@ -212,13 +234,13 @@ namespace QuickJS.Binding
 
             if (originalType == typeof(Enum))
             {
-                AddModuleAlias("System", "Enum");
+                AddBuiltinModuleAlias("System", "Enum");
                 return;
             }
 
             if (originalType.IsArray)
             {
-                AddModuleAlias("System", "Array");
+                AddBuiltinModuleAlias("System", "CSharpArray");
                 AddModuleAlias(originalType.GetElementType());
                 return;
             }
@@ -363,7 +385,7 @@ namespace QuickJS.Binding
 
             if (type == typeof(Array))
             {
-                return "Array<any>";
+                return GetCSharpArray() + "<any>";
             }
 
             if (type == typeof(ScriptPromise))
@@ -389,64 +411,48 @@ namespace QuickJS.Binding
 
                 if (rank == 1)
                 {
-                    return "Array<" + tsFullName + ">";
+                    return GetCSharpArray() + "<" + tsFullName + ">";
                 }
-                return "Array<" + tsFullName + ", " + rank + ">";
+                return GetCSharpArray() + "<" + tsFullName + ", " + rank + ">";
             }
 
-            //TODO refactor TSName accessing of exported types
             var info = this.cg.bindingManager.GetExportedType(type);
             if (info != null)
             {
                 var tsTypeNaming = info.tsTypeNaming;
                 var localAlias = GetAlias(tsTypeNaming);
 
-                if (localAlias != null)
+                if (type.IsGenericType)
                 {
-                    if (BindingManager.IsConstructedGenericType(type))
+                    if (type.IsGenericTypeDefinition)
+                    {
+                        var joinedArgs = string.Join(", ", from arg in type.GetGenericArguments() select arg.Name);
+                        var typeName = tsTypeNaming.GetFullName(localAlias);
+                        return $"{typeName}<{joinedArgs}>";
+                    }
+                    else
                     {
                         var gType = type.GetGenericTypeDefinition();
                         var gTypeInfo = this.cg.bindingManager.GetExportedType(gType);
                         if (gTypeInfo != null)
                         {
-                            var templateArgs = "";
                             var tArgs = type.GetGenericArguments();
-                            //TODO should use alias + intermediate + pure_type_name
-                            // var typeName = CodeGenUtils.Join(".", localAlias, intermediatePath, tsTypeNaming.jsPureName);
-                            var typeName = localAlias == tsTypeNaming.jsPureName ? localAlias : CodeGenUtils.Join(".", localAlias, tsTypeNaming.jsPureName); // [TEMP]
-                            // var typeName = CodeGenUtils.Join(".", gTypeInfo.tsTypeNaming.typePath, gTypeInfo.tsTypeNaming.jsPureName);
+                            var tArgCount = tArgs.Length;
+                            var templateArgs = new string[tArgCount];
+                            var typeName = gTypeInfo.tsTypeNaming.GetFullName(localAlias);
 
-                            for (var i = 0; i < tArgs.Length; i++)
+                            for (int i = 0; i < tArgCount; i++)
                             {
-                                templateArgs = CodeGenUtils.Join(", ", templateArgs, GetTSTypeFullName(tArgs[i]));
+                                templateArgs[i] = GetTSTypeFullName(tArgs[i]);
                             }
-                            return $"{typeName}<{templateArgs}>";
+
+                            var joinedArgs = CodeGenUtils.Join(", ", templateArgs);
+                            return $"{typeName}<{joinedArgs}>";
                         }
-                    }
-
-                    return CodeGenUtils.Join(".", localAlias, tsTypeNaming.jsLocalName);
-                }
-
-                if (BindingManager.IsConstructedGenericType(type))
-                {
-                    var gType = type.GetGenericTypeDefinition();
-                    var gTypeInfo = this.cg.bindingManager.GetExportedType(gType);
-                    if (gTypeInfo != null)
-                    {
-                        var templateArgs = "";
-                        var tArgs = type.GetGenericArguments();
-                        var typeName = CodeGenUtils.Join(".", gTypeInfo.tsTypeNaming.typePath, gTypeInfo.tsTypeNaming.jsPureName);
-
-                        for (var i = 0; i < tArgs.Length; i++)
-                        {
-                            templateArgs = CodeGenUtils.Join(", ", templateArgs, GetTSTypeFullName(tArgs[i]));
-                        }
-                        return $"{typeName}<{templateArgs}>";
                     }
                 }
 
-                CodeGenUtils.Assert(tsTypeNaming.moduleName == this.moduleName, "should be the same module if there is no alias for a type");
-                return CodeGenUtils.Join(".", tsTypeNaming.moduleEntry, tsTypeNaming.jsLocalName);
+                return tsTypeNaming.GetFullName(localAlias);
             }
 
             if (type.BaseType == typeof(MulticastDelegate))

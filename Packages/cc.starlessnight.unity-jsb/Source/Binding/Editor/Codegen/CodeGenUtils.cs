@@ -131,21 +131,67 @@ namespace QuickJS.Binding
             return left;
         }
 
+        public static string Join(string sp, string[] values, int offset, int count)
+        {
+            var r = "";
+            for (int i = 0; i < count; ++i)
+            {
+                var value = values[i + offset];
+                if (value.Length != 0)
+                {
+                    r += i != count - 1 ? value + sp : value;
+                }
+            }
+            return r;
+        }
+
         public static string Join(string sp, params string[] values)
         {
             return string.Join(sp, Strip(values));
         }
 
-        public static string ToFileName(string typeName)
+        // 将类型名转换成简单字符串 (比如用于文件名)
+        public static string GetFileName(Type type)
         {
-            return typeName
-                .Replace('.', '_')
-                .Replace('+', '_')
-                .Replace('<', '_')
-                .Replace('>', '_')
-                .Replace(' ', '_')
-                .Replace(',', '_')
-                .Replace('=', '_');
+            string typeName = "";
+            if (type.IsGenericType)
+            {
+                typeName += type.Name.Substring(0, type.Name.IndexOf('`'));
+                foreach (var gp in type.GetGenericArguments())
+                {
+                    typeName += "_" + gp.Name;
+                }
+            }
+            else
+            {
+                typeName = type.IsArray ? type.Name + "_array" : type.Name;
+            }
+
+            if (type.DeclaringType != null)
+            {
+                return GetFileName(type.DeclaringType) + "_" + typeName;
+            }
+
+            if (string.IsNullOrEmpty(type.Namespace))
+            {
+                return typeName;
+            }
+
+            return type.Namespace.Replace(".", "_") + "_" + typeName;
+        }
+
+        public static bool IsValidTypeDeclarationName(string name)
+        {
+            return !(
+                name.Contains(".") ||
+                name.Contains("<") ||
+                name.Contains(">") ||
+                name.Contains("`") ||
+                name.Contains("+") ||
+                name.Contains(" ") ||
+                name.Contains(",") ||
+                name.Contains("=")
+            );
         }
 
         /// <summary>
@@ -153,7 +199,7 @@ namespace QuickJS.Binding
         /// </summary>
         public static string JoinExpression(string sp, params string[] values)
         {
-            return string.Join(sp, from value in Strip(values) select $"\"{value}\"");
+            return string.Join(sp, from value in values select $"\"{value}\"");
         }
 
         // 保证生成一个以 prefix 为前缀, 与参数列表中所有参数名不同的名字
@@ -182,10 +228,26 @@ namespace QuickJS.Binding
         /// </summary>
         public static string[] GetModuleRegistrationPathSlice(ITSTypeNaming tSTypeNaming)
         {
-            return CodeGenUtils.Strip(tSTypeNaming.typePath.Split('.'), CodeGenUtils.StripGenericDeclaration(tSTypeNaming.className));
+            return tSTypeNaming.classPath;
         }
 
-        [Conditional("UNITY_ASSERTIONS")]
+        public static string GetTSClassName(TypeBindingInfo typeBindingInfo)
+        {
+            var tsTypeNaming = typeBindingInfo.tsTypeNaming;
+            var type = typeBindingInfo.type;
+            if (type.IsGenericType)
+            {
+                if (type.IsGenericTypeDefinition)
+                {
+                    var args = string.Join(", ", from arg in type.GetGenericArguments() select arg.Name);
+                    return string.Format("{0}<{1}>", tsTypeNaming.className, args);
+                }
+            }
+
+            return Join("", tsTypeNaming.className, tsTypeNaming.genericDefinition);
+        }
+
+        [Conditional("JSB_DEBUG")]
         public static void Assert(bool condition, string msg)
         {
 #if UNITY_EDITOR

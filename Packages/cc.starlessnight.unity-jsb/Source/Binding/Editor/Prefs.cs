@@ -179,10 +179,12 @@ namespace QuickJS.Binding
         /// <summary>
         /// Determines which module will the types be exported. <br/>
         ///     legacy(default): export types into dispersed modules (depends on it's namespace and outer class) <br/>
-        ///     singular: [NOT_IMPLEMENTED] export types into a single module  <br/>
+        ///     singular(experimental): export types into a single module  <br/>
         /// NOT_IMPLEMENTED
         /// </summary>
-        public string moduleStruct = "legacy";
+        public string moduleStyle = "legacy";
+
+        public string singularModuleName = "interop";
 
         /// <summary>
         /// the optional suffix for the generated d.ts file
@@ -397,6 +399,15 @@ namespace QuickJS.Binding
                     case "auto": return Environment.NewLine;
                     default: return newLineStyle;
                 }
+            }
+        }
+
+        public ETSModuleStyle GetModuleStyle()
+        {
+            switch(moduleStyle)
+            {
+                case "singular": return ETSModuleStyle.Singular;
+                default: return ETSModuleStyle.Legacy;
             }
         }
 

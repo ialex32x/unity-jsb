@@ -3,41 +3,55 @@ using System.Collections.Generic;
 
 namespace QuickJS.Binding
 {
-    public interface ITSTypeNaming
+    public abstract class ITSTypeNaming
     {
         /// <summary>
         /// js module name <br/>
         /// NOTE: in legacy mode, it will be empty if the corresponding csharp type is not in namespace
         /// </summary>
-        string moduleName { get; }
+        public string moduleName { get; protected set; }
 
         /// <summary>
-        /// top level name for registering in module
+        /// full path of class apart from the generic arguments of generic type definition
         /// </summary>
-        string moduleEntry { get; }
+        public string[] classPath { get; protected set; }
 
         /// <summary>
-        /// type path in module (without the name of this type, e.g TypeA.TypeB for TypeA.TypeB.ThisType)
+        /// (optional) only for renamed types
         /// </summary>
-        string typePath { get; }
+        public string genericDefinition { get; protected set; }
 
         /// <summary>
-        /// class name for registering class in js <br/>
-        /// - for generic type definitions, it's the type name with generic args (only for generating d.ts) <br/>
-        /// - for constructed generic types, it's transformed into 'Type_GenericType' <br/>
+        /// e.g NS1 from NS1.OUT1.THIS
         /// </summary>
-        string className { get; }
+        public string moduleEntry => classPath[0];
 
-#region WIP - refactoring module structure
-        ///<summary>
-        /// the purified name for js (without the suffix for generic type args). 
-        ///</summary>
-        string jsPureName { get; }
+        public string className => classPath[classPath.Length - 1];
 
         /// <summary>
-        /// local class name path (e.g TypeB.ThisType<T>, apart from the moduleEntry)
+        /// joined the class path without the type name (the last element)
+        /// e.g NS1.OUT1 from NS1.OUT1.THIS
         /// </summary>
-        string jsLocalName { get; }
-#endregion
+        public string ns => classPath.Length == 1 ? string.Empty : CodeGenUtils.Join(".", classPath, 0, classPath.Length - 1);
+
+        /// <summary>
+        /// full name without generic part
+        /// </summary>
+        public string GetFullName(string alias = null)
+        {
+            if (alias == null)
+            {
+                return CodeGenUtils.Join(".", CodeGenUtils.Join(".", classPath, 0, classPath.Length), genericDefinition);
+            }
+            return CodeGenUtils.Join(".", CodeGenUtils.Join(".", alias, CodeGenUtils.Join(".", classPath, 1, classPath.Length - 1)), genericDefinition);
+        }
+
+        protected string StripCSharpGenericDefinition(string typeName)
+        {
+            var gArgIndex = typeName.IndexOf('`');
+            return gArgIndex < 0 ? typeName : typeName.Substring(0, gArgIndex);
+        }
+
+        public abstract void Initialize(BindingManager bindingManager, Type type);
     }
 }

@@ -147,6 +147,7 @@ namespace jsb.Editor
             bindingManager.SetTypeBlocked(typeof(UnityEngine.UIElements.IExperimentalFeatures));
             bindingManager.SetTypeBlocked(typeof(UnityEngine.UIElements.Experimental.ITransitionAnimations));
             bindingManager.SetTypeBlocked(typeof(UnityEngine.UIElements.Experimental.IValueAnimation));
+            
             bindingManager.TransformType(typeof(UnityEngine.UIElements.VisualElement.UxmlTraits)).Rename("UxmlTraits0");
             bindingManager.TransformType(typeof(UnityEngine.UIElements.EventBase<>)).Rename("EventBase1");
             bindingManager.TransformType(typeof(UnityEngine.UIElements.UxmlFactory<>)).Rename("UxmlFactory1");

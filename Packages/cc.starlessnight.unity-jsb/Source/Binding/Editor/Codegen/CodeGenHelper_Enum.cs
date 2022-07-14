@@ -8,11 +8,15 @@ namespace QuickJS.Binding
 {
     public class EnumCodeGen : TypeCodeGen
     {
+        private string _tsClassName;
+
         public EnumCodeGen(CodeGenerator cg, TypeBindingInfo type)
         : base(cg, type)
         {
+            _tsClassName = CodeGenUtils.GetTSClassName(typeBindingInfo);
+
             this.cg.AppendJSDoc(type.type);
-            this.cg.tsDeclare.AppendLine("enum {0} {{", typeBindingInfo.tsTypeNaming.className);
+            this.cg.tsDeclare.AppendLine("enum {0} {{", _tsClassName);
             this.cg.tsDeclare.AddTabLevel();
         }
 
@@ -21,7 +25,7 @@ namespace QuickJS.Binding
             using (new RegFuncCodeGen(cg))
             {
                 this.cg.cs.AppendLine("var cls = register.CreateEnum(\"{0}\", typeof({1}));",
-                    typeBindingInfo.tsTypeNaming.className,
+                    _tsClassName,
                     this.cg.bindingManager.GetCSTypeFullName(typeBindingInfo.type));
                 var values = new Dictionary<string, object>();
                 foreach (var name in Enum.GetNames(typeBindingInfo.type))
