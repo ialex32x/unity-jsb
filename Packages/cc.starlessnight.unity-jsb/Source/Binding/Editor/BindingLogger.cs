@@ -1,3 +1,4 @@
+#if UNITY_EDITOR || JSB_RUNTIME_REFLECT_BINDING
 
 namespace QuickJS.Binding
 {
@@ -8,3 +9,5 @@ namespace QuickJS.Binding
         void LogError(string message);
     }
 }
+
+#endif

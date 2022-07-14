@@ -1,3 +1,4 @@
+#if UNITY_EDITOR || JSB_RUNTIME_REFLECT_BINDING
 using System;
 using System.Linq;
 using System.Collections.Generic;
@@ -529,3 +530,4 @@ namespace QuickJS.Binding
         }
     }
 }
+#endif

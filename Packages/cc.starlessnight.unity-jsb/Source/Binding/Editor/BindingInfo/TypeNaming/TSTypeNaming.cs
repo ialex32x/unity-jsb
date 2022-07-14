@@ -1,3 +1,4 @@
+#if UNITY_EDITOR || JSB_RUNTIME_REFLECT_BINDING
 using System;
 using System.Collections.Generic;
 
@@ -55,3 +56,5 @@ namespace QuickJS.Binding
         public abstract void Initialize(BindingManager bindingManager, Type type);
     }
 }
+
+#endif

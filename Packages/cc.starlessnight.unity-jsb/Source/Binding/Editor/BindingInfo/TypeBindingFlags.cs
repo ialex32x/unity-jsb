@@ -1,4 +1,5 @@
-﻿using System;
+#if UNITY_EDITOR || JSB_RUNTIME_REFLECT_BINDING
+using System;
 
 namespace QuickJS.Binding
 {
@@ -13,3 +14,5 @@ namespace QuickJS.Binding
         Default = BindingCode | TypeDefinition | BuildTargetPlatformOnly,
     }
 }
+
+#endif

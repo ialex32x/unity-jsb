@@ -1,3 +1,4 @@
+#if UNITY_EDITOR || JSB_RUNTIME_REFLECT_BINDING
 using System.Collections.Generic;
 
 namespace QuickJS.Binding
@@ -16,3 +17,5 @@ namespace QuickJS.Binding
         public List<string> modules = new List<string>();
     }
 }
+
+#endif
