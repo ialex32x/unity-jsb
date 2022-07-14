@@ -21,13 +21,6 @@ namespace QuickJS.Binding
         /// </summary>
         string typePath { get; }
 
-        string[] typePathSlice { get; }
-
-        /// <summary>
-        /// e.g ["TypeA", "TypeB", "ThisType"]
-        /// </summary>
-        string[] fullPathSlice { get; }
-
         /// <summary>
         /// class name for registering class in js <br/>
         /// - for generic type definitions, it's the type name with generic args (only for generating d.ts) <br/>
@@ -41,6 +34,9 @@ namespace QuickJS.Binding
         ///</summary>
         string jsPureName { get; }
 
+        /// <summary>
+        /// local class name path (e.g TypeB.ThisType<T>, apart from the moduleEntry)
+        /// </summary>
         string jsLocalName { get; }
 #endregion
     }

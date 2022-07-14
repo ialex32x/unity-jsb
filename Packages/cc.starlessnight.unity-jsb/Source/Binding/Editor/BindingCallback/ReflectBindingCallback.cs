@@ -262,11 +262,13 @@ namespace QuickJS.Binding
 
         public void AddTypeReference(string moduleName, TypeBindingInfo typeBindingInfo)
         {
+            var moduleRegistrationPathSlice = CodeGenUtils.GetModuleRegistrationPathSlice(typeBindingInfo.tsTypeNaming);
+
+            _runtime.AddTypeReference(_moduleReg, typeBindingInfo.type, register => typeBindingInfo.DoReflectBind(register, _moduleReg), moduleRegistrationPathSlice);
             if (typeBindingInfo.preload)
             {
                 _preloadTypes.Add(typeBindingInfo.type);
             }
-            _runtime.AddTypeReference(_moduleReg, typeBindingInfo.type, register => typeBindingInfo.DoReflectBind(register, _moduleReg), typeBindingInfo.tsTypeNaming.fullPathSlice);
         }
 
         public void EndStaticModule(string moduleName)

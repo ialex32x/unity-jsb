@@ -23,3 +23,38 @@ public class TWrapper<T>
         return null;
     }
 }
+
+namespace AnotherNamespace1
+{
+    public class TSCodeGenTest
+    {
+        public class InnerClass<T>
+        {
+            public static TWrapper<T> GetIntWrapper()
+            {
+                return null;
+            }
+        }
+    }
+
+    public class TSCodeGenTest2<T>
+    {
+    }
+}
+
+namespace AnotherNamespace2
+{
+    public class TSCodeGenTest
+    {
+        //TODO ts codegen support
+        public static AnotherNamespace1.TSCodeGenTest.InnerClass<int> GetInnerClass()
+        {
+            return null;
+        }
+
+        public static AnotherNamespace1.TSCodeGenTest2<int> GetTSCodeGenTest2()
+        {
+            return null;
+        }
+    }
+}

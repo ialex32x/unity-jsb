@@ -177,6 +177,14 @@ namespace QuickJS.Binding
             return name;
         }
 
+        /// <summary>
+        /// e.g ["TypeA", "TypeB", "ThisType"]
+        /// </summary>
+        public static string[] GetModuleRegistrationPathSlice(ITSTypeNaming tSTypeNaming)
+        {
+            return CodeGenUtils.Strip(tSTypeNaming.typePath.Split('.'), CodeGenUtils.StripGenericDeclaration(tSTypeNaming.className));
+        }
+
         [Conditional("UNITY_ASSERTIONS")]
         public static void Assert(bool condition, string msg)
         {

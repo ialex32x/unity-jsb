@@ -15,14 +15,12 @@ namespace QuickJS.Binding
         /// </summary>
         public string typePath { get; private set; }
 
-        public string[] typePathSlice { get; private set; }
-
         /// <summary>
         /// top level name for registering in module
         /// </summary>
         public string moduleEntry { get; private set; }
 
-        public string[] fullPathSlice => CodeGenUtils.Strip(this.typePathSlice, CodeGenUtils.StripGenericDeclaration(this.className));
+        public string jsLocalName { get; private set; }
 
         /// <summary>
         /// class name for registering class in js <br/>
@@ -35,8 +33,6 @@ namespace QuickJS.Binding
         /// the purified name for js (without the suffix for generic type args). 
         ///</summary>
         public string jsPureName { get; private set; }
-
-        public string jsLocalName { get; private set; }
 
         public LegacyTSTypeNaming(BindingManager bindingManager, Type type)
         {
@@ -141,8 +137,16 @@ namespace QuickJS.Binding
             else
             {
                 var i = this.typePath.IndexOf('.');
-                this.moduleEntry = i < 0 ? this.typePath : this.typePath.Substring(0, i);
-                this.jsLocalName = CodeGenUtils.Join(".", i < 0 ? "" : this.typePath.Substring(i + 1), this.className);
+                if (i < 0)
+                {
+                    this.moduleEntry = this.typePath;
+                    this.jsLocalName = this.className;
+                }
+                else
+                {
+                    this.moduleEntry = this.typePath.Substring(0, i);
+                    this.jsLocalName = CodeGenUtils.Join(".", this.typePath.Substring(i + 1), this.className);
+                }
             }
 
             if (this.moduleEntry.EndsWith("[]"))
@@ -150,7 +154,6 @@ namespace QuickJS.Binding
                 CodeGenUtils.Assert(false, "should be unreachable?");
                 this.moduleEntry = this.moduleEntry.Substring(0, this.moduleEntry.Length - 2);
             }
-            this.typePathSlice = typePath.Split('.');
         }
     }
 }

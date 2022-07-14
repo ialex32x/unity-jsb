@@ -54,13 +54,17 @@ namespace QuickJS.Binding
             this.moduleName = typeBindingInfo.tsTypeNaming.moduleName;
             this.moduleBindingInfo = cg.bindingManager.GetExportedTSModule(this.moduleName);
 
-            var moduleDecl = string.IsNullOrEmpty(this.moduleName) ? cg.bindingManager.prefs.defaultJSModule : this.moduleName;
             this.cg.tsDeclare.BeginPart();
-            this.cg.tsDeclare.AppendLine($"declare module \"{moduleDecl}\" {{");
+            this.cg.tsDeclare.AppendLine($"declare module \"{GetModuleName(this.moduleName)}\" {{");
             this.cg.tsDeclare.AddTabLevel();
 
             CollectImports();
             WriteImports();
+        }
+
+        private string GetModuleName(string rawModuleName)
+        {
+            return string.IsNullOrEmpty(rawModuleName) ? cg.bindingManager.prefs.defaultJSModule : rawModuleName;
         }
 
         public void Dispose()
@@ -188,7 +192,7 @@ namespace QuickJS.Binding
                         }
                         ++index;
                     }
-                    this.cg.tsDeclare.AppendL($" }} from \"{moduleName}\";");
+                    this.cg.tsDeclare.AppendL($" }} from \"{GetModuleName(moduleName)}\";");
                     this.cg.tsDeclare.AppendLine();
                 }
             }
@@ -394,6 +398,35 @@ namespace QuickJS.Binding
             var info = this.cg.bindingManager.GetExportedType(type);
             if (info != null)
             {
+                var tsTypeNaming = info.tsTypeNaming;
+                var localAlias = GetAlias(tsTypeNaming);
+
+                if (localAlias != null)
+                {
+                    if (BindingManager.IsConstructedGenericType(type))
+                    {
+                        var gType = type.GetGenericTypeDefinition();
+                        var gTypeInfo = this.cg.bindingManager.GetExportedType(gType);
+                        if (gTypeInfo != null)
+                        {
+                            var templateArgs = "";
+                            var tArgs = type.GetGenericArguments();
+                            //TODO should use alias + intermediate + pure_type_name
+                            // var typeName = CodeGenUtils.Join(".", localAlias, intermediatePath, tsTypeNaming.jsPureName);
+                            var typeName = localAlias == tsTypeNaming.jsPureName ? localAlias : CodeGenUtils.Join(".", localAlias, tsTypeNaming.jsPureName); // [TEMP]
+                            // var typeName = CodeGenUtils.Join(".", gTypeInfo.tsTypeNaming.typePath, gTypeInfo.tsTypeNaming.jsPureName);
+
+                            for (var i = 0; i < tArgs.Length; i++)
+                            {
+                                templateArgs = CodeGenUtils.Join(", ", templateArgs, GetTSTypeFullName(tArgs[i]));
+                            }
+                            return $"{typeName}<{templateArgs}>";
+                        }
+                    }
+
+                    return CodeGenUtils.Join(".", localAlias, tsTypeNaming.jsLocalName);
+                }
+
                 if (BindingManager.IsConstructedGenericType(type))
                 {
                     var gType = type.GetGenericTypeDefinition();
@@ -412,14 +445,6 @@ namespace QuickJS.Binding
                     }
                 }
 
-                var tsTypeNaming = info.tsTypeNaming;
-                var localAlias = GetAlias(tsTypeNaming);
-
-                if (localAlias != null)
-                {
-                    return CodeGenUtils.Join(".", localAlias, tsTypeNaming.jsLocalName);
-                }
-                
                 CodeGenUtils.Assert(tsTypeNaming.moduleName == this.moduleName, "should be the same module if there is no alias for a type");
                 return CodeGenUtils.Join(".", tsTypeNaming.moduleEntry, tsTypeNaming.jsLocalName);
             }

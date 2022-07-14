@@ -34,7 +34,8 @@ namespace QuickJS.Binding
             var csType = this.cg.bindingManager.GetCSTypeFullName(typeBindingInfo.type);
             var csNamespace = this.cg.bindingManager.prefs.ns;
             var csBindingName = typeBindingInfo.csBindingName;
-            var jsNamespace = CodeGenUtils.JoinExpression(", ", typeBindingInfo.tsTypeNaming.fullPathSlice);
+            var moduleRegistrationPathSlice = CodeGenUtils.GetModuleRegistrationPathSlice(typeBindingInfo.tsTypeNaming);
+            var jsNamespace = CodeGenUtils.JoinExpression(", ", moduleRegistrationPathSlice);
             
             AddStatement($"{runtimeVarName}.AddTypeReference({moduleVarName}, typeof({csType}), {csNamespace}.{csBindingName}.Bind, {jsNamespace});");
         }

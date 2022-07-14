@@ -37,6 +37,9 @@ namespace Example.Editor
 
             bindingManager.AddExportedType(typeof(TWrapper<int>));
             bindingManager.AddExportedType(typeof(TWrapper<Vector3>));
+            bindingManager.AddExportedType(typeof(AnotherNamespace1.TSCodeGenTest.InnerClass<int>));
+            bindingManager.AddExportedType(typeof(AnotherNamespace1.TSCodeGenTest2<int>));
+            bindingManager.AddExportedType(typeof(AnotherNamespace2.TSCodeGenTest));
             bindingManager.AddExportedType(typeof(DisposableObject)).SetDisposable();
 
 #if CUSTOM_DEF_FOO && UNITY_EDITOR
