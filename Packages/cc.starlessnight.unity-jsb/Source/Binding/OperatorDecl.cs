@@ -11,17 +11,12 @@ namespace QuickJS.Binding
         private List<CrossOperatorDef> left;
         private List<CrossOperatorDef> right;
 
-        private int _count;
-
-        public int count { get { return _count; } }
-
         public OperatorDecl(Type type)
         {
             this.type = type;
             self = new List<OperatorDef>();
             left = new List<CrossOperatorDef>();
             right = new List<CrossOperatorDef>();
-            _count = 1;
         }
 
         public void AddOperator(string op, JSValue value)
@@ -44,7 +39,6 @@ namespace QuickJS.Binding
             var newCrossDef = new CrossOperatorDef(sideType);
             newCrossDef.operators.Add(new OperatorDef(op, value));
             list.Add(newCrossDef);
-            _count++;
         }
 
         ///<summary>
@@ -53,7 +47,9 @@ namespace QuickJS.Binding
         public unsafe void Register(TypeRegister register, JSContext ctx, JSValue create)
         {
             var proto = register.FindChainedPrototypeOf(type);
-            var argv = new JSValue[_count];
+            var leftCount = left.Count;
+            var rightCount = right.Count;
+            var argv = new JSValue[leftCount + rightCount + 1];
 
             argv[0] = JSApi.JS_NewObject(ctx);
             for (int i = 0, len = self.Count; i < len; i++)
@@ -64,7 +60,7 @@ namespace QuickJS.Binding
                 // UnityEngine.Debug.LogFormat("{0} operator {1}", type, def.op);
             }
 
-            for (int i = 0, len = left.Count; i < len; i++)
+            for (int i = 0, len = leftCount; i < len; i++)
             {
                 var cross = left[i];
                 var sideCtor = register.GetConstructor(cross.type);
@@ -81,7 +77,7 @@ namespace QuickJS.Binding
                 }
             }
 
-            for (int i = 0, len = right.Count; i < len; i++)
+            for (int i = 0, len = rightCount; i < len; i++)
             {
                 var cross = right[i];
                 var sideCtor = register.GetConstructor(cross.type);
@@ -93,7 +89,7 @@ namespace QuickJS.Binding
                     var def = cross.operators[opIndex];
                     // var funcVal = JSApi.JS_NewCFunction(ctx, def.func, def.op, def.length);
                     JSApi.JS_DefinePropertyValue(ctx, operator_, register.GetAtom(def.op), def.value);
-                    argv[i + 1 + left.Count] = operator_;
+                    argv[i + 1 + leftCount] = operator_;
                     // UnityEngine.Debug.LogFormat("{0} {1} operator {2} {3} ({4})", type, side, def.op, cross.type, sideCtor);
                 }
             }

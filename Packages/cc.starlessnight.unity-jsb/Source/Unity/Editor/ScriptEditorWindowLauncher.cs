@@ -87,7 +87,7 @@ namespace QuickJS.Unity
             {
                 var buttonRect = new Rect(rect.x + (rect.width - buttonSize) * .5f, rect.y, buttonSize, buttonSize);
 
-                if (classPath.classType != JSScriptClassType.EditorWindow)
+                if (classPath.classType != JSScriptClassType.EditorWindow || !PrefsLoader.CurrentPrefs.editorScripting)
                 {
                     GUI.DrawTexture(buttonRect, GetIcon(classPath.classType).image);
                 }
@@ -194,7 +194,14 @@ namespace QuickJS.Unity
             }
             if (size > 1)
             {
-                GUILayout.Label(size + " Scripts", _footStyle);
+                if (PrefsLoader.CurrentPrefs.editorScripting)
+                {
+                    GUILayout.Label(size + " Scripts | EditorScripting: enabled", _footStyle);
+                }
+                else
+                {
+                    GUILayout.Label(size + " Scripts | EditorScripting: disabled", _footStyle);
+                }
             }
         }
 

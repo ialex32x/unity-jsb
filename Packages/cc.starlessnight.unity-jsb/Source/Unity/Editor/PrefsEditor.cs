@@ -724,7 +724,6 @@ namespace QuickJS.Unity
                     _prefs.xmlDocDir = EditorGUILayout.TextField("XmlDoc Dir", _prefs.xmlDocDir);
                     _prefs.typescriptDir = EditorGUILayout.TextField("d.ts Output Dir", _prefs.typescriptDir);
                     _prefs.jsModulePackInfoPath = EditorGUILayout.TextField("JS Module List", _prefs.jsModulePackInfoPath);
-                    _prefs.defaultJSModule = EditorGUILayout.TextField("Default Module", _prefs.defaultJSModule);
                 });
 
                 Block("Code Style", () =>
@@ -733,6 +732,13 @@ namespace QuickJS.Unity
                     _prefs.tab = RepeatString(" ", EditorGUILayout.IntSlider("Tab Size", _prefs.tab.Length, 0, 8));
                     _prefs.newLineStyle = Popup("Newline Style", _prefs.newLineStyle, _newlineNames, _newlineValues);
                     _prefs.moduleStyle = Popup("Module Style", _prefs.moduleStyle, _moduleStyleNames, _moduleStyleValues);
+                    var moduleStyle = _prefs.GetModuleStyle();
+                    EditorGUI.BeginDisabledGroup(moduleStyle != ETSModuleStyle.Legacy);
+                    _prefs.defaultJSModule = EditorGUILayout.TextField("Default Module", _prefs.defaultJSModule);
+                    EditorGUI.EndDisabledGroup();
+                    EditorGUI.BeginDisabledGroup(moduleStyle != ETSModuleStyle.Singular);
+                    _prefs.singularModuleName = EditorGUILayout.TextField("Singular Module", _prefs.singularModuleName);
+                    EditorGUI.EndDisabledGroup();
                 });
 
                 Block("Advanced (Experimental)", () =>
