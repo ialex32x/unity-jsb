@@ -98,6 +98,13 @@ namespace QuickJS.Binding
         public bool alwaysEmitOperatorMethod = true;
 
         /// <summary>
+        /// [EXPERIMENTAL][UNFINISHED] 
+        /// csharp array => js array / csharp dictionary => js map 
+        /// (with Proxy)
+        /// </summary>
+        public bool enableTypeProxy = false;
+
+        /// <summary>
         /// all obsolete types/members will not be exported if set true
         /// </summary>
         public bool excludeObsoleteItems = true;

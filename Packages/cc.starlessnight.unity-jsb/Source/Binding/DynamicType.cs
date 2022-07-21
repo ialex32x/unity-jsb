@@ -202,6 +202,7 @@ namespace QuickJS.Binding
             var propertyInfos = _type.GetProperties(flags);
             for (int i = 0, count = propertyInfos.Length; i < count; i++)
             {
+                //TODO fix indexed accessor
                 var propertyInfo = propertyInfos[i];
                 var anyMethod = propertyInfo.GetGetMethod(true) ?? propertyInfo.GetSetMethod(true);
                 var dynamicProperty = new DynamicProperty(this, propertyInfo);
