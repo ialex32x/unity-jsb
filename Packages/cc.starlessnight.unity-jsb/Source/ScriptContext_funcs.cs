@@ -546,7 +546,7 @@ namespace QuickJS
             return ctx.ThrowInternalError("unknown type");
         }
 
-        // NOT_IMPLEMENTED, EXPERIMENTAL
+        // EXPERIMENTAL
         [MonoPInvokeCallback(typeof(JSCFunction))]
         public static JSValue ArrayLike_GetValue(JSContext ctx, JSValue this_obj, int argc, JSValue[] argv)
         {
@@ -582,7 +582,7 @@ namespace QuickJS
             return ctx.ThrowInternalError("unknown type");
         }
 
-        // NOT_IMPLEMENTED, EXPERIMENTAL
+        // EXPERIMENTAL
         [MonoPInvokeCallback(typeof(JSCFunction))]
         public static JSValue ArrayLike_SetValue(JSContext ctx, JSValue this_obj, int argc, JSValue[] argv)
         {
@@ -612,8 +612,9 @@ namespace QuickJS
                 var type = o.GetType();
                 if (type.IsConstructedGenericType && type.GetGenericTypeDefinition() == typeof(System.Collections.Generic.List<>))
                 {
+                    var elementType = type.GetGenericArguments()[0];
                     object value;
-                    if (Values.js_get_var(ctx, argv[2], type.GetGenericArguments()[0], out value))
+                    if (Values.js_get_var(ctx, argv[2], elementType, out value))
                     {
                         var p = type.GetProperty("Item");
                         if (p != null)
@@ -628,18 +629,109 @@ namespace QuickJS
             return ctx.ThrowInternalError("unknown type");
         }
 
-        // NOT_IMPLEMENTED, EXPERIMENTAL
+        private static void _ArrayResize(ref Array array, int newSize)
+        {
+            var sourceArray = array;
+            if (sourceArray.Length != newSize)
+            {
+                var destinationArray = Array.CreateInstance(array.GetType().GetElementType(), newSize);
+                Array.Copy((Array)sourceArray, 0, (Array)destinationArray, 0, sourceArray.Length > newSize ? newSize : sourceArray.Length);
+                array = destinationArray;
+            }
+        }
+
+        // EXPERIMENTAL
         [MonoPInvokeCallback(typeof(JSCFunction))]
         public static JSValue ArrayLike_RemoveAt(JSContext ctx, JSValue this_obj, int argc, JSValue[] argv)
         {
-            return JSApi.JS_UNDEFINED;
+            if (argc < 2 || !argv[0].IsObject() || !argv[1].IsNumber())
+            {
+                return ctx.ThrowInternalError("unknown type");
+            }
+
+            int index;
+            if (!Values.js_get_primitive(ctx, argv[1], out index))
+            {
+                return ctx.ThrowInternalError("unknown type");
+            }
+
+            object o;
+            if (Values.js_get_cached_object(ctx, argv[0], out o) && o != null)
+            {
+                if (o is Array array)
+                {
+                    var len = array.Length;
+                    for (var i = index; i < len - 1; ++i)
+                    {
+                        array.SetValue(array.GetValue(i + 1), i);
+                    }
+                    _ArrayResize(ref array, len - 1);
+                    return JSApi.JS_UNDEFINED;
+                }
+                var type = o.GetType();
+                if (type.IsConstructedGenericType && type.GetGenericTypeDefinition() == typeof(System.Collections.Generic.List<>))
+                {
+                    var m = type.GetMethod("RemoveAt");
+                    if (m != null)
+                    {
+                        m.Invoke(o, new object[] { index });
+                        return JSApi.JS_UNDEFINED;
+                    }
+                }
+            }
+            return ctx.ThrowInternalError("unknown type");
         }
 
-        // NOT_IMPLEMENTED, EXPERIMENTAL
+        // EXPERIMENTAL
         [MonoPInvokeCallback(typeof(JSCFunction))]
         public static JSValue ArrayLike_Insert(JSContext ctx, JSValue this_obj, int argc, JSValue[] argv)
         {
-            return JSApi.JS_UNDEFINED;
+            if (argc < 3 || !argv[0].IsObject() || !argv[1].IsNumber())
+            {
+                return ctx.ThrowInternalError("unknown type");
+            }
+
+            int index;
+            if (!Values.js_get_primitive(ctx, argv[1], out index))
+            {
+                return ctx.ThrowInternalError("unknown type");
+            }
+
+            object o;
+            if (Values.js_get_cached_object(ctx, argv[0], out o) && o != null)
+            {
+                if (o is Array array)
+                {
+                    object value;
+                    if (Values.js_get_var(ctx, argv[2], o.GetType().GetElementType(), out value))
+                    {
+                        var len = array.Length;
+                        _ArrayResize(ref array, len + 1);
+                        for (var i = index; i < len - 1; ++i)
+                        {
+                            array.SetValue(array.GetValue(i), i + 1);
+                        }
+                        array.SetValue(value, index);
+                        return JSApi.JS_UNDEFINED;
+                    }
+                }
+                var type = o.GetType();
+                if (type.IsConstructedGenericType && type.GetGenericTypeDefinition() == typeof(System.Collections.Generic.List<>))
+                {
+                    var elementType = type.GetGenericArguments()[0];
+                    object value;
+                    if (Values.js_get_var(ctx, argv[2], elementType, out value))
+                    {
+                        var m = type.GetMethod("Insert", new Type[] { typeof(int), elementType });
+                        if (m != null)
+                        {
+                            m.Invoke(o, new object[] { index, value });
+                            return JSApi.JS_UNDEFINED;
+                        }
+                    }
+                }
+            }
+            return ctx.ThrowInternalError("unknown type");
         }
 
         //TODO: 临时代码

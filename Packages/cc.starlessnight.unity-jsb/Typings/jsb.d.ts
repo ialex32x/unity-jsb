@@ -37,7 +37,7 @@ declare module "jsb.editor" {
 }
 
 declare module "jsb" {
-    import { Delegate as SystemDelegate, Array as SystemArray } from "System";
+    import { Delegate as SystemDelegate, CSharpArray } from "System";
 
     type byte = number;
     type Nullable<T> = T;
@@ -146,6 +146,14 @@ declare module "jsb" {
         static EndReload();
     }
 
+    class ArrayUtils {
+        static GetLength(cs: CSharpArray<any>): void;
+        static GetValue(cs: CSharpArray<any>, index: number): void;
+        static RemoveAt(cs: CSharpArray<any>, index: number): void;
+        static Insert(cs: CSharpArray<any>, value: any, index: number): void;
+        static SetValue(cs: CSharpArray<any>, value: any, index: number): void;
+    }
+
     /**
      * Eval code snippet read from file.
      */
@@ -245,17 +253,17 @@ declare module "jsb" {
     /**
      * Converts C# Array into JS Array
      */
-    function ToArray<T>(o: SystemArray<T>): Array<T>;
+    function ToArray<T>(o: CSharpArray<T>): Array<T>;
 
     /**
      * Converts C# Array<byte> into JS ArrayBuffer
      */
-    function ToArrayBuffer(o: SystemArray<byte> | number[]): ArrayBuffer;
+    function ToArrayBuffer(o: CSharpArray<byte> | number[]): ArrayBuffer;
 
     /**
      * Converts JS ArrayBuffer or Unit8Array into C# Array<byte>
      */
-    function ToBytes(o: ArrayBuffer | Uint8Array): SystemArray<byte>;
+    function ToBytes(o: ArrayBuffer | Uint8Array): CSharpArray<byte>;
 
     /**
      * Dynamically import a C# type

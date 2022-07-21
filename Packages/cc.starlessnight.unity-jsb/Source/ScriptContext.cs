@@ -815,6 +815,14 @@ namespace QuickJS
 
                 ns_jsb.AddValue("ModuleManager", ns_ModuleManager.GetConstructor());
             }
+            {
+                var ns_ArrayUtils = register.CreateClass("ArrayUtils");
+                ns_ArrayUtils.AddFunction("GetLength", ArrayLike_GetLength, 1);
+                ns_ArrayUtils.AddFunction("GetValue", ArrayLike_GetValue, 2);
+                ns_ArrayUtils.AddFunction("RemoveAt", ArrayLike_RemoveAt, 2);
+                ns_ArrayUtils.AddFunction("Insert", ArrayLike_Insert, 3);
+                ns_ArrayUtils.AddFunction("SetValue", ArrayLike_SetValue, 3);
+            }
             return ns_jsb;
         }
 
