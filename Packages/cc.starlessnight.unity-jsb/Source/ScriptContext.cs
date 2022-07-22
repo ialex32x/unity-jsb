@@ -822,6 +822,8 @@ namespace QuickJS
                 ns_ArrayUtils.AddFunction("RemoveAt", ArrayLike_RemoveAt, 2);
                 ns_ArrayUtils.AddFunction("Insert", ArrayLike_Insert, 3);
                 ns_ArrayUtils.AddFunction("SetValue", ArrayLike_SetValue, 3);
+
+                ns_jsb.AddValue("ArrayUtils", ns_ArrayUtils.GetConstructor());
             }
             return ns_jsb;
         }

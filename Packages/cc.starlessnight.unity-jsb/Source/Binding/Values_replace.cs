@@ -12,7 +12,7 @@ namespace QuickJS.Binding
         /// It's the default behaviour for value rebinding, write an overloaded version of this function for a specific type if it's different from the default.
         /// </summary>
         public static bool js_rebind_this<T>(JSContext ctx, JSValue this_obj, ref T o)
-        where T : struct
+        // where T : struct
         {
             var header = JSApi.jsb_get_payload_header(ctx, this_obj);
             switch (header.type_id)

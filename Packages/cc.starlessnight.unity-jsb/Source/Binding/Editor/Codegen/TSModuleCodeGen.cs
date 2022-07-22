@@ -208,9 +208,9 @@ namespace QuickJS.Binding
             var prefs = typeBindingInfo.bindingManager.prefs;
             if (prefs.GetModuleStyle() == ETSModuleStyle.Singular)
             {
-                return "System.CSharpArray";
+                return "System.Array";
             }
-            return "CSharpArray";
+            return "Array";
         }
 
         private void AddBuiltinModuleAlias(string topLevel, string typeName)
@@ -241,7 +241,7 @@ namespace QuickJS.Binding
 
             if (originalType.IsArray)
             {
-                AddBuiltinModuleAlias("System", "CSharpArray");
+                AddBuiltinModuleAlias("System", "Array");
                 AddModuleAlias(originalType.GetElementType());
                 return;
             }

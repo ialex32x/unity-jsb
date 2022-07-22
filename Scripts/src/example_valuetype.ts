@@ -1,5 +1,8 @@
 import { Vector2, Vector3 } from "UnityEngine";
 
+import { ArrayTest } from "Example";
+import { CreateJSArrayProxy, GetUnderlyingArray } from "./experimental/array_proxy";
+
 let u = new Vector3(1, 2, 3);
 
 console.assert(u.x == 1, "u.x should equals to 1");
@@ -25,3 +28,22 @@ console.assert(!(Vector2.zero instanceof Vector3), "(wrong value) instanceof Vec
 console.assert(Vector3.zero.magnitude == 0, "Vector3.zero");
 Vector3.zero.Set(1, 2, 3);
 console.assert(Vector3.zero.magnitude == 0, "Vector3.zero");
+
+
+/** experimental
+ *    CreateJSArrayProxy will be merged into value-conversion layer if possible. All of the System.Array objects will be treated as js array in d.ts after this feature implemented.
+ */
+let array1 = CreateJSArrayProxy(ArrayTest.values1);
+
+// size change will cause side-effect, array proxy target will detach from the original csharp variable reference
+// array1.push(3, 4, 5, 6); 
+// ArrayTest.values1 = GetUnderlyingObject(array1);
+
+array1[0] = 123;
+console.log("length", array1.length);
+console.log("join", array1.join());
+console.log("reduce", array1.reduce((p, c) => p + c));
+console.log(GetUnderlyingArray(array1));
+console.log("eq", ArrayTest.values1 === GetUnderlyingArray(array1));
+console.log("len", ArrayTest.values1.Length);
+console.log("[1]", ArrayTest.values1.GetValue(0));

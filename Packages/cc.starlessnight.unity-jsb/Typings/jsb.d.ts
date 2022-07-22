@@ -37,7 +37,7 @@ declare module "jsb.editor" {
 }
 
 declare module "jsb" {
-    import { Delegate as SystemDelegate, CSharpArray } from "System";
+    import { Delegate as SystemDelegate, Array as CSharpArray } from "System";
 
     type byte = number;
     type Nullable<T> = T;
@@ -147,8 +147,8 @@ declare module "jsb" {
     }
 
     class ArrayUtils {
-        static GetLength(cs: CSharpArray<any>): void;
-        static GetValue(cs: CSharpArray<any>, index: number): void;
+        static GetLength(cs: CSharpArray<any>): number;
+        static GetValue(cs: CSharpArray<any>, index: number): any;
         static RemoveAt(cs: CSharpArray<any>, index: number): void;
         static Insert(cs: CSharpArray<any>, value: any, index: number): void;
         static SetValue(cs: CSharpArray<any>, value: any, index: number): void;

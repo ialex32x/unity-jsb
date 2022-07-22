@@ -1,6 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const UnityEngine_1 = require("UnityEngine");
+const Example_1 = require("Example");
+const array_proxy_1 = require("./experimental/array_proxy");
 let u = new UnityEngine_1.Vector3(1, 2, 3);
 console.assert(u.x == 1, "u.x should equals to 1");
 u.Normalize();
@@ -22,4 +24,19 @@ console.assert(!(UnityEngine_1.Vector2.zero instanceof UnityEngine_1.Vector3), "
 console.assert(UnityEngine_1.Vector3.zero.magnitude == 0, "Vector3.zero");
 UnityEngine_1.Vector3.zero.Set(1, 2, 3);
 console.assert(UnityEngine_1.Vector3.zero.magnitude == 0, "Vector3.zero");
+/** experimental
+ *    CreateJSArrayProxy will be merged into value-conversion layer if possible. All of the System.Array objects will be treated as js array in d.ts after this feature implemented.
+ */
+let array1 = array_proxy_1.CreateJSArrayProxy(Example_1.ArrayTest.values1);
+// size change will cause side-effect, array proxy target will detach from the original csharp variable reference
+// array1.push(3, 4, 5, 6); 
+// ArrayTest.values1 = GetUnderlyingObject(array1);
+array1[0] = 123;
+console.log("length", array1.length);
+console.log("join", array1.join());
+console.log("reduce", array1.reduce((p, c) => p + c));
+console.log(array_proxy_1.GetUnderlyingArray(array1));
+console.log("eq", Example_1.ArrayTest.values1 === array_proxy_1.GetUnderlyingArray(array1));
+console.log("len", Example_1.ArrayTest.values1.Length);
+console.log("[1]", Example_1.ArrayTest.values1.GetValue(0));
 //# sourceMappingURL=example_valuetype.js.map

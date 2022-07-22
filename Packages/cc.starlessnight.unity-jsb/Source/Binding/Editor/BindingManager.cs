@@ -1,4 +1,4 @@
-#if UNITY_EDITOR || JSB_RUNTIME_REFLECT_BINDING
+﻿#if UNITY_EDITOR || JSB_RUNTIME_REFLECT_BINDING
 using System;
 using System.IO;
 using System.Linq;
@@ -136,7 +136,7 @@ namespace QuickJS.Binding
             // ;
 
             TransformType(typeof(Array))
-                .Rename("CSharpArray<T, RANK = 1>")
+                .Rename("Array<T, RANK = 1>")
 
                 .SetMethodBlocked("GetValue", typeof(long), typeof(long), typeof(long))
                 .SetMethodBlocked("GetValue", typeof(long), typeof(long))
