@@ -59,5 +59,7 @@ namespace QuickJS.Binding
         public virtual void OnCleanup(BindingManager bindingManager)
         {
         }
+        
+        public virtual int Priority { get; set; }
     }
 }
