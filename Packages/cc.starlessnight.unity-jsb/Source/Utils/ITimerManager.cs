@@ -5,7 +5,7 @@ using QuickJS.Native;
 
 namespace QuickJS.Utils
 {
-    public interface ITimerManager
+    public interface ITimerManager : IEnumerable<TimerInfo>
     {
         #region Timer Management
         uint SetTimeout(ScriptFunction fn, int ms);
@@ -13,12 +13,9 @@ namespace QuickJS.Utils
         bool ClearTimer(uint id);
         #endregion
 
-        int now { get; }
-
-        // usually for debug only
-        void ForEach(Action<ulong, int, int, bool> walker);
-
         void Bind(TypeRegister typeRegister);
+
+        int now { get; }
 
         void Update(int milliseconds);
         void Destroy();

@@ -20,13 +20,6 @@ namespace QuickJS.Unity
 
         private class Snapshot
         {
-            public struct TimerInfo
-            {
-                public ulong id;
-                public int delay;
-                public int deadline;
-                public bool once;
-            }
             public int id;
             public bool alive;
 
@@ -45,7 +38,7 @@ namespace QuickJS.Unity
             // public int scriptPromiseCount;
             public int stringCount;
             public int timeNow;
-            public List<TimerInfo> activeTimers = new List<TimerInfo>();
+            public List<Utils.TimerInfo> activeTimers = new List<Utils.TimerInfo>();
         }
 
         private Vector2 _sv;
@@ -56,7 +49,7 @@ namespace QuickJS.Unity
 
         [SerializeField]
         private bool _autoCap = true;
-        
+
         private float _time;
 
         [SerializeField]
@@ -200,16 +193,13 @@ namespace QuickJS.Unity
                 // snapshot.scriptPromiseCount = objectCache.GetScriptPromiseCount();
                 snapshot.stringCount = stringCache.GetStringCount();
 
-                var timeManager = runtime.GetTimerManager();
+                var timerManager = runtime.GetTimerManager();
                 snapshot.activeTimers.Clear();
-                snapshot.timeNow = timeManager.now;
-                timeManager.ForEach((id, delay, deadline, once) => snapshot.activeTimers.Add(new Snapshot.TimerInfo()
+                snapshot.timeNow = timerManager.now;
+                foreach (var info in timerManager)
                 {
-                    id = id,
-                    delay = delay,
-                    deadline = deadline,
-                    once = once,
-                }));
+                    snapshot.activeTimers.Add(info);
+                }
             }
         }
 

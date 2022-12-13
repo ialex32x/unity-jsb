@@ -372,7 +372,7 @@ namespace QuickJS
             _fileSystem = fileSystem;
             _objectCache = new ObjectCache(_logger);
             _objectCollection = new ObjectCollection();
-            _timerManager = args.timerManager ?? new DefaultTimerManager(_logger);
+            _timerManager = args.timerManager ?? new DefaultTimerManager();
             _typeDB = new TypeDB(this, _mainContext);
 #if !JSB_UNITYLESS
             _typeDB.AddType(typeof(Unity.JSBehaviour), JSApi.JS_UNDEFINED);

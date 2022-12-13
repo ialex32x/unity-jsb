@@ -1,43 +1,74 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using QuickJS.Binding;
 using QuickJS.Native;
 
 namespace QuickJS.Utils
 {
-    public class DefaultTimerManager : Scheduler, ITimerManager
+    public readonly struct TimerInfo
+    {
+        public readonly uint id;
+        public readonly int delay;
+        public readonly int deadline;
+        public readonly bool once;
+
+        public TimerInfo(uint id, int delay, int deadline, bool once)
+        {
+            this.id = id;
+            this.delay = delay;
+            this.deadline = deadline;
+            this.once = once;
+        }
+    }
+
+    public class DefaultTimerManager : ITimerManager
     {
         private uint _idgen;
-        private Dictionary<uint, ulong> _timers = new Dictionary<uint, ulong>();
+        private TimerManager _manager = new TimerManager();
+        private Dictionary<uint, SIndex> _timers = new Dictionary<uint, SIndex>();
 
-        public DefaultTimerManager(IScriptLogger logger, int jiffies = 10, int slots = 120, int depth = 4, int prealloc = 50, int capacity = 500)
-        : base(logger, jiffies, slots, depth, prealloc, capacity)
+        public DefaultTimerManager()
         {
+        }
+
+        public int now => (int)_manager.now;
+
+        public void Update(int milliseconds)
+        {
+            _manager.Update((uint)milliseconds);
+        }
+
+        public void Destroy()
+        {
+            _manager.Clear();
+            _timers.Clear();
         }
 
         public uint SetTimeout(ScriptFunction fn, int ms)
         {
             var id = ++_idgen;
-            var timer = this.Add(ms, true, fn);
-            _timers.Add(id, timer);
+            var index = SIndex.None;
+            _manager.SetTimer(ref index, fn, (uint)ms, false);
+            _timers.Add(id, index);
             return id;
         }
 
         public uint SetInterval(ScriptFunction fn, int ms)
         {
             var id = ++_idgen;
-            var timer = this.Add(ms, false, fn);
-            _timers.Add(id, timer);
+            var index = SIndex.None;
+            _manager.SetTimer(ref index, fn, (uint)ms, true);
+            _timers.Add(id, index);
             return id;
         }
 
         public bool ClearTimer(uint id)
         {
-            ulong timer;
-            if (_timers.TryGetValue(id, out timer))
+            if (_timers.TryGetValue(id, out var index))
             {
                 _timers.Remove(id);
-                this.Remove(timer);
+                _manager.ClearTimer(index);
                 return true;
             }
 
@@ -166,5 +197,57 @@ namespace QuickJS.Utils
             context.AddGlobalFunction("clearInterval", js_clear_timer, 1);
             context.AddGlobalFunction("clearTimeout", js_clear_timer, 1);
         }
+
+        #region Enumeration Support
+        IEnumerator<TimerInfo> IEnumerable<TimerInfo>.GetEnumerator() => (IEnumerator<TimerInfo>)this.GetEnumerator();
+        IEnumerator IEnumerable.GetEnumerator() => (IEnumerator)this.GetEnumerator();
+        public Enumerator GetEnumerator() => new Enumerator(this);
+        public struct Enumerator : IEnumerator<TimerInfo>, IDisposable, IEnumerator
+        {
+            private DefaultTimerManager _self;
+            private Dictionary<uint, SIndex>.Enumerator _e;
+
+            public Enumerator(DefaultTimerManager self)
+            {
+                _self = self;
+                _e = self._timers.GetEnumerator();
+            }
+
+            public TimerInfo Current
+            {
+                get
+                {
+                    var pair = _e.Current;
+                    var data = _self._manager.GetTimerInfo(pair.Value);
+                    return new TimerInfo(pair.Key, data.delay, data.deadline, data.once);
+                }
+            }
+
+            public void Reset()
+            {
+                _e = _self._timers.GetEnumerator();
+            }
+
+            public bool MoveNext()
+            {
+                return _e.MoveNext();
+            }
+
+            public void Dispose() => _e.Dispose();
+
+            void IDisposable.Dispose() => _e.Dispose();
+
+            object IEnumerator.Current
+            {
+                get
+                {
+                    var pair = _e.Current;
+                    var data = _self._manager.GetTimerInfo(pair.Value);
+                    return (object)new TimerInfo(pair.Key, data.delay, data.deadline, data.once);
+                }
+            }
+        }
+
+        #endregion
     }
 }
