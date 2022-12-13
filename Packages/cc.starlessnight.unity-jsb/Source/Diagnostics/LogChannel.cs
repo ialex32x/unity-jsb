@@ -29,7 +29,7 @@ namespace QuickJS.Diagnostics
             if (!_enabled) return;
             Logger.Write(ELogSeverity.VeryVerbose, _name, text);
         }
-        
+
         [Conditional("JSB_DEBUG")]
         public void VeryVerbose(object obj)
         {
@@ -50,7 +50,7 @@ namespace QuickJS.Diagnostics
             if (!_enabled) return;
             Logger.Write(ELogSeverity.Verbose, _name, text);
         }
-        
+
         [Conditional("JSB_DEBUG")]
         public void Verbose(object obj)
         {
@@ -71,7 +71,7 @@ namespace QuickJS.Diagnostics
             if (!_enabled) return;
             Logger.Write(ELogSeverity.Debug, _name, text);
         }
-        
+
         [Conditional("JSB_DEBUG")]
         public void Debug(object obj)
         {
@@ -92,7 +92,7 @@ namespace QuickJS.Diagnostics
             if (!_enabled) return;
             Logger.Write(ELogSeverity.Info, _name, text);
         }
-        
+
         [Conditional("JSB_DEBUG")]
         public void Info(object obj)
         {
@@ -113,7 +113,7 @@ namespace QuickJS.Diagnostics
             if (!_enabled) return;
             Logger.Write(ELogSeverity.Warning, _name, text);
         }
-        
+
         [Conditional("JSB_DEBUG")]
         public void Warning(object obj)
         {
@@ -135,7 +135,7 @@ namespace QuickJS.Diagnostics
             if (!_enabled) return;
             Logger.Write(ELogSeverity.Error, _name, text);
         }
-        
+
         [Conditional("JSB_RELEASE")]
         public void Error(object obj)
         {
@@ -158,7 +158,7 @@ namespace QuickJS.Diagnostics
             if (!_enabled) return;
             Logger.Write(ELogSeverity.Fatal, _name, text);
         }
-        
+
         [Conditional("JSB_RELEASE")]
         public void Fatal(object obj)
         {
@@ -172,6 +172,18 @@ namespace QuickJS.Diagnostics
         {
             if (!_enabled) return;
             Logger.Write(ELogSeverity.Fatal, _name, fmt, args);
+        }
+
+        public void Write(ELogSeverity severity, object obj)
+        {
+            if (!_enabled || obj == null) return;
+            Logger.Write(severity, _name, obj.ToString());
+        }
+
+        public void Write(ELogSeverity severity, string fmt, params object[] args)
+        {
+            if (!_enabled) return;
+            Logger.Write(severity, _name, fmt, args);
         }
 
         public void Exception(Exception exception)

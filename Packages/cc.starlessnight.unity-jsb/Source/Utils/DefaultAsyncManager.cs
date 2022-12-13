@@ -110,14 +110,13 @@ namespace QuickJS.Utils
                 return;
             }
             var context = runtime.GetMainContext();
-            var logger = runtime.GetLogger();
             var args = (JSTaskCompletionArgs)cbArgs;
             var task = args.task;
             var safeRelease = args.safeRelease;
 
             if (!safeRelease.isValid)
             {
-                logger?.Write(LogLevel.Error, "pormise func has already been released");
+                Diagnostics.Logger.Default.Error("pormise func has already been released");
                 return;
             }
 
@@ -132,7 +131,7 @@ namespace QuickJS.Utils
                 }
                 catch (Exception exception)
                 {
-                    logger?.WriteException(exception);
+                    Diagnostics.Logger.Default.Exception(exception);
                 }
             }
 

@@ -136,12 +136,8 @@ namespace QuickJS.Extra
             var ret = JSApi.JS_Call(_jsContext, _onerror, JSApi.JS_UNDEFINED, 1, argv);
             if (ret.IsException())
             {
-                var logger = ScriptEngine.GetLogger(_jsContext);
-                if (logger != null)
-                {
-                    var ex = _jsContext.GetExceptionString();
-                    logger.Write(LogLevel.Error, ex);
-                }
+                var ex = _jsContext.GetExceptionString();
+                Diagnostics.Logger.Default.Error(ex);
             }
             else
             {

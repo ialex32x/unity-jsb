@@ -517,7 +517,7 @@ namespace QuickJS.Unity
                 }
                 catch (Exception exception)
                 {
-                    ScriptEngine.GetLogger(ctx)?.WriteException(exception);
+                    Diagnostics.Logger.Default.Exception(exception);
                 }
             }
         }

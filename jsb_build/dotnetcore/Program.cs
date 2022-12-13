@@ -16,9 +16,8 @@ namespace DotnetCoreConsoleApp
             // var r = m.Invoke(null, null);
             // Console.WriteLine("Output: {0}", r);
 
-            var logger = new DefaultScriptLogger();
             var pathResolver = new PathResolver();
-            var fileSystem = new DefaultFileSystem(logger);
+            var fileSystem = new DefaultFileSystem();
             var asyncManager = new DefaultAsyncManager();
             var runtime = ScriptEngine.CreateRuntime();
 
@@ -28,7 +27,6 @@ namespace DotnetCoreConsoleApp
                 fileSystem = fileSystem,
                 pathResolver = pathResolver,
                 asyncManager = asyncManager,
-                logger = logger,
                 byteBufferAllocator = new ByteBufferPooledAllocator(),
                 binder = BindingManager.UnitylessReflectBind,
             });

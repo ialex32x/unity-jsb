@@ -69,11 +69,8 @@ namespace QuickJS.Utils
 
     public class DefaultFileSystem : IFileSystem
     {
-        private IScriptLogger _logger;
-
-        public DefaultFileSystem(IScriptLogger logger)
+        public DefaultFileSystem()
         {
-            _logger = logger;
         }
 
         public bool Exists(string path)
@@ -101,10 +98,7 @@ namespace QuickJS.Utils
             }
             catch (Exception exception)
             {
-                if (_logger != null)
-                {
-                    _logger.Write(LogLevel.Error, "{0}: {1}\n{2}", path, exception.Message, exception.StackTrace);
-                }
+                Diagnostics.Logger.IO.Exception(path, exception);
                 return null;
             }
         }
@@ -113,11 +107,8 @@ namespace QuickJS.Utils
 #if !JSB_UNITYLESS
     public class ResourcesFileSystem : IFileSystem
     {
-        private IScriptLogger _logger;
-
-        public ResourcesFileSystem(IScriptLogger logger)
+        public ResourcesFileSystem()
         {
-            _logger = logger;
         }
 
         public bool Exists(string path)
@@ -140,10 +131,7 @@ namespace QuickJS.Utils
             }
             catch (Exception exception)
             {
-                if (_logger != null)
-                {
-                    _logger.Write(LogLevel.Error, "{0}: {1}\n{2}", path, exception.Message, exception.StackTrace);
-                }
+                Diagnostics.Logger.IO.Exception(path, exception);
                 return null;
             }
         }

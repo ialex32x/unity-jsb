@@ -371,7 +371,7 @@ namespace QuickJS.Utils
             var funValue = JSApi.JSB_NewCFunctionMagic(_context, _DynamicMethodInvoke, name, 0, magic);
             _dynamicMethods.Add(method);
 #if JSB_DEBUG
-            _context.GetLogger()?.Write(LogLevel.Info, "NewDynamicDelegate {0} {1} = {2}", name, d, funValue);
+            Diagnostics.Logger.Default.Debug("NewDynamicDelegate {0} {1} = {2}", name, d, funValue);
 #endif
             return funValue;
         }

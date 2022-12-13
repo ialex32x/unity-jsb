@@ -59,16 +59,6 @@ namespace QuickJS
             return count;
         }
 
-        public static IScriptLogger GetLogger(JSContext ctx)
-        {
-            return GetRuntime(ctx)?.GetLogger();
-        }
-
-        public static IScriptLogger GetLogger(JSRuntime rt)
-        {
-            return GetRuntime(rt)?.GetLogger();
-        }
-
         public static ObjectCache GetObjectCache(JSRuntime rt)
         {
             return GetRuntime(rt)?.GetObjectCache();

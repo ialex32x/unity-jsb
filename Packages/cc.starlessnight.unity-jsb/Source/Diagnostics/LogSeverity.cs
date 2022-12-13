@@ -12,7 +12,8 @@ namespace QuickJS.Diagnostics
         Warning = 16,
         Error = 32,
         Fatal = 64,
+        Assert = 128, 
 
-        All = VeryVerbose | Verbose | Debug | Info | Warning | Error | Fatal,
+        All = VeryVerbose | Verbose | Debug | Info | Warning | Error | Fatal | Assert,
     }
 }

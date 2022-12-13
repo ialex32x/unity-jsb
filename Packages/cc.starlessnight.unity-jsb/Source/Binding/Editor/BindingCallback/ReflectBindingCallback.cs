@@ -207,7 +207,7 @@ namespace QuickJS.Binding
 
             if (!CodeGenUtils.IsCodeEmitSupported())
             {
-                runtime.GetLogger().Write(Utils.LogLevel.Warn, CodeGenUtils.CodeEmitWarning);
+                Diagnostics.Logger.Default.Warning(CodeGenUtils.CodeEmitWarning);
             }
         }
 

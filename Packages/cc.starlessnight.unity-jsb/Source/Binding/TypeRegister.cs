@@ -35,11 +35,6 @@ namespace QuickJS.Binding
             return _context;
         }
 
-        public IScriptLogger GetLogger()
-        {
-            return _context.GetLogger();
-        }
-
         public JSAtom GetAtom(string name)
         {
             return _atoms.GetAtom(name);

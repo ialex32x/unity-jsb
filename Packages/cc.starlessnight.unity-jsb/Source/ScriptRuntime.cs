@@ -38,7 +38,6 @@ namespace QuickJS
         private JSRuntime _rt;
         private int _runtimeId;
         private bool _withStacktrace;
-        private IScriptLogger _logger;
         private int _freeContextSlot = -1;
 
         // reserved feature, there is only one context for a script runtime so far.
@@ -192,7 +191,7 @@ namespace QuickJS
                 var rval = ResolveModule(_mainContext, "", module_id, set_as_main);
                 if (rval.IsException())
                 {
-                    JSNative.print_exception(_mainContext, _logger, LogLevel.Error, "failed to load module: " + module_id);
+                    JSNative.print_exception(_mainContext, "failed to load module: " + module_id);
                 }
                 else
                 {
@@ -280,7 +279,7 @@ namespace QuickJS
             }
             catch (Exception exception)
             {
-                _logger?.WriteException(exception);
+                Diagnostics.Logger.Default.Exception(exception);
             }
         }
 
@@ -293,7 +292,7 @@ namespace QuickJS
             }
             catch (Exception exception)
             {
-                _logger?.WriteException(exception);
+                Diagnostics.Logger.Default.Exception(exception);
             }
         }
 
@@ -324,7 +323,7 @@ namespace QuickJS
                     }
                     catch (Exception exception)
                     {
-                        ScriptEngine.GetLogger(rt)?.WriteException(exception);
+                        Diagnostics.Logger.Default.Exception(exception);
                     }
                 }
             }
@@ -346,9 +345,8 @@ namespace QuickJS
             _isValid = true;
             _isRunning = true;
             _isStaticBinding = DefaultBinder.IsStaticBinding(args.binder);
-            _logger = args.logger;
 #if JSB_DEBUG
-            _logger?.Write(LogLevel.Info, "initializing script runtime: {0}", _runtimeId);
+            Diagnostics.Logger.Default.Info("initializing script runtime: {0}", _runtimeId);
 #endif
             _rt = JSApi.JSB_NewRuntime(class_finalizer);
             JSApi.JS_SetHostPromiseRejectionTracker(_rt, JSNative.PromiseRejectionTracker, IntPtr.Zero);
@@ -370,7 +368,7 @@ namespace QuickJS
             _byteBufferAllocator = args.byteBufferAllocator;
             _autorelease = new Utils.AutoReleasePool();
             _fileSystem = fileSystem;
-            _objectCache = new ObjectCache(_logger);
+            _objectCache = new ObjectCache();
             _objectCollection = new ObjectCollection();
             _timerManager = args.timerManager ?? new DefaultTimerManager();
             _typeDB = new TypeDB(this, _mainContext);
@@ -390,7 +388,7 @@ namespace QuickJS
             }
             catch (Exception exception)
             {
-                _logger?.WriteException(exception);
+                Diagnostics.Logger.Default.Exception(exception);
             }
 
             var register = _mainContext.CreateTypeRegister();
@@ -413,7 +411,7 @@ namespace QuickJS
             }
             else
             {
-                _logger?.Write(LogLevel.Error, "failed to load plover.js from Resources");
+                Diagnostics.Logger.Default.Error("failed to load plover.js from Resources");
             }
 #endif
 
@@ -423,7 +421,7 @@ namespace QuickJS
             }
             else
             {
-                _logger?.Write(LogLevel.Info, "[EXPERIMENTAL] Waiting for debugger...");
+                Diagnostics.Logger.Default.Debug("[EXPERIMENTAL] Waiting for debugger...");
                 JSApi.JS_SetWaitingForDebuggerFunc((JSContext)_mainContext, _RunIfWaitingForDebugger);
             }
         }
@@ -490,7 +488,6 @@ namespace QuickJS
                 fileSystem = _fileSystem,
                 pathResolver = _pathResolver,
                 asyncManager = _asyncManager,
-                logger = _logger,
                 byteBufferAllocator = new IO.ByteBufferPooledAllocator(),
             });
             return runtime;
@@ -509,11 +506,6 @@ namespace QuickJS
         public ITimerManager GetTimerManager()
         {
             return _timerManager;
-        }
-
-        public IScriptLogger GetLogger()
-        {
-            return _logger;
         }
 
         public ITypeDB GetTypeDB()
@@ -541,7 +533,7 @@ namespace QuickJS
 #if JSB_DEBUG
             if (!IsMainThread())
             {
-                _logger?.Write(LogLevel.Error, "RemoveManagedObject is only allowed to be invoked in script runtime thread");
+                Diagnostics.Logger.Default.Error("RemoveManagedObject is only allowed to be invoked in script runtime thread");
             }
 #endif
             return _objectCollection.RemoveObject(handle);
@@ -672,7 +664,7 @@ namespace QuickJS
         // {
         //     if (_runtimeId < 0)
         //     {
-        //         _logger?.Write(LogLevel.Error, "fatal error: enqueue pending action after the runtime shutdown");
+        //         Diagnostics.Logger.Default.Error("fatal error: enqueue pending action after the runtime shutdown");
         //         return;
         //     }
 
@@ -702,7 +694,7 @@ namespace QuickJS
 
             if (_runtimeId < 0)
             {
-                _logger?.Write(LogLevel.Error, "fatal error: enqueue pending action after the runtime shutdown");
+                Diagnostics.Logger.Default.Error("fatal error: enqueue pending action after the runtime shutdown");
                 return;
             }
 
@@ -740,7 +732,7 @@ namespace QuickJS
 
             if (_runtimeId < 0)
             {
-                _logger?.Write(LogLevel.Error, "fatal error: enqueue pending action after the runtime shutdown");
+                Diagnostics.Logger.Default.Error("fatal error: enqueue pending action after the runtime shutdown");
                 return;
             }
 
@@ -771,7 +763,7 @@ namespace QuickJS
         {
             if (_runtimeId < 0)
             {
-                _logger?.Write(LogLevel.Error, "fatal error: enqueue pending action after the runtime shutdown");
+                Diagnostics.Logger.Default.Error("fatal error: enqueue pending action after the runtime shutdown");
                 return false;
             }
 
@@ -835,7 +827,7 @@ namespace QuickJS
             if (UnityEditor.EditorApplication.isCompiling)
             {
                 ScriptEngine.Shutdown();
-                _logger?.Write(LogLevel.Warn, "assembly reloading, shutdown script engine immediately");
+                Diagnostics.Logger.Default.Warning("assembly reloading, shutdown script engine immediately");
                 return;
             }
 #endif
@@ -908,7 +900,7 @@ namespace QuickJS
                         try { action.callback(this, action.args, action.value); }
                         catch (Exception exception)
                         {
-                            _logger?.WriteException(exception);
+                            Diagnostics.Logger.Default.Exception(exception);
                         }
                     }
                     _executingActions.Clear();
@@ -927,7 +919,7 @@ namespace QuickJS
                         try { action.callback(this, action.args, action.value); }
                         catch (Exception exception)
                         {
-                            _logger?.WriteException(exception);
+                            Diagnostics.Logger.Default.Exception(exception);
                         }
                     }
                     _delayedActions.Clear();
@@ -940,7 +932,7 @@ namespace QuickJS
 #if JSB_DEBUG
             if (_isValid)
             {
-                _logger?.Write(LogLevel.Assert, "should never happen, ensure the script runtime is explicitly closed always");
+                Diagnostics.Logger.Default.Fatal("should never happen, ensure the script runtime is explicitly closed");
             }
 #endif
             Destroy();
@@ -965,7 +957,7 @@ namespace QuickJS
                 return;
             }
 #if JSB_DEBUG
-            _logger?.Write(LogLevel.Info, "destroying script runtime: {0}", _runtimeId);
+            Diagnostics.Logger.Default.Info("destroying script runtime: {0}", _runtimeId);
 #endif
             _isValid = false;
             try
@@ -978,7 +970,7 @@ namespace QuickJS
             }
             catch (Exception e)
             {
-                _logger?.WriteException(e);
+                Diagnostics.Logger.Default.Exception(e);
             }
 
             _isInitialized = false;
@@ -987,7 +979,7 @@ namespace QuickJS
             _objectCollection.Clear();
             if (_objectCollection.count != 0)
             {
-                _logger?.Write(LogLevel.Error, "invalid object collection state during the phase of destroying runtime: {0}", _objectCollection.count);
+                Diagnostics.Logger.Default.Error("invalid object collection state during the phase of destroying runtime: {0}", _objectCollection.count);
             }
 
             _timerManager.Destroy();
@@ -1027,18 +1019,18 @@ namespace QuickJS
             {
                 if (_pendingActions.Count != 0)
                 {
-                    _logger?.Write(LogLevel.Assert, "unexpected pending actions");
+                    Diagnostics.Logger.Default.Error("unexpected pending actions");
                 }
             }
 
             if (_delayedActions.Count != 0)
             {
-                _logger?.Write(LogLevel.Assert, "unexpected delayed actions");
+                Diagnostics.Logger.Default.Error("unexpected delayed actions");
             }
 
             if (JSApi.JSB_FreeRuntime(_rt) == 0)
             {
-                _logger?.Write(LogLevel.Assert, "gc object leaks");
+                Diagnostics.Logger.Default.Error("gc object leaks");
             }
 
 #if JSB_WITH_V8_BACKEND
@@ -1055,7 +1047,7 @@ namespace QuickJS
             }
             catch (Exception e)
             {
-                _logger?.WriteException(e);
+                Diagnostics.Logger.Default.Exception(e);
             }
         }
 

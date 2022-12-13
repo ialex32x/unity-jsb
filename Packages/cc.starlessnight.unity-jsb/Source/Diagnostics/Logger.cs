@@ -8,15 +8,16 @@ namespace QuickJS.Diagnostics
     public static class Logger
     {
         public static LogChannel Default => GetChannel("Default");
-        public static LogChannel UI => GetChannel("UI");
-        public static LogChannel Core => GetChannel("Core");
+        public static LogChannel Binding => GetChannel("Binding");
+        public static LogChannel IO => GetChannel("IO");
+        public static LogChannel Scripting => GetChannel("Scripting");
 
         private static ReaderWriterLockSlim _channelsLock = new ReaderWriterLockSlim();
         private static ELogSeverity _severity = ELogSeverity.All;
         private static Dictionary<string, LogChannel> _channels = new Dictionary<string, LogChannel>();
-        private static ILogHandler _handler = new UnityLogHandler();
+        private static ILogWriter _writer = new DefaultLogWriter();
 
-        public static ILogHandler handler { get => _handler; set => _handler = value; }
+        public static ILogWriter writer { get => _writer; set => _writer = value; }
 
         public static bool GetSeverityEnabled(ELogSeverity severity) => (_severity | severity) != 0;
 
@@ -61,14 +62,16 @@ namespace QuickJS.Diagnostics
 
         public static void Write(ELogSeverity severity, string channel, string text)
         {
-            if ((severity & _severity) == 0 || _handler == null) return;
-            _handler.Write(severity, channel, text);
+            if ((severity & _severity) == 0) return;
+            var target = _writer;
+            target?.Write(severity, channel, text);
         }
 
         public static void Write(ELogSeverity severity, string channel, string fmt, params object[] args)
         {
-            if ((severity & _severity) == 0 || _handler == null) return;
-            _handler.Write(severity, channel, fmt, args);
+            if ((severity & _severity) == 0) return;
+            var target = _writer;
+            target?.Write(severity, channel, fmt, args);
         }
     }
 }

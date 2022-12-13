@@ -101,7 +101,7 @@ namespace QuickJS.Utils
             JSApi.JS_FreeValue(_jsContext, argv[1]);
             if (ret.IsException())
             {
-                _jsContext.print_exception(Utils.LogLevel.Error, $"exception thrown in FSWatcher.Call: ${name} Path: ${fullPath}");
+                Diagnostics.Logger.Default.Error("exception thrown in FSWatcher.Call: {0} Path: {1}", name, fullPath);
             }
             else
             {

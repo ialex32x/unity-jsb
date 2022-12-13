@@ -1,28 +1,21 @@
 using System;
-using QuickJS;
-using QuickJS.Binding;
 using QuickJS.Utils;
-using QuickJS.IO;
 using System.Net;
 using System.IO;
 using System.Text;
 
 namespace Example
 {
-    using UnityEngine;
-
     /// <summary>
     /// a simple demonstration of accessing remote file (sync)
     /// </summary>
     public class HttpFileSystem : IFileSystem
     {
         private string _url;
-        private IScriptLogger _logger;
 
-        public HttpFileSystem(IScriptLogger logger, string baseUrl)
+        public HttpFileSystem(string baseUrl)
         {
             _url = baseUrl;
-            _logger = logger;
         }
 
         private string GetRemote(string path)
@@ -68,10 +61,7 @@ namespace Example
             }
             catch (Exception exception)
             {
-                if (_logger != null)
-                {
-                    _logger.Write(LogLevel.Error, "{0}: {1}\n{2}", path, exception.Message, exception.StackTrace);
-                }
+                QuickJS.Diagnostics.Logger.IO.Error("{0}: {1}\n{2}", path, exception.Message, exception.StackTrace);
                 return null;
             }
         }

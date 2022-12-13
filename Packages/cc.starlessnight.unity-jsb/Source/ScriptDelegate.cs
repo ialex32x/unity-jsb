@@ -23,7 +23,7 @@ namespace QuickJS
             // 会出现的问题是, 如果 c# 没有对 ScriptDelegate 的强引用, 那么反复 get_delegate 会重复创建 ScriptDelegate
             context.GetObjectCache().AddDelegate(_jsValue, this);
 #if JSB_DEBUG
-            context.GetLogger()?.Write(Utils.LogLevel.Info, "Alloc DelegateValue {0}", _jsValue);
+            Diagnostics.Logger.Default.Debug("Alloc DelegateValue {0}", _jsValue);
 #endif
         }
 
@@ -39,7 +39,7 @@ namespace QuickJS
             _jsValue = JSApi.JS_UNDEFINED;
 
 #if JSB_DEBUG
-            context.GetLogger()?.Write(Utils.LogLevel.Info, "FreeDelegationValue {0}", jsValue);
+            Diagnostics.Logger.Default.Debug("FreeDelegationValue {0}", jsValue);
 #endif
             context.GetRuntime().FreeDelegationValue(jsValue);
         }

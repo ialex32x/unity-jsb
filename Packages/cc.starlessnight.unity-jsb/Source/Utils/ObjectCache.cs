@@ -33,11 +33,8 @@ namespace QuickJS.Utils
 
         // private JSWeakMap<ScriptPromise> _promiseMap = new JSWeakMap<ScriptPromise>();
 
-        private IScriptLogger _logger;
-
-        public ObjectCache(IScriptLogger logger)
+        public ObjectCache()
         {
-            _logger = logger;
         }
 
         public void ForEachManagedObject(Action<object> callback)
@@ -89,20 +86,17 @@ namespace QuickJS.Utils
                 return;
             }
 #if JSB_DEBUG
-            if (_logger != null)
+            Diagnostics.Logger.Default.Debug("_activeMapSlotCount {0}", _activeMapSlotCount);
+            foreach (var entry in _map)
             {
-                _logger.Write(LogLevel.Info, "_activeMapSlotCount {0}", _activeMapSlotCount);
-                foreach (var entry in _map)
+                if (entry.target != null)
                 {
-                    if (entry.target != null)
-                    {
-                        _logger.Write(LogLevel.Info, "Entry {0}", entry.target);
-                    }
+                    Diagnostics.Logger.Default.Debug("Entry {0}", entry.target);
                 }
-                foreach (var entry in _rmap)
-                {
-                    _logger.Write(LogLevel.Info, "REntry {0} = {1}", entry.Key, entry.Value);
-                }
+            }
+            foreach (var entry in _rmap)
+            {
+                Diagnostics.Logger.Default.Debug("REntry {0} = {1}", entry.Key, entry.Value);
             }
 #endif
             _disposed = true;
@@ -128,13 +122,10 @@ namespace QuickJS.Utils
             if (o != null)
             {
 #if JSB_DEBUG
-                if (_logger != null)
+                JSValue oldPtr;
+                if (TryGetJSValue(o, out oldPtr))
                 {
-                    JSValue oldPtr;
-                    if (TryGetJSValue(o, out oldPtr))
-                    {
-                        _logger.Write(LogLevel.Assert, "exists object => js value mapping {0}: {1} => {2}", o, oldPtr, heapptr);
-                    }
+                    Diagnostics.Logger.Default.Fatal("exists object => js value mapping {0}: {1} => {2}", o, oldPtr, heapptr);
                 }
 #endif
                 _rmap[o] = heapptr;
@@ -152,7 +143,7 @@ namespace QuickJS.Utils
             if (_disposed)
             {
 #if JSB_DEBUG
-                _logger?.Write(LogLevel.Error, "calling RemoveJSValue after being disposed: {0}", o);
+                Diagnostics.Logger.Default.Error("calling RemoveJSValue after being disposed: {0}", o);
 #endif
                 return false;
             }
@@ -167,7 +158,7 @@ namespace QuickJS.Utils
             if (_disposed)
             {
 #if JSB_DEBUG
-                _logger?.Write(LogLevel.Error, "calling AddObject after being disposed: {0}", o);
+                Diagnostics.Logger.Default.Error("calling AddObject after being disposed: {0}", o);
 #endif
                 return -1;
             }
@@ -266,7 +257,7 @@ namespace QuickJS.Utils
             if (_disposed)
             {
 #if JSB_DEBUG
-                _logger?.Write(LogLevel.Error, "calling ReplaceObject after being disposed: {0}", o);
+                Diagnostics.Logger.Default.Error("calling ReplaceObject after being disposed: {0}", o);
 #endif
                 return false;
             }
@@ -339,11 +330,11 @@ namespace QuickJS.Utils
             if (_disposed)
             {
 #if JSB_DEBUG
-                _logger?.Write(LogLevel.Error, "calling AddDelegate after being disposed: {0}", o);
+                Diagnostics.Logger.Default.Error("calling AddDelegate after being disposed: {0}", o);
 #endif
                 return false;
             }
-            
+
             _delegateMap.Add(jso, o);
             return true;
         }
@@ -358,11 +349,11 @@ namespace QuickJS.Utils
             if (_disposed)
             {
 #if JSB_DEBUG
-                _logger?.Write(LogLevel.Info, "calling RemoveDelegate after being disposed: {0}", jso);
+                Diagnostics.Logger.Default.Debug("calling RemoveDelegate after being disposed: {0}", jso);
 #endif
                 return false;
             }
-            
+
             return _delegateMap.Remove(jso);
         }
 
@@ -403,44 +394,6 @@ namespace QuickJS.Utils
             return _scriptValueMap.Remove(jso);
         }
 
-        #endregion 
-
-        // #region script promise mapping 
-
-        // /// <summary>
-        // /// register a weak reference of ScriptPromise in ObjectCache
-        // /// </summary>
-        // public void AddScriptPromise(JSValue jso, ScriptPromise o)
-        // {
-        //     if (_disposed)
-        //     {
-        //         return;
-        //     }
-        //     _promiseMap.Add(jso, o);
-        // }
-
-        // public bool TryGetScriptPromise<T>(JSValue jso, out T o)
-        // where T : ScriptPromise
-        // {
-        //     ScriptPromise value;
-        //     if (_promiseMap.TryGetValue(jso, out value))
-        //     {
-        //         o = value as T;
-        //         return true;
-        //     }
-        //     o = null;
-        //     return false;
-        // }
-
-        // public bool RemoveScriptPromise(JSValue jso)
-        // {
-        //     if (_disposed)
-        //     {
-        //         return false;
-        //     }
-        //     return _promiseMap.Remove(jso);
-        // }
-
-        // #endregion 
+        #endregion
     }
 }

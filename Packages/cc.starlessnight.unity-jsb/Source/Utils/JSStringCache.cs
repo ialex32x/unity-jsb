@@ -41,7 +41,8 @@ namespace QuickJS.Utils
             Clear();
         }
 
-        public int GetStringCount() {
+        public int GetStringCount()
+        {
             return _strMap.Count;
         }
 
@@ -130,11 +131,7 @@ namespace QuickJS.Utils
                 var slot = _slots[findSlotIndex];
                 if (slot.jsValue != jsValue)
                 {
-                    var logger = ScriptEngine.GetLogger(_ctx);
-                    if (logger != null)
-                    {
-                        logger.Write(LogLevel.Warn, "duplicated string cache: {0} != {1} => {2}", slot.jsValue, jsValue, slot.stringValue);
-                    }
+                    Diagnostics.Logger.Default.Warning("duplicated string cache: {0} != {1} => {2}", slot.jsValue, jsValue, slot.stringValue);
                 }
 #endif
                 return findSlotIndex;

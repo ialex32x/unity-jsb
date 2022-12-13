@@ -174,7 +174,7 @@ namespace QuickJS.Unity
                 {
                     bindingCallback = new ReflectBindingCallback(runtime),
                     utils = new UnityBindingUtils(),
-                    bindingLogger = new DefaultBindingLogger(Utils.LogLevel.Error),
+                    bindingLogger = new DefaultBindingLogger(),
                 });
                 bm.Collect();
                 bm.Generate(TypeBindingFlags.None);

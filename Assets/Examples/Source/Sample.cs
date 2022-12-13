@@ -57,20 +57,20 @@ namespace Example
 
             if (fileLoader == FileLoader.Resources)
             {
-                fileSystem = new ResourcesFileSystem(_mConsole);
+                fileSystem = new ResourcesFileSystem();
 
                 // it's the relative path under Unity Resources directory space
                 pathResolver.AddSearchPath("dist");
             }
             else if (fileLoader == FileLoader.Http)
             {
-                fileSystem = new HttpFileSystem(_mConsole, baseUrl);
+                fileSystem = new HttpFileSystem(baseUrl);
             }
             else
             {
                 // the DefaultFileSystem only demonstrates the minimalistic implementation of file access, it's usually enough for development in editor.
                 // you should implement your own filesystem layer for the device-end runtime (based on AssetBundle or zip)
-                fileSystem = new DefaultFileSystem(_mConsole);
+                fileSystem = new DefaultFileSystem();
                 pathResolver.AddSearchPath("Scripts/out");
                 // pathResolver.AddSearchPath("../Scripts/out");
                 // _rt.AddSearchPath("Assets/Examples/Scripts/dist");
@@ -91,7 +91,6 @@ namespace Example
                 fileSystem = fileSystem,
                 pathResolver = pathResolver,
                 asyncManager = asyncManager,
-                logger = _mConsole,
                 byteBufferAllocator = new ByteBufferPooledAllocator(),
                 binder = DefaultBinder.GetBinder(useReflectBind),
                 // apiBridge = new Experimental.CustomApiBridgeImpl(),

@@ -129,14 +129,8 @@ namespace QuickJS
                 return JSApi.JS_UNDEFINED;
             }
 
-            var logger = runtime.GetLogger();
-            if (logger == null)
-            {
-                return JSApi.JS_UNDEFINED;
-            }
-
             int i = 0;
-            if (magic == (int)LogLevel.Assert)
+            if (magic == (int)Diagnostics.ELogSeverity.Assert)
             {
                 if (JSApi.JS_ToBool(ctx, argv[0]) == 1)
                 {
@@ -148,7 +142,7 @@ namespace QuickJS
 
             var sb = new StringBuilder();
             size_t str_len;
-            if (magic == (int)LogLevel.Assert)
+            if (magic == (int)Diagnostics.ELogSeverity.Assert)
             {
                 sb.Append("Assertion failed: ");
             }
@@ -172,8 +166,8 @@ namespace QuickJS
                 }
             }
 
-            var logLevel = magic == -1 ? LogLevel.Info : (LogLevel)magic;
-            if (logLevel > LogLevel.Warn || runtime.withStacktrace)
+            var severity = magic == -1 ? Diagnostics.ELogSeverity.Info : (Diagnostics.ELogSeverity)magic;
+            if (severity > Diagnostics.ELogSeverity.Warning || runtime.withStacktrace)
             {
                 sb.AppendLine();
                 runtime.GetContext(ctx).AppendStacktrace(sb);
@@ -181,7 +175,7 @@ namespace QuickJS
 
             try
             {
-                logger.Write(logLevel, sb.ToString());
+                Diagnostics.Logger.Scripting.Write(severity, sb.ToString());
             }
             catch (Exception)
             {

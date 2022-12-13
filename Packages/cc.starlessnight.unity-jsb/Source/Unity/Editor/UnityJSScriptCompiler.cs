@@ -14,7 +14,6 @@ namespace QuickJS.Unity
     {
         private JSRuntime _rt;
         private JSContext _ctx;
-        private Utils.IScriptLogger _logger = new Utils.DefaultScriptLogger();
 
         public UnityJSScriptCompiler()
         {
@@ -56,7 +55,7 @@ namespace QuickJS.Unity
 
                     if (JSApi.JS_IsException(rval))
                     {
-                        JSNative.print_exception(_ctx, _logger, Utils.LogLevel.Error, "[ScriptCompiler]");
+                        JSNative.print_exception(_ctx, "[ScriptCompiler]");
                     }
                     else
                     {
@@ -79,7 +78,7 @@ namespace QuickJS.Unity
             }
             catch (Exception exception)
             {
-                _logger.WriteException(exception);
+                Diagnostics.Logger.Default.Exception(exception);
                 return null;
             }
         }

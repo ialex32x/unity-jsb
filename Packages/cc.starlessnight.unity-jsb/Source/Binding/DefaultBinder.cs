@@ -52,34 +52,24 @@ namespace QuickJS.Binding
 
         public static void _StaticBindInternal(ScriptRuntime runtime, Type type)
         {
-            var logger = runtime.GetLogger();
             var bindAll = type?.GetMethod(Values.MethodNameOfStaticBinder, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static);
             if (bindAll == null)
             {
-                if (logger != null)
-                {
-                    logger.Write(Utils.LogLevel.Error, "generate binding code before run, or turn on ReflectBind");
-                }
+                Diagnostics.Logger.Binding.Error("generate binding code before run, or turn on ReflectBind");
                 return;
             }
 
             var codeGenVersionField = type.GetField("CodeGenVersion");
             if (codeGenVersionField == null || !codeGenVersionField.IsStatic || !codeGenVersionField.IsLiteral || codeGenVersionField.FieldType != typeof(uint))
             {
-                if (logger != null)
-                {
-                    logger.Write(Utils.LogLevel.Error, "binding code version mismatch");
-                }
+                Diagnostics.Logger.Binding.Error("binding code version mismatch");
                 return;
             }
 
             var codeGenVersion = (uint)codeGenVersionField.GetValue(null);
             if (codeGenVersion != ScriptEngine.VERSION)
             {
-                if (logger != null)
-                {
-                    logger.Write(Utils.LogLevel.Warn, "CodeGenVersion: {0} != {1}", codeGenVersion, ScriptEngine.VERSION);
-                }
+                Diagnostics.Logger.Binding.Warning("CodeGenVersion: {0} != {1}", codeGenVersion, ScriptEngine.VERSION);
             }
 
             bindAll.Invoke(null, new object[] { runtime });
@@ -109,7 +99,6 @@ namespace QuickJS.Binding
 
         public static void ReflectBind(ScriptRuntime runtime)
         {
-            var logger = runtime.GetLogger();
             try
             {
                 var typeName = "QuickJS.Unity.UnityHelper";
@@ -132,21 +121,13 @@ namespace QuickJS.Binding
             }
             catch (Exception exception)
             {
-                if (logger != null)
-                {
-                    logger.Write(Utils.LogLevel.Error, $"{exception.Message}, fallback to StaticBind mode\n{exception.StackTrace}");
-                    if (exception.InnerException != null)
-                    {
-                        logger.Write(Utils.LogLevel.Error, $"{exception.InnerException.Message}\n{exception.InnerException.StackTrace}");
-                    }
-                }
+                Diagnostics.Logger.Binding.Exception("fallback to StaticBind mode", exception);
                 StaticBind(runtime);
             }
         }
 
         public static void InMemoryBind(ScriptRuntime runtime)
         {
-            var logger = runtime.GetLogger();
             try
             {
                 var typeName = "QuickJS.Unity.UnityHelper";
@@ -169,14 +150,7 @@ namespace QuickJS.Binding
             }
             catch (Exception exception)
             {
-                if (logger != null)
-                {
-                    logger.Write(Utils.LogLevel.Error, $"{exception.Message}, fallback to ReflectBind mode\n{exception.StackTrace}");
-                    if (exception.InnerException != null)
-                    {
-                        logger.Write(Utils.LogLevel.Error, $"{exception.InnerException.Message}\n{exception.InnerException.StackTrace}");
-                    }
-                }
+                Diagnostics.Logger.Binding.Exception("fallback to ReflectBind mode", exception);
                 ReflectBind(runtime);
             }
         }

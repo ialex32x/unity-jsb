@@ -292,7 +292,7 @@ namespace QuickJS.Unity
                         }
                         catch (Exception exception)
                         {
-                            runtime.GetLogger()?.WriteException(exception);
+                            Diagnostics.Logger.Default.Exception(exception);
                         }
                     }
                 }

@@ -1,17 +1,13 @@
 using System;
 using System.Collections.Generic;
-using System.Net;
-using System.Net.Sockets;
 using System.Threading;
-using System.Text;
 
 namespace QuickJS.Extra
 {
-    using QuickJS.Utils;
     using UnityEngine;
     using UnityEngine.UI;
 
-    public class MiniConsole : IScriptLogger, ILogHandler
+    public class MiniConsole : Diagnostics.ILogWriter, ILogHandler
     {
         private bool _loopCheck;
         private int _mainThreadId;
@@ -33,6 +29,7 @@ namespace QuickJS.Extra
 
             _defaultHandler = Debug.unityLogger.logHandler;
             Debug.unityLogger.logHandler = this;
+            Diagnostics.Logger.writer = this;
         }
 
         private void NewEntry(string text, Color color)
@@ -77,33 +74,6 @@ namespace QuickJS.Extra
             catch (Exception)
             {
             }
-        }
-
-        public void Write(LogLevel ll, string text)
-        {
-            switch (ll)
-            {
-                case LogLevel.Info: Log(text); return;
-                case LogLevel.Warn: LogWarning(text); return;
-                case LogLevel.Error: LogError(text); return;
-                default: LogError(text); return;
-            }
-        }
-
-        public void Write(LogLevel ll, string fmt, params object[] args)
-        {
-            switch (ll)
-            {
-                case LogLevel.Info: LogFormat(fmt, args); return;
-                case LogLevel.Warn: LogWarningFormat(fmt, args); return;
-                case LogLevel.Error: LogErrorFormat(fmt, args); return;
-                default: LogErrorFormat(fmt, args); return;
-            }
-        }
-
-        public void WriteException(Exception exception)
-        {
-            LogException(exception);
         }
 
         private void LogError(string text)
@@ -200,30 +170,51 @@ namespace QuickJS.Extra
             Log(string.Format(fmt, args));
         }
 
-        public void LogException(Exception exception, Object context)
+        void Diagnostics.ILogWriter.Write(QuickJS.Diagnostics.ELogSeverity severity, string channel, string fmt, object[] args)
+        {
+            switch (severity)
+            {
+                case QuickJS.Diagnostics.ELogSeverity.VeryVerbose:
+                case QuickJS.Diagnostics.ELogSeverity.Verbose: 
+                case QuickJS.Diagnostics.ELogSeverity.Debug: 
+                case QuickJS.Diagnostics.ELogSeverity.Info: LogFormat(fmt, args); break;
+                case QuickJS.Diagnostics.ELogSeverity.Warning: LogWarningFormat(fmt, args); break;
+                case QuickJS.Diagnostics.ELogSeverity.Error: 
+                case QuickJS.Diagnostics.ELogSeverity.Fatal: 
+                default: LogErrorFormat(fmt, args); break;
+            }
+        }
+
+        void Diagnostics.ILogWriter.Write(QuickJS.Diagnostics.ELogSeverity severity, string channel, string text)
+        {
+            switch (severity)
+            {
+                case QuickJS.Diagnostics.ELogSeverity.VeryVerbose:
+                case QuickJS.Diagnostics.ELogSeverity.Verbose: 
+                case QuickJS.Diagnostics.ELogSeverity.Debug: 
+                case QuickJS.Diagnostics.ELogSeverity.Info: Log(text); break;
+                case QuickJS.Diagnostics.ELogSeverity.Warning: LogWarning(text); break;
+                case QuickJS.Diagnostics.ELogSeverity.Error: 
+                case QuickJS.Diagnostics.ELogSeverity.Fatal: 
+                default: LogError(text); break;
+            }
+        }
+
+        void ILogHandler.LogException(Exception exception, Object context)
         {
             LogException(exception);
         }
 
-        public void LogFormat(LogType logType, Object context, string format, params object[] args)
+        void ILogHandler.LogFormat(LogType logType, Object context, string format, params object[] args)
         {
             switch (logType)
             {
-                case LogType.Log:
-                    LogFormat(format, args);
-                    break;
-                case LogType.Warning:
-                    LogWarningFormat(format, args);
-                    break;
-                case LogType.Error:
-                    LogErrorFormat(format, args);
-                    break;
-                case LogType.Exception:
-                    LogException(string.Format(format, args));
-                    break;
-                case LogType.Assert:
-                    LogException(string.Format(format, args));
-                    break;
+                case LogType.Log: LogFormat(format, args); break;
+                case LogType.Warning: LogWarningFormat(format, args); break;
+                case LogType.Error: LogErrorFormat(format, args); break;
+                case LogType.Exception: LogException(string.Format(format, args)); break;
+                case LogType.Assert: 
+                default: LogException(string.Format(format, args)); break;
             }
         }
     }

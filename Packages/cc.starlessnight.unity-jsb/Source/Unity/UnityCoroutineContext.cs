@@ -33,7 +33,7 @@ namespace QuickJS.Unity
 
             if (!safeRelease.isValid)
             {
-                context.GetLogger()?.Write(LogLevel.Error, "pormise func has already been released");
+                Diagnostics.Logger.Default.Error("pormise func has already been released");
                 yield break;
             }
 
@@ -82,7 +82,7 @@ namespace QuickJS.Unity
 
             if (!safeRelease.isValid)
             {
-                context.GetLogger()?.Write(LogLevel.Error, "pormise func has already been released");
+                Diagnostics.Logger.Default.Error("pormise func has already been released");
                 yield break;
             }
 

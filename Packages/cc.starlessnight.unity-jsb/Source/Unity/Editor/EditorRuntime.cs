@@ -130,9 +130,8 @@ namespace QuickJS.Unity
                 AssemblyReloadEvents.beforeAssemblyReload += OnBeforeAssemblyReload;
                 EditorApplication.quitting += OnEditorQuitting;
 
-                var logger = new DefaultScriptLogger();
                 var pathResolver = new PathResolver();
-                var fileSystem = new DefaultFileSystem(logger);
+                var fileSystem = new DefaultFileSystem();
                 var asyncManager = new DefaultAsyncManager();
 
                 _tick = Environment.TickCount;
@@ -143,7 +142,6 @@ namespace QuickJS.Unity
                     fileSystem = fileSystem,
                     pathResolver = pathResolver,
                     asyncManager = asyncManager,
-                    logger = logger,
                     byteBufferAllocator = new ByteBufferPooledAllocator(),
                     binder = DefaultBinder.GetBinder(_prefs.preferredBindingMethod),
                 });
