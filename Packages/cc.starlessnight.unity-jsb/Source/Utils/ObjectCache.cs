@@ -7,7 +7,9 @@ namespace QuickJS.Utils
 
     public class ObjectCache
     {
-        private class ObjectRef
+        const int DefaultCacheSize = 128;
+
+        private struct ObjectSlot
         {
             public int next;
             public object target;
@@ -21,7 +23,8 @@ namespace QuickJS.Utils
 
         // it holds any two way binding object (with JS finalizer calling)
         // id => host object
-        private List<ObjectRef> _map = new List<ObjectRef>();
+        private ObjectSlot[] _objectSlots = new ObjectSlot[DefaultCacheSize];
+        private int _slotAllocated = 0;
 
         // host object => jsvalue heapptr (dangerous, no ref count)
         private Dictionary<object, JSValue> _rmap = new Dictionary<object, JSValue>(EqualityComparer.Default);
@@ -39,9 +42,9 @@ namespace QuickJS.Utils
 
         public void ForEachManagedObject(Action<object> callback)
         {
-            for (int i = 0, count = _map.Count; i < count; ++i)
+            for (int i = 0, count = _slotAllocated; i < count; ++i)
             {
-                var item = _map[i];
+                ref var item = ref _objectSlots[i];
                 if (item.next == -1)
                 {
                     callback(item.target);
@@ -56,7 +59,7 @@ namespace QuickJS.Utils
 
         public int GetManagedObjectCap()
         {
-            return _map.Count;
+            return _slotAllocated;
         }
 
         public int GetJSObjectCount()
@@ -87,7 +90,7 @@ namespace QuickJS.Utils
             }
 #if JSB_DEBUG
             Diagnostics.Logger.Default.Debug("_activeMapSlotCount {0}", _activeMapSlotCount);
-            foreach (var entry in _map)
+            foreach (var entry in _objectSlots)
             {
                 if (entry.target != null)
                 {
@@ -102,7 +105,7 @@ namespace QuickJS.Utils
             _disposed = true;
             _freeIndex = 0;
             _activeMapSlotCount = 0;
-            _map.Clear();
+            _slotAllocated = 0;
             _rmap.Clear();
             _delegateMap.Clear();
             _scriptValueMap.Clear();
@@ -165,26 +168,37 @@ namespace QuickJS.Utils
 
             if (o != null)
             {
+                ++_activeMapSlotCount;
                 if (_freeIndex < 0)
                 {
-                    var freeEntry = new ObjectRef();
-                    var id = _map.Count;
-                    _map.Add(freeEntry);
-                    ++_activeMapSlotCount;
-                    freeEntry.next = -1;
-                    freeEntry.target = o;
-                    freeEntry.disposable = disposable;
-                    return id;
+                    var id = _slotAllocated++;
+                    var oldSize = _objectSlots.Length;
+                    if (id < oldSize)
+                    {
+                        ref var freeEntryRef = ref _objectSlots[id];
+                        freeEntryRef.next = -1;
+                        freeEntryRef.target = o;
+                        freeEntryRef.disposable = disposable;
+                        return id;
+                    }
+                    else
+                    {
+                        Array.Resize(ref _objectSlots, oldSize <= 8192 ? oldSize * 2 : oldSize + 256);
+                        ref var freeEntryRef = ref _objectSlots[id];
+                        freeEntryRef.next = -1;
+                        freeEntryRef.target = o;
+                        freeEntryRef.disposable = disposable;
+                        return id;
+                    }
                 }
                 else
                 {
                     var id = _freeIndex;
-                    var freeEntry = _map[id];
-                    _freeIndex = freeEntry.next;
-                    ++_activeMapSlotCount;
-                    freeEntry.next = -1;
-                    freeEntry.target = o;
-                    freeEntry.disposable = disposable;
+                    ref var freeEntryRef = ref _objectSlots[id];
+                    _freeIndex = freeEntryRef.next;
+                    freeEntryRef.next = -1;
+                    freeEntryRef.target = o;
+                    freeEntryRef.disposable = disposable;
                     return id;
                 }
             }
@@ -193,12 +207,12 @@ namespace QuickJS.Utils
 
         public bool SetObjectDisposable(int id, bool disposable)
         {
-            if (id >= 0 && id < _map.Count)
+            if (id >= 0 && id < _slotAllocated)
             {
-                var entry = _map[id];
-                if (entry.next == -1)
+                ref var entryRef = ref _objectSlots[id];
+                if (entryRef.next == -1)
                 {
-                    entry.disposable = disposable;
+                    entryRef.disposable = disposable;
                     return true;
                 }
             }
@@ -208,12 +222,12 @@ namespace QuickJS.Utils
 
         public bool TryGetObject(int id, out object o)
         {
-            if (id >= 0 && id < _map.Count)
+            if (id >= 0 && id < _slotAllocated)
             {
-                var entry = _map[id];
-                if (entry.next == -1)
+                ref var entryRef = ref _objectSlots[id];
+                if (entryRef.next == -1)
                 {
-                    o = entry.target;
+                    o = entryRef.target;
                     return true;
                 }
             }
@@ -231,10 +245,10 @@ namespace QuickJS.Utils
         {
             if (TryGetObject(id, out o))
             {
-                var entry = _map[id];
-                var disposable = entry.disposable;
-                entry.next = _freeIndex;
-                entry.target = null;
+                ref var entryRef = ref _objectSlots[id];
+                var disposable = entryRef.disposable;
+                entryRef.next = _freeIndex;
+                entryRef.target = null;
                 _freeIndex = id;
                 --_activeMapSlotCount;
                 RemoveJSValue(o);
@@ -265,8 +279,8 @@ namespace QuickJS.Utils
             object oldValue;
             if (TryGetObject(id, out oldValue))
             {
-                var entry = _map[id];
-                entry.target = o;
+                ref var entryRef = ref _objectSlots[id];
+                entryRef.target = o;
                 JSValue heapptr;
                 if (oldValue != null && _rmap.TryGetValue(oldValue, out heapptr))
                 {

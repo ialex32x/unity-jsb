@@ -8,15 +8,20 @@ namespace QuickJS.Utils
         void OnCollectionReleased();
     }
 
+    /// <summary>
+    /// A collection of entries who need to be notified at the stage of releasing script runtime.
+    /// </summary>
     public class ObjectCollection
     {
+        public const int DefaultSize = 32;
+
         public struct Handle
         {
             public int id;
             public int tag;
         }
 
-        private class ObjectRef
+        private struct ObjectEntry
         {
             public int next;
             public int tag;
@@ -24,18 +29,19 @@ namespace QuickJS.Utils
         }
 
         private int _freeIndex = -1;
-        private int _activeSlotCount = 0;
-        private List<ObjectRef> _map = new List<ObjectRef>();
+        private int _activeCount = 0;
+        private int _allocatedCount = 0;
+        private ObjectEntry[] _entries = new ObjectEntry[DefaultSize];
 
-        public int count => _activeSlotCount;
+        public int count => _activeCount;
 
         public void Clear()
         {
-            if (_activeSlotCount > 0)
+            if (_activeCount > 0)
             {
-                for (int i = 0, count = _map.Count; i < count; ++i)
+                for (int i = 0; i < _allocatedCount; ++i)
                 {
-                    var entry = _map[i];
+                    ref var entry = ref _entries[i];
                     IObjectCollectionEntry target;
                     if (entry.target.TryGetTarget(out target))
                     {
@@ -51,6 +57,7 @@ namespace QuickJS.Utils
                     }
 #endif
                 }
+                _allocatedCount = 0;
             }
         }
 
@@ -58,26 +65,44 @@ namespace QuickJS.Utils
         {
             if (o != null)
             {
+                ++_activeCount;
                 if (_freeIndex < 0)
                 {
-                    var freeEntry = new ObjectRef();
-                    var id = _map.Count;
-                    _map.Add(freeEntry);
-                    ++_activeSlotCount;
-                    freeEntry.next = -1;
-                    freeEntry.target = new WeakReference<IObjectCollectionEntry>(o);
-                    ++freeEntry.tag;
-                    handle = new Handle() { id = id, tag = freeEntry.tag };
+                    var id = _allocatedCount++;
+                    var oldSize = _entries.Length;
+                    if (id < oldSize)
+                    {
+                        ref var freeEntry = ref _entries[id];
+                        ++freeEntry.tag;
+                        freeEntry.next = -1;
+                        if (freeEntry.target == null)
+                        {
+                            freeEntry.target = new WeakReference<IObjectCollectionEntry>(o);
+                        }
+                        else
+                        {
+                            freeEntry.target.SetTarget(o);
+                        }
+                        handle = new Handle() { id = id, tag = freeEntry.tag };
+                    }
+                    else
+                    {
+                        Array.Resize(ref _entries, oldSize <= 1024 ? oldSize * 2 : oldSize + 128);
+                        ref var freeEntry = ref _entries[id];
+                        ++freeEntry.tag;
+                        freeEntry.next = -1;
+                        freeEntry.target = new WeakReference<IObjectCollectionEntry>(o);
+                        handle = new Handle() { id = id, tag = freeEntry.tag };
+                    }
                 }
                 else
                 {
                     var id = _freeIndex;
-                    var freeEntry = _map[id];
+                    ref var freeEntry = ref _entries[id];
                     _freeIndex = freeEntry.next;
-                    ++_activeSlotCount;
+                    ++freeEntry.tag;
                     freeEntry.next = -1;
                     freeEntry.target.SetTarget(o);
-                    ++freeEntry.tag;
                     handle = new Handle() { id = id, tag = freeEntry.tag };
                 }
             }
@@ -90,9 +115,9 @@ namespace QuickJS.Utils
         public bool IsHandleValid(Handle handle)
         {
             var id = handle.id;
-            if (id >= 0 && id < _map.Count)
+            if (id >= 0 && id < _allocatedCount)
             {
-                var entry = _map[id];
+                ref var entry = ref _entries[id];
                 if (entry.next == -1 && entry.tag == handle.tag)
                 {
                     return true;
@@ -104,9 +129,9 @@ namespace QuickJS.Utils
         public bool TryGetObject(Handle handle, out IObjectCollectionEntry o)
         {
             var id = handle.id;
-            if (id >= 0 && id < _map.Count)
+            if (id >= 0 && id < _allocatedCount)
             {
-                var entry = _map[id];
+                ref var entry = ref _entries[id];
                 if (entry.next == -1 && entry.tag == handle.tag)
                 {
                     return entry.target.TryGetTarget(out o);
@@ -126,12 +151,12 @@ namespace QuickJS.Utils
         {
             if (TryGetObject(handle, out o))
             {
-                var entry = _map[handle.id];
+                ref var entry = ref _entries[handle.id];
                 entry.next = _freeIndex;
                 entry.target.SetTarget(null);
                 ++entry.tag;
                 _freeIndex = handle.id;
-                --_activeSlotCount;
+                --_activeCount;
                 return true;
             }
             return false;
