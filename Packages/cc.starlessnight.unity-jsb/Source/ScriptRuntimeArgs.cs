@@ -56,5 +56,10 @@ namespace QuickJS
         /// NOTE: reflectbind is only supported in editor.
         /// </summary>
         public BindAction binder;
+
+        
+        public uint initialObjectCollectionSize;
+
+        public uint initialObjectCacheSize;
     }
 }

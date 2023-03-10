@@ -13,8 +13,6 @@ namespace QuickJS.Utils
     /// </summary>
     public class ObjectCollection
     {
-        public const int DefaultSize = 32;
-
         public struct Handle
         {
             public int id;
@@ -32,9 +30,14 @@ namespace QuickJS.Utils
         private int _freeIndex = -1;
         private int _activeCount = 0;
         private int _allocatedCount = 0;
-        private ObjectEntry[] _entries = new ObjectEntry[DefaultSize];
+        private ObjectEntry[] _entries;
 
         public int count => _activeCount;
+
+        public ObjectCollection(uint initialSize)
+        {
+            _entries = new ObjectEntry[initialSize > 32 ? initialSize : 32];
+        }
 
         public void Clear()
         {

@@ -368,8 +368,8 @@ namespace QuickJS
             _byteBufferAllocator = args.byteBufferAllocator;
             _autorelease = new Utils.AutoReleasePool();
             _fileSystem = fileSystem;
-            _objectCache = new ObjectCache();
-            _objectCollection = new ObjectCollection();
+            _objectCache = new ObjectCache(args.initialObjectCacheSize);
+            _objectCollection = new ObjectCollection(args.initialObjectCollectionSize);
             _timerManager = args.timerManager ?? new DefaultTimerManager();
             _typeDB = new TypeDB(this, _mainContext);
 #if !JSB_UNITYLESS

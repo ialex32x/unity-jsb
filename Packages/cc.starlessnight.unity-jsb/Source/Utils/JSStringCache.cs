@@ -144,7 +144,7 @@ namespace QuickJS.Utils
                 var id = _allocated++;
                 if (id >= oldSize)
                 {
-                    Array.Resize(ref _slots, oldSize * 2);
+                    Array.Resize(ref _slots, oldSize < 8192 ? oldSize * 2 : oldSize + 1024);
                 }
                 ref var slot = ref _slots[id];
                 slot.next = -1;

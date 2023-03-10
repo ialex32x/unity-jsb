@@ -7,8 +7,6 @@ namespace QuickJS.Utils
 
     public class ObjectCache
     {
-        const int DefaultCacheSize = 128;
-
         private struct ObjectSlot
         {
             public int next;
@@ -23,7 +21,7 @@ namespace QuickJS.Utils
 
         // it holds any two way binding object (with JS finalizer calling)
         // id => host object
-        private ObjectSlot[] _objectSlots = new ObjectSlot[DefaultCacheSize];
+        private ObjectSlot[] _objectSlots;
         private int _slotAllocated = 0;
 
         // host object => jsvalue heapptr (dangerous, no ref count)
@@ -36,8 +34,9 @@ namespace QuickJS.Utils
 
         // private JSWeakMap<ScriptPromise> _promiseMap = new JSWeakMap<ScriptPromise>();
 
-        public ObjectCache()
+        public ObjectCache(uint initialSize)
         {
+            _objectSlots = new ObjectSlot[initialSize > 256 ? initialSize : 256];
         }
 
         public void ForEachManagedObject(Action<object> callback)
@@ -156,7 +155,7 @@ namespace QuickJS.Utils
                 var id = _slotAllocated++;
                 if (id >= oldSize)
                 {
-                    Array.Resize(ref _objectSlots, oldSize <= 8192 ? oldSize * 2 : oldSize + 256);
+                    Array.Resize(ref _objectSlots, oldSize <= 8192 ? oldSize * 2 : oldSize + 1024);
                 }
                 ref var freeEntryRef = ref _objectSlots[id];
                 freeEntryRef.next = -1;
