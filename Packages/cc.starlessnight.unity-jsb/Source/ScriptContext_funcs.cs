@@ -74,7 +74,7 @@ namespace QuickJS
                 var context = ScriptEngine.GetContext(ctx);
                 var cache = context.GetStringCache();
                 string stringValue;
-                if (cache.GetValue(argv[0], out stringValue))
+                if (cache.TryGetValue(argv[0], out stringValue))
                 {
                     cache.RemoveValue(stringValue);
                     return JSApi.JS_TRUE;
