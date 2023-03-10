@@ -7,7 +7,9 @@ namespace QuickJS.Utils
 
     public class JSStringCache
     {
-        public class Slot
+        const uint kInitialStringCacheSize = 64;
+
+        private struct Slot
         {
             public int next;
             public JSValue jsValue;
@@ -22,7 +24,8 @@ namespace QuickJS.Utils
         private Dictionary<string, int> _strMap = new Dictionary<string, int>();
 
         private int _freeIndex = -1;
-        private List<Slot> _slots = new List<Slot>();
+        private int _allocated = 0;
+        private Slot[] _slots = new Slot[kInitialStringCacheSize];
 
         private JSContext _ctx;
 
@@ -48,15 +51,21 @@ namespace QuickJS.Utils
 
         public void Clear()
         {
-            foreach (var kv in _strMap)
+            if (_jsvMap.Count > 0)
             {
-                var slotIndex = kv.Value;
-                var slot = _slots[slotIndex];
-                JSApi.JS_FreeValue(_ctx, slot.jsValue);
+                _jsvMap.Clear();
+                foreach (var kv in _strMap)
+                {
+                    var slotIndex = kv.Value;
+                    ref var slot = ref _slots[slotIndex];
+                    JSApi.JS_FreeValue(_ctx, slot.jsValue);
+                    slot.jsValue = JSApi.JS_UNDEFINED;
+                    slot.stringValue = null;
+                }
+                _strMap.Clear();
+                _freeIndex = -1;
+                _allocated = 0;
             }
-            _strMap.Clear();
-            _jsvMap.Clear();
-            _slots.Clear();
         }
 
         public void RemoveValue(string o)
@@ -69,7 +78,7 @@ namespace QuickJS.Utils
             int slotIndex;
             if (_strMap.TryGetValue(o, out slotIndex))
             {
-                var slot = _slots[slotIndex];
+                ref var slot = ref _slots[slotIndex];
                 _strMap.Remove(o);
                 _jsvMap.Remove(slot.jsValue);
                 JSApi.JS_FreeValue(_ctx, slot.jsValue);
@@ -81,7 +90,7 @@ namespace QuickJS.Utils
         }
 
         /// <summary>
-        /// 返回值并未调整计数, 外部需要使用时, 自行 DupValue
+        /// the returned jsValue is not reference added, DupValue call is required if jsValue used/stored out of the cache
         /// </summary>
         public bool AddValue(string stringValue, out JSValue jsValue)
         {
@@ -90,6 +99,7 @@ namespace QuickJS.Utils
                 jsValue = JSApi.JS_UNDEFINED;
                 return false;
             }
+
             jsValue = _ctx.NewString(stringValue);
             if (jsValue.IsString())
             {
@@ -113,35 +123,30 @@ namespace QuickJS.Utils
             {
                 return _AddPair(JSApi.JS_DupValue(_ctx, jsValue), stringValue) >= 0;
             }
-
             return false;
         }
 
         private int _AddPair(JSValue jsValue, string stringValue)
         {
-            if (_disposed)
-            {
-                return -1;
-            }
-
             int findSlotIndex;
             if (_strMap.TryGetValue(stringValue, out findSlotIndex))
             {
 #if JSB_DEBUG
-                var slot = _slots[findSlotIndex];
-                if (slot.jsValue != jsValue)
-                {
-                    Diagnostics.Logger.Default.Warning("duplicated string cache: {0} != {1} => {2}", slot.jsValue, jsValue, slot.stringValue);
-                }
+                ref var slot = ref _slots[findSlotIndex];
+                Diagnostics.Assert.Debug(slot.jsValue == jsValue, "corrupted string cache: {0} != {1} => {2}", slot.jsValue, jsValue, slot.stringValue);
 #endif
                 return findSlotIndex;
             }
 
             if (_freeIndex < 0)
             {
-                var slot = new Slot();
-                var id = _slots.Count;
-                _slots.Add(slot);
+                var oldSize = _slots.Length;
+                var id = _allocated++;
+                if (id >= oldSize)
+                {
+                    Array.Resize(ref _slots, oldSize * 2);
+                }
+                ref var slot = ref _slots[id];
                 slot.next = -1;
                 slot.stringValue = stringValue;
                 slot.jsValue = jsValue;
@@ -152,7 +157,7 @@ namespace QuickJS.Utils
             else
             {
                 var id = _freeIndex;
-                var slot = _slots[id];
+                ref var slot = ref _slots[id];
                 _freeIndex = slot.next;
                 slot.next = -1;
                 slot.stringValue = stringValue;
@@ -163,6 +168,9 @@ namespace QuickJS.Utils
             }
         }
 
+        /// <summary>
+        /// get corresponding jsValue of stringValue (only if cached before with AddValue/GetValue)
+        /// </summary>
         public bool TryGetValue(string stringValue, out JSValue jsValue)
         {
             if (!_disposed && stringValue != null)
@@ -170,7 +178,7 @@ namespace QuickJS.Utils
                 int slotIndex;
                 if (_strMap.TryGetValue(stringValue, out slotIndex))
                 {
-                    var slot = _slots[slotIndex];
+                    ref readonly var slot = ref _slots[slotIndex];
                     jsValue = slot.jsValue;
                     return true;
                 }
@@ -180,6 +188,9 @@ namespace QuickJS.Utils
             return false;
         }
 
+        /// <summary>
+        /// get corresponding jsValue of stringValue (cache it if not exist)
+        /// </summary>
         public bool GetValue(string stringValue, out JSValue jsValue)
         {
             if (!_disposed && stringValue != null)
@@ -187,7 +198,7 @@ namespace QuickJS.Utils
                 int slotIndex;
                 if (_strMap.TryGetValue(stringValue, out slotIndex))
                 {
-                    var slot = _slots[slotIndex];
+                    ref readonly var slot = ref _slots[slotIndex];
                     jsValue = slot.jsValue;
                     return true;
                 }
@@ -206,7 +217,7 @@ namespace QuickJS.Utils
                 int slotIndex;
                 if (_jsvMap.TryGetValue(jsValue, out slotIndex))
                 {
-                    var slot = _slots[slotIndex];
+                    ref readonly var slot = ref _slots[slotIndex];
                     stringValue = slot.stringValue;
                     return true;
                 }
@@ -223,7 +234,7 @@ namespace QuickJS.Utils
                 int slotIndex;
                 if (_jsvMap.TryGetValue(jsValue, out slotIndex))
                 {
-                    var slot = _slots[slotIndex];
+                    ref readonly var slot = ref _slots[slotIndex];
                     stringValue = slot.stringValue;
                     return true;
                 }

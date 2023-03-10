@@ -154,17 +154,7 @@ namespace QuickJS.Unity
         void OnUnbindingObject(JSContext ctx, JSValue this_obj)
         {
             var payload = JSApi.JSB_FreePayload(ctx, this_obj);
-            if (payload.type_id == BridgeObjectType.ObjectRef)
-            {
-                try
-                {
-                    ScriptEngine.GetObjectCache(ctx).RemoveObject(payload.value);
-                }
-                catch (Exception exception)
-                {
-                    Diagnostics.Logger.Default.Exception(exception);
-                }
-            }
+            ScriptEngine.GetObjectCache(ctx)?.RemoveObject(payload);
         }
 
         public void ReleaseJSValues()

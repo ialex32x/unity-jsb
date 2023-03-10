@@ -282,6 +282,8 @@ namespace QuickJS.Extra
             {
                 runtime.OnUpdate -= Update;
                 runtime.RemoveManagedObject(_handle);
+                var cache = runtime.GetObjectCache();
+                cache.RemoveObject(JSApi.JSB_FreePayload(_jsContext, _jsThis));
             }
 
             _jsContext = JSContext.Null;

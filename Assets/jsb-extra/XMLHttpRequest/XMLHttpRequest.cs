@@ -87,27 +87,25 @@ namespace QuickJS.Extra
             {
                 return;
             }
+            var runtime = ScriptEngine.GetRuntime(_jsContext);
+            if (runtime == null)
+            {
+                return;
+            }
+            var jsThis = _jsThis;
+            _jsThis = JSApi.JS_UNDEFINED;
+            var cache = runtime.GetObjectCache();
+            cache.RemoveObject(JSApi.JSB_FreePayload(_jsContext, jsThis));
             _state = ReadyState.UNSENT;
             _code = 0;
-            _jsThis = JSApi.JS_UNDEFINED;
+            runtime.RemoveManagedObject(_handle);
+            JSApi.JS_FreeValue(_jsContext, _onreadystatechange);
+            _onreadystatechange = JSApi.JS_UNDEFINED;
 
-            var runtime = ScriptEngine.GetRuntime(_jsContext);
-            if (runtime != null)
-            {
-                runtime.RemoveManagedObject(_handle);
-            }
+            JSApi.JS_FreeValue(_jsContext, _onerror);
+            _onerror = JSApi.JS_UNDEFINED;
 
-            if (_jsContext.IsValid())
-            {
-                JSApi.JS_FreeValue(_jsContext, _onreadystatechange);
-                _onreadystatechange = JSApi.JS_UNDEFINED;
-
-                JSApi.JS_FreeValue(_jsContext, _onerror);
-                _onerror = JSApi.JS_UNDEFINED;
-
-                _jsContext = JSContext.Null;
-            }
-
+            _jsContext = JSContext.Null;
         }
 
         // = OnJSFinalize

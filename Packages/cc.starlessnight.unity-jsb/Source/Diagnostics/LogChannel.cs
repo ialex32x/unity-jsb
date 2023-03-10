@@ -136,6 +136,7 @@ namespace QuickJS.Diagnostics
             Logger.Write(ELogSeverity.Error, _name, text);
         }
 
+        [Conditional("JSB_DEBUG")]
         [Conditional("JSB_RELEASE")]
         public void Error(object obj)
         {
@@ -159,6 +160,7 @@ namespace QuickJS.Diagnostics
             Logger.Write(ELogSeverity.Fatal, _name, text);
         }
 
+        [Conditional("JSB_DEBUG")]
         [Conditional("JSB_RELEASE")]
         public void Fatal(object obj)
         {

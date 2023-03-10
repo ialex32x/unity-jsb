@@ -44,7 +44,7 @@ namespace QuickJS.Utils
         {
             for (int i = 0, count = _slotAllocated; i < count; ++i)
             {
-                ref var item = ref _objectSlots[i];
+                ref readonly var item = ref _objectSlots[i];
                 if (item.next == -1)
                 {
                     callback(item.target);
@@ -92,10 +92,7 @@ namespace QuickJS.Utils
             Diagnostics.Logger.Default.Debug("_activeMapSlotCount {0}", _activeMapSlotCount);
             foreach (var entry in _objectSlots)
             {
-                if (entry.target != null)
-                {
-                    Diagnostics.Logger.Default.Debug("Entry {0}", entry.target);
-                }
+                Diagnostics.Assert.Debug(entry.target == null, "Entry {0}", entry.target);
             }
             foreach (var entry in _rmap)
             {
@@ -103,7 +100,7 @@ namespace QuickJS.Utils
             }
 #endif
             _disposed = true;
-            _freeIndex = 0;
+            _freeIndex = -1;
             _activeMapSlotCount = 0;
             _slotAllocated = 0;
             _rmap.Clear();
@@ -141,18 +138,6 @@ namespace QuickJS.Utils
             return _rmap.TryGetValue(o, out heapptr);
         }
 
-        public bool RemoveJSValue(object o)
-        {
-            if (_disposed)
-            {
-#if JSB_DEBUG
-                Diagnostics.Logger.Default.Error("calling RemoveJSValue after being disposed: {0}", o);
-#endif
-                return false;
-            }
-            return o != null && _rmap.Remove(o);
-        }
-
         /// <summary>
         /// register a strong reference of object in ObjectCache
         /// </summary>
@@ -160,49 +145,35 @@ namespace QuickJS.Utils
         {
             if (_disposed)
             {
-#if JSB_DEBUG
-                Diagnostics.Logger.Default.Error("calling AddObject after being disposed: {0}", o);
-#endif
+                Diagnostics.Logger.Default.Debug("calling AddObject after being disposed: {0}", o);
                 return -1;
             }
-
-            if (o != null)
+            Diagnostics.Assert.Debug(o != null);
+            ++_activeMapSlotCount;
+            if (_freeIndex < 0)
             {
-                ++_activeMapSlotCount;
-                if (_freeIndex < 0)
+                var oldSize = _objectSlots.Length;
+                var id = _slotAllocated++;
+                if (id >= oldSize)
                 {
-                    var id = _slotAllocated++;
-                    var oldSize = _objectSlots.Length;
-                    if (id < oldSize)
-                    {
-                        ref var freeEntryRef = ref _objectSlots[id];
-                        freeEntryRef.next = -1;
-                        freeEntryRef.target = o;
-                        freeEntryRef.disposable = disposable;
-                        return id;
-                    }
-                    else
-                    {
-                        Array.Resize(ref _objectSlots, oldSize <= 8192 ? oldSize * 2 : oldSize + 256);
-                        ref var freeEntryRef = ref _objectSlots[id];
-                        freeEntryRef.next = -1;
-                        freeEntryRef.target = o;
-                        freeEntryRef.disposable = disposable;
-                        return id;
-                    }
+                    Array.Resize(ref _objectSlots, oldSize <= 8192 ? oldSize * 2 : oldSize + 256);
                 }
-                else
-                {
-                    var id = _freeIndex;
-                    ref var freeEntryRef = ref _objectSlots[id];
-                    _freeIndex = freeEntryRef.next;
-                    freeEntryRef.next = -1;
-                    freeEntryRef.target = o;
-                    freeEntryRef.disposable = disposable;
-                    return id;
-                }
+                ref var freeEntryRef = ref _objectSlots[id];
+                freeEntryRef.next = -1;
+                freeEntryRef.target = o;
+                freeEntryRef.disposable = disposable;
+                return id;
             }
-            return -1;
+            else
+            {
+                var id = _freeIndex;
+                ref var freeEntryRef = ref _objectSlots[id];
+                _freeIndex = freeEntryRef.next;
+                freeEntryRef.next = -1;
+                freeEntryRef.target = o;
+                freeEntryRef.disposable = disposable;
+                return id;
+            }
         }
 
         public bool SetObjectDisposable(int id, bool disposable)
@@ -224,7 +195,7 @@ namespace QuickJS.Utils
         {
             if (id >= 0 && id < _slotAllocated)
             {
-                ref var entryRef = ref _objectSlots[id];
+                ref readonly var entryRef = ref _objectSlots[id];
                 if (entryRef.next == -1)
                 {
                     o = entryRef.target;
@@ -233,6 +204,11 @@ namespace QuickJS.Utils
             }
             o = null;
             return false;
+        }
+
+        public bool RemoveObject(in JSPayloadHeader payload)
+        {
+            return payload.type_id == BridgeObjectType.ObjectRef ? RemoveObject(payload.value) : false;
         }
 
         public bool RemoveObject(int id)
@@ -251,7 +227,7 @@ namespace QuickJS.Utils
                 entryRef.target = null;
                 _freeIndex = id;
                 --_activeMapSlotCount;
-                RemoveJSValue(o);
+                _rmap.Remove(o);
                 if (disposable)
                 {
                     var jsf = o as IDisposable;
@@ -268,14 +244,6 @@ namespace QuickJS.Utils
         // 覆盖已有记录, 无记录返回 false
         public bool ReplaceObject(int id, object o)
         {
-            if (_disposed)
-            {
-#if JSB_DEBUG
-                Diagnostics.Logger.Default.Error("calling ReplaceObject after being disposed: {0}", o);
-#endif
-                return false;
-            }
-
             object oldValue;
             if (TryGetObject(id, out oldValue))
             {
@@ -343,12 +311,9 @@ namespace QuickJS.Utils
         {
             if (_disposed)
             {
-#if JSB_DEBUG
-                Diagnostics.Logger.Default.Error("calling AddDelegate after being disposed: {0}", o);
-#endif
+                Diagnostics.Logger.Default.Debug("calling AddDelegate after disposed: {0}", o);
                 return false;
             }
-
             _delegateMap.Add(jso, o);
             return true;
         }
@@ -362,12 +327,9 @@ namespace QuickJS.Utils
         {
             if (_disposed)
             {
-#if JSB_DEBUG
-                Diagnostics.Logger.Default.Debug("calling RemoveDelegate after being disposed: {0}", jso);
-#endif
+                Diagnostics.Logger.Default.Debug("calling RemoveDelegate after disposed: {0}", jso);
                 return false;
             }
-
             return _delegateMap.Remove(jso);
         }
 

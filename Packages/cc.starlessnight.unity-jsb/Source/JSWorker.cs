@@ -90,11 +90,9 @@ namespace QuickJS
             _self = JSApi.JS_DupValue(ctx, value);
             _parentRuntime = parent;
             _parentRuntime.AddManagedObject(this, out _handle);
-
             _runtime = runtime;
             RegisterGlobalObjects();
             _runtime.EvalMain(scriptPath);
-
             _thread = new Thread(new ThreadStart(Run));
             _thread.Priority = ThreadPriority.Lowest;
             _thread.IsBackground = true;

@@ -64,7 +64,7 @@ namespace QuickJS.Utils
         private void _JSActionCallback(ScriptRuntime runtime, object cbArgs, JSValue cbValue)
         {
             // check if the runtime or this FSWatcher has already been destroyed
-            if (!runtime.isValid || !runtime.isRunning || _jsThis.IsUndefined())
+            if (!runtime.isValid || !runtime.isRunning || _runtime == null)
             {
                 return;
             }
@@ -86,7 +86,7 @@ namespace QuickJS.Utils
 
         private unsafe void Call(JSValue func, string name, string fullPath)
         {
-            if (!_jsContext.IsValid() || JSApi.JS_IsFunction(_jsContext, func) != 1)
+            if (JSApi.JS_IsFunction(_jsContext, func) != 1)
             {
                 return;
             }
@@ -110,7 +110,6 @@ namespace QuickJS.Utils
         }
 
         #region JS Bridging
-        private JSValue _jsThis; // dangeous reference holder (no ref count)
         private JSContext _jsContext; // dangeous reference holder
         private ScriptRuntime _runtime;
 
@@ -119,15 +118,6 @@ namespace QuickJS.Utils
         private JSValue _onchange;
 
         private ObjectCollection.Handle _handle;
-
-        private void _Transfer(JSContext ctx, JSValue value)
-        {
-            _jsContext = ctx;
-            _jsThis = value;
-
-            _runtime = ScriptEngine.GetRuntime(ctx);
-            _runtime.AddManagedObject(this, out _handle);
-        }
 
         #region IObjectCollectionEntry implementation
         public void OnCollectionReleased()
@@ -139,33 +129,27 @@ namespace QuickJS.Utils
         // = OnJSFinalize
         public void Dispose()
         {
-            if (_jsThis.IsUndefined())
+            if (_runtime == null)
             {
                 return;
             }
 
+            var runtime = _runtime;
+            _runtime = null;
             _DisposeWatcher();
-            _jsThis = JSApi.JS_UNDEFINED;
-
-            if (_runtime != null)
+            var cache = runtime.GetObjectCache();
+            if (cache.TryGetJSValue(this, out var this_obj))
             {
-                _runtime.RemoveManagedObject(_handle);
-                _runtime = null;
+                cache.RemoveObject(JSApi.JSB_FreePayload(_jsContext, this_obj));
             }
-
-            if (_jsContext.IsValid())
-            {
-                JSApi.JS_FreeValue(_jsContext, _oncreate);
-                _oncreate = JSApi.JS_UNDEFINED;
-
-                JSApi.JS_FreeValue(_jsContext, _ondelete);
-                _ondelete = JSApi.JS_UNDEFINED;
-
-                JSApi.JS_FreeValue(_jsContext, _onchange);
-                _onchange = JSApi.JS_UNDEFINED;
-
-                _jsContext = JSContext.Null;
-            }
+            runtime.RemoveManagedObject(_handle);
+            JSApi.JS_FreeValue(_jsContext, _oncreate);
+            _oncreate = JSApi.JS_UNDEFINED;
+            JSApi.JS_FreeValue(_jsContext, _ondelete);
+            _ondelete = JSApi.JS_UNDEFINED;
+            JSApi.JS_FreeValue(_jsContext, _onchange);
+            _onchange = JSApi.JS_UNDEFINED;
+            _jsContext = JSContext.Null;
         }
 
         [MonoPInvokeCallback(typeof(JSCFunctionMagic))]
@@ -183,7 +167,9 @@ namespace QuickJS.Utils
             }
             var o = new FSWatcher(path, filter);
             var val = NewBridgeClassObject(ctx, new_target, o, magic, true);
-            o._Transfer(ctx, val);
+            o._jsContext = ctx;
+            o._runtime = ScriptEngine.GetRuntime(ctx);
+            o._runtime.AddManagedObject(o, out o._handle);
             return val;
         }
 

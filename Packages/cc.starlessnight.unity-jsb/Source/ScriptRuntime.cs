@@ -528,7 +528,7 @@ namespace QuickJS
             _objectCollection.AddObject(entry, out handle);
         }
 
-        public bool RemoveManagedObject(ObjectCollection.Handle handle)
+        public bool RemoveManagedObject(in ObjectCollection.Handle handle)
         {
 #if JSB_DEBUG
             if (!IsMainThread())
@@ -975,13 +975,7 @@ namespace QuickJS
 
             _isInitialized = false;
             _isRunning = false;
-
             _objectCollection.Clear();
-            if (_objectCollection.count != 0)
-            {
-                Diagnostics.Logger.Default.Error("invalid object collection state during the phase of destroying runtime: {0}", _objectCollection.count);
-            }
-
             _timerManager.Destroy();
             _typeDB.Destroy();
 
@@ -991,11 +985,9 @@ namespace QuickJS
             ExecutePendingActions(true);
 
 #if !JSB_WITH_V8_BACKEND
-            //TODO unity-jsb: jsvalue's gc finalizer can't be certainly invoked when the jsvalue hasn't any reference, we just do not calling cache.Destroy normally for now.
+            //TODO unity-jsb: jsvalue's gc finalizer can't be certainly invoked when the jsvalue hasn't any reference, leave cache.Destroy not called for now.
             _objectCache.Destroy();
 #endif
-
-            //
             GC.Collect();
             GC.WaitForPendingFinalizers();
             ExecutePendingActions(true);
