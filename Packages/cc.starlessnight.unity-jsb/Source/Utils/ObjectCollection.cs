@@ -41,31 +41,38 @@ namespace QuickJS.Utils
 
         public void Clear()
         {
-            if (_activeCount > 0)
+            if (_activeCount <= 0)
             {
+                return;
+            }
+
+            try
+            {
+                _isClearing = true;
                 var count = _allocatedCount;
                 for (int i = 0; i < count; ++i)
                 {
                     ref var entry = ref _entries[i];
                     IObjectCollectionEntry target;
-                    if (entry.target.TryGetTarget(out target))
+                    WeakReference<IObjectCollectionEntry> reference = entry.target;
+                    if (reference.TryGetTarget(out target))
                     {
                         // entry should be purged OnCollectionReleased with RemoveObject
                         target.OnCollectionReleased();
-#if JSB_DEBUG
-                        Diagnostics.Logger.Default.Warning("releasing collection entry: {0}", target);
-                        Diagnostics.Assert.Debug(!entry.target.TryGetTarget(out var _1) || _1 == null);
+                        Diagnostics.Logger.Default.Debug("releasing collection entry: {0}", target);
+                        Diagnostics.Assert.Debug(!reference.TryGetTarget(out var _1) || _1 == null);
                         Diagnostics.Assert.Debug(_allocatedCount == count);
-#endif
                     }
-#if JSB_DEBUG
                     else if (entry.next == -1)
                     {
                         Diagnostics.Logger.Default.Warning("null collection entry");
                     }
-#endif
-                }
+                } // end for count
                 Diagnostics.Assert.Debug(_activeCount == 0, "invalid object collection state during the phase of destroying runtime: {0}", _activeCount);
+            }
+            finally
+            {
+                _isClearing = false;
             }
         }
 
@@ -73,6 +80,7 @@ namespace QuickJS.Utils
         {
             if (o != null)
             {
+                Diagnostics.Assert.Debug(!_isClearing);
                 ++_activeCount;
                 if (_freeIndex < 0)
                 {
