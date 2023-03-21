@@ -371,12 +371,6 @@ namespace QuickJS.Binding
 
         public void AddConstructor(ConstructorInfo constructorInfo)
         {
-            if (this.transform.IsBlocked(constructorInfo))
-            {
-                bindingManager.Info("skip blocked constructor: {0}", constructorInfo.Name);
-                return;
-            }
-
             if (!constructors.Add(constructorInfo, false))
             {
                 bindingManager.Info("add constructor failed: {0}", constructorInfo.Name);
@@ -404,7 +398,7 @@ namespace QuickJS.Binding
                 if (field.IsStatic && type.IsGenericTypeDefinition)
                 {
                     bindingManager.Info("skip static field in generic type definition: {0}", field.Name);
-                    return;
+                    continue;
                 }
 
                 if (field.FieldType.IsPointer)
@@ -443,6 +437,15 @@ namespace QuickJS.Binding
                     continue;
                 }
 
+                if (field.FieldType.BaseType == typeof(MulticastDelegate))
+                {
+                    if (!bindingManager.IsSupportedAsDelegate(field.FieldType))
+                    {
+                        bindingManager.Info("skip unsupported delegate field: {0}", field.Name);
+                        continue;
+                    }
+                }
+
                 AddField(field);
             }
 
@@ -455,15 +458,15 @@ namespace QuickJS.Binding
                     continue;
                 }
 
-                if ((evt.GetAddMethod(true)?.IsStatic == true || evt.GetRemoveMethod(true)?.IsStatic == true) && type.IsGenericTypeDefinition)
-                {
-                    bindingManager.Info("skip static event in generic type definition: {0}", evt.Name);
-                    return;
-                }
-
                 if (evt.EventHandlerType.IsPointer)
                 {
                     bindingManager.Info("skip pointer event: {0}", evt.Name);
+                    continue;
+                }
+
+                if ((evt.GetAddMethod(true)?.IsStatic == true || evt.GetRemoveMethod(true)?.IsStatic == true) && type.IsGenericTypeDefinition)
+                {
+                    bindingManager.Info("skip static event in generic type definition: {0}", evt.Name);
                     continue;
                 }
 
@@ -491,6 +494,12 @@ namespace QuickJS.Binding
                     continue;
                 }
 
+                if (!bindingManager.IsSupportedAsDelegate(evt.EventHandlerType))
+                {
+                    bindingManager.Info("skip unsupported delegate event: {0}", evt.Name);
+                    continue;
+                }
+
                 AddEvent(evt);
             }
 
@@ -515,7 +524,7 @@ namespace QuickJS.Binding
                 if ((propInfoGetMethod?.IsStatic == true || propInfoSetMethod?.IsStatic == true) && type.IsGenericTypeDefinition)
                 {
                     bindingManager.Info("skip static property in generic type definition: {0}", property.Name);
-                    return;
+                    continue;
                 }
 
                 if (property.IsDefined(typeof(JSOmitAttribute), false))
@@ -542,7 +551,16 @@ namespace QuickJS.Binding
                     continue;
                 }
 
-                //NOTE: 索引访问
+                if (property.PropertyType.BaseType == typeof(MulticastDelegate))
+                {
+                    if (!bindingManager.IsSupportedAsDelegate(property.PropertyType))
+                    {
+                        bindingManager.Info("skip unsupported delegate property: {0}", property.Name);
+                        continue;
+                    }
+                }
+
+                //NOTE: special name for Indexer
                 if (property.Name == "Item")
                 {
                     if (property.CanRead && propInfoGetMethod != null && propInfoGetMethod.IsPublic)
@@ -609,6 +627,12 @@ namespace QuickJS.Binding
                         continue;
                     }
 
+                    if (transform.IsBlocked(constructor))
+                    {
+                        bindingManager.Info("skip blocked constructor: {0}", constructor.Name);
+                        continue;
+                    }
+
                     AddConstructor(constructor);
                 }
             }
@@ -620,12 +644,14 @@ namespace QuickJS.Binding
 
         private void CollectMethods(IEnumerable<Native.JSCFunction> funcs, bool asExtensionAnyway)
         {
-            if (funcs != null)
+            if (funcs == null)
             {
-                foreach (var func in funcs)
-                {
-                    AddMethod(func);
-                }
+                return;
+            }
+
+            foreach (var func in funcs)
+            {
+                AddMethod(func);
             }
         }
 

@@ -33,6 +33,9 @@ namespace QuickJS.Binding
         private List<string> _explicitAssemblies = new List<string>(); // 仅导出指定需要导出的类型
 
         private HashSet<Type> _typeBlacklist;
+        // any member method/field/property/event which references a type in this hashset will not eventually exported
+        private HashSet<Type> _unsupportedRelevantTypes;
+        private HashSet<Type> _unsupportedDelegates;
         private HashSet<string> _namespaceBlacklist;
         private HashSet<string> _typeFullNameBlacklist;
         private HashSet<string> _assemblyBlacklist;  // 禁止导出的 assembly
@@ -101,6 +104,8 @@ namespace QuickJS.Binding
             _typeFullNameBlacklist = new HashSet<string>(prefs.typeFullNameBlacklist);
             _assemblyBlacklist = new HashSet<string>(prefs.assemblyBlacklist);
             _typeBlacklist = new HashSet<Type>();
+            _unsupportedRelevantTypes = new HashSet<Type>();
+            _unsupportedDelegates = new HashSet<Type>();
             _logWriter = args.useLogWriter ? new TextGenerator(newline, tab) : null;
 
             if (prefs.optToString)
@@ -425,6 +430,11 @@ namespace QuickJS.Binding
             }
         }
 
+        public void AddUnsupportedRelevantType(Type type)
+        {
+            _unsupportedRelevantTypes.Add(type);
+        }
+
         public RawTypeBindingInfo GetExportedRawType(Type type)
         {
             RawTypeBindingInfo rawTypeBindingInfo;
@@ -655,62 +665,113 @@ namespace QuickJS.Binding
             }
         }
 
+        public bool IsSupportedAsDelegate(Type delegateType)
+        {
+            if (_unsupportedDelegates.Contains(delegateType))
+            {
+                return false;
+            }
+
+            var invoke = delegateType.GetMethod("Invoke");
+            var returnType = invoke.ReturnType;
+            var parameters = invoke.GetParameters();
+
+            if (returnType.IsPointer || returnType.IsGenericTypeDefinition || _unsupportedRelevantTypes.Contains(returnType))
+            {
+                _unsupportedDelegates.Add(delegateType);
+                return false;
+            }
+
+            if (returnType.IsGenericType)
+            {
+                //TODO temporarily skip types like NativeArray<XXX> with _unsupportedRelevantTypes
+                if (_unsupportedRelevantTypes.Contains(returnType.GetGenericTypeDefinition()))
+                {
+                    _unsupportedDelegates.Add(delegateType);
+                    return false;
+                }
+            }
+
+            for (int i = 0, count = parameters.Length; i < count; ++i)
+            {
+                var parameterType = parameters[i].ParameterType;
+                if (parameterType.IsPointer || parameterType.IsGenericTypeDefinition || parameterType.IsGenericParameter || _unsupportedRelevantTypes.Contains(parameterType))
+                {
+                    _unsupportedDelegates.Add(delegateType);
+                    return false;
+                }
+                if (prefs.skipDelegateWithByRefParams && parameterType.IsByRef)
+                {
+                    _unsupportedDelegates.Add(delegateType);
+                    return false;
+                }
+                if (parameterType.IsGenericType)
+                {
+                    //TODO temporarily skip types like NativeArray<XXX> with _unsupportedRelevantTypes
+                    if (_unsupportedRelevantTypes.Contains(parameterType.GetGenericTypeDefinition()))
+                    {
+                        _unsupportedDelegates.Add(delegateType);
+                        return false;
+                    }
+                }
+                if (parameterType.DeclaringType != null)
+                {
+                    //TODO nested type in a generic class (even in a constructed generic type) not supported for now
+                    if (parameterType.DeclaringType.IsGenericType)
+                    {
+                        _unsupportedDelegates.Add(delegateType);
+                        return false;
+                    }
+                }
+            }
+            return true;
+        }
+
         // 收集所有 delegate 类型
         // delegateType: 委托本身的类型
         // explicitThis: 委托的首个参数作为 显式 this 传递
         public void CollectDelegate(Type delegateType)
         {
-            if (delegateType == null || delegateType.BaseType != typeof(MulticastDelegate))
+            if (delegateType == null || delegateType.BaseType != typeof(MulticastDelegate) || _exportedDelegates.ContainsKey(delegateType))
             {
                 return;
             }
-            if (!_exportedDelegates.ContainsKey(delegateType))
-            {
-                var invoke = delegateType.GetMethod("Invoke");
-                var returnType = invoke.ReturnType;
-                var parameters = invoke.GetParameters();
-                if (ContainsPointer(invoke))
-                {
-                    Info("skip unsafe (pointer) delegate: [{0}] {1}", delegateType, invoke);
-                    return;
-                }
-                if (ContainsGenericParameters(invoke))
-                {
-                    Info("skip generic delegate: [{0}] {1}", delegateType, invoke);
-                    return;
-                }
-                if (prefs.skipDelegateWithByRefParams && ContainsByRefParameters(invoke))
-                {
-                    Info("skip ByRef delegate: [{0}] {1}", delegateType, invoke);
-                    return;
-                }
-                var requiredDefines = new HashSet<string>();
-                CollectTypeRequiredDefines(requiredDefines, delegateType);
-                CollectTypeRequiredDefines(requiredDefines, returnType);
-                CollectTypeRequiredDefines(requiredDefines, parameters);
-                var defs = string.Join(" && ", from def in requiredDefines select def);
 
-                // 是否存在等价 delegate
-                foreach (var kv in _exportedDelegates)
+            if (!IsSupportedAsDelegate(delegateType))
+            {
+                return;
+            }
+
+            var invoke = delegateType.GetMethod("Invoke");
+            var returnType = invoke.ReturnType;
+            var parameters = invoke.GetParameters();
+            var requiredDefines = new HashSet<string>();
+
+            CollectTypeRequiredDefines(requiredDefines, delegateType);
+            CollectTypeRequiredDefines(requiredDefines, returnType);
+            CollectTypeRequiredDefines(requiredDefines, parameters);
+            var defs = string.Join(" && ", from def in requiredDefines select def);
+
+            // 是否存在等价 delegate
+            foreach (var kv in _exportedDelegates)
+            {
+                var regDelegateType = kv.Key;
+                var regDelegateBinding = kv.Value;
+                if (regDelegateBinding.Equals(returnType, parameters, defs))
                 {
-                    var regDelegateType = kv.Key;
-                    var regDelegateBinding = kv.Value;
-                    if (regDelegateBinding.Equals(returnType, parameters, defs))
-                    {
-                        Info("skip delegate: {0} && {1} required defines: {2}", regDelegateBinding, delegateType, defs);
-                        regDelegateBinding.types.Add(delegateType);
-                        _redirectDelegates[delegateType] = regDelegateType;
-                        return;
-                    }
+                    Info("skip delegate: {0} && {1} required defines: {2}", regDelegateBinding, delegateType, defs);
+                    regDelegateBinding.types.Add(delegateType);
+                    _redirectDelegates[delegateType] = regDelegateType;
+                    return;
                 }
-                var delegateBindingInfo = new DelegateBridgeBindingInfo(returnType, parameters, defs);
-                delegateBindingInfo.types.Add(delegateType);
-                _exportedDelegates.Add(delegateType, delegateBindingInfo);
-                Info("add delegate: {0} required defines: {1}", delegateType, defs);
-                for (var i = 0; i < parameters.Length; i++)
-                {
-                    CollectDelegate(parameters[i].ParameterType);
-                }
+            }
+            var delegateBindingInfo = new DelegateBridgeBindingInfo(returnType, parameters, defs);
+            delegateBindingInfo.types.Add(delegateType);
+            _exportedDelegates.Add(delegateType, delegateBindingInfo);
+            Info("add delegate: {0} required defines: {1}", delegateType, defs);
+            for (var i = 0; i < parameters.Length; i++)
+            {
+                CollectDelegate(parameters[i].ParameterType);
             }
         }
 
@@ -1342,6 +1403,10 @@ namespace QuickJS.Binding
             {
                 if (type.IsConstructedGenericType)
                 {
+                    if (_typeBlacklist.Contains(type.GetGenericTypeDefinition()))
+                    {
+                        return true;
+                    }
                     if (IsCompoundedType(type.GetGenericArguments()))
                     {
                         return true;
@@ -1378,7 +1443,7 @@ namespace QuickJS.Binding
                 return true;
             }
 
-            //TODO optional support for unsafe types?
+            //TODO support for unsafe types?
             if (type.IsDefined(typeof(System.Runtime.CompilerServices.UnsafeValueTypeAttribute), false))
             {
                 return true;

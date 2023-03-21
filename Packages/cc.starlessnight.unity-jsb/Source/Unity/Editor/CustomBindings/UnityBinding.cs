@@ -52,6 +52,7 @@ namespace jsb.Editor
             bindingManager.SetTypeBlocked(typeof(UnityEngine.ISerializationCallbackReceiver));
             bindingManager.SetTypeBlocked(typeof(UnityEngine.Playables.ScriptPlayable<>));
             bindingManager.SetTypeBlocked(typeof(AOT.MonoPInvokeCallbackAttribute));
+            bindingManager.AddUnsupportedRelevantType(typeof(Unity.Collections.NativeArray<>));
 
             // SetTypeBlocked(typeof(RendererExtensions));
             bindingManager.TransformType(typeof(UnityEngine.Events.UnityEvent<>))
