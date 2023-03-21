@@ -28,7 +28,7 @@ It brings Javascript runtime capability to Unity3D by integrating [QuickJS](http
 * [UNFINISHED] Hotfix on C#
 * [UNFINISHED] `UIElement` support
 
-> Supports .NET4.0/dotnetcore3.1/Unity2019.4+ (Windows/macOS/iOS/Android)  x86/x64/arm64
+> Supports .NET4.0/dotnetcore3.1/Unity2020.3+ (Windows/macOS/iOS/Android)  x86/x64/arm64
 > Only tested on macOS with Unity2020.3(INTEL)
 
 # Samples
@@ -321,7 +321,15 @@ git clone https://github.com/ialex32x/unity-jsb --depth=1
 ## Restore node_modules
 ```
 npm install
+
 ```
+## Re-compile ts source files (only if modified)
+```sh
+tsc 
+# or compile and watch
+# tsc --watch 
+```
+
 ## Generate d.ts
 Open project with Unity3D, run menu command ```JS Bridge/Generate Type Definition```
 > NOTE: The split size of the generated d.ts file is configurable in `PrefsEditor` (or directly edit `js-bridge.json`).
