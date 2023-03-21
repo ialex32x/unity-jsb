@@ -633,6 +633,12 @@ namespace QuickJS.Binding
                         continue;
                     }
 
+                    if (!bindingManager.IsSupportedMethod(typeof(void), constructor))
+                    {
+                        bindingManager.Info("skip unsupported constructor: {0}", constructor.Name);
+                        continue;
+                    }
+
                     AddConstructor(constructor);
                 }
             }
@@ -661,21 +667,9 @@ namespace QuickJS.Binding
             {
                 return;
             }
-            
+
             foreach (var method in methods)
             {
-                if (BindingManager.IsGenericMethod(method))
-                {
-                    bindingManager.Info("skip generic method: {0}", method);
-                    continue;
-                }
-
-                if (BindingManager.ContainsUnsupportedParameter(method))
-                {
-                    bindingManager.Info("skip unsupported (pointer/invalid parameter type) method: {0}", method);
-                    continue;
-                }
-
                 if (method.IsSpecialName)
                 {
                     if (!IsSupportedOperators(method))
@@ -706,6 +700,12 @@ namespace QuickJS.Binding
                 if (transform.Filter(method))
                 {
                     bindingManager.Info("skip filtered method: {0}", method.Name);
+                    continue;
+                }
+
+                if (!bindingManager.IsSupportedMethod(method.ReturnType, method))
+                {
+                    bindingManager.Info("skip unsupported method: {0}", method.Name);
                     continue;
                 }
 

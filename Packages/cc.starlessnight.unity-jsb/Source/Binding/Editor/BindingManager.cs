@@ -216,6 +216,8 @@ namespace QuickJS.Binding
             AddTSTypeNameMap(typeof(string), "string");
             AddTSTypeNameMap(typeof(char), "string");
             AddTSTypeNameMap(typeof(void), "void");
+            AddUnsupportedRelevantType(typeof(System.Span<>));
+            AddUnsupportedRelevantType(typeof(System.ReadOnlySpan<>));
 
             TransformType(typeof(QuickJS.IO.ByteBuffer))
                 .SetMemberBlocked("_SetPosition")
@@ -676,6 +678,61 @@ namespace QuickJS.Binding
                 var parameter = parameters[i];
                 CollectTypeRequiredDefines(defs, parameter.ParameterType);
             }
+        }
+
+        public bool IsSupportedMethod(Type returnType, MethodBase methodBase)
+        {
+            if (methodBase.IsGenericMethod)
+            {
+                return false;
+            }
+
+            // var returnType = methodInfo.ReturnType;
+            var parameters = methodBase.GetParameters();
+
+            if (returnType.IsPointer || returnType.FullName == null || returnType.IsGenericTypeDefinition || _unsupportedRelevantTypes.Contains(returnType))
+            {
+                return false;
+            }
+
+            if (returnType.IsGenericType)
+            {
+                //TODO temporarily skip types like NativeArray<XXX> with _unsupportedRelevantTypes
+                if (_unsupportedRelevantTypes.Contains(returnType.GetGenericTypeDefinition()))
+                {
+                    return false;
+                }
+            }
+
+            for (int i = 0, count = parameters.Length; i < count; ++i)
+            {
+                var parameterType = parameters[i].ParameterType;
+                if (parameterType.IsPointer || parameterType.FullName == null || parameterType.IsGenericTypeDefinition || parameterType.IsGenericParameter || _unsupportedRelevantTypes.Contains(parameterType))
+                {
+                    return false;
+                }
+                if (prefs.skipDelegateWithByRefParams && parameterType.IsByRef)
+                {
+                    return false;
+                }
+                if (parameterType.IsGenericType)
+                {
+                    //TODO temporarily skip types like NativeArray<XXX> with _unsupportedRelevantTypes
+                    if (_unsupportedRelevantTypes.Contains(parameterType.GetGenericTypeDefinition()))
+                    {
+                        return false;
+                    }
+                }
+                if (parameterType.DeclaringType != null)
+                {
+                    //TODO nested type in a generic class (even in a constructed generic type) not supported for now
+                    if (parameterType.DeclaringType.IsGenericType)
+                    {
+                        return false;
+                    }
+                }
+            }
+            return true;
         }
 
         public bool IsSupportedAsDelegate(Type delegateType)

@@ -161,7 +161,7 @@ namespace QuickJS.Unity
             catch (Exception exception)
             {
                 stopWatch.Stop();
-                Debug.LogFormat("Finished executing {0} in {1}ms with error: {2}", name, stopWatch.ElapsedMilliseconds, exception.Message);
+                Debug.LogFormat("Finished executing {0} in {1}ms with error: {2}\nStackTrace: {3}", name, stopWatch.ElapsedMilliseconds, exception.Message, exception.StackTrace);
                 throw;
             }
         }
