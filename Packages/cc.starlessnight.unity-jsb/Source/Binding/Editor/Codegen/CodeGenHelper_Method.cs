@@ -230,13 +230,13 @@ namespace QuickJS.Binding
                     this.cg.tsDeclare.AppendL(": { ");
 
                     var returnTypeTS = this.cg.currentTSModule.GetTSTypeFullName(returnType);
-                    var returnVarName = this.cg.bindingManager.GetTSVariable("return");
+                    var returnVarName = BindingManager.GetTSVariable("return");
                     this.cg.tsDeclare.AppendL($"\"{returnVarName}\": {returnTypeTS}");
 
                     for (var i = 0; i < outParametersCount; i++)
                     {
                         var rp = returnParameters[i];
-                        var name = this.cg.bindingManager.GetTSVariable(rp.Name);
+                        var name = BindingManager.GetTSVariable(rp.Name);
                         var ts = this.cg.currentTSModule.GetTSTypeFullName(rp.ParameterType);
                         if (i != outParametersCount - 1)
                         {
@@ -481,13 +481,13 @@ namespace QuickJS.Binding
                     {
                         var elementType = parameterType.GetElementType();
                         var elementTS = this.cg.currentTSModule.GetTSTypeFullName(elementType);
-                        var parameterVarName = this.cg.bindingManager.GetTSVariable(parameter);
+                        var parameterVarName = BindingManager.GetTSVariable(parameter.Name);
                         this.cg.tsDeclare.AppendL($"{parameter_prefix}...{parameterVarName}: {elementTS}[]");
                     }
                     else
                     {
                         var parameterTS = this.cg.currentTSModule.GetTSTypeFullName(parameter);
-                        var parameterVarName = this.cg.bindingManager.GetTSVariable(parameter);
+                        var parameterVarName = BindingManager.GetTSVariable(parameter.Name);
                         this.cg.tsDeclare.AppendL($"{parameter_prefix}{parameterVarName}: {parameterTS}");
                     }
 

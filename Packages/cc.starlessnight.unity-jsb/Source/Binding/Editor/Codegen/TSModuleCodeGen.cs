@@ -500,7 +500,7 @@ namespace QuickJS.Binding
             {
                 var parameter = parameters[i];
                 var typename = GetTSTypeFullName(parameter);
-                arglist += this.cg.bindingManager.GetTSVariable(parameter) + ": ";
+                arglist += BindingManager.GetTSVariable(parameter.Name) + ": ";
                 arglist += typename;
                 if (i != size - 1)
                 {

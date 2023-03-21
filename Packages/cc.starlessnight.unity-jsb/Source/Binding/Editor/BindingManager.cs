@@ -59,6 +59,7 @@ namespace QuickJS.Binding
         private Dictionary<Type, string> _csTypePusherMap = new Dictionary<Type, string>();
         private Dictionary<string, string> _csTypeNameMapS = new Dictionary<string, string>();
         private static HashSet<string> _tsKeywords = new HashSet<string>();
+        private static HashSet<string> _csKeywords = new HashSet<string>();
 
         private Dictionary<int, List<MethodInfo>> _reflectedDelegateTemplates = new Dictionary<int, List<MethodInfo>>();
 
@@ -85,6 +86,10 @@ namespace QuickJS.Binding
                 "throw", "else", "var", "number", "string", "get", "module", "instanceof", "typeof", "public", "private",
                 "while", "void", "null", "super", "this", "new", "in", "await", "async", "extends", "static",
                 "package", "implements", "interface", "continue", "yield", "const", "export", "finally", "for"
+            );
+            AddCSKeywords(
+                "default", "return", "class", "struct", "break", "continue", "var", "if", "else", "for", "nameof",
+                "typeof", "while", "new", "in", "static", "catch", "public", "case"
             );
         }
 
@@ -386,6 +391,14 @@ namespace QuickJS.Binding
             foreach (var keyword in keywords)
             {
                 _tsKeywords.Add(keyword);
+            }
+        }
+
+        public static void AddCSKeywords(params string[] keywords)
+        {
+            foreach (var keyword in keywords)
+            {
+                _csKeywords.Add(keyword);
             }
         }
 
@@ -1150,19 +1163,14 @@ namespace QuickJS.Binding
             return "Values.js_push_classvalue";
         }
 
-        public string GetTSVariable(string name)
+        public static string GetCSVariable(string name)
         {
-            if (_tsKeywords.Contains(name))
-            {
-                return name + "_";
-            }
-            return name;
+            return _csKeywords.Contains(name) ? "@" + name : name;
         }
 
-        public string GetTSVariable(ParameterInfo parameterInfo)
+        public static string GetTSVariable(string name)
         {
-            var name = parameterInfo.Name;
-            return GetTSVariable(name);
+            return _tsKeywords.Contains(name) ? name + "_" : name;
         }
 
         /// <summary>

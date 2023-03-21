@@ -852,7 +852,7 @@ namespace QuickJS.Binding
             {
                 var propertyBindingInfo = pair.Value;
                 var isStatic = propertyBindingInfo.isStatic;
-                var tsPropertyVar = this.bindingManager.GetTSVariable(propertyBindingInfo.regName);
+                var tsPropertyVar = BindingManager.GetTSVariable(propertyBindingInfo.regName);
                 var dynamicProperty = new Binding.DynamicProperty(dynamicType, propertyBindingInfo.propertyInfo);
 
                 cls.AddField(isStatic, propertyBindingInfo.regName, dynamicProperty);
@@ -862,7 +862,7 @@ namespace QuickJS.Binding
             {
                 var fieldBindingInfo = pair.Value;
                 var isStatic = fieldBindingInfo.isStatic;
-                var tsPropertyVar = this.bindingManager.GetTSVariable(fieldBindingInfo.regName);
+                var tsPropertyVar = BindingManager.GetTSVariable(fieldBindingInfo.regName);
                 var dynamicField = new Binding.DynamicField(dynamicType, fieldBindingInfo.fieldInfo);
 
                 cls.AddField(isStatic, fieldBindingInfo.regName, dynamicField);
@@ -872,7 +872,7 @@ namespace QuickJS.Binding
             foreach (var pair in events)
             {
                 var eventBindingInfo = pair.Value;
-                var tsDelegateVar = this.bindingManager.GetTSVariable(eventBindingInfo.regName);
+                var tsDelegateVar = BindingManager.GetTSVariable(eventBindingInfo.regName);
                 var dynamicMethod = new Binding.DynamicEventDelegateOp(dynamicType, eventBindingInfo.eventInfo, tsDelegateVar);
 
                 cls.AddMethod(eventBindingInfo.isStatic, tsDelegateVar, dynamicMethod);
@@ -882,7 +882,7 @@ namespace QuickJS.Binding
             foreach (var pair in delegates)
             {
                 var delegateBindingInfo = pair.Value;
-                var tsDelegateVar = this.bindingManager.GetTSVariable(delegateBindingInfo.regName);
+                var tsDelegateVar = BindingManager.GetTSVariable(delegateBindingInfo.regName);
                 Binding.IDynamicMethod dynamicMethod = null;
 
                 if (delegateBindingInfo.isField)

@@ -550,7 +550,7 @@ namespace QuickJS.Binding
                     var propertyBindingInfo = kv.Value;
                     if (propertyBindingInfo.staticPair.IsValid())
                     {
-                        var tsPropertyVar = this.cg.bindingManager.GetTSVariable(propertyBindingInfo.regName);
+                        var tsPropertyVar = BindingManager.GetTSVariable(propertyBindingInfo.regName);
                         using (new CSEditorOnlyCodeGen(cg, typeBindingInfo.GetRequiredDefines(propertyBindingInfo.propertyInfo)))
                         {
                             cg.cs.AppendLine("cls.AddProperty(true, \"{0}\", {1}, {2});",
@@ -570,7 +570,7 @@ namespace QuickJS.Binding
 
                     if (propertyBindingInfo.instancePair.IsValid())
                     {
-                        var tsPropertyVar = this.cg.bindingManager.GetTSVariable(propertyBindingInfo.regName);
+                        var tsPropertyVar = BindingManager.GetTSVariable(propertyBindingInfo.regName);
                         using (new CSEditorOnlyCodeGen(cg, typeBindingInfo.GetRequiredDefines(propertyBindingInfo.propertyInfo)))
                         {
                             cg.cs.AppendLine("cls.AddProperty(false, \"{0}\", {1}, {2});",
@@ -593,7 +593,7 @@ namespace QuickJS.Binding
                 {
                     var fieldBindingInfo = kv.Value;
                     var bStatic = fieldBindingInfo.isStatic;
-                    var tsFieldVar = this.cg.bindingManager.GetTSVariable(fieldBindingInfo.regName);
+                    var tsFieldVar = BindingManager.GetTSVariable(fieldBindingInfo.regName);
                     using (new CSEditorOnlyCodeGen(cg, typeBindingInfo.GetRequiredDefines(fieldBindingInfo.fieldInfo)))
                     {
                         if (fieldBindingInfo.constantValue != null)
@@ -624,7 +624,7 @@ namespace QuickJS.Binding
                 {
                     var eventBindingInfo = kv.Value;
                     var bStatic = eventBindingInfo.isStatic;
-                    var tsFieldVar = this.cg.bindingManager.GetTSVariable(eventBindingInfo.regName);
+                    var tsFieldVar = BindingManager.GetTSVariable(eventBindingInfo.regName);
                     var tsFieldType = this.cg.currentTSModule.GetTSTypeFullName(eventBindingInfo.eventInfo.EventHandlerType);
                     var tsFieldPrefix = "";
                     if (bStatic)
@@ -643,7 +643,7 @@ namespace QuickJS.Binding
                 {
                     var delegateBindingInfo = kv.Value;
                     var bStatic = delegateBindingInfo.isStatic;
-                    var tsFieldVar = this.cg.bindingManager.GetTSVariable(delegateBindingInfo.regName);
+                    var tsFieldVar = BindingManager.GetTSVariable(delegateBindingInfo.regName);
                     var tsFieldType = this.cg.currentTSModule.GetTSTypeFullName(delegateBindingInfo.delegateType);
                     var tsFieldPrefix = "";
                     if (bStatic)
