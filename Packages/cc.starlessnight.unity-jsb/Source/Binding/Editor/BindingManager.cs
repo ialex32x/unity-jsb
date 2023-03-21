@@ -361,6 +361,7 @@ namespace QuickJS.Binding
 
                             inst.OnInitialize(this);
                             _enabledBindingProcess.Add(inst);
+                            _enabledBindingProcess.Sort((p1, p2) => p1.Priority.CompareTo(p2.Priority));
                             _bindingLogger?.Log($"add binding process: {type}");
                         }
                     }

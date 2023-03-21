@@ -45,6 +45,8 @@ namespace QuickJS.Binding
         
         // 完成默认清理行为后 
         void OnCleanup(BindingManager bindingManager);
+        
+        int Priority { get; set; }
     }
 }
 
