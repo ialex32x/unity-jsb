@@ -1,5 +1,4 @@
 #if !JSB_UNITYLESS
-#if UNITY_EDITOR
 using System;
 
 namespace QuickJS.Unity
@@ -82,4 +81,3 @@ namespace QuickJS.Unity
 }
 
 #endif // !JSB_UNITYLESS
-#endif // UNITY_EDITOR

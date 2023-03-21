@@ -1,12 +1,10 @@
 #if !JSB_UNITYLESS
 using System;
-using System.Reflection;
 
 namespace QuickJS.Unity
 {
     using Native;
     using Binding;
-    using UnityEngine;
 
     public static class ComponentFix
     {
@@ -337,4 +335,4 @@ namespace QuickJS.Unity
         }
     }
 }
-#endif
+#endif // !JSB_UNITYLESS

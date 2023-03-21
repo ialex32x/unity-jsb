@@ -1,5 +1,4 @@
 #if !JSB_UNITYLESS
-#if UNITY_EDITOR
 using System;
 
 namespace QuickJS.Unity
@@ -50,11 +49,7 @@ namespace QuickJS.Unity
                     if (!typeDB.IsConstructorEquals(type, ctor))
                     {
                         Type bridgeType = null;
-                        if (type == typeof(UnityEditor.EditorWindow))
-                        {
-                            bridgeType = typeof(JSEditorWindow);
-                        }
-                        else if (type == typeof(ScriptableObject))
+                        if (type == typeof(ScriptableObject))
                         {
                             bridgeType = typeof(JSScriptableObject);
                         }
@@ -62,7 +57,13 @@ namespace QuickJS.Unity
                         {
                             bridgeType = typeof(JSBehaviourFull);
                         }
-                        
+#if UNITY_EDITOR
+                        else if (type == typeof(UnityEditor.EditorWindow))
+                        {
+                            bridgeType = typeof(JSEditorWindow);
+                        }
+#endif // !UNITY_EDITOR
+
                         if (bridgeType != null)
                         {
                             var scriptableObject = (IScriptInstancedObject)ScriptableObject.CreateInstance(bridgeType);
@@ -88,4 +89,3 @@ namespace QuickJS.Unity
 }
 
 #endif // !JSB_UNITYLESS
-#endif // UNITY_EDITOR

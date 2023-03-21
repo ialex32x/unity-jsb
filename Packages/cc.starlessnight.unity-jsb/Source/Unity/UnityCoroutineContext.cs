@@ -3,7 +3,6 @@ using System.Collections;
 
 namespace QuickJS.Unity
 {
-    using System;
     using QuickJS.Native;
     using QuickJS.Utils;
     using UnityEngine;
@@ -18,11 +17,11 @@ namespace QuickJS.Unity
             }
             else
             {
-                StartCoroutine(_Pending(awaitObject as UnityEngine.YieldInstruction, context, safeRelease));
+                StartCoroutine(_Pending(awaitObject as YieldInstruction, context, safeRelease));
             }
         }
 
-        private IEnumerator _Pending(UnityEngine.YieldInstruction instruction, ScriptContext context, SafeRelease safeRelease)
+        private IEnumerator _Pending(YieldInstruction instruction, ScriptContext context, SafeRelease safeRelease)
         {
             yield return instruction;
 
@@ -67,7 +66,7 @@ namespace QuickJS.Unity
             {
                 var current = enumerator.Current;
 
-                if (current is UnityEngine.YieldInstruction)
+                if (current is YieldInstruction)
                 {
                     yield return current;
                 }
@@ -112,4 +111,4 @@ namespace QuickJS.Unity
     }
 }
 
-#endif
+#endif // !JSB_UNITYLESS
