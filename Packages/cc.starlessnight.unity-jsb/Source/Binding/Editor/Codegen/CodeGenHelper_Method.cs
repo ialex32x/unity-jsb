@@ -112,6 +112,10 @@ namespace QuickJS.Binding
                     {
                         argitem += "out ";
                     }
+                    else if (parameter.IsIn)
+                    {
+                        argitem += "in ";
+                    }
                     else
                     {
                         argitem += "ref ";
