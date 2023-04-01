@@ -216,8 +216,9 @@ namespace QuickJS.Binding
             AddTSTypeNameMap(typeof(string), "string");
             AddTSTypeNameMap(typeof(char), "string");
             AddTSTypeNameMap(typeof(void), "void");
-            AddUnsupportedRelevantType(typeof(System.Span<>));
-            AddUnsupportedRelevantType(typeof(System.ReadOnlySpan<>));
+
+            AddUnsupportedRelevantType(typeof(System.Int32).Assembly.GetType("System.Span`1"));
+            AddUnsupportedRelevantType(typeof(System.Int32).Assembly.GetType("System.ReadOnlySpan`1"));
 
             TransformType(typeof(QuickJS.IO.ByteBuffer))
                 .SetMemberBlocked("_SetPosition")
@@ -447,7 +448,10 @@ namespace QuickJS.Binding
 
         public void AddUnsupportedRelevantType(Type type)
         {
-            _unsupportedRelevantTypes.Add(type);
+            if (type != null) 
+            {
+                _unsupportedRelevantTypes.Add(type);
+            }
         }
 
         public RawTypeBindingInfo GetExportedRawType(Type type)
