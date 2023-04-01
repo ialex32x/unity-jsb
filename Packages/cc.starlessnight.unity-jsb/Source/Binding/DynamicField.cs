@@ -1,9 +1,11 @@
 using System;
 using System.Reflection;
-using QuickJS.Native;
 
 namespace QuickJS.Binding
 {
+    using QuickJS.Native;
+    using QuickJS.Errors;
+
     public interface IDynamicField
     {
         JSValue GetValue(JSContext ctx, JSValue this_val);

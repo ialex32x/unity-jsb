@@ -1,9 +1,11 @@
 using System;
 using System.Reflection;
-using QuickJS.Native;
 
 namespace QuickJS.Binding
 {
+    using QuickJS.Native;
+    using QuickJS.Errors;
+
     // 委托 add/remove/set/get 操作包装函数
     public class DynamicFieldDelegateOp : IDynamicMethod
     {

@@ -78,7 +78,7 @@ namespace QuickJS.Binding
                 {
                     using (new CSTopLevelCodeGen(this, CodeGenerator.NameOfBindingList)) // just comments
                     {
-                        using (new CSNamespaceCodeGen(this, @namespace))
+                        using (new CSNamespaceCodeGen(this, @namespace, "ScriptRuntime = QuickJS.ScriptRuntime"))
                         {
                             using (new PreservedCodeGen(this))
                             {
@@ -223,7 +223,7 @@ namespace QuickJS.Binding
                 {
                     using (new CSTopLevelCodeGen(this, CodeGenerator.NameOfDelegates))
                     {
-                        using (new CSNamespaceCodeGen(this, this.bindingManager.prefs.ns))
+                        using (new CSNamespaceCodeGen(this, this.bindingManager.prefs.ns, "JSDelegateAttribute = QuickJS.JSDelegateAttribute"))
                         {
                             using (new PreservedCodeGen(this))
                             {

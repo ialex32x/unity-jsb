@@ -2000,7 +2000,8 @@ namespace QuickJS.Binding
             AddExportedType(typeof(sbyte)).SystemRuntime();
             AddExportedType(typeof(float)).SystemRuntime();
             AddExportedType(typeof(double)).SystemRuntime();
-            AddExportedType(typeof(string)).SystemRuntime();
+            AddExportedType(typeof(string)).SystemRuntime()
+                .SetMemberBlocked("ContainsInvariantCultureIgnoreCase");
             AddExportedType(typeof(int)).SystemRuntime();
             AddExportedType(typeof(uint)).SystemRuntime();
             AddExportedType(typeof(short)).SystemRuntime();

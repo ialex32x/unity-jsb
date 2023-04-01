@@ -8,6 +8,7 @@ using System.Linq;
 namespace QuickJS.Unity
 {
     using Native;
+    using Errors;
     using Binding;
     using UnityEngine;
     using UnityEditor;

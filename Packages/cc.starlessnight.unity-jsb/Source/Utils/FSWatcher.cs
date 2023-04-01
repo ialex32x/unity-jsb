@@ -4,6 +4,7 @@ using System.IO;
 namespace QuickJS.Utils
 {
     using QuickJS;
+    using QuickJS.Errors;
     using QuickJS.Native;
     using QuickJS.Binding;
 

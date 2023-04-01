@@ -5,12 +5,14 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.RegularExpressions;
-using QuickJS.Binding;
-using QuickJS.Native;
-using QuickJS.Utils;
 
 namespace QuickJS
 {
+    using QuickJS.Binding;
+    using QuickJS.Native;
+    using QuickJS.Utils;
+    using QuickJS.Errors;
+
     public partial class ScriptContext
     {
         public event Action<ScriptContext, string> OnScriptReloading;

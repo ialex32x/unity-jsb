@@ -5,6 +5,7 @@ namespace QuickJS.Unity
 {
     using Native;
     using Binding;
+    using Errors;
     using UnityEngine;
 
     public static class ScriptableObjectFix

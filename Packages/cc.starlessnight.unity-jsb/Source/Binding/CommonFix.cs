@@ -3,7 +3,8 @@ using System.Reflection;
 
 namespace QuickJS.Binding
 {
-    using Native;
+    using QuickJS.Native;
+    using QuickJS.Errors;
 
     public static class CommonFix
     {

@@ -1,8 +1,10 @@
 ﻿using System;
-using QuickJS.Native;
 
 namespace QuickJS
 {
+    using QuickJS.Native;
+    using QuickJS.Errors;
+
     public class ScriptFunction : GCObject, Utils.Invokable
     {
         private JSValue _fnValue;

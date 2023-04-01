@@ -12,6 +12,7 @@ namespace QuickJS.Extra
 {
     using UnityEngine;
     using QuickJS;
+    using QuickJS.Errors;
     using QuickJS.IO;
     using QuickJS.Native;
     using QuickJS.Binding;

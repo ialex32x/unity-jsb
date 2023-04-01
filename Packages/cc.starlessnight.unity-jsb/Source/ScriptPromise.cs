@@ -1,8 +1,10 @@
 using System;
-using QuickJS.Native;
 
 namespace QuickJS
 {
+    using QuickJS.Native;
+    using QuickJS.Errors;
+    
     public abstract class ScriptPromise : GCObject, Utils.IObjectCollectionEntry
     {
         private Utils.ObjectCollection.Handle _handle;

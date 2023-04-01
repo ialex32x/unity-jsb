@@ -8,6 +8,7 @@ namespace QuickJS
     using QuickJS.Utils;
     using QuickJS.Native;
     using QuickJS.Binding;
+    using QuickJS.Errors;
 
     public class JSWorker : Values, IDisposable, IObjectCollectionEntry
     {

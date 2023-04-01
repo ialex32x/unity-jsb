@@ -4,6 +4,7 @@ using System;
 namespace QuickJS.Unity
 {
     using Native;
+    using Errors;
     using Binding;
     using UnityEngine;
 

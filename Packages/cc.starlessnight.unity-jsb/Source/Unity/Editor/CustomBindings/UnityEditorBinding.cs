@@ -129,6 +129,8 @@ namespace jsb.Editor
                 .AddStaticMethod(EditorWindowFix.CreateWindow)
             ;
             bindingManager.AddTypeFullNameBlacklist("UnityEditor.ProfilerWindow");
+            bindingManager.AddTypeFullNameBlacklist("UnityEditor.MaterialEditor");
+            bindingManager.AddTypeFullNameBlacklist("UnityEditor.ShaderUtil");
         }
         
         public override void OnPostExporting(BindingManager bindingManager)

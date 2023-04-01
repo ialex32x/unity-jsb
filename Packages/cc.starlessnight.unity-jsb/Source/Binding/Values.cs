@@ -9,7 +9,7 @@ namespace QuickJS.Binding
     public partial class Values
     {
         public const string KeyForCSharpTypeID = "__csharp_type_id__";
-        public const string NamespaceOfStaticBinder = "QuickJS";
+        public const string NamespaceOfStaticBinder = "jsb.gen";
         public const string ClassNameOfStaticBinder = "StaticBinder";
         public const string MethodNameOfStaticBinder = "BindAll";
 

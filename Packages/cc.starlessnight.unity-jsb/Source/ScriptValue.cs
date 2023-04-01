@@ -1,7 +1,9 @@
-using QuickJS.Native;
 
 namespace QuickJS
 {
+    using QuickJS.Native;
+    using QuickJS.Errors;
+    
     /// <summary>
     /// ScriptValue holds a strong reference of js value, so it relies on C# object finalizer (or the runtime managed object cache) to release.
     /// Directly creating a ScriptValue instance outside is not allowed, use js_get_classvalue(ctx, val, out scriptValue) if you want to get a ScriptValue instance from a JSValue.
