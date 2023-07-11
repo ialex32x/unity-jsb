@@ -2,7 +2,7 @@ using System;
 
 namespace QuickJS.Utils
 {
-    public interface Invokable : IDisposable
+    public interface IInvokable : IDisposable
     {
         void Invoke();
     }

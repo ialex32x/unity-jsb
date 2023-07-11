@@ -13,20 +13,16 @@ namespace QuickJS.Utils
     /// </summary>
     public readonly struct SIndex : IEquatable<SIndex>
     {
-        public static readonly SIndex None = new SIndex();
+        public static readonly SIndex None = default;
 
-        private readonly bool _isValid;
         public readonly int index;
         public readonly int revision;
 
         public SIndex(int index, int revision)
         {
-            this._isValid = true;
             this.index = index;
             this.revision = revision;
         }
-
-        public bool isValid => _isValid;
 
         public bool Equals(in SIndex other) => this == other;
 
@@ -34,13 +30,13 @@ namespace QuickJS.Utils
 
         public override bool Equals(object obj) => obj is SIndex other && this == other;
 
-        public override int GetHashCode() => _isValid ? index ^ revision : 0;
+        public override int GetHashCode() => index ^ revision;
 
-        public override string ToString() => _isValid ? index.ToString() : "None";
+        public override string ToString() => index.ToString();
 
-        public static bool operator ==(SIndex a, SIndex b) => a._isValid == b._isValid && a.index == b.index && a.revision == b.revision;
+        public static bool operator ==(SIndex a, SIndex b) => a.index == b.index && a.revision == b.revision;
 
-        public static bool operator !=(SIndex a, SIndex b) => a._isValid != b._isValid || a.index != b.index || a.revision != b.revision;
+        public static bool operator !=(SIndex a, SIndex b) => a.index != b.index || a.revision != b.revision;
     }
 
     public interface SListAccess
@@ -98,11 +94,15 @@ namespace QuickJS.Utils
 
         public bool isLocked => _lock > 0;
 
+        public SIndex firstIndex => _firstIndex >= 0 ? new SIndex(_firstIndex, _slots[_firstIndex].revision) : SIndex.None;
+        
+        public SIndex lastIndex => _lastIndex >= 0 ? new SIndex(_lastIndex, _slots[_lastIndex].revision) : SIndex.None;
+        
         public T this[in SIndex index]
         {
             get
             {
-                if (index.isValid && index.index >= 0 && index.index < this._slots.Length)
+                if (index.index >= 0 && index.index < this._slots.Length)
                 {
                     ref var slot = ref _slots[index.index];
 
@@ -140,6 +140,7 @@ namespace QuickJS.Utils
                         {
                             return slot.value;
                         }
+                        current = slot.next;
                     }
                 }
 
@@ -159,6 +160,7 @@ namespace QuickJS.Utils
                             slot.value = value;
                             return;
                         }
+                        current = slot.next;
                     }
                 }
 
@@ -286,7 +288,7 @@ namespace QuickJS.Utils
 
         public bool IsValidIndex(in SIndex index)
         {
-            if (index.isValid && index.index >= 0 && index.index < this._slots.Length)
+            if (index.index >= 0 && index.index < this._slots.Length)
             {
                 ref var slot = ref _slots[index.index];
 
@@ -300,7 +302,7 @@ namespace QuickJS.Utils
 
         public bool TryGetValue(in SIndex index, out T value)
         {
-            if (index.isValid && index.index >= 0 && index.index < this._slots.Length)
+            if (index.index >= 0 && index.index < this._slots.Length)
             {
                 ref var slot = ref _slots[index.index];
 
@@ -314,9 +316,9 @@ namespace QuickJS.Utils
             return false;
         }
 
-        public ref T UnsafeGetValueByRef(in SIndex index)
+        public ref T UnsafeGetValueByRef(SIndex index)
         {
-            if (index.isValid && index.index >= 0 && index.index < this._slots.Length)
+            if (index.index >= 0 && index.index < this._slots.Length)
             {
                 ref var slot = ref _slots[index.index];
 
@@ -333,7 +335,7 @@ namespace QuickJS.Utils
 
         public T UnsafeGetValue(in SIndex index)
         {
-            if (index.isValid && index.index >= 0 && index.index < this._slots.Length)
+            if (index.index >= 0 && index.index < this._slots.Length)
             {
                 ref var slot = ref _slots[index.index];
 
@@ -352,7 +354,7 @@ namespace QuickJS.Utils
 
         public bool UnsafeSetValue(in SIndex index, T value)
         {
-            if (index.isValid && index.index >= 0 && index.index < this._slots.Length)
+            if (index.index >= 0 && index.index < this._slots.Length)
             {
                 ref var slot = ref _slots[index.index];
 
@@ -378,7 +380,7 @@ namespace QuickJS.Utils
                 if (index-- == 0)
                 {
                     value = slot.value;
-                    return new SIndex(current, slot.revision);
+                    return new(current, slot.revision);
                 }
                 current = slot.next;
             }
@@ -395,7 +397,8 @@ namespace QuickJS.Utils
             var index = _freeIndex;
             ref var slot = ref _slots[index];
 
-            ++slot.revision;
+            // safer to skip SIndex.None
+            slot.revision = slot.revision == -1 ? 1 : slot.revision + 1;
             slot.value = value;
             slot.isValid = true;
             _freeIndex = slot.next;
@@ -439,7 +442,7 @@ namespace QuickJS.Utils
             var newIndex = _freeIndex;
             ref var newSlot = ref _slots[newIndex];
 
-            ++newSlot.revision;
+            newSlot.revision = newSlot.revision == -1 ? 1 : newSlot.revision + 1;
             newSlot.value = value;
             newSlot.isValid = true;
             _freeIndex = newSlot.next;
@@ -482,7 +485,7 @@ namespace QuickJS.Utils
                     var newIndex = _freeIndex;
                     ref var newSlot = ref _slots[newIndex];
 
-                    ++newSlot.revision;
+                    newSlot.revision = newSlot.revision == -1 ? 1 : newSlot.revision + 1;
                     newSlot.value = value;
                     newSlot.isValid = true;
                     _freeIndex = newSlot.next;
@@ -562,6 +565,7 @@ namespace QuickJS.Utils
                     {
                         return TryRemoveAt(new SIndex(current, slot.revision), out value);
                     }
+                    current = slot.next;
                 }
             }
 
@@ -571,7 +575,7 @@ namespace QuickJS.Utils
 
         public bool TryRemoveAt(in SIndex index, out T value)
         {
-            if (index.isValid && index.index >= 0 && index.index < this._slots.Length)
+            if (index.index >= 0 && index.index < this._slots.Length)
             {
                 ref var slot = ref _slots[index.index];
 
@@ -586,7 +590,6 @@ namespace QuickJS.Utils
                     slot.value = default;
                     slot.next = _freeIndex;
                     slot.isValid = false;
-                    // ++slot.revision;
                     _freeIndex = index.index;
                     --_usedSize;
                     ++_version;
@@ -853,14 +856,21 @@ namespace QuickJS.Utils
             private SList<T> _list;
             private int _current;
             private int _next;
-            private int _version;
 
             public UnsafeEnumerator(SList<T> pool)
             {
                 this._list = pool;
                 this._current = -1;
                 this._next = pool._firstIndex;
-                this._version = pool._version;
+            }
+
+            public SIndex Index
+            {
+                get
+                {
+                    ref var slot = ref this._list._slots[_current];
+                    return new(_current, slot.revision);
+                }
             }
 
             public T Current

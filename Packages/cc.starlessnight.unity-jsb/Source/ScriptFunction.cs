@@ -5,7 +5,7 @@ namespace QuickJS
     using QuickJS.Native;
     using QuickJS.Errors;
 
-    public class ScriptFunction : GCObject, Utils.Invokable
+    public class ScriptFunction : GCObject, Utils.IInvokable
     {
         private JSValue _fnValue;
         private JSValue _thisValue;
