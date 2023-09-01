@@ -26,6 +26,8 @@ namespace QuickJS.Binding
 
         public delegate bool TypeCastGet<T>(JSContext ctx, JSValue val, out T o);
 
+        public delegate bool TypeCastRebind<T>(JSContext ctx, JSValue new_target, ref T o);
+
         public delegate JSValue TypeCastPush<T>(JSContext ctx, T o);
 
         public delegate JSValue TypeCastNew<T>(JSContext ctx, JSValue new_target, T o, int type_id, bool disposable);
@@ -40,6 +42,11 @@ namespace QuickJS.Binding
         }
 
         public static bool register_type_caster<T>(TypeCastGet<T> fn)
+        {
+            return register_type_caster(fn.Method);
+        }
+
+        public static bool register_type_caster<T>(TypeCastRebind<T> fn)
         {
             return register_type_caster(fn.Method);
         }
