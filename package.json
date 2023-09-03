@@ -2,7 +2,7 @@
     "dependencies": {
         "@types/matter-js": "^0.17.7",
         "matter-js": "^0.18.0",
-        "protobufjs": "^6.11.3"
+        "protobufjs": "^7.2.4"
     },
     "devDependencies": {
         "@babel/plugin-proposal-optional-chaining": "^7.10.4",
